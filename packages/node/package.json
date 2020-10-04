@@ -1,0 +1,19 @@
+{
+  "name": "@subql/node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "app-module-path": "^2.2.0",
+    "vm2": "^3.9.2"
+  },
+  "devDependencies": {
+    "@types/app-module-path": "^2",
+    "@types/node": "^12.12.68"
+  }
+}

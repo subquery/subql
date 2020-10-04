@@ -1,0 +1,61 @@
+{
+  "name": "@subql/cli",
+  "description": "cli for polkagraph",
+  "version": "0.0.1",
+  "author": "Ian He",
+  "bin": "./bin/run",
+  "bugs": "https://github.com/packages/cli/issues",
+  "dependencies": {
+    "@oclif/command": "^1.8.0",
+    "@oclif/config": "^1.17.0",
+    "@oclif/plugin-help": "^3.2.0",
+    "graphql-tag": "^2.11.0",
+    "graphql-tools": "^6.2.4",
+    "pg": "^8.4.1",
+    "pg-format": "^1.0.4",
+    "tslib": "^1.13.0",
+    "typeorm": "^0.2.28"
+  },
+  "devDependencies": {
+    "@oclif/dev-cli": "^1.22.2",
+    "@types/node": "^10.17.35",
+    "@types/pg-format": "^1",
+    "eslint": "^5.16.0",
+    "eslint-config-oclif": "^3.1.0",
+    "eslint-config-oclif-typescript": "^0.1.0",
+    "globby": "^10.0.2",
+    "ts-node": "^8.10.2",
+    "typescript": "^3.9.7"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "files": [
+    "/bin",
+    "/lib",
+    "/npm-shrinkwrap.json",
+    "/oclif.manifest.json"
+  ],
+  "homepage": "https://github.com/packages/cli",
+  "keywords": [
+    "oclif"
+  ],
+  "license": "Apache 2",
+  "main": "lib/index.js",
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "cli",
+    "plugins": [
+      "@oclif/plugin-help"
+    ]
+  },
+  "repository": "packages/cli",
+  "scripts": {
+    "postpack": "rm -f oclif.manifest.json",
+    "posttest": "eslint . --ext .ts --config .eslintrc",
+    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "test": "echo NO TESTS",
+    "version": "oclif-dev readme && git add README.md"
+  },
+  "types": "lib/index.d.ts"
+}

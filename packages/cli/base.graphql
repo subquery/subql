@@ -1,0 +1,6 @@
+scalar BigInt
+scalar BigDecimal
+scalar Bytes
+
+directive @derivedFrom(field: String!) on FIELD_DEFINITION
+directive @entity on OBJECT
