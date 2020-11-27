@@ -16,28 +16,28 @@ cli for polkagraph
 <!-- usage -->
 ```sh-session
 $ npm install -g @subql/cli
-$ cli COMMAND
+$ subql COMMAND
 running command...
-$ cli (-v|--version|version)
+$ subql (-v|--version|version)
 @subql/cli/0.0.1 darwin-x64 node-v12.16.3
-$ cli --help [COMMAND]
+$ subql --help [COMMAND]
 USAGE
-  $ cli COMMAND
+  $ subql COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`cli hello [FILE]`](#cli-hello-file)
-* [`cli help [COMMAND]`](#cli-help-command)
+* [`subql hello [FILE]`](#subql-hello-file)
+* [`subql help [COMMAND]`](#subql-help-command)
 
-## `cli hello [FILE]`
+## `subql hello [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ cli hello [FILE]
+  $ subql hello [FILE]
 
 OPTIONS
   -f, --force
@@ -51,13 +51,13 @@ EXAMPLE
 
 _See code: [src/commands/hello.ts](https://github.com/packages/cli/blob/v0.0.1/src/commands/hello.ts)_
 
-## `cli help [COMMAND]`
+## `subql help [COMMAND]`
 
-display help for cli
+display help for subql
 
 ```
 USAGE
-  $ cli help [COMMAND]
+  $ subql help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for

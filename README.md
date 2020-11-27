@@ -1,1 +1,1 @@
-# polkagraph-node
+# SubQl

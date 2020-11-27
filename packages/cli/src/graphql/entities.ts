@@ -1,12 +1,12 @@
-import {GraphQLSchema, GraphQLNamedType} from 'graphql';
-import {DirectiveName} from "./constant";
+import {GraphQLSchema, GraphQLNamedType, GraphQLObjectType, isObjectType} from 'graphql'
+import {DirectiveName} from './constant'
 
-export function getAllEntities(schema: GraphQLSchema): GraphQLNamedType[] {
-  return Object.entries( schema.getTypeMap() )
-    .filter(([typeName, node]) =>
-      node.astNode?.directives?.find(({name: {value}})=>value === DirectiveName.Entity))
-    .map(([typeName, node]) => node)
-  ;
+export function getAllEntities(schema: GraphQLSchema): GraphQLObjectType[] {
+  return Object.entries(schema.getTypeMap())
+  .filter(([, node]) =>
+      node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.Entity))
+  .map(([, node]) => node)
+  .filter(isObjectType)
 }
 
 // TODO: GraphQLNamedType -> EntitySchema

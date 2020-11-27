@@ -1,0 +1,23 @@
+{
+  "props" : {
+    "baseFolderPath" : ".../../base",
+    "className" : "Extrinsic",
+    "fields" :
+      [
+        {
+          "name": "id",
+          "type": "ID",
+          "required": true
+        },
+        {
+          "name":"NumExtrinsic",
+          "type": "Int",
+          "required": true
+        }
+      ]
+  }
+}
+
+
+
+

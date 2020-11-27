@@ -1,0 +1,1 @@
+{"props":{"baseFolderPath":".../../base","className":"TestEntity","fields":[{"name":"id","type":"string","required":true},{"name":"NumExtrinsic","type":"number","required":false}]}}

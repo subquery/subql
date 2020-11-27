@@ -1,0 +1,19 @@
+import {Entity} from '<%= props.baseFolderPath %>';
+import assert from 'assert';
+
+
+export class <%= props.className %> implements Entity {
+
+    constructor(id: string) {
+        this.id = id;
+    }
+<% props.fields.forEach(function(field){ %>
+    public <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %>;
+<% }); %>
+
+    async save(): Promise<void>{
+        let id = this.id;
+        assert(id !== null, "Cannot save Extrinsic entity without an ID");
+        store.set('<%=props.className %>', id.toString(), this);
+    }
+}

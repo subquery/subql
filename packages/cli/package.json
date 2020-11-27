@@ -3,12 +3,15 @@
   "description": "cli for polkagraph",
   "version": "0.0.1",
   "author": "Ian He",
-  "bin": "./bin/run",
+  "bin": {
+    "subql": "./bin/run"
+  },
   "bugs": "https://github.com/packages/cli/issues",
   "dependencies": {
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.0",
+    "graphql": "^15.4.0",
     "graphql-tag": "^2.11.0",
     "graphql-tools": "^6.2.4",
     "pg": "^8.4.1",
@@ -44,7 +47,7 @@
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",
-    "bin": "cli",
+    "bin": "subql",
     "plugins": [
       "@oclif/plugin-help"
     ]
