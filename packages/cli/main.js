@@ -6,7 +6,7 @@ const s = new Source(fs.readFileSync('./schema.graphql').toString());
 const base = buildSchema(new Source(fs.readFileSync('./base.graphql').toString()));
 
 const doc = parse(s);
-const sc = extendSchema(base, doc)
+const sc = extendSchema(base, doc);
 
 visit(doc, {
   enter(node, key, parent, path, ancestors) {
@@ -18,4 +18,4 @@ visit(doc, {
   leave(node, key, parent, path, ancestors) {
     console.log(`leave ${node.kind}`);
   },
-})
+});

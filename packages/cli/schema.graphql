@@ -1,21 +1,13 @@
-
 type Extrinsic @entity {
-
   id: ID!
 
   NumExtrinsic: Int!
-
-
 }
 
-
 type testEntity @entity {
-
   id: ID!
 
   NumExtrinsic: Int!
 
   NumEvent: Int
-
-
 }

@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "baseUrl": ".",
+    "types": ["node", "jest"],
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2017"],
+    "emitDecoratorMetadata": true,
+    "declaration": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "paths": {
+      "@subql/cli/*": ["packages/cli/src/*"],
+      "@subql/cli": ["packages/cli/src/index"],
+      "@subql/common/*": ["packages/common/src/*"],
+      "@subql/common": ["packages/common/src/index"],
+      "@subql/type/*": ["packages/type/src/*"],
+      "@subql/type": ["packages/type/src/index"],
+      "@subql/node/*": ["packages/node/src/*"],
+      "@subql/node": ["packages/node/src/index"]
+    },
+    "skipLibCheck": true
+  },
+  "include": ["packages/**/*"],
+  "exclude": ["**/node_modules/**"],
+  "typeRoots": ["./node_modules/@types"]
+}

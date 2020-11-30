@@ -1,5 +1,4 @@
-@subql/cli
-===============
+# @subql/cli
 
 cli for polkagraph
 
@@ -9,11 +8,15 @@ cli for polkagraph
 [![License](https://img.shields.io/npm/l/@subql/cli.svg)](https://github.com/packages/cli/blob/master/package.json)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+
+- [Usage](#usage)
+- [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @subql/cli
 $ subql COMMAND
@@ -25,11 +28,15 @@ USAGE
   $ subql COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`subql hello [FILE]`](#subql-hello-file)
-* [`subql help [COMMAND]`](#subql-help-command)
+
+- [`subql hello [FILE]`](#subql-hello-file)
+- [`subql help [COMMAND]`](#subql-help-command)
 
 ## `subql hello [FILE]`
 
@@ -67,4 +74,5 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
+
 <!-- commandsstop -->

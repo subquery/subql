@@ -1,0 +1,33 @@
+specVersion: '0.0.1'
+description: ''
+repository: 'https://github.com/onfinality-io/examples'
+
+schema: './schema.graphql'
+
+endpoint: 'wss://rpc.polkadot.io'
+
+dataSources:
+  - name: main
+    kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      file: ./src/mappings/Extrinsic.ts
+      handlers:
+        - name: handleBlock
+          kind: substrate/BlockHandler
+          filter:
+            module: balance
+        - handler: handleEvent
+          kind: substrate/CallHandler
+          filter:
+            module: balance
+            name: xxx
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter:
+            module: balance
+            name: xxx
+  - name: contract
+    kind: substrate/Ink!
+  - name: contract2
+    kind: substrate/EVM

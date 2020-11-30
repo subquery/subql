@@ -1,8 +1,8 @@
-import {Command, flags} from '@oclif/command'
-import {generateSchema} from '../controller/codegen-controller'
+import {Command, flags} from '@oclif/command';
+import {generateSchema} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {
-  static description = 'Generate schemas for graph node'
+  static description = 'Generate schemas for graph node';
 
   static flags = {
     // can pass either --force or -f
@@ -18,12 +18,12 @@ export default class Codegen extends Command {
     }),
 
      */
-  }
+  };
 
   async run() {
-    this.log('*********************************')
-    this.log('Start codegen from schema.graphql')
-    this.log('*********************************')
-    await generateSchema()
+    this.log('*********************************');
+    this.log('Start codegen from schema.graphql');
+    this.log('*********************************');
+    await generateSchema();
   }
 }

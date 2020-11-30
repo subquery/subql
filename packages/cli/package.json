@@ -23,12 +23,7 @@
     "@oclif/dev-cli": "^1.22.2",
     "@types/node": "^10.17.35",
     "@types/pg-format": "^1",
-    "eslint": "^5.16.0",
-    "eslint-config-oclif": "^3.1.0",
-    "eslint-config-oclif-typescript": "^0.1.0",
-    "globby": "^10.0.2",
-    "ts-node": "^8.10.2",
-    "typescript": "^3.9.7"
+    "globby": "^10.0.2"
   },
   "engines": {
     "node": ">=8.0.0"

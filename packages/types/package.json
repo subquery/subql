@@ -16,7 +16,6 @@
     "@polkadot/api": "^2.8.1"
   },
   "devDependencies": {
-    "@types/app-module-path": "^2",
-    "@types/node": "^12.12.68"
+    "@types/app-module-path": "^2"
   }
 }
