@@ -1,0 +1,12 @@
+
+
+type Extrinsic @entity {
+
+
+  NumExtrinsic: Int!
+
+  created: Date!
+
+  balance: BigDecimal!
+
+}

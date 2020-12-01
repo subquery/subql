@@ -8,55 +8,48 @@ cli for polkagraph
 [![License](https://img.shields.io/npm/l/@subql/cli.svg)](https://github.com/packages/cli/blob/master/package.json)
 
 <!-- toc -->
-
-- [Usage](#usage)
-- [Commands](#commands)
+* [@subql/cli](#subqlcli)
+* [Usage](#usage)
+* [Commands](#commands)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.0.1 darwin-x64 node-v12.16.3
+@subql/cli/0.0.1 darwin-x64 node-v12.19.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
+* [`subql codegen`](#subql-codegen)
+* [`subql help [COMMAND]`](#subql-help-command)
+* [`subql init`](#subql-init)
 
-- [`subql hello [FILE]`](#subql-hello-file)
-- [`subql help [COMMAND]`](#subql-help-command)
+## `subql codegen`
 
-## `subql hello [FILE]`
-
-describe the command here
+Generate schemas for graph nodes
 
 ```
 USAGE
-  $ subql hello [FILE]
+  $ subql codegen
 
 OPTIONS
   -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ cli hello
-  hello world from ./src/hello.ts!
+  --file=file
 ```
 
-_See code: [src/commands/hello.ts](https://github.com/packages/cli/blob/v0.0.1/src/commands/hello.ts)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.0.1/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -75,4 +68,19 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0/src/commands/help.ts)_
 
+## `subql init`
+
+Welcome, Init a subquery project
+
+```
+USAGE
+  $ subql init
+
+OPTIONS
+  -f, --force
+  --file=file
+  --starter
+```
+
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.0.1/lib/commands/init.js)_
 <!-- commandsstop -->

@@ -11,11 +11,16 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.0",
+    "@subql/common": "workspace:*",
+    "@types/ejs": "^3.0.5",
+    "ejs": "^3.1.5",
+    "express": "^4.17.1",
     "graphql": "^15.4.0",
     "graphql-tag": "^2.11.0",
     "graphql-tools": "^6.2.4",
     "pg": "^8.4.1",
     "pg-format": "^1.0.4",
+    "simple-git": "^2.24.0",
     "tslib": "^1.13.0",
     "typeorm": "^0.2.28"
   },
@@ -23,6 +28,9 @@
     "@oclif/dev-cli": "^1.22.2",
     "@types/node": "^10.17.35",
     "@types/pg-format": "^1",
+    "eslint": "^5.16.0",
+    "eslint-config-oclif": "^3.1.0",
+    "eslint-config-oclif-typescript": "^0.1.0",
     "globby": "^10.0.2"
   },
   "engines": {
@@ -51,7 +59,7 @@
   "scripts": {
     "postpack": "rm -f oclif.manifest.json",
     "posttest": "eslint . --ext .ts --config .eslintrc",
-    "prepack": "rm -rf lib && tsc -b && oclif-dev manifest && oclif-dev readme",
+    "prepack": "rm -rf lib && tsc -b && cp -r src/template lib/ && oclif-dev manifest && oclif-dev readme",
     "test": "echo NO TESTS",
     "version": "oclif-dev readme && git add README.md"
   },

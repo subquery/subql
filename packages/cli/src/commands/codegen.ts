@@ -22,7 +22,7 @@ export default class Codegen extends Command {
 
   async run() {
     this.log('*********************************');
-    this.log('Start codegen from schema.graphql');
+    this.log('Start codegen from schema');
     this.log('*********************************');
     await generateSchema();
   }

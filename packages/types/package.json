@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc -b"
   },
   "author": "",
   "main": "dist/index.js",
@@ -16,6 +17,7 @@
     "@polkadot/api": "^2.8.1"
   },
   "devDependencies": {
+    "@polkadot/api": "^2.8.1",
     "@types/app-module-path": "^2"
   }
 }

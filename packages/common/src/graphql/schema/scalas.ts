@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
-export default gql`
+
+export const scalas = gql`
   scalar BigInt
   scalar BigDecimal
-  scalar Bytes
+  scalar Date
 `;

@@ -1,4 +1,4 @@
-import {Entity} from '<%= props.baseFolderPath %>';
+import {Entity} from "@subql/types";
 import assert from 'assert';
 
 
@@ -7,13 +7,30 @@ export class <%= props.className %> implements Entity {
     constructor(id: string) {
         this.id = id;
     }
+
 <% props.fields.forEach(function(field){ %>
     public <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %>;
 <% }); %>
 
     async save(): Promise<void>{
         let id = this.id;
-        assert(id !== null, "Cannot save Extrinsic entity without an ID");
+        assert(id !== null, "Cannot save <%=props.className %> entity without an ID");
         store.set('<%=props.className %>', id.toString(), this);
+    }
+    static async remove(id:string): Promise<void>{
+        assert(id !== null, "Cannot remove <%=props.className %> entity without an ID");
+        await store.remove('<%=props.className %>', id.toString());
+    }
+
+    static async get(id:string): Promise<<%=props.className %>>{
+        assert(id !== null, "Cannot get <%=props.className %> entity without an ID");
+        const record = await store.get('<%=props.className %>', id.toString());
+        return <%=props.className %>.create(record);
+    }
+
+    static create(record){
+        let entity = new <%=props.className %>(record.id);
+        Object.assign(entity,record);
+        return entity;
     }
 }
