@@ -3,7 +3,7 @@ import {Command, flags} from '@oclif/command';
 import {getStarter} from '../controller/init-controller';
 
 export default class Init extends Command {
-  static description = 'Welcome, Init a subquery project';
+  static description = 'Init a scafflod subquery project';
 
   static flags = {
     force: flags.boolean({char: 'f'}),
@@ -11,12 +11,12 @@ export default class Init extends Command {
     starter: flags.boolean(),
   };
 
-  async run() {
+  async run(): Promise<void> {
     const {flags} = this.parse(Init);
 
     if (flags.starter) {
-      console.log('Init the starter package');
-      getStarter();
+      this.log('Init the starter package');
+      await getStarter();
     }
   }
 }

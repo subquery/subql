@@ -32,13 +32,29 @@ USAGE
 # Commands
 
 <!-- commands -->
+* [`subql build`](#subql-build)
 * [`subql codegen`](#subql-codegen)
 * [`subql help [COMMAND]`](#subql-help-command)
 * [`subql init`](#subql-init)
 
+## `subql build`
+
+Pack this SubQuery project
+
+```
+USAGE
+  $ subql build
+
+OPTIONS
+  -f, --force
+  --file=file
+```
+
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.0.1/lib/commands/build.js)_
+
 ## `subql codegen`
 
-Generate schemas for graph nodes
+Generate schemas for graph node
 
 ```
 USAGE
@@ -70,7 +86,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.0
 
 ## `subql init`
 
-Welcome, Init a subquery project
+Init a scafflod subquery project
 
 ```
 USAGE

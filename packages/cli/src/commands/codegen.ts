@@ -20,10 +20,10 @@ export default class Codegen extends Command {
      */
   };
 
-  async run() {
+  async run(): Promise<void> {
     this.log('*********************************');
-    this.log('Start codegen from schema');
+    this.log('Codegen from schema');
     this.log('*********************************');
-    await generateSchema();
+    generateSchema();
   }
 }
