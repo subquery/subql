@@ -1,4 +1,4 @@
-import {GraphQLSchema, GraphQLNamedType, GraphQLObjectType, isObjectType} from 'graphql';
+import {GraphQLSchema, GraphQLObjectType, isObjectType} from 'graphql';
 import {DirectiveName} from './constant';
 
 export function getAllEntities(schema: GraphQLSchema): GraphQLObjectType[] {

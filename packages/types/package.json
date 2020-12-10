@@ -1,23 +1,23 @@
 {
   "name": "@subql/types",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc -b"
+    "build": "rm -rf dist && tsc -b"
   },
-  "author": "",
+  "author": "Ian He",
   "main": "dist/index.js",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "files": [
     "src/global.d.ts",
     "/dist"
   ],
   "peerDependencies": {
-    "@polkadot/api": "^2.8.1"
+    "@polkadot/api": "^3.0.1"
   },
   "devDependencies": {
-    "@polkadot/api": "^2.8.1",
-    "@types/app-module-path": "^2"
+    "@polkadot/api": "^3.0.1",
+    "@types/app-module-path": "^2.2.0"
   }
 }

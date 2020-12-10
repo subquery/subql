@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
-  "description": "cli for polkagraph",
-  "version": "0.0.1",
+  "description": "cli for subquery",
+  "version": "0.1.1",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -10,28 +10,20 @@
   "dependencies": {
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
-    "@oclif/plugin-help": "^3.2.0",
+    "@oclif/plugin-help": "^3.2.1",
     "@subql/common": "workspace:*",
     "@types/ejs": "^3.0.5",
     "ejs": "^3.1.5",
-    "express": "^4.17.1",
-    "graphql": "^15.4.0",
-    "graphql-tag": "^2.11.0",
-    "graphql-tools": "^6.2.4",
-    "pg": "^8.4.1",
-    "pg-format": "^1.0.4",
-    "simple-git": "^2.24.0",
-    "tslib": "^1.13.0",
-    "typeorm": "^0.2.28"
+    "simple-git": "^2.27.0",
+    "tslib": "^2.0.3"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "^1.22.2",
-    "@types/node": "^10.17.35",
-    "@types/pg-format": "^1",
+    "@oclif/dev-cli": "^1.26.0",
+    "@types/node": "^10.17.49",
     "eslint": "^5.16.0",
     "eslint-config-oclif": "^3.1.0",
-    "eslint-config-oclif-typescript": "^0.1.0",
-    "globby": "^10.0.2"
+    "eslint-config-oclif-typescript": "^0.2.0",
+    "globby": "^11.0.1"
   },
   "engines": {
     "node": ">=8.0.0"
@@ -46,7 +38,7 @@
   "keywords": [
     "oclif"
   ],
-  "license": "Apache 2",
+  "license": "Apache-2.0",
   "main": "lib/index.js",
   "oclif": {
     "commands": "./lib/commands",

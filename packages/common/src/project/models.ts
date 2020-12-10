@@ -29,12 +29,10 @@ export class BlockHandler implements SubqlBlockHandler {
   filter: SubqlBlockFilter;
   @IsEnum(SubqlKind, {groups: [SubqlKind.BlockHandler]})
   kind: SubqlKind.BlockHandler;
-  name: string;
+  handler: string;
 }
 
 export class Mapping implements SubqlMapping {
-  @IsString()
-  file: string;
   @Type(() => BlockHandler)
   @IsArray()
   handlers: SubqlBlockHandler[];

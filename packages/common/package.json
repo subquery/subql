@@ -1,17 +1,21 @@
 {
   "name": "@subql/common",
-  "version": "1.0.0",
+  "version": "0.1.2",
   "description": "",
   "scripts": {
+    "build": "rm -rf dist && tsc -b",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Ian He",
   "main": "dist/index.js",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "dependencies": {
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
-    "js-yaml": "^3.14.0",
+    "graphql": "^15.4.0",
+    "graphql-tag": "^2.11.0",
+    "graphql-tools": "^7.0.2",
+    "js-yaml": "^3.14.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
