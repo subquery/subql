@@ -1,11 +1,10 @@
-import fs = require('fs');
+import fs from 'fs';
 import {Source, parse, extendSchema, GraphQLSchema, buildASTSchema} from 'graphql';
-// import path = require('path')
 
 import {scalas} from './schema/scalas';
 import {directives} from './schema/directives';
 
-export function loadBaseSchema(): GraphQLSchema {
+function loadBaseSchema(): GraphQLSchema {
   const schema = buildASTSchema(scalas);
   return extendSchema(schema, directives);
 }

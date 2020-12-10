@@ -17,7 +17,7 @@ export interface SubqlBlockFilter {
 }
 
 export interface SubqlBlockHandler {
-  name: string;
+  handler: string;
   kind: 'substrate/BlockHandler';
   filter: SubqlBlockFilter;
 }
@@ -27,7 +27,6 @@ export interface SubqlBlockHandler {
 // export interface SubqlEventHandler {}
 
 export interface SubqlMapping {
-  file: string;
   handlers: SubqlBlockHandler[];
 }
 
