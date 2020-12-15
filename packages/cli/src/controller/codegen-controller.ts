@@ -12,8 +12,8 @@ const typesPath = `${process.cwd()}/src/types/models`;
 function makeSchema(className: string, data: string): void {
   const filename = `${className}.ts`;
   const file = `${typesPath}/${filename}`;
-
-  fs.writeFile(file, data, function () {
+  fs.writeFile(file, data, function (err) {
+    if (err) throw err;
     console.log(`>--- Schema ${className} generated !`);
   });
 }
