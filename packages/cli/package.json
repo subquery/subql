@@ -20,10 +20,13 @@
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@types/node": "^10.17.49",
+    "@types/pg-format": "^1",
+    "@types/rimraf": "^3.0.0",
     "eslint": "^5.16.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
-    "globby": "^11.0.1"
+    "globby": "^11.0.1",
+    "typeorm": "^0.2.29"
   },
   "engines": {
     "node": ">=8.0.0"
