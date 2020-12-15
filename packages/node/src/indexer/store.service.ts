@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { Sequelize } from 'sequelize';
-import { ModelAttributes } from 'sequelize/types/lib/model';
-import { Entity, Store } from '@subql/types';
 import assert from 'assert';
+import { Injectable } from '@nestjs/common';
+import { ModelAttributes, Sequelize } from 'sequelize';
+import { Entity, Store } from '@subql/types';
 
 @Injectable()
 export class StoreService {
