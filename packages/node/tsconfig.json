@@ -5,7 +5,13 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
-    "incremental": true
+    "incremental": true,
+    "paths": {
+      "@subql/common": ["../common/src"],
+      "@subql/common/*": ["../common/src/*"],
+      "@subql/types": ["../types/src"],
+      "@subql/types/*": ["../types/src/*"]
+    }
   },
   "include": ["src/**/*"]
 }
