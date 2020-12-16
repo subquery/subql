@@ -15,7 +15,14 @@
     "declaration": true,
     "sourceMap": true,
     "inlineSources": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "incremental": true,
+    "paths": {
+      "@subql/common": ["packages/common/src"],
+      "@subql/common/*": ["packages/common/src/*"],
+      "@subql/types": ["packages/types/src"],
+      "@subql/types/*": ["packages/types/src/*"]
+    }
   },
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],

@@ -3,15 +3,7 @@
   "compilerOptions": {
     "target": "es2017",
     "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "paths": {
-      "@subql/common": ["../common/src"],
-      "@subql/common/*": ["../common/src/*"],
-      "@subql/types": ["../types/src"],
-      "@subql/types/*": ["../types/src/*"]
-    }
+    "outDir": "./dist"
   },
   "include": ["src/**/*"]
 }
