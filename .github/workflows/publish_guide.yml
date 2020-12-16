@@ -4,7 +4,7 @@ name: Build guide web
 
 on:
   push:
-    branches: [ jay-pipeline ]
+    branches: [ main ]
     paths: [docs]
 
 jobs:

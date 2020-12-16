@@ -1,12 +1,10 @@
 module.exports = {
-    base: "/subweb/",
-    lastUpdated: 'Last Updated', // string | boolean
+    base: "/subql/",
+    lastUpdated: 'Last Updated',
 
     locales: {
-        // 键名是该语言所属的子路径
-        // 作为特例，默认语言可以使用 '/' 作为其路径。
         '/': {
-            lang: 'English', // 将会被设置为 <html> 的 lang 属性
+            lang: 'English',
             title: 'SubQuery',
             description: 'SubQuery is a open-source tool to provide a complete process and query data solution to every substrate project and will become core infrastructure for the Polkadot ecosystem.'
         },
@@ -30,12 +28,12 @@ module.exports = {
                 ],
                 sidebar: {
                     '/': [
-                        '',     /* /guide/ */
-                        'quickstart',  /* /guide/one.html */
-                        'directory_structure',  /* /guide/directory_structure.html */
-                        'define_a_subquery' , /* /guide/define_a_subquery.html */
-                        'deploy',  /* /guide/deploy.html */
-                        'query_the_project',   /* /guide/deploy.html */
+                        '',
+                        'quickstart',
+                        'directory_structure',
+                        'define_a_subquery' ,
+                        'deploy',
+                        'query_the_project',
                         'qna'
 
 
@@ -44,11 +42,9 @@ module.exports = {
 
             },
             '/zh/': {
-                // 多语言下拉菜单的标题
+
                 selectText: '选择语言',
-                // 该语言在下拉菜单中的标签
                 label: '简体中文',
-                // 当前 locale 的 algolia docsearch 选项
                 algolia: {},
                 nav: [
                     { text: '项目指南', link: '/zh/' },
@@ -57,10 +53,10 @@ module.exports = {
                 ],
                 sidebar: {
                     '/zh/': [
-                        '',     /* /guide/ */
-                        'quickstart',  /* /guide/one.html */
-                        'directory_structure',  /* /guide/one.html */
-                        'two'   /* /guide/two.html */
+                        '',
+                        'quickstart',
+                        'directory_structure',
+                        'two'
                     ]
                 }
             }
