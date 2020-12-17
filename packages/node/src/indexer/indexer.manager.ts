@@ -1,7 +1,7 @@
 import path from 'path';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
-import { Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeVM, VMScript } from 'vm2';
 import { ApiPromise } from '@polkadot/api';
 import { SignedBlock } from '@polkadot/types/interfaces';
@@ -55,7 +55,7 @@ export class IndexerManager implements OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     this.api = await this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.subqueryName);
-    await this.initDbSchema(this.subqueryState.dbSchema);
+    await this.initDbSchema();
     await this.api.rpc.chain.subscribeFinalizedHeads((head) => {
       this.latestFinalizedHeight = head.number.toNumber();
     });
@@ -131,21 +131,23 @@ export class IndexerManager implements OnApplicationBootstrap {
       where: { name: this.subqueryName },
     });
     if (!project) {
+      const suffix = await this.nextSubquerySchemaSuffix();
+      const projectSchema = `subquery_${suffix}`;
       const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!((schemas as any) as string[]).includes(name)) {
-        // use sequence to add suffix after fixed string `subql` as schema name
-        await this.sequelize.createSchema(name, undefined);
+      if (!((schemas as any) as string[]).includes(projectSchema)) {
+        await this.sequelize.createSchema(projectSchema, undefined);
       }
       project = await this.subqueryRepo.create({
         name,
-        dbSchema: name,
+        dbSchema: projectSchema,
         hash: '0x',
       });
     }
     return project;
   }
 
-  private async initDbSchema(schema: string): Promise<void> {
+  private async initDbSchema(): Promise<void> {
+    const schema = this.subqueryState.dbSchema;
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
     );
@@ -155,5 +157,30 @@ export class IndexerManager implements OnApplicationBootstrap {
     });
     await this.storeService.syncSchema(models, schema);
     return;
+  }
+
+  private async nextSubquerySchemaSuffix(): Promise<number> {
+    const seqExists = await this.sequelize.query(
+      `SELECT 1
+       FROM information_schema.sequences
+       where sequence_schema = 'public'
+         and sequence_name = 'subquery_schema_seq'`,
+      {
+        type: QueryTypes.SELECT,
+      },
+    );
+    if (!seqExists.length) {
+      await this.sequelize.query(
+        `CREATE SEQUENCE subquery_schema_seq as integer START 1;`,
+        { type: QueryTypes.RAW },
+      );
+    }
+    const [{ nextval }] = await this.sequelize.query(
+      `SELECT nextval('subquery_schema_seq')`,
+      {
+        type: QueryTypes.SELECT,
+      },
+    );
+    return Number(nextval);
   }
 }
