@@ -1,8 +1,9 @@
 import {Command, flags} from '@oclif/command';
+
 import {getStarter} from '../controller/init-controller';
 
 export default class Init extends Command {
-  static description = 'Init a scaffold subquery project';
+  static description = 'Init a scafflod subquery project';
 
   static flags = {
     force: flags.boolean({char: 'f'}),

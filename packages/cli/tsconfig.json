@@ -5,13 +5,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "importHelpers": true,
-    "outDir": "lib",
-    "paths": {
-      "@subql/common": ["../common/src"],
-      "@subql/common/*": ["../common/src/*"],
-      "@subql/types": ["../types/src"],
-      "@subql/types/*": ["../types/src/*"]
-    }
+    "outDir": "lib"
   },
   "include": [
     "src/**/*"
