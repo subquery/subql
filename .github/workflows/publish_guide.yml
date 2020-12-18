@@ -4,8 +4,10 @@ name: Build guide web
 
 on:
   push:
-    branches: [ main ]
-    paths: [docs]
+    branches:
+      - master
+    paths:
+      - 'docs/**'
 
 jobs:
   build-and-deploy:
