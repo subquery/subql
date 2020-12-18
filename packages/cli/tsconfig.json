@@ -5,8 +5,13 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "importHelpers": true,
+    "rootDir": "src",
+    "tsBuildInfoFile": "lib/.tsbuildinfo",
     "outDir": "lib"
   },
+  "references": [
+    {"path": "../common"}
+  ],
   "include": [
     "src/**/*"
   ]
