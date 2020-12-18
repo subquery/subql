@@ -5,7 +5,7 @@ name: Build guide web
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
 
