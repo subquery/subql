@@ -1,0 +1,25 @@
+name: PR
+on:
+  pull_request:
+    paths-ignore:
+      - '.github/workflows/**'
+
+
+
+jobs:
+  pr:
+    name: pr
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: install node v12
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - name: yarn install
+      run: yarn install
+    - name: pretty quick
+      run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
+    - name: Eslint
+      run: yarn eslint . --ext .ts
+
