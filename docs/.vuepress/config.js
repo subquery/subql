@@ -35,8 +35,6 @@ module.exports = {
                         'deploy',
                         'query_the_project',
                         'qna'
-
-
                     ]
                 }
 
@@ -56,7 +54,10 @@ module.exports = {
                         '',
                         'quickstart',
                         'directory_structure',
-                        'two'
+                        'define_a_subquery' ,
+                        'deploy',
+                        'query_the_project',
+                        'qna'
                     ]
                 }
             }
