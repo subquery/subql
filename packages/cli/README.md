@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.1.1 darwin-x64 node-v14.15.2
+@subql/cli/0.1.1 darwin-x64 node-v12.19.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -95,7 +95,7 @@ USAGE
 OPTIONS
   -f, --force
   --file=file
-  --starter
+  --starter=starter
 ```
 
 _See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.1.1/lib/commands/init.js)_
