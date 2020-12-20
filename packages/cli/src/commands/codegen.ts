@@ -20,6 +20,7 @@ export default class Codegen extends Command {
      */
   };
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async run(): Promise<void> {
     this.log('*********************************');
     this.log('Codegen from schema');

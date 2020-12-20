@@ -17,8 +17,14 @@ module.exports = {
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    project: 'tsconfig.json',
+    tsconfigRootDir: __dirname,
     sourceType: 'module',
+    project: [
+      './tsconfig.json',
+      './packages/*/tsconfig.json',
+    ],
+    warnOnUnsupportedTypeScriptVersion: false,
+    EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
   },
   plugins: ['@typescript-eslint', 'import'],
   extends: [
@@ -55,7 +61,7 @@ module.exports = {
         accessibility: 'no-public',
       },
     ],
-    '@typescript-eslint/no-namespace': ['error', {"allowDeclarations": true }],
+    '@typescript-eslint/no-namespace': ['error', {allowDeclarations: true}],
     // "@typescript-eslint/member-ordering": "error",
     // "@typescript-eslint/naming-convention": "error",
     // "@typescript-eslint/no-param-reassign": "error",
@@ -67,7 +73,7 @@ module.exports = {
     eqeqeq: ['error', 'always'],
     'import/no-extraneous-dependencies': 'off',
     'import/order': 'error',
-    'no-console': 'error',
+    'no-console': 'warn',
     'no-duplicate-imports': 'error',
     // "no-magic-numbers": "error",
     'no-return-await': 'error',
