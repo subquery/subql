@@ -86,7 +86,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1
 
 ## `subql init`
 
-Init a scafflod subquery project
+Init a scaffold subquery project
 
 ```
 USAGE
@@ -94,8 +94,7 @@ USAGE
 
 OPTIONS
   -f, --force
-  --file=file
-  --starter=starter
+  --starter
 ```
 
 _See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.1.1/lib/commands/init.js)_

@@ -1,11 +1,10 @@
 import fs from 'fs';
 import simpleGit, {SimpleGit} from 'simple-git';
-import child from 'child_process';
 const git: SimpleGit = simpleGit();
 
 const starterPath = 'https://github.com/jiqiang90/subql-starter';
 
-export async function getStarter(projectName: string): Promise<void> {
+export async function createProject(projectName: string): Promise<void> {
   const localPath = `${process.cwd()}/${projectName}`;
   try {
     await git.clone(starterPath, localPath);
