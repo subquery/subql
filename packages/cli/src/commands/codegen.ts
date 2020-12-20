@@ -1,3 +1,5 @@
+import fs from 'fs';
+import rimraf from 'rimraf';
 import {Command, flags} from '@oclif/command';
 import {generateSchema} from '../controller/codegen-controller';
 
@@ -23,8 +25,15 @@ export default class Codegen extends Command {
   // eslint-disable-next-line @typescript-eslint/require-await
   async run(): Promise<void> {
     this.log('*********************************');
-    this.log('Codegen from schema');
+    this.log('Codegen from schema~');
     this.log('*********************************');
-    generateSchema();
+
+    rimraf('src/types', function (err) {
+      if (err) throw err;
+      fs.mkdir('src/types/models', {recursive: true}, (err) => {
+        if (err) throw err;
+        generateSchema();
+      });
+    });
   }
 }

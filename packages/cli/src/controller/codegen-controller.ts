@@ -13,7 +13,11 @@ function makeSchema(className: string, data: string): void {
   const filename = `${className}.ts`;
   const file = `${typesPath}/${filename}`;
 
-  fs.writeFile(file, data, function () {
+  fs.writeFile(file, data, (err) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
     console.log(`>--- Schema ${className} generated !`);
   });
 }

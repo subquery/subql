@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.1.1 darwin-x64 node-v14.15.2
+@subql/cli/0.1.1 darwin-x64 node-v12.19.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -86,7 +86,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1
 
 ## `subql init`
 
-Init a scafflod subquery project
+Init a scaffold subquery project
 
 ```
 USAGE
@@ -94,7 +94,6 @@ USAGE
 
 OPTIONS
   -f, --force
-  --file=file
   --starter
 ```
 
