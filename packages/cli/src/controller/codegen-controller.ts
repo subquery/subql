@@ -36,6 +36,7 @@ export interface processedField {
   type: string;
   required: boolean;
 }
+
 export function processFields(className: string, fields: GraphQLFieldMap<any, any>): processedField[] {
   const fieldList: processedField[] = [];
   for (const k in fields) {

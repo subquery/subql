@@ -10,7 +10,7 @@ export class StoreService {
   async syncSchema(
     models: { name: string; attributes: ModelAttributes<any> }[],
     schema: string,
-  ) {
+  ): Promise<void> {
     for (const { name, attributes } of models) {
       this.sequelize.define(name, attributes, {
         // timestamps: false,
@@ -27,7 +27,9 @@ export class StoreService {
       get: async (entity: string, id: string): Promise<Entity | null> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        return model.findOne({ where: { id } }) as any;
+        return (model.findOne({
+          where: { id },
+        }) as unknown) as Promise<Entity | null>;
       },
       set: async (entity: string, id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
