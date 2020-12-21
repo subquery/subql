@@ -8,7 +8,7 @@ on:
 
 jobs:
   setups:
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'jiqiang90/mono-action'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -19,7 +19,7 @@ jobs:
 
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'jiqiang90/mono-action'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
     runs-on: ubuntu-latest
     needs: setups
     steps:
