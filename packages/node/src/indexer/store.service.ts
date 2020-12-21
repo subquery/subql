@@ -27,9 +27,10 @@ export class StoreService {
       get: async (entity: string, id: string): Promise<Entity | null> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        return (model.findOne({
+        const record = await model.findOne({
           where: { id },
-        }) as unknown) as Promise<Entity | null>;
+        });
+        return record?.toJSON() as Entity;
       },
       set: async (entity: string, id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);

@@ -1,5 +1,6 @@
 import { GraphQLObjectType, GraphQLOutputType, isNonNullType } from 'graphql';
 import { ModelAttributes } from 'sequelize';
+import { ModelAttributeColumnOptions } from 'sequelize/types/lib/model';
 
 const SEQUELIZE_TYPE_MAPPING = {
   ID: 'text',
@@ -23,11 +24,20 @@ export function objectTypeToModelAttributes(
       type = type.ofType;
       allowNull = false;
     }
-    acc[k] = {
+    const columnOption: ModelAttributeColumnOptions<any> = {
       type: SEQUELIZE_TYPE_MAPPING[type.toString()],
       allowNull,
       primaryKey: type.toString() === 'ID',
     };
+    if (type.toString() === 'BigInt') {
+      columnOption.get = function () {
+        return BigInt(this.getDataValue(k));
+      };
+      columnOption.set = function (val: unknown) {
+        this.setDataValue(k, String(val));
+      };
+    }
+    acc[k] = columnOption;
     return acc;
   }, {} as ModelAttributes<any>);
 }
