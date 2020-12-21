@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { GraphQLObjectType, GraphQLOutputType, isNonNullType } from 'graphql';
 import { ModelAttributes } from 'sequelize';
 
