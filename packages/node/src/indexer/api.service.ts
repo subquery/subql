@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { SubqueryProject } from '../configure/project.model';

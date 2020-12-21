@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import {Command, flags} from '@oclif/command';
 import {generateSchema} from '../controller/codegen-controller';
 

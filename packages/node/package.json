@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "description": "",
   "author": "Ian He",
-  "private": true,
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
