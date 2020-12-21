@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.1.2-0",
+  "version": "0.1.2-1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
