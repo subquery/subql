@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.1.1 darwin-x64 node-v14.15.2
+@subql/cli/0.1.2-1 linux-x64 node-v12.20.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -35,7 +35,7 @@ USAGE
 * [`subql build`](#subql-build)
 * [`subql codegen`](#subql-codegen)
 * [`subql help [COMMAND]`](#subql-help-command)
-* [`subql init`](#subql-init)
+* [`subql init PROJECTNAME`](#subql-init-projectname)
 
 ## `subql build`
 
@@ -50,7 +50,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.1.1/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.1.2-1/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -65,7 +65,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.1.1/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.1.2-1/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -84,19 +84,21 @@ OPTIONS
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1/src/commands/help.ts)_
 
-## `subql init`
+## `subql init PROJECTNAME`
 
-Init a scafflod subquery project
+Init a scaffold subquery project
 
 ```
 USAGE
-  $ subql init
+  $ subql init PROJECTNAME
+
+ARGUMENTS
+  PROJECTNAME  Give the starter project name
 
 OPTIONS
   -f, --force
-  --file=file
   --starter
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.1.1/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.1.2-1/lib/commands/init.js)_
 <!-- commandsstop -->

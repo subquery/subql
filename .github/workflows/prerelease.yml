@@ -14,6 +14,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
       - run: yarn install
 
   Bump-Prerelease-Publish:
@@ -25,6 +26,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
 
       - uses: actions/setup-node@v1
         with:
@@ -69,8 +71,9 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
+        with:
+          message: '[SKIP CI] Prerelease'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}

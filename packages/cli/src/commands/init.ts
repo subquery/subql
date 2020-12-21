@@ -3,23 +3,30 @@
 
 import {Command, flags} from '@oclif/command';
 
-import {getStarter} from '../controller/init-controller';
+import {createProject} from '../controller/init-controller';
 
 export default class Init extends Command {
-  static description = 'Init a scafflod subquery project';
+  static description = 'Init a scaffold subquery project';
 
   static flags = {
     force: flags.boolean({char: 'f'}),
-    file: flags.string(),
     starter: flags.boolean(),
   };
 
-  async run(): Promise<void> {
-    const {flags} = this.parse(Init);
+  static args = [
+    {
+      name: 'projectName',
+      required: true,
+      description: 'Give the starter project name',
+    },
+  ];
 
-    if (flags.starter) {
+  async run(): Promise<void> {
+    const {flags, args} = this.parse(Init);
+    if (flags.starter && args.projectName) {
       this.log('Init the starter package');
-      await getStarter();
+      await createProject(args.projectName);
+      this.log(`Starter package: ${args.projectName} is ready`);
     }
   }
 }

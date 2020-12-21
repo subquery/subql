@@ -13,6 +13,7 @@ import { objectTypeToModelAttributes } from '../utils/graphql';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
+import { NodeConfig } from '../configure/NodeConfig';
 import { StoreService } from './store.service';
 import { ApiService } from './api.service';
 
@@ -32,11 +33,9 @@ export class IndexerManager implements OnApplicationBootstrap {
     protected storeService: StoreService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
+    protected nodeConfig: NodeConfig,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    @Inject('SUBQUERY_PROJECT_NAME') protected subqueryName: string,
-  ) {
-    // this.block$.subscribe((block) => {});
-  }
+  ) {}
 
   async indexBlock(block: SignedBlock): Promise<void> {
     // TODO: find block handlers and call them
@@ -57,7 +56,7 @@ export class IndexerManager implements OnApplicationBootstrap {
 
   async onApplicationBootstrap(): Promise<void> {
     this.api = await this.apiService.getApi();
-    this.subqueryState = await this.ensureProject(this.subqueryName);
+    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.api.rpc.chain.subscribeFinalizedHeads((head) => {
       this.latestFinalizedHeight = head.number.toNumber();
@@ -131,7 +130,7 @@ export class IndexerManager implements OnApplicationBootstrap {
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
-      where: { name: this.subqueryName },
+      where: { name: this.nodeConfig.subqueryName },
     });
     if (!project) {
       const suffix = await this.nextSubquerySchemaSuffix();
