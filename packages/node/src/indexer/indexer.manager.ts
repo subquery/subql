@@ -35,20 +35,24 @@ export class IndexerManager implements OnApplicationBootstrap {
   ) {}
 
   async indexBlock(block: SignedBlock): Promise<void> {
-    // TODO: find block handlers and call them
-    for (const ds of this.project.dataSources) {
-      if (ds.kind === SubqlKind.Runtime) {
-        for (const handler of ds.mapping.handlers) {
-          if (handler.kind === SubqlKind.BlockHandler) {
-            await this.securedExec(handler.handler, [block]);
+    try {
+      // TODO: find block handlers and call them
+      for (const ds of this.project.dataSources) {
+        if (ds.kind === SubqlKind.Runtime) {
+          for (const handler of ds.mapping.handlers) {
+            if (handler.kind === SubqlKind.BlockHandler) {
+              await this.securedExec(handler.handler, [block]);
+            }
+            // TODO: support call handler and event handler
           }
-          // TODO: support call handler and event handler
         }
+        // TODO: support Ink! and EVM
       }
-      // TODO: support Ink! and EVM
+      this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
+      await this.subqueryState.save();
+    } catch (e) {
+      process.exit(1);
     }
-    this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
-    await this.subqueryState.save();
   }
 
   async onApplicationBootstrap(): Promise<void> {
@@ -88,7 +92,7 @@ export class IndexerManager implements OnApplicationBootstrap {
       }
       console.log('fetch block ', blockHeight);
       const blockHash = await this.api.rpc.chain.getBlockHash(blockHeight);
-      const block = await this.api.derive.chain.getBlock(blockHash);
+      const block = await this.api.rpc.chain.getBlock(blockHash);
       this.block$.next(block);
       this.lastPreparedHeight = blockHeight;
     }
