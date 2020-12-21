@@ -8,23 +8,25 @@ on:
 
 jobs:
   setups:
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'jiqiang90/mono-action'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
       - run: yarn install
 
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'jiqiang90/mono-action'"
     runs-on: ubuntu-latest
     needs: setups
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
 
       - uses: actions/setup-node@v1
         with:
@@ -69,8 +71,9 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
+        with:
+          message: '[SKIP CI] Prerelease'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
