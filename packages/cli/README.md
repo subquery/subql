@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.1.2-1 linux-x64 node-v12.20.0
+@subql/cli/0.1.2-1 darwin-x64 node-v12.19.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND

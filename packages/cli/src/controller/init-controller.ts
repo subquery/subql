@@ -5,7 +5,7 @@ import fs from 'fs';
 import simpleGit, {SimpleGit} from 'simple-git';
 const git: SimpleGit = simpleGit();
 
-const starterPath = 'https://github.com/jiqiang90/subql-starter';
+const starterPath = 'https://github.com/OnFinality-io/subql-starter';
 
 export async function createProject(projectName: string): Promise<void> {
   const localPath = `${process.cwd()}/${projectName}`;
