@@ -14,12 +14,14 @@
     "@subql/common": "workspace:*",
     "@types/ejs": "^3.0.5",
     "ejs": "^3.1.5",
+    "rimraf": "^3.0.2",
     "simple-git": "^2.27.0",
     "tslib": "^2.0.3"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@types/node": "^10.17.49",
+    "@types/rimraf": "^3",
     "eslint": "^5.16.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
