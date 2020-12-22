@@ -7,14 +7,6 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  setups:
-    runs-on: ubuntu-latest
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 100
-      - run: yarn install
 
   Release-Publish:
     name: Bump-Release-Publish
@@ -46,6 +38,7 @@ jobs:
         with:
           paths: packages/types
 
+      - run: yarn
 
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
