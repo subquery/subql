@@ -50,14 +50,14 @@ jobs:
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
-        run: echo "Changes exist in common" && yarn npm publish --access public
+        run: echo "Changes exist in common" && yarn build && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
         working-directory: packages/cli
-        run: echo "Changes exist in cli" && yarn npm publish --access public
+        run: echo "Changes exist in cli" && yarn build && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -65,7 +65,7 @@ jobs:
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
         working-directory: packages/types
-        run: echo "Changes exist in types" && yarn npm publish --access public
+        run: echo "Changes exist in types" && yarn build && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
