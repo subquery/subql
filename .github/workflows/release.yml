@@ -8,8 +8,8 @@ on:
 
 jobs:
 
-  Release-Publish:
-    name: Bump-Release-Publish
+  Build-Publish:
+    name: Build-Publish
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
     runs-on: ubuntu-latest
     steps:
@@ -62,7 +62,3 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
 
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
