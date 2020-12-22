@@ -7,16 +7,6 @@ on:
       - '.github/workflows/**'
 
 jobs:
-  setups:
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 100
-          token: ${{ secrets.REPO_TOKEN }}
-      - run: yarn install
-
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
@@ -48,18 +38,19 @@ jobs:
         with:
           paths: packages/types
 
+      - run: yarn
 
       - name: Bump common & deploy
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
-        run: yarn info && echo "Changes exist in common" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in common" && yarn build && yarn version prerelease && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump cli & deploy
         if: steps.changed-cli.outputs.changed == 'true'
         working-directory: packages/cli
-        run: yarn info && echo "Changes exist in cli" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in cli" && yarn build && yarn version prerelease && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -67,7 +58,7 @@ jobs:
       - name: Bump types & deploy
         if: steps.changed-types.outputs.changed == 'true'
         working-directory: packages/types
-        run: yarn info && echo "Changes exist in types" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in types" && yarn build && yarn version prerelease && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
