@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -33,6 +33,7 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
     "sequelize": "^6.3.5",
+    "typescript": "^4.1.3",
     "vm2": "^3.9.2",
     "yargs": "^16.2.0"
   },
