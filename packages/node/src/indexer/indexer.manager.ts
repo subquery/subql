@@ -7,17 +7,28 @@ import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeVM, VMScript } from 'vm2';
 import { ApiPromise } from '@polkadot/api';
-import { SignedBlock } from '@polkadot/types/interfaces';
 import { Subject } from 'rxjs';
+import {
+  SubstrateBlock,
+  SubstrateEvent,
+  SubstrateExtrinsic,
+} from '@subql/types';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
 import { NodeConfig } from '../configure/NodeConfig';
+import * as SubstrateUtil from '../utils/substrate';
 import { StoreService } from './store.service';
 import { ApiService } from './api.service';
 
 const PRELOAD_BLOCKS = 10;
+
+interface BlockContent {
+  block: SubstrateBlock;
+  extrinsics: SubstrateExtrinsic[];
+  events: SubstrateEvent[];
+}
 
 @Injectable()
 export class IndexerManager implements OnApplicationBootstrap {
@@ -26,7 +37,7 @@ export class IndexerManager implements OnApplicationBootstrap {
   private latestFinalizedHeight: number;
   private lastPreparedHeight: number;
   private subqueryState: SubqueryModel;
-  private block$: Subject<SignedBlock> = new Subject();
+  private block$: Subject<BlockContent> = new Subject();
 
   constructor(
     protected apiService: ApiService,
@@ -37,7 +48,7 @@ export class IndexerManager implements OnApplicationBootstrap {
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
-  async indexBlock(block: SignedBlock): Promise<void> {
+  async indexBlock({ block, extrinsics, events }: BlockContent): Promise<void> {
     try {
       // TODO: find block handlers and call them
       for (const ds of this.project.dataSources) {
@@ -46,7 +57,28 @@ export class IndexerManager implements OnApplicationBootstrap {
             if (handler.kind === SubqlKind.BlockHandler) {
               await this.securedExec(handler.handler, [block]);
             }
-            // TODO: support call handler and event handler
+            if (handler.kind === SubqlKind.CallHandler) {
+              const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
+                extrinsics,
+                handler.filter,
+              );
+              await Promise.all(
+                filteredExtrinsics.map(async (e) =>
+                  this.securedExec(handler.handler, [e]),
+                ),
+              );
+            }
+            if (handler.kind === SubqlKind.EventHandler) {
+              const filteredEvents = SubstrateUtil.filterEvents(
+                events,
+                handler.filter,
+              );
+              await Promise.all(
+                filteredEvents.map(async (e) =>
+                  this.securedExec(handler.handler, [e]),
+                ),
+              );
+            }
           }
         }
         // TODO: support Ink! and EVM
@@ -54,6 +86,7 @@ export class IndexerManager implements OnApplicationBootstrap {
       this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
       await this.subqueryState.save();
     } catch (e) {
+      console.log(e);
       process.exit(1);
     }
   }
@@ -95,8 +128,21 @@ export class IndexerManager implements OnApplicationBootstrap {
       }
       console.log('fetch block ', blockHeight);
       const blockHash = await this.api.rpc.chain.getBlockHash(blockHeight);
-      const block = await this.api.rpc.chain.getBlock(blockHash);
-      this.block$.next(block);
+      const [block, events] = await Promise.all([
+        this.api.rpc.chain.getBlock(blockHash),
+        this.api.query.system.events.at(blockHash),
+      ]);
+      const wrappedBlock = SubstrateUtil.wrapBlock(block);
+      const wrappedExtrinsics = SubstrateUtil.wrapExtrinsics(
+        wrappedBlock,
+        events,
+      );
+      const wrappedEvents = SubstrateUtil.wrapEvents(wrappedExtrinsics, events);
+      this.block$.next({
+        block: wrappedBlock,
+        extrinsics: wrappedExtrinsics,
+        events: wrappedEvents,
+      });
       this.lastPreparedHeight = blockHeight;
     }
   }

@@ -3166,11 +3166,13 @@ __metadata:
     "@subql/common": "workspace:*"
     "@types/ejs": ^3.0.5
     "@types/node": ^10.17.49
+    "@types/rimraf": ^3
     ejs: ^3.1.5
     eslint: ^5.16.0
     eslint-config-oclif: ^3.1.0
     eslint-config-oclif-typescript: ^0.2.0
     globby: ^11.0.1
+    rimraf: ^3.0.2
     simple-git: ^2.27.0
     tslib: ^2.0.3
   bin:
@@ -3420,7 +3422,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/glob@npm:^7.1.1":
+"@types/glob@npm:*, @types/glob@npm:^7.1.1":
   version: 7.1.3
   resolution: "@types/glob@npm:7.1.3"
   dependencies:
@@ -3604,6 +3606,16 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: e6e6613c800aeda63e2331e753e8d21df1a2c9aa7a4bc71ed792a848e4811fc96e609759089355314a2318c76eff1f161499cd242044838ab1e6f56e463ebb9c
+  languageName: node
+  linkType: hard
+
+"@types/rimraf@npm:^3":
+  version: 3.0.0
+  resolution: "@types/rimraf@npm:3.0.0"
+  dependencies:
+    "@types/glob": "*"
+    "@types/node": "*"
+  checksum: 00a00a430f838ddafdbc17386f08d928b1ae7aeada84d112f4369a7a89b4d47c1bb6849688f1d6ee404a08338ab52a80c742f0c3040d63ccc2aaec04bd1009f5
   languageName: node
   linkType: hard
 

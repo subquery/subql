@@ -15,22 +15,37 @@ export interface ProjectManifest {
   dataSources: SubqlDataSource[];
 }
 
-export interface SubqlBlockFilter {
+export interface SubqlCallFilter {
   module?: string;
+  method?: string;
+}
+
+export interface SubqlEventFilter {
+  module?: string;
+  method?: string;
 }
 
 export interface SubqlBlockHandler {
   handler: string;
   kind: 'substrate/BlockHandler';
-  filter: SubqlBlockFilter;
 }
 
-// export interface SubqlCallHandler {}
-//
-// export interface SubqlEventHandler {}
+export interface SubqlCallHandler {
+  handler: string;
+  kind: 'substrate/CallHandler';
+  filter?: SubqlCallFilter;
+}
+
+export interface SubqlEventHandler {
+  handler: string;
+  kind: 'substrate/EventHandler';
+  filter?: SubqlEventFilter;
+}
+
+export type SubqlHandler = SubqlBlockHandler | SubqlCallHandler | SubqlEventHandler;
 
 export interface SubqlMapping {
-  handlers: SubqlBlockHandler[];
+  handlers: SubqlHandler[];
 }
 
 export interface SubqlDatasource {
