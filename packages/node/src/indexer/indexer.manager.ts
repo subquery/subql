@@ -52,6 +52,9 @@ export class IndexerManager implements OnApplicationBootstrap {
     try {
       // TODO: find block handlers and call them
       for (const ds of this.project.dataSources) {
+        if (ds.startBlock > block.block.header.number.toNumber()) {
+          continue;
+        }
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             if (handler.kind === SubqlKind.BlockHandler) {
@@ -86,7 +89,7 @@ export class IndexerManager implements OnApplicationBootstrap {
       this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
       await this.subqueryState.save();
     } catch (e) {
-      console.log(e);
+      console.error(e);
       process.exit(1);
     }
   }
@@ -189,10 +192,12 @@ export class IndexerManager implements OnApplicationBootstrap {
       if (!((schemas as any) as string[]).includes(projectSchema)) {
         await this.sequelize.createSchema(projectSchema, undefined);
       }
+
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
         hash: '0x',
+        nextBlockHeight: Math.min(...this.project.dataSources.map(item => item.startBlock)),
       });
     }
     return project;
