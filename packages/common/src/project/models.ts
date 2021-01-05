@@ -1,13 +1,13 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {IsArray, IsEnum, IsString} from 'class-validator';
+import {IsArray, IsEnum, IsOptional, IsString} from 'class-validator';
 import {Type} from 'class-transformer';
 import {
   ProjectManifest,
-  SubqlBlockFilter,
-  SubqlBlockHandler,
+  SubqlCallFilter,
   SubqlDataSource,
+  SubqlEventFilter,
   SubqlMapping,
   SubqlRuntimeDatasource,
 } from './types';
@@ -28,17 +28,29 @@ export class ProjectManifestImpl implements ProjectManifest {
   dataSources: SubqlDataSource[];
 }
 
-export class BlockHandler implements SubqlBlockHandler {
-  filter: SubqlBlockFilter;
-  @IsEnum(SubqlKind, {groups: [SubqlKind.BlockHandler]})
-  kind: SubqlKind.BlockHandler;
+export class Filter implements SubqlCallFilter, SubqlEventFilter {
+  @IsOptional()
+  @IsString()
+  module?: string;
+  @IsOptional()
+  @IsString()
+  method?: string;
+}
+
+export class Handler {
+  @IsOptional()
+  @Type(() => Filter)
+  filter?: SubqlCallFilter | SubqlEventFilter;
+  @IsEnum(SubqlKind, {groups: [SubqlKind.BlockHandler, SubqlKind.CallHandler, SubqlKind.EventHandler]})
+  kind: SubqlKind.CallHandler | SubqlKind.BlockHandler | SubqlKind.EventHandler;
+  @IsString()
   handler: string;
 }
 
 export class Mapping implements SubqlMapping {
-  @Type(() => BlockHandler)
+  @Type(() => Handler)
   @IsArray()
-  handlers: SubqlBlockHandler[];
+  handlers: Handler[];
 }
 
 export class RuntimeDataSource implements SubqlRuntimeDatasource {
