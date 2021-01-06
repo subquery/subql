@@ -37,6 +37,11 @@ jobs:
         with:
           paths: packages/types
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
       - run: yarn
 
       - name: Bump common & deploy
@@ -60,6 +65,11 @@ jobs:
         run: echo "Changes exist in types" && yarn build && yarn version prerelease && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump node
+        if: steps.changed-node.outputs.changed == 'true'
+        working-directory: packages/types
+        run: echo "Changes exist in node" && yarn build && yarn version prerelease
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
