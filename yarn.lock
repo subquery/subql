@@ -3527,6 +3527,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/minipass@npm:*":
+  version: 2.2.0
+  resolution: "@types/minipass@npm:2.2.0"
+  dependencies:
+    "@types/node": "*"
+  checksum: 378ca1b93f5761eddbdca13f1870b439a2ecd0e05284f2138b9cf6880bb857d5783f3838439440aca78fcd74460c28a868b35e2ec8109695a22e95c384344f02
+  languageName: node
+  linkType: hard
+
 "@types/node-fetch@npm:^2.5.7":
   version: 2.5.7
   resolution: "@types/node-fetch@npm:2.5.7"
@@ -3678,6 +3687,16 @@ __metadata:
   version: 1.0.6
   resolution: "@types/tapable@npm:1.0.6"
   checksum: 01709a2f8dbea665a39c008ba6995c76210fabb52434815e7632c7fff22ecad1dd49a1d75b8f5b2e9b365c6d7a6407127bed834587df4777b800110c2a74fc36
+  languageName: node
+  linkType: hard
+
+"@types/tar@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "@types/tar@npm:4.0.4"
+  dependencies:
+    "@types/minipass": "*"
+    "@types/node": "*"
+  checksum: 69a55c1b7c4240201bcc95c705fdbea8d86abf175cb33b1edc04e294b9e635960cbc0d81240c7db3c778f872a5b92c8880d13d2c6f448371fc367b219e132e81
   languageName: node
   linkType: hard
 
@@ -16723,6 +16742,7 @@ fsevents@^1.2.7:
   resolution: "subql-mono@workspace:."
   dependencies:
     "@types/node": ^12.19.9
+    "@types/tar": ^4.0.4
     "@typescript-eslint/eslint-plugin": ^4.10.0
     "@typescript-eslint/parser": ^4.10.0
     eslint: ^7.15.0
@@ -16733,6 +16753,7 @@ fsevents@^1.2.7:
     jest: ^26.6.3
     prettier: ^2.2.1
     pretty-quick: ^3.1.0
+    tar: ^6.0.5
     ts-loader: ^8.0.12
     ts-node: ^9.1.1
     tsconfig-paths: ^3.9.0
@@ -16919,7 +16940,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"tar@npm:^6.0.1":
+"tar@npm:^6.0.1, tar@npm:^6.0.5":
   version: 6.0.5
   resolution: "tar@npm:6.0.5"
   dependencies:
