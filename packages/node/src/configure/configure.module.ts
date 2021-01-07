@@ -72,10 +72,7 @@ export class ConfigureModule {
         },
         {
           provide: SubqueryProject,
-          useValue: SubqueryProject.create(
-            loadProjectManifest(projectPath),
-            projectPath,
-          ),
+          useFactory: async () => SubqueryProject.create(projectPath),
         },
       ],
       exports: [NodeConfig, SubqueryProject],
