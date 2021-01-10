@@ -63,6 +63,11 @@ export class ConfigureModule {
       config.subquery,
     );
 
+    const project = async () =>
+      SubqueryProject.create(projectPath).catch((err) => {
+        console.error('Create Subquery project from given path failed !', err);
+        process.exit(1);
+      });
     return {
       module: ConfigureModule,
       providers: [
@@ -72,7 +77,7 @@ export class ConfigureModule {
         },
         {
           provide: SubqueryProject,
-          useFactory: async () => SubqueryProject.create(projectPath),
+          useFactory: project,
         },
       ],
       exports: [NodeConfig, SubqueryProject],
