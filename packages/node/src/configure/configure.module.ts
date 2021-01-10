@@ -65,7 +65,10 @@ export class ConfigureModule {
 
     const project = async () =>
       SubqueryProject.create(projectPath).catch((err) => {
-        console.error('Create Subquery project from given path failed !', err);
+        console.error(
+          'Create Subquery project from given path failed!',
+          err.message,
+        );
         process.exit(1);
       });
     return {
