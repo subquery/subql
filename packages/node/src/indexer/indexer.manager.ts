@@ -23,6 +23,7 @@ import { StoreService } from './store.service';
 import { ApiService } from './api.service';
 
 const PRELOAD_BLOCKS = 10;
+const DEFAULT_DB_SCHEMA = 'public';
 
 interface BlockContent {
   block: SubstrateBlock;
@@ -186,18 +187,26 @@ export class IndexerManager implements OnApplicationBootstrap {
       where: { name: this.nodeConfig.subqueryName },
     });
     if (!project) {
-      const suffix = await this.nextSubquerySchemaSuffix();
-      const projectSchema = `subquery_${suffix}`;
-      const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!((schemas as any) as string[]).includes(projectSchema)) {
-        await this.sequelize.createSchema(projectSchema, undefined);
+      let projectSchema: string;
+      if (this.nodeConfig.localMode) {
+        // create tables in default schema if local mode is enabled
+        projectSchema = DEFAULT_DB_SCHEMA;
+      } else {
+        const suffix = await this.nextSubquerySchemaSuffix();
+        projectSchema = `subquery_${suffix}`;
+        const schemas = await this.sequelize.showAllSchemas(undefined);
+        if (!((schemas as any) as string[]).includes(projectSchema)) {
+          await this.sequelize.createSchema(projectSchema, undefined);
+        }
       }
 
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
         hash: '0x',
-        nextBlockHeight: Math.min(...this.project.dataSources.map(item => item.startBlock)),
+        nextBlockHeight: Math.min(
+          ...this.project.dataSources.map((item) => item.startBlock),
+        ),
       });
     }
     return project;
