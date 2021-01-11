@@ -1,6 +1,6 @@
 {
   "name": "@subql/types",
-  "version": "0.3.1-2",
+  "version": "0.3.1-3",
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
