@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
+import fs from 'fs';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
 import { QueryTypes, Sequelize } from 'sequelize';
@@ -152,12 +153,15 @@ export class IndexerManager implements OnApplicationBootstrap {
   }
 
   private initVM() {
+    const projectEntry = this.getProjectEntry();
+
     this.vm = new NodeVM({
       console: 'redirect',
       wasm: false,
       sandbox: {
         store: this.storeService.getStore(),
         api: this.apiService.getApi(),
+        __subqlProjectEntry: projectEntry,
       },
       require: {
         builtin: ['assert'],
@@ -167,13 +171,15 @@ export class IndexerManager implements OnApplicationBootstrap {
       },
       wrapper: 'commonjs',
     });
+
+    this.vm.on('console.log', (data) => console.log(`[VM Sandbox]: ${data}`));
   }
 
   private async securedExec(handler: string, args: any[]): Promise<void> {
     this.vm.setGlobal('args', args);
     const script = new VMScript(
       `
-      const {${handler}: handler} = require('./dist');
+      const {${handler}: handler} = require(__subqlProjectEntry);
       module.exports = handler(...args);
     `,
       path.join(this.project.path, 'sandbox'),
@@ -248,5 +254,15 @@ export class IndexerManager implements OnApplicationBootstrap {
       },
     );
     return Number(nextval);
+  }
+
+  private getProjectEntry() {
+    const pkgPath = path.join(this.nodeConfig.subquery, 'package.json');
+    const content = fs.readFileSync(pkgPath).toString();
+    const pkg = JSON.parse(content);
+    if (!pkg.main) {
+      return './dist';
+    }
+    return pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
   }
 }
