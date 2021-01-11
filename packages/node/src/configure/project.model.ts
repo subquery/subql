@@ -11,7 +11,6 @@ import { prepareProjectDir } from '../utils/project';
 export class SubqueryProject implements ProjectManifest {
   static async create(path: string): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
-    console.log(projectPath);
     const project = new SubqueryProject();
     const source = loadProjectManifest(projectPath);
     Object.assign(project, source);
