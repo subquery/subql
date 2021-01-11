@@ -18,26 +18,18 @@ async function timeout(ms) {
 
 async function establishConnection(
   sequelize: Sequelize,
-  numRetries,
+  numRetries: number,
 ): Promise<void> {
-  if (numRetries > 0) {
-    try {
-      console.log(
-        'Try to connect to database: ',
-        numRetries,
-        'attempts remaining',
-      );
-      await sequelize.authenticate();
-      console.log('Connection has been established successfully.');
-    } catch (error) {
-      console.error('Unable to connect to the database:', error.message);
-      console.log('Await retry...');
+  try {
+    await sequelize.authenticate();
+  } catch (error) {
+    console.error('Unable to connect to the database', error.message);
+    if (numRetries > 0) {
       await timeout(3000);
       void (await establishConnection(sequelize, numRetries - 1));
+    } else {
+      process.exit(1);
     }
-  } else {
-    console.log('Connect to database failed !');
-    process.exit(1);
   }
 }
 
