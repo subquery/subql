@@ -12,7 +12,8 @@ export interface IConfig {
 }
 
 export class NodeConfig implements IConfig {
-  private _config: IConfig;
+  private readonly _config: IConfig;
+
   static fromFile(filePath: string): NodeConfig {
     const fileInfo = path.parse(filePath);
     const rawContent = fs.readFileSync(filePath);
