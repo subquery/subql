@@ -33,6 +33,11 @@ export class ConfigureModule {
         describe: 'specify configuration file',
         type: 'string',
       },
+      local: {
+        type: 'boolean',
+        demandOption: false,
+        describe: 'use local mode',
+      },
     });
     const { argv } = yargsOptions;
     let config: NodeConfig;
@@ -55,6 +60,7 @@ export class ConfigureModule {
         subquery: argv.subquery,
         subqueryName:
           argv['subquery-name'] ?? last(argv.subquery.split(path.sep)),
+        localMode: argv.local,
       });
     }
 

@@ -9,6 +9,7 @@ export interface IConfig {
   readonly configDir?: string;
   readonly subquery: string;
   readonly subqueryName: string;
+  readonly localMode: boolean;
 }
 
 export class NodeConfig implements IConfig {
@@ -45,6 +46,10 @@ export class NodeConfig implements IConfig {
 
   get configDir(): string {
     return this._config.configDir;
+  }
+
+  get localMode(): boolean {
+    return this._config.localMode;
   }
 
   merge(config: Partial<IConfig>): this {
