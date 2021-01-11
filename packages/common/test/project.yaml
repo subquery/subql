@@ -1,33 +1,34 @@
 specVersion: '0.0.1'
 description: ''
-repository: 'https://github.com/onfinality-io/examples'
+repository: 'https://github.com/OnFinality-io/subql-examples'
 
 schema: './schema.graphql'
 
-endpoint: 'wss://rpc.polkadot.io'
+network:
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+  customTypes: {
+    "TestType": "u32"
+  }
 
 dataSources:
   - name: main
     kind: substrate/Runtime
     startBlock: 1
     mapping:
-      file: ./src/mappings/Extrinsic.ts
       handlers:
-        - name: handleBlock
+        - handler: handleBlock
           kind: substrate/BlockHandler
-          filter:
-            module: balance
         - handler: handleEvent
           kind: substrate/CallHandler
           filter:
             module: balance
-            name: xxx
+            method: xxx
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:
             module: balance
-            name: xxx
-  - name: contract
-    kind: substrate/Ink!
-  - name: contract2
-    kind: substrate/EVM
+            method: xxx
+#  - name: contract
+#    kind: substrate/Ink!
+#  - name: contract2
+#    kind: substrate/EVM

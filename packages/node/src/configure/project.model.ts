@@ -6,6 +6,7 @@ import {
   ProjectManifest,
   SubqlDataSource,
 } from '@subql/common';
+import { RegistryTypes } from '@polkadot/types/types';
 import { prepareProjectDir } from '../utils/project';
 
 export class SubqueryProject implements ProjectManifest {
@@ -22,7 +23,10 @@ export class SubqueryProject implements ProjectManifest {
 
   dataSources: SubqlDataSource[];
   description: string;
-  endpoint: string;
+  network: {
+    endpoint: string;
+    customTypes?: RegistryTypes;
+  };
   repository: string;
   schema: string;
   specVersion: string;
