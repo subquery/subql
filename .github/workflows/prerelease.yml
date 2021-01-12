@@ -68,7 +68,7 @@ jobs:
 
       - name: Bump node
         if: steps.changed-node.outputs.changed == 'true'
-        working-directory: packages/types
+        working-directory: packages/node
         run: echo "Changes exist in node" && yarn build && yarn version prerelease
 
       - name: Commit changes
