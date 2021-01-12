@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {RegistryTypes} from '@polkadot/types/types';
 import {SubqlKind} from './constants';
 
 export interface ProjectManifest {
@@ -10,7 +11,10 @@ export interface ProjectManifest {
 
   schema: string;
 
-  endpoint: string;
+  network: {
+    endpoint: string;
+    customTypes?: RegistryTypes;
+  };
 
   dataSources: SubqlDataSource[];
 }

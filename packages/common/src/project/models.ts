@@ -1,23 +1,26 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {IsArray, IsEnum, IsOptional, IsString} from 'class-validator';
+import {IsArray, IsEnum, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {Type} from 'class-transformer';
-import {
-  ProjectManifest,
-  SubqlCallFilter,
-  SubqlDataSource,
-  SubqlEventFilter,
-  SubqlMapping,
-  SubqlRuntimeDatasource,
-} from './types';
+import {RegistryTypes} from '@polkadot/types/types';
+import {ProjectManifest, SubqlCallFilter, SubqlEventFilter, SubqlMapping, SubqlRuntimeDatasource} from './types';
 import {SubqlKind} from './constants';
+
+export class ProjectNetwork {
+  @IsString()
+  endpoint: string;
+  @IsObject()
+  @IsOptional()
+  customTypes?: RegistryTypes;
+}
 
 export class ProjectManifestImpl implements ProjectManifest {
   @IsString()
   description: string;
-  @IsString()
-  endpoint: string;
+  @ValidateNested()
+  @Type(() => ProjectNetwork)
+  network: ProjectNetwork;
   @IsString()
   repository: string;
   @IsString()
@@ -25,7 +28,9 @@ export class ProjectManifestImpl implements ProjectManifest {
   @IsString()
   specVersion: string;
   @IsArray()
-  dataSources: SubqlDataSource[];
+  @ValidateNested()
+  @Type(() => RuntimeDataSource)
+  dataSources: RuntimeDataSource[];
 }
 
 export class Filter implements SubqlCallFilter, SubqlEventFilter {
@@ -39,6 +44,7 @@ export class Filter implements SubqlCallFilter, SubqlEventFilter {
 
 export class Handler {
   @IsOptional()
+  @ValidateNested()
   @Type(() => Filter)
   filter?: SubqlCallFilter | SubqlEventFilter;
   @IsEnum(SubqlKind, {groups: [SubqlKind.BlockHandler, SubqlKind.CallHandler, SubqlKind.EventHandler]})
@@ -50,6 +56,7 @@ export class Handler {
 export class Mapping implements SubqlMapping {
   @Type(() => Handler)
   @IsArray()
+  @ValidateNested()
   handlers: Handler[];
 }
 
@@ -57,6 +64,7 @@ export class RuntimeDataSource implements SubqlRuntimeDatasource {
   @IsEnum(SubqlKind, {groups: [SubqlKind.Runtime]})
   kind: SubqlKind.Runtime;
   @Type(() => Mapping)
+  @ValidateNested()
   mapping: SubqlMapping;
   name: string;
   startBlock: number;

@@ -52,7 +52,6 @@ export class IndexerManager implements OnApplicationBootstrap {
 
   async indexBlock({ block, extrinsics, events }: BlockContent): Promise<void> {
     try {
-      // TODO: find block handlers and call them
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;
