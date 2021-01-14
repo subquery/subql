@@ -5,7 +5,7 @@ You will need to run
 ### 1. a subql-node to index data
 ```yaml
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 
 metadata:
   name: subql-node-1
@@ -14,12 +14,10 @@ metadata:
     release: subql-node-1
 
 spec:
-  serviceName: subql-node-1-svc
-
   selector:
     matchLabels:
       release: subql-node-1
-
+  replicas: 1
   template:
     metadata:
       labels:
