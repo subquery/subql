@@ -34,11 +34,8 @@ export function objectTypeToModelAttributes(
     };
     if (type.toString() === 'BigInt') {
       columnOption.get = function () {
-        if (this.getDataValue(k)) {
-          return BigInt(this.getDataValue(k));
-        } else {
-          return;
-        }
+        const dataValue = this.getDataValue(k);
+        return dataValue ? BigInt(dataValue) : null;
       };
       columnOption.set = function (val: unknown) {
         this.setDataValue(k, val?.toString());
