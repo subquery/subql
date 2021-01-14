@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import * as child from 'child_process';
 import simpleGit, {SimpleGit} from 'simple-git';
 const git: SimpleGit = simpleGit();
 
@@ -16,8 +17,9 @@ export async function createProject(projectName: string): Promise<void> {
     currentPackage.name = projectName;
     const newPackage = JSON.stringify(currentPackage, null, 2);
     fs.writeFileSync(`${localPath}/package.json`, newPackage, 'utf8');
+    child.exec(`rm -rf ${localPath}/.git`);
   } catch (e) {
     /* handle all errors here */
-    console.log(e);
+    console.error(e.message);
   }
 }
