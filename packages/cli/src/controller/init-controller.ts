@@ -21,5 +21,8 @@ export async function createProject(projectName: string): Promise<void> {
   } catch (e) {
     /* handle all errors here */
     console.error(e.message);
+    process.exit(1);
+  } finally {
+    this.log(`Starter package: ${projectName} is ready`);
   }
 }
