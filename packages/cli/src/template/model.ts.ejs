@@ -4,8 +4,6 @@
 // Auto-generated , DO NOT EDIT
 import {Entity} from "@subql/types";
 import assert from 'assert';
-import BN from 'bn.js'
-
 
 export class <%= props.className %> implements Entity {
 
@@ -20,7 +18,7 @@ export class <%= props.className %> implements Entity {
     async save(): Promise<void>{
         let id = this.id;
         assert(id !== null, "Cannot save <%=props.className %> entity without an ID");
-        store.set('<%=props.className %>', id.toString(), this);
+        await store.set('<%=props.className %>', id.toString(), this);
     }
     static async remove(id:string): Promise<void>{
         assert(id !== null, "Cannot remove <%=props.className %> entity without an ID");
@@ -30,7 +28,11 @@ export class <%= props.className %> implements Entity {
     static async get(id:string): Promise<<%=props.className %>>{
         assert(id !== null, "Cannot get <%=props.className %> entity without an ID");
         const record = await store.get('<%=props.className %>', id.toString());
-        return <%=props.className %>.create(record);
+        if (record){
+            return <%=props.className %>.create(record);
+        }else{
+            return;
+        }
     }
 
     static create(record){
