@@ -34,10 +34,11 @@ export function objectTypeToModelAttributes(
     };
     if (type.toString() === 'BigInt') {
       columnOption.get = function () {
-        return BigInt(this.getDataValue(k));
+        const dataValue = this.getDataValue(k);
+        return dataValue ? BigInt(dataValue) : null;
       };
       columnOption.set = function (val: unknown) {
-        this.setDataValue(k, String(val));
+        this.setDataValue(k, val?.toString());
       };
     }
     acc[k] = columnOption;
