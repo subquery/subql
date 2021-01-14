@@ -44,36 +44,40 @@ function getProjectEntry(root: string): string {
 
 export class IndexerSandbox extends NodeVM {
   private option: SandboxOption;
+  private script: VMScript;
   entry: string;
 
   constructor(option: SandboxOption) {
-    const { store, api, root } = option;
+    const { root } = option;
     const entry = getProjectEntry(root);
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
-      sandbox: {
-        store,
-        api,
-        __subqlProjectEntry: entry,
-      },
       require: {
         root,
       },
     });
     super(vmOption);
+    this.injectGlobals(option);
     this.option = option;
     this.entry = entry;
+    this.script = new VMScript(
+      `
+      const mappingFunctions = require('${entry}');
+      module.exports = mappingFunctions[funcName](...args);
+    `,
+      path.join(root, 'sandbox'),
+    );
   }
 
-  async securedExec(func: string, args: any[]): Promise<void> {
+  async securedExec(funcName: string, args: any[]): Promise<void> {
     this.setGlobal('args', args);
-    const script = new VMScript(
-      `
-      const {${func}: func} = require(__subqlProjectEntry);
-      module.exports = func(...args);
-    `,
-      path.join(this.option.root, 'sandbox'),
-    );
-    await this.run(script);
+    this.setGlobal('funcName', funcName);
+    await this.run(this.script);
     this.setGlobal('args', []);
+    this.setGlobal('funcName', '');
+  }
+
+  private injectGlobals({ api, store }: SandboxOption) {
+    this.freeze(store, 'store');
+    this.freeze(api, 'api');
   }
 }
