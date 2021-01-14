@@ -20,6 +20,7 @@ export class ProjectManifestImpl implements ProjectManifest {
   description: string;
   @ValidateNested()
   @Type(() => ProjectNetwork)
+  @IsObject()
   network: ProjectNetwork;
   @IsString()
   repository: string;

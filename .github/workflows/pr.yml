@@ -22,4 +22,6 @@ jobs:
       run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
     - name: Eslint
       run: yarn eslint packages --ext .ts
+    - name: Test
+      run: yarn test
 

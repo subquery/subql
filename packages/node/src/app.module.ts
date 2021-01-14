@@ -4,7 +4,6 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 // import { SequelizeModule } from '@nestjs/sequelize';
 
-import { AppService } from './app.service';
 import { IndexerModule } from './indexer/indexer.module';
 import { DbModule } from './db/db.module';
 import { ConfigureModule } from './configure/configure.module';

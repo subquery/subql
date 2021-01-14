@@ -20,25 +20,5 @@
   },
   "devDependencies": {
     "@types/js-yaml": "^3.12.5"
-  },
-  "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "json",
-      "ts"
-    ],
-    "setupFiles": [
-      "./test/jest-setup.ts"
-    ],
-    "rootDir": ".",
-    "testRegex": ".(spec|test|e2e).ts$",
-    "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
-    },
-    "collectCoverageFrom": [
-      "**/*.(t|j)s"
-    ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
   }
 }

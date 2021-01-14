@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import {Source, parse, extendSchema, GraphQLSchema, buildASTSchema} from 'graphql';
+import {buildASTSchema, DocumentNode, extendSchema, GraphQLSchema, parse, Source} from 'graphql';
 
 import {scalas} from './schema/scalas';
 import {directives} from './schema/directives';
@@ -15,5 +15,9 @@ function loadBaseSchema(): GraphQLSchema {
 export function buildSchema(path: string): GraphQLSchema {
   const src = new Source(fs.readFileSync(path).toString());
   const doc = parse(src);
+  return buildSchemaFromDocumentNode(doc);
+}
+
+export function buildSchemaFromDocumentNode(doc: DocumentNode): GraphQLSchema {
   return extendSchema(loadBaseSchema(), doc);
 }

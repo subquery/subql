@@ -25,11 +25,6 @@ export type SubqueryRepo = typeof Model & {
   new (values?: any, options?: BuildOptions): SubqueryModel;
 };
 
-// class SubqueryEntity extends Model<
-//   SubqueryModelAttributes,
-//   SubqueryCreationAttributes
-// > {}
-
 export function SubqueryFactory(sequelize: Sequelize): SubqueryRepo {
   return <SubqueryRepo>sequelize.define(
     'Subquery',
