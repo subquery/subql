@@ -152,16 +152,9 @@ export class IndexerManager implements OnApplicationBootstrap {
   }
 
   private initVM() {
-    const projectEntry = this.getProjectEntry();
-
     this.vm = new NodeVM({
       console: 'redirect',
       wasm: false,
-      sandbox: {
-        store: this.storeService.getStore(),
-        api: this.apiService.getApi(),
-        __subqlProjectEntry: projectEntry,
-      },
       require: {
         builtin: ['assert'],
         external: ['tslib'],
@@ -170,6 +163,10 @@ export class IndexerManager implements OnApplicationBootstrap {
       },
       wrapper: 'commonjs',
     });
+
+    this.vm.freeze(this.storeService.getStore(), 'store');
+    this.vm.freeze(this.apiService.getApi(), 'api');
+    this.vm.freeze(this.getProjectEntry(), '__subqlProjectEntry');
 
     this.vm.on('console.log', (data) => console.log(`[VM Sandbox]: ${data}`));
   }
