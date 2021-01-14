@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2017",
+    "noImplicitAny": false,
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "types": ["node", "jest"],
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "lib": ["ES2017"],
+    "emitDecoratorMetadata": true,
+    "sourceMap": false,
+    "rootDir": ".",
+    "outDir": "."
+  },
+  "exclude": [],
+  "include": ["./main.ts"]
+}
