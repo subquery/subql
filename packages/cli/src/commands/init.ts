@@ -10,7 +10,9 @@ export default class Init extends Command {
 
   static flags = {
     force: flags.boolean({char: 'f'}),
-    starter: flags.boolean(),
+    starter: flags.boolean({
+      default: true,
+    }),
   };
 
   static args = [
@@ -26,7 +28,6 @@ export default class Init extends Command {
     if (flags.starter && args.projectName) {
       this.log('Init the starter package');
       await createProject(args.projectName);
-      this.log(`Starter package: ${args.projectName} is ready`);
     }
   }
 }
