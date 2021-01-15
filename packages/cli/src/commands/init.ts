@@ -10,7 +10,9 @@ export default class Init extends Command {
 
   static flags = {
     force: flags.boolean({char: 'f'}),
-    starter: flags.boolean(),
+    starter: flags.boolean({
+      default: true,
+    }),
   };
 
   static args = [
