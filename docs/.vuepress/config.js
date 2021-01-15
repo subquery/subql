@@ -1,5 +1,4 @@
 module.exports = {
-    base: "/subql/",
     lastUpdated: 'Last Updated',
 
     locales: {
