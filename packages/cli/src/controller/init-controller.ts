@@ -10,21 +10,16 @@ const starterPath = 'https://github.com/OnFinality-io/subql-starter';
 
 export async function createProject(projectName: string): Promise<void> {
   const localPath = `${process.cwd()}/${projectName}`;
-  try {
-    await git.clone(starterPath, localPath);
-    const packageData = fs.readFileSync(`${localPath}/package.json`);
-    const currentPackage = JSON.parse(packageData.toString());
-    currentPackage.name = projectName;
-    const newPackage = JSON.stringify(currentPackage, null, 2);
-    fs.writeFileSync(`${localPath}/package.json`, newPackage, 'utf8');
-    rimraf(`${localPath}/.git`, function (err) {
-      if (err) throw err;
-    });
-  } catch (e) {
-    /* handle all errors here */
-    console.error(e.message);
-    process.exit(1);
-  } finally {
-    console.log(`Starter package: ${projectName} is ready`);
+  if (fs.existsSync(localPath)) {
+    throw new Error('Directory exists');
   }
+  await git.clone(starterPath, localPath);
+  const packageData = fs.readFileSync(`${localPath}/package.json`);
+  const currentPackage = JSON.parse(packageData.toString());
+  currentPackage.name = projectName;
+  const newPackage = JSON.stringify(currentPackage, null, 2);
+  fs.writeFileSync(`${localPath}/package.json`, newPackage, 'utf8');
+  await new Promise<void>((resolve, reject) =>
+    rimraf(`${localPath}/.git`, (error) => (error ? reject(error) : resolve()))
+  );
 }
