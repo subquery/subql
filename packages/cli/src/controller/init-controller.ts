@@ -4,7 +4,6 @@
 import fs from 'fs';
 import rimraf from 'rimraf';
 import simpleGit, {SimpleGit} from 'simple-git';
-import {generateSchema} from './codegen-controller';
 const git: SimpleGit = simpleGit();
 
 const starterPath = 'https://github.com/OnFinality-io/subql-starter';
