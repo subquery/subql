@@ -27,7 +27,15 @@ export default class Init extends Command {
     const {flags, args} = this.parse(Init);
     if (flags.starter && args.projectName) {
       this.log('Init the starter package');
-      await createProject(args.projectName);
+      try {
+        await createProject(args.projectName);
+      } catch (e) {
+        /* handle all errors here */
+        console.error(e.message);
+        process.exit(1);
+      } finally {
+        console.log(`Starter package: ${args.projectName} is ready`);
+      }
     }
   }
 }
