@@ -5,8 +5,7 @@ import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { last } from 'lodash';
-import { hideBin } from 'yargs/helpers';
-import yargs from 'yargs/yargs';
+import { getYargsOption } from '../yargs';
 import { NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './project.model';
 
@@ -14,30 +13,7 @@ import { SubqueryProject } from './project.model';
 @Module({})
 export class ConfigureModule {
   static register(): DynamicModule {
-    const yargsOptions = yargs(hideBin(process.argv)).options({
-      subquery: {
-        alias: 'f',
-        demandOption: false,
-        describe: 'the local path of subquery project',
-        type: 'string',
-      },
-      'subquery-name': {
-        demandOption: false,
-        describe: 'name of the subquery project',
-        type: 'string',
-      },
-      config: {
-        alias: 'c',
-        demandOption: false,
-        describe: 'specify configuration file',
-        type: 'string',
-      },
-      local: {
-        type: 'boolean',
-        demandOption: false,
-        describe: 'use local mode',
-      },
-    });
+    const yargsOptions = getYargsOption();
     const { argv } = yargsOptions;
     let config: NodeConfig;
     if (argv.config) {
