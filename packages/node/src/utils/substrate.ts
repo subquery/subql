@@ -1,11 +1,14 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
+import { SubqlCallFilter, SubqlEventFilter } from '@subql/common';
 import {
   SubstrateBlock,
   SubstrateExtrinsic,
   SubstrateEvent,
 } from '@subql/types';
 import { merge } from 'lodash';
-import { SubqlCallFilter, SubqlEventFilter } from '@subql/common';
 
 export function wrapBlock(signedBlock: SignedBlock): SubstrateBlock {
   return merge(signedBlock, { timestamp: getTimestamp(signedBlock) });
@@ -14,7 +17,7 @@ export function wrapBlock(signedBlock: SignedBlock): SubstrateBlock {
 function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
   for (const e of extrinsics) {
     const {
-      method: { section, method },
+      method: { method, section },
     } = e;
     if (section === 'timestamp' && method === 'set') {
       const date = new Date(e.args[0].toJSON() as number);

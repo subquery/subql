@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, flags} from '@oclif/command';
-
 import {createProject} from '../controller/init-controller';
 
 export default class Init extends Command {
@@ -24,7 +23,7 @@ export default class Init extends Command {
   ];
 
   async run(): Promise<void> {
-    const {flags, args} = this.parse(Init);
+    const {args, flags} = this.parse(Init);
     if (flags.starter && args.projectName) {
       this.log('Init the starter package');
       try {

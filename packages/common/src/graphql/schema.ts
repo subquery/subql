@@ -3,9 +3,8 @@
 
 import fs from 'fs';
 import {buildASTSchema, DocumentNode, extendSchema, GraphQLSchema, parse, Source} from 'graphql';
-
-import {scalas} from './schema/scalas';
 import {directives} from './schema/directives';
+import {scalas} from './schema/scalas';
 
 function loadBaseSchema(): GraphQLSchema {
   const schema = buildASTSchema(scalas);

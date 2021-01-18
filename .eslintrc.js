@@ -13,7 +13,8 @@ Happy linting! 💖
 */
 module.exports = {
   env: {
-    es6: true,
+    node: true,
+    jest: true,
   },
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -26,7 +27,7 @@ module.exports = {
     warnOnUnsupportedTypeScriptVersion: false,
     EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
   },
-  plugins: ['@typescript-eslint', 'import'],
+  plugins: ['@typescript-eslint', 'header', 'import', 'sort-destructure-keys'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/recommended',
@@ -72,8 +73,20 @@ module.exports = {
     'default-case': 'error',
     eqeqeq: ['error', 'always'],
     'import/no-extraneous-dependencies': 'off',
-    'import/order': 'error',
-    'no-console': 'warn',
+    'import/order': ['error', {
+      alphabetize: {
+        order: 'asc', /* sort in ascending order. Options: ['ignore', 'asc', 'desc'] */
+        caseInsensitive: true /* ignore case. Options: [true, false] */
+      }
+    }],
+    'header/header': [2, 'line', [//Copyright 2020-2021 OnFinality Limited authors & contributors
+      { pattern: ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors' },
+      ' SPDX-License-Identifier: Apache-2.0'
+    ], 2],
+    'sort-destructure-keys/sort-destructure-keys': [2, {
+      caseSensitive: true
+    }],
+    'no-console': 'off',
     'no-duplicate-imports': 'error',
     // "no-magic-numbers": "error",
     'no-return-await': 'error',
@@ -81,4 +94,10 @@ module.exports = {
     'prefer-template': 'error',
     'use-isnan': 'error',
   },
+  settings: {
+    'import/extensions': ['.js', '.ts'],
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx']
+    },
+  }
 };

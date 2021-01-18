@@ -1,11 +1,11 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {IsArray, IsEnum, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import {Type} from 'class-transformer';
 import {RegistryTypes} from '@polkadot/types/types';
-import {ProjectManifest, SubqlCallFilter, SubqlEventFilter, SubqlMapping, SubqlRuntimeDatasource} from './types';
+import {Type} from 'class-transformer';
+import {IsArray, IsEnum, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {SubqlKind} from './constants';
+import {ProjectManifest, SubqlCallFilter, SubqlEventFilter, SubqlMapping, SubqlRuntimeDatasource} from './types';
 
 export class ProjectNetwork {
   @IsString()

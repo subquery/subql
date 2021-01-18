@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import rimraf from 'rimraf';
 import {Command, flags} from '@oclif/command';
+import rimraf from 'rimraf';
 import {generateSchema} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {

@@ -3,9 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import {isNonNullType, getNullableType} from 'graphql';
-import ejs from 'ejs';
 import {getAllEntities, buildSchema} from '@subql/common';
+import ejs from 'ejs';
+import {isNonNullType, getNullableType} from 'graphql';
 import {GraphQLFieldMap, GraphQLOutputType} from 'graphql/type/definition';
 import {transformTypes} from './types-mapping';
 const templatePath: string = path.resolve(__dirname, '../template/model.ts.ejs');
@@ -44,7 +44,7 @@ export interface processedField {
   required: boolean;
 }
 
-export function processFields(className: string, fields: GraphQLFieldMap<any, any>): processedField[] {
+export function processFields(className: string, fields: GraphQLFieldMap<unknown, unknown>): processedField[] {
   const fieldList: processedField[] = [];
   for (const k in fields) {
     if (Object.prototype.hasOwnProperty.call(fields, k)) {
