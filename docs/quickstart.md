@@ -22,17 +22,15 @@ $suqbl help
 
 ## Initialize the starter package
 
-Inside the folder in which you want to create the subquery project, and run this command:
+Inside the directory in which you want to create the SubQuery project, simply replace `project-name` with your project name and run the command:
+```
+$subql init --starter project-name
+```
+Then you should see a folder with your project name has been created inside the directory, you can use this as the start point of your project. And the files should be identical as in the [Directory Structure](/directory_structure).
 
+Last, under the project directory, run following command to install all the dependency.
 ```
-$subql  init --starter
-```
-Then you should see a directory `subql-starter` has been created inside your folder, you can use this 
-as the start point of your project. And the files should be identical as in the [Directory Structure](/directory_structure).
-
-Last, under the `suql-starter` directory, run follow command to install all the dependency.
-```
-$npm install
+$yarn install
 ```
 
 
@@ -49,22 +47,37 @@ check out our doc section on [Define the SubQuery](/define_a_subquery)
 
 #### Code generation
 
-Next, run codegen command under your project root directory.
+In order to index your subquery project, it is mandatory to build your project first.
+Run this command under the project directory.
 
-```
-$subql codegen
-```
+````
+$yarn build
+````
 
-## Deploy a subquery project
-
-#### Pack and upload
+## Build the project
 
 In order to deploy your subquery project to our hosted service, it is mandatory to pack your configuration before upload.
 Run pack command from root directory of your project will automatically generate a `your-project-name.tgz` file.
 
 ```
-$subql build
+$yarn build
 ```
 
-Last, all you need to do is upload this file to our host. 
-All good to go.
+## Index and Query
+
+#### Run required systems in docker
+
+Then, under the project directory run following command:
+
+```
+$docker-compose up
+```
+#### Query the project
+
+Open your browser and head to `http://localhost:8080/console`.
+
+Under the `DATA` tab, on the left top corner select the schema you just created, it usually named `public`.
+Then you can see the table is currently untracked, click on the `Track` button.
+
+Finally, head to the `GRAPHQL` tab, in the explorer you should see the table is ready to query.
+
