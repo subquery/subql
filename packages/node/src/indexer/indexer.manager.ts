@@ -89,7 +89,11 @@ export class IndexerManager implements OnApplicationBootstrap {
       this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
       await this.subqueryState.save();
     } catch (e) {
-      console.error(e);
+      console.error(
+        `[IndexerManager] failed to handler block ${block.block.header.number.toString()}, error: ${
+          e?.message
+        }`,
+      );
       process.exit(1);
     }
   }
@@ -103,7 +107,7 @@ export class IndexerManager implements OnApplicationBootstrap {
     });
     this.initVM();
     void this.prepareBlock().catch((err) => {
-      console.error('prepare block fails', err);
+      console.error('[IndexerManager] failed to fetch block', err);
       // FIXME: retry before exit
       process.exit(1);
     });
@@ -129,7 +133,7 @@ export class IndexerManager implements OnApplicationBootstrap {
         await delay(1);
         continue;
       }
-      console.log('fetch block ', blockHeight);
+      console.log('[IndexerManager] fetch block ', blockHeight);
       const blockHash = await this.api.rpc.chain.getBlockHash(blockHeight);
       const [block, events] = await Promise.all([
         this.api.rpc.chain.getBlock(blockHash),
