@@ -200,7 +200,6 @@ export class IndexerManager implements OnApplicationBootstrap {
       return { name: entity.name, attributes: modelAttributes };
     });
     await this.storeService.syncSchema(models, schema);
-    return;
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {

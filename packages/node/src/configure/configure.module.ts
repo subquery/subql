@@ -7,7 +7,6 @@ import { DynamicModule, Global, Module } from '@nestjs/common';
 import { last } from 'lodash';
 import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import { loadProjectManifest } from '@subql/common';
 import { SubqueryProject } from './project.model';
 import { NodeConfig } from './NodeConfig';
 

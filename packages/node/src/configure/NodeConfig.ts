@@ -59,8 +59,4 @@ export class NodeConfig implements IConfig {
     );
     return this;
   }
-
-  validate(): boolean {
-    return true;
-  }
 }
