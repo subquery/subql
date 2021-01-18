@@ -16,12 +16,11 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 12
-    - name: yarn install
-      run: yarn install
-    - name: pretty quick
+    - run: yarn install
+    - name: code style check
       run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
-    - name: Eslint
+    - name: lint
       run: yarn eslint packages --ext .ts
-    - name: Test
+    - name: test
       run: yarn test
 
