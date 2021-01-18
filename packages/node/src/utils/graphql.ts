@@ -16,6 +16,7 @@ const SEQUELIZE_TYPE_MAPPING = {
   Bytes: 'bytea',
 };
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export function objectTypeToModelAttributes(
   objectType: GraphQLObjectType,
 ): ModelAttributes<any> {

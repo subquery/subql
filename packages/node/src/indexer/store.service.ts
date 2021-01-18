@@ -3,18 +3,19 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { ModelAttributes, Sequelize } from 'sequelize';
 import { Entity, Store } from '@subql/types';
+import { ModelAttributes, Sequelize } from 'sequelize';
 
 @Injectable()
 export class StoreService {
   constructor(private sequelize: Sequelize) {}
 
   async syncSchema(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     models: { name: string; attributes: ModelAttributes<any> }[],
     schema: string,
   ): Promise<void> {
-    for (const { name, attributes } of models) {
+    for (const { attributes, name } of models) {
       this.sequelize.define(name, attributes, {
         // timestamps: false,
         underscored: true,

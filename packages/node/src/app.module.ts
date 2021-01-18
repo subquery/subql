@@ -1,12 +1,10 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Module, OnApplicationBootstrap } from '@nestjs/common';
-// import { SequelizeModule } from '@nestjs/sequelize';
-
-import { IndexerModule } from './indexer/indexer.module';
-import { DbModule } from './db/db.module';
+import { Module } from '@nestjs/common';
 import { ConfigureModule } from './configure/configure.module';
+import { DbModule } from './db/db.module';
+import { IndexerModule } from './indexer/indexer.module';
 
 export class NodeOption {}
 
@@ -23,6 +21,5 @@ export class NodeOption {}
     IndexerModule,
   ],
   controllers: [],
-  // providers: [RunnerManager],
 })
 export class AppModule {}

@@ -3,24 +3,24 @@
 
 import path from 'path';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
-import { QueryTypes, Sequelize } from 'sequelize';
 import { ApiPromise } from '@polkadot/api';
-import { Subject } from 'rxjs';
+import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
 import {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { objectTypeToModelAttributes } from '../utils/graphql';
-import { SubqueryModel, SubqueryRepo } from '../entities';
-import { SubqueryProject } from '../configure/project.model';
-import { delay } from '../utils/promise';
+import { Subject } from 'rxjs';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
+import { SubqueryProject } from '../configure/project.model';
+import { SubqueryModel, SubqueryRepo } from '../entities';
+import { objectTypeToModelAttributes } from '../utils/graphql';
+import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
-import { StoreService } from './store.service';
 import { ApiService } from './api.service';
 import { IndexerSandbox } from './sandbox';
+import { StoreService } from './store.service';
 
 const PRELOAD_BLOCKS = 10;
 const DEFAULT_DB_SCHEMA = 'public';
@@ -49,7 +49,7 @@ export class IndexerManager implements OnApplicationBootstrap {
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
-  async indexBlock({ block, extrinsics, events }: BlockContent): Promise<void> {
+  async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
     try {
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
@@ -173,7 +173,7 @@ export class IndexerManager implements OnApplicationBootstrap {
         const suffix = await this.nextSubquerySchemaSuffix();
         projectSchema = `subquery_${suffix}`;
         const schemas = await this.sequelize.showAllSchemas(undefined);
-        if (!((schemas as any) as string[]).includes(projectSchema)) {
+        if (!((schemas as unknown) as string[]).includes(projectSchema)) {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }

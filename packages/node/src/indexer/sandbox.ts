@@ -1,12 +1,12 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import fs from 'fs';
-import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
-import { Store } from '@subql/types';
+import path from 'path';
 import { ApiPromise } from '@polkadot/api';
+import { Store } from '@subql/types';
 import { merge } from 'lodash';
+import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 
 export interface SandboxOption {
   store: Store;
@@ -68,7 +68,7 @@ export class IndexerSandbox extends NodeVM {
     );
   }
 
-  async securedExec(funcName: string, args: any[]): Promise<void> {
+  async securedExec(funcName: string, args: unknown[]): Promise<void> {
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     await this.run(this.script);

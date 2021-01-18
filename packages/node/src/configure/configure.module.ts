@@ -1,14 +1,14 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import assert from 'assert';
+import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { last } from 'lodash';
-import yargs from 'yargs/yargs';
 import { hideBin } from 'yargs/helpers';
-import { SubqueryProject } from './project.model';
+import yargs from 'yargs/yargs';
 import { NodeConfig } from './NodeConfig';
+import { SubqueryProject } from './project.model';
 
 @Global()
 @Module({})

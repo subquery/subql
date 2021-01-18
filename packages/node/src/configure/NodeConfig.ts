@@ -1,9 +1,12 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import assert from 'assert';
-import parseJson from 'parse-json';
 import yaml from 'js-yaml';
 import { assignWith, isUndefined, last } from 'lodash';
+import parseJson from 'parse-json';
 
 export interface IConfig {
   readonly configDir?: string;

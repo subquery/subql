@@ -1,5 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
+
 import { DynamicModule, Global } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
 import * as entities from '../entities';

@@ -22,7 +22,7 @@ export interface SubqueryModel
     SubqueryModelAttributes {}
 
 export type SubqueryRepo = typeof Model & {
-  new (values?: any, options?: BuildOptions): SubqueryModel;
+  new (values?: unknown, options?: BuildOptions): SubqueryModel;
 };
 
 export function SubqueryFactory(sequelize: Sequelize): SubqueryRepo {

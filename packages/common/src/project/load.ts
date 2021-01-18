@@ -3,9 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
+import yaml from 'js-yaml';
 import {ProjectManifestImpl} from './models';
 import {ProjectManifest} from './types';
 
