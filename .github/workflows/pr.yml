@@ -12,10 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: install node v12
+    - name: install node v14
       uses: actions/setup-node@v1
       with:
-        node-version: 12
+        node-version: 14
     - run: yarn install
     - name: code style check
       run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
