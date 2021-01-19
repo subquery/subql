@@ -38,6 +38,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       context: {
         pgClient: pgPool,
       },
+      cacheControl: {
+        defaultMaxAge: 5,
+      },
     });
     this.apolloServer.applyMiddleware({app, path: '/', cors: true});
   }

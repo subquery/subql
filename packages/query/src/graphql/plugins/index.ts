@@ -38,13 +38,12 @@ import PgRecordFunctionConnectionPlugin from 'graphile-build-pg/node8plus/plugin
 import PgScalarFunctionConnectionPlugin from 'graphile-build-pg/node8plus/plugins/PgScalarFunctionConnectionPlugin';
 import PageInfoStartEndCursor from 'graphile-build-pg/node8plus/plugins/PageInfoStartEndCursor';
 import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnectionTotalCount';
-import {PostGraphileClassicIdsInflectionPlugin, PostGraphileInflectionPlugin} from 'postgraphile-core';
 
 // Mutations
-import PgMutationCreatePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationCreatePlugin';
-import PgMutationUpdateDeletePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationUpdateDeletePlugin';
-import PgMutationProceduresPlugin from 'graphile-build-pg/node8plus/plugins/PgMutationProceduresPlugin';
-import PgMutationPayloadEdgePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationPayloadEdgePlugin';
+// import PgMutationCreatePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationCreatePlugin';
+// import PgMutationUpdateDeletePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationUpdateDeletePlugin';
+// import PgMutationProceduresPlugin from 'graphile-build-pg/node8plus/plugins/PgMutationProceduresPlugin';
+// import PgMutationPayloadEdgePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationPayloadEdgePlugin';
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 
@@ -92,16 +91,13 @@ export const pgDefaultPlugins = [
   PgConnectionTotalCount,
 
   // Mutations
-  PgMutationCreatePlugin,
-  PgMutationUpdateDeletePlugin,
-  PgMutationProceduresPlugin,
-  PgMutationPayloadEdgePlugin,
+  // PgMutationCreatePlugin,
+  // PgMutationUpdateDeletePlugin,
+  // PgMutationProceduresPlugin,
+  // PgMutationPayloadEdgePlugin,
 ];
 
-export const plugins = [
-  ...defaultPlugins,
-  ...pgDefaultPlugins,
-  // PostGraphileInflectionPlugin,
-  // PostGraphileClassicIdsInflectionPlugin,
-  // PgSimplifyInflectorPlugin,
-];
+export const plugins = [...defaultPlugins, ...pgDefaultPlugins, PgSimplifyInflectorPlugin];
+
+// todo
+// adv filter plugin: https://github.com/graphile-contrib/postgraphile-plugin-connection-filter
