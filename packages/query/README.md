@@ -1,0 +1,1 @@
+# @subql/query
