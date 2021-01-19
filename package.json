@@ -31,7 +31,7 @@
     "docs:build": "vuepress build docs",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
-    "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$'",
+    "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit",
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit test"
   },
   "husky": {
