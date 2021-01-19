@@ -20,7 +20,7 @@ jobs:
     - name: code style check
       run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
     - name: lint
-      run: yarn eslint packages --ext .ts
+      run: yarn lint
     - name: test
       run: yarn test
 

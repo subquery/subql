@@ -1,8 +1,8 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { IndexerSandbox } from './sandbox';
 import * as path from 'path';
+import { IndexerSandbox } from './sandbox';
 
 describe('sandbox for subql-node', () => {
   let vm: IndexerSandbox;

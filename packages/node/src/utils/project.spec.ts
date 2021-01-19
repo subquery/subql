@@ -1,10 +1,12 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import { prepareProjectDir } from './project';
 
-let projectPath = __dirname + '/../../test/projectFixture';
-let tarPath =
-  __dirname + '/../../test/projectFixture/mockedSubqueryProject.tgz';
-let badFormatPath = __dirname + '/../../test/projectFixture/bad.json';
+const projectPath = `${__dirname}/../../test/projectFixture`;
+const tarPath = `${__dirname}/../../test/projectFixture/mockedSubqueryProject.tgz`;
+const badFormatPath = `${__dirname}/../../test/projectFixture/bad.json`;
 
 it('Test path is a directory, outcome is same directory', async () => {
   const finalPath = await prepareProjectDir(projectPath);

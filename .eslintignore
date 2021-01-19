@@ -2,7 +2,6 @@
 /api_docs/**
 **/node_modules/**
 **/test/**/*
-**/*.spec.*
 /scripts/*
 packages/**/dist/**
 packages/**/lib/**
