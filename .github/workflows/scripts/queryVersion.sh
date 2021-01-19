@@ -6,4 +6,4 @@ PACKAGE_VERSION=$(cat ./packages/query/package.json \
   | tr -d '[[:space:]]')
 
 
-echo "::set-output name=NODE_VERSION::$PACKAGE_VERSION"
+echo "::set-output name=QUERY_VERSION::$PACKAGE_VERSION"
