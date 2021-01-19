@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import gql from 'graphql-tag';
-import {buildSchemaFromDocumentNode} from './schema';
 import {getAllEntities} from './entities';
+import {buildSchemaFromDocumentNode} from './schema';
 
 describe('utils that handle schema.graphql', () => {
   it('support @entity annotation in the schema', () => {

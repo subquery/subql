@@ -1,2 +1,7 @@
 .github
 node_modules
+coverage
+deploy
+docs
+test/docker-compose.yaml
+test/Dockerfile
