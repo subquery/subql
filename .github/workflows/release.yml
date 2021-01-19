@@ -100,7 +100,7 @@ jobs:
           username: onfinality
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: [Node service] Build and push
+      - name: "[Node service] Build and push"
         uses: docker/build-push-action@v2
         if: steps.changed-node.outputs.changed == 'true'
         with:
@@ -108,19 +108,19 @@ jobs:
           file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
 
-      - name: [Node service] Image digest
+      - name: "[Node service] Image digest"
         if: steps.changed-node.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
       #Publish query docker image
-      - name: [Query service] Build and push
+      - name: "[Query service] Build and push"
         uses: docker/build-push-action@v2
         if: steps.changed-query.outputs.changed == 'true'
         with:
           push: true
           file: ./packages/query/Dockerfile
-          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.NODE_VERSION }}
+          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
 
-      - name: [Query service] Image digest
+      - name: "[Query service] Image digest"
         if: steps.changed-query.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
