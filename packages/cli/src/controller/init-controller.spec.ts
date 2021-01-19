@@ -4,6 +4,7 @@
 import * as fs from 'fs';
 import rimraf from 'rimraf';
 import {createProject} from './init-controller';
+
 const projectName = 'mockStarterProject';
 
 // async

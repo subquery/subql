@@ -32,7 +32,7 @@
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
     "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$'",
-    "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --build"
+    "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --build --abort-on-container-exit test"
   },
   "husky": {
     "hooks": {
