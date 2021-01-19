@@ -62,10 +62,6 @@ export class DbModule {
             logging: argv.debug,
           }),
         },
-        {
-          provide: 'DB_OPTION',
-          useValue: option,
-        },
       ],
       exports: [Sequelize],
     };

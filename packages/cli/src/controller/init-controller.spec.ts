@@ -24,7 +24,7 @@ describe('Cli can create project', () => {
 
   it('should resolves when starter project successful created', async () => {
     await createProject(projectName);
-    await expect(fileExists(`./${projectName}`)).resolves;
+    await expect(fileExists(`./${projectName}`)).resolves.toEqual(true);
   });
 
   it('throw error if same name directory exists', async () => {

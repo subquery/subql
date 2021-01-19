@@ -29,7 +29,9 @@
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$'",
+    "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --build"
   },
   "husky": {
     "hooks": {
