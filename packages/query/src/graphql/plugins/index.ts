@@ -64,7 +64,7 @@ export const pgDefaultPlugins = [
   PgBasicsPlugin,
   PgIntrospectionPlugin,
   PgTypesPlugin,
-  PgJWTPlugin,
+  // PgJWTPlugin,
   PgTablesPlugin,
   PgConnectionArgFirstLastBeforeAfter,
   PgConnectionArgOrderBy,

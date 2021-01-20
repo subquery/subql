@@ -14,10 +14,16 @@ export class ConfigureModule {
         type: 'string',
         demandOption: false,
       },
+      playground: {
+        describe: 'enable graphql playground',
+        type: 'boolean',
+        demandOption: false,
+      },
     }).argv;
 
     const config = new Config({
       dbSchema: opts.schema,
+      playground: opts.playground,
     });
 
     return {
