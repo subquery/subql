@@ -1,14 +1,18 @@
-import {getAllEntities, buildSchema} from '@subql/common';
-import {transformTypes} from './types-mapping';
-import {processFields, renderTemplate, makeSchema, generateSchema} from './codegen-controller';
-import path from 'path';
-import os from 'os';
-import fs from 'fs';
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
 
-async function makeTempDir(): Promise<string> {
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
+import {getAllEntities, buildSchema} from '@subql/common';
+import {processFields, makeSchema} from './codegen-controller';
+import {transformTypes} from './types-mapping';
+
+async function makeTempDir() {
   const sep = path.sep;
   const tmpDir = os.tmpdir();
-  return fs.mkdtempSync(`${tmpDir}${sep}`);
+  const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
+  return tempPath;
 }
 
 describe('Codegen can generate schema', () => {
@@ -16,9 +20,6 @@ describe('Codegen can generate schema', () => {
   const badextractEntities = getAllEntities(badschema);
   const goodschema = buildSchema(path.join(__dirname, '../../test/schema.graphql'));
   const goodextractEntities = getAllEntities(goodschema);
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  const tempPath = fs.mkdtempSync(`${tmpDir}${sep}`);
 
   it('can transform field into correct type', () => {
     const testClassName = 'transformTest;';
@@ -41,7 +42,6 @@ describe('Codegen can generate schema', () => {
 
   it('process field with unknown type to throw', () => {
     const testClassName = 'processFieldTest';
-    expect.assertions(1);
     for (const entity of badextractEntities) {
       const fields = entity.getFields();
       expect(() => processFields(testClassName, fields)).toThrow();
@@ -49,21 +49,11 @@ describe('Codegen can generate schema', () => {
     }
   });
 
-  it('save schema to a empty project directory should fail', async () => {
-    const testClassName = 'makeSchemaTest';
-    const tempPath = await makeTempDir();
-    process.chdir(tempPath);
-    await expect(makeSchema('classname', 'random data')).rejects.toThrow(
-      /Write schema to file failed, check project directory is correct/
-    );
-  });
-
   it('save schema to a correct project directory should pass', async () => {
     const testClassName = 'makeSchemaTest2';
     const tempPath = await makeTempDir();
     process.chdir(tempPath);
-    fs.mkdir('src/types/models', {recursive: true}, (err) => {
-      expect(makeSchema(testClassName, 'random text to add to schema')).resolves.not.toThrow();
-    });
+    await fs.promises.mkdir('src/types/models', {recursive: true});
+    await expect(makeSchema(testClassName, 'random text to add to schema')).resolves.not.toThrow();
   });
 });

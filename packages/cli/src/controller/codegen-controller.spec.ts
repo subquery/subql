@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import ejs from 'ejs';
 import {makeSchema, renderTemplate, generateSchema} from './codegen-controller';
@@ -26,31 +29,38 @@ const mockedTemplate = {
 };
 
 describe('Codegen can generate schema (mocked fs)', () => {
+  it('write schema to a empty project directory should fail', async () => {
+    (fs.promises.access as jest.Mock).mockImplementation(async () => Promise.reject(new Error()));
+    await expect(makeSchema('classname', 'random data')).rejects.toThrow(
+      'Write schema failed, not in project directory'
+    );
+  });
+
   it('should throw error when write schema file failed', async () => {
-    (fs.promises.access as jest.Mock).mockImplementation(() => Promise.resolve());
-    (fs.promises.writeFile as jest.Mock).mockImplementation(() => Promise.reject(new Error('write failed')));
+    (fs.promises.access as jest.Mock).mockImplementation(async () => Promise.resolve());
+    (fs.promises.writeFile as jest.Mock).mockImplementation(async () => Promise.reject(new Error('write failed')));
     await expect(makeSchema('classname', 'random data')).rejects.toThrow(/write failed/);
   });
 
   it('write schema should pass', async () => {
-    (fs.promises.access as jest.Mock).mockImplementation(() => Promise.resolve());
-    (fs.promises.writeFile as jest.Mock).mockImplementation(() => Promise.resolve());
-    await expect(makeSchema('classname', 'random data')).resolves;
+    (fs.promises.access as jest.Mock).mockImplementation(async () => Promise.resolve());
+    (fs.promises.writeFile as jest.Mock).mockImplementation(async () => Promise.resolve());
+    await expect(makeSchema('classname', 'random data')).resolves.not.toThrow();
   });
 
   it('render ejs template with an incorrect format modelTemplate should throw', async () => {
-    (ejs.renderFile as jest.Mock).mockImplementation(() => Promise.reject(new Error('render template failed')));
+    (ejs.renderFile as jest.Mock).mockImplementation(async () => Promise.reject(new Error('render template failed')));
     await expect(renderTemplate('renderTemplateTest', mockedTemplate)).rejects.toThrow(/render template failed/);
   });
 
   it('render ejs template with correct format modelTemplate should pass', async () => {
-    (ejs.renderFile as jest.Mock).mockImplementation(() => Promise.resolve());
-    await expect(renderTemplate('renderTemplateTest', mockedTemplate)).resolves;
+    (ejs.renderFile as jest.Mock).mockImplementation(async () => Promise.resolve());
+    await expect(renderTemplate('renderTemplateTest', mockedTemplate)).resolves.not.toThrow();
   });
 
   it('generate schema should pass', async () => {
     const schemaString = 'type goodEntity @entity {id: ID!}';
     (fs.readFileSync as jest.Mock).mockReturnValue(schemaString);
-    await expect(generateSchema()).resolves;
+    await expect(generateSchema()).resolves.not.toThrow();
   });
 });

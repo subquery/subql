@@ -20,7 +20,7 @@ export async function makeSchema(className: string, data: string): Promise<void>
   try {
     await fs.promises.access(typesPath);
   } catch (err) {
-    throw new Error('Write schema to file failed, check project directory is correct');
+    throw new Error('Write schema failed, not in project directory');
   }
 
   try {
@@ -55,7 +55,7 @@ export function processFields(className: string, fields: GraphQLFieldMap<unknown
       const type: GraphQLOutputType = isNonNullType(fields[k].type) ? getNullableType(fields[k].type) : fields[k].type;
       const newType = transformTypes(className, type.toString());
       if (!newType) {
-        const errMsg = 'Undefined type ' + type.toString() + ' in Schema ' + className;
+        const errMsg = `Undefined type ${type.toString()} in Schema ${className}`;
         throw new Error(errMsg);
       }
       fieldList.push({
