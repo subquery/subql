@@ -17,6 +17,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       return;
     }
     const app = this.httpAdapterHost.httpAdapter.getInstance();
+    const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const pgPool = new Pool({
       user: this.config.get('DB_USERNAME'),
@@ -31,6 +32,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
     const builder = await getPostGraphileBuilder(pgPool, [this.config.get('dbSchema')], {
       replaceAllPlugins: plugins,
+      subscriptions: true,
     });
     const schema = builder.buildSchema();
     this.apolloServer = new ApolloServer({
@@ -41,8 +43,17 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       cacheControl: {
         defaultMaxAge: 5,
       },
+      playground: this.config.get('playground'),
+      subscriptions: {
+        path: '/subscription',
+      },
     });
-    this.apolloServer.applyMiddleware({app, path: '/', cors: true});
+    this.apolloServer.applyMiddleware({
+      app,
+      path: '/',
+      cors: true,
+    });
+    this.apolloServer.installSubscriptionHandlers(httpServer);
   }
 
   async onModuleDestroy(): Promise<void> {
