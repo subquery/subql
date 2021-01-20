@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - main
+      - "next/**"
     paths-ignore:
       - '.github/workflows/**'
 
