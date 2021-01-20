@@ -1,3 +1,7 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+/* eslint-disable */
 import {
   SwallowErrorsPlugin,
   StandardTypesPlugin,
@@ -46,6 +50,8 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 // import PgMutationPayloadEdgePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationPayloadEdgePlugin';
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
+
+/* eslint-enable */
 
 export const defaultPlugins = [
   SwallowErrorsPlugin,

@@ -3525,6 +3525,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@polkadot/x-ws@npm:^5.3.1":
+  version: 5.3.1
+  resolution: "@polkadot/x-ws@npm:5.3.1"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+    "@types/websocket": ^1.0.1
+    websocket: ^1.0.33
+  checksum: 8a2105dd7fa91eebd987960c96b052f5f008e6d62039120dbd75b7d375674679e551dc66505091c96e9472fd2c392a5fba8d34f440c4b706f4f355e049d3371a
+  languageName: node
+  linkType: hard
+
 "@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
   version: 1.1.2
   resolution: "@protobufjs/aspromise@npm:1.1.2"
@@ -3595,17 +3606,6 @@ __metadata:
   version: 1.1.0
   resolution: "@protobufjs/utf8@npm:1.1.0"
   checksum: 5b3fa7425fe2852f6e5643d9a53c6cfb4491630667176c0fc35ddb7a71101559241bafb6b80486144ed75da3d3624095d037c802b578dbdb4cce131cf1bcb7cf
-  languageName: node
-  linkType: hard
-
-"@polkadot/x-ws@npm:^5.3.1":
-  version: 5.3.1
-  resolution: "@polkadot/x-ws@npm:5.3.1"
-  dependencies:
-    "@babel/runtime": ^7.12.5
-    "@types/websocket": ^1.0.1
-    websocket: ^1.0.33
-  checksum: 8a2105dd7fa91eebd987960c96b052f5f008e6d62039120dbd75b7d375674679e551dc66505091c96e9472fd2c392a5fba8d34f440c4b706f4f355e049d3371a
   languageName: node
   linkType: hard
 

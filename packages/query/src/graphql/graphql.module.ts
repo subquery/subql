@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {ApolloServer} from 'apollo-server-express';
