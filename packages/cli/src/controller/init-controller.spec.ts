@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as fs from 'fs';
-import rimraf from 'rimraf';
-import {createProject} from './init-controller';
-
+import path from 'path';
+import os from 'os';
 const projectName = 'mockStarterProject';
+import {createProject} from './init-controller';
 
 // async
 const fileExists = async (file) => {
@@ -16,27 +16,31 @@ const fileExists = async (file) => {
   });
 };
 
+async function makeTempDir(): Promise<string> {
+  const sep = path.sep;
+  const tmpDir = os.tmpdir();
+  return fs.mkdtempSync(`${tmpDir}${sep}`);
+}
+
 describe('Cli can create project', () => {
-  beforeEach(async () => {
-    await new Promise((resolve) => rimraf(`${projectName}`, resolve));
-  });
-
-  afterEach(async () => {
-    await new Promise((resolve) => rimraf(`${projectName}`, resolve));
-  });
-
   it('should resolves when starter project successful created', async () => {
+    const tempPath = await makeTempDir();
+    process.chdir(tempPath);
     await createProject(projectName);
     await expect(fileExists(`./${projectName}`)).resolves.toEqual(true);
   });
 
   it('throw error if same name directory exists', async () => {
+    const tempPath = await makeTempDir();
+    process.chdir(tempPath);
     fs.mkdirSync(`./${projectName}`);
     await expect(createProject(projectName)).rejects.toThrow();
   });
 
   it('throw error if .git exists in starter project', async () => {
+    const tempPath = await makeTempDir();
+    process.chdir(tempPath);
     await createProject(projectName);
-    await expect(fileExists(`./${projectName}/.git`)).rejects.toThrow();
+    await expect(fileExists(`${tempPath}/${projectName}/.git`)).rejects.toThrow();
   });
 });

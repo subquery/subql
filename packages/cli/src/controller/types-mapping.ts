@@ -9,8 +9,9 @@ typeMap.set('Int', 'number');
 typeMap.set('BigInt', 'bigint');
 typeMap.set('String', 'string');
 typeMap.set('Date', 'Date');
-typeMap.set('Float', 'number');
-typeMap.set('BigDecimal', 'number');
+// TODO
+// typeMap.set('Float', 'number');
+// typeMap.set('BigDecimal', 'number');
 
 export function transformTypes(className: string, fieldType: string): string {
   const trimType = fieldType.trim();

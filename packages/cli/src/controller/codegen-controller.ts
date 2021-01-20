@@ -8,33 +8,37 @@ import ejs from 'ejs';
 import {isNonNullType, getNullableType} from 'graphql';
 import {GraphQLFieldMap, GraphQLOutputType} from 'graphql/type/definition';
 import {transformTypes} from './types-mapping';
+
 const templatePath: string = path.resolve(__dirname, '../template/model.ts.ejs');
-const typesPath = `${process.cwd()}/src/types/models`;
 
 // 4. Save the rendered schema
-function makeSchema(className: string, data: string): void {
+export async function makeSchema(className: string, data: string): Promise<void> {
+  const typesPath = `${process.cwd()}/src/types/models`;
   const filename = `${className}.ts`;
   const file = `${typesPath}/${filename}`;
 
-  fs.writeFile(file, data, (err) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log(`>--- Schema ${className} generated !`);
-  });
+  try {
+    await fs.promises.access(typesPath);
+  } catch (err) {
+    throw new Error('Write schema to file failed, check project directory is correct');
+  }
+
+  try {
+    await fs.promises.writeFile(file, data);
+  } catch (err) {
+    throw new Error(err.message);
+  }
+  console.log(`>--- Schema ${className} generated !`);
 }
 
 // 3. Render entity data in ejs template
-export function renderTemplate(className: string, modelTemplate: ejs.Data): void {
-  ejs.renderFile(templatePath, modelTemplate, function (err, str) {
-    if (err) {
-      console.log(`!!! When render entity ${className} to schema have following problems !!! `);
-      console.log(err);
-    } else {
-      makeSchema(className, str);
-    }
-  });
+export async function renderTemplate(className: string, modelTemplate: ejs.Data): Promise<void> {
+  try {
+    const renderedFilePath = await ejs.renderFile(templatePath, modelTemplate);
+    await makeSchema(className, renderedFilePath);
+  } catch (err) {
+    throw new Error(err.message);
+  }
 }
 
 // 2. Re-format the field of the entity
@@ -50,6 +54,10 @@ export function processFields(className: string, fields: GraphQLFieldMap<unknown
     if (Object.prototype.hasOwnProperty.call(fields, k)) {
       const type: GraphQLOutputType = isNonNullType(fields[k].type) ? getNullableType(fields[k].type) : fields[k].type;
       const newType = transformTypes(className, type.toString());
+      if (!newType) {
+        const errMsg = 'Undefined type ' + type.toString() + ' in Schema ' + className;
+        throw new Error(errMsg);
+      }
       fieldList.push({
         name: fields[k].name,
         type: newType,
@@ -61,10 +69,9 @@ export function processFields(className: string, fields: GraphQLFieldMap<unknown
 }
 
 // 1. Loop all entities and render it
-export function generateSchema(): void {
+export async function generateSchema(): Promise<void> {
   const schema = buildSchema('./schema.graphql');
   const extractEntities = getAllEntities(schema);
-
   for (const entity of extractEntities) {
     const baseFolderPath = '.../../base';
     const className = entity.name;
@@ -78,6 +85,6 @@ export function generateSchema(): void {
       },
     };
     console.log(`<--- Start generate schema ${modelTemplate.props.className}`);
-    renderTemplate(className, modelTemplate);
+    await renderTemplate(className, modelTemplate);
   }
 }
