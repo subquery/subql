@@ -27,7 +27,6 @@ function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
       return date;
     }
   }
-  throw new Error('no timestamp.set found in the given block');
 }
 
 export function wrapExtrinsics(
