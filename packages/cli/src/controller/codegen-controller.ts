@@ -3,41 +3,25 @@
 
 import fs from 'fs';
 import path from 'path';
-import {getAllEntities, buildSchema} from '@subql/common';
+import {promisify} from 'util';
+import {getAllEntities, buildSchema, loadProjectManifest} from '@subql/common';
 import ejs from 'ejs';
-import {isNonNullType, getNullableType} from 'graphql';
+import {GraphQLSchema, isNonNullType, getNullableType} from 'graphql';
 import {GraphQLFieldMap, GraphQLOutputType} from 'graphql/type/definition';
+import rimraf from 'rimraf';
 import {transformTypes} from './types-mapping';
-const templatePath: string = path.resolve(__dirname, '../template/model.ts.ejs');
-const typesPath = `${process.cwd()}/src/types/models`;
 
-// 4. Save the rendered schema
-function makeSchema(className: string, data: string): void {
-  const filename = `${className}.ts`;
-  const file = `${typesPath}/${filename}`;
+const TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 
-  fs.writeFile(file, data, (err) => {
-    if (err) {
-      console.error(err);
-      return;
-    }
-    console.log(`>--- Schema ${className} generated !`);
-  });
+const MODEL_ROOT_DIR = 'src/types/models';
+
+// 4. Render entity data in ejs template and write it
+export async function renderTemplate(outputPath: string, templateData: ejs.Data): Promise<void> {
+  const data = await ejs.renderFile(TEMPLATE_PATH, templateData);
+  await fs.promises.writeFile(outputPath, data);
 }
 
-// 3. Render entity data in ejs template
-export function renderTemplate(className: string, modelTemplate: ejs.Data): void {
-  ejs.renderFile(templatePath, modelTemplate, function (err, str) {
-    if (err) {
-      console.log(`!!! When render entity ${className} to schema have following problems !!! `);
-      console.log(err);
-    } else {
-      makeSchema(className, str);
-    }
-  });
-}
-
-// 2. Re-format the field of the entity
+// 3. Re-format the field of the entity
 export interface processedField {
   name: string;
   type: string;
@@ -50,6 +34,9 @@ export function processFields(className: string, fields: GraphQLFieldMap<unknown
     if (Object.prototype.hasOwnProperty.call(fields, k)) {
       const type: GraphQLOutputType = isNonNullType(fields[k].type) ? getNullableType(fields[k].type) : fields[k].type;
       const newType = transformTypes(className, type.toString());
+      if (!newType) {
+        throw new Error(`Undefined type ${type.toString()} in Schema ${className}`);
+      }
       fieldList.push({
         name: fields[k].name,
         type: newType,
@@ -60,24 +47,40 @@ export function processFields(className: string, fields: GraphQLFieldMap<unknown
   return fieldList;
 }
 
-// 1. Loop all entities and render it
-export function generateSchema(): void {
-  const schema = buildSchema('./schema.graphql');
-  const extractEntities = getAllEntities(schema);
+//1. Prepare models directory and load schema
+export async function codegen(projectPath: string): Promise<void> {
+  const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
+  try {
+    await promisify(rimraf)(modelDir);
+    await fs.promises.mkdir(modelDir, {recursive: true});
+  } catch (e) {
+    throw new Error(`Failed to prepare ${modelDir}`);
+  }
+  const manifest = loadProjectManifest(projectPath);
+  const schema = buildSchema(path.join(projectPath, manifest.schema));
+  await generateModels(projectPath, schema);
+}
 
+// 2. Loop all entities and render it
+export async function generateModels(projectPath: string, schema: GraphQLSchema): Promise<void> {
+  const extractEntities = getAllEntities(schema);
   for (const entity of extractEntities) {
     const baseFolderPath = '.../../base';
     const className = entity.name;
-    const fields = entity.getFields();
-    const processedFields: processedField[] = processFields(className, fields);
+    const fields = processFields(className, entity.getFields());
     const modelTemplate = {
       props: {
-        baseFolderPath: baseFolderPath,
-        className: className,
-        fields: processedFields,
+        baseFolderPath,
+        className,
+        fields,
       },
     };
-    console.log(`<--- Start generate schema ${modelTemplate.props.className}`);
-    renderTemplate(className, modelTemplate);
+    console.log(`| Start generate schema ${className}`);
+    try {
+      await renderTemplate(path.join(projectPath, MODEL_ROOT_DIR, `${className}.ts`), modelTemplate);
+    } catch (e) {
+      throw new Error(`When render entity ${className} to schema having problems.`);
+    }
+    console.log(`* Schema ${className} generated !`);
   }
 }
