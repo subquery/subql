@@ -1,19 +1,10 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import {getAllEntities, buildSchema} from '@subql/common';
-import {processFields, makeSchema} from './codegen-controller';
+import {processFields} from './codegen-controller';
 import {transformTypes} from './types-mapping';
-
-async function makeTempDir() {
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
-  return tempPath;
-}
 
 describe('Codegen can generate schema', () => {
   const badschema = buildSchema(path.join(__dirname, '../../test/badschema.graphql'));
@@ -47,13 +38,5 @@ describe('Codegen can generate schema', () => {
       expect(() => processFields(testClassName, fields)).toThrow();
       //Float in badschema is not support, should throw error
     }
-  });
-
-  it('save schema to a correct project directory should pass', async () => {
-    const testClassName = 'makeSchemaTest2';
-    const tempPath = await makeTempDir();
-    process.chdir(tempPath);
-    await fs.promises.mkdir('src/types/models', {recursive: true});
-    await expect(makeSchema(testClassName, 'random text to add to schema')).resolves.not.toThrow();
   });
 });

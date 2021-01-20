@@ -11,11 +11,12 @@ import {transformTypes} from './types-mapping';
 
 const templatePath: string = path.resolve(__dirname, '../template/model.ts.ejs');
 
-// 4. Save the rendered schema
-export async function makeSchema(className: string, data: string): Promise<void> {
-  const typesPath = `${process.cwd()}/src/types/models`;
+// 3. Render entity data in ejs template and write it
+export async function renderTemplate(className: string, modelTemplate: ejs.Data): Promise<void> {
+  const typesPath = path.resolve(`./src/types/models`);
   const filename = `${className}.ts`;
   const file = `${typesPath}/${filename}`;
+  let data: string;
 
   try {
     await fs.promises.access(typesPath);
@@ -24,20 +25,17 @@ export async function makeSchema(className: string, data: string): Promise<void>
   }
 
   try {
-    await fs.promises.writeFile(file, data);
+    data = await ejs.renderFile(templatePath, modelTemplate);
   } catch (err) {
     throw new Error(err.message);
   }
-  console.log(`>--- Schema ${className} generated !`);
-}
 
-// 3. Render entity data in ejs template
-export async function renderTemplate(className: string, modelTemplate: ejs.Data): Promise<void> {
   try {
-    const renderedFilePath = await ejs.renderFile(templatePath, modelTemplate);
-    await makeSchema(className, renderedFilePath);
+    await fs.promises.writeFile(file, data);
   } catch (err) {
     throw new Error(err.message);
+  } finally {
+    console.log(`---> Schema ${className} generated !`);
   }
 }
 

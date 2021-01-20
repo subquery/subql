@@ -25,8 +25,8 @@ async function makeTempDir() {
 
 describe('Cli can create project', () => {
   it('should resolves when starter project successful created', async () => {
-    const tempPath = makeTempDir();
-    process.chdir(await tempPath);
+    const tempPath = await makeTempDir();
+    process.chdir(tempPath);
     await createProject(projectName);
     await expect(fileExists(`./${projectName}`)).resolves.toEqual(true);
   });
