@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DynamicModule, Global, Module} from '@nestjs/common';
-import yargs from 'yargs/yargs';
 import {hideBin} from 'yargs/helpers';
+import yargs from 'yargs/yargs';
 import {Config} from './config';
 
 @Global()
