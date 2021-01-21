@@ -51,6 +51,7 @@ export class IndexerManager implements OnApplicationBootstrap {
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
     try {
+      await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;
@@ -99,13 +100,13 @@ export class IndexerManager implements OnApplicationBootstrap {
   }
 
   async onApplicationBootstrap(): Promise<void> {
-    this.api = await this.apiService.getApi();
+    this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.api.rpc.chain.subscribeFinalizedHeads((head) => {
       this.latestFinalizedHeight = head.number.toNumber();
     });
-    this.initVM();
+    await this.initVM();
     void this.prepareBlock().catch((err) => {
       console.error('[IndexerManager] failed to fetch block', err);
       // FIXME: retry before exit
@@ -118,7 +119,7 @@ export class IndexerManager implements OnApplicationBootstrap {
     // eslint-disable-next-line no-constant-condition
     while (true) {
       let blockHeight: number;
-      if (!this.lastPreparedHeight) {
+      if (this.lastPreparedHeight === undefined) {
         blockHeight = this.subqueryState.nextBlockHeight;
       } else if (
         this.lastPreparedHeight - this.subqueryState.nextBlockHeight + 1 <
@@ -154,10 +155,11 @@ export class IndexerManager implements OnApplicationBootstrap {
     }
   }
 
-  private initVM(): void {
+  private async initVM(): Promise<void> {
+    const api = await this.apiService.getPatchedApi();
     this.vm = new IndexerSandbox({
       store: this.storeService.getStore(),
-      api: this.api,
+      api,
       root: this.project.path,
     });
 
@@ -187,7 +189,7 @@ export class IndexerManager implements OnApplicationBootstrap {
         dbSchema: projectSchema,
         hash: '0x',
         nextBlockHeight: Math.min(
-          ...this.project.dataSources.map((item) => item.startBlock),
+          ...this.project.dataSources.map((item) => item.startBlock ?? 1),
         ),
       });
     }
