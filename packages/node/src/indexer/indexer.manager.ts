@@ -58,30 +58,37 @@ export class IndexerManager implements OnApplicationBootstrap {
         }
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
-            if (handler.kind === SubqlKind.BlockHandler) {
-              await this.vm.securedExec(handler.handler, [block]);
-            }
-            if (handler.kind === SubqlKind.CallHandler) {
-              const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
-                extrinsics,
-                handler.filter,
-              );
-              await Promise.all(
-                filteredExtrinsics.map(async (e) =>
-                  this.vm.securedExec(handler.handler, [e]),
-                ),
-              );
-            }
-            if (handler.kind === SubqlKind.EventHandler) {
-              const filteredEvents = SubstrateUtil.filterEvents(
-                events,
-                handler.filter,
-              );
-              await Promise.all(
-                filteredEvents.map(async (e) =>
-                  this.vm.securedExec(handler.handler, [e]),
-                ),
-              );
+            switch (handler.kind) {
+              case SubqlKind.BlockHandler:
+                if (SubstrateUtil.filterBlock(block, handler.filter)) {
+                  await this.vm.securedExec(handler.handler, [block]);
+                }
+                break;
+              case SubqlKind.CallHandler: {
+                const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
+                  extrinsics,
+                  handler.filter,
+                );
+                await Promise.all(
+                  filteredExtrinsics.map(async (e) =>
+                    this.vm.securedExec(handler.handler, [e]),
+                  ),
+                );
+                break;
+              }
+              case SubqlKind.EventHandler: {
+                const filteredEvents = SubstrateUtil.filterEvents(
+                  events,
+                  handler.filter,
+                );
+                await Promise.all(
+                  filteredEvents.map(async (e) =>
+                    this.vm.securedExec(handler.handler, [e]),
+                  ),
+                );
+                break;
+              }
+              default:
             }
           }
         }
@@ -136,11 +143,15 @@ export class IndexerManager implements OnApplicationBootstrap {
       }
       console.log('[IndexerManager] fetch block ', blockHeight);
       const blockHash = await this.api.rpc.chain.getBlockHash(blockHeight);
-      const [block, events] = await Promise.all([
+      const [block, events, runtimeUpgrade] = await Promise.all([
         this.api.rpc.chain.getBlock(blockHash),
         this.api.query.system.events.at(blockHash),
+        this.api.query.system.lastRuntimeUpgrade.at(blockHash),
       ]);
-      const wrappedBlock = SubstrateUtil.wrapBlock(block);
+      const wrappedBlock = SubstrateUtil.wrapBlock(
+        block,
+        runtimeUpgrade.unwrap()?.specVersion.toNumber(),
+      );
       const wrappedExtrinsics = SubstrateUtil.wrapExtrinsics(
         wrappedBlock,
         events,

@@ -6,7 +6,8 @@ import {loadProjectManifest} from './load';
 
 describe('project.yaml', () => {
   it('can parse project.yaml to ProjectManifestImpl', () => {
-    loadProjectManifest(path.join(__dirname, '../../test/project.yaml'));
+    const project = loadProjectManifest(path.join(__dirname, '../../test/project.yaml'));
+    expect(project).toBeTruthy();
   });
 
   it('can validate project.yaml', () => {

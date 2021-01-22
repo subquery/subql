@@ -18,10 +18,11 @@ export function loadProjectManifest(file: string): ProjectManifest {
   const doc = yaml.safeLoad(fs.readFileSync(filePath, 'utf-8'));
 
   const manifest = plainToClass(ProjectManifestImpl, doc);
-  const errors = validateSync(manifest);
+  const errors = validateSync(manifest, {whitelist: true, forbidNonWhitelisted: true});
   if (errors?.length) {
     // TODO: print error details
-    throw new Error('failed to parse project.yaml');
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
   }
   return manifest;
 }
