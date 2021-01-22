@@ -11,7 +11,7 @@ function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
     endpoint: 'wss://kusama.api.onfinality.io/public-ws',
-    customTypes: {
+    types: {
       TestType: 'u32',
     },
   };

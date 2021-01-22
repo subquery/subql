@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {RegistryTypes} from '@polkadot/types/types';
+import {RegistryTypes, RegisteredTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -25,12 +25,24 @@ import {
   SubqlRuntimeDatasource,
 } from './types';
 
-export class ProjectNetwork {
+export class ProjectNetwork implements RegisteredTypes {
   @IsString()
   endpoint: string;
   @IsObject()
   @IsOptional()
-  customTypes?: RegistryTypes;
+  types?: RegistryTypes;
+  @IsObject()
+  @IsOptional()
+  typesAlias?: Record<string, OverrideModuleType>;
+  @IsObject()
+  @IsOptional()
+  typesBundle?: OverrideBundleType;
+  @IsObject()
+  @IsOptional()
+  typesChain?: Record<string, RegistryTypes>;
+  @IsObject()
+  @IsOptional()
+  typesSpec?: Record<string, RegistryTypes>;
 }
 
 export class ProjectManifestImpl implements ProjectManifest {
