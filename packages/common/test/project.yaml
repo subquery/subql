@@ -18,11 +18,19 @@ dataSources:
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
+          filter:
+            specVersion: [23, 24]
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+          filter:
+            specVersion: [100]
         - handler: handleEvent
           kind: substrate/CallHandler
           filter:
             module: balance
             method: xxx
+            success: true
+            specVersion: [null, 23]
         - handler: handleEvent
           kind: substrate/EventHandler
           filter:

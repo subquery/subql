@@ -2,16 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
-import { SubqlCallFilter, SubqlEventFilter } from '@subql/common';
+import {
+  SpecVersionRange,
+  SubqlBlockFilter,
+  SubqlCallFilter,
+  SubqlEventFilter,
+} from '@subql/common';
 import {
   SubstrateBlock,
-  SubstrateExtrinsic,
   SubstrateEvent,
+  SubstrateExtrinsic,
 } from '@subql/types';
 import { merge } from 'lodash';
 
-export function wrapBlock(signedBlock: SignedBlock): SubstrateBlock {
-  return merge(signedBlock, { timestamp: getTimestamp(signedBlock) });
+export function wrapBlock(
+  signedBlock: SignedBlock,
+  specVersion?: number,
+): SubstrateBlock {
+  return merge(signedBlock, {
+    timestamp: getTimestamp(signedBlock),
+    specVersion: specVersion,
+  });
 }
 
 function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
@@ -76,15 +87,46 @@ export function wrapEvents(
   }, [] as SubstrateEvent[]);
 }
 
+function checkSpecRange(
+  specVersionRange: SpecVersionRange,
+  specVersion: number,
+) {
+  const [lowerBond, upperBond] = specVersionRange;
+  return (
+    (lowerBond === undefined ||
+      lowerBond === null ||
+      specVersion >= lowerBond) &&
+    (upperBond === undefined || upperBond === null || specVersion <= upperBond)
+  );
+}
+
+export function filterBlock(
+  block: SubstrateBlock,
+  filter?: SubqlBlockFilter,
+): SubstrateBlock | undefined {
+  if (!filter) return block;
+  return filter.specVersion === undefined ||
+    block.specVersion === undefined ||
+    checkSpecRange(filter.specVersion, block.specVersion)
+    ? block
+    : undefined;
+}
+
 export function filterExtrinsics(
   extrinsics: SubstrateExtrinsic[],
   filter?: SubqlCallFilter,
 ): SubstrateExtrinsic[] {
   if (!filter) return extrinsics;
   return extrinsics.filter(
-    ({ extrinsic }) =>
-      (filter.module ? extrinsic.method.section === filter.module : true) &&
-      (filter.method ? extrinsic.method.method === filter.method : true),
+    ({ block, extrinsic, success }) =>
+      (filter.specVersion === undefined ||
+        block.specVersion === undefined ||
+        checkSpecRange(filter.specVersion, block.specVersion)) &&
+      (filter.module === undefined ||
+        extrinsic.method.section === filter.module) &&
+      (filter.method === undefined ||
+        extrinsic.method.method === filter.method) &&
+      (filter.success === undefined || success === filter.success),
   );
 }
 
@@ -94,7 +136,10 @@ export function filterEvents(
 ): SubstrateEvent[] {
   if (!filter) return events;
   return events.filter(
-    ({ event }) =>
+    ({ event, extrinsic: { block } }) =>
+      (filter.specVersion === undefined ||
+        block.specVersion === undefined ||
+        checkSpecRange(filter.specVersion, block.specVersion)) &&
       (filter.module ? event.section === filter.module : true) &&
       (filter.method ? event.method === filter.method : true),
   );

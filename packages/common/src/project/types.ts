@@ -19,19 +19,28 @@ export interface ProjectManifest {
   dataSources: SubqlDataSource[];
 }
 
-export interface SubqlCallFilter {
+// [startSpecVersion?, endSpecVersion?] closed range
+export type SpecVersionRange = [number, number];
+
+interface SubqlBaseHandlerFilter {
+  specVersion?: SpecVersionRange;
+}
+
+export type SubqlBlockFilter = SubqlBaseHandlerFilter;
+
+export interface SubqlEventFilter extends SubqlBaseHandlerFilter {
   module?: string;
   method?: string;
 }
 
-export interface SubqlEventFilter {
-  module?: string;
-  method?: string;
+export interface SubqlCallFilter extends SubqlEventFilter {
+  success?: boolean;
 }
 
 export interface SubqlBlockHandler {
   handler: string;
   kind: 'substrate/BlockHandler';
+  filter?: SubqlBlockFilter;
 }
 
 export interface SubqlCallHandler {
@@ -48,6 +57,8 @@ export interface SubqlEventHandler {
 
 export type SubqlHandler = SubqlBlockHandler | SubqlCallHandler | SubqlEventHandler;
 
+export type SubqlHandlerFilter = SubqlBlockFilter | SubqlCallFilter | SubqlEventFilter;
+
 export interface SubqlMapping {
   handlers: SubqlHandler[];
 }
@@ -55,7 +66,7 @@ export interface SubqlMapping {
 export interface SubqlDatasource {
   name: string;
   kind: SubqlKind;
-  startBlock: number;
+  startBlock?: number;
   mapping: SubqlMapping;
 }
 

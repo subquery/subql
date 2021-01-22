@@ -14,6 +14,7 @@ export interface Store {
 }
 
 export interface SubstrateBlock extends SignedBlock {
+  specVersion: number;
   timestamp: Date;
 }
 
