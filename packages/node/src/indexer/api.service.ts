@@ -11,6 +11,7 @@ import {
 } from '@polkadot/api/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { AnyTuple } from '@polkadot/types/types';
+import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 
@@ -43,9 +44,16 @@ export class ApiService implements OnApplicationShutdown {
     const apiOption: ApiOptions = {
       provider: new WsProvider(network.endpoint),
     };
-    if (network.customTypes) {
-      apiOption.types = network.customTypes;
-    }
+    assign(
+      apiOption,
+      pick(network, [
+        'types',
+        'typesAlias',
+        'typesBundle',
+        'typesChain',
+        'typesSpec',
+      ]),
+    );
     this.api = await ApiPromise.create(apiOption);
     return this;
   }
