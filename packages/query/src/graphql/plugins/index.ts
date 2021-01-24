@@ -17,7 +17,6 @@ import {
 import PgBasicsPlugin from 'graphile-build-pg/node8plus/plugins/PgBasicsPlugin';
 import PgIntrospectionPlugin from 'graphile-build-pg/node8plus/plugins/PgIntrospectionPlugin';
 import PgTypesPlugin from 'graphile-build-pg/node8plus/plugins/PgTypesPlugin';
-import PgJWTPlugin from 'graphile-build-pg/node8plus/plugins/PgJWTPlugin';
 import PgTablesPlugin from 'graphile-build-pg/node8plus/plugins/PgTablesPlugin';
 import PgConnectionArgFirstLastBeforeAfter from 'graphile-build-pg/node8plus/plugins/PgConnectionArgFirstLastBeforeAfter';
 import PgConnectionArgOrderBy from 'graphile-build-pg/node8plus/plugins/PgConnectionArgOrderBy';
