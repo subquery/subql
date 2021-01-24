@@ -1,7 +1,6 @@
 specVersion: "0.0.1"
-description: "This subquery indexes which block a given extrinsic is finalized in"
-repository: "https://github.com/onfinality-io/subql-examples"
-
+description: ""
+repository: "https://github.com/onfinality-io/subql-starter"
 schema: "./badschema.graphql"
 
 network:
@@ -10,17 +9,12 @@ network:
 dataSources:
   - name: main
     kind: substrate/Runtime
-    startBlock: 50000
+    startBlock: 1
     mapping:
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
-  - handler: handleBond
-    kind: substrate/EventHandler
-    startBlock: 50100
-    filter:
-      section: balances
-      method: Deposit
+
 
 
 
