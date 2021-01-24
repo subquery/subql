@@ -43,12 +43,6 @@ import PgScalarFunctionConnectionPlugin from 'graphile-build-pg/node8plus/plugin
 import PageInfoStartEndCursor from 'graphile-build-pg/node8plus/plugins/PageInfoStartEndCursor';
 import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnectionTotalCount';
 
-// Mutations
-// import PgMutationCreatePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationCreatePlugin';
-// import PgMutationUpdateDeletePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationUpdateDeletePlugin';
-// import PgMutationProceduresPlugin from 'graphile-build-pg/node8plus/plugins/PgMutationProceduresPlugin';
-// import PgMutationPayloadEdgePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationPayloadEdgePlugin';
-
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 
@@ -96,12 +90,6 @@ export const pgDefaultPlugins = [
   PgScalarFunctionConnectionPlugin, // For PostGraphile compatibility
   PageInfoStartEndCursor, // For PostGraphile compatibility
   PgConnectionTotalCount,
-
-  // Mutations
-  // PgMutationCreatePlugin,
-  // PgMutationUpdateDeletePlugin,
-  // PgMutationProceduresPlugin,
-  // PgMutationPayloadEdgePlugin,
 ];
 
 export const plugins = [...defaultPlugins, ...pgDefaultPlugins, PgSimplifyInflectorPlugin, PgManyToManyPlugin];
