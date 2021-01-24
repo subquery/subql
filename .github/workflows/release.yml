@@ -3,11 +3,11 @@ on:
   push:
     branches:
       - main
-      - 'next/**'
     paths-ignore:
       - '.github/workflows/**'
 
 jobs:
+
   Build-Publish:
     name: Build-Publish
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
@@ -23,7 +23,7 @@ jobs:
           node-version: 14
           registry-url: 'https://registry.npmjs.org'
 
-      #Identify changes
+    #Identify changes
       - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
@@ -44,26 +44,16 @@ jobs:
         with:
           paths: packages/node
 
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-query
-        with:
-          paths: packages/query
-
       #Get node version
       - name: Get updated node version
         id: get-node-version
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      #Get query version
-      - name: Get updated query version
-        id: get-query-version
-        run: |
-          sh .github/workflows/scripts/queryVersion.sh
-
       - run: yarn
 
       #Publish to npm
+
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
@@ -100,28 +90,13 @@ jobs:
         with:
           username: onfinality
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: "[Node service] Build and push"
+      - name: Build and push
         uses: docker/build-push-action@v2
         if: steps.changed-node.outputs.changed == 'true'
         with:
           push: true
-          file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
 
-      - name: "[Node service] Image digest"
+      - name: Image digest
         if: steps.changed-node.outputs.changed == 'true'
-        run: echo ${{ steps.docker_build.outputs.digest }}
-
-      #Publish query docker image
-      - name: "[Query service] Build and push"
-        uses: docker/build-push-action@v2
-        if: steps.changed-query.outputs.changed == 'true'
-        with:
-          push: true
-          file: ./packages/query/Dockerfile
-          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
-
-      - name: "[Query service] Image digest"
-        if: steps.changed-query.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
