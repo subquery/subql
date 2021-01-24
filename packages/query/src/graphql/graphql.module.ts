@@ -23,8 +23,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const pgPool = new Pool({
-      user: this.config.get('DB_USERNAME'),
-      password: this.config.get('DB_PASSWORD'),
+      user: this.config.get('DB_USER'),
+      password: this.config.get('DB_PASS'),
       host: this.config.get('DB_HOST'),
       port: this.config.get('DB_PORT'),
       database: this.config.get('DB_DATABASE'),

@@ -2000,6 +2000,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphile-contrib/pg-many-to-many@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@graphile-contrib/pg-many-to-many@npm:1.0.0"
+  checksum: 755d0dca4139039a134bc42112982e7ec450ccbd04d7e1637a10230187b01cde5506455d4b7982fffae962b7bc4b6482f618b6e678ef2fc7d8ddc48750a084de
+  languageName: node
+  linkType: hard
+
 "@graphile-contrib/pg-simplify-inflector@npm:^6.1.0":
   version: 6.1.0
   resolution: "@graphile-contrib/pg-simplify-inflector@npm:6.1.0"
@@ -3726,6 +3733,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/query@workspace:packages/query"
   dependencies:
+    "@graphile-contrib/pg-many-to-many": ^1.0.0
     "@graphile-contrib/pg-simplify-inflector": ^6.1.0
     "@nestjs/cli": ^7.5.4
     "@nestjs/common": ^7.6.5

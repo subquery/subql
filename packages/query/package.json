@@ -24,6 +24,7 @@
     "/dist"
   ],
   "dependencies": {
+    "@graphile-contrib/pg-many-to-many": "^1.0.0",
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
     "@nestjs/common": "^7.6.5",
     "@nestjs/core": "^7.6.5",

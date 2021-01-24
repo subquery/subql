@@ -50,6 +50,7 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 // import PgMutationPayloadEdgePlugin from 'graphile-build-pg/node8plus/plugins/PgMutationPayloadEdgePlugin';
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
+import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 
 /* eslint-enable */
 
@@ -103,7 +104,7 @@ export const pgDefaultPlugins = [
   // PgMutationPayloadEdgePlugin,
 ];
 
-export const plugins = [...defaultPlugins, ...pgDefaultPlugins, PgSimplifyInflectorPlugin];
+export const plugins = [...defaultPlugins, ...pgDefaultPlugins, PgSimplifyInflectorPlugin, PgManyToManyPlugin];
 
 // todo
 // adv filter plugin: https://github.com/graphile-contrib/postgraphile-plugin-connection-filter
