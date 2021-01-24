@@ -16,8 +16,10 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: 14
-    - run: yarn install
-    - name: code style check
+    - run: yarn
+    - name: build
+      run: yarn workspaces foreach run build
+    - name: code-style check
       run: yarn  pretty-quick --check --pattern 'packages/**/src/**/*'
     - name: lint
       run: yarn lint
