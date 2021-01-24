@@ -49,6 +49,7 @@
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.165",
     "@types/rimraf": "^3",
-    "@types/yargs": "^15.0.11"
+    "@types/yargs": "^15.0.11",
+    "typescript": "^4.1.3"
   }
 }
