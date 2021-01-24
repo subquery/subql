@@ -1,0 +1,22 @@
+specVersion: "0.0.1"
+description: ""
+repository: "https://github.com/onfinality-io/subql-starter"
+
+schema: "./schema.graphql"
+
+network:
+  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+
+dataSources:
+  - name: main
+    kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+
+
+
+
+

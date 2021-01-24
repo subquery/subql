@@ -1,0 +1,4 @@
+type badEntity @entity {
+
+  id: Float #give the unknown type
+}
