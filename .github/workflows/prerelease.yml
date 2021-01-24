@@ -42,6 +42,11 @@ jobs:
         with:
           paths: packages/node
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
+
       - run: yarn
 
       - name: Bump common & deploy
@@ -69,6 +74,11 @@ jobs:
       - name: Bump node
         if: steps.changed-node.outputs.changed == 'true'
         working-directory: packages/node
+        run: echo "Changes exist in node" && yarn build && yarn version prerelease
+
+      - name: Bump query
+        if: steps.changed-query.outputs.changed == 'true'
+        working-directory: packages/query
         run: echo "Changes exist in node" && yarn build && yarn version prerelease
 
       - name: Commit changes
