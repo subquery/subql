@@ -75,10 +75,11 @@ function filterExtrinsicEvents(
 export function wrapEvents(
   extrinsics: SubstrateExtrinsic[],
   events: EventRecord[],
+  block: SubstrateBlock,
 ): SubstrateEvent[] {
   return events.reduce((acc, event, idx) => {
     const { phase } = event;
-    const wrappedEvent: SubstrateEvent = merge(event, { idx });
+    const wrappedEvent: SubstrateEvent = merge(event, { idx, block });
     if (phase.isApplyExtrinsic) {
       wrappedEvent.extrinsic = extrinsics[phase.asApplyExtrinsic.toNumber()];
     }
@@ -136,7 +137,7 @@ export function filterEvents(
 ): SubstrateEvent[] {
   if (!filter) return events;
   return events.filter(
-    ({ event, extrinsic: { block } }) =>
+    ({ block, event }) =>
       (filter.specVersion === undefined ||
         block.specVersion === undefined ||
         checkSpecRange(filter.specVersion, block.specVersion)) &&

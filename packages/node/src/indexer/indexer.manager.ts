@@ -156,7 +156,11 @@ export class IndexerManager implements OnApplicationBootstrap {
         wrappedBlock,
         events,
       );
-      const wrappedEvents = SubstrateUtil.wrapEvents(wrappedExtrinsics, events);
+      const wrappedEvents = SubstrateUtil.wrapEvents(
+        wrappedExtrinsics,
+        events,
+        wrappedBlock,
+      );
       this.block$.next({
         block: wrappedBlock,
         extrinsics: wrappedExtrinsics,
