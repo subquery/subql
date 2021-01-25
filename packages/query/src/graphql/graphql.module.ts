@@ -53,6 +53,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       cacheControl: {
         defaultMaxAge: 5,
       },
+      debug: this.config.get('NODE_ENV') !== 'production',
       playground: this.config.get('playground'),
       subscriptions: {
         path: '/subscription',
