@@ -35,7 +35,7 @@ export class ApiService implements OnApplicationShutdown {
 
   constructor(protected project: SubqueryProject) {}
 
-  async onApplicationShutdown(signal?: string) {
+  async onApplicationShutdown(): Promise<void> {
     await Promise.all([this.api?.disconnect(), this.patchedApi?.disconnect()]);
   }
 

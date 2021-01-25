@@ -66,7 +66,7 @@ module.exports = {
     // "@typescript-eslint/member-ordering": "error",
     // "@typescript-eslint/naming-convention": "error",
     // "@typescript-eslint/no-param-reassign": "error",
-    '@typescript-eslint/promise-function-async': 'error',
+    '@typescript-eslint/promise-function-async': ['error', { checkArrowFunctions: false }],
     // "arrow-body-style": "error",
     complexity: 'error',
     curly: ['error', 'multi-line'],

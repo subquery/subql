@@ -5,44 +5,30 @@ import path from 'path';
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
-import {
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-} from '@subql/types';
-import { Subject } from 'rxjs';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { objectTypeToModelAttributes } from '../utils/graphql';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
+import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
+import { BlockContent } from './types';
 
-const PRELOAD_BLOCKS = 10;
 const DEFAULT_DB_SCHEMA = 'public';
-
-interface BlockContent {
-  block: SubstrateBlock;
-  extrinsics: SubstrateExtrinsic[];
-  events: SubstrateEvent[];
-}
 
 @Injectable()
 export class IndexerManager implements OnApplicationBootstrap {
   private vm: IndexerSandbox;
   private api: ApiPromise;
-  private latestFinalizedHeight: number;
-  private lastPreparedHeight: number;
   private subqueryState: SubqueryModel;
-  private block$: Subject<BlockContent> = new Subject();
 
   constructor(
     protected apiService: ApiService,
     protected storeService: StoreService,
+    protected fetchService: FetchService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -94,8 +80,10 @@ export class IndexerManager implements OnApplicationBootstrap {
         }
         // TODO: support Ink! and EVM
       }
-      this.subqueryState.nextBlockHeight = block.block.header.number.toNumber();
+      this.subqueryState.nextBlockHeight =
+        block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();
+      this.fetchService.latestProcessed(block.block.header.number.toNumber());
     } catch (e) {
       console.error(
         `[IndexerManager] failed to handler block ${block.block.header.number.toString()}, error: ${
@@ -110,64 +98,16 @@ export class IndexerManager implements OnApplicationBootstrap {
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
-    await this.api.rpc.chain.subscribeFinalizedHeads((head) => {
-      this.latestFinalizedHeight = head.number.toNumber();
-    });
     await this.initVM();
-    void this.prepareBlock().catch((err) => {
-      console.error('[IndexerManager] failed to fetch block', err);
-      // FIXME: retry before exit
-      process.exit(1);
-    });
-    this.block$.subscribe(this.indexBlock.bind(this));
-  }
-
-  private async prepareBlock() {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      let blockHeight: number;
-      if (this.lastPreparedHeight === undefined) {
-        blockHeight = this.subqueryState.nextBlockHeight;
-      } else if (
-        this.lastPreparedHeight - this.subqueryState.nextBlockHeight + 1 <
-        PRELOAD_BLOCKS
-      ) {
-        blockHeight = this.lastPreparedHeight + 1;
-      } else {
-        await delay(1);
-        continue;
-      }
-      if (blockHeight > this.latestFinalizedHeight) {
-        await delay(1);
-        continue;
-      }
-      console.log('[IndexerManager] fetch block ', blockHeight);
-      const blockHash = await this.api.rpc.chain.getBlockHash(blockHeight);
-      const [block, events, runtimeUpgrade] = await Promise.all([
-        this.api.rpc.chain.getBlock(blockHash),
-        this.api.query.system.events.at(blockHash),
-        this.api.query.system.lastRuntimeUpgrade.at(blockHash),
-      ]);
-      const wrappedBlock = SubstrateUtil.wrapBlock(
-        block,
-        runtimeUpgrade.unwrap()?.specVersion.toNumber(),
-      );
-      const wrappedExtrinsics = SubstrateUtil.wrapExtrinsics(
-        wrappedBlock,
-        events,
-      );
-      const wrappedEvents = SubstrateUtil.wrapEvents(
-        wrappedExtrinsics,
-        events,
-        wrappedBlock,
-      );
-      this.block$.next({
-        block: wrappedBlock,
-        extrinsics: wrappedExtrinsics,
-        events: wrappedEvents,
+    void this.fetchService
+      .startLoop(this.subqueryState.nextBlockHeight)
+      .catch((err) => {
+        console.error('[IndexerManager] failed to fetch block', err);
+        // FIXME: retry before exit
+        process.exit(1);
       });
-      this.lastPreparedHeight = blockHeight;
-    }
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    this.fetchService.subscribe((block) => this.indexBlock(block));
   }
 
   private async initVM(): Promise<void> {
