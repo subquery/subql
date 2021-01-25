@@ -4,17 +4,17 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-const projectName = 'mockStarterProject';
+import git from 'simple-git';
 import {createProject} from './init-controller';
 
-// async
-const fileExists = async (file) => {
-  return new Promise((resolve, reject) => {
-    fs.access(file, fs.constants.F_OK, (err) => {
-      err ? reject(err) : resolve(true);
-    });
-  });
-};
+jest.mock('simple-git', () => {
+  const mGit = {
+    clone: jest.fn(),
+  };
+  return jest.fn(() => mGit);
+});
+
+jest.setTimeout(30000);
 
 async function makeTempDir() {
   const sep = path.sep;
@@ -22,27 +22,20 @@ async function makeTempDir() {
   const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
   return tempPath;
 }
-jest.setTimeout(30000);
+const projectSpec = {
+  name: 'mocked_starter',
+  repository: '',
+  endpoint: 'wss://rpc.polkadot.io/public-ws',
+  author: 'jay',
+  description: 'this is test for init controller',
+  version: '',
+  license: '',
+};
 
-describe('Cli can create project', () => {
-  it('should resolves when starter project successful created', async () => {
+describe('Cli can create project (mocked)', () => {
+  it('throw error when git clone failed', async () => {
     const tempPath = await makeTempDir();
-    process.chdir(tempPath);
-    await createProject(projectName);
-    await expect(fileExists(`./${projectName}`)).resolves.toEqual(true);
-  });
-
-  it('throw error if same name directory exists', async () => {
-    const tempPath = makeTempDir();
-    process.chdir(await tempPath);
-    fs.mkdirSync(`./${projectName}`);
-    await expect(createProject(projectName)).rejects.toThrow();
-  });
-
-  it('throw error if .git exists in starter project', async () => {
-    const tempPath = makeTempDir();
-    process.chdir(await tempPath);
-    await createProject(projectName);
-    await expect(fileExists(`${tempPath}/${projectName}/.git`)).rejects.toThrow();
+    (git().clone as jest.Mock).mockImplementationOnce((path, cb) => cb(new Error()));
+    await expect(createProject(tempPath, projectSpec)).rejects.toThrow(/Failed to clone starter template from git/);
   });
 });
