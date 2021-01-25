@@ -31,4 +31,5 @@ export interface SubstrateEvent extends EventRecord {
   // index in the block
   idx: number;
   extrinsic?: SubstrateExtrinsic;
+  block: SubstrateBlock;
 }
