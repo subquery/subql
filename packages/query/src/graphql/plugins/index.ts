@@ -18,7 +18,6 @@ import PgBasicsPlugin from 'graphile-build-pg/node8plus/plugins/PgBasicsPlugin';
 import PgIntrospectionPlugin from 'graphile-build-pg/node8plus/plugins/PgIntrospectionPlugin';
 import PgTypesPlugin from 'graphile-build-pg/node8plus/plugins/PgTypesPlugin';
 import PgTablesPlugin from 'graphile-build-pg/node8plus/plugins/PgTablesPlugin';
-import PgConnectionArgFirstLastBeforeAfter from 'graphile-build-pg/node8plus/plugins/PgConnectionArgFirstLastBeforeAfter';
 import PgConnectionArgOrderBy from 'graphile-build-pg/node8plus/plugins/PgConnectionArgOrderBy';
 import PgConnectionArgOrderByDefaultValue from 'graphile-build-pg/node8plus/plugins/PgConnectionArgOrderByDefaultValue';
 import PgConnectionArgCondition from 'graphile-build-pg/node8plus/plugins/PgConnectionArgCondition';
@@ -44,6 +43,7 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
+import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 
 /* eslint-enable */
 

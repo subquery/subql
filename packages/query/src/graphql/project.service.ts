@@ -12,8 +12,8 @@ export class ProjectService {
   async getProjectSchema(name: string): Promise<string> {
     const {rows} = await this.pool.query(
       `select *
-                                          from public.subqueries
-                                          where name = $1`,
+       from public.subqueries
+       where name = $1`,
       [name]
     );
     if (rows.length === 0) {
