@@ -5,7 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
-import {createProject, projectSpec} from '../controller/init-controller';
+import {createProject} from '../controller/init-controller';
+import {ProjectSpec} from '../types';
 
 export default class Init extends Command {
   static description = 'Init a scaffold subquery project';
@@ -26,23 +27,23 @@ export default class Init extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = this.parse(Init);
-    const project = {} as projectSpec;
+    const project = {} as ProjectSpec;
 
     project.name = args.projectName
       ? args.projectName
-      : ((await cli.prompt('What is the project name?', {default: 'subql-starter', required: true})) as string);
+      : await cli.prompt('Project name', {default: 'subql-starter', required: true});
     if (fs.existsSync(path.join(process.cwd(), `${project.name}`))) {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
-    project.repository = (await cli.prompt('What is the project git repository?', {required: false})) as string;
-    project.endpoint = (await cli.prompt('What is the RPC endpoint?', {
+    project.repository = await cli.prompt('Git repository', {required: false});
+    project.endpoint = await cli.prompt('RPC endpoint', {
       default: 'wss://polkadot.api.onfinality.io/public-ws',
       required: true,
-    })) as string;
-    project.author = (await cli.prompt('What is the authors name?', {required: true})) as string;
-    project.description = (await cli.prompt('Description', {required: false})) as string;
-    project.version = (await cli.prompt('Version:', {default: '1.0.0', required: true})) as string;
-    project.license = (await cli.prompt('License:', {default: 'Apache-2.0', required: true})) as string;
+    });
+    project.author = await cli.prompt('Authors', {required: true});
+    project.description = await cli.prompt('Description', {required: false});
+    project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});
+    project.license = await cli.prompt('License:', {default: 'Apache-2.0', required: true});
 
     if (flags.starter && project.name) {
       cli.action.start('Init the starter package');
