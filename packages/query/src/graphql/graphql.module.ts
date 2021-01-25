@@ -8,40 +8,47 @@ import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {plugins} from './plugins';
+import {ProjectService} from './project.service';
 
-@Module({})
+@Module({
+  providers: [ProjectService],
+})
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   private apolloServer: ApolloServer;
 
-  constructor(private readonly httpAdapterHost: HttpAdapterHost, private readonly config: Config) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly config: Config,
+    private readonly pgPool: Pool,
+    private readonly projectService: ProjectService
+  ) {}
 
   async onModuleInit(): Promise<void> {
     if (!this.httpAdapterHost) {
       return;
     }
+    this.apolloServer = await this.createServer();
+  }
+
+  async onModuleDestroy(): Promise<void> {
+    return this.apolloServer?.stop();
+  }
+
+  private async createServer() {
     const app = this.httpAdapterHost.httpAdapter.getInstance();
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
-    const pgPool = new Pool({
-      user: this.config.get('DB_USER'),
-      password: this.config.get('DB_PASS'),
-      host: this.config.get('DB_HOST'),
-      port: this.config.get('DB_PORT'),
-      database: this.config.get('DB_DATABASE'),
-    });
-    pgPool.on('error', (err) => {
-      // tslint:disable-next-line no-console
-      console.error('PostgreSQL client generated error: ', err.message);
-    });
-    const builder = await getPostGraphileBuilder(pgPool, [this.config.get('dbSchema')], {
+    const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
+    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
       replaceAllPlugins: plugins,
       subscriptions: true,
     });
+
     const schema = builder.buildSchema();
-    this.apolloServer = new ApolloServer({
+    const server = new ApolloServer({
       schema,
       context: {
-        pgClient: pgPool,
+        pgClient: this.pgPool,
       },
       cacheControl: {
         defaultMaxAge: 5,
@@ -51,15 +58,13 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         path: '/subscription',
       },
     });
-    this.apolloServer.applyMiddleware({
+    server.applyMiddleware({
       app,
       path: '/',
       cors: true,
     });
-    this.apolloServer.installSubscriptionHandlers(httpServer);
-  }
+    server.installSubscriptionHandlers(httpServer);
 
-  async onModuleDestroy(): Promise<void> {
-    return this.apolloServer?.stop();
+    return server;
   }
 }
