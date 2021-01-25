@@ -3202,7 +3202,7 @@ __metadata:
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
     "@types/js-yaml": ^3.12.5
-    class-transformer: ^0.3.1
+    class-transformer: 0.3.1
     class-validator: ^0.12.2
     graphql: ^15.4.0
     graphql-tag: ^2.11.0
@@ -6115,7 +6115,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-transformer@npm:^0.3.1":
+"class-transformer@npm:0.3.1":
   version: 0.3.1
   resolution: "class-transformer@npm:0.3.1"
   checksum: 3ae3ef2510d2822766a97d31eb7ca550dabda56cbfe70968f295420531667ca95b4d84cddfe2dc302abc41c8e26d667d43235b0f4759eee09a007741cc307bc8
