@@ -6,8 +6,30 @@ import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { last } from 'lodash';
 import { getYargsOption } from '../yargs';
-import { NodeConfig } from './NodeConfig';
+import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './project.model';
+
+const YargsNameMapping = {
+  local: 'localMode',
+  'subquery-name': 'subqueryName',
+  'batch-size': 'batchSize',
+};
+
+type Args = ReturnType<typeof getYargsOption>['argv'];
+
+function yargsToIConfig(yargs: Args): Partial<IConfig> {
+  return Object.entries(yargs).reduce((acc, [key, value]) => {
+    acc[YargsNameMapping[key] ?? key] = value;
+    return acc;
+  }, {});
+}
+
+function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
+  return {
+    ...config,
+    subqueryName: config.subqueryName ?? last(config.subquery.split(path.sep)),
+  } as MinConfig;
+}
 
 @Global()
 @Module({})
@@ -17,11 +39,7 @@ export class ConfigureModule {
     const { argv } = yargsOptions;
     let config: NodeConfig;
     if (argv.config) {
-      config = NodeConfig.fromFile(argv.config);
-      config.merge({
-        subquery: argv.subquery,
-        subqueryName: argv['subquery-name'],
-      });
+      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
     } else {
       if (!argv.subquery) {
         console.log(
@@ -31,12 +49,7 @@ export class ConfigureModule {
         process.exit(1);
       }
       assert(argv.subquery, 'subquery path is missing');
-      config = new NodeConfig({
-        subquery: argv.subquery,
-        subqueryName:
-          argv['subquery-name'] ?? last(argv.subquery.split(path.sep)),
-        localMode: argv.local,
-      });
+      config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 
     const projectPath = path.resolve(

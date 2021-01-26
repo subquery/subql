@@ -1,7 +1,14 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { EventRecord, SignedBlock } from '@polkadot/types/interfaces';
+import { ApiPromise } from '@polkadot/api';
+import { Option, Vec } from '@polkadot/types';
+import {
+  BlockHash,
+  EventRecord,
+  LastRuntimeUpgradeInfo,
+  SignedBlock,
+} from '@polkadot/types/interfaces';
 import {
   SpecVersionRange,
   SubqlBlockFilter,
@@ -13,7 +20,8 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { merge } from 'lodash';
+import { last, merge, range } from 'lodash';
+import { BlockContent } from '../indexer/types';
 
 export function wrapBlock(
   signedBlock: SignedBlock,
@@ -143,5 +151,107 @@ export function filterEvents(
         checkSpecRange(filter.specVersion, block.specVersion)) &&
       (filter.module ? event.section === filter.module : true) &&
       (filter.method ? event.method === filter.method : true),
+  );
+}
+
+// TODO: prefetch all known runtime upgrades at once
+export async function prefetchMetadata(
+  api: ApiPromise,
+  height: number,
+): Promise<void> {
+  const hash = await api.rpc.chain.getBlockHash(height);
+  await api.getBlockRegistry(hash);
+}
+
+export async function fetchBlocks(
+  api: ApiPromise,
+  startHeight: number,
+  endHeight: number,
+): Promise<BlockContent[]> {
+  const blocks = await fetchBlocksRange(api, startHeight, endHeight);
+  const blockHashs = blocks.map((b) => b.block.header.hash);
+  const [blockEvents, runtimeUpgrades] = await Promise.all([
+    fetchEventsRange(api, blockHashs),
+    fetchLastRuntimeUpgradeRange(api, blockHashs),
+  ]);
+  return blocks.map((block, idx) => {
+    const events = blockEvents[idx];
+    const runtimeUpgrade = runtimeUpgrades[idx];
+
+    const wrappedBlock = wrapBlock(
+      block,
+      runtimeUpgrade.unwrap()?.specVersion.toNumber(),
+    );
+    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
+    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
+    return {
+      block: wrappedBlock,
+      extrinsics: wrappedExtrinsics,
+      events: wrappedEvents,
+    };
+  });
+}
+
+export async function fetchBlocksViaRangeQuery(
+  api: ApiPromise,
+  startHeight: number,
+  endHeight: number,
+): Promise<BlockContent[]> {
+  const blocks = await fetchBlocksRange(api, startHeight, endHeight);
+  const firstBlockHash = blocks[0].block.header.hash;
+  const endBlockHash = last(blocks).block.header.hash;
+  const [blockEvents, runtimeUpgrades] = await Promise.all([
+    api.query.system.events.range([firstBlockHash, endBlockHash]),
+    api.query.system.lastRuntimeUpgrade.range([firstBlockHash, endBlockHash]),
+  ]);
+
+  let lastEvents: Vec<EventRecord>;
+  let lastRuntimeUpgrade: Option<LastRuntimeUpgradeInfo>;
+  return blocks.map((block, idx) => {
+    const [, events = lastEvents] = blockEvents[idx] ?? [];
+    const [, runtimeUpgrade = lastRuntimeUpgrade] = runtimeUpgrades[idx] ?? [];
+    lastEvents = events;
+    lastRuntimeUpgrade = runtimeUpgrade;
+
+    const wrappedBlock = wrapBlock(
+      block,
+      runtimeUpgrade.unwrap()?.specVersion.toNumber(),
+    );
+    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
+    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
+    return {
+      block: wrappedBlock,
+      extrinsics: wrappedExtrinsics,
+      events: wrappedEvents,
+    };
+  });
+}
+
+export async function fetchBlocksRange(
+  api: ApiPromise,
+  startHeight: number,
+  endHeight: number,
+): Promise<SignedBlock[]> {
+  return Promise.all(
+    range(startHeight, endHeight + 1).map(async (height) => {
+      const blockHash = await api.rpc.chain.getBlockHash(height);
+      return api.rpc.chain.getBlock(blockHash);
+    }),
+  );
+}
+
+export async function fetchEventsRange(
+  api: ApiPromise,
+  hashs: BlockHash[],
+): Promise<Vec<EventRecord>[]> {
+  return Promise.all(hashs.map((hash) => api.query.system.events.at(hash)));
+}
+
+export async function fetchLastRuntimeUpgradeRange(
+  api: ApiPromise,
+  hashs: BlockHash[],
+): Promise<Option<LastRuntimeUpgradeInfo>[]> {
+  return Promise.all(
+    hashs.map((hash) => api.query.system.lastRuntimeUpgrade.at(hash)),
   );
 }
