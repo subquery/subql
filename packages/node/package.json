@@ -12,6 +12,9 @@
     "start:dev": "nodemon",
     "start:prod": "node dist/main"
   },
+  "bin": {
+    "subql-node": "./bin/run"
+  },
   "dependencies": {
     "@nestjs/common": "^7.6.1",
     "@nestjs/core": "^7.6.1",
@@ -48,5 +51,9 @@
     "nodemon": "^2.0.6",
     "supertest": "^6.0.1",
     "ts-jest": "^26.4.4"
-  }
+  },
+  "files": [
+    "/dist",
+    "/bin"
+  ]
 }
