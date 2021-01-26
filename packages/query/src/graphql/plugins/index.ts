@@ -26,7 +26,6 @@ import PgAllRows from 'graphile-build-pg/node8plus/plugins/PgAllRows';
 import PgColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgColumnsPlugin';
 import PgColumnDeprecationPlugin from 'graphile-build-pg/node8plus/plugins/PgColumnDeprecationPlugin';
 import PgForwardRelationPlugin from 'graphile-build-pg/node8plus/plugins/PgForwardRelationPlugin';
-import PgBackwardRelationPlugin from 'graphile-build-pg/node8plus/plugins/PgBackwardRelationPlugin';
 import PgRowByUniqueConstraint from 'graphile-build-pg/node8plus/plugins/PgRowByUniqueConstraint';
 import PgComputedColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgComputedColumnsPlugin';
 import PgQueryProceduresPlugin from 'graphile-build-pg/node8plus/plugins/PgQueryProceduresPlugin';
@@ -43,7 +42,10 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
+
+// custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
+import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
 
 /* eslint-enable */
 
