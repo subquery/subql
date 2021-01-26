@@ -1,17 +1,11 @@
 name: "Node-to-docker"
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - '.github/workflows/**'
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   node-build-push-docker:
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[docker]') && github.repository == 'OnFinality-io/subql'"
-    runs-on: ubuntu-latest
 
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
@@ -41,15 +35,10 @@ jobs:
         with:
           push: true
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
+          build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Image digest
         if: steps.changed-node.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v5
-        with:
-          message: '[SKIP CI] Node v${{ steps.get-node-version.outputs.NODE_VERSION }}'
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
