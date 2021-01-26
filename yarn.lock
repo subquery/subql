@@ -3249,6 +3249,8 @@ __metadata:
     typescript: ^4.1.3
     vm2: ^3.9.2
     yargs: ^16.2.0
+  bin:
+    subql-node: ./bin/run
   languageName: unknown
   linkType: soft
 
