@@ -51,5 +51,9 @@
     "nodemon": "^2.0.6",
     "supertest": "^6.0.1",
     "ts-jest": "^26.4.4"
-  }
+  },
+  "files": [
+    "/dist",
+    "/bin"
+  ]
 }
