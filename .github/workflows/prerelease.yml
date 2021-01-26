@@ -73,6 +73,8 @@ jobs:
         if: steps.changed-node.outputs.changed == 'true'
         working-directory: packages/node
         run: echo "Changes exist in node" && yarn version prerelease && yarn npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
         uses: EndBug/add-and-commit@v5
