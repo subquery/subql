@@ -1,24 +1,13 @@
-FROM node:12 as builder
-WORKDIR /workdir
-
-
-
-COPY . .
-RUN yarn install
-
-
-RUN yarn workspace @subql/node build
 
 # production images
-FROM node:12-alpine
+FROM node:14-alpine
 ENV TZ utc
 
+ARG RELEASE_VERSION
 RUN apk add --no-cache tini
-ENTRYPOINT ["/sbin/tini", "--", "node", "./dist/main.js"]
+ENTRYPOINT ["/sbin/tini", "--", "subql-node"]
 
+RUN npm i -g @subql/node@${RELEASE_VERSION}
 WORKDIR /workdir
-COPY --from=builder /workdir .
 
-
-WORKDIR /workdir/packages/node
 CMD ["-f","/app"]
