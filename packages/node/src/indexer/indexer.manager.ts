@@ -106,8 +106,7 @@ export class IndexerManager implements OnApplicationBootstrap {
         // FIXME: retry before exit
         process.exit(1);
       });
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    this.fetchService.subscribe((block) => this.indexBlock(block));
+    this.fetchService.register((block) => this.indexBlock(block));
   }
 
   private async initVM(): Promise<void> {

@@ -56,7 +56,7 @@ describe('FetchService', () => {
     await fetchService.onApplicationBootstrap();
     const loopPromise = fetchService.startLoop(1);
     // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.subscribe(async (content) => {
+    fetchService.register(async (content) => {
       if (content.block.block.header.number.toNumber() === 10) {
         fetchService.onApplicationShutdown();
       }

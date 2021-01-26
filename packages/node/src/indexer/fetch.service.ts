@@ -41,7 +41,7 @@ export class FetchService
     return this.apiService.getApi();
   }
 
-  subscribe(next: (value: BlockContent) => Promise<void>) {
+  register(next: (value: BlockContent) => Promise<void>) {
     let stopper = false;
     void (async () => {
       while (!stopper) {
