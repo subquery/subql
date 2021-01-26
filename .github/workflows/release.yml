@@ -53,51 +53,34 @@ jobs:
 
       - run: yarn
 
+      - name: build
+        run: yarn workspaces foreach run build
       #Publish to npm
 
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
-        run: echo "Changes exist in common" && yarn build && yarn npm publish --access public
+        run: echo "Changes exist in common" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
         working-directory: packages/cli
-        run: echo "Changes exist in cli" && yarn build && yarn npm publish --access public
+        run: echo "Changes exist in cli" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
         working-directory: packages/types
-        run: echo "Changes exist in types" && yarn build && yarn npm publish --access public
+        run: echo "Changes exist in types" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      #Publish node docker image
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+      - name: Publish Node
         if: steps.changed-node.outputs.changed == 'true'
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-        if: steps.changed-node.outputs.changed == 'true'
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v1
-        if: steps.changed-node.outputs.changed == 'true'
-        with:
-          username: onfinality
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Build and push
-        uses: docker/build-push-action@v2
-        if: steps.changed-node.outputs.changed == 'true'
-        with:
-          push: true
-          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
-
-      - name: Image digest
-        if: steps.changed-node.outputs.changed == 'true'
-        run: echo ${{ steps.docker_build.outputs.digest }}
+        working-directory: packages/node
+        run: echo "Changes exist in node" && yarn npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
