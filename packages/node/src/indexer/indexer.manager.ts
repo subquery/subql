@@ -36,6 +36,8 @@ export class IndexerManager implements OnApplicationBootstrap {
   ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
+    const tx = await this.sequelize.transaction();
+    this.storeService.setTransaction(tx);
     try {
       await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.project.dataSources) {
@@ -90,8 +92,13 @@ export class IndexerManager implements OnApplicationBootstrap {
           e?.message
         }`,
       );
-      process.exit(1);
+      try {
+        await tx.rollback();
+      } finally {
+        process.exit(1);
+      }
     }
+    await tx.commit();
   }
 
   async onApplicationBootstrap(): Promise<void> {
