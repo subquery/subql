@@ -13,6 +13,7 @@
     "@oclif/plugin-help": "^3.2.1",
     "@subql/common": "workspace:*",
     "@types/ejs": "^3.0.5",
+    "cli-ux": "^5.5.1",
     "ejs": "^3.1.5",
     "rimraf": "^3.0.2",
     "simple-git": "^2.27.0",

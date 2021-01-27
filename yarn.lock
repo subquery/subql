@@ -3184,6 +3184,7 @@ __metadata:
     "@types/ejs": ^3.0.5
     "@types/node": ^10.17.49
     "@types/rimraf": ^3
+    cli-ux: ^5.5.1
     ejs: ^3.1.5
     eslint: ^5.16.0
     eslint-config-oclif: ^3.1.0
@@ -6264,6 +6265,40 @@ __metadata:
     supports-hyperlinks: ^2.1.0
     tslib: ^2.0.0
   checksum: 319e308991bbfdc0592131ae5652b3a5f1915a6a94d62165e9dfb8ef796e172775cd560c9e0dc0b67671ee5dbd67004fcd006b0f7b8d9815caa2b89ba4ad9dba
+  languageName: node
+  linkType: hard
+
+"cli-ux@npm:^5.5.1":
+  version: 5.5.1
+  resolution: "cli-ux@npm:5.5.1"
+  dependencies:
+    "@oclif/command": ^1.6.0
+    "@oclif/errors": ^1.2.1
+    "@oclif/linewrap": ^1.0.0
+    "@oclif/screen": ^1.0.3
+    ansi-escapes: ^4.3.0
+    ansi-styles: ^4.2.0
+    cardinal: ^2.1.1
+    chalk: ^4.1.0
+    clean-stack: ^3.0.0
+    cli-progress: ^3.4.0
+    extract-stack: ^2.0.0
+    fs-extra: ^8.1
+    hyperlinker: ^1.0.0
+    indent-string: ^4.0.0
+    is-wsl: ^2.2.0
+    js-yaml: ^3.13.1
+    lodash: ^4.17.11
+    natural-orderby: ^2.0.1
+    object-treeify: ^1.1.4
+    password-prompt: ^1.1.2
+    semver: ^7.3.2
+    string-width: ^4.2.0
+    strip-ansi: ^6.0.0
+    supports-color: ^7.1.0
+    supports-hyperlinks: ^2.1.0
+    tslib: ^2.0.0
+  checksum: 5719712f4c50cecf567ef7dc12c79ca4a4da9077fc88dfcdde90aafb813af12bd8738f7e25c6af2792ecd94106fb891a68c8636bb8d5ac1fbd16da39ad4f7282
   languageName: node
   linkType: hard
 
