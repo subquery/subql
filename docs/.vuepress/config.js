@@ -1,5 +1,4 @@
 module.exports = {
-    lastUpdated: 'Last Updated',
 
     locales: {
         '/': {
@@ -10,6 +9,7 @@ module.exports = {
     },
 
     themeConfig: {
+        lastUpdated: 'Last Updated',
         locales: {
             '/': {
                 selectText: 'Languages',
@@ -26,6 +26,9 @@ module.exports = {
                         'quickstart',
                         'directory_structure',
                         'define_a_subquery' ,
+                        'indexing_query',
+                        'sandbox'
+
                     ],
                 }
 
