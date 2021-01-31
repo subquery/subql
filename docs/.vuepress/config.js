@@ -9,6 +9,8 @@ module.exports = {
     },
 
     themeConfig: {
+        logo:'/assets/img/logo.png',
+        logoLink: 'https://subquery.network',
         lastUpdated: 'Last Updated',
         locales: {
             '/': {
@@ -17,6 +19,7 @@ module.exports = {
                 ariaLabel: 'Languages',
                 algolia: {},
                 nav: [
+                    { text: 'Home', link: 'https://www.subquery.network/',target:'_self', rel:''},
                     { text: 'Guide', link: '/' },
                     { text: 'OnFinality', link: 'https://onfinality.io/', target:'_self', rel:''},
                 ],
