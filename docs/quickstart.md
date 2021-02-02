@@ -18,13 +18,13 @@ A SubQuery package defines which data The SubQuery will index from the Substrate
 Install SubQuery CLI globally on your terminal by using Yarn or NPM:
 
 ```
-npm install -g @subql-cli
-yarn global add @subql-cli
+npm install -g @subql/cli
+yarn global add @subql/cli
 ```
 
 Run help to see available commands and usage provide by CLI
 ```
-suqbl help
+subql help
 ```
 
 ## Initialize the starter package
@@ -58,7 +58,7 @@ In order to index your SubQuery project, it is mandatory to build your project f
 Run this command under the project directory.
 
 ````
-yarn build
+yarn codegen
 ````
 
 ## Build the project
