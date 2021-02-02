@@ -4,6 +4,7 @@
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
+import {ProjectManifest} from '@subql/common';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
@@ -52,7 +53,7 @@ async function prepareManifest(projectPath: string, project: ProjectSpec): Promi
   //load and write manifest(project.yaml)
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = yaml.safeLoadAll(manifest)[0];
+  const data = yaml.safeLoad(manifest) as ProjectManifest;
   data.description = project.description ?? data.description;
   data.network.endpoint = project.endpoint;
   data.repository = project.repository ?? '';
