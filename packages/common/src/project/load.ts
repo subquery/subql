@@ -21,8 +21,12 @@ export function loadProjectManifest(file: string): ProjectManifest {
   const errors = validateSync(manifest, {whitelist: true, forbidNonWhitelisted: true});
   if (errors?.length) {
     // TODO: print error details
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
-    throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
+    try {
+      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
+    } catch (e) {
+      throw new Error(`failed to parse project.yaml.`);
+    }
   }
   return manifest;
 }

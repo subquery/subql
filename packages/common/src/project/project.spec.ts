@@ -13,4 +13,10 @@ describe('project.yaml', () => {
   it('can validate project.yaml', () => {
     expect(() => loadProjectManifest(path.join(__dirname, '../../test/project_falsy.yaml'))).toThrow();
   });
+
+  it('can validate project.yaml with array format', () => {
+    expect(() => loadProjectManifest(path.join(__dirname, '../../test/project_falsy_array.yaml'))).toThrow(
+      'failed to parse project.yaml.'
+    );
+  });
 });
