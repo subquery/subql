@@ -53,10 +53,10 @@ async function prepareManifest(projectPath: string, project: ProjectSpec): Promi
   //load and write manifest(project.yaml)
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = yaml.safeLoad(manifest) as ProjectManifest;
+  const data = yaml.load(manifest) as ProjectManifest;
   data.description = project.description ?? data.description;
   data.network.endpoint = project.endpoint;
   data.repository = project.repository ?? '';
-  const newYaml = yaml.safeDump(data);
+  const newYaml = yaml.dump(data);
   await fs.promises.writeFile(yamlPath, newYaml, 'utf8');
 }
