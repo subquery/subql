@@ -12,12 +12,6 @@ jobs:
           fetch-depth: 100
           token: ${{ secrets.REPO_TOKEN }}
 
-
-      - name: Get updated node version
-        id: get-node-version
-        run: |
-          sh .github/workflows/scripts/nodeVersion.sh
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -30,6 +24,12 @@ jobs:
           username: onfinality
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      ## node
+      - name: Get updated node version
+        id: get-node-version
+        run: |
+          sh .github/workflows/scripts/nodeVersion.sh
+
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
@@ -41,4 +41,19 @@ jobs:
         if: steps.changed-node.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
+      ## query
+      - name: Get updated node version
+        id: get-query-version
+        run: |
+          sh .github/workflows/scripts/queryVersion.sh
 
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.NODE_VERSION }}
+          build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.NODE_VERSION }}
+
+      - name: Image digest
+        if: steps.changed-query.outputs.changed == 'true'
+        run: echo ${{ steps.docker_build.outputs.digest }}

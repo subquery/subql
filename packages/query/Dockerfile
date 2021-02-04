@@ -1,19 +1,12 @@
-FROM node:12 as builder
-WORKDIR /workdir
-
-COPY . .
-RUN yarn install
-
-RUN yarn workspace @subql/query build
-
 # production images
-FROM node:12-alpine
+FROM node:14-alpine
 ENV TZ utc
 
-COPY --from=builder /workdir /workdir
-
-WORKDIR /workdir/packages/query
-
+ARG RELEASE_VERSION
 RUN apk add --no-cache tini
-ENTRYPOINT ["/sbin/tini", "--", "node", "./dist/main.js"]
-CMD ["-s","public"]
+ENTRYPOINT ["/sbin/tini", "--", "subql-query"]
+
+RUN npm i -g @subql/query@${RELEASE_VERSION}
+WORKDIR /workdir
+
+CMD ["-f","/app"]

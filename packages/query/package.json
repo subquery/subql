@@ -2,6 +2,9 @@
   "name": "@subql/query",
   "version": "0.2.0",
   "description": "",
+  "bin": {
+    "subql-query": "./bin/run"
+  },
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rm -rf dist && tsc -b",
@@ -20,8 +23,8 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "files": [
-    "src/global.d.ts",
-    "/dist"
+    "/dist",
+    "/bin"
   ],
   "dependencies": {
     "@graphile-contrib/pg-many-to-many": "^1.0.0",

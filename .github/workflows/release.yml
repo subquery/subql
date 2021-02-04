@@ -45,11 +45,10 @@ jobs:
         with:
           paths: packages/node
 
-      #Get node version
-      - name: Get updated node version
-        id: get-node-version
-        run: |
-          sh .github/workflows/scripts/nodeVersion.sh
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
 
       - run: yarn
 
@@ -82,5 +81,12 @@ jobs:
         if: steps.changed-node.outputs.changed == 'true'
         working-directory: packages/node
         run: echo "Changes exist in node" && yarn npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Query
+        if: steps.changed-query.outputs.changed == 'true'
+        working-directory: packages/query
+        run: echo "Changes exist in query" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
