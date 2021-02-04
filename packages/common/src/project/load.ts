@@ -15,7 +15,7 @@ export function loadProjectManifest(file: string): ProjectManifest {
     filePath = path.join(file, 'project.yaml');
   }
 
-  const doc = yaml.safeLoad(fs.readFileSync(filePath, 'utf-8'));
+  const doc = yaml.load(fs.readFileSync(filePath, 'utf-8'));
 
   const manifest = plainToClass(ProjectManifestImpl, doc);
   const errors = validateSync(manifest, {whitelist: true, forbidNonWhitelisted: true});
