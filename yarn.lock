@@ -2912,7 +2912,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:3.7.3, @polkadot/api@npm:^3.7.3":
+"@polkadot/api@npm:3.7.3, @polkadot/api@npm:^3, @polkadot/api@npm:^3.7.3":
   version: 3.7.3
   resolution: "@polkadot/api@npm:3.7.3"
   dependencies:
@@ -3298,7 +3298,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": ^3.7.3
+    "@polkadot/api": ^3
     "@types/app-module-path": ^2.2.0
   peerDependencies:
     "@polkadot/api": ^3
