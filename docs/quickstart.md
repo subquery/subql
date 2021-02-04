@@ -2,35 +2,42 @@
 
 
 The Starter Package is an example that you can use as a starting point for developing your SubQuery project.
-A subquery package defines which data The Subquery will index from the Substrate blockchain, and how it will store it. 
+A SubQuery package defines which data The SubQuery will index from the Substrate blockchain, and how it will store it. 
 
 ## Preparation
 
+#### Environment
+
+- [Typescript](https://www.typescriptlang.org/) are required to compile project and define types.  
+
+- Both SubQuery CLI and generated Project have dependencies and require [Node](https://nodejs.org/en/).
+     
+
 #### Install the SubQuery CLI
 
-Install Subquery CLI globally on your terminal by using Yarn or NPM:
+Install SubQuery CLI globally on your terminal by using Yarn or NPM:
 
 ```
-$npm install -g @subql-cli
-$yarn global add @subql-cli
+npm install -g @subql/cli
+yarn global add @subql/cli
 ```
 
 Run help to see available commands and usage provide by CLI
 ```
-$suqbl help
+subql help
 ```
 
 ## Initialize the starter package
 
 Inside the directory in which you want to create the SubQuery project, simply replace `project-name` with your project name and run the command:
 ```
-$subql init --starter project-name
+subql init --starter project-name
 ```
 Then you should see a folder with your project name has been created inside the directory, you can use this as the start point of your project. And the files should be identical as in the [Directory Structure](/directory_structure).
 
 Last, under the project directory, run following command to install all the dependency.
 ```
-$yarn install
+yarn install
 ```
 
 
@@ -47,30 +54,30 @@ check out our doc section on [Define the SubQuery](/define_a_subquery)
 
 #### Code generation
 
-In order to index your subquery project, it is mandatory to build your project first.
+In order to index your SubQuery project, it is mandatory to build your project first.
 Run this command under the project directory.
 
 ````
-$yarn build
+yarn codegen
 ````
 
 ## Build the project
 
-In order to deploy your subquery project to our hosted service, it is mandatory to pack your configuration before upload.
+In order to deploy your SubQuery project to our hosted service, it is mandatory to pack your configuration before upload.
 Run pack command from root directory of your project will automatically generate a `your-project-name.tgz` file.
 
 ```
-$yarn build
+yarn build
 ```
 
-## Index and Query
+## Indexing and Query
 
 #### Run required systems in docker
 
 Then, under the project directory run following command:
 
 ```
-$docker-compose up
+docker-compose up
 ```
 #### Query the project
 

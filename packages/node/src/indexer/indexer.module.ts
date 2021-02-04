@@ -4,12 +4,18 @@
 import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
+import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { StoreService } from './store.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  providers: [IndexerManager, StoreService, ApiService],
+  providers: [
+    IndexerManager,
+    StoreService,
+    ApiService.useFactory,
+    FetchService,
+  ],
   exports: [],
 })
 export class IndexerModule {}

@@ -14,6 +14,7 @@ export interface Store {
 }
 
 export interface SubstrateBlock extends SignedBlock {
+  specVersion: number;
   timestamp: Date;
 }
 
@@ -30,4 +31,5 @@ export interface SubstrateEvent extends EventRecord {
   // index in the block
   idx: number;
   extrinsic?: SubstrateExtrinsic;
+  block: SubstrateBlock;
 }

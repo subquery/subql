@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.5.0",
+  "version": "0.7.3-0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -13,19 +13,20 @@
     "@oclif/plugin-help": "^3.2.1",
     "@subql/common": "workspace:*",
     "@types/ejs": "^3.0.5",
+    "cli-ux": "^5.5.1",
     "ejs": "^3.1.5",
     "rimraf": "^3.0.2",
-    "simple-git": "^2.27.0",
-    "tslib": "^2.0.3"
+    "simple-git": "^2.31.0",
+    "tslib": "^2.1.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
-    "@types/node": "^10.17.49",
+    "@types/node": "^10.17.51",
     "@types/rimraf": "^3",
     "eslint": "^5.16.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",
-    "globby": "^11.0.1"
+    "globby": "^11.0.2"
   },
   "engines": {
     "node": ">=8.0.0"

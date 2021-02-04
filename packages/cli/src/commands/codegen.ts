@@ -1,42 +1,26 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import {Command, flags} from '@oclif/command';
-import rimraf from 'rimraf';
-import {generateSchema} from '../controller/codegen-controller';
+import {codegen} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
 
   static flags = {
-    // can pass either --force or -f
     force: flags.boolean({char: 'f'}),
     file: flags.string(),
-    /*
-    schema: flags.boolean({
-      description: 'Generate schema from GraphQL',
-    }),
-    database: flags.boolean({
-      required: false,
-      description: 'Build database from schema',
-    }),
-
-     */
   };
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async run(): Promise<void> {
-    this.log('*********************************');
-    this.log('Codegen from schema~');
-    this.log('*********************************');
-
-    rimraf('src/types', function (err) {
-      if (err) throw err;
-      fs.mkdir('src/types/models', {recursive: true}, (err) => {
-        if (err) throw err;
-        generateSchema();
-      });
-    });
+    this.log('===============================');
+    this.log('---------Subql Codegen---------');
+    this.log('===============================');
+    try {
+      await codegen(process.cwd());
+    } catch (err) {
+      console.error(err.message);
+      process.exit(1);
+    }
   }
 }
