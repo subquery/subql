@@ -2840,6 +2840,8 @@ __metadata:
     rxjs: ^6.6.3
     typescript: ^4.1.3
     yargs: ^16.2.0
+  bin:
+    subql-query: ./bin/run
   languageName: unknown
   linkType: soft
 
