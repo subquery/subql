@@ -41,6 +41,11 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    network: {
+      demandOption: false,
+      type: 'string',
+      describe: 'blockchain network url to connect',
+    },
     'output-fmt': {
       demandOption: false,
       describe: 'print log as json or plain text',
