@@ -72,8 +72,8 @@ export class ConfigureModule {
         process.exit(1);
       });
 
-      if (config.network) {
-        p.network.endpoint = config.network;
+      if (config.networkEndpoint) {
+        p.network.endpoint = config.networkEndpoint;
       }
       return p;
     };

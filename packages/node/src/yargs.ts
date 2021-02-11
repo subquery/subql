@@ -41,10 +41,10 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
-    network: {
+    'network-endpoint': {
       demandOption: false,
       type: 'string',
-      describe: 'blockchain network url to connect',
+      describe: 'blockchain network endpoint to connect',
     },
     'output-fmt': {
       demandOption: false,
