@@ -53,6 +53,7 @@ describe('FetchService', () => {
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
     );
+    fetchService.fetchMeta = jest.fn();
     await fetchService.onApplicationBootstrap();
     const loopPromise = fetchService.startLoop(1);
     // eslint-disable-next-line @typescript-eslint/require-await

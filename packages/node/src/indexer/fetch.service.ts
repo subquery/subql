@@ -23,6 +23,7 @@ export class FetchService
   private latestPreparedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
   private isShutdown = false;
+  private specVersion: number;
 
   constructor(
     private apiService: ApiService,
@@ -46,6 +47,7 @@ export class FetchService
     void (async () => {
       while (!stopper) {
         const block = await this.blockBuffer.take();
+        //console.log('Block buffer size:',this.blockBuffer.size);
         await next(block);
       }
     })();
@@ -70,7 +72,7 @@ export class FetchService
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
-    let prefetchMetadata = false;
+    await this.fetchMeta(initBlockHeight);
     // eslint-disable-next-line no-constant-condition
     while (!this.isShutdown) {
       const [startBlockHeight, endBlockHeight] =
@@ -82,10 +84,7 @@ export class FetchService
       console.log(
         `[IndexerManager] fetch block [${startBlockHeight}, ${endBlockHeight}]`,
       );
-      if (!prefetchMetadata) {
-        await SubstrateUtil.prefetchMetadata(this.api, startBlockHeight);
-        prefetchMetadata = true;
-      }
+      await this.fetchMeta(endBlockHeight);
       const blocks = await (this.nodeConfig.preferRange
         ? SubstrateUtil.fetchBlocksViaRangeQuery(
             this.api,
@@ -101,6 +100,17 @@ export class FetchService
         this.blockBuffer.put(block);
       }
       this.latestPreparedHeight = endBlockHeight;
+    }
+  }
+
+  async fetchMeta(height: number): Promise<void> {
+    const blockHash = await this.api.rpc.chain.getBlockHash(height);
+    const { specVersion } = await this.api.rpc.state.getRuntimeVersion(
+      blockHash,
+    );
+    if (this.specVersion !== specVersion.toNumber()) {
+      this.specVersion = specVersion.toNumber();
+      await SubstrateUtil.prefetchMetadata(this.api, height);
     }
   }
 
