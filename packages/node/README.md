@@ -15,16 +15,17 @@ $ npm i -g @subql/node
 $> subql-node
 
 Options:
-      --help           Show help                                       [boolean]
-      --version        Show version number                             [boolean]
-  -f, --subquery       the local path of subquery project               [string]
-      --subquery-name  name of the subquery project                     [string]
-  -c, --config         specify configuration file                       [string]
-      --local          use local mode                                  [boolean]
-      --batch-size     batch size of blocks to fetch in one round       [number]
-      --debug          show debug information to console output
+      --help              Show help                                    [boolean]
+      --version           Show version number                          [boolean]
+  -f, --subquery          the local path of subquery project            [string]
+      --subquery-name     name of the subquery project                  [string]
+  -c, --config            specify configuration file                    [string]
+      --local             use local mode                               [boolean]
+      --batch-size        batch size of blocks to fetch in one round    [number]
+      --debug             show debug information to console output
                                                       [boolean] [default: false]
-      --output-fmt     print log as json or plain text
+      --network-endpoint  blockchain network endpoint to connect        [string]
+      --output-fmt        print log as json or plain text
                                            [string] [choices: "json", "colored"]
 ```
 
