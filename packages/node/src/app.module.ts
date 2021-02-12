@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ConfigureModule } from './configure/configure.module';
 import { DbModule } from './db/db.module';
 import { IndexerModule } from './indexer/indexer.module';
+import { PrometheusMetricModule } from './prometheus/prometheus.module';
 
 export class NodeOption {}
 
@@ -17,8 +19,10 @@ export class NodeOption {}
       password: process.env.DB_PASS ?? 'postgres',
       database: process.env.DB_DATABASE ?? 'postgres',
     }),
+    EventEmitterModule.forRoot(),
     ConfigureModule.register(),
     IndexerModule,
+    PrometheusMetricModule,
   ],
   controllers: [],
 })

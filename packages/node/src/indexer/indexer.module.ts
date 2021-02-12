@@ -13,7 +13,7 @@ import { StoreService } from './store.service';
   providers: [
     IndexerManager,
     StoreService,
-    ApiService.useFactory,
+    ApiService,
     FetchService,
   ],
   exports: [],

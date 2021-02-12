@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { INestApplication } from '@nestjs/common';
+import {EventEmitterModule} from "@nestjs/event-emitter";
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { SubqueryProject } from '../configure/project.model';
@@ -29,8 +30,9 @@ describe('ApiService', () => {
     const module = await Test.createTestingModule({
       providers: [
         { provide: SubqueryProject, useFactory: testSubqueryProject },
-        ApiService.useFactory,
+        ApiService,
       ],
+      imports: [EventEmitterModule.forRoot()]
     }).compile();
 
     app = module.createNestApplication();

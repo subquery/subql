@@ -2,13 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { buildSchema, getAllEntities, SubqlKind } from '@subql/common';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
+import {Metrics} from "../prometheus/types";
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
@@ -23,7 +25,7 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('indexer');
 
 @Injectable()
-export class IndexerManager implements OnApplicationBootstrap {
+export class IndexerManager {
   private vm: IndexerSandbox;
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
@@ -36,9 +38,12 @@ export class IndexerManager implements OnApplicationBootstrap {
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-  ) {}
+    private eventEmitter: EventEmitter2) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
+    this.eventEmitter.emit(
+        'metric.write', {name:Metrics.ProcessingHeight,value:block.block.header.number.toNumber()}
+    );
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     try {
@@ -104,7 +109,9 @@ export class IndexerManager implements OnApplicationBootstrap {
     await tx.commit();
   }
 
-  async onApplicationBootstrap(): Promise<void> {
+  async start(): Promise<void> {
+    await this.apiService.init();
+    await this.fetchService.init();
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
