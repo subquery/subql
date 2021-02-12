@@ -63,14 +63,21 @@ export class ConfigureModule {
       config.subquery,
     );
 
-    const project = async () =>
-      SubqueryProject.create(projectPath).catch((err) => {
+    const project = async () => {
+      const p = await SubqueryProject.create(projectPath).catch((err) => {
         logger.error(
           'Create Subquery project from given path failed!',
           err.message,
         );
         process.exit(1);
       });
+
+      if (config.networkEndpoint) {
+        p.network.endpoint = config.networkEndpoint;
+      }
+      return p;
+    };
+
     return {
       module: ConfigureModule,
       providers: [

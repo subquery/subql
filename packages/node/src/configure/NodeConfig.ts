@@ -17,6 +17,7 @@ export interface IConfig {
   readonly batchSize: number;
   readonly debug: boolean;
   readonly preferRange: boolean;
+  readonly networkEndpoint?: string;
   readonly outputFmt?: 'json';
 }
 
@@ -89,6 +90,10 @@ export class NodeConfig implements IConfig {
 
   get outputFmt(): 'json' | undefined {
     return this._config.outputFmt;
+  }
+
+  get networkEndpoint(): string | undefined {
+    return this._config.networkEndpoint;
   }
 
   merge(config: Partial<IConfig>): this {
