@@ -5,6 +5,7 @@ import { DynamicModule, Global } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
 import { Options as SequelizeOption } from 'sequelize/types';
 import * as entities from '../entities';
+import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 
@@ -16,6 +17,8 @@ export interface DbOption {
   database: string;
 }
 
+const logger = getLogger('db');
+
 async function establishConnection(
   sequelize: Sequelize,
   numRetries: number,
@@ -23,7 +26,7 @@ async function establishConnection(
   try {
     await sequelize.authenticate();
   } catch (error) {
-    console.error('Unable to connect to the database', error.message);
+    logger.error('Unable to connect to the database', error.message);
     if (numRetries > 0) {
       await delay(3);
       void (await establishConnection(sequelize, numRetries - 1));
@@ -50,7 +53,7 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 export class DbModule {
   static forRoot(option: DbOption): DynamicModule {
     const { argv } = getYargsOption();
-
+    const logger = getLogger('db');
     return {
       module: DbModule,
       providers: [
@@ -59,7 +62,9 @@ export class DbModule {
           useFactory: sequelizeFactory({
             ...option,
             dialect: 'postgres',
-            logging: argv.debug,
+            logging: argv.debug ? (sql: string, timing?: number) => {
+              logger.debug(sql);
+            } : false,
           }),
         },
       ],

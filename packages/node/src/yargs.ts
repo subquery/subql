@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { argv as yargv } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -40,5 +41,15 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    'output-fmt': {
+      demandOption: false,
+      describe: 'print log as json or plain text',
+      type: 'string',
+      choices: ['json', 'colored'],
+    }
   });
+}
+
+export function argv(arg: string): unknown {
+  return yargv[arg];
 }
