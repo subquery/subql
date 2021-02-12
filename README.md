@@ -9,6 +9,11 @@ SubQuery is NOT an ETL tool, the persisted data is minimized and shaped from the
 SubQuery aims to support all substrate-compatible networks.
 
 ## Get Started
+### Installation
+```shell
+npm i -g @subql/cli @subql/node @subql/query
+```
+
 ### Step #1: Create a SubQuery project
 1. use `@subql/cli` tool we provide to create a SubQuery project
   * it is written in typescript
@@ -24,15 +29,15 @@ Prerequisites
   Then start our `@subql/node` with the path of local SubQuery project as arguments, `@subql/node` will handle the rest.
 
 ### Step #3: Run a Query Service
-We do have plan for a custom built graphql query service `@subql/query`, but in this stage we will use [Harura](https://hasura.io) to do the job.
+check our query component [`@subql/query`](packages/query)
 
 
 ## Components
-Npmjs Packages to published:
-* `@subql/cli`
-* `@subql/node`
-* `@subql/common`
-* `@subql/types`
+* [`@subql/cli`](packages/cli)
+* [`@subql/node`](packages/node)
+* [`@subql/query`](packages/query)
+* [`@subql/common`](packages/common)
+* [`@subql/types`](packages/types)
 
 ## More Docs
 [Docs](https://onfinality-io.github.io/subql/)

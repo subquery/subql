@@ -4,22 +4,22 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { last } from 'lodash';
+import { camelCase, last } from 'lodash';
+import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './project.model';
 
 const YargsNameMapping = {
   local: 'localMode',
-  'subquery-name': 'subqueryName',
-  'batch-size': 'batchSize',
 };
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
-    acc[YargsNameMapping[key] ?? key] = value;
+    if (['_','$0'].includes(key)) return acc;
+    acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
   }, {});
 }
@@ -30,6 +30,8 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
     subqueryName: config.subqueryName ?? last(config.subquery.split(path.sep)),
   } as MinConfig;
 }
+
+const logger = getLogger('configure');
 
 @Global()
 @Module({})
@@ -42,7 +44,7 @@ export class ConfigureModule {
       config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
     } else {
       if (!argv.subquery) {
-        console.log(
+        logger.error(
           'subquery path is missing neither in cli options nor in config file',
         );
         yargsOptions.showHelp();
@@ -52,6 +54,10 @@ export class ConfigureModule {
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 
+    if (config.debug){
+      setLevel('debug');
+    }
+
     const projectPath = path.resolve(
       config.configDir && !argv.subquery ? config.configDir : '.',
       config.subquery,
@@ -59,7 +65,7 @@ export class ConfigureModule {
 
     const project = async () =>
       SubqueryProject.create(projectPath).catch((err) => {
-        console.error(
+        logger.error(
           'Create Subquery project from given path failed!',
           err.message,
         );

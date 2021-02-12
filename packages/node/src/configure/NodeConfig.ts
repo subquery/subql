@@ -17,6 +17,7 @@ export interface IConfig {
   readonly batchSize: number;
   readonly debug: boolean;
   readonly preferRange: boolean;
+  readonly outputFmt?: 'json';
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -84,6 +85,10 @@ export class NodeConfig implements IConfig {
 
   get preferRange(): boolean {
     return this._config.preferRange;
+  }
+
+  get outputFmt(): 'json' | undefined {
+    return this._config.outputFmt;
   }
 
   merge(config: Partial<IConfig>): this {

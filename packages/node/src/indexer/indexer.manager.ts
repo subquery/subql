@@ -10,6 +10,7 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { objectTypeToModelAttributes } from '../utils/graphql';
+import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { FetchService } from './fetch.service';
@@ -18,6 +19,8 @@ import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
 const DEFAULT_DB_SCHEMA = 'public';
+
+const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager implements OnApplicationBootstrap {
@@ -87,8 +90,8 @@ export class IndexerManager implements OnApplicationBootstrap {
       await this.subqueryState.save();
       this.fetchService.latestProcessed(block.block.header.number.toNumber());
     } catch (e) {
-      console.error(
-        `[IndexerManager] failed to handler block ${block.block.header.number.toString()}, error: ${
+      logger.error(
+        `failed to handler block ${block.block.header.number.toString()}, error: ${
           e?.message
         }`,
       );
@@ -109,7 +112,7 @@ export class IndexerManager implements OnApplicationBootstrap {
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
-        console.error('[IndexerManager] failed to fetch block', err);
+        logger.error('failed to fetch block', err);
         // FIXME: retry before exit
         process.exit(1);
       });
@@ -124,7 +127,7 @@ export class IndexerManager implements OnApplicationBootstrap {
       root: this.project.path,
     });
 
-    this.vm.on('console.log', (data) => console.log(`[VM Sandbox]: ${data}`));
+    this.vm.on('console.log', (data) => getLogger('sandbox').log(data));
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {

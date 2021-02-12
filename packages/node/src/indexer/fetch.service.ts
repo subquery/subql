@@ -9,11 +9,14 @@ import {
 import { ApiPromise } from '@polkadot/api';
 import { isUndefined } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
+import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
 import { BlockContent } from './types';
+
+const logger = getLogger('fetch');
 
 @Injectable()
 export class FetchService
@@ -47,7 +50,6 @@ export class FetchService
     void (async () => {
       while (!stopper) {
         const block = await this.blockBuffer.take();
-        //console.log('Block buffer size:',this.blockBuffer.size);
         await next(block);
       }
     })();
@@ -81,8 +83,8 @@ export class FetchService
         await delay(1);
         continue;
       }
-      console.log(
-        `[IndexerManager] fetch block [${startBlockHeight}, ${endBlockHeight}]`,
+      logger.info(
+        `fetch block [${startBlockHeight}, ${endBlockHeight}]`,
       );
       await this.fetchMeta(endBlockHeight);
       const blocks = await (this.nodeConfig.preferRange

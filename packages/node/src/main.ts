@@ -3,10 +3,16 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { getLogger, NestLogger } from './utils/logger';
+import { argv } from './yargs';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const debug = argv('debug');
+  const app = await NestFactory.create(AppModule, {
+    logger: debug ? new NestLogger() : false,
+  });
   await app.listen(3000);
+  getLogger('subql-node').info('node started');
 }
 
 void bootstrap();
