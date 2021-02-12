@@ -11,52 +11,59 @@ export function getYargsOption() {
     subquery: {
       alias: 'f',
       demandOption: false,
-      describe: 'the local path of subquery project',
+      describe: 'Local path of the subquery project',
       type: 'string',
     },
     'subquery-name': {
       demandOption: false,
-      describe: 'name of the subquery project',
+      describe: 'Name of the subquery project',
       type: 'string',
     },
     config: {
       alias: 'c',
       demandOption: false,
-      describe: 'specify configuration file',
+      describe: 'Specify configuration file',
       type: 'string',
     },
     local: {
       type: 'boolean',
       demandOption: false,
-      describe: 'use local mode',
+      describe: 'Use local mode',
     },
     'batch-size': {
       demandOption: false,
-      describe: 'batch size of blocks to fetch in one round',
+      describe: 'Batch size of blocks to fetch in one round',
       type: 'number',
     },
     debug: {
       demandOption: false,
-      describe: 'show debug information to console output',
+      describe:
+        'Show debug information to console output. will forcefully set log level to debug',
       type: 'boolean',
       default: false,
     },
     'network-endpoint': {
       demandOption: false,
       type: 'string',
-      describe: 'blockchain network endpoint to connect',
+      describe: 'Blockchain network endpoint to connect',
     },
     'output-fmt': {
       demandOption: false,
-      describe: 'print log as json or plain text',
+      describe: 'Print log as json or plain text',
       type: 'string',
       choices: ['json', 'colored'],
     },
     'log-level': {
       demandOption: false,
-      describe: 'specify log level to print',
+      describe: 'Specify log level to print. Ignored when --debug is used',
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
+    },
+    migrate: {
+      demandOption: false,
+      describe: 'Migrate db schema (for management tables only)',
+      type: 'boolean',
+      default: false,
     },
   });
 }

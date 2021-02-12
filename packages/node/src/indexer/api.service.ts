@@ -15,7 +15,7 @@ import { AnyTuple } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
-import { IndexerEvent } from './events';
+import { IndexerEvent, NetworkMetadataPayload } from './events';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -26,6 +26,7 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
+  networkMeta: NetworkMetadataPayload;
 
   constructor(
     protected project: SubqueryProject,
@@ -52,6 +53,12 @@ export class ApiService implements OnApplicationShutdown {
       ]),
     );
     this.api = await ApiPromise.create(apiOption);
+    this.networkMeta = {
+      chain: this.api.runtimeChain.toString(),
+      specName: this.api.runtimeVersion.specName.toString(),
+      genesisHash: this.api.genesisHash.toString(),
+    };
+    this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });

@@ -45,7 +45,8 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
   )) {
     entities[factoryFn](sequelize);
   }
-  await sequelize.sync();
+  const { migrate } = getYargsOption().argv;
+  await sequelize.sync({ alter: migrate });
   return sequelize;
 };
 

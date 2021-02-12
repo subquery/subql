@@ -17,19 +17,23 @@ $> subql-node
 Options:
       --help              Show help                                    [boolean]
       --version           Show version number                          [boolean]
-  -f, --subquery          the local path of subquery project            [string]
-      --subquery-name     name of the subquery project                  [string]
-  -c, --config            specify configuration file                    [string]
-      --local             use local mode                               [boolean]
-      --batch-size        batch size of blocks to fetch in one round    [number]
-      --debug             show debug information to console output
+  -f, --subquery          Local path of the subquery project            [string]
+      --subquery-name     Name of the subquery project                  [string]
+  -c, --config            Specify configuration file                    [string]
+      --local             Use local mode                               [boolean]
+      --batch-size        Batch size of blocks to fetch in one round    [number]
+      --debug             Show debug information to console output. will
+                          forcefully set log level to debug
                                                       [boolean] [default: false]
-      --network-endpoint  blockchain network endpoint to connect        [string]
-      --output-fmt        print log as json or plain text
+      --network-endpoint  Blockchain network endpoint to connect        [string]
+      --output-fmt        Print log as json or plain text
                                            [string] [choices: "json", "colored"]
-      --log-level         specify log level to print
+      --log-level         Specify log level to print. Ignored when --debug is
+                          used
           [string] [choices: "fatal", "error", "warn", "info", "debug", "trace",
                                                                        "silent"]
+      --migrate           Migrate db schema (for management tables only)
+                                                      [boolean] [default: false]
 ```
 
 ## License
