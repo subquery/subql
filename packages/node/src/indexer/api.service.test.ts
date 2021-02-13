@@ -37,7 +37,9 @@ describe('ApiService', () => {
 
     app = module.createNestApplication();
     await app.init();
-    return app.get(ApiService);
+    const apiService = app.get(ApiService);
+    await apiService.init();
+    return apiService;
   };
 
   it('can instantiate api', async () => {
