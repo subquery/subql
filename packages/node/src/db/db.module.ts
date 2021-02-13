@@ -62,9 +62,11 @@ export class DbModule {
           useFactory: sequelizeFactory({
             ...option,
             dialect: 'postgres',
-            logging: argv.debug ? (sql: string, timing?: number) => {
-              logger.debug(sql);
-            } : false,
+            logging: argv.debug
+              ? (sql: string, timing?: number) => {
+                  logger.debug(sql);
+                }
+              : false,
           }),
         },
       ],

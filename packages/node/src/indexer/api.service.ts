@@ -1,12 +1,13 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
+  ApiInterfaceRx,
   ApiOptions,
   QueryableStorageEntry,
-  ApiInterfaceRx,
   QueryableStorageMultiArg,
 } from '@polkadot/api/types';
 import { BlockHash } from '@polkadot/types/interfaces';
@@ -14,26 +15,22 @@ import { AnyTuple } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
+import { Metrics } from '../prometheus/types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
 };
 
+@Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
 
-  static useFactory = {
-    provide: ApiService,
-    inject: [SubqueryProject],
-    useFactory: async (project: SubqueryProject) => {
-      const apiService = new ApiService(project);
-      return apiService.init();
-    },
-  };
-
-  constructor(protected project: SubqueryProject) {}
+  constructor(
+    protected project: SubqueryProject,
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async onApplicationShutdown(): Promise<void> {
     await Promise.all([this.api?.disconnect(), this.patchedApi?.disconnect()]);
@@ -54,7 +51,24 @@ export class ApiService implements OnApplicationShutdown {
         'typesSpec',
       ]),
     );
+
     this.api = await ApiPromise.create(apiOption);
+    this.eventEmitter.emit('metric.write', {
+      name: Metrics.ApiConnected,
+      value: 1,
+    });
+    this.api.on('connected', () => {
+      this.eventEmitter.emit('metric.write', {
+        name: Metrics.ApiConnected,
+        value: 1,
+      });
+    });
+    this.api.on('disconnected', () => {
+      this.eventEmitter.emit('metric.write', {
+        name: Metrics.ApiConnected,
+        value: 0,
+      });
+    });
     return this;
   }
 
@@ -67,7 +81,23 @@ export class ApiService implements OnApplicationShutdown {
       return this.patchedApi;
     }
     const patchedApi = this.getApi().clone();
+    this.api.on('connected', () => {
+      this.eventEmitter.emit('metric.write', {
+        name: Metrics.InjectedApiConnected,
+        value: 1,
+      });
+    });
+    this.api.on('disconnected', () => {
+      this.eventEmitter.emit('metric.write', {
+        name: Metrics.InjectedApiConnected,
+        value: 0,
+      });
+    });
     await patchedApi.isReady;
+    this.eventEmitter.emit('metric.write', {
+      name: Metrics.InjectedApiConnected,
+      value: 1,
+    });
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',

@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { fetchBlocks } from '../utils/substrate';
@@ -31,8 +32,9 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
+      new EventEmitter2(),
     );
-    await fetchService.onApplicationBootstrap();
+    await fetchService.init();
     expect(
       apiService.getApi().rpc.chain.subscribeFinalizedHeads,
     ).toHaveBeenCalledTimes(1);
@@ -52,9 +54,10 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
+      new EventEmitter2(),
     );
     fetchService.fetchMeta = jest.fn();
-    await fetchService.onApplicationBootstrap();
+    await fetchService.init();
     const loopPromise = fetchService.startLoop(1);
     // eslint-disable-next-line @typescript-eslint/require-await
     fetchService.register(async (content) => {
@@ -71,6 +74,7 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
     let [start, end] = (fetchService as any).nextBlockRange(100);
@@ -90,6 +94,7 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
     (fetchService as any).latestPreparedHeight = 200;
@@ -103,6 +108,7 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
     (fetchService as any).latestPreparedHeight = undefined;
