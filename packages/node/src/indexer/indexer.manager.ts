@@ -10,7 +10,7 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
-import {Metrics} from "../prometheus/types";
+import { Metrics } from '../prometheus/types';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
@@ -38,12 +38,14 @@ export class IndexerManager {
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    private eventEmitter: EventEmitter2) {}
+    private eventEmitter: EventEmitter2,
+  ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
-    this.eventEmitter.emit(
-        'metric.write', {name:Metrics.ProcessingHeight,value:block.block.header.number.toNumber()}
-    );
+    this.eventEmitter.emit('metric.write', {
+      name: Metrics.ProcessingHeight,
+      value: block.block.header.number.toNumber(),
+    });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     try {

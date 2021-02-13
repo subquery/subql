@@ -34,7 +34,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged --pattern 'packages/**/src/**/*'"
+      "pre-commit": "pretty-quick --staged --pattern 'packages/*/src/**/*.ts'"
     }
   }
 }

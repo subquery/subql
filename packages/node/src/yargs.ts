@@ -51,7 +51,7 @@ export function getYargsOption() {
       describe: 'print log as json or plain text',
       type: 'string',
       choices: ['json', 'colored'],
-    }
+    },
   });
 }
 

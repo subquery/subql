@@ -10,12 +10,7 @@ import { StoreService } from './store.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  providers: [
-    IndexerManager,
-    StoreService,
-    ApiService,
-    FetchService,
-  ],
+  providers: [IndexerManager, StoreService, ApiService, FetchService],
   exports: [],
 })
 export class IndexerModule {}

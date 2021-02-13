@@ -18,7 +18,7 @@ type Args = ReturnType<typeof getYargsOption>['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
-    if (['_','$0'].includes(key)) return acc;
+    if (['_', '$0'].includes(key)) return acc;
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
   }, {});
@@ -54,7 +54,7 @@ export class ConfigureModule {
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 
-    if (config.debug){
+    if (config.debug) {
       setLevel('debug');
     }
 

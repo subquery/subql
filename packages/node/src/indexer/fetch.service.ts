@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { isUndefined } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
-import {Metrics} from "../prometheus/types";
+import { Metrics } from '../prometheus/types';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
@@ -48,9 +48,10 @@ export class FetchService implements OnApplicationShutdown {
     void (async () => {
       while (!stopper) {
         const block = await this.blockBuffer.take();
-        this.eventEmitter.emit(
-            'metric.write', {name:Metrics.BlockQueueSize,value:this.blockBuffer.size}
-        );
+        this.eventEmitter.emit('metric.write', {
+          name: Metrics.BlockQueueSize,
+          value: this.blockBuffer.size,
+        });
         await next(block);
       }
     })();
@@ -61,9 +62,10 @@ export class FetchService implements OnApplicationShutdown {
     const subscribeHeads = () =>
       this.api.rpc.chain.subscribeFinalizedHeads((head) => {
         this.latestFinalizedHeight = head.number.toNumber();
-        this.eventEmitter.emit(
-          'metric.write', {name:Metrics.TargetHeight,value:this.latestFinalizedHeight}
-        );
+        this.eventEmitter.emit('metric.write', {
+          name: Metrics.TargetHeight,
+          value: this.latestFinalizedHeight,
+        });
       });
     this.api.on('connected', subscribeHeads);
     await subscribeHeads();
@@ -87,9 +89,7 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
-      logger.info(
-        `fetch block [${startBlockHeight}, ${endBlockHeight}]`,
-      );
+      logger.info(`fetch block [${startBlockHeight}, ${endBlockHeight}]`);
       await this.fetchMeta(endBlockHeight);
       const blocks = await (this.nodeConfig.preferRange
         ? SubstrateUtil.fetchBlocksViaRangeQuery(
@@ -105,9 +105,10 @@ export class FetchService implements OnApplicationShutdown {
       for (const block of blocks) {
         this.blockBuffer.put(block);
       }
-      this.eventEmitter.emit(
-          'metric.write', {name:Metrics.BlockQueueSize,value:this.blockBuffer.size}
-      );
+      this.eventEmitter.emit('metric.write', {
+        name: Metrics.BlockQueueSize,
+        value: this.blockBuffer.size,
+      });
       this.latestPreparedHeight = endBlockHeight;
     }
   }
