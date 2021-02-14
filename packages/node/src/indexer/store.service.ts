@@ -19,9 +19,7 @@ export class StoreService {
   ): Promise<void> {
     for (const { attributes, name } of models) {
       this.sequelize.define(name, attributes, {
-        // timestamps: false,
         underscored: true,
-        freezeTableName: true,
         schema,
       });
     }
