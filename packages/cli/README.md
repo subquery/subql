@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.7.3-0 linux-x64 node-v14.15.4
+@subql/cli/0.7.3 linux-x64 node-v14.15.4
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -50,7 +50,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.7.3-0/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.7.3/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -65,7 +65,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.7.3-0/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.7.3/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -82,7 +82,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.1/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
 
 ## `subql init [PROJECTNAME]`
 
@@ -100,5 +100,5 @@ OPTIONS
   --starter
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.7.3-0/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.7.3/lib/commands/init.js)_
 <!-- commandsstop -->
