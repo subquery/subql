@@ -1,0 +1,85 @@
+# Changelog
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.8.1] - 2021-02-15
+### Fixed
+- fix dependencies (#164)
+
+## [0.8.0] - 2021-02-15
+### Changed
+- bump dependencies
+- don't freeze table name (#161)
+
+### Added
+- cache metadata if specVersion bumped (#156)
+- improve logging, support --output-fmt=json (#158)
+- support override network endpoint from --network-endpoint flag (#157)
+- add prometheus metrics (#159)
+
+## [0.7.0] - 2021-01-27
+### Fixed
+- fix crash for events not own by extrinsic (#120)
+
+### Added
+- batch fetch blocks (#124)
+- wrap all handler executions of same block in a db transaction (#125)
+- node add startscript (#128)
+
+## [0.6.0] - 2021-01-25
+### Changed
+- bump @polkadot/api (#90)
+- clean up console output unless start with --debug (#95)
+- bump @polkadot/api to v3.6.3 (#109)
+
+### Added
+- patch and inject api in sandbox context (#103)
+- support specVersion filter and success filter (#106)
+- support other custom types option that @polkadot/api has (#107)
+
+## [0.5.0] - 2021-01-15
+### Fixed
+- Fix BigInt transformation (#79)
+
+### Changed
+- escalate sandbox out of IndexerManager (#83)
+
+## [0.4.0] - 2021-01-12
+### Added
+- allow user to define start block in project (#54)
+- add local flag to support create all tables in the default db schema (#59)
+- retry when can not establish connection with postgres (#61)
+- add priority to find subquery project entry point from package json file (#60)
+- support load project from tarball file (#55)
+
+### Fixed
+- read db connection strings from env (#63)
+
+### Changed
+- [BREAKING] project manifest spec updated to support custom types (#65)
+
+## [0.3.0] - 2021-01-06
+### Added
+- support callHandler and eventHandler (#47)
+
+## 0.2.0 - 2020-12-22
+### Added
+- support block handler
+- put subquery tables in their own db schema
+- use BigInt instead of BN (#27)
+
+### Changed
+- bump @polkadot/api to 3.1.1
+
+[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/OnFinality-io/subql/compare/v0.8.0...v0.8.1
+[0.8.0]: https://github.com/OnFinality-io/subql/compare/v0.7.0...v0.8.0
+[0.7.0]: https://github.com/OnFinality-io/subql/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/OnFinality-io/subql/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/OnFinality-io/subql/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/OnFinality-io/subql/compare/v0.2.0...v0.3.0
