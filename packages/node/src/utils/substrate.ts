@@ -7,6 +7,7 @@ import {
   BlockHash,
   EventRecord,
   LastRuntimeUpgradeInfo,
+  RuntimeVersion,
   SignedBlock,
 } from '@polkadot/types/interfaces';
 import {
@@ -170,18 +171,15 @@ export async function fetchBlocks(
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksRange(api, startHeight, endHeight);
   const blockHashs = blocks.map((b) => b.block.header.hash);
-  const [blockEvents, runtimeUpgrades] = await Promise.all([
+  const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    fetchLastRuntimeUpgradeRange(api, blockHashs),
+    fetchRuntimeVersionRange(api, blockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const runtimeUpgrade = runtimeUpgrades[idx];
+    const { specVersion } = runtimeVersions[idx];
 
-    const wrappedBlock = wrapBlock(
-      block,
-      runtimeUpgrade.unwrap()?.specVersion.toNumber(),
-    );
+    const wrappedBlock = wrapBlock(block, specVersion.toNumber());
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {
@@ -247,11 +245,11 @@ export async function fetchEventsRange(
   return Promise.all(hashs.map((hash) => api.query.system.events.at(hash)));
 }
 
-export async function fetchLastRuntimeUpgradeRange(
+export async function fetchRuntimeVersionRange(
   api: ApiPromise,
   hashs: BlockHash[],
-): Promise<Option<LastRuntimeUpgradeInfo>[]> {
+): Promise<RuntimeVersion[]> {
   return Promise.all(
-    hashs.map((hash) => api.query.system.lastRuntimeUpgrade.at(hash)),
+    hashs.map((hash) => api.rpc.state.getRuntimeVersion(hash)),
   );
 }
