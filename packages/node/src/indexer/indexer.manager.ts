@@ -96,6 +96,7 @@ export class IndexerManager {
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();
       this.fetchService.latestProcessed(block.block.header.number.toNumber());
+      await tx.commit();
     } catch (e) {
       logger.error(
         `failed to handler block ${block.block.header.number.toString()}, error: ${
@@ -108,7 +109,6 @@ export class IndexerManager {
         process.exit(1);
       }
     }
-    await tx.commit();
   }
 
   async start(): Promise<void> {
@@ -125,7 +125,12 @@ export class IndexerManager {
         // FIXME: retry before exit
         process.exit(1);
       });
-    this.fetchService.register((block) => this.indexBlock(block));
+    try {
+      this.fetchService.register((block) => this.indexBlock(block));
+    } catch (e) {
+      logger.error('failed to index block', e);
+      process.exit(1);
+    }
   }
 
   private async initVM(): Promise<void> {
