@@ -96,19 +96,16 @@ export class IndexerManager {
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();
       this.fetchService.latestProcessed(block.block.header.number.toNumber());
-      await tx.commit();
     } catch (e) {
       logger.error(
         `failed to handler block ${block.block.header.number.toString()}, error: ${
           e?.message
         }`,
       );
-      try {
-        await tx.rollback();
-      } finally {
-        process.exit(1);
-      }
+      await tx.rollback();
+      throw e;
     }
+    await tx.commit();
   }
 
   async start(): Promise<void> {

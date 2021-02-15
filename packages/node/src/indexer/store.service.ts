@@ -27,9 +27,6 @@ export class StoreService {
   }
 
   setTransaction(tx: Transaction) {
-    if (this.tx) {
-      throw new Error('more than one tx created');
-    }
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
   }
