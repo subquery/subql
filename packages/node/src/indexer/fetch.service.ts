@@ -8,7 +8,7 @@ import { isUndefined } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { Metrics } from '../prometheus/types';
 import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
+import { delay, timeout } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
@@ -52,7 +52,12 @@ export class FetchService implements OnApplicationShutdown {
           name: Metrics.BlockQueueSize,
           value: this.blockBuffer.size,
         });
-        await next(block);
+        try {
+          await timeout(next(block), 10);
+        } catch (e) {
+          logger.error('failed to index block', e);
+          await delay(5);
+        }
       }
     })();
     return () => (stopper = true);

@@ -102,11 +102,8 @@ export class IndexerManager {
           e?.message
         }`,
       );
-      try {
-        await tx.rollback();
-      } finally {
-        process.exit(1);
-      }
+      await tx.rollback();
+      throw e;
     }
     await tx.commit();
   }
