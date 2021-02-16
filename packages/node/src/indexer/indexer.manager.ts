@@ -122,12 +122,7 @@ export class IndexerManager {
         // FIXME: retry before exit
         process.exit(1);
       });
-    try {
-      this.fetchService.register((block) => this.indexBlock(block));
-    } catch (e) {
-      logger.error('failed to index block', e);
-      process.exit(1);
-    }
+    this.fetchService.register((block) => this.indexBlock(block));
   }
 
   private async initVM(): Promise<void> {
