@@ -52,11 +52,15 @@ export class FetchService implements OnApplicationShutdown {
           name: Metrics.BlockQueueSize,
           value: this.blockBuffer.size,
         });
-        try {
-          await timeout(next(block), 10);
-        } catch (e) {
-          logger.error('failed to index block', e);
-          await delay(5);
+        let success = false;
+        while (!success) {
+          try {
+            await timeout(next(block), 10);
+            success = true;
+          } catch (e) {
+            logger.error('failed to index block', e);
+            await delay(5);
+          }
         }
       }
     })();
