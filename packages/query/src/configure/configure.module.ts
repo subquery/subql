@@ -16,7 +16,7 @@ export class ConfigureModule {
         alias: 'n',
         describe: 'project name',
         type: 'string',
-        demandOption: false,
+        demandOption: true,
       },
       playground: {
         describe: 'enable graphql playground',
