@@ -20,7 +20,7 @@ jobs:
     - name: build
       run: yarn workspaces foreach run build
     - name: code-style check
-      run: yarn pretty-quick --check --pattern 'packages/*/src/**/*' --branch main
+      run: yarn pretty-quick --check --pattern 'packages/*/src/**/*' --branch origin/main
     - name: lint
       run: yarn lint
     - name: test
