@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2021-02-17
+### Fixed
+- keep retrying failed block not skipping it (#175)
+
 ## [0.8.2] - 2021-02-16
 ### Fixed
 - fix query.system.lastRuntimeUpgrade return null before the first runtime upgrade, use rpc.state.getRuntimeVersion instead (#169)
@@ -80,7 +84,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/OnFinality-io/subql/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/OnFinality-io/subql/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/OnFinality-io/subql/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/OnFinality-io/subql/compare/v0.7.0...v0.8.0
