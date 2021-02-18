@@ -49,6 +49,7 @@ function colorizeLevel(level: number) {
 
 const outputFmt = argv('output-fmt');
 const debug = argv('debug');
+// TODO: support if loglevel is specified in config file.
 const logLevel = argv('log-level') as string | undefined;
 
 const logger = Pino({
