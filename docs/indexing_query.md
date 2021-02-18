@@ -89,11 +89,19 @@ For the development debugging purpose, user can run the node in local mode. Swit
 If not using local mode, it will create a new schema with the initial `subquery_ ` and corresponding project tables.
 ## Query
 
-After running Hasura successfully,open your browser and head to `http://localhost:8080/console`.
+### Install @subql/query globally
 
-Under the `DATA` tab, on the left top corner select the schema you just created, it usually named `public` if you used local mode, and `subquery_x` if not.
+````
+npm install -g @subql/query
+````
 
-Then you can see the table is currently untracked, click on the `Track` button.
+### Run the query service
 
-Finally, head to the `GRAPHQL` tab, in the explorer you should see the table is ready to query.
+````
+subql-query --name <project_name> --playground
+````
+Make sure the project name is same as you defined at the beginning when [initialize the project](/quickstart.html#initialize-the-starter-package).
 
+After running subql-query service successfully, open your browser and head to `http://localhost:3000`.
+
+Finally, you should see a GraphQL playground is showing in the explorer and the schemas that ready to query.

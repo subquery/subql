@@ -23,8 +23,7 @@ Prerequisites
 Then start our `@subql/node` with the path of local SubQuery project as arguments, `@subql/node` will handle the rest.
 
 #### Step #3: Run a Query Service
-We do have plan for a custom built graphql query service `@subql/query`, but in this stage we will use [Harura](https://hasura.io) to do the job.
-
+A custom-built graphql query service `@subql/query` is designed to interact with the GraphQL API of deployed SubQuery project, querying and viewing the schema.
 
 #### Components
 Npmjs Packages to published:
