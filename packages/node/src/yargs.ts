@@ -52,6 +52,12 @@ export function getYargsOption() {
       type: 'string',
       choices: ['json', 'colored'],
     },
+    'log-level': {
+      demandOption: false,
+      describe: 'specify log level to print',
+      type: 'string',
+      choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
+    },
   });
 }
 

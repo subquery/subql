@@ -7,6 +7,7 @@ import path from 'path';
 import yaml from 'js-yaml';
 import { last } from 'lodash';
 import parseJson from 'parse-json';
+import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';
 
 export interface IConfig {
@@ -19,6 +20,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly outputFmt?: 'json';
+  readonly logLevel?: LevelWithSilent;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -94,6 +96,10 @@ export class NodeConfig implements IConfig {
 
   get networkEndpoint(): string | undefined {
     return this._config.networkEndpoint;
+  }
+
+  get logLevel(): LevelWithSilent {
+    return this.debug ? 'debug' : this._config.logLevel;
   }
 
   merge(config: Partial<IConfig>): this {

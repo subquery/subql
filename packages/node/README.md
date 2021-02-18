@@ -27,6 +27,9 @@ Options:
       --network-endpoint  blockchain network endpoint to connect        [string]
       --output-fmt        print log as json or plain text
                                            [string] [choices: "json", "colored"]
+      --log-level         specify log level to print
+          [string] [choices: "fatal", "error", "warn", "info", "debug", "trace",
+                                                                       "silent"]
 ```
 
 ## License

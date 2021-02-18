@@ -16,6 +16,16 @@ const LEVELS = {
   10: 'TRACE',
 };
 
+const levelsMap = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+  fatal: 60,
+  silent: 999,
+};
+
 const ctx = new chalk.Instance({ level: 3 });
 const colored = {
   default: ctx.white,
@@ -39,6 +49,7 @@ function colorizeLevel(level: number) {
 
 const outputFmt = argv('output-fmt');
 const debug = argv('debug');
+const logLevel = argv('log-level') as string | undefined;
 
 const logger = Pino({
   messageKey: 'message',
@@ -82,7 +93,7 @@ const logger = Pino({
       const { category, level, message, payload, time } = logObject;
       let error = '';
       if (payload instanceof Error) {
-        if (debug) {
+        if (debug || ['debug', 'trace'].includes(logLevel)) {
           error = `\n${payload.stack}`;
         } else {
           error = `${payload.name}: ${payload.message}`;
@@ -133,4 +144,11 @@ export class NestLogger implements LoggerService {
   warn(message: any): any {
     this.logger.warn(message);
   }
+}
+
+export function levelFilter(
+  test: LevelWithSilent,
+  target: LevelWithSilent,
+): boolean {
+  return levelsMap[test?.toLowerCase()] >= levelsMap[target.toLowerCase()];
 }
