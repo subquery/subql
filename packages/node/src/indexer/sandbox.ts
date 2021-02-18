@@ -7,6 +7,8 @@ import { ApiPromise } from '@polkadot/api';
 import { Store } from '@subql/types';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
+import { NodeConfig } from '../configure/NodeConfig';
+import { levelFilter } from '../utils/logger';
 
 export interface SandboxOption {
   store: Store;
@@ -45,9 +47,10 @@ function getProjectEntry(root: string): string {
 export class IndexerSandbox extends NodeVM {
   private option: SandboxOption;
   private script: VMScript;
+  private config: NodeConfig;
   entry: string;
 
-  constructor(option: SandboxOption) {
+  constructor(option: SandboxOption, config?: NodeConfig) {
     const { root } = option;
     const entry = getProjectEntry(root);
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
@@ -56,6 +59,7 @@ export class IndexerSandbox extends NodeVM {
       },
     });
     super(vmOption);
+    this.config = config;
     this.injectGlobals(option);
     this.option = option;
     this.entry = entry;
@@ -71,7 +75,18 @@ export class IndexerSandbox extends NodeVM {
   async securedExec(funcName: string, args: unknown[]): Promise<void> {
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
-    await this.run(this.script);
+    try {
+      await this.run(this.script);
+    } catch (e) {
+      e.handler = funcName;
+      if (
+        this.config?.logLevel &&
+        levelFilter('debug', this.config?.logLevel)
+      ) {
+        e.handlerArgs = JSON.stringify(args);
+      }
+      throw e;
+    }
     this.setGlobal('args', []);
     this.setGlobal('funcName', '');
   }

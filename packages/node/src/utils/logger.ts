@@ -16,6 +16,16 @@ const LEVELS = {
   10: 'TRACE',
 };
 
+const levelsMap = {
+  trace: 10,
+  debug: 20,
+  info: 30,
+  warn: 40,
+  error: 50,
+  fatal: 60,
+  silent: 999,
+};
+
 const ctx = new chalk.Instance({ level: 3 });
 const colored = {
   default: ctx.white,
@@ -38,16 +48,36 @@ function colorizeLevel(level: number) {
 }
 
 const outputFmt = argv('output-fmt');
+const debug = argv('debug');
+// TODO: support if loglevel is specified in config file.
+const logLevel = argv('log-level') as string | undefined;
 
 const logger = Pino({
   messageKey: 'message',
   timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
-  nestedKey: 'paylad',
+  nestedKey: 'payload',
   formatters: {
     level(label, number) {
       return { level: label };
     },
   },
+  serializers:
+    outputFmt === 'json'
+      ? {
+          payload: (value) => {
+            if (value instanceof Error) {
+              return {
+                type: 'error',
+                name: value.name,
+                message: value.message,
+                stack: value.stack,
+              };
+            } else {
+              return JSON.stringify(value);
+            }
+          },
+        }
+      : {},
   prettyPrint: outputFmt !== 'json',
   prettifier: function (options) {
     // `this` is bound to the pino instance
@@ -61,10 +91,18 @@ const logger = Pino({
       }
       if (!logObject) return inputData;
       // implement prettification
-      const { category, level, message, time } = logObject;
+      const { category, level, message, payload, time } = logObject;
+      let error = '';
+      if (payload instanceof Error) {
+        if (debug || ['debug', 'trace'].includes(logLevel)) {
+          error = `\n${payload.stack}`;
+        } else {
+          error = `${payload.name}: ${payload.message}`;
+        }
+      }
       return `${time} <${ctx.magentaBright(category)}> ${colorizeLevel(
         level,
-      )} ${message} \n`;
+      )} ${message} ${error}\n`;
     };
 
     function isObject(input) {
@@ -92,15 +130,26 @@ export function setLevel(level: LevelWithSilent): void {
 export class NestLogger implements LoggerService {
   private logger = logger.child({ category: 'nestjs' });
 
-  error(message: any, trace?: string, context?: string) {
-    this.logger.error(message, trace);
+  error(message: any, trace?: string) {
+    if (trace) {
+      this.logger.error({ trace }, message);
+    } else {
+      this.logger.error(message);
+    }
   }
 
-  log(message: any, context?: string): any {
+  log(message: any): any {
     this.logger.info(message);
   }
 
-  warn(message: any, context?: string): any {
+  warn(message: any): any {
     this.logger.warn(message);
   }
+}
+
+export function levelFilter(
+  test: LevelWithSilent,
+  target: LevelWithSilent,
+): boolean {
+  return levelsMap[test?.toLowerCase()] >= levelsMap[target.toLowerCase()];
 }

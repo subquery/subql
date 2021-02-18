@@ -97,11 +97,6 @@ export class IndexerManager {
       await this.subqueryState.save();
       this.fetchService.latestProcessed(block.block.header.number.toNumber());
     } catch (e) {
-      logger.error(
-        `failed to handler block ${block.block.header.number.toString()}, error: ${
-          e?.message
-        }`,
-      );
       await tx.rollback();
       throw e;
     }
@@ -118,7 +113,7 @@ export class IndexerManager {
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
-        logger.error('failed to fetch block', err);
+        logger.error(err, 'failed to fetch block');
         // FIXME: retry before exit
         process.exit(1);
       });
@@ -127,11 +122,14 @@ export class IndexerManager {
 
   private async initVM(): Promise<void> {
     const api = await this.apiService.getPatchedApi();
-    this.vm = new IndexerSandbox({
-      store: this.storeService.getStore(),
-      api,
-      root: this.project.path,
-    });
+    this.vm = new IndexerSandbox(
+      {
+        store: this.storeService.getStore(),
+        api,
+        root: this.project.path,
+      },
+      this.nodeConfig,
+    );
 
     this.vm.on('console.log', (data) => getLogger('sandbox').log(data));
   }
