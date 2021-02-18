@@ -43,7 +43,7 @@ export class FetchService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  register(next: (value: BlockContent) => Promise<void>) {
+  register(next: (value: BlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
       while (!stopper) {
@@ -58,7 +58,12 @@ export class FetchService implements OnApplicationShutdown {
             await timeout(next(block), 10);
             success = true;
           } catch (e) {
-            logger.error('failed to index block', e);
+            logger.error(
+              e,
+              `failed to index block at height ${block.block.block.header.number.toString()} ${
+                e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
+              }`,
+            );
             await delay(5);
           }
         }

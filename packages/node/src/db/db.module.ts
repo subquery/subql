@@ -26,7 +26,7 @@ async function establishConnection(
   try {
     await sequelize.authenticate();
   } catch (error) {
-    logger.error('Unable to connect to the database', error.message);
+    logger.error(error, 'Unable to connect to the database');
     if (numRetries > 0) {
       await delay(3);
       void (await establishConnection(sequelize, numRetries - 1));

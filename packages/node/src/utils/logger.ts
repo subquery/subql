@@ -38,16 +38,34 @@ function colorizeLevel(level: number) {
 }
 
 const outputFmt = argv('output-fmt');
+const debug = argv('debug');
 
 const logger = Pino({
   messageKey: 'message',
   timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
-  nestedKey: 'paylad',
+  nestedKey: 'payload',
   formatters: {
     level(label, number) {
       return { level: label };
     },
   },
+  serializers:
+    outputFmt === 'json'
+      ? {
+          payload: (value) => {
+            if (value instanceof Error) {
+              return {
+                type: 'error',
+                name: value.name,
+                message: value.message,
+                stack: value.stack,
+              };
+            } else {
+              return JSON.stringify(value);
+            }
+          },
+        }
+      : {},
   prettyPrint: outputFmt !== 'json',
   prettifier: function (options) {
     // `this` is bound to the pino instance
@@ -61,10 +79,18 @@ const logger = Pino({
       }
       if (!logObject) return inputData;
       // implement prettification
-      const { category, level, message, time } = logObject;
+      const { category, level, message, payload, time } = logObject;
+      let error = '';
+      if (payload instanceof Error) {
+        if (debug) {
+          error = `\n${payload.stack}`;
+        } else {
+          error = `${payload.name}: ${payload.message}`;
+        }
+      }
       return `${time} <${ctx.magentaBright(category)}> ${colorizeLevel(
         level,
-      )} ${message} \n`;
+      )} ${message} ${error}\n`;
     };
 
     function isObject(input) {
@@ -92,15 +118,19 @@ export function setLevel(level: LevelWithSilent): void {
 export class NestLogger implements LoggerService {
   private logger = logger.child({ category: 'nestjs' });
 
-  error(message: any, trace?: string, context?: string) {
-    this.logger.error(message, trace);
+  error(message: any, trace?: string) {
+    if (trace) {
+      this.logger.error({ trace }, message);
+    } else {
+      this.logger.error(message);
+    }
   }
 
-  log(message: any, context?: string): any {
+  log(message: any): any {
     this.logger.info(message);
   }
 
-  warn(message: any, context?: string): any {
+  warn(message: any): any {
     this.logger.warn(message);
   }
 }
