@@ -95,7 +95,7 @@ npm install -g @subql/query
 ### Run the query service
 
 ````
-DB_HOST=localhost
+export DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
 Make sure the project name is same as you defined at the beginning when [initialize the project](/quickstart.html#initialize-the-starter-package).
