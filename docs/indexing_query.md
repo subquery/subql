@@ -13,9 +13,6 @@ An alternative indexing solution with <strong>docker</strong> has provided in th
 - [Postgres](https://www.postgresql.org/) database 12 or higher. 
 As after [SubQuery node](#start-a-local-subquery-node) indexing the blockchain, extracted data need to store in in an external database instance.
 
-- [Hasura](https://hasura.io/) provide an instant, realtime GraphQL APIs over the Postgres. It will meet the current demands of interacting with stored chain data in database.
-
-
 ## Start a local SubQuery node
 SubQuery node is an implementation that extract substrate-based blockchain data which designated from a SubQuery project, and update it into a Postgres database.
 
@@ -49,7 +46,7 @@ The acceptable project path can be either a directory or [packed project](/defin
 export DB_USER=postgres 
 export DB_PASS=postgres 
 export DB_DATABASE=postgres 
-export DB_HOST=postgres 
+export DB_HOST=localhost 
 export DB_POST=5432
 subql-node -f your-project-path 
 ````
@@ -98,9 +95,11 @@ npm install -g @subql/query
 ### Run the query service
 
 ````
+DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
 Make sure the project name is same as you defined at the beginning when [initialize the project](/quickstart.html#initialize-the-starter-package).
+Also check the environment variables are correct.
 
 After running subql-query service successfully, open your browser and head to `http://localhost:3000`.
 
