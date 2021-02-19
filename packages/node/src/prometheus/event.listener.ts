@@ -4,6 +4,7 @@
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
+import { BlockPayload } from '../indexer/types';
 import { MetricPayload, Metrics } from './types';
 
 export class MetricEventListener {
@@ -15,7 +16,7 @@ export class MetricEventListener {
     @InjectMetric('subql_indexer_block_queue_size')
     private blockQueueSizeMetric: Gauge<string>,
     @InjectMetric('subql_indexer_processing_block_height')
-    private processingHeight: Gauge<string>,
+    private processingBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
   ) {}
@@ -24,12 +25,18 @@ export class MetricEventListener {
     [Metrics.ApiConnected]: this.apiConnectedMetric,
     [Metrics.InjectedApiConnected]: this.injectedApiConnectedMetric,
     [Metrics.BlockQueueSize]: this.blockQueueSizeMetric,
-    [Metrics.ProcessingHeight]: this.processingHeight,
     [Metrics.TargetHeight]: this.targetHeightMetric,
   };
 
   @OnEvent('metric.write')
-  handleEvents({ name, value }: MetricPayload) {
+  handleMetric({ name, value }: MetricPayload) {
     this.metricMap[name]?.set(value);
+  }
+
+  @OnEvent('block.processing')
+  handleProcessingBlock(blockPayload: BlockPayload) {
+    if (blockPayload.name === 'processing_block_event') {
+      this.processingBlockHeight.set(blockPayload.data.height);
+    }
   }
 }

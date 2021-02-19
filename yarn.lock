@@ -2800,6 +2800,7 @@ __metadata:
     "@types/express": ^4.17.11
     "@types/jest": ^26.0.20
     "@types/lodash": ^4.14.168
+    "@types/moment-duration-format": ^2
     "@types/pino": ^6.3.5
     "@types/sequelize": ^4.28.9
     "@types/supertest": ^2.0.10
@@ -2809,6 +2810,8 @@ __metadata:
     app-module-path: ^2.2.0
     dotenv: ^8.2.0
     lodash: ^4.17.20
+    moment: ^2.29.1
+    moment-duration-format: ^2.3.2
     nodemon: ^2.0.7
     parse-json: ^5.2.0
     pg: ^8.5.1
@@ -3305,6 +3308,15 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 378ca1b93f5761eddbdca13f1870b439a2ecd0e05284f2138b9cf6880bb857d5783f3838439440aca78fcd74460c28a868b35e2ec8109695a22e95c384344f02
+  languageName: node
+  linkType: hard
+
+"@types/moment-duration-format@npm:^2":
+  version: 2.2.2
+  resolution: "@types/moment-duration-format@npm:2.2.2"
+  dependencies:
+    moment: ">=2.14.0"
+  checksum: 1784d37fb57753b1a6fc23ea6a207ec39fb2e55c29a49985e33c863080fb5eff78a4190ed86ea500e23cb0c93d385ed594cbf35c793a014d879bc02eb2651b36
   languageName: node
   linkType: hard
 
@@ -13134,6 +13146,13 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
+"moment-duration-format@npm:^2.3.2":
+  version: 2.3.2
+  resolution: "moment-duration-format@npm:2.3.2"
+  checksum: e4d548c14c7ff30adbf92815d2dee49b41188ccd2908d0165521e3e231c533f72460aee20228614e3091f788d9a60bcedcc5c2e48d5a2825c53ef5cf8768f8d5
+  languageName: node
+  linkType: hard
+
 "moment-timezone@npm:^0.5.31":
   version: 0.5.32
   resolution: "moment-timezone@npm:0.5.32"
@@ -13143,7 +13162,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"moment@npm:>= 2.9.0, moment@npm:^2.26.0":
+"moment@npm:>= 2.9.0, moment@npm:>=2.14.0, moment@npm:^2.26.0, moment@npm:^2.29.1":
   version: 2.29.1
   resolution: "moment@npm:2.29.1"
   checksum: 86729013febf7160de5b93da69273dd304d674b0224f9544b3abd09a87671ddd2cdd57598261ce57588910d63747ffd5590965e83c790d8bf327083c0e0a06e0

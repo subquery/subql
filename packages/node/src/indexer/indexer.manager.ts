@@ -18,7 +18,8 @@ import { ApiService } from './api.service';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
-import { BlockContent } from './types';
+import { BlockContent, BlockEvents } from './types';
+import { BenchmarkService } from './benchmark.service';
 
 const DEFAULT_DB_SCHEMA = 'public';
 
@@ -34,6 +35,7 @@ export class IndexerManager {
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
+    protected benchmarkService: BenchmarkService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -42,9 +44,12 @@ export class IndexerManager {
   ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
-    this.eventEmitter.emit('metric.write', {
-      name: Metrics.ProcessingHeight,
-      value: block.block.header.number.toNumber(),
+    this.eventEmitter.emit('block.processing', {
+      name: BlockEvents.BlockProcessing,
+      data: {
+        height: block.block.header.number.toNumber(),
+        timestamp: Date.now(),
+      },
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
@@ -118,6 +123,7 @@ export class IndexerManager {
         process.exit(1);
       });
     this.fetchService.register((block) => this.indexBlock(block));
+    await this.benchmarkService.init();
   }
 
   private async initVM(): Promise<void> {
