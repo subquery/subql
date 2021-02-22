@@ -27,7 +27,9 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   return {
     ...config,
-    subqueryName: config.subqueryName ?? last(config.subquery.split(path.sep)),
+    subqueryName:
+      config.subqueryName ??
+      last(path.resolve(config.subquery).split(path.sep)),
   } as MinConfig;
 }
 

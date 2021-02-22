@@ -135,6 +135,7 @@ export class IndexerManager {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
+    const { chain, genesisHash } = this.apiService.networkMeta;
     if (!project) {
       let projectSchema: string;
       if (this.nodeConfig.localMode) {
@@ -148,7 +149,6 @@ export class IndexerManager {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
-
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
@@ -156,7 +156,20 @@ export class IndexerManager {
         nextBlockHeight: Math.min(
           ...this.project.dataSources.map((item) => item.startBlock ?? 1),
         ),
+        network: chain,
+        networkGenesis: genesisHash,
       });
+    } else {
+      if (!project.networkGenesis || !project.network) {
+        project.network = chain;
+        project.networkGenesis = genesisHash;
+        await project.save();
+      } else if (project.networkGenesis !== genesisHash) {
+        logger.error(
+          `Not same network: genesisHash different - ${project.networkGenesis} : ${genesisHash}`,
+        );
+        process.exit(1);
+      }
     }
     return project;
   }

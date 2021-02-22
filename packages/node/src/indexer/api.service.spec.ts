@@ -10,7 +10,12 @@ import { ApiService } from './api.service';
 
 jest.mock('@polkadot/api', () => {
   const ApiPromise = jest.fn();
-  (ApiPromise as any).create = jest.fn(() => ({ on: jest.fn() }));
+  (ApiPromise as any).create = jest.fn(() => ({
+    on: jest.fn(),
+    runtimeChain: jest.fn(),
+    runtimeVersion: { specName: jest.fn() },
+    genesisHash: jest.fn(),
+  }));
   return { ApiPromise, WsProvider: jest.fn() };
 });
 

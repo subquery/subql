@@ -7,6 +7,7 @@ export enum IndexerEvent {
   BlockTarget = 'block_target_height',
   BlockProcessing = 'block_processing_height',
   BlockQueueSize = 'block_queue_size',
+  NetworkMetadata = 'network_metadata',
 }
 
 export interface ProcessingBlockPayload {
@@ -20,4 +21,10 @@ export interface TargetBlockPayload {
 
 export interface EventPayload<T> {
   value: T;
+}
+
+export interface NetworkMetadataPayload {
+  chain: string;
+  specName: string;
+  genesisHash: string;
 }

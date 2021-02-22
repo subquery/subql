@@ -15,6 +15,8 @@ interface SubqueryCreationAttributes {
   version?: string;
   hash: string;
   nextBlockHeight?: number;
+  network: string;
+  networkGenesis: string;
 }
 
 export interface SubqueryModel
@@ -56,6 +58,14 @@ export function SubqueryFactory(sequelize: Sequelize): SubqueryRepo {
         type: DataTypes.INTEGER,
         allowNull: false,
         defaultValue: 1,
+      },
+      network: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      networkGenesis: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
     },
     { underscored: true },
