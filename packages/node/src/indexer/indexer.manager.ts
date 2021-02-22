@@ -12,6 +12,7 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
+import { timeout } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { IndexerEvent } from './events';
@@ -19,7 +20,6 @@ import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
-import { timeout } from '../utils/promise';
 
 const DEFAULT_DB_SCHEMA = 'public';
 
@@ -68,11 +68,9 @@ export class IndexerManager {
                   extrinsics,
                   handler.filter,
                 );
-                await Promise.all(
-                  filteredExtrinsics.map(async (e) =>
-                    this.vm.securedExec(handler.handler, [e]),
-                  ),
-                );
+                for (const e of filteredExtrinsics) {
+                  await this.vm.securedExec(handler.handler, [e]);
+                }
                 break;
               }
               case SubqlKind.EventHandler: {
@@ -80,11 +78,9 @@ export class IndexerManager {
                   events,
                   handler.filter,
                 );
-                await Promise.all(
-                  filteredEvents.map(async (e) =>
-                    this.vm.securedExec(handler.handler, [e]),
-                  ),
-                );
+                for (const e of filteredEvents) {
+                  await this.vm.securedExec(handler.handler, [e]);
+                }
                 break;
               }
               default:
