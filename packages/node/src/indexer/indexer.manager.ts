@@ -19,6 +19,7 @@ import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
+import { timeout } from '../utils/promise';
 
 const DEFAULT_DB_SCHEMA = 'public';
 
@@ -49,7 +50,7 @@ export class IndexerManager {
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     try {
-      await this.apiService.setBlockhash(block.block.hash);
+      await timeout(this.apiService.setBlockhash(block.block.hash), 10); //TODO remove this when polkadot/api issue #3197 solved
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;

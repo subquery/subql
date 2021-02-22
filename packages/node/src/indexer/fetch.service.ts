@@ -54,7 +54,7 @@ export class FetchService implements OnApplicationShutdown {
         let success = false;
         while (!success) {
           try {
-            await timeout(next(block), 10);
+            await next(block);
             success = true;
           } catch (e) {
             logger.error(
