@@ -14,6 +14,7 @@ import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
+import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
@@ -41,7 +42,7 @@ export class IndexerManager {
   ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
-    this.eventEmitter.emit('block_processing_height', {
+    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: block.block.header.number.toNumber(),
       timestamp: Date.now(),
     });
