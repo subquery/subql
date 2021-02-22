@@ -9,6 +9,7 @@ import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
 import { levelFilter } from '../utils/logger';
+import { timeout } from '../utils/promise';
 
 export interface SandboxOption {
   store: Store;
@@ -76,7 +77,7 @@ export class IndexerSandbox extends NodeVM {
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     try {
-      await this.run(this.script);
+      await timeout(this.run(this.script), 10);
     } catch (e) {
       e.handler = funcName;
       if (

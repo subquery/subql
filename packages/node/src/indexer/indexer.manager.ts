@@ -12,6 +12,7 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
+import { timeout } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { IndexerEvent } from './events';
@@ -49,7 +50,7 @@ export class IndexerManager {
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     try {
-      await this.apiService.setBlockhash(block.block.hash);
+      await timeout(this.apiService.setBlockhash(block.block.hash), 10); //TODO remove this when polkadot/api issue #3197 solved
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;
@@ -67,11 +68,9 @@ export class IndexerManager {
                   extrinsics,
                   handler.filter,
                 );
-                await Promise.all(
-                  filteredExtrinsics.map(async (e) =>
-                    this.vm.securedExec(handler.handler, [e]),
-                  ),
-                );
+                for (const e of filteredExtrinsics) {
+                  await this.vm.securedExec(handler.handler, [e]);
+                }
                 break;
               }
               case SubqlKind.EventHandler: {
@@ -79,11 +78,9 @@ export class IndexerManager {
                   events,
                   handler.filter,
                 );
-                await Promise.all(
-                  filteredEvents.map(async (e) =>
-                    this.vm.securedExec(handler.handler, [e]),
-                  ),
-                );
+                for (const e of filteredEvents) {
+                  await this.vm.securedExec(handler.handler, [e]);
+                }
                 break;
               }
               default:

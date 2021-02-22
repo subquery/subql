@@ -7,7 +7,7 @@ import { ApiPromise } from '@polkadot/api';
 import { isUndefined } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { getLogger } from '../utils/logger';
-import { delay, timeout } from '../utils/promise';
+import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
@@ -54,7 +54,7 @@ export class FetchService implements OnApplicationShutdown {
         let success = false;
         while (!success) {
           try {
-            await timeout(next(block), 10);
+            await next(block);
             success = true;
           } catch (e) {
             logger.error(
