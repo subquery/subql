@@ -2162,6 +2162,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/schedule@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "@nestjs/schedule@npm:0.4.2"
+  dependencies:
+    cron: 1.7.2
+    uuid: 8.3.2
+  peerDependencies:
+    "@nestjs/common": ^6.10.11 || ^7.0.0
+    reflect-metadata: ^0.1.12
+  checksum: 15940f90fa75f35d4c9a002c507a6161e76269a1958ce01fe3652b6943ea2ff80a2fe315c530a3457abce862f4674317a1fee05a8357b16bbce21cdb92828310
+  languageName: node
+  linkType: hard
+
 "@nestjs/schematics@npm:^7.1.0, @nestjs/schematics@npm:^7.2.6, @nestjs/schematics@npm:^7.2.7":
   version: 7.2.7
   resolution: "@nestjs/schematics@npm:7.2.7"
@@ -2791,6 +2804,7 @@ __metadata:
     "@nestjs/core": ^7.6.1
     "@nestjs/event-emitter": ^0.0.2
     "@nestjs/platform-express": ^7.6.1
+    "@nestjs/schedule": ^0.4.2
     "@nestjs/schematics": ^7.2.7
     "@nestjs/testing": ^7.6.9
     "@polkadot/api": ^3.9.2
@@ -2807,6 +2821,7 @@ __metadata:
     "@types/yargs": ^16.0.0
     "@willsoto/nestjs-prometheus": ^3.0.0
     app-module-path: ^2.2.0
+    dayjs: ^1.10.4
     dotenv: ^8.2.0
     lodash: ^4.17.20
     nodemon: ^2.0.7
@@ -6926,6 +6941,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cron@npm:1.7.2":
+  version: 1.7.2
+  resolution: "cron@npm:1.7.2"
+  dependencies:
+    moment-timezone: ^0.5.x
+  checksum: 99e1343f5117f62dab6204d54a720943c97db187eb2d0c54d582ca829ac963f714fc1bd7cd9ac8139e7fc2a6bd9389020c9dc1cd6c60e8d5e460451b846f5391
+  languageName: node
+  linkType: hard
+
 "cross-fetch@npm:3.0.6, cross-fetch@npm:^3.0.4":
   version: 3.0.6
   resolution: "cross-fetch@npm:3.0.6"
@@ -7266,6 +7290,13 @@ __metadata:
   version: 2.0.0
   resolution: "dataloader@npm:2.0.0"
   checksum: 0165c2e80751d269c33d2a14b0078a4f3853cb010e2531e7aa99523aba8d0cdc922b9ad67e4c2bb9074c90e0ee0a41b6e7f5f63c40d31224a71c8a0b703f4be3
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.10.4":
+  version: 1.10.4
+  resolution: "dayjs@npm:1.10.4"
+  checksum: 3b7bb2232fff808209870bc72d4b2000941a1aa45f0226e2907f9dd1dda306d4b3a1eb9058450fd2c324b01a007a37809ac6f9b525806a86902c55e2934cd5d5
   languageName: node
   linkType: hard
 
@@ -13140,6 +13171,15 @@ fsevents@~2.1.2:
   dependencies:
     moment: ">= 2.9.0"
   checksum: 1e5ff2335e310fabdebdde7c0d4b97062bb242c14926e8f79b06fdf8ad356db05d76f75add80ad1b33a68bcd330e265a1ca8b5bbdf1ea2a9c2b5df76d4e12d52
+  languageName: node
+  linkType: hard
+
+"moment-timezone@npm:^0.5.x":
+  version: 0.5.33
+  resolution: "moment-timezone@npm:0.5.33"
+  dependencies:
+    moment: ">= 2.9.0"
+  checksum: d4e72a3514a2885ab26b1cbc640e2f4785c997f9de28bb48bf3994ef137b0a560ca8f07eb07f11121e1223eef0c3bce4bc647b911111481a6a066bbc61285f99
   languageName: node
   linkType: hard
 

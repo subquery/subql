@@ -13,23 +13,23 @@ import { MetricEventListener } from './event.listener';
   providers: [
     MetricEventListener,
     makeGaugeProvider({
-      name: 'subql_indexer_api_connected',
+      name: 'api_connected_status',
       help: 'The indexer api connection status',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_injected_api_connected',
+      name: 'injected_api_connected_status',
       help: 'The indexer injected api connection status',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_processing_block_height',
+      name: 'block_processing_height',
       help: 'The current processing block height',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_target_block_height',
+      name: 'block_target_height',
       help: 'The latest finalized block height',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_block_queue_size',
+      name: 'block_queue_size',
       help: 'The size of fetched block queue',
     }),
   ],

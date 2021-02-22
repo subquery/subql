@@ -1,0 +1,68 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+import { OnEvent } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import { getLogger } from '../utils/logger';
+import { delay } from '../utils/promise';
+import {
+  IndexerEvent,
+  ProcessingBlockPayload,
+  TargetBlockPayload,
+} from './events';
+
+const SAMPLING_TIME_VARIANCE = 15;
+const logger = getLogger('benchmark');
+dayjs.extend(duration);
+
+export class BenchmarkService {
+  private currentProcessingHeight: number;
+  private currentProcessingTimestamp: number;
+  private targetHeight: number;
+  private lastRegisteredHeight: number;
+  private lastRegisteredTimestamp: number;
+  private blockPerSecond: number;
+
+  @Interval(SAMPLING_TIME_VARIANCE * 1000)
+  async benchmark(): Promise<void> {
+    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
+      await delay(10);
+    } else {
+      if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
+        this.blockPerSecond =
+          (this.currentProcessingHeight - this.lastRegisteredHeight) /
+          ((this.currentProcessingTimestamp - this.lastRegisteredTimestamp) /
+            1000);
+        const durationStr = dayjs
+          .duration(
+            (this.targetHeight - this.currentProcessingHeight) /
+              this.blockPerSecond,
+            'seconds',
+          )
+          .format('D [days] HH [hours] MM [mins]');
+        logger.info(
+          `${this.blockPerSecond.toFixed(2)} bps, target: #${
+            this.targetHeight
+          }, current: #${
+            this.currentProcessingHeight
+          }, estimate time: ${durationStr}`,
+        );
+      }
+      this.lastRegisteredHeight = this.currentProcessingHeight;
+      this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
+    }
+  }
+
+  @OnEvent(IndexerEvent.BlockProcessing)
+  handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
+    this.currentProcessingHeight = blockPayload.height;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+
+  @OnEvent(IndexerEvent.BlockTarget)
+  handleTargetBlock(blockPayload: TargetBlockPayload) {
+    this.targetHeight = blockPayload.height;
+  }
+}

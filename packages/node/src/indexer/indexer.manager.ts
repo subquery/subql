@@ -10,11 +10,11 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
-import { Metrics } from '../prometheus/types';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
+import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
@@ -42,9 +42,9 @@ export class IndexerManager {
   ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
-    this.eventEmitter.emit('metric.write', {
-      name: Metrics.ProcessingHeight,
-      value: block.block.header.number.toNumber(),
+    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+      height: block.block.header.number.toNumber(),
+      timestamp: Date.now(),
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);

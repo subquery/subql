@@ -4,32 +4,49 @@
 import { OnEvent } from '@nestjs/event-emitter';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
-import { MetricPayload, Metrics } from './types';
+import {
+  EventPayload,
+  IndexerEvent,
+  ProcessingBlockPayload,
+  TargetBlockPayload,
+} from '../indexer/events';
 
 export class MetricEventListener {
   constructor(
-    @InjectMetric('subql_indexer_api_connected')
+    @InjectMetric('api_connected_status')
     private apiConnectedMetric: Gauge<string>,
-    @InjectMetric('subql_indexer_injected_api_connected')
+    @InjectMetric('injected_api_connected_status')
     private injectedApiConnectedMetric: Gauge<string>,
-    @InjectMetric('subql_indexer_block_queue_size')
+    @InjectMetric('block_queue_size')
     private blockQueueSizeMetric: Gauge<string>,
-    @InjectMetric('subql_indexer_processing_block_height')
-    private processingHeight: Gauge<string>,
-    @InjectMetric('subql_indexer_target_block_height')
+    @InjectMetric('block_processing_height')
+    private processingBlockHeight: Gauge<string>,
+    @InjectMetric('block_target_height')
     private targetHeightMetric: Gauge<string>,
   ) {}
 
-  private metricMap = {
-    [Metrics.ApiConnected]: this.apiConnectedMetric,
-    [Metrics.InjectedApiConnected]: this.injectedApiConnectedMetric,
-    [Metrics.BlockQueueSize]: this.blockQueueSizeMetric,
-    [Metrics.ProcessingHeight]: this.processingHeight,
-    [Metrics.TargetHeight]: this.targetHeightMetric,
-  };
+  @OnEvent(IndexerEvent.ApiConnected)
+  handleApiConnected({ value }: EventPayload<number>) {
+    this.apiConnectedMetric.set(value);
+  }
 
-  @OnEvent('metric.write')
-  handleEvents({ name, value }: MetricPayload) {
-    this.metricMap[name]?.set(value);
+  @OnEvent(IndexerEvent.InjectedApiConnected)
+  handleInjectedApiConnected({ value }: EventPayload<number>) {
+    this.injectedApiConnectedMetric.set(value);
+  }
+
+  @OnEvent(IndexerEvent.BlockQueueSize)
+  handleBlockQueueSizeMetric({ value }: EventPayload<number>) {
+    this.blockQueueSizeMetric.set(value);
+  }
+
+  @OnEvent(IndexerEvent.BlockProcessing)
+  handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
+    this.processingBlockHeight.set(blockPayload.height);
+  }
+
+  @OnEvent(IndexerEvent.BlockTarget)
+  handleTargetBlock(blockPayload: TargetBlockPayload) {
+    this.targetHeightMetric.set(blockPayload.height);
   }
 }
