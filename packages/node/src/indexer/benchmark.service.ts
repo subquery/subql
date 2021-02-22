@@ -2,15 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OnEvent } from '@nestjs/event-emitter';
-import * as moment from 'moment';
-import 'moment-duration-format';
-import { MetricPayload } from '../prometheus/types';
+import { Interval } from '@nestjs/schedule';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
-import { BlockPayload } from './types';
+import {
+  IndexerEvent,
+  ProcessingBlockPayload,
+  TargetBlockPayload,
+} from './events';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
+dayjs.extend(duration);
 
 export class BenchmarkService {
   private currentProcessingHeight: number;
@@ -19,65 +24,45 @@ export class BenchmarkService {
   private lastRegisteredHeight: number;
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
-  private needReset = true;
 
-  async init(): Promise<void> {
-    if (!this.currentProcessingHeight) {
-      await delay(5);
-    }
-    setInterval(() => this.benchmark(), SAMPLING_TIME_VARIANCE * 1000);
-  }
-
-  private benchmark() {
-    if (this.needReset) {
-      this.resetBlock();
+  @Interval(SAMPLING_TIME_VARIANCE * 1000)
+  async benchmark(): Promise<void> {
+    if (!this.currentProcessingHeight && !this.currentProcessingTimestamp) {
+      await delay(10);
     } else {
-      logger.debug(
-        `current #${this.currentProcessingHeight}, last #${
-          this.lastRegisteredHeight
-        }, take ${
-          (this.currentProcessingTimestamp - this.lastRegisteredTimestamp) /
-          1000
-        } secs`,
-      );
-      this.blockPerSecond =
-        (this.currentProcessingHeight - this.lastRegisteredHeight) /
-        ((this.currentProcessingTimestamp - this.lastRegisteredTimestamp) /
-          1000);
-      const duration = moment
-        .duration(
-          (this.targetHeight - this.currentProcessingHeight) *
-            this.blockPerSecond,
-          'seconds',
-        )
-        .format('D [days] HH [hours] MM [mins]');
-      logger.info(
-        `${this.blockPerSecond.toFixed(2)} bps, target: #${
-          this.targetHeight
-        }, current: #${
-          this.currentProcessingHeight
-        }, estimate time: ${duration}`,
-      );
-      this.resetBlock();
+      if (this.currentProcessingHeight && this.lastRegisteredTimestamp) {
+        this.blockPerSecond =
+          (this.currentProcessingHeight - this.lastRegisteredHeight) /
+          ((this.currentProcessingTimestamp - this.lastRegisteredTimestamp) /
+            1000);
+        const durationStr = dayjs
+          .duration(
+            (this.targetHeight - this.currentProcessingHeight) *
+              this.blockPerSecond,
+            'seconds',
+          )
+          .format('D [days] HH [hours] MM [mins]');
+        logger.info(
+          `${this.blockPerSecond.toFixed(2)} bps, target: #${
+            this.targetHeight
+          }, current: #${
+            this.currentProcessingHeight
+          }, estimate time: ${durationStr}`,
+        );
+      }
+      this.lastRegisteredHeight = this.currentProcessingHeight;
+      this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
     }
   }
 
-  private resetBlock(): void {
-    this.lastRegisteredHeight = this.currentProcessingHeight;
-    this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
-    this.needReset = false;
+  @OnEvent(`${IndexerEvent.BlockProcessing}`)
+  handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
+    this.currentProcessingHeight = blockPayload.height;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
   }
 
-  @OnEvent('block.processing')
-  handleProcessingBlock(blockPayload: BlockPayload) {
-    this.currentProcessingHeight = blockPayload.data.height;
-    this.currentProcessingTimestamp = blockPayload.data.timestamp;
-  }
-
-  @OnEvent('metric.write')
-  handleTargetBlock({ name, value }: MetricPayload) {
-    if (name === 'subql_indexer_target_block_height') {
-      this.targetHeight = value;
-    }
+  @OnEvent(`${IndexerEvent.BlockTarget}`)
+  handleTargetBlock(blockPayload: TargetBlockPayload) {
+    this.targetHeight = blockPayload.height;
   }
 }

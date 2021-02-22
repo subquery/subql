@@ -10,7 +10,6 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
-import { Metrics } from '../prometheus/types';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
@@ -18,8 +17,7 @@ import { ApiService } from './api.service';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
-import { BlockContent, BlockEvents } from './types';
-import { BenchmarkService } from './benchmark.service';
+import { BlockContent } from './types';
 
 const DEFAULT_DB_SCHEMA = 'public';
 
@@ -35,7 +33,6 @@ export class IndexerManager {
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
-    protected benchmarkService: BenchmarkService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -44,12 +41,9 @@ export class IndexerManager {
   ) {}
 
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
-    this.eventEmitter.emit('block.processing', {
-      name: BlockEvents.BlockProcessing,
-      data: {
-        height: block.block.header.number.toNumber(),
-        timestamp: Date.now(),
-      },
+    this.eventEmitter.emit('block_processing_height', {
+      height: block.block.header.number.toNumber(),
+      timestamp: Date.now(),
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
@@ -123,7 +117,6 @@ export class IndexerManager {
         process.exit(1);
       });
     this.fetchService.register((block) => this.indexBlock(block));
-    await this.benchmarkService.init();
   }
 
   private async initVM(): Promise<void> {

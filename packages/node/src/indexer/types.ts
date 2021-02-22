@@ -12,12 +12,3 @@ export interface BlockContent {
   extrinsics: SubstrateExtrinsic[];
   events: SubstrateEvent[];
 }
-
-export enum BlockEvents {
-  BlockProcessing = 'processing_block_event',
-}
-
-export interface BlockPayload {
-  data: { height: number; timestamp: number };
-  name: BlockEvents;
-}

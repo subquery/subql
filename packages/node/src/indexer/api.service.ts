@@ -15,7 +15,7 @@ import { AnyTuple } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
-import { Metrics } from '../prometheus/types';
+import { IndexerEvent } from './events';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -51,23 +51,13 @@ export class ApiService implements OnApplicationShutdown {
         'typesSpec',
       ]),
     );
-
     this.api = await ApiPromise.create(apiOption);
-    this.eventEmitter.emit('metric.write', {
-      name: Metrics.ApiConnected,
-      value: 1,
-    });
+    this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 1 });
     this.api.on('connected', () => {
-      this.eventEmitter.emit('metric.write', {
-        name: Metrics.ApiConnected,
-        value: 1,
-      });
+      this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 1 });
     });
     this.api.on('disconnected', () => {
-      this.eventEmitter.emit('metric.write', {
-        name: Metrics.ApiConnected,
-        value: 0,
-      });
+      this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 0 });
     });
     return this;
   }
@@ -82,20 +72,17 @@ export class ApiService implements OnApplicationShutdown {
     }
     const patchedApi = this.getApi().clone();
     this.api.on('connected', () => {
-      this.eventEmitter.emit('metric.write', {
-        name: Metrics.InjectedApiConnected,
+      this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
         value: 1,
       });
     });
     this.api.on('disconnected', () => {
-      this.eventEmitter.emit('metric.write', {
-        name: Metrics.InjectedApiConnected,
+      this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
         value: 0,
       });
     });
     await patchedApi.isReady;
-    this.eventEmitter.emit('metric.write', {
-      name: Metrics.InjectedApiConnected,
+    this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
       value: 1,
     });
     Object.defineProperty(

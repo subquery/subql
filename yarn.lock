@@ -2162,6 +2162,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/schedule@npm:^0.4.2":
+  version: 0.4.2
+  resolution: "@nestjs/schedule@npm:0.4.2"
+  dependencies:
+    cron: 1.7.2
+    uuid: 8.3.2
+  peerDependencies:
+    "@nestjs/common": ^6.10.11 || ^7.0.0
+    reflect-metadata: ^0.1.12
+  checksum: 15940f90fa75f35d4c9a002c507a6161e76269a1958ce01fe3652b6943ea2ff80a2fe315c530a3457abce862f4674317a1fee05a8357b16bbce21cdb92828310
+  languageName: node
+  linkType: hard
+
 "@nestjs/schematics@npm:^7.1.0, @nestjs/schematics@npm:^7.2.6, @nestjs/schematics@npm:^7.2.7":
   version: 7.2.7
   resolution: "@nestjs/schematics@npm:7.2.7"
@@ -2791,6 +2804,7 @@ __metadata:
     "@nestjs/core": ^7.6.1
     "@nestjs/event-emitter": ^0.0.2
     "@nestjs/platform-express": ^7.6.1
+    "@nestjs/schedule": ^0.4.2
     "@nestjs/schematics": ^7.2.7
     "@nestjs/testing": ^7.6.9
     "@polkadot/api": ^3.9.2
@@ -2800,7 +2814,6 @@ __metadata:
     "@types/express": ^4.17.11
     "@types/jest": ^26.0.20
     "@types/lodash": ^4.14.168
-    "@types/moment-duration-format": ^2
     "@types/pino": ^6.3.5
     "@types/sequelize": ^4.28.9
     "@types/supertest": ^2.0.10
@@ -2808,10 +2821,9 @@ __metadata:
     "@types/yargs": ^16.0.0
     "@willsoto/nestjs-prometheus": ^3.0.0
     app-module-path: ^2.2.0
+    dayjs: ^1.10.4
     dotenv: ^8.2.0
     lodash: ^4.17.20
-    moment: ^2.29.1
-    moment-duration-format: ^2.3.2
     nodemon: ^2.0.7
     parse-json: ^5.2.0
     pg: ^8.5.1
@@ -3308,15 +3320,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 378ca1b93f5761eddbdca13f1870b439a2ecd0e05284f2138b9cf6880bb857d5783f3838439440aca78fcd74460c28a868b35e2ec8109695a22e95c384344f02
-  languageName: node
-  linkType: hard
-
-"@types/moment-duration-format@npm:^2":
-  version: 2.2.2
-  resolution: "@types/moment-duration-format@npm:2.2.2"
-  dependencies:
-    moment: ">=2.14.0"
-  checksum: 1784d37fb57753b1a6fc23ea6a207ec39fb2e55c29a49985e33c863080fb5eff78a4190ed86ea500e23cb0c93d385ed594cbf35c793a014d879bc02eb2651b36
   languageName: node
   linkType: hard
 
@@ -6938,6 +6941,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cron@npm:1.7.2":
+  version: 1.7.2
+  resolution: "cron@npm:1.7.2"
+  dependencies:
+    moment-timezone: ^0.5.x
+  checksum: 99e1343f5117f62dab6204d54a720943c97db187eb2d0c54d582ca829ac963f714fc1bd7cd9ac8139e7fc2a6bd9389020c9dc1cd6c60e8d5e460451b846f5391
+  languageName: node
+  linkType: hard
+
 "cross-fetch@npm:3.0.6, cross-fetch@npm:^3.0.4":
   version: 3.0.6
   resolution: "cross-fetch@npm:3.0.6"
@@ -7278,6 +7290,13 @@ __metadata:
   version: 2.0.0
   resolution: "dataloader@npm:2.0.0"
   checksum: 0165c2e80751d269c33d2a14b0078a4f3853cb010e2531e7aa99523aba8d0cdc922b9ad67e4c2bb9074c90e0ee0a41b6e7f5f63c40d31224a71c8a0b703f4be3
+  languageName: node
+  linkType: hard
+
+"dayjs@npm:^1.10.4":
+  version: 1.10.4
+  resolution: "dayjs@npm:1.10.4"
+  checksum: 3b7bb2232fff808209870bc72d4b2000941a1aa45f0226e2907f9dd1dda306d4b3a1eb9058450fd2c324b01a007a37809ac6f9b525806a86902c55e2934cd5d5
   languageName: node
   linkType: hard
 
@@ -13146,13 +13165,6 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"moment-duration-format@npm:^2.3.2":
-  version: 2.3.2
-  resolution: "moment-duration-format@npm:2.3.2"
-  checksum: e4d548c14c7ff30adbf92815d2dee49b41188ccd2908d0165521e3e231c533f72460aee20228614e3091f788d9a60bcedcc5c2e48d5a2825c53ef5cf8768f8d5
-  languageName: node
-  linkType: hard
-
 "moment-timezone@npm:^0.5.31":
   version: 0.5.32
   resolution: "moment-timezone@npm:0.5.32"
@@ -13162,7 +13174,16 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"moment@npm:>= 2.9.0, moment@npm:>=2.14.0, moment@npm:^2.26.0, moment@npm:^2.29.1":
+"moment-timezone@npm:^0.5.x":
+  version: 0.5.33
+  resolution: "moment-timezone@npm:0.5.33"
+  dependencies:
+    moment: ">= 2.9.0"
+  checksum: d4e72a3514a2885ab26b1cbc640e2f4785c997f9de28bb48bf3994ef137b0a560ca8f07eb07f11121e1223eef0c3bce4bc647b911111481a6a066bbc61285f99
+  languageName: node
+  linkType: hard
+
+"moment@npm:>= 2.9.0, moment@npm:^2.26.0":
   version: 2.29.1
   resolution: "moment@npm:2.29.1"
   checksum: 86729013febf7160de5b93da69273dd304d674b0224f9544b3abd09a87671ddd2cdd57598261ce57588910d63747ffd5590965e83c790d8bf327083c0e0a06e0
