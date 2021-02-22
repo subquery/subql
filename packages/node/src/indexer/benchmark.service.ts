@@ -27,17 +27,17 @@ export class BenchmarkService {
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
-    if (!this.currentProcessingHeight && !this.currentProcessingTimestamp) {
+    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
       await delay(10);
     } else {
-      if (this.currentProcessingHeight && this.lastRegisteredTimestamp) {
+      if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
         this.blockPerSecond =
           (this.currentProcessingHeight - this.lastRegisteredHeight) /
           ((this.currentProcessingTimestamp - this.lastRegisteredTimestamp) /
             1000);
         const durationStr = dayjs
           .duration(
-            (this.targetHeight - this.currentProcessingHeight) *
+            (this.targetHeight - this.currentProcessingHeight) /
               this.blockPerSecond,
             'seconds',
           )
@@ -55,13 +55,13 @@ export class BenchmarkService {
     }
   }
 
-  @OnEvent(`${IndexerEvent.BlockProcessing}`)
+  @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }
 
-  @OnEvent(`${IndexerEvent.BlockTarget}`)
+  @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeight = blockPayload.height;
   }

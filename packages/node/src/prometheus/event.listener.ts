@@ -25,27 +25,27 @@ export class MetricEventListener {
     private targetHeightMetric: Gauge<string>,
   ) {}
 
-  @OnEvent(`${IndexerEvent.ApiConnected}`)
+  @OnEvent(IndexerEvent.ApiConnected)
   handleApiConnected({ value }: EventPayload<number>) {
     this.apiConnectedMetric.set(value);
   }
 
-  @OnEvent(`${IndexerEvent.InjectedApiConnected}`)
+  @OnEvent(IndexerEvent.InjectedApiConnected)
   handleInjectedApiConnected({ value }: EventPayload<number>) {
     this.injectedApiConnectedMetric.set(value);
   }
 
-  @OnEvent(`${IndexerEvent.BlockQueueSize}`)
+  @OnEvent(IndexerEvent.BlockQueueSize)
   handleBlockQueueSizeMetric({ value }: EventPayload<number>) {
     this.blockQueueSizeMetric.set(value);
   }
 
-  @OnEvent(`${IndexerEvent.BlockProcessing}`)
+  @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
     this.processingBlockHeight.set(blockPayload.height);
   }
 
-  @OnEvent(`${IndexerEvent.BlockTarget}`)
+  @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeightMetric.set(blockPayload.height);
   }

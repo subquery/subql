@@ -52,12 +52,12 @@ export class ApiService implements OnApplicationShutdown {
       ]),
     );
     this.api = await ApiPromise.create(apiOption);
-    this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 1 });
+    this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
-      this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 1 });
+      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     });
     this.api.on('disconnected', () => {
-      this.eventEmitter.emit(`${IndexerEvent.ApiConnected}`, { value: 0 });
+      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
     return this;
   }
@@ -72,17 +72,17 @@ export class ApiService implements OnApplicationShutdown {
     }
     const patchedApi = this.getApi().clone();
     this.api.on('connected', () => {
-      this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
+      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
         value: 1,
       });
     });
     this.api.on('disconnected', () => {
-      this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
+      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
         value: 0,
       });
     });
     await patchedApi.isReady;
-    this.eventEmitter.emit(`${IndexerEvent.InjectedApiConnected}`, {
+    this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
       value: 1,
     });
     Object.defineProperty(

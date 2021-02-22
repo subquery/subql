@@ -48,7 +48,7 @@ export class FetchService implements OnApplicationShutdown {
     void (async () => {
       while (!stopper) {
         const block = await this.blockBuffer.take();
-        this.eventEmitter.emit(`${IndexerEvent.BlockQueueSize}`, {
+        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
           value: this.blockBuffer.size,
         });
         let success = false;
@@ -75,7 +75,7 @@ export class FetchService implements OnApplicationShutdown {
     const subscribeHeads = () =>
       this.api.rpc.chain.subscribeFinalizedHeads((head) => {
         this.latestFinalizedHeight = head.number.toNumber();
-        this.eventEmitter.emit(`${IndexerEvent.BlockTarget}`, {
+        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
           height: this.latestFinalizedHeight,
         });
       });
@@ -117,7 +117,7 @@ export class FetchService implements OnApplicationShutdown {
       for (const block of blocks) {
         this.blockBuffer.put(block);
       }
-      this.eventEmitter.emit(`${IndexerEvent.BlockQueueSize}`, {
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.blockBuffer.size,
       });
       this.latestPreparedHeight = endBlockHeight;
