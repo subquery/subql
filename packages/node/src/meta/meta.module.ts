@@ -24,11 +24,11 @@ import { MetaService } from './meta.service';
       help: 'The indexer injected api connection status',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_block_processing_height',
+      name: 'subql_indexer_processing_block_height',
       help: 'The current processing block height',
     }),
     makeGaugeProvider({
-      name: 'subql_indexer_block_target_height',
+      name: 'subql_indexer_target_block_height',
       help: 'The latest finalized block height',
     }),
     makeGaugeProvider({

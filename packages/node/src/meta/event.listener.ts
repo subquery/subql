@@ -19,9 +19,9 @@ export class MetricEventListener {
     private injectedApiConnectedMetric: Gauge<string>,
     @InjectMetric('subql_indexer_block_queue_size')
     private blockQueueSizeMetric: Gauge<string>,
-    @InjectMetric('subql_indexer_block_processing_height')
+    @InjectMetric('subql_indexer_processing_block_height')
     private processingBlockHeight: Gauge<string>,
-    @InjectMetric('subql_indexer_block_target_height')
+    @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
   ) {}
 
