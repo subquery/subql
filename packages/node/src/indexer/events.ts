@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export enum IndexerEvent {
-  ApiConnected = 'api_connected_status',
-  InjectedApiConnected = 'injected_api_connected_status',
+  ApiConnected = 'api_connected',
+  InjectedApiConnected = 'injected_api_connected',
   BlockTarget = 'block_target_height',
   BlockProcessing = 'block_processing_height',
   BlockQueueSize = 'block_queue_size',

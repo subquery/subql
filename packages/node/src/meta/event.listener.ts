@@ -13,15 +13,15 @@ import {
 
 export class MetricEventListener {
   constructor(
-    @InjectMetric('api_connected_status')
+    @InjectMetric('subql_indexer_api_connected')
     private apiConnectedMetric: Gauge<string>,
-    @InjectMetric('injected_api_connected_status')
+    @InjectMetric('subql_indexer_injected_api_connected')
     private injectedApiConnectedMetric: Gauge<string>,
-    @InjectMetric('block_queue_size')
+    @InjectMetric('subql_indexer_block_queue_size')
     private blockQueueSizeMetric: Gauge<string>,
-    @InjectMetric('block_processing_height')
+    @InjectMetric('subql_indexer_processing_block_height')
     private processingBlockHeight: Gauge<string>,
-    @InjectMetric('block_target_height')
+    @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
   ) {}
 
