@@ -38,7 +38,7 @@
     "/oclif.manifest.json"
   ],
   "homepage": "https://github.com/subquery/subql",
-  "repository": "github:subquery/subql",
+  "repository": "packages/cli",
   "keywords": [
     "oclif"
   ],
@@ -51,7 +51,6 @@
       "@oclif/plugin-help"
     ]
   },
-  "repository": "packages/cli",
   "scripts": {
     "build": "rm -rf lib && tsc -b",
     "postpack": "rm -f oclif.manifest.json",
