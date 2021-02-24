@@ -6,7 +6,7 @@
   "bin": {
     "subql": "./bin/run"
   },
-  "bugs": "https://github.com/packages/cli/issues",
+  "bugs": "https://github.com/subquery/subql/issues",
   "dependencies": {
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
@@ -37,7 +37,8 @@
     "/npm-shrinkwrap.json",
     "/oclif.manifest.json"
   ],
-  "homepage": "https://github.com/packages/cli",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
   "keywords": [
     "oclif"
   ],

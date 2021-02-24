@@ -5,6 +5,8 @@
   "bin": {
     "subql-query": "./bin/run"
   },
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "rm -rf dist && tsc -b",

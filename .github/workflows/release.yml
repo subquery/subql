@@ -11,7 +11,7 @@ jobs:
 
   Build-Publish:
     name: Build-Publish
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'OnFinality-io/subql'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:
       #Check out
