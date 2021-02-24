@@ -128,7 +128,7 @@ export class IndexerManager {
       this.nodeConfig,
     );
 
-    this.vm.on('console.log', (data) => getLogger('sandbox').log(data));
+    this.vm.on('console.log', (data) => getLogger('sandbox').info(data));
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
