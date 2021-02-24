@@ -1,6 +1,6 @@
 specVersion: "0.0.1"
 description: ""
-repository: "https://github.com/onfinality-io/subql-starter"
+repository: "https://github.com/subquery/subql-starter"
 
 schema: "./schema.graphql"
 

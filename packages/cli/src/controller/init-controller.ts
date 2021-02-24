@@ -10,7 +10,7 @@ import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
 import {ProjectSpec} from '../types';
 
-const STARTER_PATH = 'https://github.com/OnFinality-io/subql-starter';
+const STARTER_PATH = 'https://github.com/subquery/subql-starter';
 
 export async function createProject(localPath: string, project: ProjectSpec): Promise<void> {
   const projectPath = path.join(localPath, project.name);

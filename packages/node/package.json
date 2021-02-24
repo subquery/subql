@@ -12,6 +12,8 @@
     "start:dev": "nodemon",
     "start:prod": "node dist/main"
   },
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
   "bin": {
     "subql-node": "./bin/run"
   },

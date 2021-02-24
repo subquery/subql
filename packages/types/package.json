@@ -2,6 +2,8 @@
   "name": "@subql/types",
   "version": "0.6.0",
   "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b"

@@ -171,18 +171,18 @@ These are the interface we supporting now:
 
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will multi queries of the <strong>different</strong> types at the current block.
 
-See an example of using the API in [validator-threshold](https://github.com/OnFinality-io/subql-examples/tree/main/validator-threshold).
+See an example of using the API in [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold).
 
 
 ### Examples
 
 | Example                   | Description                                          | Keywords     |
 |---------------------------|------------------------------------------------------|--------------|
-| [extrinsic-finalized-block](https://github.com/OnFinality-io/subql-examples/tree/main/extrinsic-finalized-block) | Index extrinsics and so they can be queried by hash. | blockHandler |
-| [block-timestamp](https://github.com/OnFinality-io/subql-examples/tree/main/block-timestamp) | Indexes timestamp of each finalized block. | callHandler |
-| [sum-reward](https://github.com/OnFinality-io/subql-examples/tree/main/sum-reward) | Indexes staking bond, reward and slash from events of finalized block. | eventHandler |
-| [kitty](https://github.com/OnFinality-io/subql-examples/tree/main/kitty) | Indexes birthinfo of kitties. | callHandler, eventHandler, customTypes |
-| [validator-threshold](https://github.com/OnFinality-io/subql-examples/tree/main/validator-threshold) | Indexes the least staking amount required for a validator to be elected. | blockHandler, @polkadot/api |
+| [extrinsic-finalized-block](https://github.com/subquery/subql-examples/tree/main/extrinsic-finalized-block) | Index extrinsics and so they can be queried by hash. | blockHandler |
+| [block-timestamp](https://github.com/subquery/subql-examples/tree/main/block-timestamp) | Indexes timestamp of each finalized block. | callHandler |
+| [sum-reward](https://github.com/subquery/subql-examples/tree/main/sum-reward) | Indexes staking bond, reward and slash from events of finalized block. | eventHandler |
+| [kitty](https://github.com/subquery/subql-examples/tree/main/kitty) | Indexes birthinfo of kitties. | callHandler, eventHandler, customTypes |
+| [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) | Indexes the least staking amount required for a validator to be elected. | blockHandler, @polkadot/api |
 
 
 ## Code Generation
