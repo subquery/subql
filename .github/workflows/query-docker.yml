@@ -35,7 +35,7 @@ jobs:
         with:
           push: true
           file: ./packages/query/Dockerfile
-          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
+          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},onfinality/subql-query:latest
           build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
 
       - name: Image digest
