@@ -57,6 +57,10 @@ export class ApiService implements OnApplicationShutdown {
       chain: this.api.runtimeChain.toString(),
       specName: this.api.runtimeVersion.specName.toString(),
       genesisHash: this.api.genesisHash.toString(),
+      blockTime:
+        this.api.consts.babe?.expectedBlockTime.toNumber() ||
+        this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
+        6000,
     };
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
@@ -78,16 +82,16 @@ export class ApiService implements OnApplicationShutdown {
       return this.patchedApi;
     }
     const patchedApi = this.getApi().clone();
-    this.api.on('connected', () => {
+    patchedApi.on('connected', () =>
       this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
         value: 1,
-      });
-    });
-    this.api.on('disconnected', () => {
+      }),
+    );
+    patchedApi.on('disconnected', () =>
       this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
         value: 0,
-      });
-    });
+      }),
+    );
     await patchedApi.isReady;
     this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
       value: 1,
