@@ -18,5 +18,5 @@ it('utils.promise timeout()', async () => {
   })();
   await expect(timeout(firstPromise, 2)).resolves.toEqual(true);
   const secondPromise = delay(3);
-  await expect(timeout(secondPromise, 2)).rejects.toThrow(/promise timeout/);
+  await expect(timeout(secondPromise, 2)).rejects.toThrow(/timeout/);
 });
