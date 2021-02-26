@@ -15,6 +15,7 @@ jest.mock('@polkadot/api', () => {
     runtimeChain: jest.fn(),
     runtimeVersion: { specName: jest.fn() },
     genesisHash: jest.fn(),
+    consts: jest.fn(),
   }));
   return { ApiPromise, WsProvider: jest.fn() };
 });
