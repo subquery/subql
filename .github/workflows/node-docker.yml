@@ -35,7 +35,7 @@ jobs:
         with:
           push: true
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
+          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Image digest
