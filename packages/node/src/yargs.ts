@@ -35,6 +35,11 @@ export function getYargsOption() {
       describe: 'Batch size of blocks to fetch in one round',
       type: 'number',
     },
+    timeout: {
+      demandOption: false,
+      describe: 'Timeout for indexer sandbox to execute the mapping functions',
+      type: 'number',
+    },
     debug: {
       demandOption: false,
       describe:

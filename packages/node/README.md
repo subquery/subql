@@ -34,6 +34,8 @@ Options:
                                                                        "silent"]
       --migrate           Migrate db schema (for management tables only)
                                                       [boolean] [default: false]
+      --timeout           Timeout for sandbox to execute the mapping functions 
+                                                                        [number]                                                  
 ```
 
 ## License
