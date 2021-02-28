@@ -16,6 +16,7 @@ export interface IConfig {
   readonly subqueryName: string;
   readonly localMode: boolean;
   readonly batchSize: number;
+  readonly timeout: number;
   readonly debug: boolean;
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
@@ -29,6 +30,7 @@ export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
 const DEFAULT_CONFIG = {
   localMode: false,
   batchSize: 100,
+  timeout:20,
   preferRange: false,
   debug: false,
 };
@@ -80,6 +82,10 @@ export class NodeConfig implements IConfig {
 
   get batchSize(): number {
     return this._config.batchSize;
+  }
+
+  get timeout(): number {
+    return this._config.timeout;
   }
 
   get debug(): boolean {

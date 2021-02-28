@@ -77,7 +77,7 @@ export class IndexerSandbox extends NodeVM {
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     try {
-      await timeout(this.run(this.script), 10);
+      await timeout(this.run(this.script), this.config.timeout);
     } catch (e) {
       e.handler = funcName;
       if (
