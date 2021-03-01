@@ -6,6 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { SubqueryProject } from '../configure/project.model';
+import { delay } from '../utils/promise';
 import { ApiService } from './api.service';
 
 function testSubqueryProject(): SubqueryProject {
@@ -46,6 +47,9 @@ describe('ApiService', () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
+    // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
+    // will cause an unhandled promise rejection and affect the result of next test.
+    await delay(0.1);
   });
 
   it('api query is locked at specified block', async () => {
