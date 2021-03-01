@@ -14,12 +14,12 @@ describe('sandbox for subql-node', () => {
 
   it('resolve entry from package.json', () => {
     vm = new IndexerSandbox(
-        {
-          store: undefined,
-          api: undefined,
-          root: path.resolve(__dirname, '../../test/sandbox'),
-        },
-        new NodeConfig({ subquery: '', subqueryName: '' }),
+      {
+        store: undefined,
+        api: undefined,
+        root: path.resolve(__dirname, '../../test/sandbox'),
+      },
+      new NodeConfig({ subquery: '', subqueryName: '' }),
     );
     expect(vm.entry).toEqual('./main.js');
   });
