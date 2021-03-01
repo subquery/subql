@@ -51,7 +51,7 @@ export class IndexerSandbox extends NodeVM {
   private config: NodeConfig;
   entry: string;
 
-  constructor(option: SandboxOption, config?: NodeConfig) {
+  constructor(option: SandboxOption, config: NodeConfig) {
     const { root } = option;
     const entry = getProjectEntry(root);
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
@@ -80,10 +80,7 @@ export class IndexerSandbox extends NodeVM {
       await timeout(this.run(this.script), this.config.timeout);
     } catch (e) {
       e.handler = funcName;
-      if (
-        this.config?.logLevel &&
-        levelFilter('debug', this.config?.logLevel)
-      ) {
+      if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
         e.handlerArgs = JSON.stringify(args);
       }
       throw e;
