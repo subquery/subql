@@ -51,7 +51,7 @@ export class IndexerSandbox extends NodeVM {
   private config: NodeConfig;
   entry: string;
 
-  constructor(option: SandboxOption, config?: NodeConfig) {
+  constructor(option: SandboxOption, config: NodeConfig) {
     const { root } = option;
     const entry = getProjectEntry(root);
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
