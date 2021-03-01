@@ -79,7 +79,7 @@ describe('ApiService', () => {
     } else {
       blockhash = await api.rpc.chain.getBlockHash(4401242);
     }
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
 
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
