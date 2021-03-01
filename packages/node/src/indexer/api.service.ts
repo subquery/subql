@@ -123,8 +123,8 @@ export class ApiService implements OnApplicationShutdown {
     if (inject) {
       const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
       this.patchedApi.injectMetadata(metadata, true, registry);
+      this.patchApi();
     }
-    this.patchApi();
   }
 
   private replaceToAtVersion(
