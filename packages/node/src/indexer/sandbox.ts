@@ -80,10 +80,7 @@ export class IndexerSandbox extends NodeVM {
       await timeout(this.run(this.script), this.config.timeout);
     } catch (e) {
       e.handler = funcName;
-      if (
-        this.config?.logLevel &&
-        levelFilter('debug', this.config?.logLevel)
-      ) {
+      if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
         e.handlerArgs = JSON.stringify(args);
       }
       throw e;
