@@ -115,13 +115,15 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash): Promise<void> {
+  async setBlockhash(blockHash: BlockHash, inject = false): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
     this.currentBlockHash = blockHash;
-    const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
-    this.patchedApi.injectMetadata(metadata, true, registry);
+    if (inject) {
+      const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
+      this.patchedApi.injectMetadata(metadata, true, registry);
+    }
     this.patchApi();
   }
 

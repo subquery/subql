@@ -30,6 +30,7 @@ export class IndexerManager {
   private vm: IndexerSandbox;
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
+  private prevSpecVersion?: number;
 
   constructor(
     protected apiService: ApiService,
@@ -49,8 +50,13 @@ export class IndexerManager {
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
+
+    const inject = block.specVersion !== this.prevSpecVersion;
+    this.prevSpecVersion = block.specVersion;
+
     try {
-      await timeout(this.apiService.setBlockhash(block.block.hash), 10); //TODO remove this when polkadot/api issue #3197 solved
+      const hash = block.block.hash;
+      await timeout(this.apiService.setBlockhash(hash, inject), 10); //TODO remove this when polkadot/api issue #3197 solved
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;
