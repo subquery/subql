@@ -58,7 +58,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(1);
     const validators = await api.query.session.validators.at(blockhash);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     const [patchedValidators, currentValidators] = await Promise.all([
       patchedApi.query.session.validators(),
       api.query.session.validators(),

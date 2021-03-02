@@ -23,7 +23,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestPreparedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
   private isShutdown = false;
-  private currentSpecVersion: number;
+  private parentSpecVersion: number;
 
   constructor(
     private apiService: ApiService,
@@ -112,7 +112,7 @@ export class FetchService implements OnApplicationShutdown {
             this.api,
             startBlockHeight,
             endBlockHeight,
-            metadataChanged ? undefined : this.currentSpecVersion,
+            metadataChanged ? undefined : this.parentSpecVersion,
           ));
       for (const block of blocks) {
         this.blockBuffer.put(block);
@@ -125,14 +125,17 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fetchMeta(height: number): Promise<boolean> {
-    const blockHash = await this.api.rpc.chain.getBlockHash(height);
+    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
+      Math.max(height - 1, 0),
+    );
     const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      blockHash,
+      parentBlockHash,
     );
     const specVersion = runtimeVersion.specVersion.toNumber();
-    if (this.currentSpecVersion !== specVersion) {
-      this.currentSpecVersion = specVersion;
+    if (this.parentSpecVersion !== specVersion) {
+      const blockHash = await this.api.rpc.chain.getBlockHash(height);
       await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+      this.parentSpecVersion = specVersion;
       return true;
     }
     return false;
