@@ -177,12 +177,10 @@ export async function fetchBlocks(
   overallSpecVer?: number,
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksRange(api, startHeight, endHeight);
+  const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   const [blockEvents, runtimeVersions] = await Promise.all([
-    fetchEventsRange(
-      api,
-      blocks.map((b) => b.block.header.hash),
-    ),
+    fetchEventsRange(api, blockHashs),
     overallSpecVer
       ? undefined
       : fetchRuntimeVersionRange(api, parentBlockHashs),
