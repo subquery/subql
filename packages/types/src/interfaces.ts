@@ -14,6 +14,7 @@ export interface Store {
 }
 
 export interface SubstrateBlock extends SignedBlock {
+  // parent block's spec version, can be used to decide the correct metadata that should be used for this block.
   specVersion: number;
   timestamp: Date;
 }

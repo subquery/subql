@@ -163,6 +163,13 @@ export async function prefetchMetadata(
   await api.getBlockRegistry(hash);
 }
 
+/**
+ *
+ * @param api
+ * @param startHeight
+ * @param endHeight
+ * @param overallSpecVer exists if all blocks in the range have same parant specVersion
+ */
 export async function fetchBlocks(
   api: ApiPromise,
   startHeight: number,
@@ -171,17 +178,20 @@ export async function fetchBlocks(
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksRange(api, startHeight, endHeight);
   const blockHashs = blocks.map((b) => b.block.header.hash);
+  const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    overallSpecVer ? undefined : fetchRuntimeVersionRange(api, blockHashs),
+    overallSpecVer
+      ? undefined
+      : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const specVersion = overallSpecVer
+    const parentSpecVersion = overallSpecVer
       ? overallSpecVer
       : runtimeVersions[idx].specVersion.toNumber();
 
-    const wrappedBlock = wrapBlock(block, specVersion);
+    const wrappedBlock = wrapBlock(block, parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {
