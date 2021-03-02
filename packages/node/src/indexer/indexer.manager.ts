@@ -12,7 +12,6 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { objectTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
-import { timeout } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { IndexerEvent } from './events';
@@ -30,6 +29,7 @@ export class IndexerManager {
   private vm: IndexerSandbox;
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
+  private prevSpecVersion?: number;
 
   constructor(
     protected apiService: ApiService,
@@ -49,8 +49,11 @@ export class IndexerManager {
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
+
     try {
-      await timeout(this.apiService.setBlockhash(block.block.hash), 10); //TODO remove this when polkadot/api issue #3197 solved
+      const inject = block.specVersion !== this.prevSpecVersion;
+      await this.apiService.setBlockhash(block.block.hash, inject);
+
       for (const ds of this.project.dataSources) {
         if (ds.startBlock > block.block.header.number.toNumber()) {
           continue;
@@ -93,6 +96,7 @@ export class IndexerManager {
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();
       this.fetchService.latestProcessed(block.block.header.number.toNumber());
+      this.prevSpecVersion = block.specVersion;
     } catch (e) {
       await tx.rollback();
       throw e;

@@ -88,7 +88,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async startLoop(initBlockHeight: number): Promise<void> {
-    const preloadBlocks = this.nodeConfig.batchSize * 2;
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
