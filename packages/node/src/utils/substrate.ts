@@ -158,9 +158,8 @@ export function filterEvents(
 // TODO: prefetch all known runtime upgrades at once
 export async function prefetchMetadata(
   api: ApiPromise,
-  height: number,
+  hash: BlockHash,
 ): Promise<void> {
-  const hash = await api.rpc.chain.getBlockHash(height);
   await api.getBlockRegistry(hash);
 }
 
@@ -168,18 +167,21 @@ export async function fetchBlocks(
   api: ApiPromise,
   startHeight: number,
   endHeight: number,
+  overallSpecVer?: number,
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksRange(api, startHeight, endHeight);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    fetchRuntimeVersionRange(api, blockHashs),
+    overallSpecVer ? undefined : fetchRuntimeVersionRange(api, blockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const { specVersion } = runtimeVersions[idx];
+    const specVersion = overallSpecVer
+      ? overallSpecVer
+      : runtimeVersions[idx].specVersion.toNumber();
 
-    const wrappedBlock = wrapBlock(block, specVersion.toNumber());
+    const wrappedBlock = wrapBlock(block, specVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {

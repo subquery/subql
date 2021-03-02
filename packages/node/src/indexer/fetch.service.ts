@@ -23,7 +23,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestPreparedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
   private isShutdown = false;
-  private specVersion: number;
+  private currentSpecVersion: number;
 
   constructor(
     private apiService: ApiService,
@@ -101,7 +101,7 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
       logger.info(`fetch block [${startBlockHeight}, ${endBlockHeight}]`);
-      await this.fetchMeta(endBlockHeight);
+      const metadataChanged = await this.fetchMeta(endBlockHeight);
       const blocks = await (this.nodeConfig.preferRange
         ? SubstrateUtil.fetchBlocksViaRangeQuery(
             this.api,
@@ -112,6 +112,7 @@ export class FetchService implements OnApplicationShutdown {
             this.api,
             startBlockHeight,
             endBlockHeight,
+            metadataChanged ? undefined : this.currentSpecVersion,
           ));
       for (const block of blocks) {
         this.blockBuffer.put(block);
@@ -123,15 +124,18 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  async fetchMeta(height: number): Promise<void> {
+  async fetchMeta(height: number): Promise<boolean> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
-    const { specVersion } = await this.api.rpc.state.getRuntimeVersion(
+    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
       blockHash,
     );
-    if (this.specVersion !== specVersion.toNumber()) {
-      this.specVersion = specVersion.toNumber();
-      await SubstrateUtil.prefetchMetadata(this.api, height);
+    const specVersion = runtimeVersion.specVersion.toNumber();
+    if (this.currentSpecVersion !== specVersion) {
+      this.currentSpecVersion = specVersion;
+      await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+      return true;
     }
+    return false;
   }
 
   private nextBlockRange(
