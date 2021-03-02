@@ -82,6 +82,11 @@ export class ApiService implements OnApplicationShutdown {
       return this.patchedApi;
     }
     const patchedApi = this.getApi().clone();
+    Object.defineProperty(
+      (patchedApi as any)._rpcCore.provider,
+      'hasSubscriptions',
+      { value: false },
+    );
     patchedApi.on('connected', () =>
       this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
         value: 1,
@@ -96,11 +101,6 @@ export class ApiService implements OnApplicationShutdown {
     this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
       value: 1,
     });
-    Object.defineProperty(
-      (patchedApi as any)._rpcCore.provider,
-      'hasSubscriptions',
-      { value: false },
-    );
     this.patchedApi = patchedApi;
     this.patchApi();
     return this.patchedApi;
