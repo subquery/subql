@@ -1,5 +1,10 @@
 name: "Node-to-docker"
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/node/package.json'
   workflow_dispatch:
 
 jobs:
@@ -39,6 +44,5 @@ jobs:
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Image digest
-        if: steps.changed-node.outputs.changed == 'true'
         run: echo ${{ steps.docker_build.outputs.digest }}
 
