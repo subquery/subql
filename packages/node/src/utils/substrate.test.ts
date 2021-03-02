@@ -18,7 +18,8 @@ describe('substrate utils', () => {
   });
 
   it('query range of blocks', async () => {
-    await prefetchMetadata(api, 100000);
+    const blockHash = await api.rpc.chain.getBlockHash(100000);
+    await prefetchMetadata(api, blockHash);
     const blocks = await fetchBlocks(api, 100000, 100019);
     expect(blocks).toHaveLength(20);
     for (const block of blocks) {
@@ -29,7 +30,8 @@ describe('substrate utils', () => {
   }, 30000);
 
   it('query range of blocks via range query', async () => {
-    await prefetchMetadata(api, 100000);
+    const blockHash = await api.rpc.chain.getBlockHash(100000);
+    await prefetchMetadata(api, blockHash);
     const blocks = await fetchBlocksViaRangeQuery(api, 100000, 100019);
     expect(blocks).toHaveLength(20);
     for (const block of blocks) {
