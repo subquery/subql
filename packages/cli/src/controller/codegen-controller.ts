@@ -4,10 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {getAllEntities, buildSchema, loadProjectManifest} from '@subql/common';
+import {getAllEntitiesRelations, buildSchema, loadProjectManifest} from '@subql/common';
+import {GraphQLEntityField} from "@subql/common/graphql/types";
 import ejs from 'ejs';
-import {GraphQLSchema, isNonNullType, getNullableType} from 'graphql';
-import {GraphQLFieldMap, GraphQLOutputType} from 'graphql/type/definition';
+import {GraphQLSchema} from 'graphql';
 import rimraf from 'rimraf';
 import {transformTypes} from './types-mapping';
 
@@ -28,21 +28,18 @@ export interface processedField {
   required: boolean;
 }
 
-export function processFields(className: string, fields: GraphQLFieldMap<unknown, unknown>): processedField[] {
+export function processFields(className: string, fields: GraphQLEntityField[]): processedField[] {
   const fieldList: processedField[] = [];
-  for (const k in fields) {
-    if (Object.prototype.hasOwnProperty.call(fields, k)) {
-      const type: GraphQLOutputType = isNonNullType(fields[k].type) ? getNullableType(fields[k].type) : fields[k].type;
-      const newType = transformTypes(className, type.toString());
-      if (!newType) {
-        throw new Error(`Undefined type ${type.toString()} in Schema ${className}`);
-      }
-      fieldList.push({
-        name: fields[k].name,
-        type: newType,
-        required: isNonNullType(fields[k].type),
-      });
+  for (const field of fields) {
+    const newType = transformTypes(className, field.type.toString());
+    if (!newType) {
+      throw new Error(`Undefined type ${field.type.toString()} in Schema ${className}`);
     }
+    fieldList.push({
+      name: field.name,
+      type: newType,
+      required: !field.nullable,
+    });
   }
   return fieldList;
 }
@@ -63,11 +60,11 @@ export async function codegen(projectPath: string): Promise<void> {
 
 // 2. Loop all entities and render it
 export async function generateModels(projectPath: string, schema: GraphQLSchema): Promise<void> {
-  const extractEntities = getAllEntities(schema);
-  for (const entity of extractEntities) {
+  const extractEntities = getAllEntitiesRelations(schema);
+  for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
     const className = entity.name;
-    const fields = processFields(className, entity.getFields());
+    const fields = processFields(className, entity.fields);
     const modelTemplate = {
       props: {
         baseFolderPath,
