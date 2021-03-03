@@ -5,8 +5,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.10.1] - 2021-03-03
+### Fixed
+- use parent's specVersion to decide if metadata need to be injected (#211)
+
+## [0.10.0] - 2021-03-03
+### Added
+- performance improvement: reduce injectMetadata call (#206)
+- performance improvement: reduce specVersion query for each batch (#207)
+
+## [0.9.2] - 2021-03-03
+### Added
+- more comprehensive timeout error stack (#198)
+- use logger.info() instead of log() for sandbox logging (#197)
+- estimate time remaining consider block increases (#199)
+- add configurable timeout (#202)
+- bump @polkadot/api to 3.11.1 (#203)
+
+## [0.9.1] - 2021-03-03
 ### Fixed
 - revert metrics name changes (#193) 
+
+### Added
+- Update subquery starter repo path to new organization (#196)
 
 ## [0.9.0] - 2021-02-23
 ### Added
@@ -95,7 +117,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/subquery/subql/compare/v0.10.0...v0.10.1
+[0.10.0]: https://github.com/subquery/subql/compare/v0.9.2...v0.10.0
+[0.9.2]: https://github.com/subquery/subql/compare/v0.9.1...v0.9.2
+[0.9.1]: https://github.com/subquery/subql/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/OnFinality-io/subql/compare/v0.8.3...v0.9.0
 [0.8.3]: https://github.com/OnFinality-io/subql/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/OnFinality-io/subql/compare/v0.8.1...v0.8.2
