@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { GraphQLModelsType } from '@subql/common/graphql/types';
 import { GraphQLObjectType, GraphQLOutputType, isNonNullType } from 'graphql';
 import { ModelAttributes } from 'sequelize';
 import { ModelAttributeColumnOptions } from 'sequelize/types/lib/model';
@@ -16,33 +17,30 @@ const SEQUELIZE_TYPE_MAPPING = {
   Bytes: 'bytea',
 };
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-export function objectTypeToModelAttributes(
-  objectType: GraphQLObjectType,
+export function modelsTypeToModelAttributes(
+  modelType: GraphQLModelsType,
 ): ModelAttributes<any> {
-  const fields = objectType.getFields();
-  return Object.entries(fields).reduce((acc, [k, v]) => {
-    let type: GraphQLOutputType = v.type;
+  const fields = modelType.fields;
+  return Object.values(fields).reduce((acc, field) => {
     let allowNull = true;
-    if (isNonNullType(type)) {
-      type = type.ofType;
+    if (!field.nullable) {
       allowNull = false;
     }
     const columnOption: ModelAttributeColumnOptions<any> = {
-      type: SEQUELIZE_TYPE_MAPPING[type.toString()],
+      type: SEQUELIZE_TYPE_MAPPING[field.type],
       allowNull,
-      primaryKey: type.toString() === 'ID',
+      primaryKey: field.type === 'ID',
     };
-    if (type.toString() === 'BigInt') {
+    if (field.type === 'BigInt') {
       columnOption.get = function () {
-        const dataValue = this.getDataValue(k);
+        const dataValue = this.getDataValue(field.name);
         return dataValue ? BigInt(dataValue) : null;
       };
       columnOption.set = function (val: unknown) {
-        this.setDataValue(k, val?.toString());
+        this.setDataValue(field.name, val?.toString());
       };
     }
-    acc[k] = columnOption;
+    acc[field.name] = columnOption;
     return acc;
   }, {} as ModelAttributes<any>);
 }

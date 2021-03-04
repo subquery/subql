@@ -31,6 +31,6 @@ describe('Codegen can generate schema', () => {
 
   it('codegen with incorrect schema field should fail', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest2');
-    await expect(codegen(projectPath)).rejects.toThrow(/Undefined type/);
+    await expect(codegen(projectPath)).rejects.toThrow(/is not an valid type/);
   });
 });

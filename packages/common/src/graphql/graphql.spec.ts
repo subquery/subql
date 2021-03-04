@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import gql from 'graphql-tag';
-import {getAllEntities,getAllEntitiesRelations} from './entities';
+import {getAllEntitiesRelations} from './entities';
 import {buildSchemaFromDocumentNode} from './schema';
 
 describe('utils that handle schema.graphql', () => {
@@ -23,14 +23,12 @@ describe('utils that handle schema.graphql', () => {
     const graphqlSchema = gql`
       type KittyBirthInfo @entity {
         id: ID!
-        birthBlockHeight: BigInt!
-        owner: String!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
-    const entities = getAllEntities(schema);
-    expect(entities).toMatchObject([{name: 'KittyBirthInfo'}]);
-    expect(Object.keys(entities[0].getFields())).toEqual(expect.arrayContaining(['id', 'birthBlockHeight', 'owner']));
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models).toMatchObject([{name: 'KittyBirthInfo'}]);
+    expect(entities.models[0].fields).toEqual([{isArray: false, name: 'id', nullable: false, type: 'ID'}]);
   });
 
   it('throw error for unsupported types', () => {
@@ -47,8 +45,8 @@ describe('utils that handle schema.graphql', () => {
     const graphqlSchema = gql`
       type Account @entity {
         id: ID!
-        identity: Identity! @derivedFrom(field: "account") 
-        transfers: [Transfer] @derivedFrom(field: "from") 
+        identity: Identity! @derivedFrom(field: "account")
+        transfers: [Transfer] @derivedFrom(field: "from")
       }
       type Transfer @entity {
         id: ID!
@@ -56,70 +54,65 @@ describe('utils that handle schema.graphql', () => {
       }
       type Identity @entity {
         id: ID!
-        account :Account!
+        account: Account!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
-    expect(entities.models).toMatchObject(
-        [{
-          name: 'Account',
-          fields: [ { name: 'id', type: 'ID', isArray: false, nullable: false } ]
-        }
-          ,{
-          name: 'Transfer',
-          fields: [
-            { name: 'id', type: 'ID', isArray: false, nullable: false },
-            { name: 'fromId', type: 'String', isArray: false, nullable: false }
-          ]
-        }
-          ,{
-          name: 'Identity',
-          fields: [
-            { name: 'id', type: 'ID', isArray: false, nullable: false },
-            {
-              name: 'accountId',
-              type: 'String',
-              isArray: false,
-              nullable: false
-            }
-          ]
-        }
-        ]
-    );
-
-    expect(entities.relations).toMatchObject(
-        [
+    expect(entities.models).toMatchObject([
+      {
+        name: 'Account',
+        fields: [{name: 'id', type: 'ID', isArray: false, nullable: false}],
+      },
+      {
+        name: 'Transfer',
+        fields: [
+          {name: 'id', type: 'ID', isArray: false, nullable: false},
+          {name: 'fromId', type: 'String', isArray: false, nullable: false},
+        ],
+      },
+      {
+        name: 'Identity',
+        fields: [
+          {name: 'id', type: 'ID', isArray: false, nullable: false},
           {
-            from: 'Account',
-            type: 'hasOne',
-            to: 'Identity',
-            foreignKey: 'accountId',
-            fieldName: 'identity'
+            name: 'accountId',
+            type: 'String',
+            isArray: false,
+            nullable: false,
           },
-          {
-            from: 'Account',
-            type: 'hasMany',
-            to: 'Transfer',
-            foreignKey: 'fromId',
-            fieldName: 'transfers'
-          },
-          {
-            from: 'Transfer',
-            type: 'belongsTo',
-            to: 'Account',
-            foreignKey: 'fromId'
-          },
-          {
-            from: 'Identity',
-            type: 'belongsTo',
-            to: 'Account',
-            foreignKey: 'accountId'
-          }
+        ],
+      },
+    ]);
 
-        ]
-    );
-
+    expect(entities.relations).toMatchObject([
+      {
+        from: 'Account',
+        type: 'hasOne',
+        to: 'Identity',
+        foreignKey: 'accountId',
+        fieldName: 'identity',
+      },
+      {
+        from: 'Account',
+        type: 'hasMany',
+        to: 'Transfer',
+        foreignKey: 'fromId',
+        fieldName: 'transfers',
+      },
+      {
+        from: 'Transfer',
+        type: 'belongsTo',
+        to: 'Account',
+        foreignKey: 'fromId',
+      },
+      {
+        from: 'Identity',
+        type: 'belongsTo',
+        to: 'Account',
+        foreignKey: 'accountId',
+      },
+    ]);
   });
 
   it('throw error if derivedFrom field with missing field name in corresponding entity', () => {
@@ -130,13 +123,13 @@ describe('utils that handle schema.graphql', () => {
       }
       type Transfer @entity {
         id: ID!
-        #from: Account! # If this is missing 
+        #from: Account! # If this is missing
         to: Account!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(() => getAllEntitiesRelations(schema)).toThrow('Please check entity Account with field transfers has correct relation with entity Transfer');
+    expect(() => getAllEntitiesRelations(schema)).toThrow(
+      'Please check entity Account with field transfers has correct relation with entity Transfer'
+    );
   });
-
-
 });
