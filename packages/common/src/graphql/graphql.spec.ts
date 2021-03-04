@@ -32,6 +32,7 @@ describe('utils that handle schema.graphql', () => {
     expect(entities).toMatchObject([{name: 'KittyBirthInfo'}]);
     expect(Object.keys(entities[0].getFields())).toEqual(expect.arrayContaining(['id', 'birthBlockHeight', 'owner']));
   });
+
   it('throw error for unsupported types', () => {
     const graphqlSchema = gql`
       type Test @entity {
@@ -40,60 +41,102 @@ describe('utils that handle schema.graphql', () => {
       }
     `;
     expect(() => buildSchemaFromDocumentNode(graphqlSchema)).toThrow();
-    expect(() => buildSchemaFromDocumentNode(gql`
-      type Test @entity {
-        id: ID!
-        price: [String]
-      }
-    `)).toThrow();
   });
 
-  it('can extract list field with entity from the schema', () => {
+  it('can extract nested models and relations from the schema', () => {
     const graphqlSchema = gql`
-      type KittyBirthInfo @entity {
-        id: ID!,
-        owner: String,
-        paper: paper @derivedFrom(field: "account")
-      }
-      type paper @entity {
+      type Account @entity {
         id: ID!
-        account: KittyBirthInfo
+        identity: Identity! @derivedFrom(field: "account") 
+        transfers: [Transfer] @derivedFrom(field: "from") 
+      }
+      type Transfer @entity {
+        id: ID!
+        from: Account!
+      }
+      type Identity @entity {
+        id: ID!
+        account :Account!
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
     expect(entities.models).toMatchObject(
         [{
-          name: 'KittyBirthInfo',
+          name: 'Account',
+          fields: [ { name: 'id', type: 'ID', isArray: false, nullable: false } ]
+        }
+          ,{
+          name: 'Transfer',
           fields: [
             { name: 'id', type: 'ID', isArray: false, nullable: false },
-            { name: 'owner', type: 'String', isArray: false, nullable: true }
+            { name: 'fromId', type: 'String', isArray: false, nullable: false }
           ]
-        }, {name:'paper', fields: [
+        }
+          ,{
+          name: 'Identity',
+          fields: [
             { name: 'id', type: 'ID', isArray: false, nullable: false },
             {
               name: 'accountId',
               type: 'String',
               isArray: false,
-              nullable: true
+              nullable: false
             }
-          ]}]
+          ]
+        }
+        ]
     );
 
     expect(entities.relations).toMatchObject(
-        [{
-          from: 'paper',
-          type: 'belongsTo',
-          to: 'KittyBirthInfo',
-          foreignKey: 'accountId'
-        }, {
-          from: 'KittyBirthInfo',
-          type: 'hasOne',
-          to: 'paper',
-          foreignKey: 'accountId',
-          fieldName: 'paper'}]
+        [
+          {
+            from: 'Account',
+            type: 'hasOne',
+            to: 'Identity',
+            foreignKey: 'accountId',
+            fieldName: 'identity'
+          },
+          {
+            from: 'Account',
+            type: 'hasMany',
+            to: 'Transfer',
+            foreignKey: 'fromId',
+            fieldName: 'transfers'
+          },
+          {
+            from: 'Transfer',
+            type: 'belongsTo',
+            to: 'Account',
+            foreignKey: 'fromId'
+          },
+          {
+            from: 'Identity',
+            type: 'belongsTo',
+            to: 'Account',
+            foreignKey: 'accountId'
+          }
+
+        ]
     );
 
   });
+
+  it('throw error if derivedFrom field with missing field name in corresponding entity', () => {
+    const graphqlSchema = gql`
+      type Account @entity {
+        id: ID!
+        transfers: [Transfer] @derivedFrom(field: "from")
+      }
+      type Transfer @entity {
+        id: ID!
+        #from: Account! # If this is missing 
+        to: Account!
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow('Please check entity Account with field transfers has correct relation with entity Transfer');
+  });
+
 
 });
