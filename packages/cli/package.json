@@ -57,7 +57,8 @@
     "posttest": "eslint . --ext .ts --config .eslintrc",
     "prepack": "yarn build && cp -r src/template lib/ && oclif-dev manifest && oclif-dev readme",
     "test": "echo NO TESTS",
-    "version": "oclif-dev readme && git add README.md"
+    "version": "oclif-dev readme && git add README.md",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "types": "lib/index.d.ts"
 }
