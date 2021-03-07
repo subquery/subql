@@ -1,12 +1,12 @@
 ![open grant logo](https://raw.githubusercontent.com/w3f/General-Grants-Program/master/src/badge_black.svg)
 # Subquery
-Almost every substrate project has a need to process and query data.
+Almost every Substrate project has a need to process and query data.
 SubQuery is a open-source tool to provide a complete solution to this problem and will become core infrastructure for the Polkadot ecosystem.
 We expect it to solve how to Extract, Transform, Persist, and Query data intially, and then how to Connect and Present data in the future.
 
 SubQuery is NOT an ETL tool, the persisted data is minimized and shaped from the perspective of how it will be used.
 
-SubQuery aims to support all substrate-compatible networks.
+SubQuery aims to support all Substrate-compatible networks.
 
 ## Get Started
 ### Installation
@@ -29,7 +29,7 @@ Prerequisites
   Then start our `@subql/node` with the path of local SubQuery project as arguments, `@subql/node` will handle the rest.
 
 ### Step #3: Run a Query Service
-check our query component [`@subql/query`](packages/query)
+Check our query component [`@subql/query`](packages/query)
 
 
 ## Components
@@ -39,8 +39,8 @@ check our query component [`@subql/query`](packages/query)
 * [`@subql/common`](packages/common)
 * [`@subql/types`](packages/types)
 
-## More Docs
-[Docs](https://onfinality-io.github.io/subql/)
+## More Documentation
+For more documentation, visit [doc.subquery.network](https://doc.subquery.network/)
 
 ## Copyright
 
