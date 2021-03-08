@@ -16,11 +16,15 @@ export class SubqueryProject implements ProjectManifest {
     const source = loadProjectManifest(projectPath);
     Object.assign(project, source);
     project.path = projectPath;
+    project.dataSources.map(function (dataSource) {
+      if (!dataSource.startBlock || dataSource.startBlock < 1){
+        dataSource.startBlock = 1;
+      }
+    })
     return project;
   }
 
   path: string;
-
   dataSources: SubqlDataSource[];
   description: string;
   network: ProjectNetwork;
@@ -28,3 +32,4 @@ export class SubqueryProject implements ProjectManifest {
   schema: string;
   specVersion: string;
 }
+
