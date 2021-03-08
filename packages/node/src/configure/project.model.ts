@@ -17,10 +17,10 @@ export class SubqueryProject implements ProjectManifest {
     Object.assign(project, source);
     project.path = projectPath;
     project.dataSources.map(function (dataSource) {
-      if (!dataSource.startBlock || dataSource.startBlock < 1){
+      if (!dataSource.startBlock || dataSource.startBlock < 1) {
         dataSource.startBlock = 1;
       }
-    })
+    });
     return project;
   }
 
@@ -32,4 +32,3 @@ export class SubqueryProject implements ProjectManifest {
   schema: string;
   specVersion: string;
 }
-
