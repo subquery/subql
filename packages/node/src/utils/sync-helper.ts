@@ -22,7 +22,7 @@ export function commentConstraintQuery(
   constraint: string,
   comment: string,
 ): string {
-  return `comment on constraint ${constraint} on ${table} is E'${comment}';`;
+  return `comment on constraint ${constraint} on ${table} is E'${comment}'`;
 }
 
 export function createUniqueIndexQuery(
