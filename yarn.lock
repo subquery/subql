@@ -2899,6 +2899,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/validator@workspace:packages/validator":
+  version: 0.0.0-use.local
+  resolution: "@subql/validator@workspace:packages/validator"
+  dependencies:
+    "@types/js-yaml": ^4.0.0
+    axios: ^0.21.1
+    js-yaml: ^4.0.0
+    package-json-type: ^1.0.3
+  languageName: unknown
+  linkType: soft
+
 "@szmarczak/http-timer@npm:^1.1.2":
   version: 1.1.2
   resolution: "@szmarczak/http-timer@npm:1.1.2"
@@ -5247,7 +5258,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:0.21.1":
+"axios@npm:0.21.1, axios@npm:^0.21.1":
   version: 0.21.1
   resolution: "axios@npm:0.21.1"
   dependencies:
@@ -14148,6 +14159,13 @@ fsevents@~2.1.2:
   version: 2.2.0
   resolution: "p-try@npm:2.2.0"
   checksum: 20983f3765466c1ab617ed153cb53b70ac5df828d854a3334d185e20b37f436e9096f12bc1b7fc96d8908dc927a3685172d3d89e755774f57b7103460c54dcc5
+  languageName: node
+  linkType: hard
+
+"package-json-type@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "package-json-type@npm:1.0.3"
+  checksum: 12befaf486279f14ade1954486bc8889d3c0a8f527864e9c318cb15f70f0aad2eba1485e6a51d353f0994cc2d81ec304ce0269685fe5a7a8cf6ebb2fb0b7fdf1
   languageName: node
   linkType: hard
 
