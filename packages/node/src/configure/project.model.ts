@@ -7,9 +7,9 @@ import {
   SubqlDataSource,
 } from '@subql/common';
 import { ProjectNetwork } from '@subql/common/project/models';
-import { prepareProjectDir } from '../utils/project';
 import { getLogger } from '../utils/logger';
-import dayjs from 'dayjs';
+import { prepareProjectDir } from '../utils/project';
+
 const logger = getLogger('indexer');
 
 export class SubqueryProject implements ProjectManifest {
