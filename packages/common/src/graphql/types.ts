@@ -41,5 +41,5 @@ export enum FieldScalar {
   BigInt = 'BigInt',
   String = 'String',
   Date = 'Date',
-  Boolean = 'Boolean'
+  Boolean = 'Boolean',
 }

@@ -9,6 +9,8 @@ typeMap.set('Int', 'number');
 typeMap.set('BigInt', 'bigint');
 typeMap.set('String', 'string');
 typeMap.set('Date', 'Date');
+typeMap.set('Boolean', 'boolean');
+
 // TODO
 // typeMap.set('Float', 'number');
 // typeMap.set('BigDecimal', 'number');
