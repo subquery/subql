@@ -10,7 +10,7 @@ import { ProjectNetwork } from '@subql/common/project/models';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 
-const logger = getLogger('indexer');
+const logger = getLogger('configure');
 
 export class SubqueryProject implements ProjectManifest {
   static async create(path: string): Promise<SubqueryProject> {
