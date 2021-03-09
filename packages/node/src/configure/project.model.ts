@@ -8,6 +8,9 @@ import {
 } from '@subql/common';
 import { ProjectNetwork } from '@subql/common/project/models';
 import { prepareProjectDir } from '../utils/project';
+import { getLogger } from '../utils/logger';
+import dayjs from 'dayjs';
+const logger = getLogger('indexer');
 
 export class SubqueryProject implements ProjectManifest {
   static async create(path: string): Promise<SubqueryProject> {
@@ -18,6 +21,7 @@ export class SubqueryProject implements ProjectManifest {
     project.path = projectPath;
     project.dataSources.map(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
+        logger.warn('start block changed to #1');
         dataSource.startBlock = 1;
       }
     });
