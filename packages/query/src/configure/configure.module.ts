@@ -21,7 +21,7 @@ export class ConfigureModule {
     const pgPool = new Pool({
       user: config.get('DB_USER'),
       password: config.get('DB_PASS'),
-      host: config.get('DB_HOST'),
+      host: config.get('DB_HOST_READ') ?? config.get('DB_HOST'),
       port: config.get('DB_PORT'),
       database: config.get('DB_DATABASE'),
     });
