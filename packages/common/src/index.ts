@@ -5,3 +5,4 @@ import 'reflect-metadata';
 
 export * from './project';
 export * from './graphql';
+export {levelFilter, Logger, LoggerOption} from './logger';
