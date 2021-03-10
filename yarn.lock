@@ -2773,9 +2773,11 @@ __metadata:
     "@oclif/dev-cli": ^1.26.0
     "@oclif/plugin-help": ^3.2.1
     "@subql/common": "workspace:*"
+    "@subql/validator": "workspace:*"
     "@types/ejs": ^3.0.5
     "@types/node": ^10.17.51
     "@types/rimraf": ^3
+    chalk: ^4.1.0
     cli-ux: ^5.5.1
     ejs: ^3.1.5
     eslint: ^5.16.0
@@ -2899,7 +2901,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/validator@workspace:packages/validator":
+"@subql/validator@workspace:*, @subql/validator@workspace:packages/validator":
   version: 0.0.0-use.local
   resolution: "@subql/validator@workspace:packages/validator"
   dependencies:
