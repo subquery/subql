@@ -5,12 +5,22 @@ import {commonRules, RequireBuildScript, RequireCliDep, RequireCodegenScript} fr
 import {Validator} from './validator';
 
 describe('Validator', () => {
-  it('should validate the all', async () => {
+  let v: Validator;
+
+  beforeAll(() => {
     const url = 'https://github.com/subquery/subql-starter';
-    const v = new Validator(url);
+    v = new Validator(url);
     v.addRule(...commonRules);
-    const result = await v.validate();
+  });
+
+  it('should validate get reports', async () => {
+    const result = await v.getValidateReports();
     expect(result.length).toBe(5);
     expect(result.filter((r) => r.valid).length).toBe(5);
+  });
+
+  it('should return validate result', async () => {
+    const result = await v.validate();
+    expect(result).toBeTruthy();
   });
 });

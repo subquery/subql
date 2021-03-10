@@ -18,7 +18,7 @@ export default class Validate extends Command {
     const v = new Validator(flags.location ?? process.cwd());
     v.addRule(...commonRules);
 
-    const reports = await v.validate();
+    const reports = await v.getValidateReports();
     const passed = reports.filter((r) => r.valid).length;
     const skipped = reports.filter((r) => r.skipped).length;
     const failed = reports.length - passed - skipped;
