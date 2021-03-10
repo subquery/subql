@@ -38,6 +38,7 @@ check our query component [`@subql/query`](packages/query)
 * [`@subql/query`](packages/query)
 * [`@subql/common`](packages/common)
 * [`@subql/types`](packages/types)
+* [`@subql/validator`](packages/validator)
 
 ## More Docs
 [Docs](https://onfinality-io.github.io/subql/)
