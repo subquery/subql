@@ -7,6 +7,7 @@ import {Rule, RuleType} from './rules';
 
 export interface Report {
   name: string;
+  skipped: boolean;
   description: string;
   valid: boolean;
 }
@@ -32,11 +33,13 @@ export class Validator {
         name: 'package-json-file',
         description: 'a package.json file should be placed in the project folder',
         valid: !!pkg,
+        skipped: false,
       },
       {
         name: 'project-yaml-file',
         description: 'a project.yaml file should be placed in the project root folder',
         valid: !!pkg,
+        skipped: false,
       }
     );
 
@@ -50,14 +53,18 @@ export class Validator {
     };
 
     for (const r of this.rules) {
-      if ((!pkg && r.type === RuleType.PackageJSON) || (!schema && r.type === RuleType.Schema)) {
-        continue;
-      }
-      reports.push({
+      const report = {
         name: r.name,
         description: r.description,
-        valid: r.validate(ctx),
-      });
+        valid: false,
+        skipped: false,
+      };
+      if ((!pkg && r.type === RuleType.PackageJSON) || (!schema && r.type === RuleType.Schema)) {
+        report.skipped = true;
+      } else {
+        report.valid = r.validate(ctx);
+      }
+      reports.push(report);
     }
     return reports;
   }

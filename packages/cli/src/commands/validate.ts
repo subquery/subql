@@ -20,12 +20,15 @@ export default class Validate extends Command {
 
     const reports = await v.validate();
     const passed = reports.filter((r) => r.valid).length;
-    const failed = reports.length - passed;
+    const skipped = reports.filter((r) => r.skipped).length;
+    const failed = reports.length - passed - skipped;
 
     if (!flags.silent) {
       for (const r of reports) {
         if (r.valid) {
           this.log(`${chalk.bgGreen.bold(' PASS ')} ${r.name}`);
+        } else if (r.skipped) {
+          this.log(`${chalk.yellow.bold(' SKIP ')} ${r.name}`);
         } else {
           this.log(`${chalk.bgRed.bold(' FAIL ')} ${r.name}`);
           this.log(`       ${chalk.redBright(r.description)}`);
@@ -33,7 +36,7 @@ export default class Validate extends Command {
       }
 
       this.log('');
-      this.log(`Result: ${passed} passed, ${failed} failed`);
+      this.log(`Result: ${passed} passed, ${failed} failed, ${skipped} skipped`);
       this.log('');
     }
 
