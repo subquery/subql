@@ -19,7 +19,8 @@ export class GithubReader implements Reader {
   async getPkg(): Promise<IPackageJson | undefined> {
     try {
       const branch = await this.getDefaultBranch();
-      return this.api.get(`${branch}/package.json`).then((r) => r.data);
+      const {data} = await this.api.get(`${branch}/package.json`);
+      return data;
     } catch (err) {
       return undefined;
     }
@@ -28,7 +29,7 @@ export class GithubReader implements Reader {
   async getProjectSchema(): Promise<unknown | undefined> {
     try {
       const branch = await this.getDefaultBranch();
-      const data = await this.api.get(`${branch}/project.yaml`).then((r) => r.data);
+      const {data} = await this.api.get(`${branch}/project.yaml`);
       return yaml.load(data);
     } catch (err) {
       return undefined;
@@ -39,7 +40,8 @@ export class GithubReader implements Reader {
     if (this.defaultBranch) {
       return this.defaultBranch;
     }
-    this.defaultBranch = await axios.get(`https://api.github.com/repos/${this.key}`).then((r) => r.data.default_branch);
+    const {data} = await axios.get(`https://api.github.com/repos/${this.key}`);
+    this.defaultBranch = data.default_branch;
     return this.defaultBranch;
   }
 }
