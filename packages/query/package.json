@@ -12,7 +12,7 @@
     "build": "rm -rf dist && tsc -b",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start:dev": "nodemon",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
@@ -35,6 +35,7 @@
     "@nestjs/core": "^7.6.5",
     "@nestjs/platform-express": "^7.6.5",
     "apollo-server-express": "^2.19.2",
+    "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.10.0",
     "graphile-build-pg": "^4.10.0",
     "graphql": "^15.4.0",
@@ -51,10 +52,12 @@
     "@nestjs/schematics": "^7.2.6",
     "@nestjs/testing": "^7.6.5",
     "@types/express": "^4.17.11",
+    "@types/express-pino-logger": "^4.0.2",
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.165",
     "@types/rimraf": "^3",
     "@types/yargs": "^15.0.11",
+    "nodemon": "^2.0.7",
     "typescript": "^4.1.3"
   }
 }

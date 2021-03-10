@@ -3,27 +3,15 @@
 
 import {DynamicModule, Global, Module} from '@nestjs/common';
 import {Pool} from 'pg';
-import {hideBin} from 'yargs/helpers';
-import yargs from 'yargs/yargs';
+import {getLogger} from '../utils/logger';
+import {getYargsOption} from '../yargs';
 import {Config} from './config';
 
 @Global()
 @Module({})
 export class ConfigureModule {
   static register(): DynamicModule {
-    const opts = yargs(hideBin(process.argv)).options({
-      name: {
-        alias: 'n',
-        describe: 'project name',
-        type: 'string',
-        demandOption: true,
-      },
-      playground: {
-        describe: 'enable graphql playground',
-        type: 'boolean',
-        demandOption: false,
-      },
-    }).argv;
+    const {argv: opts} = getYargsOption();
 
     const config = new Config({
       name: opts.name,
@@ -39,7 +27,7 @@ export class ConfigureModule {
     });
     pgPool.on('error', (err) => {
       // tslint:disable-next-line no-console
-      console.error('PostgreSQL client generated error: ', err.message);
+      getLogger('db').error('PostgreSQL client generated error: ', err.message);
     });
 
     return {

@@ -19,9 +19,11 @@
     "graphql-tag": "^2.12.0",
     "graphql-tools": "^7.0.2",
     "js-yaml": "^4.0.0",
+    "pino": "^6.11.1",
     "reflect-metadata": "^0.1.13"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.0"
+    "@types/js-yaml": "^4.0.0",
+    "@types/pino": "^6.3.6"
   }
 }

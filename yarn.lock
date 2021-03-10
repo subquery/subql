@@ -2795,12 +2795,14 @@ __metadata:
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
     "@types/js-yaml": ^4.0.0
+    "@types/pino": ^6.3.6
     class-transformer: 0.3.1
     class-validator: ^0.13.1
     graphql: ^15.5.0
     graphql-tag: ^2.12.0
     graphql-tools: ^7.0.2
     js-yaml: ^4.0.0
+    pino: ^6.11.1
     reflect-metadata: ^0.1.13
   languageName: unknown
   linkType: soft
@@ -2867,15 +2869,18 @@ __metadata:
     "@nestjs/schematics": ^7.2.6
     "@nestjs/testing": ^7.6.5
     "@types/express": ^4.17.11
+    "@types/express-pino-logger": ^4.0.2
     "@types/jest": ^26.0.20
     "@types/lodash": ^4.14.165
     "@types/rimraf": ^3
     "@types/yargs": ^15.0.11
     apollo-server-express: ^2.19.2
+    express-pino-logger: ^6.0.0
     graphile-build: ^4.10.0
     graphile-build-pg: ^4.10.0
     graphql: ^15.4.0
     lodash: ^4.17.20
+    nodemon: ^2.0.7
     pg: ^8.5.1
     postgraphile-core: ^4.10.0
     reflect-metadata: ^0.1.13
@@ -3096,6 +3101,15 @@ __metadata:
   version: 0.0.45
   resolution: "@types/estree@npm:0.0.45"
   checksum: 9d339cbcf29a96a32e9d40efc21009c2342e93c4f653294dd1ef081ae474bca9e54707e5d4a1cff90b9e3566e8bdd71ac31e0c3d24bc2ff1d3d5aa75058b3937
+  languageName: node
+  linkType: hard
+
+"@types/express-pino-logger@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "@types/express-pino-logger@npm:4.0.2"
+  dependencies:
+    "@types/pino-http": "*"
+  checksum: fc96f5e5e879b7c1a2722a8c9bca70afa7bf770d1d2b473a6ff594f685cf4d70d91bb0f617c8487e77005de4ec9dcc32adb9806b30537bbab89fa7370aacf209
   languageName: node
   linkType: hard
 
@@ -3398,12 +3412,32 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/pino-http@npm:*":
+  version: 5.4.0
+  resolution: "@types/pino-http@npm:5.4.0"
+  dependencies:
+    "@types/pino": "*"
+  checksum: 6429806da4bc7f1896d9ce5d29806f1a21c4096838fac84a979cf2d780c7b9d4fb2bdcb836d62dee67b1ecf9a495529da621b157b776df385c938d6e8911a744
+  languageName: node
+  linkType: hard
+
 "@types/pino-std-serializers@npm:*":
   version: 2.4.1
   resolution: "@types/pino-std-serializers@npm:2.4.1"
   dependencies:
     "@types/node": "*"
   checksum: af90e75d5420b40d327e27294ab5730c08bfacaf52e3cc700bd6dfd006fa2a982340909f2c9b0f808b44d98bd15396780eed1626040189a41910f2fc23fe3461
+  languageName: node
+  linkType: hard
+
+"@types/pino@npm:*, @types/pino@npm:^6.3.6":
+  version: 6.3.6
+  resolution: "@types/pino@npm:6.3.6"
+  dependencies:
+    "@types/node": "*"
+    "@types/pino-std-serializers": "*"
+    "@types/sonic-boom": "*"
+  checksum: ad25dc65e2364189f8f5ea8e2a8872a446b675e906206d8b30338acfb41be0df8f4d7866b970086716c5452c37ace7e4d8a44650388b95b93e3a1fe7d56ae0d6
   languageName: node
   linkType: hard
 
@@ -8749,6 +8783,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"express-pino-logger@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "express-pino-logger@npm:6.0.0"
+  dependencies:
+    pino-http: ^5.3.0
+  checksum: 9f2350c2e0d1fb76b6520f3ff22bd7c2918bc4d83979558d62a4943a6f8c12b8dc436c6937c16575911fa5310d463f1638b2821a18e5a9c40de61a24ffb7ebed
+  languageName: node
+  linkType: hard
+
 "express@npm:4.17.1, express@npm:^4.17.1":
   version: 4.17.1
   resolution: "express@npm:4.17.1"
@@ -8944,6 +8987,15 @@ __metadata:
   version: 2.0.7
   resolution: "fast-safe-stringify@npm:2.0.7"
   checksum: 7bd22543263b707870d70c6f2336b6e8563e34d6807dc388cc0566895e31e0a8273af017a7eb1c9538d0ef54288284e1c0585b557bd856491295a847159fd929
+  languageName: node
+  linkType: hard
+
+"fast-url-parser@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "fast-url-parser@npm:1.1.3"
+  dependencies:
+    punycode: ^1.3.2
+  checksum: 8dbc306b736e32963fe4391a581401c422d826497ce5cacf6e7c60525febfbcea477fbc5b012fe3316f6634a20fa00882168c5ed792ff3ef904c5bc6a11a598d
   languageName: node
   linkType: hard
 
@@ -14543,6 +14595,24 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
+"pino-http@npm:^5.3.0":
+  version: 5.5.0
+  resolution: "pino-http@npm:5.5.0"
+  dependencies:
+    fast-url-parser: ^1.1.3
+    pino: ^6.0.0
+    pino-std-serializers: ^2.4.0
+  checksum: 6ee96d9e9036bf11a1a03646b28f58fc30ece6524d4035a498e3c8ff4988192fdc6f297ab739753cc889f70aca7fd578343fc18d514ef823f54dd25a89a6cb45
+  languageName: node
+  linkType: hard
+
+"pino-std-serializers@npm:^2.4.0":
+  version: 2.5.0
+  resolution: "pino-std-serializers@npm:2.5.0"
+  checksum: c7605e6b9dd3b2e6898059da0bca93277ed9139f0b884d9f7c922f22f011ba4a930389a71728e7c682ee5c3bf786aa67a90f10b1eb8eadc0467c5b78883a43bc
+  languageName: node
+  linkType: hard
+
 "pino-std-serializers@npm:^3.1.0":
   version: 3.2.0
   resolution: "pino-std-serializers@npm:3.2.0"
@@ -14550,7 +14620,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"pino@npm:^6.11.1":
+"pino@npm:^6.0.0, pino@npm:^6.11.1":
   version: 6.11.1
   resolution: "pino@npm:6.11.1"
   dependencies:
@@ -15380,7 +15450,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"punycode@npm:^1.2.4":
+"punycode@npm:^1.2.4, punycode@npm:^1.3.2":
   version: 1.4.1
   resolution: "punycode@npm:1.4.1"
   checksum: 5ce1e044cee2b12f1c65ccd523d7e71d6578f2c77f5c21c2e7a9d588535559c9508571d42638c131dab93cbe9a7b37bce1a7475d43fc8236c99dfe1efc36cfa5

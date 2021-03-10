@@ -4,13 +4,13 @@
 // overwrite the official plugin: https://github.com/graphile/graphile-engine/blob/v4/packages/graphile-build-pg/src/plugins/PgBackwardRelationPlugin.js
 // fix the one to one relationship unique key check
 
-import debugFactory from 'debug';
-
-const debug = debugFactory('graphile-build-pg');
+import {getLogger} from '../../utils/logger';
 
 const OMIT = 0;
 const DEPRECATED = 1;
 const ONLY = 2;
+
+const logger = getLogger('graphile-build-pg');
 
 export default function (builder, {pgLegacyRelations, pgSimpleCollections, subscriptions}) {
   const legacyRelationMode =
@@ -50,7 +50,7 @@ export default function (builder, {pgLegacyRelations, pgSimpleCollections, subsc
       const foreignTableTypeName = inflection.tableType(foreignTable);
       const gqlForeignTableType = pgGetGqlTypeByTypeIdAndModifier(foreignTable.type.id, null);
       if (!gqlForeignTableType) {
-        debug(`Could not determine type for foreign table with id ${foreignTable.type.id}`);
+        logger.debug(`Could not determine type for foreign table with id ${foreignTable.type.id}`);
         return fields;
       }
 
@@ -72,7 +72,7 @@ export default function (builder, {pgLegacyRelations, pgSimpleCollections, subsc
           const tableTypeName = inflection.tableType(table);
           const gqlTableType = pgGetGqlTypeByTypeIdAndModifier(table.type.id, null);
           if (!gqlTableType) {
-            debug(`Could not determine type for table with id ${constraint.classId}`);
+            logger.debug(`Could not determine type for table with id ${constraint.classId}`);
             return memo;
           }
           const schema = table.namespace;

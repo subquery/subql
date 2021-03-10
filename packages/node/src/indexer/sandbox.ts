@@ -4,11 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import { ApiPromise } from '@polkadot/api';
+import { levelFilter } from '@subql/common';
 import { Store } from '@subql/types';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
-import { levelFilter } from '../utils/logger';
 import { timeout } from '../utils/promise';
 
 export interface SandboxOption {
