@@ -24,7 +24,7 @@ export class Validator {
     this.rules.push(...rules);
   }
 
-  async validate(): Promise<Report[]> {
+  async getValidateReports(): Promise<Report[]> {
     const reports: Report[] = [];
     const [pkg, schema] = await Promise.all([this.reader.getPkg(), this.reader.getProjectSchema()]);
 
@@ -67,5 +67,10 @@ export class Validator {
       reports.push(report);
     }
     return reports;
+  }
+
+  async validate(): Promise<boolean> {
+    const reports = await this.getValidateReports();
+    return !reports.some((r) => !r.valid);
   }
 }
