@@ -2798,6 +2798,7 @@ __metadata:
     "@types/pino": ^6.3.6
     class-transformer: 0.3.1
     class-validator: ^0.13.1
+    flatted: ^3.1.1
     graphql: ^15.5.0
     graphql-tag: ^2.12.0
     graphql-tools: ^7.0.2
@@ -9268,7 +9269,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.1.0":
+"flatted@npm:^3.1.0, flatted@npm:^3.1.1":
   version: 3.1.1
   resolution: "flatted@npm:3.1.1"
   checksum: 1065cd78294ea651b8c1b96c298a3e70893a23da655e2288e40c06d5d9b1ebce4bd977e604678e01065a92580f3de5078d60d9ee4cdcede9a9989859d7eb5057

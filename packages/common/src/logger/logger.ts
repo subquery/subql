@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {inspect} from 'util';
+import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
 import {colorizeLevel, ctx} from './colors';
 
@@ -37,12 +37,7 @@ export class Logger {
                     stack: value.stack,
                   };
                 } else {
-                  try {
-                    const s = inspect(value);
-                    return s;
-                  } catch (err) {
-                    return undefined;
-                  }
+                  return stringify(value);
                 }
               },
             }
