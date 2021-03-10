@@ -25,7 +25,7 @@
     "vuepress": "^1.8.0"
   },
   "resolutions": {
-    "@polkadot/api": "3.11.1"
+    "@polkadot/api": "4.0.3"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",

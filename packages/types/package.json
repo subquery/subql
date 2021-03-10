@@ -16,10 +16,10 @@
     "/dist"
   ],
   "peerDependencies": {
-    "@polkadot/api": "^3"
+    "@polkadot/api": "^4"
   },
   "devDependencies": {
-    "@polkadot/api": "^3",
+    "@polkadot/api": "^4",
     "@types/app-module-path": "^2.2.0"
   }
 }
