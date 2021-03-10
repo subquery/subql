@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.7.4-1 linux-x64 node-v14.16.0
+@subql/cli/0.7.4-2 linux-x64 node-v14.16.0
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -36,6 +36,7 @@ USAGE
 * [`subql codegen`](#subql-codegen)
 * [`subql help [COMMAND]`](#subql-help-command)
 * [`subql init [PROJECTNAME]`](#subql-init-projectname)
+* [`subql validate`](#subql-validate)
 
 ## `subql build`
 
@@ -50,7 +51,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.7.4-1/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.7.4-2/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -65,7 +66,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.7.4-1/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.7.4-2/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -100,5 +101,20 @@ OPTIONS
   --starter
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.7.4-1/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.7.4-2/lib/commands/init.js)_
+
+## `subql validate`
+
+check a folder or github repo is a validate subquery project
+
+```
+USAGE
+  $ subql validate
+
+OPTIONS
+  -l, --location=location  local folder or github repo url
+  --silent
+```
+
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.7.4-2/lib/commands/validate.js)_
 <!-- commandsstop -->
