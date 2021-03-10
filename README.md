@@ -38,6 +38,7 @@ Check our query component [`@subql/query`](packages/query)
 * [`@subql/query`](packages/query)
 * [`@subql/common`](packages/common)
 * [`@subql/types`](packages/types)
+* [`@subql/validator`](packages/validator)
 
 ## More Documentation
 For more documentation, visit [doc.subquery.network](https://doc.subquery.network/)

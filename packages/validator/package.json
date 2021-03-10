@@ -1,0 +1,26 @@
+{
+  "name": "@subql/validator",
+  "version": "0.1.0",
+  "description": "to validate subquery project",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "ZheX",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "axios": "^0.21.1",
+    "js-yaml": "^4.0.0",
+    "package-json-type": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.0"
+  }
+}

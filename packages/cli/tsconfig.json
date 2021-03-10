@@ -10,7 +10,8 @@
     "outDir": "lib"
   },
   "references": [
-    {"path": "../common"}
+    {"path": "../common"},
+    {"path": "../validator"}
   ],
   "include": [
     "src/**/*"
