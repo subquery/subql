@@ -1,6 +1,11 @@
 name: "Query-to-docker"
 on:
   workflow_dispatch:
+    inputs:
+      isLatest:
+        description: 'Add latest tag'
+        default: 'true'
+        require: true
 
 jobs:
   query-build-push-docker:
@@ -31,6 +36,16 @@ jobs:
           sh .github/workflows/scripts/queryVersion.sh
 
       - name: Build and push
+        if: github.event.inputs.isLatest == 'false'
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: ./packages/query/Dockerfile
+          tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
+          build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
+
+      - name: Build and push
+        if: github.event.inputs.isLatest == 'true'
         uses: docker/build-push-action@v2
         with:
           push: true
