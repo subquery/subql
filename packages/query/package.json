@@ -34,6 +34,7 @@
     "@nestjs/common": "^7.6.5",
     "@nestjs/core": "^7.6.5",
     "@nestjs/platform-express": "^7.6.5",
+    "@subql/common": "workspace:*",
     "apollo-server-express": "^2.19.2",
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.10.0",
