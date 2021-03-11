@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NestFactory} from '@nestjs/core';
-import {NestLogger} from '@subql/node/dist/utils/logger';
 import {AppModule} from './app.module';
+import {NestLogger} from './utils/logger';
 
 void (async () => {
   const app = await NestFactory.create(AppModule, {
