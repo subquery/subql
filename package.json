@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@babel/preset-env": "^7.13.10",
     "@types/node": "^12.19.15",
     "@typescript-eslint/eslint-plugin": "^4.14.2",
     "@typescript-eslint/parser": "^4.14.2",
@@ -19,6 +20,7 @@
     "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "pretty-quick": "^3.1.0",
+    "regenerator-runtime": "^0.13.7",
     "ts-jest": "^26.5.3",
     "ts-loader": "^8.0.14",
     "ts-node": "^9.1.1",
