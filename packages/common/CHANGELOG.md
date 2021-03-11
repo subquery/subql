@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2021-03-11
+### Added
+- support type Boolean in graphql schema (#216)
+- refactor to build relationship of entities from grahql schema (#212)
+- refactor logger to @subql/common (#220)
+
 ## [0.6.1] - 2021-02-15
 ### Changed
 - bump dependencies (#148)
@@ -31,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.6.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/OnFinality-io/subql/compare/v0.6.0...v0.6.1
 [0.5.0]: https://github.com/OnFinality-io/subql/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/OnFinality-io/subql/compare/v0.3.0...v0.4.0

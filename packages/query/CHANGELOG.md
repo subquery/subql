@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2021-03-11
+### Added
+- refactor logger: support --output-fmt and --log-level (#220)
+- use read db host (DB_HOST_READ from env) as priority (#221)
+
 ## 0.2.0 - 2021-02-05
 ### Added
 - init query service project
@@ -14,4 +19,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/subquery/subql/compare/v0.2.0...v0.3.0

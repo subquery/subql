@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2021-03-11
+### Added
+- Update subquery repo path (#196)
+- codegen will create foreign key for relations: 1-1, and 1-N  (#212)
+- codegen support type Boolean (#216)
+- add subcommand validate (#219)
+
 ## [0.7.3] - 2021-02-15
 ### Changed
 - bump dependencies (#148)
@@ -36,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/OnFinality-io/subql/compare/v0.7.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/subquery/subql/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/OnFinality-io/subql/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/OnFinality-io/subql/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/OnFinality-io/subql/compare/v0.7.0...v0.7.1
