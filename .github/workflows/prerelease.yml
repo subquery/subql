@@ -42,6 +42,16 @@ jobs:
         with:
           paths: packages/node
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-validator
+        with:
+          paths: packages/validator
+
       - run: yarn
 
       - name: build
@@ -50,14 +60,14 @@ jobs:
       - name: Bump common & deploy
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
-        run: echo "Changes exist in common" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in common" && yarn version prerelease && yarn npm publish --access public --tag dev
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump cli & deploy
         if: steps.changed-cli.outputs.changed == 'true'
         working-directory: packages/cli
-        run: echo "Changes exist in cli" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in cli" && yarn version prerelease && yarn npm publish --access public --tag dev
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -65,14 +75,28 @@ jobs:
       - name: Bump types & deploy
         if: steps.changed-types.outputs.changed == 'true'
         working-directory: packages/types
-        run: echo "Changes exist in types" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in types" && yarn version prerelease && yarn npm publish --access public --tag dev
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy
         if: steps.changed-node.outputs.changed == 'true'
         working-directory: packages/node
-        run: echo "Changes exist in node" && yarn version prerelease && yarn npm publish --access public
+        run: echo "Changes exist in node" && yarn version prerelease && yarn npm publish --access public --tag dev
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump query & deploy
+        if: steps.changed-query.outputs.changed == 'true'
+        working-directory: packages/query
+        run: echo "Changes exist in query" && yarn version prerelease && yarn npm publish --access public --tag dev
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump validator & deploy
+        if: steps.changed-validator.outputs.changed == 'true'
+        working-directory: packages/validator
+        run: echo "Changes exist in validator" && yarn version prerelease && yarn npm publish --access public --tag dev
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 

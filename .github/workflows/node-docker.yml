@@ -1,11 +1,11 @@
 name: "Node-to-docker"
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'packages/node/package.json'
   workflow_dispatch:
+    inputs:
+      isLatest:
+        description: 'Add latest tag'
+        default: 'true'
+        require: true
 
 jobs:
   node-build-push-docker:
@@ -36,6 +36,16 @@ jobs:
           sh .github/workflows/scripts/nodeVersion.sh
 
       - name: Build and push
+        if: github.event.inputs.isLatest == 'false'
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          file: ./packages/node/Dockerfile
+          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
+          build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
+
+      - name: Build and push
+        if: github.event.inputs.isLatest == 'true'
         uses: docker/build-push-action@v2
         with:
           push: true
