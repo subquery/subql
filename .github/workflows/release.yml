@@ -50,6 +50,11 @@ jobs:
         with:
           paths: packages/query
 
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-validator
+        with:
+          paths: packages/validator
+
       - run: yarn
 
       - name: build
@@ -88,5 +93,12 @@ jobs:
         if: steps.changed-query.outputs.changed == 'true'
         working-directory: packages/query
         run: echo "Changes exist in query" && yarn npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Validator
+        if: steps.changed-validator.outputs.changed == 'true'
+        working-directory: packages/validator
+        run: echo "Changes exist in validator" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
