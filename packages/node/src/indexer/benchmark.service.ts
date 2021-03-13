@@ -39,13 +39,15 @@ export class BenchmarkService {
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
         this.blockPerSecond =
           heightDiff / (timeDiff / 1000) - 1 / this.blockTimeSec;
-        const durationStr = dayjs
-          .duration(
-            (this.targetHeight - this.currentProcessingHeight) /
-              this.blockPerSecond,
-            'seconds',
-          )
-          .format('D [days] HH [hours] MM [mins]');
+
+        const duration = dayjs.duration(
+          (this.targetHeight - this.currentProcessingHeight) /
+            this.blockPerSecond,
+          'seconds',
+        );
+        const hoursMinsStr = duration.format('HH [hours] mm [mins]');
+        const days = Math.floor(duration.asDays());
+        const durationStr = `${days} days ${hoursMinsStr}`;
         logger.info(
           `${this.blockPerSecond.toFixed(2)} bps, target: #${
             this.targetHeight
