@@ -85,16 +85,93 @@ filter:
 
 ## The GraphQL Schema
 
+### Defining Entities
 It is must define the GraphQL schemas inside of `schema.graphql` file. To know how to write in  "GraphQL schema language",
-we recommend to check out on [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+we recommend checking out on [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-We currently supporting flowing types:
+
+### Optional and required fields
+Each entity must define its required field `id` with the type of `ID!`, it used as the primary key and unique among all entities of the same type.
+
+**Required filed** in the entity are indicated by the `!`. 
+
+Please see the example below:
+
+```graphql
+type Example @entity {
+  id: ID! #id Entity is always required
+  name: String! # This is a required field
+  address: String #This is an optional field
+}
+```
+
+### Supported scalars and types
+
+We currently supporting flowing scalars:
 - `ID`
 - `Int`
 - `String`
 - `BigInt`
 - `Date`
+- `Boolean`
 
+For nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+
+### Entity Relationships
+
+An entity often has nested relationships with other entities. Set the field value to another entity name will define a unidirectional relationship between these two entities by default.
+
+From the entity's relationship perspectives, the entity can `belongsTo`,`hasOne`or`hasMany` with other entities. In following examples covers these scenarios.
+
+#### One-to-One relationships
+
+Define a Passport entity type with a required one-to-one relationship with a Person entity type:
+
+```graphql
+type Person @entity {
+  id: ID!
+}
+
+type Passport @entity {
+  id: ID!
+  owner: Person!
+}
+```
+
+#### One-to-Many relationships
+
+Define a Contact entity type with an optional one-to-many relationship with a Person entity type.
+And remember, use bracket to indicate a field type is multiple entities.
+
+```graphql
+type Person @entity {
+  id: ID!
+  contacts: [Contact] 
+}
+
+type Contact @entity {
+  id: ID!
+  phone: String!
+}
+```
+#### Reverse Lookups
+
+To enable reverse lookups on an entity, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+This crate a virtual field on the entity that will be queried.
+
+The Transfer from an account accessible from the Account by deriving a transfers field:
+```graphql
+type Account @entity {
+  id: ID!
+  transfers: [Transfer] @derivedFrom(field: "from")
+}
+
+type Transfer @entity {
+  id: ID!
+  amount: BigInt
+  from: Account!
+}
+```
 
 ## Mapping function
 
