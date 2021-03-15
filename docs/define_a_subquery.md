@@ -260,6 +260,7 @@ See an example of using the API in [validator-threshold](https://github.com/subq
 | [sum-reward](https://github.com/subquery/subql-examples/tree/main/sum-reward) | Indexes staking bond, reward and slash from events of finalized block. | eventHandler |
 | [kitty](https://github.com/subquery/subql-examples/tree/main/kitty) | Indexes birthinfo of kitties. | callHandler, eventHandler, customTypes |
 | [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) | Indexes the least staking amount required for a validator to be elected. | blockHandler, @polkadot/api |
+| [entity-relation](https://github.com/subquery/subql-examples/tree/main/entity-relation) | Indexes balance transfers between accounts, also indexes utility batchAll to find out the content of the extrinsic calls | One-to-many, many-to-many relationship |
 
 
 ## Code Generation
