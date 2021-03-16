@@ -154,6 +154,26 @@ type Contact @entity {
   phone: String!
 }
 ```
+
+#### Many-to-Many relationships
+
+Many-to-Many relationships can be implement by pointing to the same entity name in multiple fields of another entity.
+
+For example, an account can have multiple transfers, and a transfer is also belongs to the account it transferred from and to.
+This will establish a bidirectional relationship between two Accounts (from and to) through Transfer table. 
+```graphql
+type Account @entity {
+  id: ID!
+}
+
+type Transfer @entity {
+  id: ID!
+  amount: BigInt
+  from: Account!
+  to: Account!
+}
+```
+
 #### Reverse Lookups
 
 To enable reverse lookups on an entity, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
@@ -172,27 +192,6 @@ type Transfer @entity {
   from: Account!
 }
 ```
-#### Many-to-Many relationships
-
-Many-to-Many relationships can be implement by pointing to the same entity name in multiple fields of another entity.
-
-For example, an account can have multiple transfers, and a transfer is also belongs to the account it transferred from and to.
-This will establish a bidirectional relationship between two Accounts (from and to) by Transfer table. 
-```graphql
-type Account @entity {
-  id: ID!
-}
-
-type Transfer @entity {
-  id: ID!
-  amount: BigInt
-  from: Account!
-  to: Account!
-}
-```
-
-
-
 
 ## Mapping function
 
