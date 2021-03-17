@@ -21,8 +21,8 @@ export class SubqueryProject implements ProjectManifest {
     project.path = projectPath;
     project.dataSources.map(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
+        if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
         dataSource.startBlock = 1;
-        logger.warn('start block changed to #1');
       }
     });
     return project;
