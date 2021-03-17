@@ -156,11 +156,12 @@ type Contact @entity {
 ```
 
 #### Many-to-Many relationships
+A many-to-Many relationship can be achieved by implementing a middle entity to connect the other two entities.
 
-Many-to-Many relationships can be implement by pointing to the same entity name in multiple fields of another entity.
-
+Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
 For example, an account can have multiple transfers, and a transfer is also belongs to the account it transferred from and to.
 This will establish a bidirectional relationship between two Accounts (from and to) through Transfer table. 
+
 ```graphql
 type Account @entity {
   id: ID!
