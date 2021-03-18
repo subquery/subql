@@ -42,6 +42,7 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
+import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
@@ -93,7 +94,13 @@ export const pgDefaultPlugins = [
   PgConnectionTotalCount,
 ];
 
-export const plugins = [...defaultPlugins, ...pgDefaultPlugins, PgSimplifyInflectorPlugin, PgManyToManyPlugin];
+export const plugins = [
+  ...defaultPlugins,
+  ...pgDefaultPlugins,
+  PgSimplifyInflectorPlugin,
+  PgManyToManyPlugin,
+  ConnectionFilterPlugin,
+];
 
 // todo
 // adv filter plugin: https://github.com/graphile-contrib/postgraphile-plugin-connection-filter
