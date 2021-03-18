@@ -3437,7 +3437,8 @@ __metadata:
     lodash: ^4.17.20
     nodemon: ^2.0.7
     pg: ^8.5.1
-    postgraphile-core: ^4.10.0
+    postgraphile-core: ^4.11.2
+    postgraphile-plugin-connection-filter: ^2.1.1
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^6.6.3
@@ -15770,7 +15771,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"postgraphile-core@npm:^4.10.0":
+"postgraphile-core@npm:^4.11.2":
   version: 4.11.2
   resolution: "postgraphile-core@npm:4.11.2"
   dependencies:
@@ -15781,6 +15782,13 @@ fsevents@~2.1.2:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
     pg: ">=6.1.0 <9"
   checksum: 6eca09f5eb8e5acfc1f4960fcdbeca52391b91ec0edd52577d10a7cb8a68dc0d5c9b389035b503679415322a602939a052dcb2fa67e3cb6a6fd2625097ad0b44
+  languageName: node
+  linkType: hard
+
+"postgraphile-plugin-connection-filter@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "postgraphile-plugin-connection-filter@npm:2.1.1"
+  checksum: f7d020faf28fcbb7e4bf5154332c946c93caab00bf2f8bffcc3d930eca05ab51ed13414958597ae86543ea762a0b0c73d379bffb5976167eb988a384c7dce424
   languageName: node
   linkType: hard
 
