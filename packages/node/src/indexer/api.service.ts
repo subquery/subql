@@ -10,6 +10,7 @@ import {
   QueryableStorageEntry,
   QueryableStorageMultiArg,
 } from '@polkadot/api/types';
+import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { AnyTuple } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
@@ -109,9 +110,9 @@ export class ApiService implements OnApplicationShutdown {
   private patchApi(): void {
     this.patchApiQuery(this.patchedApi);
     this.patchApiTx(this.patchedApi);
-    this.patchApiRpc(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
+    this.patchApiRpc(this.patchedApi);
     (this.patchedApi as any).isPatched = true;
   }
 
@@ -168,8 +169,25 @@ export class ApiService implements OnApplicationShutdown {
         newEntryFunc as QueryableStorageEntry<'rxjs', AnyTuple>,
       );
     }
-    newEntryFunc.multi = (async (keys: any[]) => {
-      return Promise.all(keys.map(async (key) => newEntryFunc(key)));
+    newEntryFunc.multi = ((args: any[]) => {
+      const keys = args.map((arg) => {
+        const key = new StorageKey(
+          this.api.registry,
+          original.key(
+            ...(original.creator.meta.type.isDoubleMap ? arg : [arg]),
+          ),
+        );
+        key.setMeta(original.creator.meta);
+        return key;
+      });
+      if (apiType === 'promise') {
+        return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
+      } else {
+        return this.api.rx.rpc.state.queryStorageAt(
+          keys,
+          this.currentBlockHash,
+        );
+      }
     }) as any;
     newEntryFunc.range = NOT_SUPPORT('range');
     newEntryFunc.size = this.replaceToAtVersion(original, 'sizeAt');
@@ -275,31 +293,37 @@ export class ApiService implements OnApplicationShutdown {
     }, {});
   }
 
+  private getKeysFromCalls(
+    api: ApiPromise,
+    calls: QueryableStorageMultiArg<'promise' | 'rxjs'>[],
+  ): StorageKey[] {
+    return calls.map((callMultiArg) => {
+      if (callMultiArg instanceof Array) {
+        const [storageFunc, ...args] = callMultiArg;
+        const key = new StorageKey(api.registry, storageFunc.key(...args));
+        key.setMeta(storageFunc.creator.meta);
+        return key;
+      } else {
+        const key = new StorageKey(api.registry, callMultiArg.key());
+        key.setMeta(callMultiArg.creator.meta);
+        return key;
+      }
+    });
+  }
+
   private patchApiQueryMulti(api: ApiPromise): void {
-    (api as any)._queryMulti = async (
+    (api as any)._queryMulti = (
       calls: QueryableStorageMultiArg<'promise'>[],
-    ) =>
-      Promise.all(
-        calls.map(async (callMultiArg) => {
-          if (callMultiArg instanceof Array) {
-            const [storageFunc, ...args] = callMultiArg;
-            return storageFunc(...args);
-          } else {
-            return callMultiArg();
-          }
-        }),
-      );
-    (api as any)._rx.queryMulti = (calls: QueryableStorageMultiArg<'rxjs'>[]) =>
-      combineLatest(
-        calls.map((callMultiArg) => {
-          if (callMultiArg instanceof Array) {
-            const [storageFunc, ...args] = callMultiArg;
-            return storageFunc(...args);
-          } else {
-            return callMultiArg();
-          }
-        }),
-      );
+    ) => {
+      const keys = this.getKeysFromCalls(api, calls);
+      return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
+    };
+    (api as any)._rx.queryMulti = (
+      calls: QueryableStorageMultiArg<'rxjs'>[],
+    ) => {
+      const keys = this.getKeysFromCalls(api, calls);
+      return this.api.rx.rpc.state.queryStorageAt(keys, this.currentBlockHash);
+    };
   }
 
   private patchDerive(api: ApiPromise): void {
