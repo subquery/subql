@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
+import { take } from 'rxjs/operators';
 import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
 import { ApiService } from './api.service';
@@ -196,5 +197,40 @@ describe('ApiService', () => {
     ]);
 
     expect(multiResults).toEqual(patchedApiResults);
+  });
+
+  it('api.rx.queryMulti', async () => {
+    const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
+    const apiService = await prepareApiService();
+    const api = apiService.getApi();
+    const patchedApi = await apiService.getPatchedApi();
+    const blockhash = await api.rpc.chain.getBlockHash(6721189);
+    await apiService.setBlockhash(blockhash, true);
+
+    const multiResults = await Promise.all([
+      api.query.timestamp.now.at(blockhash),
+      await api.query.session.validators.at(blockhash),
+      await api.query.system.account.at(blockhash, account1),
+      await api.query.staking.erasStakers.at(
+        blockhash,
+        2038,
+        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
+      ),
+    ]);
+    const patchedApiRxResults = await (patchedApi.rx as any)
+      .queryMulti([
+        api.query.timestamp.now, // not in array
+        [api.query.session.validators], // zero arg
+        [api.query.system.account, account1], //one arg
+        [
+          api.query.staking.erasStakers,
+          2038,
+          `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
+        ], //double map
+      ])
+      .pipe(take(1))
+      .toPromise();
+
+    expect(multiResults).toEqual(patchedApiRxResults);
   });
 });
