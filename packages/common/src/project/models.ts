@@ -49,7 +49,7 @@ export class ProjectNetwork implements RegisteredTypes {
 
 export class ProjectManifestImpl implements ProjectManifest {
   @Allow()
-  definitions: object
+  definitions: object;
   @IsString()
   description: string;
   @ValidateNested()
@@ -88,7 +88,6 @@ export class NetworkFilter implements SubqlNetworkFilter {
   @IsString()
   specName: string;
 }
-
 
 export class CallFilter extends EventFilter implements SubqlCallFilter {
   @IsOptional()
@@ -160,7 +159,7 @@ export class RuntimeDataSource implements SubqlRuntimeDatasource {
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @Type(()=> NetworkFilter)
+  @Type(() => NetworkFilter)
   @IsOptional()
-  filter?:SubqlNetworkFilter
+  filter?: SubqlNetworkFilter;
 }
