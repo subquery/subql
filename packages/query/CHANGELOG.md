@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-03-25
+### Added
+- support filter for condition search (#240)
+
 ## [0.3.2] - 2021-03-11
 ### Fixed
 - add dependency of @subql/common for @subql/query (#233)
@@ -27,7 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/subquery/subql/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/subquery/subql/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/subquery/subql/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/subquery/subql/compare/v0.2.0...v0.3.0

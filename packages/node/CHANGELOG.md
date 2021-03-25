@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2021-03-25
+### Fixed
+- Fix benchmark output format issues (#235)
+- Only warning when user set start block to number smaller than 1. (#239)
+
+### Added
+- Support entity relations (#132)
+- Refactor api.query...multi(),  api.queryMulti() to use rpc.queryStorageAt() (#244)
+
 ## [0.10.2] - 2021-03-11
 ### Added
 - refactor logger to @subql/common (#220)
@@ -122,7 +131,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.10.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/subquery/subql/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/subquery/subql/compare/v0.10.1...v0.10.2
 [0.10.1]: https://github.com/subquery/subql/compare/v0.10.0...v0.10.1
 [0.10.0]: https://github.com/subquery/subql/compare/v0.9.2...v0.10.0
