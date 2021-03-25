@@ -27,11 +27,23 @@ module.exports = {
                     '/': [
                         '',
                         'quickstart',
-                        'directory_structure',
-                        'define_a_subquery' ,
-                        'indexing_query',
-                        'sandbox'
-
+                        {
+                            title: 'Create a Project',
+                            collapsable: false,
+                            children: [
+                                'create/define_a_subquery',
+                                'create/directory_structure',
+                            ]
+                        },
+                        {
+                            title: 'Run a Project',
+                            collapsable: false,
+                            children: [
+                                'run/',
+                                'run/indexing_query',
+                                'run/sandbox',
+                            ]
+                        },
                     ],
                 }
 
