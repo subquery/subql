@@ -53,10 +53,18 @@ export class IndexerManager {
       const inject = block.specVersion !== this.prevSpecVersion;
       await this.apiService.setBlockhash(block.block.hash, inject);
 
-      for (const ds of this.project.dataSources) {
-        if (ds.startBlock > block.block.header.number.toNumber()) {
-          continue;
-        }
+      const dataSources = this.project.dataSources.filter(ds=>
+        ds.startBlock <= block.block.header.number.toNumber() &&
+        !ds.filter?.specName||ds.filter.specName === this.api.runtimeVersion.specName.toString()
+      )
+      if (dataSources.length === 0){
+        logger.error(
+          `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
+        );
+        process.exit(1);
+      }
+
+      for (const ds of dataSources) {
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
@@ -157,7 +165,9 @@ export class IndexerManager {
         dbSchema: projectSchema,
         hash: '0x',
         nextBlockHeight: Math.min(
-          ...this.project.dataSources.map((item) => item.startBlock ?? 1),
+          ...this.project.dataSources
+            .filter(ds=> !ds.filter?.specName||ds.filter.specName === this.api.runtimeVersion.specName.toString())
+            .map((item) => item.startBlock ?? 1),
         ),
         network: chain,
         networkGenesis: genesisHash,

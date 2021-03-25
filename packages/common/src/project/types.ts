@@ -66,12 +66,17 @@ export interface SubqlMapping {
 export interface SubqlDatasource {
   name: string;
   kind: SubqlKind;
+  filter?: SubqlNetworkFilter;
   startBlock?: number;
   mapping: SubqlMapping;
 }
 
 export interface SubqlRuntimeDatasource extends SubqlDatasource {
   kind: SubqlKind.Runtime;
+}
+
+export interface SubqlNetworkFilter {
+  specName: String;
 }
 
 export type SubqlDataSource = SubqlRuntimeDatasource;
