@@ -159,8 +159,8 @@ export class RuntimeDataSource implements SubqlRuntimeDatasource {
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @Type(() => NetworkFilter)
   @IsOptional()
   @ValidateNested()
+  @Type(() => NetworkFilter)
   filter?: SubqlNetworkFilter;
 }

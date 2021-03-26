@@ -144,22 +144,19 @@ export class IndexerManager {
     this.vm.on('console.log', (data) => getLogger('sandbox').info(data));
   }
 
-  private getStartBlockFromDataSources(){
+  private getStartBlockFromDataSources() {
     const startBlocksList = this.project.dataSources
       .filter(
         (ds) =>
           !ds.filter?.specName ||
-          ds.filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+          ds.filter.specName === this.api.runtimeVersion.specName.toString(),
       )
       .map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to get start block from valid data sources`,
-      );
+      logger.error(`Failed to get start block from valid data sources`);
       process.exit(1);
-    }else{
-      return Math.min(...startBlocksList)
+    } else {
+      return Math.min(...startBlocksList);
     }
   }
 
