@@ -153,7 +153,9 @@ export class IndexerManager {
       )
       .map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {
-      logger.error(`Failed to find a valid datasource, Please check your endpoint if specName filter is used.`);
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
       process.exit(1);
     } else {
       return Math.min(...startBlocksList);
