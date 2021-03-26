@@ -55,9 +55,9 @@ export class IndexerManager {
 
       const dataSources = this.project.dataSources.filter(
         (ds) =>
-          (ds.startBlock <= block.block.header.number.toNumber() &&
-            !ds.filter?.specName) ||
-          ds.filter.specName === this.api.runtimeVersion.specName.toString(),
+          ds.startBlock <= block.block.header.number.toNumber() &&
+          (!ds.filter?.specName ||
+            ds.filter.specName === this.api.runtimeVersion.specName.toString()),
       );
       if (dataSources.length === 0) {
         logger.error(
@@ -144,6 +144,25 @@ export class IndexerManager {
     this.vm.on('console.log', (data) => getLogger('sandbox').info(data));
   }
 
+  private getStartBlockFromDataSources(){
+    const startBlocksList = this.project.dataSources
+      .filter(
+        (ds) =>
+          !ds.filter?.specName ||
+          ds.filter.specName ===
+          this.api.runtimeVersion.specName.toString(),
+      )
+      .map((item) => item.startBlock ?? 1);
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to get start block from valid data sources`,
+      );
+      process.exit(1);
+    }else{
+      return Math.min(...startBlocksList)
+    }
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
@@ -162,20 +181,12 @@ export class IndexerManager {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
+
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
         hash: '0x',
-        nextBlockHeight: Math.min(
-          ...this.project.dataSources
-            .filter(
-              (ds) =>
-                !ds.filter?.specName ||
-                ds.filter.specName ===
-                  this.api.runtimeVersion.specName.toString(),
-            )
-            .map((item) => item.startBlock ?? 1),
-        ),
+        nextBlockHeight: this.getStartBlockFromDataSources(),
         network: chain,
         networkGenesis: genesisHash,
       });
