@@ -10,11 +10,11 @@ SubQuery aims to support all Substrate-compatible networks.
 ## Get Started
 #### Installation
 ```shell
-# NPM
-npm install -g @subql/cli @subql/node @subql/query
-
 # Yarn
 yarn global add @subql/cli @subql/node @subql/query
+
+# NPM
+npm install -g @subql/cli @subql/node @subql/query
 ```
 
 #### Create a SubQuery project

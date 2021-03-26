@@ -18,14 +18,18 @@ SubQuery node is an implementation that extract substrate-based blockchain data 
 
 ### Install it globally
 
-````
+```shell
+# Yarn
+yarn global add @subql/node
+
+# NPM
 npm install -g @subql/node
-````
+```
 Once installation completed, you can execute it.
 
-````
+```shell
 subql-node <command>
-````
+```
 
 ### Command-Line 
 
@@ -88,9 +92,13 @@ If not using local mode, it will create a new schema with the initial `subquery_
 
 ### Install @subql/query globally
 
-````
+```shell
+# Yarn
+yarn global add @subql/query
+
+# NPM
 npm install -g @subql/query
-````
+```
 
 ### Run the query service
 
