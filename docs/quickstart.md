@@ -18,7 +18,7 @@ If you haven't already, we suggest that you familiarise yourself with the [termi
 ### Install the SubQuery CLI
 
 Install SubQuery CLI globally on your terminal by using Yarn or NPM:
-```
+```shell
 # NPM
 npm install -g @subql/cli
 
@@ -27,14 +27,14 @@ yarn global add @subql/cli
 ```
 
 You can then run help to see available commands and usage provide by CLI
-```
+```shell
 subql help
 ```
 
 ## Initialise the Starter SubQuery Project
 
 Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
-```
+```shell
 subql init --starter PROJECT_NAME
 ```
 You'll be asked certain questions as the SubQuery project is initalised:
@@ -48,7 +48,7 @@ You'll be asked certain questions as the SubQuery project is initalised:
 After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The files and  should be identical as in the [Directory Structure](/create/directory_structure).
 
 Last, under the project directory, run following command to install the new project's dependencies.
-```
+```shell
 cd PROJECT_NAME
 
 # NPM
@@ -70,13 +70,13 @@ For more information on how to write the SubQuery, check out our documentation u
 ### GraphQL Model Generation
 
 In order to index your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
-````
+```shell
 # NPM 
 npm run-script codegen
 
 # Yarn
 yarn codegen
-````
+```
 
 You'll find the generated models in the `/src/types/models` directory
 
@@ -86,7 +86,7 @@ In order run your SubQuery Project on a SubQuery node or our hosted service, you
 
 Run pack command from the project's root directory to automatically generate a `PROJECT_NAME.tgz` file.
 
-```
+```shell
 # NPM
 npm run-script build
 
@@ -103,7 +103,7 @@ SubQuery nodes are run as a container in Docker, if you don't already have Docke
 All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised it you wont need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run/indexing_query)
 
 Under the project directory run following command:
-```
+```shell
 docker-compose pull && docker-compose up
 ```
 It may take some time to download the required packages (`@subquery/node` and Postgres) for the first time but soon you'll see a running SubQuery node.
