@@ -100,11 +100,11 @@ SubQuery nodes are run as a container in Docker, if you don't already have Docke
 
 ### Run your SubQuery Project
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised it you wont need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run)
+All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised it you wont need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run/indexing_query)
 
 Under the project directory run following command:
 ```
-docker-compose up
+docker-compose pull && docker-compose up
 ```
 It may take some time to download the required packages (`@subquery/node` and Postgres) for the first time but soon you'll see a running SubQuery node.
 

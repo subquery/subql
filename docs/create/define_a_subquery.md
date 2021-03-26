@@ -199,7 +199,7 @@ type Transfer @entity {
 The mappings function defined how to transform the indexed data into the entities have defined in the schema above. Mappings are written 
 in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly). 
 
-- In the [examples](/define_a_subquery.html#examples) and its `project.yaml` under mapping.handlers, create an exported function of the same name. 
+- In the [examples](#examples) and its `project.yaml` under mapping.handlers, create an exported function of the same name. 
 
 - Also, under the `src/index.ts`, you have to export the functions of handlers as defined in above.
 

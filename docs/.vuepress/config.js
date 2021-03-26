@@ -19,9 +19,9 @@ module.exports = {
                 ariaLabel: 'Languages',
                 algolia: {},
                 nav: [
-                    { text: 'SubQuery', link: 'https://www.subquery.network/',target:'_self', rel:''},
-                    { text: 'Guide', link: '/' },
-                    { text: 'OnFinality', link: 'https://onfinality.io/', target:'_self', rel:''},
+                    { text: 'Explorer', link: 'https://explorer.subquery.network/',target:'_blank', rel:''},
+                    { text: 'Documentation', link: '/' },
+                    { text: 'GitHub', link: 'https://github.com/subquery/subql', target:'_blank', rel:''},
                 ],
                 sidebar: {
                     '/': [
@@ -39,7 +39,6 @@ module.exports = {
                             title: 'Run a Project',
                             collapsable: false,
                             children: [
-                                'run/',
                                 'run/indexing_query',
                                 'run/sandbox',
                             ]

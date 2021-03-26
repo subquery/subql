@@ -37,7 +37,7 @@ To find out more available option, run `--help`.
 subql-node -f your-project-path 
 subql-node -f your-project-tar.tgz
 ````
-The acceptable project path can be either a directory or [packed project](/define_a_subquery.html#pack).
+The acceptable project path can be either a directory or [packed project](/create/define_a_subquery.html#pack).
 
 
 #### Connect to database
@@ -98,7 +98,7 @@ npm install -g @subql/query
 export DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
-Make sure the project name is same as you defined at the beginning when [initialize the project](/quickstart.html#initialize-the-starter-package).
+Make sure the project name is same as you defined at the beginning when [initialize the project](/quickstart.html#initialise-the-starter-subquery-project).
 Also check the environment variables are correct.
 
 After running subql-query service successfully, open your browser and head to `http://localhost:3000`.
