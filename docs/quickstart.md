@@ -82,10 +82,9 @@ You'll find the generated models in the `/src/types/models` directory
 
 ## Build the Project
 
-In order run your SubQuery Project on a SubQuery node or our hosted service, you need to build your work.
+In order run your SubQuery Project on a locally hosted SubQuery Node, you need to build your work.
 
-Run the build command from the project's root directory to automatically generate a `PROJECT_NAME.tgz` file.
-
+Run the build command from the project's root directory.
 ```shell
 # Yarn
 yarn build
