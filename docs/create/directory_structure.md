@@ -18,4 +18,4 @@ Following map provide an overview of a SubQuery project.
       L mappingHandlers.ts
 ```
 
-In the [Define a SubQuery](/define_a_subquery) section, we will explore more details of each file. 
+In the [Define the SubQuery](/create/define_a_subquery) section, we will explore more details of each file. 

@@ -1,4 +1,4 @@
-# The sandbox
+# The Sandbox
 
 In our envisioned usage scenario, the SubQuery node is usually run by a trusted host, and the code of the SubQuery project submitted by the user to the node is not entirely trustworthy. 
 
