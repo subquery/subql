@@ -43,6 +43,14 @@ module.exports = {
                                 'run/sandbox',
                             ]
                         },
+                        {
+                            title: 'Publish a Project',
+                            collapsable: false,
+                            children: [
+                                'publish/publish',
+                                'publish/upgrade',
+                            ]
+                        },
                     ],
                 }
 

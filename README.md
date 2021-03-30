@@ -17,20 +17,20 @@ yarn global add @subql/cli @subql/node @subql/query
 npm install -g @subql/cli @subql/node @subql/query
 ```
 
-#### Create a SubQuery project
+#### Create a SubQuery Project
 You can follow our [Quick Start Guide](/https://doc.subquery.network/quickstart.html) to learn how to create, initialize, build, and pack a new SubQuery Project using the `@subql/cli` tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nodejs.org/en/).
 
-#### Run an Indexer and Query Service
+#### Publish your SubQuery Project to our Managed Service
+Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+
+#### Run your own Indexer and Query Service
 [Follow our guide](https://doc.subquery.network/run/indexing_query.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 
-You'll also use our custom-built GraphQL query service `@subql/query` to interact with your SubQuery project.
-
-#### Publish SubQuery project to the SubQuery Explorer
-Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Contact us at [hello@subquery.network](mailto:hello@subquery.network) to get your project listed for free.
+You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
 #### Components
 * [`@subql/cli`](packages/cli)
