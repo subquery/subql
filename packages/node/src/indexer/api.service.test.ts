@@ -233,4 +233,20 @@ describe('ApiService', () => {
 
     expect(multiResults).toEqual(patchedApiRxResults);
   });
+
+  it('api.#registry is swapped to the specified block', async () => {
+    const apiService = await prepareApiService();
+    const api = apiService.getApi();
+    const patchedApi = await apiService.getPatchedApi();
+    const registry = patchedApi.registry;
+    const callIndexOfBatch = api.tx.utility.batch.callIndex;
+    // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
+    const blockhash = await api.rpc.chain.getBlockHash(1);
+    await apiService.setBlockhash(blockhash, true);
+    const registry2 = patchedApi.registry;
+    const call = patchedApi.findCall(callIndexOfBatch);
+    expect(call?.method).not.toBe('batch');
+    expect(call?.section).not.toBe('utility');
+    expect(registry).not.toBe(registry2);
+  }, 30000);
 });

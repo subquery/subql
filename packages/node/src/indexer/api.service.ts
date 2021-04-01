@@ -12,7 +12,7 @@ import {
 } from '@polkadot/api/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
-import { AnyTuple } from '@polkadot/types/types';
+import { AnyTuple, Registry } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
@@ -107,7 +107,13 @@ export class ApiService implements OnApplicationShutdown {
     return this.patchedApi;
   }
 
-  private patchApi(): void {
+  private patchApi(registry?: Registry): void {
+    if (registry) {
+      Object.defineProperty(this.patchedApi, 'registry', {
+        value: registry,
+        writable: false,
+      });
+    }
     this.patchApiQuery(this.patchedApi);
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
@@ -124,7 +130,7 @@ export class ApiService implements OnApplicationShutdown {
     if (inject) {
       const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
       this.patchedApi.injectMetadata(metadata, true, registry);
-      this.patchApi();
+      this.patchApi(registry);
     }
   }
 
