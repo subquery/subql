@@ -263,11 +263,27 @@ Last, it records the success status of this extrinsic.
 We wish to cover all data sources for the user in the mapping handler, other than the three configured interface types above. Therefore, we have exposed some of the @polkadot/api interfaces to increase the scalability. 
 These are the interface we supporting now:
 
-- [api.query.module.method()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
 
-- [api.query.module.method.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will multi queries of the <strong>same</strong> types at the current block.
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will multi queries of the <strong>same</strong> types at the current block.
 
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will multi queries of the <strong>different</strong> types at the current block.
+
+And these are the interface we are **NOT** supporting at the moment:
+
+- ~~api.tx.*~~
+- ~~api.rpc.*~~
+- ~~api.derive.*~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.hash~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.keysAt~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.keysPaged~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
+
+
 
 See an example of using the API in [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold).
 
