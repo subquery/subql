@@ -17,8 +17,8 @@ yarn global add @subql/cli @subql/node @subql/query
 npm install -g @subql/cli @subql/node @subql/query
 ```
 
-#### Create a SubQuery Project
-You can follow our [Quick Start Guide](/https://doc.subquery.network/quickstart.html) to learn how to create, initialize, build, and pack a new SubQuery Project using the `@subql/cli` tool.
+#### Create a SubQuery project
+You can follow our [Quick Start Guide](https://doc.subquery.network/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nodejs.org/en/).
 
