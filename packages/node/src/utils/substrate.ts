@@ -32,7 +32,7 @@ export function wrapBlock(
   return merge(signedBlock, {
     timestamp: getTimestamp(signedBlock),
     specVersion: specVersion,
-    events: [...events],
+    events,
   });
 }
 
@@ -193,7 +193,7 @@ export async function fetchBlocks(
       ? overallSpecVer
       : runtimeVersions[idx].specVersion.toNumber();
 
-    const wrappedBlock = wrapBlock(block, events, parentSpecVersion);
+    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {
