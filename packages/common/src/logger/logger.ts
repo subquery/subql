@@ -15,11 +15,13 @@ export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel, nestedKey, outputFormat}: LoggerOption) {
+  constructor({level, nestedKey, outputFormat}: LoggerOption) {
     this.pino = Pino({
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
       nestedKey,
+      //level:'debug',
+      level:level,
       formatters: {
         level(label, number) {
           return {level: label};
@@ -58,7 +60,7 @@ export class Logger {
           const {category, level, message, payload, time} = logObject;
           let error = '';
           if (payload instanceof Error) {
-            if (['debug', 'trace'].includes(logLevel)) {
+            if (['debug', 'trace'].includes(level)) {
               error = `\n${payload.stack}`;
             } else {
               error = `${payload.name}: ${payload.message}`;
@@ -76,7 +78,7 @@ export class Logger {
 
   getLogger(category: string): Pino.Logger {
     if (!this.childLoggers[category]) {
-      this.childLoggers[category] = this.pino.child({category});
+      this.childLoggers[category] = this.pino.child({category, level: this.pino.level});
     }
     return this.childLoggers[category];
   }

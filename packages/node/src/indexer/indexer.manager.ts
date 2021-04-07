@@ -141,7 +141,6 @@ export class IndexerManager {
       this.nodeConfig,
     );
 
-    this.vm.on('console.log', (data) => getLogger('sandbox').info(data));
   }
 
   private getStartBlockFromDataSources() {
