@@ -11,22 +11,23 @@ SubQuery allows every Substrate/Polkadot team to process and query their data. T
 3. Lastly, we'll explain how to upload SubQuery projects to the hosted SubQuery console so you don't need to worry about running infrastructure.
 
 ## Create a SubQuery project
-You can follow our [Quick Start Guide](/quickstart) to learn how to create, initialize, build, and pack a new SubQuery Project using the `@subql/cli` tool.
+You can follow our [Quick Start Guide](/quickstart) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and  [Node](https://nodejs.org/en/).
 
-## Run an Indexer and Query Service
+## Start using your project
+#### Publish Project to the SubQuery Explorer
+Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](/publish/publish) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+
+#### Run your own Local Indexer and Query Service
 We'll cover how to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 
-You'll also use our custom-built GraphQL query service `@subql/query` to interact with your SubQuery project.
-
-## Publish Project to the SubQuery Explorer
-Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Contact us at [hello@subquery.network](mailto:hello@subquery.network) to get your project listed for free.
+You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
 ## Terminology
-- SubQuery Project (*where the magic happens*): A definition (`@subql/cli`) of how a SubQuery Node should traverse and aggregate a projects network and how the data should the transformed and stored to enable useful GraphQL queries 
-- SubQuery Node (*where the work is done*): A package (`@subql/node`) that will accept a SubQuery project definiton, and run a node that constantly indexes a connected network to a database
-- SubQuery Query Service (*where we get the data from*): A package (`@subql/query`) that interacts with the GraphQL API of a deployed SubQuery node to query and view the indexed data
+- SubQuery Project (*where the magic happens*): A definition ([`@subql/cli`](https://www.npmjs.com/package/@subql/cli)) of how a SubQuery Node should traverse and aggregate a projects network and how the data should the transformed and stored to enable useful GraphQL queries 
+- SubQuery Node (*where the work is done*): A package ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) that will accept a SubQuery project definiton, and run a node that constantly indexes a connected network to a database
+- SubQuery Query Service (*where we get the data from*): A package ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) that interacts with the GraphQL API of a deployed SubQuery node to query and view the indexed data
 - GraphQL (*how we query the data*): A query langage for APIs that is specifically suited for flexible graph based data - see [graphql.org](https://graphql.org/learn/)

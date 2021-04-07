@@ -1,4 +1,4 @@
-# Quick start
+# Quick Start Guide
 
 In this Quick Start guide, we're going to use the starter project as an example that you can use as a starting point for developing your SubQuery Project.
 
@@ -95,7 +95,9 @@ npm run-script build
 
 ## Running and Querying your Starter Project
 
-The easiest way to run SubQuery nodes is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+
+[*Skip this and publish your new project to SubQuery Projects*](/publish/publish)
 
 ### Run your SubQuery Project
 
@@ -105,7 +107,7 @@ Under the project directory run following command:
 ```shell
 docker-compose pull && docker-compose up
 ```
-It may take some time to download the required packages (`@subql/node`, `@subql/query`, and Postgres) for the first time but soon you'll see a running SubQuery node.
+It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
 
 ### Query your Project
 
@@ -131,4 +133,6 @@ For a new SubQuery starter project, you can try the following query to get a tas
 
 ## Next Steps
 
-Congratulations, you now have a running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we're going to dive into how you create your own SubQuery Project. 
+Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
+
+[Publish your new project to SubQuery Projects](/publish/publish)
