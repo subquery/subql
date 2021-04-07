@@ -20,7 +20,6 @@ import PgTypesPlugin from 'graphile-build-pg/node8plus/plugins/PgTypesPlugin';
 import PgTablesPlugin from 'graphile-build-pg/node8plus/plugins/PgTablesPlugin';
 import PgConnectionArgOrderBy from 'graphile-build-pg/node8plus/plugins/PgConnectionArgOrderBy';
 import PgConnectionArgOrderByDefaultValue from 'graphile-build-pg/node8plus/plugins/PgConnectionArgOrderByDefaultValue';
-import PgConnectionArgCondition from 'graphile-build-pg/node8plus/plugins/PgConnectionArgCondition';
 import PgConditionComputedColumnPlugin from 'graphile-build-pg/node8plus/plugins/PgConditionComputedColumnPlugin';
 import PgAllRows from 'graphile-build-pg/node8plus/plugins/PgAllRows';
 import PgColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgColumnsPlugin';
@@ -72,7 +71,6 @@ export const pgDefaultPlugins = [
   PgConnectionArgFirstLastBeforeAfter,
   PgConnectionArgOrderBy,
   PgConnectionArgOrderByDefaultValue,
-  PgConnectionArgCondition,
   PgConditionComputedColumnPlugin,
   PgAllRows,
   PgColumnsPlugin,
@@ -101,6 +99,3 @@ export const plugins = [
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
 ];
-
-// todo
-// adv filter plugin: https://github.com/graphile-contrib/postgraphile-plugin-connection-filter
