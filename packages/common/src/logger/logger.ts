@@ -20,8 +20,7 @@ export class Logger {
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
       nestedKey,
-      //level:'debug',
-      level:level,
+      level: level,
       formatters: {
         level(label, number) {
           return {level: label};

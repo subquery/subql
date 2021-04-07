@@ -140,7 +140,6 @@ export class IndexerManager {
       },
       this.nodeConfig,
     );
-
   }
 
   private getStartBlockFromDataSources() {

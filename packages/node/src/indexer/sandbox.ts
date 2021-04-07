@@ -95,7 +95,6 @@ export class IndexerSandbox extends NodeVM {
   private injectGlobals({ api, store }: SandboxOption) {
     this.freeze(store, 'store');
     this.freeze(api, 'api');
-    this.freeze(logger, 'logger')
-
+    this.freeze(logger, 'logger');
   }
 }
