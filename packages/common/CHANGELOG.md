@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- fixed logger level(#248)
+- fixed logger level (#248)
 
 ## [0.7.0] - 2021-03-11
 ### Added
