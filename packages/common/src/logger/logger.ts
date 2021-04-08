@@ -15,11 +15,12 @@ export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel, nestedKey, outputFormat}: LoggerOption) {
+  constructor({level: logLevel = 'info', nestedKey, outputFormat}: LoggerOption) {
     this.pino = Pino({
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
       nestedKey,
+      level: logLevel,
       formatters: {
         level(label, number) {
           return {level: label};
@@ -76,7 +77,7 @@ export class Logger {
 
   getLogger(category: string): Pino.Logger {
     if (!this.childLoggers[category]) {
-      this.childLoggers[category] = this.pino.child({category});
+      this.childLoggers[category] = this.pino.child({category, level: this.pino.level});
     }
     return this.childLoggers[category];
   }

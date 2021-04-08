@@ -9,6 +9,7 @@ import { Store } from '@subql/types';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
+import { getLogger } from '../utils/logger';
 import { timeout } from '../utils/promise';
 
 export interface SandboxOption {
@@ -44,6 +45,8 @@ function getProjectEntry(root: string): string {
     );
   }
 }
+
+const logger = getLogger('sandbox');
 
 export class IndexerSandbox extends NodeVM {
   private option: SandboxOption;
@@ -92,5 +95,6 @@ export class IndexerSandbox extends NodeVM {
   private injectGlobals({ api, store }: SandboxOption) {
     this.freeze(store, 'store');
     this.freeze(api, 'api');
+    this.freeze(logger, 'logger');
   }
 }
