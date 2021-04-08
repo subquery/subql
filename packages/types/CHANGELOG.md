@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- inject logger module (#248)
+- inject logger module in global(#248)
 
 ## [0.6.1] - 2021-03-11
 

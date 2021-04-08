@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Fixed
-- bump dependencies
+- bump dependencies for logger
 
 ## [0.11.0] - 2021-03-25
 ### Fixed
