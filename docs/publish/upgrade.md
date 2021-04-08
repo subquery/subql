@@ -10,7 +10,7 @@ Although you have the freedom to always upgrade and deploy new versions of your 
 
 Login to SubQuery Projects, and find the project that you want to deploy a new version to. Under Deployment Details you'll see three dots in the top right, click on the Deploy New Version button.
 
-![Deploy new version to your Project](https://static.subquery.network/media/projects/projects-second-deployment.png)
+![Deploy new version to your Project](/assets/img/projects-second-deployment.png)
 
 #### Upgrade to the Latest Indexer and Query Service
 
