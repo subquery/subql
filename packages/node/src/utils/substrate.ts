@@ -26,11 +26,13 @@ import { BlockContent } from '../indexer/types';
 
 export function wrapBlock(
   signedBlock: SignedBlock,
+  events: EventRecord[],
   specVersion?: number,
 ): SubstrateBlock {
   return merge(signedBlock, {
     timestamp: getTimestamp(signedBlock),
     specVersion: specVersion,
+    events,
   });
 }
 
@@ -191,7 +193,7 @@ export async function fetchBlocks(
       ? overallSpecVer
       : runtimeVersions[idx].specVersion.toNumber();
 
-    const wrappedBlock = wrapBlock(block, parentSpecVersion);
+    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {
@@ -225,6 +227,7 @@ export async function fetchBlocksViaRangeQuery(
 
     const wrappedBlock = wrapBlock(
       block,
+      events,
       runtimeUpgrade.unwrap()?.specVersion.toNumber(),
     );
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
