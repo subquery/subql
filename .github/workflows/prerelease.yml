@@ -7,8 +7,21 @@ on:
       - '.github/workflows/**'
 
 jobs:
+  pre-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: 'Block Concurrent Executions'
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
+    needs: pre-ci
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:
