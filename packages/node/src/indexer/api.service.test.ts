@@ -21,7 +21,7 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(30000);
+jest.setTimeout(80000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -118,6 +118,8 @@ describe('ApiService', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => patchedApi.rpc.chain.getBlock()).toThrow(/is not supported/);
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
+
+    await delay(0.1);
   }, 30000);
 
   it('xxx.xxx.multi with input parameter is an array', async () => {
@@ -164,6 +166,8 @@ describe('ApiService', () => {
       [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
     ]);
     expect(multiResults).toEqual(patchedResult);
+
+    await delay(0.1);
   });
 
   it('api.queryMulti', async () => {
@@ -197,6 +201,8 @@ describe('ApiService', () => {
     ]);
 
     expect(multiResults).toEqual(patchedApiResults);
+
+    await delay(0.1);
   });
 
   it('api.rx.queryMulti', async () => {
@@ -232,6 +238,8 @@ describe('ApiService', () => {
       .toPromise();
 
     expect(multiResults).toEqual(patchedApiRxResults);
+
+    await delay(0.1);
   });
 
   it('api.#registry is swapped to the specified block', async () => {
