@@ -21,7 +21,7 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(80000);
+jest.setTimeout(120000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -51,7 +51,7 @@ describe('ApiService', () => {
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.
-    await delay(0.1);
+    await delay(3);
   });
 
   it('api query is locked at specified block', async () => {
@@ -91,6 +91,7 @@ describe('ApiService', () => {
       [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
     ]);
     expect(multiResults).toEqual(apiResult);
+    await delay(3);
   });
 
   it('api consts is swapped to the specified block', async () => {
@@ -118,8 +119,6 @@ describe('ApiService', () => {
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => patchedApi.rpc.chain.getBlock()).toThrow(/is not supported/);
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
-
-    await delay(0.1);
   }, 30000);
 
   it('xxx.xxx.multi with input parameter is an array', async () => {
@@ -141,6 +140,7 @@ describe('ApiService', () => {
     ]);
     expect(patchedMultiResults).toEqual(multiResults);
     expect(patchedMultiResults).not.toEqual(currentMulti);
+    await delay(3);
   });
 
   it('xxx.xxx.multi with input parameter is a double map', async () => {
@@ -167,7 +167,7 @@ describe('ApiService', () => {
     ]);
     expect(multiResults).toEqual(patchedResult);
 
-    await delay(0.1);
+    await delay(3);
   });
 
   it('api.queryMulti', async () => {
@@ -202,7 +202,7 @@ describe('ApiService', () => {
 
     expect(multiResults).toEqual(patchedApiResults);
 
-    await delay(0.1);
+    await delay(3);
   });
 
   it('api.rx.queryMulti', async () => {
@@ -239,7 +239,7 @@ describe('ApiService', () => {
 
     expect(multiResults).toEqual(patchedApiRxResults);
 
-    await delay(0.1);
+    await delay(3);
   });
 
   it('api.#registry is swapped to the specified block', async () => {
