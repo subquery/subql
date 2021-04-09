@@ -21,7 +21,7 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(120000);
+jest.setTimeout(30000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -51,7 +51,7 @@ describe('ApiService', () => {
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.
-    await delay(3);
+    await delay(0.1);
   });
 
   it('api query is locked at specified block', async () => {
@@ -91,7 +91,6 @@ describe('ApiService', () => {
       [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
     ]);
     expect(multiResults).toEqual(apiResult);
-    await delay(3);
   });
 
   it('api consts is swapped to the specified block', async () => {
@@ -138,9 +137,12 @@ describe('ApiService', () => {
       patchedApi.query.system.account.multi([account1, account2]),
       api.query.system.account.multi([account1, account2]),
     ]);
-    expect(patchedMultiResults).toEqual(multiResults);
-    expect(patchedMultiResults).not.toEqual(currentMulti);
-    await delay(3);
+    expect(patchedMultiResults.map((r) => r.toJSON())).toEqual(
+      multiResults.map((r) => r.toJSON()),
+    );
+    expect(patchedMultiResults.map((r) => r.toJSON())).not.toEqual(
+      currentMulti.map((r) => r.toJSON()),
+    );
   });
 
   it('xxx.xxx.multi with input parameter is a double map', async () => {
@@ -166,8 +168,6 @@ describe('ApiService', () => {
       [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
     ]);
     expect(multiResults).toEqual(patchedResult);
-
-    await delay(3);
   });
 
   it('api.queryMulti', async () => {
@@ -200,9 +200,9 @@ describe('ApiService', () => {
       ], //double map
     ]);
 
-    expect(multiResults).toEqual(patchedApiResults);
-
-    await delay(3);
+    expect(multiResults.map((r) => r.toJSON())).toEqual(
+      patchedApiResults.map((r) => r.toJSON()),
+    );
   });
 
   it('api.rx.queryMulti', async () => {
@@ -237,9 +237,9 @@ describe('ApiService', () => {
       .pipe(take(1))
       .toPromise();
 
-    expect(multiResults).toEqual(patchedApiRxResults);
-
-    await delay(3);
+    expect(multiResults.map((r) => r.toJSON())).toEqual(
+      patchedApiRxResults.map((r) => r.toJSON()),
+    );
   });
 
   it('api.#registry is swapped to the specified block', async () => {
