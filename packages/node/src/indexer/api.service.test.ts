@@ -137,8 +137,12 @@ describe('ApiService', () => {
       patchedApi.query.system.account.multi([account1, account2]),
       api.query.system.account.multi([account1, account2]),
     ]);
-    expect(patchedMultiResults).toEqual(multiResults);
-    expect(patchedMultiResults).not.toEqual(currentMulti);
+    expect(patchedMultiResults.map((r) => r.toJSON())).toEqual(
+      multiResults.map((r) => r.toJSON()),
+    );
+    expect(patchedMultiResults.map((r) => r.toJSON())).not.toEqual(
+      currentMulti.map((r) => r.toJSON()),
+    );
   });
 
   it('xxx.xxx.multi with input parameter is a double map', async () => {
@@ -196,7 +200,9 @@ describe('ApiService', () => {
       ], //double map
     ]);
 
-    expect(multiResults).toEqual(patchedApiResults);
+    expect(multiResults.map((r) => r.toJSON())).toEqual(
+      patchedApiResults.map((r) => r.toJSON()),
+    );
   });
 
   it('api.rx.queryMulti', async () => {
@@ -231,7 +237,9 @@ describe('ApiService', () => {
       .pipe(take(1))
       .toPromise();
 
-    expect(multiResults).toEqual(patchedApiRxResults);
+    expect(multiResults.map((r) => r.toJSON())).toEqual(
+      patchedApiRxResults.map((r) => r.toJSON()),
+    );
   });
 
   it('api.#registry is swapped to the specified block', async () => {
