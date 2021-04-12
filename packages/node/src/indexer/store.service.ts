@@ -13,6 +13,8 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import {
   commentConstraintQuery,
+  createSubscriptionNotifyFunctionQuery,
+  createSubscriptionTrigger,
   createUniqueIndexQuery,
   getFkConstraint,
   smartTags,
@@ -30,6 +32,7 @@ export class StoreService {
     modelsRelations: GraphQLModelsRelations,
     schema: string,
   ): Promise<void> {
+    const extraQueries = [];
     this.models = modelsRelations.models;
     for (const model of modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model);
@@ -46,10 +49,12 @@ export class StoreService {
         schema,
         indexes,
       });
+      const subscriptionModel = this.sequelize.model(model.name);
+      extraQueries.push(
+        ...createSubscriptionNotifyFunctionQuery(schema, subscriptionModel.tableName),
+        ...createSubscriptionTrigger(schema, subscriptionModel.tableName),
+      );
     }
-
-    const extraQueries = [];
-
     for (const relation of modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);

@@ -35,3 +35,39 @@ export function createUniqueIndexQuery(
     field,
   )} on ${schema}.${table} (${snakeCase(field)})`;
 }
+
+export function createSubscriptionNotifyFunctionQuery(
+  schema: string,
+  table: string,
+): string[] {
+  return ['insert', 'update', 'delete'].map((method) => {
+    return `CREATE OR REPLACE FUNCTION ${schema}.${table}_${method}()
+    RETURNS trigger AS $$
+DECLARE
+    notification TEXT;
+BEGIN
+    notification = json_build_object( 'id',NEW.id, 'mutation_type', '${method}');
+    PERFORM pg_notify(
+            '${schema}_${table}',
+            notification);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;`;
+  });
+}
+
+export function createSubscriptionTrigger(
+  schema: string,
+  table: string,
+): string[] {
+  return ['insert', 'update', 'delete'].map((method) => {
+    return `
+DROP TRIGGER IF EXISTS ${schema}_${table}_${method}_trigger
+    ON ${schema}.${table};
+CREATE TRIGGER ${schema}_${table}_${method}_trigger
+    AFTER ${method}
+    ON ${schema}.${table}
+    FOR EACH ROW
+EXECUTE PROCEDURE ${schema}.${table}_${method}();`;
+  });
+}
