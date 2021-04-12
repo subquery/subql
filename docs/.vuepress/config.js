@@ -20,6 +20,7 @@ module.exports = {
                 algolia: {},
                 nav: [
                     { text: 'Explorer', link: 'https://explorer.subquery.network/',target:'_blank', rel:''},
+                    { text: 'Projects', link: 'https://project.subquery.network/',target:'_blank', rel:''},
                     { text: 'Documentation', link: '/' },
                     { text: 'GitHub', link: 'https://github.com/subquery/subql', target:'_blank', rel:''},
                 ],
