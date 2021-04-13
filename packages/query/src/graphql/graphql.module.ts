@@ -48,6 +48,13 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
 
     const schema = builder.buildSchema();
+
+    const pgclient = await this.pgPool.connect();
+    await pgclient.query('Listen subquery_19_starter_entities');
+    pgclient.on('notification', function (data) {
+      console.log('payload', data.payload);
+    });
+
     const server = new ApolloServer({
       schema,
       context: {

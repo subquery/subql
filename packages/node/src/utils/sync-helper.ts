@@ -46,11 +46,15 @@ export function createSubscriptionNotifyFunctionQuery(
 DECLARE
     notification TEXT;
 BEGIN
-    notification = json_build_object( 'id',NEW.id, 'mutation_type', '${method}');
+    IF (TG_OP = 'DELETE') THEN
+      notification = json_build_object( 'id',OLD.id, 'mutation_type', 'delete');
+    ELSE
+      notification = json_build_object( 'id',NEW.id, 'mutation_type', '${method}');
+    END IF;
     PERFORM pg_notify(
             '${schema}_${table}',
             notification);
-    RETURN NEW;
+    RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;`;
   });
