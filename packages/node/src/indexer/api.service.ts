@@ -139,10 +139,7 @@ export class ApiService implements OnApplicationShutdown {
     atMethod: string,
   ) {
     return (...args: any[]) => {
-      const expandedArgs = original.creator.meta.type.isDoubleMap
-        ? args[0]
-        : args;
-      return original[atMethod](this.currentBlockHash, ...expandedArgs);
+      return original[atMethod](this.currentBlockHash, ...args);
     };
   }
 

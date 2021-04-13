@@ -74,23 +74,17 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
     await apiService.setBlockhash(blockhash, true);
-    const multiResults = await Promise.all([
-      await api.query.staking.erasStakers.at(
-        blockhash,
-        2038,
-        `DMkKL7AZw9TkNw2NaBdocmFRGUG8r8T4kdGGcB13fv2LARy`,
-      ),
-      await api.query.staking.erasStakers.at(
-        blockhash,
-        2038,
-        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
-      ),
-    ]);
-    const apiResult = await api.query.staking.erasStakers.multi([
-      [2038, `DMkKL7AZw9TkNw2NaBdocmFRGUG8r8T4kdGGcB13fv2LARy`],
-      [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
-    ]);
-    expect(multiResults).toEqual(apiResult);
+    const patchedApi = await apiService.getPatchedApi();
+    const apiResults = await api.query.staking.erasStakers.at(
+      blockhash,
+      2038,
+      `DMkKL7AZw9TkNw2NaBdocmFRGUG8r8T4kdGGcB13fv2LARy`,
+    );
+    const patchedResult = await patchedApi.query.staking.erasStakers(
+      2038,
+      `DMkKL7AZw9TkNw2NaBdocmFRGUG8r8T4kdGGcB13fv2LARy`,
+    );
+    expect(apiResults).toEqual(patchedResult);
   });
 
   it('api consts is swapped to the specified block', async () => {
