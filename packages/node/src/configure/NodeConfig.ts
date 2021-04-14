@@ -22,6 +22,7 @@ export interface IConfig {
   readonly networkEndpoint?: string;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
+  readonly queryLimit: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -33,6 +34,7 @@ const DEFAULT_CONFIG = {
   timeout: 20,
   preferRange: false,
   debug: false,
+  queryLimit: 100,
 };
 
 export class NodeConfig implements IConfig {
@@ -106,6 +108,10 @@ export class NodeConfig implements IConfig {
 
   get logLevel(): LevelWithSilent {
     return this.debug ? 'debug' : this._config.logLevel;
+  }
+
+  get queryLimit(): number {
+    return this._config.queryLimit;
   }
 
   merge(config: Partial<IConfig>): this {

@@ -4,10 +4,10 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {getAllEntitiesRelations, buildSchema, loadProjectManifest} from '@subql/common';
-import {GraphQLEntityField} from '@subql/common/graphql/types';
+import {getAllEntitiesRelations, loadProjectManifest} from '@subql/common';
+import {GraphQLEntityField, GraphQLEntityIndex} from '@subql/common/graphql/types';
 import ejs from 'ejs';
-import {GraphQLSchema} from 'graphql';
+import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
 import {transformTypes} from './types-mapping';
 
@@ -22,23 +22,45 @@ export async function renderTemplate(outputPath: string, templateData: ejs.Data)
 }
 
 // 3. Re-format the field of the entity
-export interface processedField {
+export interface ProcessedField {
   name: string;
   type: string;
   required: boolean;
+  indexed: boolean;
+  unique?: boolean;
 }
 
-export function processFields(className: string, fields: GraphQLEntityField[]): processedField[] {
-  const fieldList: processedField[] = [];
+export function processFields(
+  className: string,
+  fields: GraphQLEntityField[],
+  indexFields: GraphQLEntityIndex[]
+): ProcessedField[] {
+  const fieldList: ProcessedField[] = [];
   for (const field of fields) {
     const newType = transformTypes(className, field.type.toString());
     if (!newType) {
       throw new Error(`Undefined type ${field.type.toString()} in Schema ${className}`);
     }
+    const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
+      (acc, indexField) => {
+        if (indexField.fields.includes(field.name)) {
+          acc[0] = true;
+          if (indexField.fields.length === 1 && indexField.unique) {
+            acc[1] = true;
+          } else if (indexField.unique === undefined) {
+            acc[1] = false;
+          }
+        }
+        return acc;
+      },
+      [false, undefined]
+    );
     fieldList.push({
       name: field.name,
       type: newType,
       required: !field.nullable,
+      indexed,
+      unique,
     });
   }
   return fieldList;
@@ -54,22 +76,26 @@ export async function codegen(projectPath: string): Promise<void> {
     throw new Error(`Failed to prepare ${modelDir}`);
   }
   const manifest = loadProjectManifest(projectPath);
-  const schema = buildSchema(path.join(projectPath, manifest.schema));
-  await generateModels(projectPath, schema);
+  await generateModels(projectPath, manifest.schema);
 }
 
 // 2. Loop all entities and render it
-export async function generateModels(projectPath: string, schema: GraphQLSchema): Promise<void> {
+export async function generateModels(projectPath: string, schema: string): Promise<void> {
   const extractEntities = getAllEntitiesRelations(schema);
   for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
-    const className = entity.name;
-    const fields = processFields(className, entity.fields);
+    const className = upperFirst(entity.name);
+    const fields = processFields(className, entity.fields, entity.indexes);
+    const indexedFields = fields.filter((field) => field.indexed);
     const modelTemplate = {
       props: {
         baseFolderPath,
         className,
         fields,
+        indexedFields,
+      },
+      helper: {
+        upperFirst,
       },
     };
     console.log(`| Start generate schema ${className}`);

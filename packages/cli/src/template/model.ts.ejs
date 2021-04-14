@@ -1,6 +1,3 @@
-// Copyright 2020-2021 OnFinality Limited authors & contributors
-// SPDX-License-Identifier: Apache-2.0
-
 // Auto-generated , DO NOT EDIT
 import {Entity} from "@subql/types";
 import assert from 'assert';
@@ -25,8 +22,8 @@ export class <%= props.className %> implements Entity {
         await store.remove('<%=props.className %>', id.toString());
     }
 
-    static async get(id:string): Promise<<%=props.className %>>{
-        assert(id !== null, "Cannot get <%=props.className %> entity without an ID");
+    static async get(id:string): Promise<<%=props.className %> | undefined>{
+        assert((id !== null && id !== undefined), "Cannot get <%=props.className %> entity without an ID");
         const record = await store.get('<%=props.className %>', id.toString());
         if (record){
             return <%=props.className %>.create(record);
@@ -34,6 +31,22 @@ export class <%= props.className %> implements Entity {
             return;
         }
     }
+
+<% props.indexedFields.forEach(function(field){ %>
+    static async getBy<%=helper.upperFirst(field.name) %>(<%=field.name %>: <%=field.type %>): Promise<<%=props.className %><%=field.unique ? '' : '[]' %> | undefined>{
+      <% if (field.unique) {%>
+      const record = await store.getOneByField('<%=props.className %>', '<%=field.name %>', <%=field.name %>);
+      if (record){
+          return <%=props.className %>.create(record);
+      }else{
+          return;
+      }
+      <% } else { %>
+      const records = await store.getByField('<%=props.className %>', '<%=field.name %>', <%=field.name %>);
+      return records.map(record => <%=props.className %>.create(record));
+      <% }%>
+    }
+<% }); %>
 
     static create(record){
         let entity = new <%=props.className %>(record.id);
