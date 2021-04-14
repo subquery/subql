@@ -112,6 +112,7 @@ export class ApiService implements OnApplicationShutdown {
       Object.defineProperty(this.patchedApi, 'registry', {
         value: registry,
         writable: false,
+        configurable: true,
       });
     }
     this.patchApiQuery(this.patchedApi);
