@@ -9,7 +9,7 @@ export interface Entity {
 
 export interface Store {
   get(entity: string, id: string): Promise<Entity | null>;
-  getByField(entity: string, field: string, value): Promise<Entity[] | null>;
+  getByField(entity: string, field: string, value): Promise<Entity[]>;
   getOneByField(entity: string, field: string, value): Promise<Entity | null>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   remove(entity: string, id: string): Promise<void>;
