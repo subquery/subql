@@ -77,10 +77,14 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       // handle indexes
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       if (indexDirectiveVal) {
-        newModel.indexes.push({
-          unique: indexDirectiveVal.unique,
-          fields: [field.name],
-        });
+        if (typeString !== 'ID' && Object.values(FieldScalar).includes(typeString)) {
+          newModel.indexes.push({
+            unique: indexDirectiveVal.unique,
+            fields: [field.name],
+          });
+        } else {
+          throw new Error(`index can not be added on pk or fk field ${field.name}`);
+        }
       }
     }
     modelRelations.models.push(newModel);

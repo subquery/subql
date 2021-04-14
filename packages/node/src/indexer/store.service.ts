@@ -33,15 +33,18 @@ export class StoreService {
     this.models = modelsRelations.models;
     for (const model of modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model);
-
+      const indexes = model.indexes.map(({ fields, unique }) => ({
+        fields: fields.map((field) => Utils.underscoredIf(field, true)),
+        unique,
+      }));
+      if (indexes.length > this.config.indexCountLimit) {
+        throw new Error(`too many indexes on entity ${model.name}`);
+      }
       this.sequelize.define(model.name, attributes, {
         underscored: true,
         freezeTableName: false,
         schema,
-        indexes: model.indexes.map(({ fields, unique }) => ({
-          fields: fields.map((field) => Utils.underscoredIf(field, true)),
-          unique,
-        })),
+        indexes,
       });
     }
 

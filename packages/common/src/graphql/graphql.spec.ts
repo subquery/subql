@@ -149,4 +149,25 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[1].fields).toEqual(['column2']);
     expect(entities.models?.[0].indexes[1].unique).toBe(true);
   });
+
+  it('throw if add index on pk or fk', () => {
+    let graphqlSchema = gql`
+      type TestEntity @entity {
+        id: ID! @index
+      }
+    `;
+    let schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
+    graphqlSchema = gql`
+      type TestEntity @entity {
+        id: ID!
+        field1: TestEntity2 @index
+      }
+      type TestEntity2 @entity {
+        id: ID!
+      }
+    `;
+    schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
+  });
 });

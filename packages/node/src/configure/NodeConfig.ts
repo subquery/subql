@@ -23,6 +23,7 @@ export interface IConfig {
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
+  readonly indexCountLimit: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -35,6 +36,7 @@ const DEFAULT_CONFIG = {
   preferRange: false,
   debug: false,
   queryLimit: 100,
+  indexCountLimit: 10,
 };
 
 export class NodeConfig implements IConfig {
@@ -112,6 +114,10 @@ export class NodeConfig implements IConfig {
 
   get queryLimit(): number {
     return this._config.queryLimit;
+  }
+
+  get indexCountLimit(): number {
+    return this._config.indexCountLimit;
   }
 
   merge(config: Partial<IConfig>): this {
