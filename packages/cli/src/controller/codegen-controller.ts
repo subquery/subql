@@ -76,7 +76,7 @@ export async function codegen(projectPath: string): Promise<void> {
     throw new Error(`Failed to prepare ${modelDir}`);
   }
   const manifest = loadProjectManifest(projectPath);
-  await generateModels(projectPath, manifest.schema);
+  await generateModels(projectPath, path.join(projectPath, manifest.schema));
 }
 
 // 2. Loop all entities and render it
