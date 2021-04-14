@@ -20,11 +20,29 @@ import {buildSchema} from './schema';
 import {
   FieldScalar,
   GraphQLEntityField,
+  GraphQLJsonFieldType,
+  GraphQLJsonObjectType,
   GraphQLModelsRelations,
   GraphQLModelsType,
   GraphQLRelationsType,
 } from './types';
 
+let jsonObjects: GraphQLObjectType<any, any>[];
+let entityNameSet: string[];
+let jsonObjectsNameSet: string[];
+
+export function getAllJsonObjects(schema: GraphQLSchema) {
+  const jsonObjects = Object.values(schema.getTypeMap())
+    .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
+    .map((node) => node)
+    .filter(isObjectType);
+  jsonObjectsNameSet = jsonObjects.map(function (json) {
+    return json.name;
+  });
+  return jsonObjects;
+}
+
+export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRelations {
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelations {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
@@ -32,7 +50,8 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
     .map((node) => node)
     .filter(isObjectType);
 
-  const entityNameSet = entities.map(function (entity) {
+  jsonObjects = getAllJsonObjects(schema);
+  entityNameSet = entities.map(function (entity) {
     return entity.name;
   });
 
@@ -45,15 +64,17 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       fields: [],
       indexes: [],
     };
+
     for (const field of Object.values(entity.getFields())) {
       const typeString = extractType(field.type).toString();
-      const directValues = getDirectiveValues(derivedFrom, field.astNode);
+      const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
+
       //If is a basic scalar type
       if (Object.values(FieldScalar).includes(typeString)) {
         newModel.fields.push(packEntityField(typeString, field, false));
       }
       // If is a foreign key
-      else if (entityNameSet.includes(typeString) && !directValues) {
+      else if (entityNameSet.includes(typeString) && !derivedFromDirectValues) {
         newModel.fields.push(packEntityField(typeString, field, true));
         modelRelations.relations.push({
           from: entity.name,
@@ -63,14 +84,19 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
         } as GraphQLRelationsType);
       }
       // If is derivedFrom
-      else if (entityNameSet.includes(typeString) && directValues) {
+      else if (entityNameSet.includes(typeString) && derivedFromDirectValues) {
         modelRelations.relations.push({
           from: entity.name,
           type: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type) ? 'hasMany' : 'hasOne',
           to: typeString,
-          foreignKey: `${directValues.field}Id`,
+          foreignKey: `${derivedFromDirectValues.field}Id`,
           fieldName: field.name,
         } as GraphQLRelationsType);
+      }
+      // If is jsonField
+      else if (jsonObjectsNameSet.includes(typeString)) {
+        const jsonObject = setJsonObjectType(jsonObjects.find((object) => object.name === typeString));
+        newModel.fields.push(packJSONField(typeString, field, jsonObject));
       } else {
         throw new Error(`${typeString} is not an valid type`);
       }
@@ -105,6 +131,43 @@ function packEntityField(
     nullable: !isNonNullType(field.type),
   };
 }
+
+function packJSONField(
+  typeString: FieldScalar,
+  field: GraphQLField<any, any>,
+  jsonObject: GraphQLJsonObjectType
+): GraphQLEntityField {
+  return {
+    name: field.name,
+    type: 'Json',
+    jsonInterface: jsonObject,
+    isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
+    nullable: !isNonNullType(field.type),
+  };
+}
+
+function setJsonObjectType(jsonObject: GraphQLObjectType<any, any>): GraphQLJsonObjectType {
+  const graphQLJsonObject: GraphQLJsonObjectType = {
+    name: jsonObject.name,
+    fields: [],
+  };
+  for (const field of Object.values(jsonObject.getFields())) {
+    //check if field is also json
+    const typeString = extractType(field.type).toString();
+    const isJsonType = jsonObjectsNameSet.includes(typeString);
+    graphQLJsonObject.fields.push({
+      name: field.name,
+      type: isJsonType ? 'Json' : extractType(field.type),
+      jsonInterface: isJsonType
+        ? setJsonObjectType(jsonObjects.find((object) => object.name === typeString))
+        : undefined,
+      nullable: !isNonNullType(field.type),
+      isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
+    } as GraphQLJsonFieldType);
+  }
+  return graphQLJsonObject;
+}
+
 //Get the type, ready to be convert to string
 function extractType(type: GraphQLOutputType) {
   const offNullType = isNonNullType(type) ? getNullableType(type) : type;

@@ -14,6 +14,7 @@ const SEQUELIZE_TYPE_MAPPING = {
   BigDecimal: 'numeric',
   Boolean: 'boolean',
   Bytes: 'bytea',
+  Json: 'jsonb',
 };
 
 export function modelsTypeToModelAttributes(
