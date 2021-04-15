@@ -1,6 +1,11 @@
 // Auto-generated , DO NOT EDIT
 import {Entity} from "@subql/types";
 import assert from 'assert';
+<%if (props.importJsonInterfaces.length !== 0) { %>
+import {<% props.importJsonInterfaces.forEach(function(interface){ %>
+    <%= interface %>
+<% }); %>} from '../interfaces'
+<% } %>
 
 export class <%= props.className %> implements Entity {
 
@@ -9,7 +14,7 @@ export class <%= props.className %> implements Entity {
     }
 
 <% props.fields.forEach(function(field){ %>
-    public <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %>;
+    public <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
 <% }); %>
 
     async save(): Promise<void>{

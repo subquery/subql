@@ -27,19 +27,11 @@ import {
   GraphQLRelationsType,
 } from './types';
 
-let jsonObjects: GraphQLObjectType<any, any>[];
-let entityNameSet: string[];
-let jsonObjectsNameSet: string[];
-
 export function getAllJsonObjects(schema: GraphQLSchema) {
-  const jsonObjects = Object.values(schema.getTypeMap())
+  return Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
     .map((node) => node)
     .filter(isObjectType);
-  jsonObjectsNameSet = jsonObjects.map(function (json) {
-    return json.name;
-  });
-  return jsonObjects;
 }
 
 export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRelations {
@@ -50,10 +42,9 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
     .map((node) => node)
     .filter(isObjectType);
 
-  jsonObjects = getAllJsonObjects(schema);
-  entityNameSet = entities.map(function (entity) {
-    return entity.name;
-  });
+  const jsonObjects = getAllJsonObjects(schema);
+
+  const entityNameSet = entities.map((entity) => entity.name);
 
   const modelRelations = {models: [], relations: []} as GraphQLModelsRelations;
   const derivedFrom = schema.getDirective('derivedFrom');
@@ -94,8 +85,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
         } as GraphQLRelationsType);
       }
       // If is jsonField
-      else if (jsonObjectsNameSet.includes(typeString)) {
-        const jsonObject = setJsonObjectType(jsonObjects.find((object) => object.name === typeString));
+      else if (jsonObjects.map((json) => json.name).includes(typeString)) {
+        const jsonObject = setJsonObjectType(
+          jsonObjects.find((object) => object.name === typeString),
+          jsonObjects
+        );
         newModel.fields.push(packJSONField(typeString, field, jsonObject));
       } else {
         throw new Error(`${typeString} is not an valid type`);
@@ -146,7 +140,10 @@ function packJSONField(
   };
 }
 
-function setJsonObjectType(jsonObject: GraphQLObjectType<any, any>): GraphQLJsonObjectType {
+export function setJsonObjectType(
+  jsonObject: GraphQLObjectType<any, any>,
+  jsonObjects: GraphQLObjectType<any, any>[]
+): GraphQLJsonObjectType {
   const graphQLJsonObject: GraphQLJsonObjectType = {
     name: jsonObject.name,
     fields: [],
@@ -154,12 +151,15 @@ function setJsonObjectType(jsonObject: GraphQLObjectType<any, any>): GraphQLJson
   for (const field of Object.values(jsonObject.getFields())) {
     //check if field is also json
     const typeString = extractType(field.type).toString();
-    const isJsonType = jsonObjectsNameSet.includes(typeString);
+    const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
     graphQLJsonObject.fields.push({
       name: field.name,
       type: isJsonType ? 'Json' : extractType(field.type),
       jsonInterface: isJsonType
-        ? setJsonObjectType(jsonObjects.find((object) => object.name === typeString))
+        ? setJsonObjectType(
+            jsonObjects.find((object) => object.name === typeString),
+            jsonObjects
+          )
         : undefined,
       nullable: !isNonNullType(field.type),
       isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),

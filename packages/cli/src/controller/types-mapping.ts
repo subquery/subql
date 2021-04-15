@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Model type mapping
-
 const typeMap = new Map();
 typeMap.set('ID', 'string');
 typeMap.set('Int', 'number');

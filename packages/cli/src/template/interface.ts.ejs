@@ -1,0 +1,12 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
+// Auto-generated , DO NOT EDIT
+<% props.jsonInterfaces.forEach(function(interface){ %>
+export interface <%= interface.interfaceName %> {
+<% interface.fields.forEach(function(field){ %>
+    <%= field.name %><%= field.nullable ? "?" : "" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
+<% }); %>
+}
+
+<% }); %>
