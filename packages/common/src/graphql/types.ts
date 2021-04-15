@@ -11,6 +11,8 @@ export interface GraphQLModelsType {
   name: string;
 
   fields: GraphQLEntityField[];
+
+  indexes: GraphQLEntityIndex[];
 }
 
 export interface GraphQLEntityField {
@@ -21,6 +23,23 @@ export interface GraphQLEntityField {
   isArray: boolean;
 
   nullable: boolean;
+}
+
+enum IndexType {
+  BTREE = 'btree',
+  HASH = 'hash',
+  GIST = 'gist',
+  SPGIST = 'spgist',
+  GIN = 'gin',
+  BRIN = 'brin',
+}
+
+export interface GraphQLEntityIndex {
+  fields: string[];
+
+  unique?: boolean;
+
+  type?: IndexType;
 }
 
 export interface GraphQLRelationsType {

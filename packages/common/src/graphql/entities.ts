@@ -16,6 +16,7 @@ import {
 } from 'graphql';
 import {DirectiveName} from './constant';
 
+import {buildSchema} from './schema';
 import {
   FieldScalar,
   GraphQLEntityField,
@@ -24,7 +25,8 @@ import {
   GraphQLRelationsType,
 } from './types';
 
-export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRelations {
+export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelations {
+  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.Entity))
     .map((node) => node)
@@ -36,10 +38,12 @@ export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRel
 
   const modelRelations = {models: [], relations: []} as GraphQLModelsRelations;
   const derivedFrom = schema.getDirective('derivedFrom');
+  const indexDirective = schema.getDirective('index');
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
       fields: [],
+      indexes: [],
     };
     for (const field of Object.values(entity.getFields())) {
       const typeString = extractType(field.type).toString();
@@ -70,6 +74,18 @@ export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRel
       } else {
         throw new Error(`${typeString} is not an valid type`);
       }
+      // handle indexes
+      const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
+      if (indexDirectiveVal) {
+        if (typeString !== 'ID' && Object.values(FieldScalar).includes(typeString)) {
+          newModel.indexes.push({
+            unique: indexDirectiveVal.unique,
+            fields: [field.name],
+          });
+        } else {
+          throw new Error(`index can not be added on pk or fk field ${field.name}`);
+        }
+      }
     }
     modelRelations.models.push(newModel);
   }
@@ -80,7 +96,7 @@ export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRel
 function packEntityField(
   typeString: FieldScalar,
   field: GraphQLField<any, any>,
-  isForeignKey: Boolean
+  isForeignKey: boolean
 ): GraphQLEntityField {
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,

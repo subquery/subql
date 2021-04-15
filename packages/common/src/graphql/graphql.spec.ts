@@ -132,4 +132,42 @@ describe('utils that handle schema.graphql', () => {
       'Please check entity Account with field transfers has correct relation with entity Transfer'
     );
   });
+
+  it('can extract indexed fields from the schema', () => {
+    const graphqlSchema = gql`
+      type TestEntity @entity {
+        id: ID!
+        column1: String @index
+        column2: BigInt @index(unique: true)
+      }
+    `;
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models?.[0].indexes).toHaveLength(2);
+    expect(entities.models?.[0].indexes[0].fields).toEqual(['column1']);
+    expect(entities.models?.[0].indexes[0].unique).toBeUndefined();
+    expect(entities.models?.[0].indexes[1].fields).toEqual(['column2']);
+    expect(entities.models?.[0].indexes[1].unique).toBe(true);
+  });
+
+  it('throw if add index on pk or fk', () => {
+    let graphqlSchema = gql`
+      type TestEntity @entity {
+        id: ID! @index
+      }
+    `;
+    let schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
+    graphqlSchema = gql`
+      type TestEntity @entity {
+        id: ID!
+        field1: TestEntity2 @index
+      }
+      type TestEntity2 @entity {
+        id: ID!
+      }
+    `;
+    schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
+  });
 });
