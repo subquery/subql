@@ -51,7 +51,10 @@ export class StoreService {
       });
       const subscriptionModel = this.sequelize.model(model.name);
       extraQueries.push(
-        ...createSubscriptionNotifyFunctionQuery(schema, subscriptionModel.tableName),
+        ...createSubscriptionNotifyFunctionQuery(
+          schema,
+          subscriptionModel.tableName,
+        ),
         ...createSubscriptionTrigger(schema, subscriptionModel.tableName),
       );
     }
