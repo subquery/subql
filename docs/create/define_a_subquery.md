@@ -23,6 +23,8 @@ dataSources:
   - name: runtime
     kind: substrate/Runtime
     startBlock: 1
+    filter:  #Optional
+      specName: kitty-chain 
     mapping:
       handlers:
         - handler: handleKittyBred
@@ -45,12 +47,50 @@ The `network.types` declare the specific types supported by this blockchain, als
 - The dataSources defines the data will be extracted and the logic of data transformation to be applied. 
   - For `dataSources.kind`, we are only supporting `substrate/Runtime` at the moment.
   - The `startBlock` specify the block height to start indexing from.
+  - The `dataSources.filter` will filtering the data source to execute by the network endpoint spec name, see [network filter](#network-filter )
   - In `mapping.handlers` will list all the [mapping functions](#mapping-function) and their corresponding handler types,
-  also [filters](#apply-filter).
-  
-  
-### Apply filter
+  also [filters](#mapping-filter).
 
+
+### Network filter  
+
+Commonly, the user will create a subquery and expect to (re)use it for their testnet and mainnet (e.g Polkadot and Kusama), and for the different network, their start indexing block is likely to vary. Therefore, we are demanding to run different datasource for different network.
+
+To switch between the network endpoints and decide which data sources to run on the current network, add a network filter on the `dataSources` will make this simpler.
+Here is another way to define the manifest. It will only execute the data source `polkadotRuntime` because its spec name in the filter is matching with the default network endpoint.
+
+```yaml
+...
+network:
+  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+
+#Create a template to avoid redundancy
+definitions:
+  - mapping: &mymapping
+       handlers:
+         - handler: handleBlock
+           kind: substrate/BlockHandler
+
+dataSources:
+  - name: polkadotRuntime
+    kind: substrate/Runtime
+    filter:  #Optional
+        specName: polkadot
+    startBlock: 1000
+    mapping: *mymapping #use template here
+  - name: kusamaRuntime
+    kind: substrate/Runtime
+    filter: 
+        specName: kusama
+    startBlock: 12000 
+    mapping: *mymapping #reuse template
+```
+
+
+
+
+  
+### Mapping filter
 
 In above, you may have noticed we are supporting the optional filter feature. 
 The applied filtering decide which block/event/extrinsic will trigger the mapping. 
@@ -114,8 +154,30 @@ We currently supporting flowing scalars:
 - `BigInt`
 - `Date`
 - `Boolean`
+-  For nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+- `JSON` If you wish to store data under JSON format rather than creating a new table or columns, achieve this via defining a `jsonField` directives. 
 
-For nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+````graphql
+
+type AddressDetail @jsonField {
+  street: String!
+  district: String!
+}
+
+type ContactCard @jsonField {
+  phone: Int!
+  address: AddressDetail 
+}
+
+type User @entity {
+  id: ID! 
+  contact: [ContactCard] #Store a list of Json objects
+}
+
+````
+Unlike the entity, the jsonField directive object does not require any `id` field. 
+Also, a JSON object is also abling to nesting with other JSON objects.
 
 ### Entity Relationships
 
@@ -259,6 +321,40 @@ The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dc
 Last, it records the success status of this extrinsic.
 
 
+### Indexing by Non-Key field
+
+In the mapping function, it is easy to acquire the entity by its key. However, accessing the entity having the field with a particular value is difficult. 
+That is why we support indexing on entity fields simply by implement the `@index` annotation on the **Non-Key**(exclude primary and foreign keys) field.
+Here is an example.
+
+```graphql
+
+type User @entity {
+  id: ID!
+  name: String! @index(unique: true)
+  title: String! @index
+}
+
+```
+```sql
+# Add a record
+INSERT INTO SCHEMA_1.users(id,name,title) VALUES ('10086','Jack Sparrow','Pirate Lord');
+```
+Assume we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name.
+The more accessible and effective approach is adding `@index` behind the name field, and we can pass the `unique: true` to make sure its uniqueness. 
+
+When code generation, this will automatically create a `getByName` under the `User` model, which can directly be accessed in the mapping function.
+
+```typescript
+// UserHandler in mapping function
+import {User} from "../types/models/User"
+
+const jack = User.getByName('Jack Sparrow');
+
+const pirateLords = User.getByTitle('Pirate Lord'); //list of all pirate lords
+```
+
+
 ### Query States
 We wish to cover all data sources for the user in the mapping handler, other than the three configured interface types above. Therefore, we have exposed some of the @polkadot/api interfaces to increase the scalability. 
 These are the interface we supporting now:
@@ -283,9 +379,18 @@ And these are the interface we are **NOT** supporting at the moment:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-
-
 See an example of using the API in [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold).
+
+### Logging
+
+We injected a `logger` module in the types, which means rather than use the `console` , we support a logger that can accept various logging levels.
+
+```typescript
+logger.info("Info level message")
+logger.debug("Debugger level message")
+logger.warn("Warning level message")
+```
+In addition, viewing the debug messages requires adding `--log-level debug` in your command line.
 
 
 ### Examples
