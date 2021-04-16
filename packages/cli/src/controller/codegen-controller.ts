@@ -29,8 +29,8 @@ const exportTypes = {
 };
 
 // 4. Render entity data in ejs template and write it
-export async function renderTemplate(template_path: string, outputPath: string, templateData: ejs.Data): Promise<void> {
-  const data = await ejs.renderFile(template_path, templateData);
+export async function renderTemplate(templatePath: string, outputPath: string, templateData: ejs.Data): Promise<void> {
+  const data = await ejs.renderFile(templatePath, templateData);
   await fs.promises.writeFile(outputPath, data);
 }
 
@@ -45,7 +45,7 @@ export interface ProcessedField {
   isJsonInterface: boolean;
 }
 
-export async function generateJsonInterfaces(projectPath, schema: GraphQLSchema) {
+export async function generateJsonInterfaces(projectPath, schema: string) {
   const typesDir = path.join(projectPath, TYPE_ROOT_DIR);
   const jsonObjects = getAllJsonObjects(schema);
   const jsonInterfaces = jsonObjects.map((r) => {
@@ -62,6 +62,9 @@ export async function generateJsonInterfaces(projectPath, schema: GraphQLSchema)
       props: {
         jsonInterfaces,
       },
+      helper: {
+        upperFirst,
+      },
     };
     try {
       await renderTemplate(INTERFACE_TEMPLATE_PATH, path.join(typesDir, `interfaces.ts`), interfaceTemplate);
@@ -72,8 +75,12 @@ export async function generateJsonInterfaces(projectPath, schema: GraphQLSchema)
   }
 }
 
-export function processFields(type: string, className: string, fields: GraphQLEntityField[] | GraphQLJsonFieldType[],  indexFields: GraphQLEntityIndex[]
-):ProcessedField[] {
+export function processFields(
+  type: string,
+  className: string,
+  fields: (GraphQLEntityField | GraphQLJsonFieldType)[],
+  indexFields?: GraphQLEntityIndex[]
+): ProcessedField[] {
   const fieldList: ProcessedField[] = [];
   for (const field of fields) {
     const injectField = {
@@ -81,22 +88,25 @@ export function processFields(type: string, className: string, fields: GraphQLEn
       required: !field.nullable,
       isArray: field.isArray,
     } as ProcessedField;
-    const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
-      (acc, indexField) => {
-        if (indexField.fields.includes(field.name)) {
-          acc[0] = true;
-          if (indexField.fields.length === 1 && indexField.unique) {
-            acc[1] = true;
-          } else if (indexField.unique === undefined) {
-            acc[1] = false;
+    if (type === 'entity' && indexFields) {
+      const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
+        (acc, indexField) => {
+          if (indexField.fields.includes(field.name)) {
+            acc[0] = true;
+            if (indexField.fields.length === 1 && indexField.unique) {
+              acc[1] = true;
+            } else if (indexField.unique === undefined) {
+              acc[1] = false;
+            }
           }
-        }
-        return acc;
-      },
-      [false, undefined]
-    );
-    injectField.indexed = indexed;
-    injectField.unique = unique;
+          return acc;
+        },
+        [false, undefined]
+      );
+      injectField.indexed = indexed;
+      injectField.unique = unique;
+    }
+
     switch (field.type) {
       default: {
         injectField.type = transformTypes(className, field.type.toString());
@@ -112,7 +122,7 @@ export function processFields(type: string, className: string, fields: GraphQLEn
         if (field.jsonInterface === undefined) {
           throw new Error(`On field ${field.name} type is Json but json interface is not defined`);
         }
-        injectField.type = field.jsonInterface.name;
+        injectField.type = upperFirst(field.jsonInterface.name);
         injectField.isJsonInterface = true;
       }
     }
@@ -139,8 +149,7 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
   const manifest = loadProjectManifest(projectPath);
-  const schema = buildSchema(path.join(projectPath, manifest.schema)); //todo change getAllJsonObjects
-  await generateJsonInterfaces(projectPath, schema);
+  await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   if (exportTypes.interfaces || exportTypes.models) {
     try {
@@ -158,17 +167,19 @@ export async function codegen(projectPath: string): Promise<void> {
 
 // 2. Loop all entities and render it
 export async function generateModels(projectPath: string, schema: string): Promise<void> {
-  const extractEntities = getAllEntitiesRelations(schema); //todo update getAllEntitiesRelations
+  const extractEntities = getAllEntitiesRelations(schema);
   for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
     const className = upperFirst(entity.name);
-    const fields = processFields('entity',className, entity.fields,entity.indexes);
+    const entityName = entity.name;
+    const fields = processFields('entity', className, entity.fields, entity.indexes);
     const importJsonInterfaces = fields.filter((field) => field.isJsonInterface).map((f) => f.type);
     const indexedFields = fields.filter((field) => field.indexed);
     const modelTemplate = {
       props: {
         baseFolderPath,
         className,
+        entityName,
         fields,
         importJsonInterfaces,
         indexedFields,
@@ -194,6 +205,9 @@ export async function generateModels(projectPath: string, schema: string): Promi
       await renderTemplate(MODELS_INDEX_TEMPLATE_PATH, path.join(projectPath, MODEL_ROOT_DIR, `index.ts`), {
         props: {
           classNames,
+        },
+        helper: {
+          upperFirst,
         },
       });
       exportTypes.models = true;

@@ -27,14 +27,14 @@ import {
   GraphQLRelationsType,
 } from './types';
 
-export function getAllJsonObjects(schema: GraphQLSchema) {
+export function getAllJsonObjects(_schema: GraphQLSchema | string) {
+  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   return Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
     .map((node) => node)
     .filter(isObjectType);
 }
 
-export function getAllEntitiesRelations(schema: GraphQLSchema): GraphQLModelsRelations {
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelations {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
