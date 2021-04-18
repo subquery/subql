@@ -95,9 +95,9 @@ describe('ApiService', () => {
     let blockhash: BlockHash;
     const currentMaxNRPV = api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
     if (currentMaxNRPV === 128) {
-      blockhash = await api.rpc.chain.getBlockHash(4401241);
-    } else {
       blockhash = await api.rpc.chain.getBlockHash(4401242);
+    } else {
+      blockhash = await api.rpc.chain.getBlockHash(4401243);
     }
     await apiService.setBlockhash(blockhash, true);
 
