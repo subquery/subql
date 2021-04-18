@@ -76,10 +76,10 @@ export async function generateJsonInterfaces(projectPath, schema: string) {
 }
 
 export function processFields(
-  type: string,
+  type: 'entity' | 'jsonField',
   className: string,
   fields: (GraphQLEntityField | GraphQLJsonFieldType)[],
-  indexFields?: GraphQLEntityIndex[]
+  indexFields: GraphQLEntityIndex[] = []
 ): ProcessedField[] {
   const fieldList: ProcessedField[] = [];
   for (const field of fields) {

@@ -3,7 +3,7 @@ import {Entity} from "@subql/types";
 import assert from 'assert';
 <%if (props.importJsonInterfaces.length !== 0) { %>
 import {<% props.importJsonInterfaces.forEach(function(interface){ %>
-    <%= interface %>
+    <%= interface %>,
 <% }); %>} from '../interfaces'
 <% } %>
 
