@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2021-04-19
+### Added
+- Codegen supports `@index` in graphql.schema and allow query by indexed field via global.store (#271)
+- Codegen supports json type in graphql.schema, generates coresponding interfaces (#275)
+
 ## [0.8.0] - 2021-03-11
 ### Added
 - Update subquery repo path (#196)
@@ -43,7 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/subquery/subql/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/OnFinality-io/subql/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/OnFinality-io/subql/compare/v0.7.1...v0.7.2

@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2021-04-20
+### Added
+- Remove condition in query schema, use filter instead (#260)
+- Support json type, allow partial selection and use it in query filter (#275)
+
 ## [0.4.0] - 2021-03-25
 ### Added
 - support filter for condition search (#240)
@@ -31,7 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/subquery/subql/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/subquery/subql/compare/v0.3.2...v0.4.0
 [0.3.2]: https://github.com/subquery/subql/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/subquery/subql/compare/v0.3.0...v0.3.1
