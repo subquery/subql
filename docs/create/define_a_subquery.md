@@ -54,7 +54,7 @@ The `network.types` declare the specific types supported by this blockchain, als
 
 ### Network filter  
 
-Commonly, the user will create a subquery and expect to (re)use it for their testnet and mainnet (e.g Polkadot and Kusama), and for the different network, their start indexing block is likely to vary. Therefore, we are demanding to run different datasource for different network.
+Commonly, the user will create a subquery and expect to (re)use it for their testnet and mainnet (e.g Polkadot and Kusama), and for the different network, their start indexing block is likely to vary. Therefore, it's helpful to provide this optional feature when the user wishes to run a different datasource for a different network.
 
 To switch between the network endpoints and decide which data sources to run on the current network, add a network filter on the `dataSources` will make this simpler.
 Here is another way to define the manifest. It will only execute the data source `polkadotRuntime` because its spec name in the filter is matching with the default network endpoint.
@@ -160,17 +160,17 @@ We currently supporting flowing scalars:
 
 ### JSON type
 
-We are supporting Json type but we also recommend user to following these guidelines:
+We are supporting the JSON type, but we also recommend users to follow these guidelines:
 
-- When storing structured data in single field should be more manageable than creating multiple separate tables and columns.
+- When storing structured data in a single field is more manageable than creating multiple separate tables and columns.
 - Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
 - The schema is designed to be volatile
 
 #### Define JSON directive
-Define the object as a Json directive by adding the `jsonField` annotation in the schema ,this will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+Define the object as a JSON directive by adding the `jsonField` annotation in the schema, this will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
 
 Unlike the entity, the jsonField directive object does not require any `id` field. 
-Also, a JSON object is also able to nesting with other JSON objects.
+A JSON object is also able to nest with other JSON objects.
 
 ````graphql
 
@@ -193,8 +193,8 @@ type User @entity {
 
 #### Query JSON field
 
-The drawback of adopt JSON type is it will affect query efficiency when filtering, since each time it perform a text-search on the context.
-However, it is still acceptable in our query service, here is an example of how to use `contains` operator in filter for json field.
+The drawback of adopting JSON type is it will affect query efficiency when filtering since each time it performs a text search on the context.
+However, it is still acceptable in our query service. Here is an example of how to use the `contains` operator in the filter for JSON field.
 ```graphql
 
 #To find the the first 5 users own phone numbers contains '0064'.
