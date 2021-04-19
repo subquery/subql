@@ -155,9 +155,23 @@ We currently supporting flowing scalars:
 - `Date`
 - `Boolean`
 -  For nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` If you wish to store data under JSON format rather than creating a new table or columns, achieve this via defining a `jsonField` directives. 
+- `JSON` type to store structured data, please see [JSON type](#json-type)
 
-This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+
+### JSON type
+
+We are supporting Json type but we also recommend user to following these guidelines:
+
+- When storing structured data in single field should be more manageable than creating multiple separate tables and columns.
+- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
+- The schema is designed to be volatile
+
+#### Define JSON directive
+Define the object as a Json directive by adding the `jsonField` annotation in the schema ,this will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+
+Unlike the entity, the jsonField directive object does not require any `id` field. 
+Also, a JSON object is also able to nesting with other JSON objects.
+
 ````graphql
 
 type AddressDetail @jsonField {
@@ -166,8 +180,8 @@ type AddressDetail @jsonField {
 }
 
 type ContactCard @jsonField {
-  phone: Int!
-  address: AddressDetail 
+  phone: String!
+  address: AddressDetail #nesting json
 }
 
 type User @entity {
@@ -176,8 +190,31 @@ type User @entity {
 }
 
 ````
-Unlike the entity, the jsonField directive object does not require any `id` field. 
-Also, a JSON object is also abling to nesting with other JSON objects.
+
+#### Query JSON field
+
+The drawback of adopt JSON type is it will affect efficiency when filtering in query, since each time it perform a text-search on the context.
+However, it is still acceptable in our query service, here is an example of how to use `contains` operator in filter for json field.
+```graphql
+
+#To find the the first 5 users own phone numbers contains '0064'.
+
+query{
+  user(first: 5, filter: {
+    contactCard: {
+       contains: [{phone:"0064"}]
+    }
+}){
+    nodes{
+      id
+      contactCard
+    }
+  }
+}
+
+```
+                                   
+
 
 ### Entity Relationships
 
