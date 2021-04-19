@@ -88,7 +88,7 @@ export function processFields(
       required: !field.nullable,
       isArray: field.isArray,
     } as ProcessedField;
-    if (type === 'entity' && indexFields) {
+    if (type === 'entity') {
       const [indexed, unique] = indexFields.reduce<[boolean, boolean]>(
         (acc, indexField) => {
           if (indexField.fields.includes(field.name)) {
