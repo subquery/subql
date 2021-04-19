@@ -3399,7 +3399,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^6.6.3
-    sequelize: ^6.5.0
+    sequelize: ^6.6.2
     supertest: ^6.1.3
     tar: ^6.1.0
     typescript: ^4.1.3
@@ -17169,9 +17169,9 @@ resolve@^1.14.2:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.5.0":
-  version: 6.5.0
-  resolution: "sequelize@npm:6.5.0"
+"sequelize@npm:^6.6.2":
+  version: 6.6.2
+  resolution: "sequelize@npm:6.6.2"
   dependencies:
     debug: ^4.1.1
     dottie: ^2.0.0
@@ -17199,7 +17199,7 @@ resolve@^1.14.2:
       optional: true
     tedious:
       optional: true
-  checksum: 38f55f316683ecb6017b5d18ba3d94616e4104a4ce26162c297e4a61f97800a088d38728706f2a19b634195325c466e25ecb6029dcb31735939e66ee796ed612
+  checksum: 174b449f4d4a9b521380f7fab3f6ec05af0880e001d2b53e1a5f9e99633466ff531677b8d06e9b5d9ad1a574b17a72eeb9462e4e4b0aeb89bc6cbcfb294e4a2f
   languageName: node
   linkType: hard
 

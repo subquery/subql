@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { GraphQLModelsType } from '@subql/common/graphql/types';
-import { ModelAttributes } from 'sequelize';
+import { ModelAttributes, DataTypes } from 'sequelize';
 import { ModelAttributeColumnOptions } from 'sequelize/types/lib/model';
 
 const SEQUELIZE_TYPE_MAPPING = {
@@ -14,6 +14,7 @@ const SEQUELIZE_TYPE_MAPPING = {
   BigDecimal: 'numeric',
   Boolean: 'boolean',
   Bytes: 'bytea',
+  Json: DataTypes.JSONB,
 };
 
 export function modelsTypeToModelAttributes(

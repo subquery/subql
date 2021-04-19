@@ -21,7 +21,7 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(30000);
+jest.setTimeout(100000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -51,7 +51,7 @@ describe('ApiService', () => {
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.
-    await delay(0.1);
+    await delay(0.5);
   });
 
   it('api query is locked at specified block', async () => {
@@ -85,6 +85,7 @@ describe('ApiService', () => {
       `DMkKL7AZw9TkNw2NaBdocmFRGUG8r8T4kdGGcB13fv2LARy`,
     );
     expect(apiResults).toEqual(patchedResult);
+    await delay(0.5);
   });
 
   it('api consts is swapped to the specified block', async () => {
@@ -95,16 +96,16 @@ describe('ApiService', () => {
     let blockhash: BlockHash;
     const currentMaxNRPV = api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
     if (currentMaxNRPV === 128) {
-      blockhash = await api.rpc.chain.getBlockHash(4401241);
-    } else {
       blockhash = await api.rpc.chain.getBlockHash(4401242);
+    } else {
+      blockhash = await api.rpc.chain.getBlockHash(4401243);
     }
     await apiService.setBlockhash(blockhash, true);
 
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
     ).not.toEqual(currentMaxNRPV);
-  }, 30000);
+  }, 100000);
 
   it('.rpc.*.*, .tx.*.*, .derive.*.* are removed', async () => {
     const apiService = await prepareApiService();

@@ -44,6 +44,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
       replaceAllPlugins: plugins,
       subscriptions: true,
+      dynamicJson: true,
     });
 
     const schema = builder.buildSchema();

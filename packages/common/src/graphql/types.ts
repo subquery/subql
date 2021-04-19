@@ -1,6 +1,19 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+export interface GraphQLJsonObjectType {
+  name: string;
+  fields: GraphQLJsonFieldType[];
+}
+
+export interface GraphQLJsonFieldType {
+  name: string;
+  type: Exclude<keyof typeof FieldScalar, 'ID'> | 'Json';
+  jsonInterface?: GraphQLJsonObjectType;
+  nullable: boolean;
+  isArray: boolean;
+}
+
 export interface GraphQLModelsRelations {
   models: GraphQLModelsType[];
 
@@ -18,7 +31,9 @@ export interface GraphQLModelsType {
 export interface GraphQLEntityField {
   name: string;
 
-  type: keyof typeof FieldScalar;
+  type: keyof typeof FieldScalar | 'Json';
+
+  jsonInterface?: GraphQLJsonObjectType;
 
   isArray: boolean;
 
