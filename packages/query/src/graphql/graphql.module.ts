@@ -61,7 +61,14 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         path: '/subscription',
       },
     });
-    app.use(ExpressPinoLogger({logger: getLogger('express')}));
+    app.use(
+      ExpressPinoLogger({
+        logger: getLogger('express'),
+        autoLogging: {
+          ignorePaths: ['/.well-known/apollo/server-health'],
+        },
+      })
+    );
     server.applyMiddleware({
       app,
       path: '/',
