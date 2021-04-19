@@ -193,7 +193,7 @@ type User @entity {
 
 #### Query JSON field
 
-The drawback of adopt JSON type is it will affect efficiency when filtering in query, since each time it perform a text-search on the context.
+The drawback of adopt JSON type is it will affect query efficiency when filtering, since each time it perform a text-search on the context.
 However, it is still acceptable in our query service, here is an example of how to use `contains` operator in filter for json field.
 ```graphql
 
