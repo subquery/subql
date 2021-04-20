@@ -1,12 +1,12 @@
 # Indexing and Query
 
-In this chapter, we will introduce how to indexing a configured SubQuery, there are two approaches:
+In this chapter, we will introduce how to index a configured SubQuery. There are two approaches:
 
 - We support [hosted service](https://www.subquery.network/)(coming soon) for the SubQuery node. 
 
 - Running a SubQuery node for local development
 
-An alternative indexing solution with <strong>docker</strong> has provided in the [Quick start](/quickstart.html#index-and-query) chapter.   
+An alternative indexing solution with <strong>docker</strong> is provided in the [Quick start](/quickstart.html#index-and-query) chapter.   
 
 ## Preparation
 
@@ -111,4 +111,4 @@ Also check the environment variables are correct.
 
 After running subql-query service successfully, open your browser and head to `http://localhost:3000`.
 
-Finally, you should see a GraphQL playground is showing in the explorer and the schemas that ready to query.
+Finally, you should see a GraphQL playground showing in the Explorer and the schema that is ready to query.

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.0] - 2021-04-20
 ### Fixed
-- bump dependencies for logger
+- Bump dependencies for logger
 - Fix query for double map storage (#269)
 
 ### Added

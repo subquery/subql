@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.0] - 2021-04-20
 ### Added
-- Remove condition in query schema, use filter instead (#260)
-- Support json type, allow partial selection and use it in query filter (#275)
+- Remove `condition` in query schema, please use `filter` instead (#260)
+- `@jsonField` annotation is now supported in `graphql.schema` which allows you to store structured data JSON data in a single database field
+  - We'll automatically generate coresponding JSON interfaces when querying this data (#275)
+  - Read more about how you can use this in our [updated docs](https://doc.subquery.network/create/graphql.html#json-type)
 
 ## [0.4.0] - 2021-03-25
 ### Added

@@ -32,8 +32,10 @@ module.exports = {
                             title: 'Create a Project',
                             collapsable: false,
                             children: [
-                                'create/define_a_subquery',
-                                'create/directory_structure',
+                                'create/introduction',
+                                'create/manifest.md',
+                                'create/graphql.md',
+                                'create/mapping.md',
                             ]
                         },
                         {
@@ -50,6 +52,7 @@ module.exports = {
                             children: [
                                 'publish/publish',
                                 'publish/upgrade',
+                                'publish/connect',
                             ]
                         },
                     ],
