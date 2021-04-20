@@ -379,6 +379,9 @@ INSERT INTO SCHEMA_1.users(id,name,title) VALUES ('10086','Jack Sparrow','Pirate
 ```
 Assume we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name.
 The more accessible and effective approach is adding `@index` behind the name field, and we can pass the `unique: true` to make sure its uniqueness. 
+And if the field is not unique, we limited the result set size to 100.
+                                                                                                                                                     
+
 
 When code generation, this will automatically create a `getByName` under the `User` model, which can directly be accessed in the mapping function.
 
@@ -386,9 +389,9 @@ When code generation, this will automatically create a `getByName` under the `Us
 // UserHandler in mapping function
 import {User} from "../types/models/User"
 
-const jack = User.getByName('Jack Sparrow');
+const jack = await User.getByName('Jack Sparrow');
 
-const pirateLords = User.getByTitle('Pirate Lord'); //list of all pirate lords
+const pirateLords = await User.getByTitle('Pirate Lord'); //list of all pirate lords
 ```
 
 
@@ -419,8 +422,7 @@ And these are the interface we are **NOT** supporting at the moment:
 See an example of using the API in [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold).
 
 ### Logging
-
-We injected a `logger` module in the types, which means rather than use the `console` , we support a logger that can accept various logging levels.
+The `console.log` method is **no longer supported**, and we injected a `logger` module in the types, which means we support a logger that can accept various logging levels.
 
 ```typescript
 logger.info("Info level message")
