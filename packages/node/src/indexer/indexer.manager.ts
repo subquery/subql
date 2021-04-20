@@ -211,7 +211,7 @@ export class IndexerManager {
     try {
       await this.storeService.syncSchema(modelsRelations, schema);
     } catch (e) {
-      logger.error(e, `When sync schema having problems`);
+      logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);
     }
   }
