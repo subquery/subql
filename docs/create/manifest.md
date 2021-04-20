@@ -47,7 +47,7 @@ dataSources:
 
 ## Network Filters 
 
-Commonly, the user will create a SubQuery and expect to (re)use it for both their testnet and mainnet (e.g Polkadot and Kusama). Between networks, various options are likely to vary (e.g. index start block). Therefore, we allow users to define different details for each data source so one SubQuery project can still be used across multiple networks.
+Commonly, the user will create a SubQuery and expect to reuse it for both their testnet and mainnet (e.g Polkadot and Kusama). Between networks, various options are likely to vary (e.g. index start block). Therefore, we allow users to define different details for each data source so one SubQuery project can still be used across multiple networks.
 
 Users can add a `filter` on `dataSources` to decide which data source to run on the each network.
 

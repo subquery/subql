@@ -1,4 +1,4 @@
-# The GraphQL Schema
+# GraphQL Schema
 
 ## Defining Entities
 
@@ -50,15 +50,17 @@ type User @entity {
 ```
 Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness. 
 
+**If a field is not unique, the maximum result set size is 100**
+
 When code generation is run, this will automatically create a `getByName` under the `User` model, which can directly be accessed in the mapping function.
 
 ```typescript
 // UserHandler in mapping function
 import {User} from "../types/models/User"
 
-const jack = User.getByName('Jack Sparrow');
+const jack = await User.getByName('Jack Sparrow');
 
-const pirateLords = User.getByTitle('Captain'); // List of all Captains
+const pirateLords = await User.getByTitle('Captain'); // List of all Captains
 ```
 
 ## Entity Relationships

@@ -61,7 +61,7 @@ npm run-script build
 
 ## Logging
 
-We've injected a `logger` module in the types, which means rather than using the `console` we support a logger that can accept various logging levels.
+The `console.log` method is **no longer supported**. Instead a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
 
 ```typescript
 logger.info("Info level message")
