@@ -11,7 +11,7 @@ subql init --starter PROJECT_NAME
 More advanced users can jump directly to the resources they need from a fresh project.
 
 Creating a bespoke SubQuery project is ususally done in the following process:
-1. Initalise project using `subql init PROJECT_NAME
+1. Initalise project using `subql init PROJECT_NAME`
 2. Update Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](/create/manifest)
 3. Create GraphQL Entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](/create/graphql)
 4. Add all the mapping functions that are invoked to transform chain data to the GraphQL entities that you have defined - see [Mapping](/create/mapping)
