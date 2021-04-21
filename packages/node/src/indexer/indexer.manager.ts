@@ -208,7 +208,12 @@ export class IndexerManager {
       path.join(this.project.path, this.project.schema),
     );
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.syncSchema(modelsRelations, schema);
+    try {
+      await this.storeService.syncSchema(modelsRelations, schema);
+    } catch (e) {
+      logger.error(e, `Having a problem when syncing schema`);
+      process.exit(1);
+    }
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
