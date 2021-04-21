@@ -150,25 +150,35 @@ describe('utils that handle schema.graphql', () => {
     expect(entities.models?.[0].indexes[1].unique).toBe(true);
   });
 
-  it('throw if add index on pk or fk', () => {
-    let graphqlSchema = gql`
+  it('throw if add index on pk', () => {
+    const graphqlSchema = gql`
       type TestEntity @entity {
         id: ID! @index
       }
     `;
-    let schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
-    graphqlSchema = gql`
-      type TestEntity @entity {
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on field id/);
+  });
+
+  it('can extract indexed fields from foreign field', () => {
+    const graphqlSchema = gql`
+      type Fruit @entity {
         id: ID!
-        field1: TestEntity2 @index
+        apple: Apple @index
+        banana: [Banana] @index(unique: true)
       }
-      type TestEntity2 @entity {
+      type Apple @entity {
+        id: ID!
+      }
+      type Banana @entity {
         id: ID!
       }
     `;
-    schema = buildSchemaFromDocumentNode(graphqlSchema);
-    expect(() => getAllEntitiesRelations(schema)).toThrow(/^index can not be added on pk or fk field/);
+    const schema = buildSchemaFromDocumentNode(graphqlSchema);
+    const entities = getAllEntitiesRelations(schema);
+    expect(entities.models?.[0].indexes[0].fields).toEqual(['appleId']);
+    expect(entities.models?.[0].indexes[0].using).toEqual('hash');
+    expect(entities.models?.[0].indexes[1].unique).toBe(true);
   });
 
   it('can read jsonfield', () => {
