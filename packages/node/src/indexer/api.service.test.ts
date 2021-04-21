@@ -25,7 +25,7 @@ jest.setTimeout(100000);
 describe('ApiService', () => {
   let app: INestApplication;
 
-  afterEach(async () => {
+  beforeEach(async () => {
     return app?.close();
   });
 
