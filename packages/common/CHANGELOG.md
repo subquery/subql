@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2021-04-21
+### Added
+- Enforce index on foreign key field (#285)
+
 ## [0.8.0] - 2021-04-20
 ### Fixed
 - fixed logger level (#248)
@@ -46,7 +50,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.8.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/subquery/subql/compare/v0.8.0...v0.8.2
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/OnFinality-io/subql/compare/v0.6.0...v0.6.1

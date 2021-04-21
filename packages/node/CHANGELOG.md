@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.2] - 2021-04-21
+### Added
+- Enforce index on foreign key field (#285)
+
+### Fixed
+- Improve logs for db sync, catch error and exit (#283)
+
 ## [0.12.0] - 2021-04-20
 ### Fixed
 - bump dependencies for logger
@@ -145,7 +152,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.12.2...HEAD
+[0.12.2]: https://github.com/subquery/subql/compare/v0.12.0...v0.12.2
 [0.12.0]: https://github.com/subquery/subql/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/subquery/subql/compare/v0.10.2...v0.11.0
 [0.10.2]: https://github.com/subquery/subql/compare/v0.10.1...v0.10.2
