@@ -34,33 +34,46 @@ We currently supporting flowing scalars types:
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
 - `JSON` can alternatively store structured data, please see [JSON type](#json-type)
 
-## Indexing by Non-key field
+## Indexing by Non-primary-key field
 
-To improve query performance, index an entity field simply by implement the `@index` annotation on a non-key (primary and foreign keys) field.
+To improve query performance, index an entity field simply by implement the `@index` annotation on a non-primary-key field.
 
 Here is an example.
 
 ```graphql
 type User @entity {
   id: ID!
-  name: String! @index(unique: true) // unique can be set to true or false
-  title: String! @index // By default indexes are not unique
+  name: String! @index(unique: true) # unique can be set to true or false
+  title: Title! @index # By default indexes are not unique, index by foreign key field 
 }
 
+type Title @entity {
+  id: ID!  
+  name: String! @index(unique:true)
+}
 ```
 Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness. 
 
 **If a field is not unique, the maximum result set size is 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, which can directly be accessed in the mapping function.
+When code generation is run, this will automatically create a `getByName` under the `User` model, and The foreign key field `title` will create a `getByTitleId` method,
+which both can directly be accessed in the mapping function.
+
+```sql
+/* Prepare a record for title entity */
+INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
+```
 
 ```typescript
-// UserHandler in mapping function
+// Handler in mapping function
 import {User} from "../types/models/User"
+import {Title} from "../types/models/Title"
 
 const jack = await User.getByName('Jack Sparrow');
 
-const pirateLords = await User.getByTitle('Captain'); // List of all Captains
+const captainTitle = await Title.getByName('Captain');
+
+const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
 ## Entity Relationships
