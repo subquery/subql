@@ -40,7 +40,7 @@ export interface GraphQLEntityField {
   nullable: boolean;
 }
 
-enum IndexType {
+export enum IndexType {
   BTREE = 'btree',
   HASH = 'hash',
   GIST = 'gist',
@@ -54,7 +54,7 @@ export interface GraphQLEntityIndex {
 
   unique?: boolean;
 
-  type?: IndexType;
+  using?: IndexType;
 }
 
 export interface GraphQLRelationsType {

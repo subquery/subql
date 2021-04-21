@@ -33,9 +33,10 @@ export class StoreService {
     this.models = modelsRelations.models;
     for (const model of modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model);
-      const indexes = model.indexes.map(({ fields, unique }) => ({
+      const indexes = model.indexes.map(({ fields, unique, using }) => ({
         fields: fields.map((field) => Utils.underscoredIf(field, true)),
         unique,
+        using,
       }));
       if (indexes.length > this.config.indexCountLimit) {
         throw new Error(`too many indexes on entity ${model.name}`);

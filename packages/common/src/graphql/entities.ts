@@ -25,6 +25,7 @@ import {
   GraphQLModelsRelations,
   GraphQLModelsType,
   GraphQLRelationsType,
+  IndexType,
 } from './types';
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string) {
@@ -102,8 +103,14 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
             unique: indexDirectiveVal.unique,
             fields: [field.name],
           });
+        } else if (typeString !== 'ID' && entityNameSet.includes(typeString)) {
+          newModel.indexes.push({
+            unique: indexDirectiveVal.unique,
+            fields: [`${field.name}Id`],
+            using: IndexType.HASH,
+          });
         } else {
-          throw new Error(`index can not be added on pk or fk field ${field.name}`);
+          throw new Error(`index can not be added on field ${field.name}`);
         }
       }
     }
