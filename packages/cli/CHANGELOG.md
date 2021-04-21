@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2021-04-21
+### Added
+- Codegen allow query by foreign key field (#285)
+
 ## [0.9.0] - 2021-04-19
 ### Added
 - Codegen supports `@index` in graphql.schema and allow query by indexed field via global.store (#271)
@@ -48,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/subquery/subql/compare/v0.9.0...v0.9.2
 [0.9.0]: https://github.com/subquery/subql/compare/v0.8.0...v0.9.0
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.3...v0.8.0
 [0.7.3]: https://github.com/OnFinality-io/subql/compare/v0.7.2...v0.7.3
