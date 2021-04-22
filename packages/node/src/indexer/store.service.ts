@@ -3,14 +3,14 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import {
-  GraphQLModelsRelations,
-  GraphQLModelsType,
-} from '@subql/common/graphql/types';
+import { GraphQLModelsRelations } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
+import { flatten, camelCase } from 'lodash';
 import { Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
+import { getLogger } from '../utils/logger';
+import { indexField, packEntityFields } from '../utils/schema';
 import {
   commentConstraintQuery,
   createUniqueIndexQuery,
@@ -18,20 +18,39 @@ import {
   smartTags,
 } from '../utils/sync-helper';
 
+const logger = getLogger('store');
+
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
-  private models: GraphQLModelsType[];
+  private modelIndexedFields: indexField[];
+  private schema: string;
+  private modelsRelations: GraphQLModelsRelations;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
-  async syncSchema(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async init(
     modelsRelations: GraphQLModelsRelations,
     schema: string,
   ): Promise<void> {
-    this.models = modelsRelations.models;
-    for (const model of modelsRelations.models) {
+    this.schema = schema;
+    this.modelsRelations = modelsRelations;
+    try {
+      await this.syncSchema(this.schema);
+    } catch (e) {
+      logger.error(e, `Having a problem when syncing schema`);
+      process.exit(1);
+    }
+    try {
+      this.modelIndexedFields = await this.getAllIndexFields(this.schema);
+    } catch (e) {
+      logger.error(e, `Having a problem when get indexed fields`);
+      process.exit(1);
+    }
+  }
+
+  async syncSchema(schema: string): Promise<void> {
+    for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model);
       const indexes = model.indexes.map(({ fields, unique, using }) => ({
         fields: fields.map((field) => Utils.underscoredIf(field, true)),
@@ -48,10 +67,8 @@ export class StoreService {
         indexes,
       });
     }
-
     const extraQueries = [];
-
-    for (const relation of modelsRelations.relations) {
+    for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);
       switch (relation.type) {
@@ -120,6 +137,15 @@ export class StoreService {
     tx.afterCommit(() => (this.tx = undefined));
   }
 
+  private async getAllIndexFields(schema: string) {
+    const fields = [] as indexField[][];
+    for (const entity of this.modelsRelations.models) {
+      const tableFields = await packEntityFields(schema, entity.name);
+      fields.push(tableFields);
+    }
+    return flatten(fields);
+  }
+
   getStore(): Store {
     return {
       get: async (entity: string, id: string): Promise<Entity | undefined> => {
@@ -138,9 +164,12 @@ export class StoreService {
       ): Promise<Entity[] | undefined> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        const modelDef = this.models.find((m) => m.name === entity);
         const indexed =
-          modelDef.indexes.findIndex((idx) => idx.fields.includes(field)) > -1;
+          this.modelIndexedFields.findIndex(
+            (indexField) =>
+              indexField.entityName === entity &&
+              indexField.fieldName === field,
+          ) > -1;
         assert(
           indexed,
           `to query by field ${field}, an index must be created on model ${entity}`,
@@ -159,12 +188,15 @@ export class StoreService {
       ): Promise<Entity | undefined> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        const modelDef = this.models.find((m) => m.name === entity);
-        const indexed =
-          modelDef.indexes.findIndex((idx) => idx.fields.includes(field)) > -1;
+        const indexed = this.modelIndexedFields.findIndex(
+          (indexField) =>
+            indexField.entityName === entity &&
+            indexField.fieldName === field &&
+            indexField.isUnique,
+        );
         assert(
           indexed,
-          `to query by field ${field}, an index must be created on model ${entity}`,
+          `to query by field ${field}, an unique index must be created on model ${entity}`,
         );
         const record = await model.findOne({
           where: { [field]: value },
