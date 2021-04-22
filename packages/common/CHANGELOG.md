@@ -12,7 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.0] - 2021-04-20
 ### Fixed
-- fixed logger level (#248)
+- We now support injecting a custom logger into your project that can accept different logging levels (#248)
+    - Read more about it in our [updated documentation](https://doc.subquery.network/create/introduction.html#logging)
 
 ### Added
 - Support network filter for dataSources (#247)

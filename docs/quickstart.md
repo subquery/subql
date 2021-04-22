@@ -40,12 +40,12 @@ subql init --starter PROJECT_NAME
 You'll be asked certain questions as the SubQuery project is initalised:
 - Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
 - RPC endpoint (Required): Provide a wss URL to a running RPC enpoint that will be used by default for this poject. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Optional): Enter the owner of this SubQuery project here
+- Authors: Enter the owner of this SubQuery project here
 - Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
 - Version (Required): Enter a custom version number or use the default (`1.0.0`)
 - License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
 
-After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](/create/directory_structure).
+After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](/create/introduction.html#directory-structure).
 
 Last, under the project directory, run following command to install the new project's dependencies.
 ```shell
@@ -65,7 +65,7 @@ In the starter package that you just initialised, we have provided a standard se
 - The GraphQL Schema in `schema.graphql`
 - The Mapping functions in `src/mappings/` directory
 
-For more information on how to write the SubQuery, check out our documentation under [Define the SubQuery](/create/define_a_subquery) 
+For more information on how to write the SubQuery, check out our documentation under [Create a project](/create/introduction) 
 
 ### GraphQL Model Generation
 

@@ -19,3 +19,6 @@ If you just want to upgrade to the latest indexer ([`@subql/node`](https://www.n
 #### Deploy New Version of your SubQuery Project
 
 Fill in the Commit Hash from GitHub (copy the full commit hash) of the version of your SubQuery project codebase that you want deployed. This will cause longer downtime depending on the time it takes to index the current chain. You can always report back here for progress.
+
+## Next Steps
+Once your deployment has succeeded, connect to your updated SubQuery project in the SubQuery Explorer or via your GraphQL Endpoint. [Read how to here](/publish/connect)
