@@ -10,7 +10,7 @@ import { Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
-import { camelCaseObjectKey } from '../utils/Object';
+import { camelCaseObjectKey } from '../utils/object';
 import {
   commentConstraintQuery,
   createUniqueIndexQuery,
