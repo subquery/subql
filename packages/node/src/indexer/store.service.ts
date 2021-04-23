@@ -10,7 +10,7 @@ import { Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
-import { indexField, packEntityFields } from '../utils/schema';
+import { camelCaseObjectKey } from '../utils/Object';
 import {
   commentConstraintQuery,
   createUniqueIndexQuery,
@@ -20,10 +20,17 @@ import {
 
 const logger = getLogger('store');
 
+interface IndexField {
+  entityName: string;
+  fieldName: string;
+  isUnique: boolean;
+  type: string;
+}
+
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
-  private modelIndexedFields: indexField[];
+  private modelIndexedFields: IndexField[];
   private schema: string;
   private modelsRelations: GraphQLModelsRelations;
 
@@ -43,6 +50,7 @@ export class StoreService {
     }
     try {
       this.modelIndexedFields = await this.getAllIndexFields(this.schema);
+      console.log(this.modelIndexedFields);
     } catch (e) {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
@@ -138,12 +146,52 @@ export class StoreService {
   }
 
   private async getAllIndexFields(schema: string) {
-    const fields = [] as indexField[][];
+    const fields: IndexField[][] = [];
     for (const entity of this.modelsRelations.models) {
-      const tableFields = await packEntityFields(schema, entity.name);
+      const model = this.sequelize.model(entity.name);
+      const tableFields = await this.packEntityFields(
+        schema,
+        entity.name,
+        model.tableName,
+      );
       fields.push(tableFields);
     }
     return flatten(fields);
+  }
+
+  private async packEntityFields(
+    schema: string,
+    entity: string,
+    table: string,
+  ): Promise<IndexField[]> {
+    const rows = await this.sequelize.query(
+      `select
+    '${entity}' as entity_name,
+    a.attname as field_name,
+    idx.indisunique as is_unique,
+    am.amname as type
+from
+    pg_index idx
+    JOIN pg_class cls ON cls.oid=idx.indexrelid
+    JOIN pg_class tab ON tab.oid=idx.indrelid
+    JOIN pg_am am ON am.oid=cls.relam,
+    pg_namespace n,
+    pg_attribute a
+where
+  n.nspname = '${schema}'
+  and tab.relname = '${table}'
+  and a.attrelid = tab.oid
+  and a.attnum = ANY(idx.indkey)
+  and not idx.indisprimary
+group by
+    n.nspname,
+    a.attname,
+    tab.relname,
+    idx.indisunique,
+    am.amname`,
+    );
+    const results = rows[0];
+    return camelCaseObjectKey(results) as IndexField[];
   }
 
   getStore(): Store {
