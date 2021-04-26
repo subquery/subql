@@ -92,6 +92,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           jsonObjects
         );
         newModel.fields.push(packJSONField(typeString, field, jsonObject));
+        newModel.indexes.push({
+          unique: false,
+          fields: [field.name],
+          using: IndexType.GIN,
+        });
       } else {
         throw new Error(`${typeString} is not an valid type`);
       }
