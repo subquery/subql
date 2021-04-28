@@ -174,7 +174,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
     const entityName = entity.name;
     const fields = processFields('entity', className, entity.fields, entity.indexes);
     const importJsonInterfaces = fields.filter((field) => field.isJsonInterface).map((f) => f.type);
-    const indexedFields = fields.filter((field) => field.indexed);
+    const indexedFields = fields.filter((field) => field.indexed && !field.isJsonInterface);
     const modelTemplate = {
       props: {
         baseFolderPath,
