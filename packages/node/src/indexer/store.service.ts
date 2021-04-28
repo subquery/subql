@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { GraphQLModelsRelations } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { flatten, camelCase } from 'lodash';
-import { Sequelize, Transaction, Utils } from 'sequelize';
+import { QueryTypes, Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
@@ -50,7 +50,6 @@ export class StoreService {
     }
     try {
       this.modelIndexedFields = await this.getAllIndexFields(this.schema);
-      console.log(this.modelIndexedFields);
     } catch (e) {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
@@ -189,9 +188,12 @@ group by
     tab.relname,
     idx.indisunique,
     am.amname`,
+      {
+        type: QueryTypes.SELECT,
+      },
     );
-    const results = rows[0];
-    return camelCaseObjectKey(results) as IndexField[];
+    const results = rows;
+    return results.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
 
   getStore(): Store {
