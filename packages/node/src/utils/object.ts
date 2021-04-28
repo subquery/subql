@@ -13,7 +13,7 @@ export function assign<TObject, TSource1, TSource2>(
   );
 }
 
-export function camelCaseObjectKey(object) {
+export function camelCaseObjectKey(object: object[]) {
   return object.map((r) => {
     return Object.keys(r).reduce(
       (result, key) => ({
