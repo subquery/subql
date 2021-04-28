@@ -24,7 +24,7 @@ const DEFAULT_OPTION: NodeVMOptions = {
   sandbox: {},
   require: {
     builtin: ['assert'],
-    external: ['tslib'],
+    external: true,
     context: 'sandbox',
   },
   wrapper: 'commonjs',
