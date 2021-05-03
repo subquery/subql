@@ -135,4 +135,4 @@ For a new SubQuery starter project, you can try the following query to get a tas
 
 Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
 
-[Publish your new project to SubQuery Projects](/publish/publish)
+[Publish your new project to SubQuery Projects](/publish/publish.html)

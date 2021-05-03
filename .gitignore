@@ -167,6 +167,11 @@ dist
 
 # vuepress build output
 .vuepress/dist
+.vuepress/.temp
+.vuepress/.caches
+docs/.vuepress/dist
+docs/.vuepress/.temp
+docs/.vuepress/.caches
 
 # Serverless directories
 .serverless/
