@@ -238,12 +238,13 @@ group by
       ): Promise<Entity | undefined> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        const indexed = this.modelIndexedFields.findIndex(
-          (indexField) =>
-            indexField.entityName === entity &&
-            indexField.fieldName === field &&
-            indexField.isUnique,
-        );
+        const indexed =
+          this.modelIndexedFields.findIndex(
+            (indexField) =>
+              indexField.entityName === entity &&
+              indexField.fieldName === field &&
+              indexField.isUnique,
+          ) > -1;
         assert(
           indexed,
           `to query by field ${field}, an unique index must be created on model ${entity}`,
