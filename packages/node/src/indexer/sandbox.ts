@@ -23,7 +23,7 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wasm: false,
   sandbox: {},
   require: {
-    builtin: ['assert'],
+    builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
     external: true,
     context: 'sandbox',
   },
