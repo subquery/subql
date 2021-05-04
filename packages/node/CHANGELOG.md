@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2021-05-04
+### Added
+- Use indexed fields extracted from database  (#289)
+- Whitelist 3rd party library for subquery project  (#292)
+- Allow more builtins  (#294)
+
 ## [0.12.2] - 2021-04-21
 ### Added
 - Enforce index on foreign key field (#285)
