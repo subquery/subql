@@ -8,8 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.3] - 2021-05-04
 ### Added
-- Support index on jsonField (#291)
-
+-  Support indexing on jsonField in database to speed up query. Disallow user to add `@index` annotation on jsonField as it will automatically add to the model's indexing fields. Therefore, during the codegen process, indexed fields will filter out jsonField type (#291)
 
 ## [0.9.2] - 2021-04-21
 ### Added

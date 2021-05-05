@@ -82,3 +82,31 @@ And these are the interface we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+
+## Built-in modules and third-party library
+
+In order to facilitate users to process data, we have allowed some of the nodejs built-in modules for running mapping functions in the [sandbox](#the-sandbox) , and allowed users to call third-party library.
+Please note this is an **experimental features** ,there is a slight chance they may bug out and negatively impact on your mapping functions.
+### Built-in modules 
+
+Currently, we allowed: `assert`, `buffer`, `crypto`, `util`, `path` . 
+
+Rather than importing the complete module, we recommend only import the demanding methods as you needed. Because some methods might have dependencies with other modules we disallowed, which will cause failure when implementation. 
+
+```ts
+import {createHash} from "crypto"; //Good way
+
+export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = await starterEntity.get(extrinsic.block.block.header.hash.toString());
+    record.field1 = createHash('sha256');
+    await record.save();
+}
+```
+
+### Third-party library
+
+Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
+
+If a library is depends on any modules in **ESM** format, the virtual machine will not be able to compile and return the outcome. 
+
+ 

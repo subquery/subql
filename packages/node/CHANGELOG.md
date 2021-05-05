@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.3] - 2021-05-04
 ### Added
-- Use indexed fields extracted from database  (#289)
-- Whitelist 3rd party library for subquery project  (#292)
-- Allow more builtins  (#294)
+- Extract indexed fields from the database, and use this to verify model's indexed field is supported from the database (#289)
+- Sandbox now support 3rd party library for subquery project, only for library in CommonJS (#292)
+- Sandbox support builtins `'assert', 'buffer', 'crypto', 'util', 'path'`  (#294)
 
 ## [0.12.2] - 2021-04-21
 ### Added

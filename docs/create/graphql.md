@@ -38,6 +38,8 @@ We currently supporting flowing scalars types:
 
 To improve query performance, index an entity field simply by implement the `@index` annotation on a non-primary-key field.
 
+We doesn't allow user to add `@index` annotation on any [JSON](#json-type) object. By default, indexes automatically added for JSON fields in the database, but only for enhance query service performance purpose.
+
 Here is an example.
 
 ```graphql

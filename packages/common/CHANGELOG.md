@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.8.3] - 2021-05-04
 ### Added
-- Support index on jsonField (#291)
+- Add jsonFields to the model's indexing fields list and using `GIN` method, this only to enhance the performance of query service later (#291)
 
 ## [0.8.2] - 2021-04-21
 ### Added
