@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.3] - 2021-05-04
 ### Added
--  Indexing is automatically added into JSON field types in database to speed up query performance. Users should not add the `@index` annotation to any `@jsonField` as it will be automatically managed during the codegen process (#291)
+- Codegen will support indexed jsonb fields. No get methods will be created for such fields in the entity class. (#291)
 
 ## [0.9.2] - 2021-04-21
 ### Added
