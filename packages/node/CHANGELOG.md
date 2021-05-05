@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.3] - 2021-05-04
+### Added
+- Automatically verifies that a model's indexed fields are supported by extracting indexed fields from the database (#289)
+- [Experimental Feature] We're removed the restrictions on using third party CommonJS libraries in your SubQuery project sandbox - please read more about this in our [updated documentation](https://doc.subquery.network/create/mapping.html##modules-and-libraries) (#292)
+- Support for more NodeJS modules (`buffer`, `crypto`, `util`, `events`, and `path`) (#294)
+
 ## [0.12.2] - 2021-04-21
 ### Added
 - Enforce index on foreign key field (#285)

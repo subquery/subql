@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2021-05-04
+### Added
+- Codegen will support indexed jsonb fields. No get methods will be created for such fields in the entity class. (#291)
+
 ## [0.9.2] - 2021-04-21
 ### Added
 - Codegen allow query by foreign key field (#285)

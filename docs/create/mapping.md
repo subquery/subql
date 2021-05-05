@@ -82,3 +82,33 @@ And these are the interface we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+
+## Modules and Libraries
+
+In order to improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+
+Please note this is an **experimental features** and you may encounter bugs or issues that many negatively impact on your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+### Built-in modules 
+
+Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path` . 
+
+Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import. 
+
+```ts
+import {hashMessage} from "ethers/lib/utils"; //Good way
+import {utils} from "ethers" //Bad way
+
+export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = await starterEntity.get(extrinsic.block.block.header.hash.toString());
+    record.field1 = hashMessage('Hello');
+    await record.save();
+}
+```
+
+### Third-party libraries
+
+Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
+
+If a library is depends on any modules in **ESM** format, the virtual machine will compile and return the outcome. 
+
+ 
