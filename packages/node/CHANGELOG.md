@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.12.3] - 2021-05-04
 ### Added
-- Extract indexed fields from the database, and use this to verify model's indexed field is supported from the database (#289)
-- Sandbox now support 3rd party library for subquery project, only for library in CommonJS (#292)
-- Sandbox support builtins `'assert', 'buffer', 'crypto', 'util', 'path'`  (#294)
+- Automatically verifies that a model's indexed fields are supported by extracting indexed fields from the database (#289)
+- [Experimental Feature] We're removed the restrictions on using third party CommonJS libraries in your SubQuery project sandbox - please read more about this in our [updated documentation](https://doc.subquery.network/create/mapping.html##modules-and-libraries) (#292)
+- Support for more NodeJS modules (`assert`, `buffer`, `crypto`, `util`, `events`, and `path`) (#294)
 
 ## [0.12.2] - 2021-04-21
 ### Added

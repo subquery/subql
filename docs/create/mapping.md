@@ -83,18 +83,19 @@ And these are the interface we do **NOT** support currently:
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
-## Built-in modules and third-party library
+## Modules and Libraries
 
-In order to facilitate users to process data, we have allowed some of the nodejs built-in modules for running mapping functions in the [sandbox](#the-sandbox) , and allowed users to call third-party library.
-Please note this is an **experimental features** ,there is a slight chance they may bug out and negatively impact on your mapping functions.
+In order to improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+
+Please note this is an **experimental features** and you may encounter bugs or issues that many negatively impact on your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
 ### Built-in modules 
 
-Currently, we allowed: `assert`, `buffer`, `crypto`, `util`, `path` . 
+Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path` . 
 
-Rather than importing the complete module, we recommend only import the demanding methods as you needed. Because some methods might have dependencies with other modules we disallowed, which will cause failure when implementation. 
+Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import. 
 
 ```ts
-import {createHash} from "crypto"; //Good way
+import {createHash} from "crypto"; // Only import required method(s)
 
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
     const record = await starterEntity.get(extrinsic.block.block.header.hash.toString());
@@ -103,10 +104,10 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-### Third-party library
+### Third-party libraries
 
 Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
 
-If a library is depends on any modules in **ESM** format, the virtual machine will not be able to compile and return the outcome. 
+If a library is depends on any modules in **ESM** format, the virtual machine will compile and return the outcome. 
 
  
