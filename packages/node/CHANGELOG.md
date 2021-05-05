@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2021-05-06
+- Bump release version due to recent major updates, also need publish new release to npm.
+
 ## [0.12.3] - 2021-05-04
 ### Added
 - Automatically verifies that a model's indexed fields are supported by extracting indexed fields from the database (#289)
