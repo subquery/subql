@@ -109,6 +109,6 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
 
-If a library is depends on any modules in **ESM** format, the virtual machine will compile and return the outcome. 
+If a library is depends on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
 
  
