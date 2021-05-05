@@ -31,13 +31,13 @@ export class Validator {
     reports.push(
       {
         name: 'package-json-file',
-        description: 'a package.json file should be placed in the project folder',
+        description: 'A valid `package.json` file must exist in the root directory of the project',
         valid: !!pkg,
         skipped: false,
       },
       {
         name: 'project-yaml-file',
-        description: 'a project.yaml file should be placed in the project root folder',
+        description: 'A valid `project.yaml` file must exist in the root directory of the project',
         valid: !!pkg,
         skipped: false,
       }
