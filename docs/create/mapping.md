@@ -112,3 +112,157 @@ Due to the limitations of the virtual machine in our sandbox, currently we only 
 If a library is depends on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
 
  
+## Specific substrate chain
+
+For the custom types/interfaces from a specific substrate chain (other than polkadot/kusam) are usually difficult for user to import and implement. And standard API injected from sandbox is not support query or rpc call on specific module/method.
+
+However, the [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/) is the right tool to help us generate specific interfaces, and decorate additional methods in the Api.
+
+Let's take a look at the example is given in [kitty](https://github.com/subquery/subql-examples/tree/main/kitty), the instructions below will explain the integration process.
+
+### Preparation
+
+Create a new directory `api-interfaces` under project `src` folder to store all required and generated files.
+We will create a `api-interfaces/kitties` directory as want to decorate the `kitties` module in the chain.
+
+#### Metadata
+
+We need metadata to generate the actual api augmented endpoints. In the kitty example we use endpoint from a local testnet, it provide additional types.
+Follow the step in [Metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), to retrieve metadata from a node from its **Http** 
+
+```shell
+curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
+```
+
+or from a **Websocket** by use `websocat`:
+
+```shell
+//Install the websocat
+brew install websocat
+
+//Get metadata
+websocat 'ws://127.0.0.1:9944' --jsonrpc
+```
+
+Then copy and paste the output to a JSON file, in the example we have store it in the `api-interface/kitty.json`.
+
+#### Type definitions
+In our assumption, user should know the specific types and rpc from the chain ,it is defined in the [Manifest](/create/manifest.html). 
+Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
+
+- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions 
+
+```ts
+export { default as kitties } from './kitties/definitions';
+```
+
+- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+```ts
+export default {
+    // custom types
+    types: {
+        Address: "AccountId",
+        LookupSource: "AccountId",
+        KittyIndex: "u32",
+        Kitty: "[u8; 16]"
+    },
+    // custom rpc : api.rpc.kitties.getKittyPrice
+    rpc: {
+        getKittyPrice:{
+            description: 'Get Kitty price',
+            params: [
+                {
+                    name: 'kittyIndex',
+                    type: 'KittyIndex',
+                    isHistoric: "bool",
+                    isOptional: "bool"
+                }
+            ],
+            type: 'Balance'
+        }
+    }
+}
+```
+
+#### Packages
+
+- Make sure in the `package.json` development dependencies we have add the `@polkadot/typegen`, we need use this generate type definitions that can be used to decorate the `@polkadot/api`, ideally these two packages should have identical version. We also need the `ts-node` in development dependencies for help us run the scripts.
+
+- We add scripts to run both types and meta generators (in that order, so metadata can use the types).
+
+Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and directories are validate.
+
+```json
+{
+  "name": "kitty-birthinfo",
+  "scripts": {
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kitty-birthinfo/api-interfaces --input ./src/api-interfaces",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kitty-birthinfo/api-interfaces --endpoint ./src/api-interfaces/kitty.json --output ./src/api-interfaces --strict"
+  },
+  "dependencies": {
+    "@polkadot/api": "^4.9.2"
+  },
+  "devDependencies": {
+    "typescript": "^4.1.3",
+    "@polkadot/typegen": "^4.9.2",
+    "ts-node": "^8.6.2"
+  }
+}
+```
+
+### Type generation
+
+Now preparation are completed, we are ready to generate types and meta. Run the command below step by step:
+
+```shell
+# Yarn to install new dependencies
+yarn
+
+# Generate types
+yarn generate:defs
+```
+
+In each modules folder (eg `/kitties`), there should a generated `types.ts` defines all interfaces from this modules' definitions, also a `index.ts` export all of them.
+
+Then run:
+
+```shell
+
+# Generate meta
+yarn generate:meta
+
+```
+
+This command will generate the meta and new api-augment for the api. As we don't want to use the built-in api, we need replace the it by add an explicit override in our `tsconfig.json`.
+After updates, the paths in the config looks as follow ( remove the comments)
+
+```json
+{
+  "compilerOptions": {
+      // this is the package name we use (in the interface imports, --package for generators) */
+      "kitty-birthinfo/*": ["src/*"],
+      // here we replace the @polkadot/api augmentation with our own, generated from chain
+      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
+      // replace the augmented types with our own, as generated from definitions
+      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+    }
+}
+```
+
+
+### Usage
+
+Now in the mapping function, we can show how the metadata and types actually decorate the API.
+The rpc should support the modules and its method we declared in above.
+
+
+```typescript
+export async function kittyApiHandler(event: SubstrateEvent): Promise<void> {
+    const {event: {data: [from, to, kittyId]}} = event;
+    const nextKittyId = await api.query.kitties.nextKittyId();
+    const allKitties  = await api.query.kitties.kitties('0xsgH1ecx',123)
+    const kittyPrice = await api.rpc.kitties.getKittyPrice(nextKittyId);
+    logger.info(`Next kitty id ${kittyId} and price is ${kittyPrice}`)
+}
+```
+
