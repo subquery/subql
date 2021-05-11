@@ -114,21 +114,21 @@ If a library is depends on any modules in **ESM** format, the virtual machine wi
  
 ## Specific substrate chain
 
-For the custom types/interfaces from a specific substrate chain (other than polkadot/kusam) are usually difficult for user to import and implement. And standard API injected from sandbox is not support query or rpc call on specific module/method.
+The custom types/interfaces from a specific substrate chain (other than polkadot/kusam) are usually difficult for the user to import and implement. And standard API injected from the sandbox is not support query or RPC call on specific module/method.
 
-However, the [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/) is the right tool to help us generate specific interfaces, and decorate additional methods in the Api.
+However, the [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/) is the right tool to help us generate specific interfaces and decorate additional methods in the API.
 
-Let's take a look at the example is given in [kitty](https://github.com/subquery/subql-examples/tree/main/kitty), the instructions below will explain the integration process.
+Take a look at the example given in [kitty](https://github.com/subquery/subql-examples/tree/main/kitty). The instructions below will explain the integration process.
 
 ### Preparation
 
-Create a new directory `api-interfaces` under project `src` folder to store all required and generated files.
-We will create a `api-interfaces/kitties` directory as want to decorate the `kitties` module in the chain.
+Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files.
+We also create an `api-interfaces/kitties` directory as we want to add decoration in API from the `kitties` module.
 
 #### Metadata
 
-We need metadata to generate the actual api augmented endpoints. In the kitty example we use endpoint from a local testnet, it provide additional types.
-Follow the step in [Metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), to retrieve metadata from a node from its **Http** 
+We need metadata to generate the actual API augmented endpoints. In the kitty example, we use an endpoint from a local test net, and it provides additional types.
+Follow the step in [Metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), to retrieve metadata from a node from its **HTTP** 
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
@@ -144,10 +144,10 @@ brew install websocat
 websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Then copy and paste the output to a JSON file, in the example we have store it in the `api-interface/kitty.json`.
+Then copy and paste the output to a JSON file. In the example, we have stored it in the `api-interface/kitty.json`.
 
 #### Type definitions
-In our assumption, user should know the specific types and rpc from the chain ,it is defined in the [Manifest](/create/manifest.html). 
+In our assumption, the user should know the specific types and RPC from the chain, and it is defined in the [Manifest](/create/manifest.html). 
 Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
 
 - `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions 
@@ -186,11 +186,11 @@ export default {
 
 #### Packages
 
-- Make sure in the `package.json` development dependencies we have add the `@polkadot/typegen`, we need use this generate type definitions that can be used to decorate the `@polkadot/api`, ideally these two packages should have identical version. We also need the `ts-node` in development dependencies for help us run the scripts.
+- Make sure in the `package.json` development dependencies we have to add the `@polkadot/typegen`, we need to use this generate type definitions that can be used to decorate the `@polkadot/api`, ideally these two packages should have identical version. We also need the `ts-node` in development dependencies to help us run the scripts.
 
 - We add scripts to run both types and meta generators (in that order, so metadata can use the types).
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and directories are validate.
+Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and directories are validated.
 
 ```json
 {
@@ -212,7 +212,7 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
 
 ### Type generation
 
-Now preparation are completed, we are ready to generate types and meta. Run the command below step by step:
+Now the preparation is completed, we are ready to generate types and meta. Run the command below step by step:
 
 ```shell
 # Yarn to install new dependencies
@@ -222,7 +222,7 @@ yarn
 yarn generate:defs
 ```
 
-In each modules folder (eg `/kitties`), there should a generated `types.ts` defines all interfaces from this modules' definitions, also a `index.ts` export all of them.
+In each modules folder (eg `/kitties`), there should a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` export all of them.
 
 Then run:
 
@@ -233,8 +233,8 @@ yarn generate:meta
 
 ```
 
-This command will generate the meta and new api-augment for the api. As we don't want to use the built-in api, we need replace the it by add an explicit override in our `tsconfig.json`.
-After updates, the paths in the config looks as follow ( remove the comments)
+This command will generate the meta and new api-augment for the APIs. As we don't want to use the built-in API, we need to replace them by add an explicit override in our `tsconfig.json`.
+After updates, the paths in the config looks as follow (remove the comments)
 
 ```json
 {
@@ -253,7 +253,7 @@ After updates, the paths in the config looks as follow ( remove the comments)
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API.
-The rpc should support the modules and its method we declared in above.
+The RPC should support the modules and its method we declared above.
 
 
 ```typescript
