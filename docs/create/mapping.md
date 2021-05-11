@@ -257,12 +257,11 @@ The RPC should support the modules and its method we declared above.
 
 
 ```typescript
-export async function kittyApiHandler(event: SubstrateEvent): Promise<void> {
-    const {event: {data: [from, to, kittyId]}} = event;
+export async function kittyApiHandler(): Promise<void> {
     const nextKittyId = await api.query.kitties.nextKittyId();
-    const allKitties  = await api.query.kitties.kitties('0xsgH1ecx',123)
+    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
     const kittyPrice = await api.rpc.kitties.getKittyPrice(nextKittyId);
-    logger.info(`Next kitty id ${kittyId} and price is ${kittyPrice}`)
+    logger.info(`Next kitty id ${nextKittyId} and price is ${kittyPrice}`)
 }
 ```
 
