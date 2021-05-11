@@ -114,9 +114,9 @@ If a library is depends on any modules in **ESM** format, the virtual machine wi
  
 ## Custom Substrate Chains
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama. However, due to sandbox limitations, we don't support external modules or methods and you do not receive type definitions from external JSON RPC calls.
+SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama. 
 
-You can still use a custom Substrate-based chain, and we provide tools to importing types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+You can use a custom Substrate-based chain, and we provide tools to importing types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
 In the following sections we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
 
@@ -139,7 +139,7 @@ or from its **websocket** endpoint with help from [`websocat`](https://github.co
 brew install websocat
 
 //Get metadata
-websocat 'ws://127.0.0.1:9944' --jsonrpc
+echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
 Then copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
@@ -170,10 +170,15 @@ export default {
             description: 'Get Kitty price',
             params: [
                 {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isHistoric: true,
+                    isOptional: false
+                },
+                {
                     name: 'kittyIndex',
                     type: 'KittyIndex',
-                    isHistoric: "bool",
-                    isOptional: "bool"
+                    isOptional: false
                 }
             ],
             type: 'Balance'
@@ -245,13 +250,15 @@ After updates, the paths in the config look like so (without the comments)
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API.
-The RPC should support the modules and its method we declared above.
 
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
+    //return the KittyIndex type
     const nextKittyId = await api.query.kitties.nextKittyId();
+    // return the Kitty type, input parameters types are AccountId and KittyIndex
     const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(nextKittyId);
-    logger.info(`Next kitty id ${nextKittyId} and price is ${kittyPrice}`)
+    logger.info(`Next kitty id ${nextKittyId}`)
 }
 ```
+
+**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
