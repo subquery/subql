@@ -7,12 +7,15 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import {
   ApiInterfaceRx,
   ApiOptions,
+  DecoratedRpc,
   QueryableStorageEntry,
   QueryableStorageMultiArg,
+  RpcMethodResult,
 } from '@polkadot/api/types';
+import { RpcInterface } from '@polkadot/rpc-core/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
-import { AnyTuple, Registry } from '@polkadot/types/types';
+import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
 import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
@@ -199,6 +202,36 @@ export class ApiService implements OnApplicationShutdown {
     return newEntryFunc;
   }
 
+  private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
+    original: RpcMethodResult<T, AnyFunction>,
+    apiType: T,
+  ): RpcMethodResult<T, AnyFunction> {
+    if (original.meta.params) {
+      const hashIndex = original.meta.params.findIndex(
+        ({ isHistoric, name }) => isHistoric,
+      );
+      if (hashIndex > -1) {
+        const ret = ((...args: any[]) => {
+          const argsClone = [...args];
+          argsClone[hashIndex] = this.currentBlockHash;
+          return original(...argsClone);
+        }) as RpcMethodResult<T, AnyFunction>;
+        ret.json = NOT_SUPPORT('api.rpc.*.*.json');
+        ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
+        ret.meta = original.meta;
+        return ret;
+      }
+    }
+    const ret = (NOT_SUPPORT('api.rpc.*.*') as unknown) as RpcMethodResult<
+      T,
+      AnyFunction
+    >;
+    ret.json = NOT_SUPPORT('api.rpc.*.*.json');
+    ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
+    ret.meta = original.meta;
+    return ret;
+  }
+
   private patchPromiseStorageEntryMulti(
     newEntryFunc: QueryableStorageEntry<'promise', AnyTuple>,
   ): void {
@@ -276,23 +309,31 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   private patchApiRpc(api: ApiPromise): void {
-    (api as any)._rpc = Object.entries(api.rpc).reduce(
-      (acc, [module, rpcMethods]) => {
-        acc[module] = Object.entries(rpcMethods).reduce((accInner, [name]) => {
-          accInner[name] = NOT_SUPPORT('api.rpc.*');
+    (api as any)._rpc = Object.entries(
+      api.rpc as DecoratedRpc<'promise', RpcInterface>,
+    ).reduce((acc, [module, rpcMethods]) => {
+      acc[module] = Object.entries(rpcMethods).reduce(
+        (accInner, [name, rpcPromiseResult]) => {
+          accInner[name] = this.redecorateRpcFunction(
+            rpcPromiseResult,
+            'promise',
+          );
           return accInner;
-        }, {});
-        return acc;
-      },
-      {},
-    );
+        },
+        {},
+      );
+      return acc;
+    }, {});
     (api as any)._rx.rpc = Object.entries(
       (api as any)._rx.rpc as ApiInterfaceRx['rpc'],
     ).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce((accInner, [name]) => {
-        accInner[name] = NOT_SUPPORT('api.rpc.*');
-        return accInner;
-      }, {});
+      acc[module] = Object.entries(rpcMethods).reduce(
+        (accInner, [name, rpcRxResult]) => {
+          accInner[name] = this.redecorateRpcFunction(rpcRxResult, 'rxjs');
+          return accInner;
+        },
+        {},
+      );
       return acc;
     }, {});
   }
