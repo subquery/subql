@@ -14,7 +14,24 @@ jest.mock('../utils/substrate', () =>
 
 function mockApiService(): ApiService {
   const mockApi = {
-    rpc: { chain: { subscribeFinalizedHeads: jest.fn() } },
+    rpc: {
+      chain: {
+        getFinalizedHead: jest.fn(() => `0x112344`),
+        getBlock: jest.fn(() => {
+          return {
+            block: {
+              header: {
+                number: {
+                  toNumber: jest.fn(() => {
+                    return 256;
+                  }),
+                },
+              },
+            },
+          };
+        }),
+      },
+    },
     on: jest.fn(),
   };
   return {
@@ -23,7 +40,7 @@ function mockApiService(): ApiService {
 }
 
 describe('FetchService', () => {
-  it('resubscribe head when reconnect', async () => {
+  it('get finalized head when reconnect', async () => {
     const apiService = mockApiService();
     let cb;
     (apiService.getApi().on as jest.Mock).mockImplementation(
@@ -36,12 +53,10 @@ describe('FetchService', () => {
     );
     await fetchService.init();
     expect(
-      apiService.getApi().rpc.chain.subscribeFinalizedHeads,
+      apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
-    cb('connected');
-    expect(
-      apiService.getApi().rpc.chain.subscribeFinalizedHeads,
-    ).toHaveBeenCalledTimes(2);
+    await cb('connected');
+    expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(2);
   });
 
   it('loop until shutdown', async () => {

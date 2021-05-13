@@ -74,16 +74,14 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
-    this.api.on('connected', this.getFinalizedHead);
-    await this.getFinalizedHead();
+    this.api.on('connected', () => this.getFinalizedBlockHead());
+    await this.getFinalizedBlockHead();
   }
 
   @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedHead() {
+  async getFinalizedBlockHead() {
     const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-    const finalizedBlock = await this.api.rpc.chain.getBlock(
-      finalizedHead.toString(),
-    );
+    const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
     this.latestFinalizedHeight = finalizedBlock.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockTarget, {
       height: this.latestFinalizedHeight,
