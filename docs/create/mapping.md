@@ -122,7 +122,7 @@ In the following sections we use our [kitty example](https://github.com/subquery
 
 ### Preparation
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in API from the `kitties` module.
+Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
 
 #### Metadata
 
@@ -189,7 +189,7 @@ export default {
 
 #### Packages
 
-- In the `package.json` development, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need the `ts-node` in development dependency to help us run the scripts.
+- In the `package.json` development, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
 - We add scripts to run both types `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
 
 Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and directories are valid.
@@ -214,7 +214,7 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
 
 ### Type generation
 
-Now the preparation is completed, we are ready to generate types and metadata. Run the commands below:
+Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
 
 ```shell
 # Yarn to install new dependencies
@@ -249,7 +249,7 @@ After updates, the paths in the config look like so (without the comments)
 
 ### Usage
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API.
+Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above.
 
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
