@@ -60,10 +60,10 @@ network:
 
 #Create a template to avoid redundancy
 definitions:
-  - mapping: &mymapping
-       handlers:
-         - handler: handleBlock
-           kind: substrate/BlockHandler
+  mapping: &mymapping
+    handlers:
+      - handler: handleBlock
+        kind: substrate/BlockHandler
 
 dataSources:
   - name: polkadotRuntime
@@ -71,13 +71,13 @@ dataSources:
     filter:  #Optional
         specName: polkadot
     startBlock: 1000
-    mapping: *polkadot-mapping #use template here
+    mapping: *mymapping #use template here
   - name: kusamaRuntime
     kind: substrate/Runtime
     filter: 
         specName: kusama
     startBlock: 12000 
-    mapping: *kusmama-mapping # can reuse or change
+    mapping: *mymapping # can reuse or change
 ```
   
 ## Mapping Filters
