@@ -18,8 +18,22 @@ module.exports = {
     ],
     sidebarDepth: 2,
     sidebar: [
-      '/README.md',
-      '/quickstart.md',
+      {
+        text: 'Welcome to SubQuery',
+        link: '/README.md',
+        isGroup: true,
+        children: [
+          '/README.md',
+        ]
+      },
+      {
+        text: 'Quick Start Guide',
+        link: '/quickstart.md',
+        isGroup: true,
+        children: [
+          '/quickstart.md',
+        ]
+      },
       {
         text: 'Create a Project',
         link: '/create/introduction.md',
@@ -33,10 +47,10 @@ module.exports = {
       },
       {
         text: 'Run a Project',
-        link: '/run/indexing_query.md',
+        link: '/run/run.md',
         isGroup: true,
         children: [
-          '/run/indexing_query.md',
+          '/run/run.md',
           '/run/sandbox.md',
         ]
       },
@@ -48,6 +62,15 @@ module.exports = {
           '/publish/publish.md',
           '/publish/upgrade.md',
           '/publish/connect.md',
+        ]
+      },
+      {
+        text: 'Query your Data',
+        link: '/query/query.md',
+        isGroup: true,
+        children: [
+          '/query/query.md',
+          '/query/graphql.md'
         ]
       }
     ],

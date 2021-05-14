@@ -26,7 +26,7 @@ You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nod
 Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
 #### Run your own Indexer and Query Service
-[Follow our guide](https://doc.subquery.network/run/indexing_query.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
+[Follow our guide](https://doc.subquery.network/run/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 
 You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 
