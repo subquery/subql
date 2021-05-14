@@ -13,7 +13,7 @@ import { ApiService } from './api.service';
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
-    endpoint: 'wss://kusama.api.onfinality.io/public-ws',
+    endpoint: 'wss://kusama-rpc.polkadot.io/public-ws',
     types: {
       TestType: 'u32',
     },
