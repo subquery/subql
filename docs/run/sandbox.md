@@ -14,7 +14,8 @@ Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured m
 
 ## Restriction
 
+- Limit access to certain built-in modules, only `assert`,`buffer`,`crypto`,`util` and `path` are whitelisted.
 
-- Limit access to certain built-in modules, only `assert` and `console` are whitelisted.
+- We support [3rd parth modules](create/mapping.html#third-party-libraries) written in **CommonJS** only.
 
-- Any 3rd party module are forbid. When defining a SubQuery project, we do not support users to add any new dependencies to `package.json`, thereby protecting the project's stability and the security in the sandbox.
+- Any modules using `Http` and `WebSocket` are forbid.

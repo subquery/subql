@@ -1,8 +1,8 @@
 # Quick Start Guide
 
-In this Quick Start guide, we're going to use the starter project as an example that you can use as a starting point for developing your SubQuery Project.
+In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
 
-At the end of it, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
+At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
 
 If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
 
@@ -10,7 +10,7 @@ If you haven't already, we suggest that you familiarise yourself with the [termi
 
 ### Local Development Environment
 
-- [Typescript](https://www.typescriptlang.org/) are required to compile project and define types.  
+- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.  
 - Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
 - SubQuery Nodes require Docker
      
@@ -40,7 +40,7 @@ subql init --starter PROJECT_NAME
 You'll be asked certain questions as the SubQuery project is initalised:
 - Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
 - RPC endpoint (Required): Provide a wss URL to a running RPC enpoint that will be used by default for this poject. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors: Enter the owner of this SubQuery project here
+- Authors (Required): Enter the owner of this SubQuery project here
 - Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
 - Version (Required): Enter a custom version number or use the default (`1.0.0`)
 - License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
@@ -69,7 +69,7 @@ For more information on how to write the SubQuery, check out our documentation u
 
 ### GraphQL Model Generation
 
-In order to index your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+In order to [index](http://localhost:8080/run/run.html) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
 ```shell
 # Yarn
 yarn codegen
@@ -101,7 +101,7 @@ Although you can quickly publish your new project to [SubQuery Projects](https:/
 
 ### Run your SubQuery Project
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run/indexing_query)
+All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run/run)
 
 Under the project directory run following command:
 ```shell
@@ -113,9 +113,9 @@ It may take some time to download the required packages ([`@subql/node`](https:/
 
 Open your browser and head to [http://localhost:3000](http://localhost:3000).
 
-You should see a GraphQL playground is showing in the explorer and the schemas that ready to query.
+You should see a GraphQL playground is showing in the explorer and the schemas that ready to query. On the top right of the playground, you'll find a *Docs* button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works.
+For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language.](/query/graphql.html).
 
 ````graphql
 {
