@@ -21,7 +21,7 @@ jest.mock('@polkadot/api', () => {
 });
 
 const testNetwork: ProjectNetwork = {
-  endpoint: 'wss://kusama-rpc.polkadot.io/public-ws',
+  endpoint: 'wss://kusama.api.onfinality.io/public-ws',
   types: {
     TestType: 'u32',
   },
