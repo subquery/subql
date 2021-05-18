@@ -260,9 +260,9 @@ describe('ApiService', () => {
     const blockhash = await api.rpc.chain.getBlockHash(4401242);
     await apiService.setBlockhash(blockhash, true);
 
-    const patchedBlock = await patchedApi.rpc.chain.getBlock();
+    const b1 = await patchedApi.rpc.chain.getBlock();
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
-    const patchedBlock2 = await patchedApi.rpc.chain.getBlock('0x12312314');
+    const b2 = await patchedApi.rpc.chain.getBlock('0x12312314');
 
     const patchedApiRxBlock = await (patchedApi.rx as any).rpc.chain
       .getBlock()
@@ -274,9 +274,9 @@ describe('ApiService', () => {
       .pipe(take(1))
       .toPromise();
 
-    expect(patchedBlock.block.hash.toString()).toEqual(blockhash.toString());
+    expect(b1.block.hash.toString()).toEqual(blockhash.toString());
     expect(apiBlock.block.hash.toString()).toEqual(blockhash.toString());
-    expect(patchedBlock2.block.hash.toString()).toEqual(blockhash.toString());
+    expect(b2.block.hash.toString()).toEqual(blockhash.toString());
     expect(patchedApiRxBlock.block.hash.toString()).toEqual(
       blockhash.toString(),
     );
