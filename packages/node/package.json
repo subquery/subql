@@ -40,7 +40,7 @@
     "sequelize": "^6.6.2",
     "tar": "^6.1.0",
     "typescript": "^4.1.3",
-    "vm2": "^3.9.2",
+    "vm2": "git+https://github.com/subquery/vm2.git#a73f0d4ab7a8098a2f36b6b0a45052383cde9141",
     "yargs": "^16.2.0"
   },
   "devDependencies": {

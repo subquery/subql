@@ -3081,7 +3081,7 @@ __metadata:
     supertest: ^6.1.3
     tar: ^6.1.0
     typescript: ^4.1.3
-    vm2: ^3.9.2
+    vm2: "git+https://github.com/subquery/vm2.git#a73f0d4ab7a8098a2f36b6b0a45052383cde9141"
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
@@ -17254,12 +17254,12 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"vm2@npm:^3.9.2":
-  version: 3.9.2
-  resolution: "vm2@npm:3.9.2"
+"vm2@git+https://github.com/subquery/vm2.git#a73f0d4ab7a8098a2f36b6b0a45052383cde9141":
+  version: 3.9.3
+  resolution: "vm2@https://github.com/subquery/vm2.git#commit=a73f0d4ab7a8098a2f36b6b0a45052383cde9141"
   bin:
-    vm2: bin/vm2
-  checksum: 8151b95f1ab459e5491ed241414292ea4473d425d5d53376cdb544c61d26beb7159e20ae43f0606d7ba25a69becb84ce524b81af7565d8d53e9a2dc79dd468aa
+    vm2: ./bin/vm2
+  checksum: e31da5b9db266a59c6c9980a4f2d2865592263016f0427fbd7f57bfa07a37dc2ea0afdd29a1b8ca223a05003b060361230952fca93acda532677845ed2b6d38a
   languageName: node
   linkType: hard
 

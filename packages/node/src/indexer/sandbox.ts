@@ -28,6 +28,7 @@ const DEFAULT_OPTION: NodeVMOptions = {
     context: 'sandbox',
   },
   wrapper: 'commonjs',
+  sourceExtensions: ['js', 'cjs'],
 };
 
 function getProjectEntry(root: string): string {
@@ -60,6 +61,9 @@ export class IndexerSandbox extends NodeVM {
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
       require: {
         root,
+        resolve: (moduleName) => {
+          return require.resolve(moduleName, { paths: [root] });
+        },
       },
     });
     super(vmOption);
