@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - api.rpc are not all banned now, RPC that is historical can be called. check docs [link](https://doc.subquery.network/create/mapping.html#query-states) (#304)
 - bump polkadot/api dependency (#310)
-- replace vm2 with fork to support lib like `@polkadot/vm2` that uses esm as default (#311)
+- replace vm2 with fork to support lib like `@polkadot/*` that uses esm as default (#311)
 
 ## [0.13.0] - 2021-05-06
 - Bump release version due to recent major updates, also need publish new release to npm.
