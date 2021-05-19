@@ -107,11 +107,10 @@ describe('ApiService', () => {
     ).not.toEqual(currentMaxNRPV);
   }, 100000);
 
-  it('.rpc.*.*, .tx.*.*, .derive.*.* are removed', async () => {
+  it('.tx.*.*, .derive.*.* are removed', async () => {
     const apiService = await prepareApiService();
     const patchedApi = await apiService.getPatchedApi();
     // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() => patchedApi.rpc.chain.getBlock()).toThrow(/is not supported/);
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
   }, 30000);
 
@@ -251,5 +250,41 @@ describe('ApiService', () => {
     expect(call?.method).not.toBe('batch');
     expect(call?.section).not.toBe('utility');
     expect(registry).not.toBe(registry2);
+  }, 30000);
+
+  it('support historic api rpc', async () => {
+    const apiService = await prepareApiService();
+    const api = apiService.getApi();
+    const patchedApi = await apiService.getPatchedApi();
+
+    const blockhash = await api.rpc.chain.getBlockHash(4401242);
+    await apiService.setBlockhash(blockhash, true);
+
+    const b1 = await patchedApi.rpc.chain.getBlock();
+    const apiBlock = await api.rpc.chain.getBlock(blockhash);
+    const b2 = await patchedApi.rpc.chain.getBlock('0x12312314');
+
+    const patchedApiRxBlock = await (patchedApi.rx as any).rpc.chain
+      .getBlock()
+      .pipe(take(1))
+      .toPromise();
+
+    const patchedApiRxBlock2 = await (patchedApi.rx as any).rpc.chain
+      .getBlock('0x12312314')
+      .pipe(take(1))
+      .toPromise();
+
+    expect(b1.block.hash.toString()).toEqual(blockhash.toString());
+    expect(apiBlock.block.hash.toString()).toEqual(blockhash.toString());
+    expect(b2.block.hash.toString()).toEqual(blockhash.toString());
+    expect(patchedApiRxBlock.block.hash.toString()).toEqual(
+      blockhash.toString(),
+    );
+    expect(patchedApiRxBlock2.block.hash.toString()).toEqual(
+      blockhash.toString(),
+    );
+    expect(() => patchedApi.rpc.author.rotateKeys()).toThrow(
+      /is not supported/,
+    );
   }, 30000);
 });
