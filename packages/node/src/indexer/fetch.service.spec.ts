@@ -12,9 +12,41 @@ jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
 );
 
+function mockRejectedApiService(): ApiService {
+  const mockApi = {
+    rpc: {
+      chain: {
+        getFinalizedHead: jest.fn(() => `0x112344`),
+        getBlock: jest.fn(() => Promise.reject('some error')),
+      },
+    },
+    on: jest.fn(),
+  };
+  return {
+    getApi: () => mockApi,
+  } as any;
+}
+
 function mockApiService(): ApiService {
   const mockApi = {
-    rpc: { chain: { subscribeFinalizedHeads: jest.fn() } },
+    rpc: {
+      chain: {
+        getFinalizedHead: jest.fn(() => `0x112344`),
+        getBlock: jest.fn(() => {
+          return {
+            block: {
+              header: {
+                number: {
+                  toNumber: jest.fn(() => {
+                    return 256;
+                  }),
+                },
+              },
+            },
+          };
+        }),
+      },
+    },
     on: jest.fn(),
   };
   return {
@@ -23,12 +55,8 @@ function mockApiService(): ApiService {
 }
 
 describe('FetchService', () => {
-  it('resubscribe head when reconnect', async () => {
+  it('get finalized head when reconnect', async () => {
     const apiService = mockApiService();
-    let cb;
-    (apiService.getApi().on as jest.Mock).mockImplementation(
-      (evt, c) => (cb = c),
-    );
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
@@ -36,12 +64,19 @@ describe('FetchService', () => {
     );
     await fetchService.init();
     expect(
-      apiService.getApi().rpc.chain.subscribeFinalizedHeads,
+      apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
-    cb('connected');
-    expect(
-      apiService.getApi().rpc.chain.subscribeFinalizedHeads,
-    ).toHaveBeenCalledTimes(2);
+    expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(1);
+  });
+
+  it('log errors when failed to get finalized block', async () => {
+    const apiService = mockRejectedApiService();
+    const fetchService = new FetchService(
+      apiService,
+      new NodeConfig({ subquery: '', subqueryName: '' }),
+      new EventEmitter2(),
+    );
+    await fetchService.init();
   });
 
   it('loop until shutdown', async () => {

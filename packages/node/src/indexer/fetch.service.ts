@@ -3,6 +3,7 @@
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { isUndefined } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -15,6 +16,7 @@ import { IndexerEvent } from './events';
 import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
+const FINALIZED_BLOCK_TIME_VARIANCE = 5;
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
@@ -72,15 +74,21 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
-    const subscribeHeads = () =>
-      this.api.rpc.chain.subscribeFinalizedHeads((head) => {
-        this.latestFinalizedHeight = head.number.toNumber();
-        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-          height: this.latestFinalizedHeight,
-        });
-      });
-    this.api.on('connected', subscribeHeads);
-    await subscribeHeads();
+    await this.getFinalizedBlockHead();
+  }
+  @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
+  async getFinalizedBlockHead() {
+    try {
+      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
+      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
+      this.latestFinalizedHeight = finalizedBlock.block.header.number.toNumber();
+    } catch (e) {
+      logger.error(e, `Having a problem when get finalized block`);
+    }
+
+    this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+      height: this.latestFinalizedHeight,
+    });
   }
 
   latestProcessed(height: number): void {
