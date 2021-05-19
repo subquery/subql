@@ -3061,7 +3061,7 @@ __metadata:
     "@nestjs/schedule": ^0.4.2
     "@nestjs/schematics": ^7.2.7
     "@nestjs/testing": ^7.6.9
-    "@polkadot/api": ^4.6.2
+    "@polkadot/api": ^4.10.1
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@types/app-module-path": ^2.2.0
