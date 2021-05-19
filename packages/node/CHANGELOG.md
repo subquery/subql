@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - use pull instead of subscribe to get new block height, in case subscription stalled
   
 ### Changed
-- api.rpc are not all banned now, RPC that is historical can be called. check docs [link](https://doc.subquery.network/create/mapping.html#query-states) (#304)
+- api.rpc are not all banned now, RPC that is historical can be called. check docs [link](https://doc.subquery.network/create/mapping.html#rpc-calls) (#304)
 - bump polkadot/api dependency (#310)
 - replace vm2 with fork to support lib like `@polkadot/*` that uses esm as default (#311)
 
