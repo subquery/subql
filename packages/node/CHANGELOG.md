@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2021-05-19
+### Added
+- refactor api.rpc, only expose historic RPC and set to the current block hash. (#304)
+
+### Fixed
+- fetch service failed to get the latest block while API connection is on, but subscription to finalized head is dropped. 
+We take another approach, use a function to call API to get finalized block at specified intervals (5 seconds). (#307)
+
+### Changed
+- bump polkadot/api dependency (#310)
+- use subquery/vm2, which able to resolve hybrid type modules (#311)
+
 ## [0.13.0] - 2021-05-06
 - Bump release version due to recent major updates, also need publish new release to npm.
 
