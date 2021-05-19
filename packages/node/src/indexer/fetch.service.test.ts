@@ -32,7 +32,10 @@ describe('FetchService', () => {
       new EventEmitter2(),
     );
     const api = apiService.getApi();
-    const getMetaSpy = jest.spyOn((api as any)._rpcCore.state, 'getMetadata');
+    const getMetaSpy = jest.spyOn(
+      (api as any)._rpcCore.state.getMetadata,
+      'raw',
+    );
 
     await fetchService.init();
     const loopPromise = fetchService.startLoop(1);
@@ -57,7 +60,10 @@ describe('FetchService', () => {
       new EventEmitter2(),
     );
     const api = apiService.getApi();
-    const getMetaSpy = jest.spyOn((api as any)._rpcCore.state, 'getMetadata');
+    const getMetaSpy = jest.spyOn(
+      (api as any)._rpcCore.state.getMetadata,
+      'raw',
+    );
 
     await fetchService.init();
     const loopPromise = fetchService.startLoop(29150);
