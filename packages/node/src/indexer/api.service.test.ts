@@ -88,7 +88,7 @@ describe('ApiService', () => {
     await delay(0.5);
   });
 
-  it('api consts is swapped to the specified block', async () => {
+  it.skip('api consts is swapped to the specified block', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
