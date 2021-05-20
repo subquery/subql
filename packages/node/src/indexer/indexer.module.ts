@@ -6,6 +6,7 @@ import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { FetchService } from './fetch.service';
+import { HealthService } from './health.service';
 import { IndexerManager } from './indexer.manager';
 import { StoreService } from './store.service';
 
@@ -17,6 +18,7 @@ import { StoreService } from './store.service';
     ApiService,
     FetchService,
     BenchmarkService,
+    HealthService,
   ],
   exports: [],
 })
