@@ -80,12 +80,14 @@ And these are the interface we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
+See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+
 ## RPC calls
 
 We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. 
 A core premise of SubQuery is that it's deterministic, and therefore to keep the results consistent we only allow historical RPC calls.
 
-Go to see documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc), and there are some methods takes `BlockHash` as an input parameter, these methods are now permitted.
+Go to see documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc), and there are some methods takes `BlockHash` as an input parameter (e.g. `at?: BlockHash`), these methods are now permitted.
 We have also redecorated these methods to take the current indexing block hash by default. 
 
 ```typescript
@@ -97,10 +99,7 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 
 // It will use the current block has by default like so
 const b2 = await api.rpc.chain.getBlock();
-
 ```
-
-See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
 ## Modules and Libraries
 
