@@ -70,7 +70,6 @@ These are the interface we support now:
 
 And these are the interface we do **NOT** support currently:
 - ~~api.tx.*~~
-- ~~api.rpc.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
@@ -80,6 +79,26 @@ And these are the interface we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.keysPaged~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
+
+## RPC calls
+
+We also support some API RPC methods that are remote calls that allow you to interact with the actual node, query, and submit. 
+However, to keep the results consistent, we only allow user users to use historical type RPC calls.
+
+Go to see documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc), and there are some methods takes `: BlockHash` type input parameter, these methods are now permitted.
+We have redecorated these methods to take the current indexing block hash by default. 
+
+```typescript
+//Let's say we are currently indexing a block with this hash number
+const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
+
+//original method has an optional input is block hash
+const b1 = await api.rpc.chain.getBlock(blockhash);
+
+//Now it fixed to this block hash by default
+const b2 = await api.rpc.chain.getBlock();
+
+```
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
@@ -109,8 +128,9 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
 
-If a library is depends on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
+We also support **hybrid** library like `@polkadot/*` that uses ESM as default.
 
+However, other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
  
 ## Custom Substrate Chains
 

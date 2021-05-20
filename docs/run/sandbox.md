@@ -16,6 +16,6 @@ Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured m
 
 - Limit access to certain built-in modules, only `assert`,`buffer`,`crypto`,`util` and `path` are whitelisted.
 
-- We support [3rd parth modules](create/mapping.html#third-party-libraries) written in **CommonJS** only.
+- We support [3rd parth modules](create/mapping.html#third-party-libraries) written in **CommonJS**, also **hybrid** library like `@polkadot/*` that uses ESM as default.
 
 - Any modules using `Http` and `WebSocket` are forbid.
