@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.14.0] - 2021-05-19
+### Fixed
+- Use pull instead of subscribe to get new block height. This solves issues where the subscription stalls and SubQuery reports an incorrect block height.
+  
+### Changed
+- Not all `api.rpc` are banned now, historical RPC methods can be called. See the docs [link](https://doc.subquery.network/create/mapping.html#rpc-calls) (#304)
+- Bump polkadot/api dependency (#310)
+- Replace vm2 with fork to support lib like `@polkadot/*` that uses esm as default (#311)
+
 ## [0.13.0] - 2021-05-06
 - Bump release version due to recent major updates, also need publish new release to npm.
 

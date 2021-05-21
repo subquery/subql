@@ -61,7 +61,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an id (the block to which this extrinsic belongs) and provide an extrinsic property which extends the events among this block. Additionally it records the success status of this extrinsic.
 
 ## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase the scalability. 
+Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capability. 
 
 These are the interface we support now:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
@@ -70,7 +70,6 @@ These are the interface we support now:
 
 And these are the interface we do **NOT** support currently:
 - ~~api.tx.*~~
-- ~~api.rpc.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
@@ -82,6 +81,26 @@ And these are the interface we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+
+## RPC calls
+
+We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. 
+A core premise of SubQuery is that it's deterministic, and therefore to keep the results consistent we only allow historical RPC calls.
+
+Go to see documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc), and there are some methods takes `BlockHash` as an input parameter (e.g. `at?: BlockHash`), these methods are now permitted.
+We have also redecorated these methods to take the current indexing block hash by default. 
+
+```typescript
+// Let's say we are currently indexing a block with this hash number
+const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
+
+// Original method has an optional input is block hash
+const b1 = await api.rpc.chain.getBlock(blockhash);
+
+// It will use the current block has by default like so
+const b2 = await api.rpc.chain.getBlock();
+```
+- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
 
 ## Modules and Libraries
 
@@ -109,8 +128,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
 
-If a library is depends on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
-
+We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return the outcome. 
  
 ## Custom Substrate Chains
 
@@ -258,6 +276,8 @@ export async function kittyApiHandler(): Promise<void> {
     // return the Kitty type, input parameters types are AccountId and KittyIndex
     const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
     logger.info(`Next kitty id ${nextKittyId}`)
+    //Custom rpc, set undefined to blockhash
+    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
 }
 ```
 
