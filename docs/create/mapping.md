@@ -100,6 +100,7 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 // It will use the current block has by default like so
 const b2 = await api.rpc.chain.getBlock();
 ```
+- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
 
 ## Modules and Libraries
 
@@ -275,6 +276,8 @@ export async function kittyApiHandler(): Promise<void> {
     // return the Kitty type, input parameters types are AccountId and KittyIndex
     const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
     logger.info(`Next kitty id ${nextKittyId}`)
+    //Custom rpc, set undefined to blockhash
+    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
 }
 ```
 
