@@ -1,6 +1,7 @@
 
 # production images
 FROM node:14-alpine
+RUN apk add git
 ENV TZ utc
 
 ARG RELEASE_VERSION
