@@ -78,17 +78,20 @@ export class FetchService implements OnApplicationShutdown {
   }
   @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
-    try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      this.latestFinalizedHeight = finalizedBlock.block.header.number.toNumber();
-    } catch (e) {
-      logger.error(e, `Having a problem when get finalized block`);
+    if (this.api) {
+      try {
+        const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
+        const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
+        this.latestFinalizedHeight = finalizedBlock.block.header.number.toNumber();
+      } catch (e) {
+        logger.error(e, `Having a problem when get finalized block`);
+      }
+      this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+        height: this.latestFinalizedHeight,
+      });
+    } else {
+      logger.warn(`Fetch finalized block is waiting for API to be ready`);
     }
-
-    this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-      height: this.latestFinalizedHeight,
-    });
   }
 
   latestProcessed(height: number): void {
