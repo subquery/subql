@@ -82,15 +82,18 @@ export class FetchService implements OnApplicationShutdown {
       try {
         const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
         const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-        this.latestFinalizedHeight = finalizedBlock.block.header.number.toNumber();
+        const currentFinalizedHeight = finalizedBlock.block.header.number.toNumber();
+        if (this.latestFinalizedHeight !== currentFinalizedHeight) {
+          this.latestFinalizedHeight = currentFinalizedHeight;
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestFinalizedHeight,
+          });
+        }
       } catch (e) {
         logger.error(e, `Having a problem when get finalized block`);
       }
-      this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-        height: this.latestFinalizedHeight,
-      });
     } else {
-      logger.warn(`Fetch finalized block is waiting for API to be ready`);
+      logger.debug(`Fetch finalized block is waiting for API to be ready`);
     }
   }
 
