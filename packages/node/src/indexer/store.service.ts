@@ -5,7 +5,7 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { GraphQLModelsRelations } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
-import { flatten, camelCase, capitalize } from 'lodash';
+import { flatten, camelCase, upperFirst } from 'lodash';
 import { QueryTypes, Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
@@ -216,7 +216,7 @@ group by
         const indexed =
           this.modelIndexedFields.findIndex(
             (indexField) =>
-              capitalize(camelCase(indexField.entityName)) === entity &&
+              upperFirst(camelCase(indexField.entityName)) === entity &&
               camelCase(indexField.fieldName) === field,
           ) > -1;
         assert(
@@ -240,7 +240,7 @@ group by
         const indexed =
           this.modelIndexedFields.findIndex(
             (indexField) =>
-              capitalize(camelCase(indexField.entityName)) === entity &&
+              upperFirst(camelCase(indexField.entityName)) === entity &&
               camelCase(indexField.fieldName) === field &&
               indexField.isUnique,
           ) > -1;
