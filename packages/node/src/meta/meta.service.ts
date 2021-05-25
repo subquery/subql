@@ -4,6 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
+  EventPayload,
   IndexerEvent,
   NetworkMetadataPayload,
   ProcessingBlockPayload,
@@ -19,6 +20,8 @@ export class MetaService {
   private currentProcessingTimestamp: number;
   private targetHeight: number;
   private networkMeta: NetworkMetadataPayload;
+  private apiConnected: number;
+  private injectedApiConnected: number;
 
   getMeta() {
     return {
@@ -27,6 +30,8 @@ export class MetaService {
       targetHeight: this.targetHeight,
       uptime: process.uptime(),
       polkadotSdkVersion,
+      apiConnected: this.apiConnected,
+      injectedApiConnected: this.injectedApiConnected,
       ...this.networkMeta,
     };
   }
@@ -45,5 +50,15 @@ export class MetaService {
   @OnEvent(IndexerEvent.NetworkMetadata)
   handleNetworkMetadata(networkMeta: NetworkMetadataPayload): void {
     this.networkMeta = networkMeta;
+  }
+
+  @OnEvent(IndexerEvent.ApiConnected)
+  handleApiConnected({ value }: EventPayload<number>) {
+    this.apiConnected = value;
+  }
+
+  @OnEvent(IndexerEvent.InjectedApiConnected)
+  handleInjectedApiConnected({ value }: EventPayload<number>) {
+    this.injectedApiConnected = value;
   }
 }

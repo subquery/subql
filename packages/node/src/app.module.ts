@@ -6,6 +6,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigureModule } from './configure/configure.module';
 import { DbModule } from './db/db.module';
+import { HealthModule } from './health/health.module';
 import { IndexerModule } from './indexer/indexer.module';
 import { MetaModule } from './meta/meta.module';
 
@@ -25,6 +26,7 @@ export class NodeOption {}
     ScheduleModule.forRoot(),
     IndexerModule,
     MetaModule,
+    HealthModule,
   ],
   controllers: [],
 })
