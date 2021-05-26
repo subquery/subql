@@ -7,12 +7,14 @@ import {
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { MetricEventListener } from './event.listener';
+import { HealthController } from './health.controller';
+import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 
 @Module({
   imports: [PrometheusModule.register()],
-  controllers: [MetaController],
+  controllers: [MetaController, HealthController],
   providers: [
     MetricEventListener,
     makeGaugeProvider({
@@ -36,6 +38,7 @@ import { MetaService } from './meta.service';
       help: 'The size of fetched block queue',
     }),
     MetaService,
+    HealthService,
   ],
 })
 export class MetaModule {}
