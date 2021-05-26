@@ -20,8 +20,8 @@ export class MetaService {
   private currentProcessingTimestamp: number;
   private targetHeight: number;
   private networkMeta: NetworkMetadataPayload;
-  private apiConnected: number;
-  private injectedApiConnected: number;
+  private apiConnected: boolean;
+  private injectedApiConnected: boolean;
 
   getMeta() {
     return {
@@ -54,11 +54,11 @@ export class MetaService {
 
   @OnEvent(IndexerEvent.ApiConnected)
   handleApiConnected({ value }: EventPayload<number>) {
-    this.apiConnected = value;
+    this.apiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.InjectedApiConnected)
   handleInjectedApiConnected({ value }: EventPayload<number>) {
-    this.injectedApiConnected = value;
+    this.injectedApiConnected = !!value;
   }
 }
