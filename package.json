@@ -30,7 +30,7 @@
     "vuepress": "next"
   },
   "resolutions": {
-    "@polkadot/api": "4.11.1"
+    "@polkadot/api": "4.11.2"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",
