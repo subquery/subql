@@ -6,11 +6,12 @@ export enum IndexerEvent {
   InjectedApiConnected = 'injected_api_connected',
   BlockTarget = 'block_target_height',
   BlockProcessing = 'block_processing_height',
+  BlockLastProcessed = 'block_processed_height',
   BlockQueueSize = 'block_queue_size',
   NetworkMetadata = 'network_metadata',
 }
 
-export interface ProcessingBlockPayload {
+export interface ProcessBlockPayload {
   height: number;
   timestamp: number;
 }

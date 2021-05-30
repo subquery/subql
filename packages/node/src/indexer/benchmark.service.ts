@@ -10,7 +10,7 @@ import { delay } from '../utils/promise';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
-  ProcessingBlockPayload,
+  ProcessBlockPayload,
   TargetBlockPayload,
 } from './events';
 
@@ -62,7 +62,7 @@ export class BenchmarkService {
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
-  handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
+  handleProcessingBlock(blockPayload: ProcessBlockPayload) {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }

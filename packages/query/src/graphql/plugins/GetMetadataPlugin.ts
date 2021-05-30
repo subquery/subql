@@ -11,6 +11,8 @@ const metaUrl = argv('meta') as string | undefined;
 type MetaData = {
   currentProcessingHeight: number;
   currentProcessingTimestamp: number;
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: number;
   targetHeight: number;
   uptime: number;
   polkadotSdkVersion: string;
@@ -30,6 +32,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
       type Metadata {
         currentProcessingHeight: BigInt
         currentProcessingTimestamp: Date
+        lastProcessedHeight: BigInt
+        lastProcessedTimestamp: Date
         targetHeight: BigInt
         uptime: Int
         polkadotSdkVersion: String

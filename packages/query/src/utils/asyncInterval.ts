@@ -8,6 +8,7 @@ const asyncIntervals = [];
 const runAsyncInterval = async (cb, interval, intervalIndex) => {
   await cb();
   if (asyncIntervals[intervalIndex].run) {
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     asyncIntervals[intervalIndex].id = setTimeout(() => runAsyncInterval(cb, interval, intervalIndex), interval);
   }
 };

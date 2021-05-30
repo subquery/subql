@@ -6,7 +6,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
-  ProcessingBlockPayload,
+  ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
 
@@ -27,7 +27,7 @@ export class HealthService {
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
-  handleProcessingBlock(blockPayload: ProcessingBlockPayload): void {
+  handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     if (this.currentProcessingHeight !== blockPayload.height) {
       this.currentProcessingHeight = blockPayload.height;
       this.currentProcessingTimestamp = blockPayload.timestamp;
