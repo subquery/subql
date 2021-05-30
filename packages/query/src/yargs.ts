@@ -33,7 +33,7 @@ export function getYargsOption() {
       default: 'info',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
     },
-    meta: {
+    indexer: {
       demandOption: false,
       describe: 'Url that allow query to access indexer metadata',
       type: 'string',

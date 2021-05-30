@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Allow query service to query indexer metadata though add `--meta <meta-api>`
+- Allow query service to query indexer metadata though add `--indexer <indexer-meta-api>`
 
 ## [0.5.0] - 2021-04-20
 ### Added

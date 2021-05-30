@@ -3,9 +3,26 @@
 
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch from 'node-fetch';
+import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
 const metaUrl = argv('meta') as string | undefined;
+
+type MetaData = {
+  currentProcessingHeight: number;
+  currentProcessingTimestamp: number;
+  targetHeight: number;
+  uptime: number;
+  polkadotSdkVersion: string;
+  apiConnected: boolean;
+  injectedApiConnected: boolean;
+  chain: string;
+  specName: string;
+  genesisHash: string;
+  blockTime: number;
+};
+
+let metaCache: MetaData;
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
   return {
@@ -29,10 +46,20 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
     `,
     resolvers: {
       Query: {
-        Metadata: async () => {
-          return fetch(`${metaUrl}`).then((res) => res.json());
-        },
+        Metadata: () => metaCache,
       },
     },
   };
 });
+
+setAsyncInterval(async () => {
+  let result;
+  try {
+    result = await fetch(`${metaUrl}`);
+  } catch (e) {
+    console.warn(`Failed to fetch indexer meta, `, e.message);
+  }
+  if (result) {
+    metaCache = await result.json();
+  }
+}, 10000);
