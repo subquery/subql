@@ -38,7 +38,6 @@ export class MetaService {
       polkadotSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
-
       ...this.networkMeta,
     };
   }
