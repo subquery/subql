@@ -8,7 +8,7 @@ To learn more about how writing in GraphQL schema language, we recommend checkin
 **Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
 ### Entites
-Each entity must define its required fields `id` with the type of `ID!`. It used as the primary key and unique among all entities of the same type.
+Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
 Non nullable fields in the entity are indicated by `!`. Please see the example below:
 
@@ -36,7 +36,7 @@ We currently supporting flowing scalars types:
 
 To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field. 
 
-However, we don't allow user to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added for JSON fields in the database, but only for enhance query service performance purpose.
+However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added for JSON fields in the database, but only for enhance query service performance purpose.
 
 Here is an example.
 
