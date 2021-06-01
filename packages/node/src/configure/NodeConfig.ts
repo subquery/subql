@@ -31,7 +31,7 @@ export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
 
 const DEFAULT_CONFIG = {
   localMode: false,
-  batchSize: 100,
+  batchSize: 30,
   timeout: 20,
   preferRange: false,
   debug: false,
