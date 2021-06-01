@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import * as url from 'url';
+import url from 'url';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch from 'node-fetch';
 // @ts-ignore
