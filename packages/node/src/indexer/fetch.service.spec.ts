@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import axios from 'axios';
 import { range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { fetchBlocks } from '../utils/substrate';

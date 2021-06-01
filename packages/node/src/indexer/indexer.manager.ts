@@ -66,6 +66,9 @@ export class IndexerManager {
         process.exit(1);
       }
 
+      const indexEvents = [];
+      const indexExtrinsics = [];
+
       for (const ds of dataSources) {
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
@@ -80,6 +83,11 @@ export class IndexerManager {
                   extrinsics,
                   handler.filter,
                 );
+                indexExtrinsics.push({
+                  type: 'Extrinsic',
+                  module: handler.filter.module,
+                  call: handler.filter.method,
+                });
                 for (const e of filteredExtrinsics) {
                   await this.vm.securedExec(handler.handler, [e]);
                 }
@@ -90,6 +98,11 @@ export class IndexerManager {
                   events,
                   handler.filter,
                 );
+                indexEvents.push({
+                  type: 'Extrinsic',
+                  module: handler.filter.module,
+                  event: handler.filter.method,
+                });
                 for (const e of filteredEvents) {
                   await this.vm.securedExec(handler.handler, [e]);
                 }
@@ -101,6 +114,7 @@ export class IndexerManager {
         }
         // TODO: support Ink! and EVM
       }
+
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();

@@ -4172,6 +4172,7 @@ __metadata:
     "@types/yargs": ^16.0.0
     "@willsoto/nestjs-prometheus": ^3.0.0
     app-module-path: ^2.2.0
+    axios: ^0.21.1
     dayjs: ^1.10.4
     dotenv: ^8.2.0
     lodash: ^4.17.20
