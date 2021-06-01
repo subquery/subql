@@ -5,10 +5,10 @@
 The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery.
 To learn more about how writing in GraphQL schema language, we recommend checking out on [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
 ### Entites
-Each entity must define its required fields `id` with the type of `ID!`, it used as the primary key and unique among all entities of the same type.
+Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
 Non nullable fields in the entity are indicated by `!`. Please see the example below:
 
@@ -19,8 +19,6 @@ type Example @entity {
   address: String # This is an optional field
 }
 ```
-
-**Important: When you make any changes to the schema file please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
 ### Supported scalars and types
 
@@ -34,11 +32,11 @@ We currently supporting flowing scalars types:
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
 - `JSON` can alternatively store structured data, please see [JSON type](#json-type)
 
-## Indexing by Non-primary-key field
+## Indexing by non-primary-key field
 
-To improve query performance, index an entity field simply by implement the `@index` annotation on a non-primary-key field. 
+To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field. 
 
-We don't allow user to add `@index` annotation on any [JSON](#json-type) object. By default, indexes automatically added for JSON fields in the database, but only for enhance query service performance purpose.
+However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added for JSON fields in the database, but only for enhance query service performance purpose.
 
 Here is an example.
 
@@ -58,7 +56,7 @@ Assuming we knew this user's name, but we don't know the exact id value, rather 
 
 **If a field is not unique, the maximum result set size is 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and The foreign key field `title` will create a `getByTitleId` method,
+When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method,
 which both can directly be accessed in the mapping function.
 
 ```sql
@@ -80,15 +78,15 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Cap
 
 ## Entity Relationships
 
-An entity often has nested relationships with other entities. Set the field value to another entity name will define a one-to-one relationship between these two entities by default.
+An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below
+Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
 
 ### One-to-One Relationships
 
-One-to-one relationships are by default when only a single entity is mapped to another
+One-to-one relationships are the default when only a single entity is mapped to another.
 
-Exmaple: A Passport will only have one person and a person only has one passport (in this example):
+Example: A passport will only belong to one person and a person only has one passport (in this example):
 
 ```graphql
 type Person @entity {
@@ -117,7 +115,7 @@ type Passport @entity {
 
 ### One-to-Many relationships
 
-You cna use brackets to indicate that a field type includes multiple entities
+You can use square brackets to indicate that a field type includes multiple entities
 
 Example: A person can have multipe accounts
 
@@ -134,9 +132,9 @@ type Account @entity {
 ```
 
 ### Many-to-Many relationships
-A many-to-Many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
-Example: Each person is a part of multiple groups and groups have multiple different people
+Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup)
 
 ```graphql
 type Person @entity {
@@ -162,7 +160,7 @@ Also, it is possible to create a connection of the same entity in multiple field
 
 Example, an account can have multiple transfers, and each transfer has a source and destination account.
 
-This will establish a bidirectional relationship between two Accounts (from and to) through Transfer table. 
+This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table. 
 
 ```graphql
 type Account @entity {
@@ -182,16 +180,16 @@ type Transfer @entity {
 
 To enable reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
 
-This create a virtual field on the entity that can be queried.
+This creates a virtual field on the entity that can be queried.
 
-The Transfer from an account accessible from the Account by deriving a transfers field:
+The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
 
 ```graphql
 type Account @entity {
   id: ID!
   publicAddress: String!
   sentTransfers: [Transfer] @derivedFrom(field: "from")
-  recievedTransfers: [Transfer] @derivedFrom(field: "to")
+  receivedTransfers: [Transfer] @derivedFrom(field: "to")
 }
 
 type Transfer @entity {
@@ -209,10 +207,10 @@ We are supporting saving data as a JSON type, which is a fast way to store struc
 We recommend users use the JSON type in the following scenarios:
 - When storing structured data in a single field is more manageable than creating multiple separate entities.
 - Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and change frequently
+- The schema is volatile and changes frequently
 
 ### Define JSON directive
-Define the propery as a JSON type by adding the `jsonField` annotation in the entity, this will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
 
 Unlike the entity, the jsonField directive object does not require any `id` field. 
 A JSON object is also able to nest with other JSON objects.
@@ -234,11 +232,11 @@ type User @entity {
 }
 ````
 
-### Querying JSON field
+### Querying JSON fields
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering since each time it performs a text search on the entire entity.
+The drawback of using JSON types is a slight impact on query efficiency when filtering as each time it performs a text search, it is on the entire entity.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the the first 5 users own phone numbers contains '0064'.
+However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the the first 5 users own phone numbers that contains '0064'.
 
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
