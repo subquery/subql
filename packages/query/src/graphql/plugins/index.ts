@@ -102,6 +102,6 @@ export const plugins = [
   ConnectionFilterPlugin,
 ];
 
-if (argv(`meta`)) {
+if (argv(`indexer`)) {
   plugins.push(GetMetadataPlugin);
 }

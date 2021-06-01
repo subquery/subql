@@ -3,6 +3,9 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+// @ts-ignore
+import { version } from '../../package.json';
+
 import {
   EventPayload,
   IndexerEvent,
@@ -30,12 +33,14 @@ export class MetaService {
       currentProcessingHeight: this.currentProcessingHeight,
       currentProcessingTimestamp: this.currentProcessingTimestamp,
       targetHeight: this.targetHeight,
+      indexerNodeVersion: version,
       lastProcessedHeight: this.lastProcessedHeight,
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
       polkadotSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
+
       ...this.networkMeta,
     };
   }

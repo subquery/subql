@@ -5,11 +5,12 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "resolveJsonModule": false
   },
   "references": [
     {"path": "../common"},
     {"path": "../types"}
   ],
-  "include": ["src/**/*"]
+  "include": ["src/**/*","./package.json"]
 }
