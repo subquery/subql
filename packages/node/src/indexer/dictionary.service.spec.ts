@@ -1,16 +1,15 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import axios from 'axios';
 import { DictionaryService } from './dictionary.service';
 
-jest.mock('../utils/substrate', () =>
-  jest.createMockFromModule('../utils/substrate'),
-);
-
 describe('DictionaryService', () => {
-  it('print dictionary query', async () => {
+  it.skip('print dictionary query', async () => {
     const dictionaryService = new DictionaryService();
+
+    const batchSize = 50; //event + extrinsic, should keep this half size of our default batchSize
+    const startOffset = 150;
+    const startBlock = 10086;
     const indexEvents = [
       { type: 'Event', module: 'balances', event: 'Deposit' },
       { type: 'Event', module: 'balances', event: 'Transfer' },
@@ -18,19 +17,17 @@ describe('DictionaryService', () => {
     const indexExtrinsics = [
       { type: 'Extrinsic', module: 'staking', call: 'bond' },
     ];
-    const query = dictionaryService.queryDictionary(
+    const query = dictionaryService.dictionaryQuery(
+      startBlock,
+      batchSize,
+      startOffset,
       indexEvents,
       indexExtrinsics,
     );
-    console.log(query);
-    try {
-      const resp = await axios.post('http://localhost:3001', {
-        query: query,
-      });
-      console.log(resp.data);
-    } catch (err) {
-      // Handle Error Here
-      console.error(err);
-    }
+    const batch = await dictionaryService.getBlockBatch(
+      'http://localhost:3001',
+      query,
+    );
+    console.log(`batch: ${batch}`);
   });
 });

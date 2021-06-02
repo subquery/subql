@@ -2,8 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { MetaData } from '@subql/common';
 import axios from 'axios';
+import { NodeConfig } from '../configure/NodeConfig';
 
+type indexEvent = {
+  type: string;
+  module: string;
+  event: string;
+};
+
+type indexExtrinsic = {
+  type: string;
+  module: string;
+  call: string;
+};
+
+type eventsBatch = {};
+
+type extrinsicBatch = {};
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
   private isShutdown = false;
@@ -11,20 +28,27 @@ export class DictionaryService implements OnApplicationShutdown {
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
-
-  queryDictionary(indexEvents?, indexExtrinsics?): string {
+  dictionaryQuery(
+    startBlock: number,
+    batchSize: number,
+    offset: number,
+    indexEvents?: indexEvent[],
+    indexExtrinsics?: indexExtrinsic[],
+  ): string {
     let eventFilter = ``;
     let extrinsicFilter = ``;
     let baseQuery = ``;
     const metaQuery = `
   Metadata {
-    currentProcessingHeight
-    currentProcessingTimestamp
     lastProcessedHeight
     lastProcessedTimestamp
-    chain
     targetHeight
+    chain
+    specName
     genesisHash
+    indexerHealthy
+    indexerNodeVersion
+    queryNodeVersion
   }`;
     baseQuery = baseQuery.concat(metaQuery);
     if (indexEvents.length !== 0) {
@@ -37,16 +61,13 @@ export class DictionaryService implements OnApplicationShutdown {
         ]},`);
       });
       const eventQuery = `events(filter:{
+    blockHeight:{greaterThan:"${startBlock}"},
     or:[
      ${eventFilter}
     ]
-  }){
-    totalCount
+  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize},offset: ${offset}){
     nodes{
-      id,
       blockHeight
-      module
-      event
     }
   }`;
       baseQuery = baseQuery.concat(eventQuery);
@@ -61,20 +82,35 @@ export class DictionaryService implements OnApplicationShutdown {
         ]},`);
       });
       const extrinsicQueryQuery = `extrinsics(filter:{
+    blockHeight:{greaterThan:"${startBlock}"},
     or:[
      ${extrinsicFilter}
     ]
-  }){
-    totalCount
+  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize},offset: ${offset}){
     nodes{
-      id,
       blockHeight
-      module
-      call
     }
   }`;
       baseQuery = baseQuery.concat(extrinsicQueryQuery);
     }
     return `query{${baseQuery}}`;
+  }
+
+  async getBlockBatch(api: string, query: string) {
+    let resp;
+    try {
+      resp = await axios.post(api, {
+        query: query,
+      });
+    } catch (err) {
+      // Handle Error Here
+      console.error(err);
+    }
+
+    if (resp) {
+      const { Metadata, events, extrinsics } = resp.data.data;
+      const nodes = events.nodes.concat(extrinsics.nodes);
+      return [...new Set(nodes.map((node) => node.blockHeight))];
+    }
   }
 }
