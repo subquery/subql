@@ -6,7 +6,10 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "./dist",
-    "resolveJsonModule": false
+    "resolveJsonModule": false,
+    "lib": [
+      "dom"
+    ]
   },
   "references": [
     {"path": "../common"},

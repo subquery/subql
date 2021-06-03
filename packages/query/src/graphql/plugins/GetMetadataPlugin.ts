@@ -11,7 +11,7 @@ import {argv} from '../../yargs';
 
 const indexerUrl = argv('indexer') as string | undefined;
 
-type _MetaData = {
+type MetaData = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
@@ -25,12 +25,38 @@ type _MetaData = {
 
 const metaCache = {
   queryNodeVersion: version,
-} as _MetaData;
+} as MetaData;
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
+  setAsyncInterval(async () => {
+    let health;
+    let meta;
+    try {
+      meta = await fetch(new URL(`meta`, indexerUrl));
+      const result = await meta.json();
+      Object.assign(metaCache, result);
+    } catch (e) {
+      metaCache.indexerHealthy = false;
+      console.warn(`Failed to fetch indexer meta, `, e.message);
+    }
+
+    try {
+      health = await fetch(new URL(`health`, indexerUrl));
+      metaCache.indexerHealthy = !!health.ok;
+      // if (health.ok) {
+      //   metaCache.indexerHealthy = true;
+      // } else {
+      //   metaCache.indexerHealthy = false;
+      // }
+    } catch (e) {
+      metaCache.indexerHealthy = false;
+      console.warn(`Failed to fetch indexer health, `, e.message);
+    }
+  }, 10000);
+
   return {
     typeDefs: gql`
-      type Metadata {
+      type _Metadata {
         lastProcessedHeight: BigInt
         lastProcessedTimestamp: Date
         targetHeight: BigInt
@@ -42,38 +68,13 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
         queryNodeVersion: String
       }
       extend type Query {
-        Metadata: Metadata
+        _metadata: _Metadata
       }
     `,
     resolvers: {
       Query: {
-        Metadata: () => metaCache,
+        _metadata: () => metaCache,
       },
     },
   };
 });
-
-setAsyncInterval(async () => {
-  let health;
-  let meta;
-  try {
-    meta = await fetch(url.resolve(indexerUrl, `meta`));
-  } catch (e) {
-    console.warn(`Failed to fetch indexer meta, `, e.message);
-  }
-  if (meta) {
-    const result = await meta.json();
-    Object.assign(metaCache, result);
-  }
-
-  try {
-    health = await fetch(url.resolve(indexerUrl, `health`));
-  } catch (e) {
-    console.warn(`Failed to fetch indexer health, `, e.message);
-  }
-  if (health && health.ok) {
-    metaCache.indexerHealthy = true;
-  } else {
-    metaCache.indexerHealthy = false;
-  }
-}, 10000);
