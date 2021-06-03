@@ -11,7 +11,7 @@ import {argv} from '../../yargs';
 
 const indexerUrl = argv('indexer') as string | undefined;
 
-type MetaData = {
+type _MetaData = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
@@ -25,7 +25,7 @@ type MetaData = {
 
 const metaCache = {
   queryNodeVersion: version,
-} as MetaData;
+} as _MetaData;
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
   return {
