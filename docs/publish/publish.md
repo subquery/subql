@@ -1,6 +1,6 @@
 # Publish your SubQuery Project
 
-## Benefits
+## Benefits of hosting your project with SubQuery
 - We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
 - This service is being provided to the community for free!
 - You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
@@ -16,12 +16,12 @@ To create your first project, head to [project.subquery.network](https://project
 
 ![Projects Login](https://static.subquery.network/media/projects/projects-dashboard.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application. If you have a GitHub organisations accounts connected, you can use the switcher on the header to change to between your personal account and your organisation account - projects created in an organisation account are shared between members in that GitHub organisation.
+SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application. If you have a GitHub organisations accounts connected, you can use the switcher on the header to change to between your personal account and your organisation account. Projects created in an organisation account are shared between members in that GitHub organisation.
 ![Switch between GitHub accounts](https://static.subquery.network/media/projects/projects-account-switcher.png)
 
 #### Create your First Project
 
-Lets start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
+Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
 - **GitHub account:** If you have more than one GitHub accounts, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
 - **Name**
 - **Subtitle**
@@ -30,7 +30,7 @@ Lets start by clicking on "Create Project". You'll be taken to the New Project f
 - **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
 ![Create your first Project](https://static.subquery.network/media/projects/projects-create.png)
 
-Create your project and you'll see it on your SubQuery Project's list. *Now we just need to deploy a new version of it, we're almost there!*
+Create your project and you'll see it on your SubQuery Project's list. *We're almost there! We just need to deploy a new version of it. *
 ![Created Project with no deployment](https://static.subquery.network/media/projects/projects-no-deployment.png)
 
 #### Deploy your first Version

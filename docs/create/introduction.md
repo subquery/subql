@@ -10,11 +10,11 @@ subql init --starter PROJECT_NAME
 
 More advanced users can jump directly to the resources they need from a fresh project.
 
-Creating a bespoke SubQuery project is ususally done in the following process:
-1. Initalise project using `subql init PROJECT_NAME`
-2. Update Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](/create/manifest)
-3. Create GraphQL Entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](/create/graphql)
-4. Add all the mapping functions that are invoked to transform chain data to the GraphQL entities that you have defined - see [Mapping](/create/mapping)
+Creating a bespoke SubQuery project is usually done in the following manner:
+1. Initalise your project using `subql init PROJECT_NAME`
+2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](/create/manifest)
+3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](/create/graphql)
+4. Add all the mapping functions you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](/create/mapping)
 5. Generate code, build, and publish to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](/quickstart.html#running-and-querying-your-starter-project) in our quick start guide.
 
 
@@ -38,7 +38,7 @@ Following map provides an overview of the directory structure of a SubQuery proj
 
 ## Code Generation
 
-Whenever you change your GraphQL entites, you must regenerate your types directory with the following command.
+Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
 
 ```
 yarn codegen
