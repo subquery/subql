@@ -3,11 +3,14 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+// @ts-ignore
+import { version } from '../../package.json';
+
 import {
   EventPayload,
   IndexerEvent,
   NetworkMetadataPayload,
-  ProcessingBlockPayload,
+  ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
 
@@ -22,24 +25,36 @@ export class MetaService {
   private networkMeta: NetworkMetadataPayload;
   private apiConnected: boolean;
   private injectedApiConnected: boolean;
+  private lastProcessedHeight: number;
+  private lastProcessedTimestamp: number;
 
   getMeta() {
     return {
       currentProcessingHeight: this.currentProcessingHeight,
       currentProcessingTimestamp: this.currentProcessingTimestamp,
       targetHeight: this.targetHeight,
+      indexerNodeVersion: version,
+      lastProcessedHeight: this.lastProcessedHeight,
+      lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
       polkadotSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
+
       ...this.networkMeta,
     };
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
-  handleProcessingBlock(blockPayload: ProcessingBlockPayload): void {
+  handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+
+  @OnEvent(IndexerEvent.BlockLastProcessed)
+  handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
+    this.lastProcessedHeight = blockPayload.height;
+    this.lastProcessedTimestamp = blockPayload.timestamp;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

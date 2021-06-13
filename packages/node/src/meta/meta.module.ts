@@ -30,6 +30,10 @@ import { MetaService } from './meta.service';
       help: 'The current processing block height',
     }),
     makeGaugeProvider({
+      name: 'subql_indexer_processed_block_height',
+      help: 'The last processed block height',
+    }),
+    makeGaugeProvider({
       name: 'subql_indexer_target_block_height',
       help: 'The latest finalized block height',
     }),

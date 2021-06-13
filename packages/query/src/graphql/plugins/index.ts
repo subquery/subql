@@ -42,6 +42,8 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
+import {argv} from '../../yargs';
+import {GetMetadataPlugin} from './GetMetadataPlugin';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
@@ -99,3 +101,7 @@ export const plugins = [
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
 ];
+
+if (argv(`indexer`)) {
+  plugins.push(GetMetadataPlugin);
+}

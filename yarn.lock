@@ -3120,6 +3120,7 @@ __metadata:
     express-pino-logger: ^6.0.0
     graphile-build: ^4.10.0
     graphile-build-pg: ^4.10.0
+    graphile-utils: ^4.12.1
     graphql: ^15.4.0
     lodash: ^4.17.20
     nodemon: ^2.0.7
@@ -9688,6 +9689,20 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
+"graphile-utils@npm:^4.12.1":
+  version: 4.12.1
+  resolution: "graphile-utils@npm:4.12.1"
+  dependencies:
+    debug: ^4.1.1
+    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
+    tslib: ^2.0.1
+  peerDependencies:
+    graphile-build: ^4.5.0
+    graphile-build-pg: ^4.5.0
+  checksum: 8f9ab78f1e12a74df63e17414312b12ecd52833dffd4a2e89fe4ae588b3d3e0e7c503ae594fd6dd5f1921d7faec30dc550766b868595d2b4130372ea6060f732
+  languageName: node
+  linkType: hard
+
 "graphql-extensions@npm:^0.12.8":
   version: 0.12.8
   resolution: "graphql-extensions@npm:0.12.8"
@@ -9832,7 +9847,7 @@ fsevents@~2.1.2:
   languageName: node
   linkType: hard
 
-"graphql@npm:^15.3.0, graphql@npm:^15.4.0, graphql@npm:^15.5.0":
+"graphql@npm:>=0.9 <0.14 || ^14.0.2 || ^15.4.0, graphql@npm:^15.3.0, graphql@npm:^15.4.0, graphql@npm:^15.5.0":
   version: 15.5.0
   resolution: "graphql@npm:15.5.0"
   checksum: 789cdcb069a3e00592e779002217a6bc5fd09efad63ee8c4190c4b3ea96c89010e74f085fb1cba876a0bb0e324e01df2eddb84d79dca90a28e582bc425fef9ef

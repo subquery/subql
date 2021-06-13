@@ -39,6 +39,7 @@
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.10.0",
     "graphile-build-pg": "^4.10.0",
+    "graphile-utils": "^4.12.1",
     "graphql": "^15.4.0",
     "lodash": "^4.17.20",
     "pg": "^8.5.1",

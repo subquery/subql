@@ -7,7 +7,7 @@ import { Gauge } from 'prom-client';
 import {
   EventPayload,
   IndexerEvent,
-  ProcessingBlockPayload,
+  ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
 
@@ -21,6 +21,8 @@ export class MetricEventListener {
     private blockQueueSizeMetric: Gauge<string>,
     @InjectMetric('subql_indexer_processing_block_height')
     private processingBlockHeight: Gauge<string>,
+    @InjectMetric('subql_indexer_processed_block_height')
+    private processedBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
   ) {}
@@ -41,8 +43,12 @@ export class MetricEventListener {
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
-  handleProcessingBlock(blockPayload: ProcessingBlockPayload) {
+  handleProcessingBlock(blockPayload: ProcessBlockPayload) {
     this.processingBlockHeight.set(blockPayload.height);
+  }
+  @OnEvent(IndexerEvent.BlockLastProcessed)
+  handleProcessedBlock(blockPayload: ProcessBlockPayload) {
+    this.processedBlockHeight.set(blockPayload.height);
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

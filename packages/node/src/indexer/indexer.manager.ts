@@ -111,6 +111,10 @@ export class IndexerManager {
       throw e;
     }
     await tx.commit();
+    this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
+      height: block.block.header.number.toNumber(),
+      timestamp: Date.now(),
+    });
   }
 
   async start(): Promise<void> {

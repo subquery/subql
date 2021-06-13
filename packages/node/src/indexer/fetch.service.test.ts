@@ -11,6 +11,7 @@ function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
     endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    // endpoint: `wss://node-6790848002104033280.lh.onfinality.io/ws?apikey=23c0a554-a3fa-4501-b9e3-3c278ef9b2cb`,
     types: {
       TestType: 'u32',
     },
@@ -18,11 +19,11 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(100000);
+jest.setTimeout(200000);
 
 describe('FetchService', () => {
   it('fetch meta data once when spec version not changed in range', async () => {
-    const batchSize = 100;
+    const batchSize = 30;
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
@@ -50,7 +51,7 @@ describe('FetchService', () => {
   });
 
   it('fetch meta data twice when spec version changed in range', async () => {
-    const batchSize = 100;
+    const batchSize = 10;
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
@@ -66,10 +67,12 @@ describe('FetchService', () => {
     );
 
     await fetchService.init();
-    const loopPromise = fetchService.startLoop(29150);
+    //29150
+    const loopPromise = fetchService.startLoop(29230);
     // eslint-disable-next-line @typescript-eslint/require-await
     fetchService.register(async (content) => {
-      if (content.block.block.header.number.toNumber() === 29250) {
+      //29250
+      if (content.block.block.header.number.toNumber() === 29240) {
         fetchService.onApplicationShutdown();
       }
     });
