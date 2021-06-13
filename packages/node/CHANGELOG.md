@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.15.2] - 2021-06-14
+### Added
+- Add indexer version, last processed block height and its timestamp to metadata.
+
 ## [0.15.1] - 2021-05-27
 ### Changed
 - Bump polkadot/api to 4.11.2

@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Allow query service to query indexer metadata though add `--indexer <indexer-meta-api>`
 
+## [0.5.2] - 2021-06-14
+### Added
+- Add `GetMetaDataPlugin`, allow query service to query indexer metadata though add `--indexer <indexer-meta-api>`
+
 ## [0.5.0] - 2021-04-20
 ### Added
 - Remove `condition` in query schema, please use `filter` instead (#260)
