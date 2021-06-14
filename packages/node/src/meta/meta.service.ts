@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 // @ts-ignore
-import { version } from '../../package.json';
 
 import {
   EventPayload,
@@ -16,6 +15,7 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
+const { version: packageVersion } = require('../../package.json');
 
 @Injectable()
 export class MetaService {
@@ -33,7 +33,7 @@ export class MetaService {
       currentProcessingHeight: this.currentProcessingHeight,
       currentProcessingTimestamp: this.currentProcessingTimestamp,
       targetHeight: this.targetHeight,
-      indexerNodeVersion: version,
+      indexerNodeVersion: packageVersion,
       lastProcessedHeight: this.lastProcessedHeight,
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),

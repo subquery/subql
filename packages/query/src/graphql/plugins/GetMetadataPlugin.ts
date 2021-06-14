@@ -4,10 +4,9 @@
 import url from 'url';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch from 'node-fetch';
-// @ts-ignore
-import {version} from '../../../package.json';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
+const {version: packageVersion} = require('../../../package.json');
 
 const indexerUrl = argv('indexer') as string | undefined;
 
@@ -24,7 +23,7 @@ type MetaData = {
 };
 
 const metaCache = {
-  queryNodeVersion: version,
+  queryNodeVersion: packageVersion,
 } as MetaData;
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {

@@ -15,5 +15,5 @@
     {"path": "../common"},
     {"path": "../types"}
   ],
-  "include": ["src/**/*","./package.json"]
+  "include": ["src/**/*"]
 }
