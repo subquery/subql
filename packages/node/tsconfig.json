@@ -5,8 +5,7 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist",
-    "resolveJsonModule": true
+    "outDir": "./dist"
   },
   "references": [
     {"path": "../common"},
