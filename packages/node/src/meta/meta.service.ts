@@ -3,8 +3,6 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-// @ts-ignore
-
 import {
   EventPayload,
   IndexerEvent,
