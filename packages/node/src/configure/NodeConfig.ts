@@ -20,6 +20,7 @@ export interface IConfig {
   readonly debug: boolean;
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
+  readonly networkDictionary?: string;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -88,6 +89,10 @@ export class NodeConfig implements IConfig {
 
   get batchSize(): number {
     return this._config.batchSize;
+  }
+
+  get networkDictionary(): string | undefined {
+    return this._config.networkDictionary;
   }
 
   get timeout(): number {

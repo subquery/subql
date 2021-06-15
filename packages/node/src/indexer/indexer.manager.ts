@@ -13,6 +13,7 @@ import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
+import { DictionaryService } from './dictionary.service';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox } from './sandbox';
@@ -34,6 +35,7 @@ export class IndexerManager {
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
+    private dictionaryService: DictionaryService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -66,9 +68,6 @@ export class IndexerManager {
         process.exit(1);
       }
 
-      const indexEvents = [];
-      const indexExtrinsics = [];
-
       for (const ds of dataSources) {
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
@@ -83,11 +82,6 @@ export class IndexerManager {
                   extrinsics,
                   handler.filter,
                 );
-                indexExtrinsics.push({
-                  type: 'Extrinsic',
-                  module: handler.filter.module,
-                  call: handler.filter.method,
-                });
                 for (const e of filteredExtrinsics) {
                   await this.vm.securedExec(handler.handler, [e]);
                 }
@@ -98,11 +92,6 @@ export class IndexerManager {
                   events,
                   handler.filter,
                 );
-                indexEvents.push({
-                  type: 'Extrinsic',
-                  module: handler.filter.module,
-                  event: handler.filter.method,
-                });
                 for (const e of filteredEvents) {
                   await this.vm.securedExec(handler.handler, [e]);
                 }
@@ -138,13 +127,14 @@ export class IndexerManager {
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.initVM();
-    void this.fetchService
+    this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
         logger.error(err, 'failed to fetch block');
         // FIXME: retry before exit
         process.exit(1);
       });
+
     this.fetchService.register((block) => this.indexBlock(block));
   }
 

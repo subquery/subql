@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import axios from 'axios';
 import { range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
+import { SubqueryProject } from '../configure/project.model';
 import { fetchBlocks } from '../utils/substrate';
 import { ApiService } from './api.service';
+import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 
 jest.mock('../utils/substrate', () =>
@@ -55,12 +56,29 @@ function mockApiService(): ApiService {
   } as any;
 }
 
+function testSubqueryProject(): SubqueryProject {
+  const project = new SubqueryProject();
+  project.network = {
+    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    types: {
+      TestType: 'u32',
+    },
+  };
+  project.dataSources = [];
+  return project;
+}
+
 describe('FetchService', () => {
   it('get finalized head when reconnect', async () => {
     const apiService = mockApiService();
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
+
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     await fetchService.init();
@@ -72,9 +90,13 @@ describe('FetchService', () => {
 
   it('log errors when failed to get finalized block', async () => {
     const apiService = mockRejectedApiService();
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     await fetchService.init();
@@ -82,6 +104,8 @@ describe('FetchService', () => {
 
   it('loop until shutdown', async () => {
     const apiService = mockApiService();
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
     (fetchBlocks as jest.Mock).mockImplementation((api, start, end) =>
       range(start, end + 1).map((height) => ({
         block: { block: { header: { number: { toNumber: () => height } } } },
@@ -90,6 +114,8 @@ describe('FetchService', () => {
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     fetchService.fetchMeta = jest.fn();
@@ -107,9 +133,13 @@ describe('FetchService', () => {
   it('load batchSize of blocks', () => {
     const apiService = mockApiService();
     const batchSize = 50;
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
@@ -127,9 +157,13 @@ describe('FetchService', () => {
   it('skip load more if has preloaded enough', () => {
     const apiService = mockApiService();
     const batchSize = 50; // preload = 50*2 = 100
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
@@ -141,9 +175,13 @@ describe('FetchService', () => {
   it('skip load more if prepared height >= finalized height', () => {
     const apiService = mockApiService();
     const batchSize = 50; // preload = 50*2 = 100
+    const dictionaryService = new DictionaryService();
+    const project = testSubqueryProject();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;

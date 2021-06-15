@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
+import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { StoreService } from './store.service';
@@ -17,6 +18,7 @@ import { StoreService } from './store.service';
     ApiService,
     FetchService,
     BenchmarkService,
+    DictionaryService,
   ],
   exports: [],
 })

@@ -30,6 +30,9 @@ import {
 export class ProjectNetwork implements RegisteredTypes {
   @IsString()
   endpoint: string;
+  @IsString()
+  @IsOptional()
+  dictionary?: string;
   @IsObject()
   @IsOptional()
   types?: RegistryTypes;

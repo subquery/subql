@@ -2,25 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { MetaData } from '@subql/common';
+import { SubqlEventFilter, SubqlCallFilter } from '@subql/common';
 import axios from 'axios';
-import { NodeConfig } from '../configure/NodeConfig';
 
-type indexEvent = {
-  type: string;
-  module: string;
-  event: string;
-};
-
-type indexExtrinsic = {
-  type: string;
-  module: string;
-  call: string;
-};
-
-type eventsBatch = {};
-
-type extrinsicBatch = {};
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
   private isShutdown = false;
@@ -31,15 +15,16 @@ export class DictionaryService implements OnApplicationShutdown {
   dictionaryQuery(
     startBlock: number,
     batchSize: number,
-    offset: number,
-    indexEvents?: indexEvent[],
-    indexExtrinsics?: indexExtrinsic[],
+    existEventHandler: boolean,
+    existExtrinsicHandler: boolean,
+    indexEvents?: SubqlEventFilter[],
+    indexExtrinsics?: SubqlCallFilter[],
   ): string {
     let eventFilter = ``;
     let extrinsicFilter = ``;
     let baseQuery = ``;
     const metaQuery = `
-  Metadata {
+  _metadata {
     lastProcessedHeight
     lastProcessedTimestamp
     targetHeight
@@ -50,14 +35,22 @@ export class DictionaryService implements OnApplicationShutdown {
     indexerNodeVersion
     queryNodeVersion
   }`;
+    const specVersionQuery = `
+     specVersions{
+        nodes{
+          id
+          blockHeight
+        }        
+      }`;
     baseQuery = baseQuery.concat(metaQuery);
-    if (indexEvents.length !== 0) {
+    baseQuery = baseQuery.concat(specVersionQuery);
+    if (existEventHandler && indexEvents.length !== 0) {
       indexEvents.map((event) => {
         eventFilter = eventFilter.concat(`
         {
           and:[
           {module:{equalTo: "${event.module}"}},
-          {event:{equalTo:"${event.event}"}}
+          {event:{equalTo:"${event.method}"}}
         ]},`);
       });
       const eventQuery = `events(filter:{
@@ -65,20 +58,20 @@ export class DictionaryService implements OnApplicationShutdown {
     or:[
      ${eventFilter}
     ]
-  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize},offset: ${offset}){
+  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize}){
     nodes{
       blockHeight
     }
   }`;
       baseQuery = baseQuery.concat(eventQuery);
     }
-    if (indexExtrinsics.length !== 0) {
+    if (existExtrinsicHandler && indexExtrinsics.length !== 0) {
       indexExtrinsics.map((extrinsic) => {
         extrinsicFilter = extrinsicFilter.concat(`
         {
           and:[
           {module:{equalTo: "${extrinsic.module}"}},
-          {call:{equalTo:"${extrinsic.call}"}}
+          {call:{equalTo:"${extrinsic.method}"}}
         ]},`);
       });
       const extrinsicQueryQuery = `extrinsics(filter:{
@@ -86,7 +79,7 @@ export class DictionaryService implements OnApplicationShutdown {
     or:[
      ${extrinsicFilter}
     ]
-  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize},offset: ${offset}){
+  }, orderBy:BLOCK_HEIGHT_ASC,first: ${batchSize}){
     nodes{
       blockHeight
     }
@@ -96,21 +89,37 @@ export class DictionaryService implements OnApplicationShutdown {
     return `query{${baseQuery}}`;
   }
 
-  async getBlockBatch(api: string, query: string) {
+  async getDictionary(api: string, query: string) {
     let resp;
     try {
       resp = await axios.post(api, {
         query: query,
       });
+      return resp.data.data;
     } catch (err) {
-      // Handle Error Here
-      console.error(err);
+      throw new Error(err);
     }
+  }
 
-    if (resp) {
-      const { Metadata, events, extrinsics } = resp.data.data;
-      const nodes = events.nodes.concat(extrinsics.nodes);
-      return [...new Set(nodes.map((node) => node.blockHeight))];
+  getBlockBatch(queryResult): number[] {
+    let nodes = [];
+    if (queryResult.events && queryResult.events.nodes.length >= 0) {
+      nodes = nodes.concat(queryResult.events.nodes);
     }
+    if (queryResult.extrinsics && queryResult.extrinsics.nodes.length >= 0) {
+      nodes = nodes.concat(queryResult.extrinsics.nodes);
+    }
+    return [...new Set(nodes.map((node) => node.blockHeight))];
+  }
+
+  getSpecVersionMap(queryResult) {
+    let nodes = [];
+    if (
+      queryResult.specVersions &&
+      queryResult.specVersions.nodes.length >= 0
+    ) {
+      nodes = nodes.concat(queryResult.specVersions.nodes);
+    }
+    return [...new Set(nodes.map((node) => node.blockHeight))];
   }
 }
