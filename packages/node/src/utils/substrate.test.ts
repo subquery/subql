@@ -18,10 +18,10 @@ describe('substrate utils', () => {
   });
 
   it('query range of blocks', async () => {
-    const blockHash = await api.rpc.chain.getBlockHash(1785);
+    const blockHash = await api.rpc.chain.getBlockHash(100000);
     await prefetchMetadata(api, blockHash);
-    const blocks = await fetchBlocks(api, 1785, 1785);
-    expect(blocks).toHaveLength(1);
+    const blocks = await fetchBlocks(api, 100000, 100019);
+    expect(blocks).toHaveLength(20);
     for (const block of blocks) {
       expect(block).toHaveProperty('block');
       expect(block).toHaveProperty('extrinsics');
