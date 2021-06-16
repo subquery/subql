@@ -4512,6 +4512,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vuepress/plugin-search@npm:2.0.0-beta.10":
+  version: 2.0.0-beta.10
+  resolution: "@vuepress/plugin-search@npm:2.0.0-beta.10"
+  dependencies:
+    "@vuepress/client": 2.0.0-beta.10
+    "@vuepress/core": 2.0.0-beta.10
+    "@vuepress/shared": 2.0.0-beta.7
+    "@vuepress/utils": 2.0.0-beta.8
+    chokidar: ^3.5.1
+    vue: ^3.0.11
+    vue-router: ^4.0.6
+  checksum: 982c459944931f7c2b44262aa7bccc4b93e0071a124e51c6330ab6552428f91970d09cdffb9d536d1423aa1e2152a020e3550a408a8bb09ec8abb361c8bee56f
+  languageName: node
+  linkType: hard
+
 "@vuepress/plugin-theme-data@npm:2.0.0-beta.10":
   version: 2.0.0-beta.10
   resolution: "@vuepress/plugin-theme-data@npm:2.0.0-beta.10"
@@ -16167,6 +16182,7 @@ resolve@^1.14.2:
     "@typescript-eslint/eslint-plugin": ^4.14.2
     "@typescript-eslint/parser": ^4.14.2
     "@vuepress/plugin-google-analytics": next
+    "@vuepress/plugin-search": 2.0.0-beta.10
     babel-jest: ^26.6.3
     eslint: ^7.19.0
     eslint-config-prettier: ^7.2.0
