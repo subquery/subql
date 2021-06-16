@@ -76,6 +76,9 @@ module.exports = {
     ],
   },
   plugins: [
+    ['@vuepress/search', {
+      searchMaxSuggestions: 10
+    }],
     [
       '@vuepress/plugin-google-analytics',
       {
