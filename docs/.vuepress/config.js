@@ -64,8 +64,7 @@ module.exports = {
     ],
   },
   plugins: [
-    // ['fulltext-search'],
-    'fulltext-search',
+    ['fulltext-search'],
     [
       '@vuepress/plugin-google-analytics',
       {
