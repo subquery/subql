@@ -70,6 +70,8 @@ export class StoreService {
       this.sequelize.define(model.name, attributes, {
         underscored: true,
         freezeTableName: false,
+        createdAt: false,
+        updatedAt: false,
         schema,
         indexes,
       });
