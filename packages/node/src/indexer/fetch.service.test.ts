@@ -24,6 +24,30 @@ function testSubqueryProject(): SubqueryProject {
 jest.setTimeout(200000);
 
 describe('FetchService', () => {
+  it('loop until shutdown', async () => {
+    const batchSize = 20;
+    const project = testSubqueryProject();
+    const apiService = new ApiService(project, new EventEmitter2());
+    const dictionaryService = new DictionaryService();
+    await apiService.init();
+    const fetchService = new FetchService(
+      apiService,
+      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
+      new EventEmitter2(),
+    );
+    await fetchService.init();
+    const loopPromise = fetchService.startLoop(1);
+    // eslint-disable-next-line @typescript-eslint/require-await
+    fetchService.register(async (content) => {
+      if (content.block.block.header.number.toNumber() === 10) {
+        fetchService.onApplicationShutdown();
+      }
+    });
+    await loopPromise;
+  });
+
   it('fetch meta data once when spec version not changed in range', async () => {
     const batchSize = 30;
     const project = testSubqueryProject();
@@ -56,7 +80,7 @@ describe('FetchService', () => {
   });
 
   it('fetch meta data twice when spec version changed in range', async () => {
-    const batchSize = 10;
+    const batchSize = 20;
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();

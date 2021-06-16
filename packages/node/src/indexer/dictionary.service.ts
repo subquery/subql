@@ -42,8 +42,7 @@ export class DictionaryService implements OnApplicationShutdown {
           blockHeight
         }        
       }`;
-    baseQuery = baseQuery.concat(metaQuery);
-    baseQuery = baseQuery.concat(specVersionQuery);
+    baseQuery = baseQuery.concat(metaQuery, specVersionQuery);
     if (existEventHandler && indexEvents.length !== 0) {
       indexEvents.map((event) => {
         eventFilter = eventFilter.concat(`

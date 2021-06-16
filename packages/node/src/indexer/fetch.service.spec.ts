@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
-import { fetchBlocks } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
@@ -100,34 +98,6 @@ describe('FetchService', () => {
       new EventEmitter2(),
     );
     await fetchService.init();
-  });
-
-  it('loop until shutdown', async () => {
-    const apiService = mockApiService();
-    const dictionaryService = new DictionaryService();
-    const project = testSubqueryProject();
-    (fetchBlocks as jest.Mock).mockImplementation((api, start, end) =>
-      range(start, end + 1).map((height) => ({
-        block: { block: { header: { number: { toNumber: () => height } } } },
-      })),
-    );
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '' }),
-      project,
-      dictionaryService,
-      new EventEmitter2(),
-    );
-    fetchService.fetchMeta = jest.fn();
-    await fetchService.init();
-    const loopPromise = fetchService.startLoop(1);
-    // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.register(async (content) => {
-      if (content.block.block.header.number.toNumber() === 10) {
-        fetchService.onApplicationShutdown();
-      }
-    });
-    await loopPromise;
   });
 
   it('load batchSize of blocks', () => {

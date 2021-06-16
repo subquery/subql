@@ -127,7 +127,7 @@ export class IndexerManager {
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.initVM();
-    this.fetchService
+    void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
         logger.error(err, 'failed to fetch block');

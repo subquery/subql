@@ -113,15 +113,18 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   isUseDictionary() {
-    if (!this.project.network.dictionary) return false;
+    if (!this.project.network.dictionary) {
+      return false;
+    }
     if (
       this.projectIndexFilters.existBlockHandler ||
       (this.projectIndexFilters.existEventHandler &&
         this.projectIndexFilters.eventFilters.length === 0) ||
       (this.projectIndexFilters.existExtrinsicHandler &&
         this.projectIndexFilters.extrinsicFilters.length === 0)
-    )
+    ) {
       return false;
+    }
 
     return true;
   }
@@ -139,7 +142,7 @@ export class FetchService implements OnApplicationShutdown {
     }
     const query = this.dictionaryService.dictionaryQuery(
       startBlock,
-      Math.floor(this.nodeConfig.batchSize),
+      this.nodeConfig.batchSize,
       indexFilters.existEventHandler,
       indexFilters.existExtrinsicHandler,
       indexFilters.eventFilters,
