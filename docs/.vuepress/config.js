@@ -10,7 +10,7 @@ module.exports = {
     logo: '/assets/img/logo.png',
     logoLink: 'https://subquery.network',
     lastUpdated: true,
-    navbar: [
+    nav: [
       { text: 'Explorer', link: 'https://explorer.subquery.network/', target: '_blank', rel: '' },
       { text: 'Projects', link: 'https://project.subquery.network/', target: '_blank', rel: '' },
       { text: 'Documentation', link: '/' },
@@ -19,25 +19,16 @@ module.exports = {
     sidebarDepth: 2,
     sidebar: [
       {
-        text: 'Welcome to SubQuery',
-        link: '/README.md',
-        isGroup: true,
-        children: [
-          '/README.md',
-        ]
+        title: 'Welcome to SubQuery',
+        path: '/',
       },
       {
-        text: 'Quick Start Guide',
-        link: '/quickstart.md',
-        isGroup: true,
-        children: [
-          '/quickstart.md',
-        ]
+        title: 'Quick Start Guide',
+        path: '/quickstart',
       },
       {
-        text: 'Create a Project',
-        link: '/create/introduction.md',
-        isGroup: true,
+        title: 'Create a Project',
+        path: '/create/introduction',
         children: [
           '/create/introduction.md',
           '/create/manifest.md',
@@ -46,18 +37,16 @@ module.exports = {
         ]
       },
       {
-        text: 'Run a Project',
-        link: '/run/run.md',
-        isGroup: true,
+        title: 'Run a Project',
+        path: '/run/run',
         children: [
           '/run/run.md',
           '/run/sandbox.md',
         ]
       },
       {
-        text: 'Publish a Project',
-        link: '/publish/publish.md',
-        isGroup: true,
+        title: 'Publish a Project',
+        path: '/publish/publish',
         children: [
           '/publish/publish.md',
           '/publish/upgrade.md',
@@ -65,9 +54,8 @@ module.exports = {
         ]
       },
       {
-        text: 'Query your Data',
-        link: '/query/query.md',
-        isGroup: true,
+        title: 'Query your Data',
+        path: '/query/query',
         children: [
           '/query/query.md',
           '/query/graphql.md'
@@ -76,7 +64,8 @@ module.exports = {
     ],
   },
   plugins: [
-    ['@vuepress/plugin-search'],
+    // ['fulltext-search'],
+    'fulltext-search',
     [
       '@vuepress/plugin-google-analytics',
       {
@@ -85,9 +74,7 @@ module.exports = {
     ],
   ],
   markdown: {
-    extractHeaders: {
-      level: [2,3,4]
-    }
+    extractHeaders: ['h2','h3','h4']
   }
 }
 
