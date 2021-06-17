@@ -117,7 +117,7 @@ describe('FetchService', () => {
     expect(start).toEqual(100);
     expect(end).toEqual(100 + batchSize - 1);
 
-    (fetchService as any).latestPreparedHeight = 129;
+    (fetchService as any).latestBufferedHeight = 129;
     (fetchService as any).latestProcessedHeight = 100;
     [start, end] = (fetchService as any).nextBlockRange(100);
     expect(start).toEqual(130);
@@ -137,7 +137,7 @@ describe('FetchService', () => {
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    (fetchService as any).latestPreparedHeight = 200;
+    (fetchService as any).latestBufferedHeight = 200;
     (fetchService as any).latestProcessedHeight = 100;
     expect((fetchService as any).nextBlockRange(0)).toBeUndefined();
   });
@@ -155,11 +155,11 @@ describe('FetchService', () => {
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    (fetchService as any).latestPreparedHeight = undefined;
+    (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
     expect((fetchService as any).nextBlockRange(1001)).toBeUndefined();
     (fetchService as any).latestFinalizedHeight = 1000;
-    (fetchService as any).latestPreparedHeight = 1000;
+    (fetchService as any).latestBufferedHeight = 1000;
     (fetchService as any).latestProcessedHeight = 1000;
     expect((fetchService as any).nextBlockRange(0)).toBeUndefined();
   });

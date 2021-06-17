@@ -79,7 +79,7 @@ describe('FetchService', () => {
     expect(getMetaSpy).toBeCalledTimes(1);
   });
 
-  it('fetch meta data twice when spec version changed in range', async () => {
+  it('fetch meta data batchsize -1 times when spec version changed in range', async () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
@@ -109,6 +109,6 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(getMetaSpy).toBeCalledTimes(2);
+    expect(getMetaSpy).toBeCalledTimes(19);
   });
 });
