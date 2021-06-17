@@ -1,9 +1,22 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+  ApolloClient,
+  HttpLink,
+  InMemoryCache,
+  gql,
+} from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { SubqlEventFilter, SubqlCallFilter } from '@subql/common';
-import axios from 'axios';
+import { SubqlEventFilter, SubqlCallFilter, MetaData } from '@subql/common';
+import fetch from 'node-fetch';
+import { ProjectIndexFilters } from './types';
+
+export type Dictionary = {
+  _metadata: MetaData;
+  batchBlocks: number[];
+  specVersions: number[];
+};
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
@@ -12,7 +25,9 @@ export class DictionaryService implements OnApplicationShutdown {
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
-  dictionaryQuery(
+
+  //generate dictionary query
+  private dictionaryQuery(
     startBlock: number,
     batchSize: number,
     existEventHandler: boolean,
@@ -88,37 +103,54 @@ export class DictionaryService implements OnApplicationShutdown {
     return `query{${baseQuery}}`;
   }
 
-  async getDictionary(api: string, query: string) {
+  async getDictionary(
+    startBlock: number,
+    batchSize: number,
+    api: string,
+    indexFilters: ProjectIndexFilters,
+  ): Promise<Dictionary> {
     let resp;
+    const query = this.dictionaryQuery(
+      startBlock,
+      batchSize,
+      indexFilters.existEventHandler,
+      indexFilters.existExtrinsicHandler,
+      indexFilters.eventFilters,
+      indexFilters.extrinsicFilters,
+    );
+    const client = new ApolloClient({
+      cache: new InMemoryCache(),
+      link: new HttpLink({ uri: api, fetch }),
+    });
     try {
-      resp = await axios.post(api, {
-        query: query,
+      resp = await client.query({
+        query: gql(query),
       });
-      return resp.data.data;
+      const blockHeightSet = new Set<number>();
+      const specVersionBlockHeightSet = new Set<number>();
+
+      if (resp.data.events && resp.data.events.nodes.length >= 0) {
+        for (const node of resp.data.events.nodes) {
+          blockHeightSet.add(node.blockHeight);
+        }
+      }
+      if (resp.data.extrinsics && resp.data.extrinsics.nodes.length >= 0) {
+        for (const node of resp.data.extrinsics.nodes) {
+          blockHeightSet.add(node.blockHeight);
+        }
+      }
+      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
+        for (const node of resp.data.specVersions.nodes) {
+          specVersionBlockHeightSet.add(node.blockHeight);
+        }
+      }
+      const _metadata = resp.data._metadata;
+      const batchBlocks = Array.from(blockHeightSet);
+      const specVersions = Array.from(specVersionBlockHeightSet);
+
+      return { _metadata, batchBlocks, specVersions };
     } catch (err) {
       throw new Error(err);
     }
-  }
-
-  getBlockBatch(queryResult): number[] {
-    let nodes = [];
-    if (queryResult.events && queryResult.events.nodes.length >= 0) {
-      nodes = nodes.concat(queryResult.events.nodes);
-    }
-    if (queryResult.extrinsics && queryResult.extrinsics.nodes.length >= 0) {
-      nodes = nodes.concat(queryResult.extrinsics.nodes);
-    }
-    return [...new Set(nodes.map((node) => node.blockHeight))];
-  }
-
-  getSpecVersionMap(queryResult) {
-    let nodes = [];
-    if (
-      queryResult.specVersions &&
-      queryResult.specVersions.nodes.length >= 0
-    ) {
-      nodes = nodes.concat(queryResult.specVersions.nodes);
-    }
-    return [...new Set(nodes.map((node) => node.blockHeight))];
   }
 }

@@ -26,7 +26,7 @@ export class BlockedQueue<T> {
     if (this._queue.length >= this._maxSize) {
       throw new Error('BlockedQueue exceed max size');
     }
-    this._queue = this._queue.concat(items);
+    this._queue.push(...items);
   }
 
   async take(): Promise<T> {
@@ -44,7 +44,7 @@ export class BlockedQueue<T> {
       result = this._queue.slice(0, max);
       this._queue = this._queue.slice(max);
     } else {
-      result = [...this._queue];
+      result = this._queue;
       this._queue = [];
     }
     return result;

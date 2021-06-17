@@ -25,13 +25,14 @@ const FINALIZED_BLOCK_TIME_VARIANCE = 5;
 export class FetchService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
-  private latestPreparedHeight: number;
+  private latestBufferedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
   private nextBlockBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
-  private projectIndexFilters: ProjectIndexFilters; //define types
+  private projectIndexFilters: ProjectIndexFilters;
+  private bufferAllowSize: number;
 
   constructor(
     private apiService: ApiService,
@@ -46,6 +47,7 @@ export class FetchService implements OnApplicationShutdown {
     this.nextBlockBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
+    this.bufferAllowSize = this.nodeConfig.batchSize * 2;
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary = this.isUseDictionary();
   }
@@ -112,7 +114,7 @@ export class FetchService implements OnApplicationShutdown {
     return response;
   }
 
-  isUseDictionary() {
+  private isUseDictionary(): boolean {
     if (!this.project.network.dictionary) {
       return false;
     }
@@ -127,36 +129,6 @@ export class FetchService implements OnApplicationShutdown {
     }
 
     return true;
-  }
-
-  async getDictionary(startBlock: number) {
-    const indexFilters = this.projectIndexFilters;
-    if (
-      indexFilters.existBlockHandler ||
-      (indexFilters.existEventHandler &&
-        indexFilters.eventFilters.length === 0) ||
-      (indexFilters.existExtrinsicHandler &&
-        indexFilters.extrinsicFilters.length === 0)
-    ) {
-      this.useDictionary = false;
-    }
-    const query = this.dictionaryService.dictionaryQuery(
-      startBlock,
-      this.nodeConfig.batchSize,
-      indexFilters.existEventHandler,
-      indexFilters.existExtrinsicHandler,
-      indexFilters.eventFilters,
-      indexFilters.extrinsicFilters,
-    );
-    try {
-      const queryResult = await this.dictionaryService.getDictionary(
-        this.project.network.dictionary,
-        query,
-      );
-      return queryResult;
-    } catch (e) {
-      throw new Error(e);
-    }
   }
 
   register(next: (value: BlockContent) => Promise<void>): () => void {
@@ -216,28 +188,36 @@ export class FetchService implements OnApplicationShutdown {
   }
   async startLoop(initBlockHeight: number): Promise<void> {
     await Promise.all([
-      this.setNextBlockBuffer(initBlockHeight),
-      this.setBlockBuffer(),
+      this.fillNextBlockBuffer(initBlockHeight),
+      this.fillBlockBuffer(),
     ]);
   }
 
-  async setNextBlockBuffer(initBlockHeight: number): Promise<void> {
+  async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
     await this.fetchMeta(initBlockHeight);
     // eslint-disable-next-line no-constant-condition
-    let startBlockHeight;
-    startBlockHeight = initBlockHeight;
+    let startBlockHeight = initBlockHeight;
 
     while (!this.isShutdown) {
+      if (this.nextBlockBuffer.size > this.bufferAllowSize) {
+        await delay(1);
+        continue;
+      }
       if (this.useDictionary) {
         try {
-          const dictionary = await this.getDictionary(startBlockHeight);
-          const batchBlocks = this.dictionaryService.getBlockBatch(dictionary);
-          //TODO
-          // const specVersionMap = this.dictionaryService.getSpecVersionMap(dictionary);
+          const dictionary = await this.dictionaryService.getDictionary(
+            startBlockHeight,
+            this.nodeConfig.batchSize,
+            this.project.network.dictionary,
+            this.projectIndexFilters,
+          );
           const metaData = dictionary._metadata;
+          const batchBlocks = dictionary.batchBlocks;
+          //TODO
+          // const specVersionMap = dictionary.specVersions;
           if (
             metaData.chain !== this.api.runtimeChain.toString() ||
             metaData.specName !== this.api.runtimeVersion.specName.toString() ||
@@ -253,7 +233,6 @@ export class FetchService implements OnApplicationShutdown {
             logger.warn(
               `Dictionary indexed block is behind current indexing block height`,
             );
-            this.useDictionary = false;
             continue;
           }
           if (isUndefined(batchBlocks)) {
@@ -262,8 +241,8 @@ export class FetchService implements OnApplicationShutdown {
           }
           if (batchBlocks.length !== 0) {
             this.nextBlockBuffer.putAll(batchBlocks);
-            this.latestPreparedHeight = batchBlocks[batchBlocks.length - 1];
-            startBlockHeight = Number(this.latestPreparedHeight) + 1;
+            this.latestBufferedHeight = batchBlocks[batchBlocks.length - 1];
+            startBlockHeight = Number(this.latestBufferedHeight) + 1;
           }
           continue;
         } catch (e) {
@@ -277,12 +256,12 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
       this.nextBlockBuffer.putAll(range(startHeight, endHeight));
-      this.latestPreparedHeight = endHeight;
-      startBlockHeight = Number(this.latestPreparedHeight) + 1;
+      this.latestBufferedHeight = endHeight;
+      startBlockHeight = Number(this.latestBufferedHeight) + 1;
     }
   }
 
-  async setBlockBuffer(): Promise<void> {
+  async fillBlockBuffer(): Promise<void> {
     while (!this.isShutdown) {
       if (this.nextBlockBuffer.size === 0) {
         await delay(1);
@@ -330,15 +309,14 @@ export class FetchService implements OnApplicationShutdown {
   private nextBlockRange(
     initBlockHeight: number,
   ): [number, number] | undefined {
-    const preloadBlocks = this.nodeConfig.batchSize * 2;
     let startBlockHeight: number;
-    if (this.latestPreparedHeight === undefined) {
+    if (this.latestBufferedHeight === undefined) {
       startBlockHeight = initBlockHeight;
     } else if (
-      this.latestPreparedHeight - this.latestProcessedHeight <
-      preloadBlocks
+      this.latestBufferedHeight - this.latestProcessedHeight <
+      this.bufferAllowSize
     ) {
-      startBlockHeight = this.latestPreparedHeight + 1;
+      startBlockHeight = this.latestBufferedHeight + 1;
     } else {
       return;
     }
