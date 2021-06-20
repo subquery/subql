@@ -42,11 +42,6 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
     try {
       health = await fetch(new URL(`health`, indexerUrl));
       metaCache.indexerHealthy = !!health.ok;
-      // if (health.ok) {
-      //   metaCache.indexerHealthy = true;
-      // } else {
-      //   metaCache.indexerHealthy = false;
-      // }
     } catch (e) {
       metaCache.indexerHealthy = false;
       console.warn(`Failed to fetch indexer health, `, e.message);
@@ -56,9 +51,9 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
   return {
     typeDefs: gql`
       type _Metadata {
-        lastProcessedHeight: BigInt
+        lastProcessedHeight: Int
         lastProcessedTimestamp: Date
-        targetHeight: BigInt
+        targetHeight: Int
         chain: String
         specName: String
         genesisHash: String
