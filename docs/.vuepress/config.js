@@ -25,6 +25,11 @@ module.exports = {
       {
         title: 'Quick Start Guide',
         path: '/quickstart',
+        children: [
+          '/quickstart/quickstart.md',
+          '/quickstart/helloworld-localhost.md',
+          '/quickstart/understanding-helloworld.md',
+        ]
       },
       {
         title: 'Create a Project',
