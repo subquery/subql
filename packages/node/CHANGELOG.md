@@ -8,9 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.0] - 2021-06-22
 ### Changed
-- metadata expose last processed block
-- Remove created_at and updated_at from table
-- Bump polkadot/api to 4.15.1
+- metadata expose last processed block (#327)
+- Remove created_at and updated_at from table (#343)
+- Bump polkadot/api to 4.15.1 (#350)
 
 ## [0.15.1] - 2021-05-27
 ### Changed
