@@ -70,6 +70,12 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    'timestamp-field': {
+      demandOption: false,
+      describe: 'Enable/disable created_at and updated_at in schema',
+      type: 'boolean',
+      default: true,
+    },
   });
 }
 

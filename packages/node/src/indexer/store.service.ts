@@ -70,8 +70,8 @@ export class StoreService {
       this.sequelize.define(model.name, attributes, {
         underscored: true,
         freezeTableName: false,
-        createdAt: false,
-        updatedAt: false,
+        createdAt: this.config.timestampField,
+        updatedAt: this.config.timestampField,
         schema,
         indexes,
       });
