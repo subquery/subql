@@ -1,6 +1,6 @@
 # Hello World Explained
 
-In the Hello World quick start guide, we ran through some simple commands and very quickly got an example up and running. This enabled you to ensure you had all the pre-requisites in place, and to get the playground up and running and make a simple query to get your first task of SubQuery. Here, we take a closer look at what all those commands mean.
+In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This enabled you to ensure you had all the pre-requisites in place, and to get the playground up and running and make a simple query to get your first task of SubQuery. Here, we take a closer look at what all those commands mean.
 
 ## subql init
 
