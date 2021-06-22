@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.16.1] - 2021-06-22
 ### Added
-- add arg for enable/disable timestamp created_at and updated_at though `--timestamp-field`
+- add arg for enable/disable timestamp created_at and updated_at though `--timestamp-field` (#352)
 
 ## [0.16.0] - 2021-06-22
 ### Changed
