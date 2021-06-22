@@ -24,6 +24,7 @@ export interface IConfig {
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
   readonly indexCountLimit: number;
+  readonly timestampField: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -37,6 +38,7 @@ const DEFAULT_CONFIG = {
   debug: false,
   queryLimit: 100,
   indexCountLimit: 10,
+  timestampField: true,
 };
 
 export class NodeConfig implements IConfig {
@@ -118,6 +120,10 @@ export class NodeConfig implements IConfig {
 
   get indexCountLimit(): number {
     return this._config.indexCountLimit;
+  }
+
+  get timestampField(): boolean {
+    return this._config.timestampField;
   }
 
   merge(config: Partial<IConfig>): this {
