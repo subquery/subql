@@ -41,6 +41,10 @@ import { MetaService } from './meta.service';
       name: 'subql_indexer_block_queue_size',
       help: 'The size of fetched block queue',
     }),
+    makeGaugeProvider({
+      name: 'subql_indexer_next_block_queue_size',
+      help: 'The size of fetched block queue',
+    }),
     MetaService,
     HealthService,
   ],

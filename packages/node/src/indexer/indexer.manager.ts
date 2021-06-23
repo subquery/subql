@@ -35,7 +35,6 @@ export class IndexerManager {
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
-    protected dictionaryService: DictionaryService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,

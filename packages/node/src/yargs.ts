@@ -76,6 +76,12 @@ export function getYargsOption() {
       type: 'boolean',
       default: true,
     },
+    'network-dictionary': {
+      alias: 'd',
+      demandOption: false,
+      describe: 'Specify the dictionary api for this network',
+      type: 'string',
+    },
   });
 }
 

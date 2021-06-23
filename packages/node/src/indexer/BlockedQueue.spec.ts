@@ -38,4 +38,16 @@ describe('BlockedQueue', () => {
     await takePromise;
     expect(msecondTooks).toBeGreaterThanOrEqual(delay);
   });
+
+  it('block takeAll() with batchsize', async () => {
+    const queue = new BlockedQueue<number>(10);
+    const sequence = range(0, 10);
+    for (const i of sequence) {
+      queue.put(i);
+    }
+    //Take first batch
+    await expect(queue.takeAll(6)).resolves.toEqual([0, 1, 2, 3, 4, 5]);
+    //Take rest of it
+    await expect(queue.takeAll(6)).resolves.toEqual([6, 7, 8, 9]);
+  });
 });

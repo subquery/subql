@@ -19,6 +19,8 @@ export class MetricEventListener {
     private injectedApiConnectedMetric: Gauge<string>,
     @InjectMetric('subql_indexer_block_queue_size')
     private blockQueueSizeMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_next_block_queue_size')
+    private nextBlockQueueSizeMetric: Gauge<string>,
     @InjectMetric('subql_indexer_processing_block_height')
     private processingBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_processed_block_height')
@@ -40,6 +42,11 @@ export class MetricEventListener {
   @OnEvent(IndexerEvent.BlockQueueSize)
   handleBlockQueueSizeMetric({ value }: EventPayload<number>) {
     this.blockQueueSizeMetric.set(value);
+  }
+
+  @OnEvent(IndexerEvent.NextBlockQueueSize)
+  handleNextBlockQueueSizeMetric({ value }: EventPayload<number>) {
+    this.nextBlockQueueSizeMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)

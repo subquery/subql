@@ -10,20 +10,85 @@ import {
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { SubqlEventFilter, SubqlCallFilter, MetaData } from '@subql/common';
 import fetch from 'node-fetch';
+import { SubqueryProject } from '../configure/project.model';
 import { ProjectIndexFilters } from './types';
 
 export type Dictionary = {
   _metadata: MetaData;
   batchBlocks: number[];
-  specVersions: number[];
+  //TODO
+  // specVersions: number[];
 };
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
   private isShutdown = false;
 
+  constructor(protected project: SubqueryProject) {}
+
   onApplicationShutdown(): void {
     this.isShutdown = true;
+  }
+
+  async getDictionary(
+    startBlock: number,
+    batchSize: number,
+    indexFilters: ProjectIndexFilters,
+  ): Promise<Dictionary> {
+    const query = this.dictionaryQuery(
+      startBlock,
+      batchSize,
+      indexFilters.existEventHandler,
+      indexFilters.existExtrinsicHandler,
+      indexFilters.eventFilters,
+      indexFilters.extrinsicFilters,
+    );
+    const client = new ApolloClient({
+      cache: new InMemoryCache({ resultCaching: true }),
+      link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
+      defaultOptions: {
+        watchQuery: {
+          fetchPolicy: 'no-cache',
+        },
+        query: {
+          fetchPolicy: 'no-cache',
+        },
+      },
+    });
+
+    try {
+      const resp = await client.query({
+        query: gql(query),
+      });
+      const blockHeightSet = new Set<number>();
+      const specVersionBlockHeightSet = new Set<number>();
+
+      if (resp.data.events && resp.data.events.nodes.length >= 0) {
+        for (const node of resp.data.events.nodes) {
+          blockHeightSet.add(Number(node.blockHeight));
+        }
+      }
+      if (resp.data.extrinsics && resp.data.extrinsics.nodes.length >= 0) {
+        for (const node of resp.data.extrinsics.nodes) {
+          blockHeightSet.add(Number(node.blockHeight));
+        }
+      }
+      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
+        for (const node of resp.data.specVersions.nodes) {
+          specVersionBlockHeightSet.add(Number(node.blockHeight));
+        }
+      }
+      const _metadata = resp.data._metadata;
+      const batchBlocks = Array.from(blockHeightSet);
+      //TODO
+      // const specVersions = Array.from(specVersionBlockHeightSet);
+      return {
+        _metadata,
+        batchBlocks,
+      };
+    } catch (err) {
+      return undefined;
+    }
   }
 
   //generate dictionary query
@@ -101,56 +166,5 @@ export class DictionaryService implements OnApplicationShutdown {
       baseQuery = baseQuery.concat(extrinsicQueryQuery);
     }
     return `query{${baseQuery}}`;
-  }
-
-  async getDictionary(
-    startBlock: number,
-    batchSize: number,
-    api: string,
-    indexFilters: ProjectIndexFilters,
-  ): Promise<Dictionary> {
-    let resp;
-    const query = this.dictionaryQuery(
-      startBlock,
-      batchSize,
-      indexFilters.existEventHandler,
-      indexFilters.existExtrinsicHandler,
-      indexFilters.eventFilters,
-      indexFilters.extrinsicFilters,
-    );
-    const client = new ApolloClient({
-      cache: new InMemoryCache(),
-      link: new HttpLink({ uri: api, fetch }),
-    });
-    try {
-      resp = await client.query({
-        query: gql(query),
-      });
-      const blockHeightSet = new Set<number>();
-      const specVersionBlockHeightSet = new Set<number>();
-
-      if (resp.data.events && resp.data.events.nodes.length >= 0) {
-        for (const node of resp.data.events.nodes) {
-          blockHeightSet.add(node.blockHeight);
-        }
-      }
-      if (resp.data.extrinsics && resp.data.extrinsics.nodes.length >= 0) {
-        for (const node of resp.data.extrinsics.nodes) {
-          blockHeightSet.add(node.blockHeight);
-        }
-      }
-      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
-        for (const node of resp.data.specVersions.nodes) {
-          specVersionBlockHeightSet.add(node.blockHeight);
-        }
-      }
-      const _metadata = resp.data._metadata;
-      const batchBlocks = Array.from(blockHeightSet);
-      const specVersions = Array.from(specVersionBlockHeightSet);
-
-      return { _metadata, batchBlocks, specVersions };
-    } catch (err) {
-      throw new Error(err);
-    }
   }
 }

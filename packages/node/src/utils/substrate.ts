@@ -284,6 +284,7 @@ export async function fetchRuntimeVersionRange(
 export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray,
+  overallSpecVer?: number,
   // specVersionMap?: number[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
@@ -291,11 +292,15 @@ export async function fetchBlocksBatches(
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    fetchRuntimeVersionRange(api, parentBlockHashs),
+    overallSpecVer
+      ? undefined
+      : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const parentSpecVersion = runtimeVersions[idx].specVersion.toNumber();
+    const parentSpecVersion = overallSpecVer
+      ? overallSpecVer
+      : runtimeVersions[idx].specVersion.toNumber();
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
