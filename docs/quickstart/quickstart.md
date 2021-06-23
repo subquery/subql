@@ -65,13 +65,13 @@ npm install
 
 ## Configure and Build the Starter Project
 
-In the starter package that you just initialised, we have provided a standard set of configuration for your new project. You will mainly be working on the following files:
+In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
 
 - The Manifest in `project.yaml`
 - The GraphQL Schema in `schema.graphql`
 - The Mapping functions in `src/mappings/` directory
 
-For more information on how to write the SubQuery, check out our documentation under [Create a project](/create/introduction)
+For more information on how to write your own SubQuery, check out our documentation under [Create a Project](/create/introduction)
 
 ### GraphQL Model Generation
 

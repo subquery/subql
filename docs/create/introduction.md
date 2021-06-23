@@ -2,7 +2,7 @@
 
 ## Basic Workflow
 
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](/quickstart) section. From that starter package, we'll walk through the standard process to customise and implement your own SubQuery project.
+Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](/quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your own SubQuery project.
 
 ```shell
 subql init --starter PROJECT_NAME
@@ -15,7 +15,7 @@ Creating a bespoke SubQuery project is usually done in the following manner:
 2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](/create/manifest)
 3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](/create/graphql)
 4. Add all the mapping functions you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](/create/mapping)
-5. Generate code, build, and publish to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](/quickstart.html#running-and-querying-your-starter-project) in our quick start guide.
+5. Generate code, build, and publish to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](/quickstart/quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
 
 
 ## Directory Structure

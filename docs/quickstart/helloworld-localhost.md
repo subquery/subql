@@ -1,6 +1,6 @@
 # Hello World (localhost + Docker)
 
-Welcome to this Subql Hello World quick start. The aim of this quick start is to show you how you get the default starter project running in a docker in a few simple steps.
+Welcome to this SubQuery Hello World quick start. The aim of this quick start is to show you how you get the default starter project running in Docker in a few simple steps.
 
 ## Learning objectives
 
@@ -13,12 +13,12 @@ At the end of this quick start, you should:
 
 ## Intended audience
 
-This guide is geared towards new developers who have some development experience and are interested at learning more about SubQuery.
+This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
 
 ## Video guide
 
 <figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/k6iqLbzrU4g" frameborder="0" allowfullscreen="true"  width="600" height="350"> </iframe>
+  <iframe src="https://www.youtube.com/embed/k6iqLbzrU4g" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
 ## Pre-requisites
@@ -26,12 +26,12 @@ This guide is geared towards new developers who have some development experience
 You will need:
 
 - yarn or npm package manager
-- SubQuery CLI
+- SubQuery CLI (`@subql/cli`)
 - Docker
 
 You can run the following commands in a terminal to see if you already have any of these pre-requisites.
 
-```
+```shell
 yarn -v (or npm -v)
 subql -v
 docker -v
@@ -39,13 +39,13 @@ docker -v
 
 For more advanced users, copy and paste the following:
 
-```
+```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
 This should return: (for npm users, replace yarn with npm)
 
-```
+```shell
 My yarn version is: 1.22.10
 My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
@@ -54,14 +54,14 @@ My docker version is: Docker version 20.10.5, build 55c4c88
 If you get the above, then you are good to go. If not, follow these links to install them:
 
 - [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
-- [SubQuery CLI](http://localhost:8080/quickstart/quickstart.html#install-the-subquery-cli)
+- [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
 ## Step 1: subql init
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name subqlHelloWorld. Note that only author is mandatory. Everything else is left empty below.
+The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
 
-```
+```shell
 > subql init --starter subqlHelloWorld
 Git repository:
 RPC endpoint [wss://polkadot.api.onfinality.io/public-ws]:
@@ -132,7 +132,7 @@ $ ./node_modules/.bin/subql codegen
 ✨  Done in 1.02s.
 ```
 
-:warning: When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
 
 ## Step 4: yarn build
 
