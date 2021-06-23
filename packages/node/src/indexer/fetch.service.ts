@@ -27,7 +27,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
-  private nextBlockBuffer: BlockedQueue<number>;
+  private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
@@ -44,7 +44,7 @@ export class FetchService implements OnApplicationShutdown {
     this.blockBuffer = new BlockedQueue<BlockContent>(
       this.nodeConfig.batchSize * 3,
     );
-    this.nextBlockBuffer = new BlockedQueue<number>(
+    this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
     this.bufferAllowSize = this.nodeConfig.batchSize * 2;
@@ -170,6 +170,9 @@ export class FetchService implements OnApplicationShutdown {
     this.latestProcessedHeight = height;
   }
   async startLoop(initBlockHeight: number): Promise<void> {
+    if (isUndefined(this.latestProcessedHeight)) {
+      this.latestProcessedHeight = initBlockHeight - 1;
+    }
     await Promise.all([
       this.fillNextBlockBuffer(initBlockHeight),
       this.fillBlockBuffer(),
@@ -177,16 +180,16 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
-    if (isUndefined(this.latestProcessedHeight)) {
-      this.latestProcessedHeight = initBlockHeight - 1;
-    }
     await this.fetchMeta(initBlockHeight);
-    // eslint-disable-next-line no-constant-condition
-    let startBlockHeight = initBlockHeight;
+
+    let startBlockHeight: number;
 
     while (!this.isShutdown) {
+      startBlockHeight = this.latestBufferedHeight
+        ? this.latestBufferedHeight + 1
+        : initBlockHeight;
       if (
-        this.nextBlockBuffer.size >= this.bufferAllowSize ||
+        this.blockNumberBuffer.size >= this.bufferAllowSize ||
         startBlockHeight > this.latestFinalizedHeight
       ) {
         await delay(1);
@@ -210,13 +213,13 @@ export class FetchService implements OnApplicationShutdown {
               this.latestBufferedHeight =
                 dictionary._metadata.lastProcessedHeight;
             } else {
-              this.nextBlockBuffer.putAll(batchBlocks);
+              this.blockNumberBuffer.putAll(batchBlocks);
               this.latestBufferedHeight = batchBlocks[batchBlocks.length - 1];
-              startBlockHeight = this.latestBufferedHeight + 1;
-              this.eventEmitter.emit(IndexerEvent.NextBlockQueueSize, {
-                value: this.nextBlockBuffer.size,
-              });
             }
+            this.eventEmitter.emit(IndexerEvent.NextBlockQueueSize, {
+              value: this.blockNumberBuffer.size,
+            });
+
             continue; // skip nextBlockRange() way
           }
           // else use this.nextBlockRange()
@@ -226,22 +229,21 @@ export class FetchService implements OnApplicationShutdown {
       }
       // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(startBlockHeight);
-      this.nextBlockBuffer.putAll(range(startBlockHeight, endHeight));
+      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight));
       this.latestBufferedHeight = endHeight;
-      startBlockHeight = this.latestBufferedHeight + 1;
       this.eventEmitter.emit(IndexerEvent.NextBlockQueueSize, {
-        value: this.nextBlockBuffer.size,
+        value: this.blockNumberBuffer.size,
       });
     }
   }
 
   async fillBlockBuffer(): Promise<void> {
     while (!this.isShutdown) {
-      if (this.nextBlockBuffer.size === 0) {
+      if (this.blockNumberBuffer.size === 0) {
         await delay(1);
         continue;
       }
-      const bufferBlocks = await this.nextBlockBuffer.takeAll(
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(
         this.nodeConfig.batchSize,
       );
       const metadataChanged = await this.fetchMeta(

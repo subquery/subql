@@ -43,4 +43,54 @@ describe('DictionaryService', () => {
 
     expect(dic.batchBlocks.length).toBeGreaterThan(1);
   }, 500000);
+
+  it('return undefined when dictionary api failed', async () => {
+    const project = testSubqueryProject();
+    project.network.dictionary =
+      'https://api.subquery.network/sq/jiqiang90/not-exist';
+    const dictionaryService = new DictionaryService(project);
+    const batchSize = 30;
+    const startBlock = 1;
+    const indexFilters = {
+      existBlockHandler: false,
+      existEventHandler: true,
+      existExtrinsicHandler: true,
+      eventFilters: [
+        { module: 'staking', method: 'Bonded' },
+        { module: 'balances', method: 'Reward' },
+        { module: 'balances', method: 'Slash' },
+      ],
+      extrinsicFilters: [{ module: 'staking', method: 'bond' }],
+    };
+    const dic = await dictionaryService.getDictionary(
+      startBlock,
+      batchSize,
+      indexFilters,
+    );
+    expect(dic).toBeUndefined();
+  }, 500000);
+
+  it('should return meta even startblock height greater than dictionary last processed height', async () => {
+    const project = testSubqueryProject();
+    const dictionaryService = new DictionaryService(project);
+    const batchSize = 30;
+    const startBlock = 400000000;
+    const indexFilters = {
+      existBlockHandler: false,
+      existEventHandler: true,
+      existExtrinsicHandler: true,
+      eventFilters: [
+        { module: 'staking', method: 'Bonded' },
+        { module: 'balances', method: 'Reward' },
+        { module: 'balances', method: 'Slash' },
+      ],
+      extrinsicFilters: [{ module: 'staking', method: 'bond' }],
+    };
+    const dic = await dictionaryService.getDictionary(
+      startBlock,
+      batchSize,
+      indexFilters,
+    );
+    expect(dic._metadata).toBeDefined();
+  }, 500000);
 });

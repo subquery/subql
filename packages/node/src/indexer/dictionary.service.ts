@@ -11,6 +11,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { SubqlEventFilter, SubqlCallFilter, MetaData } from '@subql/common';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/project.model';
+import { getLogger } from '../utils/logger';
 import { ProjectIndexFilters } from './types';
 
 export type Dictionary = {
@@ -19,6 +20,7 @@ export type Dictionary = {
   //TODO
   // specVersions: number[];
 };
+const logger = getLogger('dictionary');
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
@@ -87,6 +89,7 @@ export class DictionaryService implements OnApplicationShutdown {
         batchBlocks,
       };
     } catch (err) {
+      logger.warn(`failed to fetch dictionary result`);
       return undefined;
     }
   }

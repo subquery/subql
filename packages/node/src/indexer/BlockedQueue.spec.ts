@@ -50,4 +50,37 @@ describe('BlockedQueue', () => {
     //Take rest of it
     await expect(queue.takeAll(6)).resolves.toEqual([6, 7, 8, 9]);
   });
+
+  it('block takeAll() without max batchsize', async () => {
+    const queue = new BlockedQueue<number>(10);
+    const sequence = range(0, 10);
+    for (const i of sequence) {
+      queue.put(i);
+    }
+    await expect(queue.takeAll()).resolves.toEqual([
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+    ]);
+  });
+
+  it('block takeAll() when queue is empty', async () => {
+    const queue = new BlockedQueue<number>(10);
+    const delay = 1000;
+    const startTs = new Date();
+    let msecondTooks: number;
+    const takePromise = queue
+      .takeAll()
+      .then(() => (msecondTooks = new Date().getTime() - startTs.getTime()));
+    setTimeout(() => queue.put(0), delay);
+    await takePromise;
+    expect(msecondTooks).toBeGreaterThanOrEqual(delay);
+  });
 });
