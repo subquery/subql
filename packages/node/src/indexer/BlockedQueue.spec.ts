@@ -83,4 +83,14 @@ describe('BlockedQueue', () => {
     await takePromise;
     expect(msecondTooks).toBeGreaterThanOrEqual(delay);
   });
+
+  it('throw error when putAll items more than maxSize', () => {
+    const size = 10;
+    const queue = new BlockedQueue<number>(10);
+    const sequence = range(0, 10);
+    queue.putAll(sequence);
+    expect(() => queue.putAll([11, 12, 13])).toThrow(
+      'BlockedQueue exceed max size',
+    );
+  });
 });

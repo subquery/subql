@@ -3,6 +3,7 @@
 
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
+import { SubqlKind } from '@subql/common';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();

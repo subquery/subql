@@ -261,15 +261,7 @@ describe('FetchService', () => {
         mapping: {
           handlers: [
             {
-              handler: 'handleBond',
-              kind: 'substrate/EventHandler',
-              filter: {
-                module: 'staking',
-                method: 'Bonded',
-              },
-            },
-            {
-              handler: 'handleBond',
+              handler: 'handleCall',
               kind: 'substrate/CallHandler',
               filter: {
                 module: 'utility',
