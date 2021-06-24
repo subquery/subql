@@ -10,6 +10,8 @@ import {
 
 const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
 
+jest.setTimeout(100000);
+
 describe('substrate utils', () => {
   let api: ApiPromise;
   beforeAll(async () => {
@@ -27,7 +29,7 @@ describe('substrate utils', () => {
       expect(block).toHaveProperty('extrinsics');
       expect(block).toHaveProperty('events');
     }
-  }, 30000);
+  });
 
   it.skip('query range of blocks via range query', async () => {
     const blockHash = await api.rpc.chain.getBlockHash(100000);
@@ -39,5 +41,5 @@ describe('substrate utils', () => {
       expect(block).toHaveProperty('extrinsics');
       expect(block).toHaveProperty('events');
     }
-  }, 30000);
+  });
 });

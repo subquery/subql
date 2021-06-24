@@ -74,6 +74,9 @@ export class ConfigureModule {
       if (config.networkEndpoint) {
         p.network.endpoint = config.networkEndpoint;
       }
+      if (config.networkDictionary) {
+        p.network.dictionary = config.networkDictionary;
+      }
       return p;
     };
 

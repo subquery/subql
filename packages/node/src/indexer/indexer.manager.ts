@@ -101,6 +101,7 @@ export class IndexerManager {
         }
         // TODO: support Ink! and EVM
       }
+
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save();
@@ -131,6 +132,7 @@ export class IndexerManager {
         // FIXME: retry before exit
         process.exit(1);
       });
+
     this.fetchService.register((block) => this.indexBlock(block));
   }
 
