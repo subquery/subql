@@ -1,9 +1,9 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { SubqlKind } from '@subql/common';
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
-import { SubqlKind } from '@subql/common';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
