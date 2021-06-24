@@ -210,13 +210,14 @@ export class FetchService implements OnApplicationShutdown {
           ) {
             const { batchBlocks } = dictionary;
             if (batchBlocks.length === 0) {
-              this.latestBufferedHeight =
-                dictionary._metadata.lastProcessedHeight;
+              this.setLatestBufferedHeight(
+                dictionary._metadata.lastProcessedHeight,
+              );
             } else {
               this.blockNumberBuffer.putAll(batchBlocks);
-              this.latestBufferedHeight = batchBlocks[batchBlocks.length - 1];
+              this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
-            this.eventEmitter.emit(IndexerEvent.NextBlockQueueSize, {
+            this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
               value: this.blockNumberBuffer.size,
             });
 
@@ -230,10 +231,7 @@ export class FetchService implements OnApplicationShutdown {
       // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(startBlockHeight);
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight));
-      this.latestBufferedHeight = endHeight;
-      this.eventEmitter.emit(IndexerEvent.NextBlockQueueSize, {
-        value: this.blockNumberBuffer.size,
-      });
+      this.setLatestBufferedHeight(endHeight);
     }
   }
 
@@ -259,9 +257,7 @@ export class FetchService implements OnApplicationShutdown {
           bufferBlocks[bufferBlocks.length - 1]
         }]`,
       );
-      for (const block of blocks) {
-        this.blockBuffer.put(block);
-      }
+      this.blockBuffer.putAll(blocks);
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.blockBuffer.size,
       });
@@ -312,11 +308,7 @@ export class FetchService implements OnApplicationShutdown {
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): boolean {
-    if (
-      metaData.chain !== this.api.runtimeChain.toString() ||
-      metaData.specName !== this.api.runtimeVersion.specName.toString() ||
-      metaData.genesisHash !== this.api.genesisHash.toString()
-    ) {
+    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       return false;
@@ -328,5 +320,12 @@ export class FetchService implements OnApplicationShutdown {
       return false;
     }
     return true;
+  }
+
+  private setLatestBufferedHeight(height: number): void {
+    this.latestBufferedHeight = height;
+    this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
+      value: this.blockNumberBuffer.size,
+    });
   }
 }

@@ -274,9 +274,6 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
-      if ((fetchService as any).latestBufferedHeight === 1001) {
-        fetchService.onApplicationShutdown();
-      }
     });
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
@@ -299,7 +296,7 @@ describe('FetchService', () => {
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
     const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`next_block_queue_size`, (nextBufferSize) => {
+    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       // [1000,1001,1002,1003,1004]
       if (nextBufferSize.value >= 5) {
         fetchService.onApplicationShutdown();
@@ -359,7 +356,7 @@ describe('FetchService', () => {
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
     const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`next_block_queue_size`, (nextBufferSize) => {
+    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       // [1000,1001,1002,1003,1004]
       if (nextBufferSize.value >= 5) {
         fetchService.onApplicationShutdown();
@@ -417,7 +414,7 @@ describe('FetchService', () => {
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
     const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`next_block_queue_size`, (nextBufferSize) => {
+    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       if (nextBufferSize.value >= 5) {
         fetchService.onApplicationShutdown();
       }
@@ -471,7 +468,7 @@ describe('FetchService', () => {
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
     const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`next_block_queue_size`, (nextBufferSize) => {
+    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       if (nextBufferSize.value >= 8) {
         fetchService.onApplicationShutdown();
       }

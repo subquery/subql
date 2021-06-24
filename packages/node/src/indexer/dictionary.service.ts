@@ -89,7 +89,7 @@ export class DictionaryService implements OnApplicationShutdown {
         batchBlocks,
       };
     } catch (err) {
-      logger.warn(`failed to fetch dictionary result`);
+      logger.warn(err, `failed to fetch dictionary result`);
       return undefined;
     }
   }
