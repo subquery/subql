@@ -6,7 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## 0.1.0 - 2021-03-11
+## [0.2.0] - 2021-06-25
+### Changed
+- Update dependencies (#358)
+
+## [0.1.0] - 2021-03-11
 ### Added
 - init release: support validation of subquery project
 
