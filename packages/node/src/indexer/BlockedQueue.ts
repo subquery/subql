@@ -15,6 +15,10 @@ export class BlockedQueue<T> {
     return this._queue.length;
   }
 
+  get freeSize(): number {
+    return this._maxSize - this._queue.length;
+  }
+
   put(item: T): void {
     if (this._queue.length >= this._maxSize) {
       throw new Error('BlockedQueue exceed max size');
