@@ -47,7 +47,6 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
-    this.bufferAllowSize = this.nodeConfig.batchSize * 2;
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary = this.isUseDictionary();
   }
@@ -189,7 +188,7 @@ export class FetchService implements OnApplicationShutdown {
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
       if (
-        this.blockNumberBuffer.size >= this.bufferAllowSize ||
+        this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
         startBlockHeight > this.latestFinalizedHeight
       ) {
         await delay(1);
@@ -237,13 +236,17 @@ export class FetchService implements OnApplicationShutdown {
 
   async fillBlockBuffer(): Promise<void> {
     while (!this.isShutdown) {
-      if (this.blockNumberBuffer.size === 0) {
+      const takeCount = Math.min(
+        this.blockBuffer.freeSize,
+        this.nodeConfig.batchSize,
+      );
+
+      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
         await delay(1);
         continue;
       }
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(
-        this.nodeConfig.batchSize,
-      );
+
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
       const metadataChanged = await this.fetchMeta(
         bufferBlocks[bufferBlocks.length - 1],
       );
