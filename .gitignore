@@ -208,3 +208,5 @@ docs/.vuepress/.caches
 
 .data
 lib
+
+.DS_Store

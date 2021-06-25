@@ -11,7 +11,7 @@ SubQuery allows every Substrate/Polkadot team to process and query their data. T
 3. Lastly, we'll explain how to upload SubQuery projects to the hosted SubQuery console so you don't need to worry about running infrastructure.
 
 ## Create a SubQuery project
-You can follow our [Quick Start Guide](/quickstart.md) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
+You can follow our [Quick Start Guide](/quickstart/quickstart.md) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and  [Node](https://nodejs.org/en/).
 
