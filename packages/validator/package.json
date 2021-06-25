@@ -1,6 +1,6 @@
 {
   "name": "@subql/validator",
-  "version": "0.1.1",
+  "version": "0.1.2-0",
   "description": "to validate subquery project",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
