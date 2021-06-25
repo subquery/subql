@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - add dictionary feature to accelerate indexing speed
+### Changed
+- replace vm2 with @subql/x-vm2
 
 ## [0.16.1] - 2021-06-22
 ### Added
