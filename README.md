@@ -18,7 +18,7 @@ npm install -g @subql/cli @subql/node @subql/query
 ```
 
 #### Create a SubQuery project
-You can follow our [Quick Start Guide](https://doc.subquery.network/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
+You can follow our [Quick Start Guide](https://doc.subquery.network/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nodejs.org/en/).
 
