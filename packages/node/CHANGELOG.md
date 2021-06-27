@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.17.0] - 2021-06-25
 ### Added
 - Add an external dictionary feature to massively improve indexing speed.
-  - Enable by `--network-dictionary=<dictionary_HTTP_url>` (#342)
+  - Enable by `--network-dictionary=<dictionary_HTTP_url>` or in `project.yaml` - [read more](https://doc.subquery.network/run/run.html#using-a-dictionary) (#342)
   - Add dictionary service to fetch dictionary from external GraphQL API (#342)
   - Add additional block number buffer in fetch service to handle incoming dictionary data (#342)
 ### Changed
