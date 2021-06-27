@@ -1,6 +1,5 @@
 {
   "name": "@subql/node",
-  "version": "0.16.1",
   "version": "0.16.2",
   "description": "",
   "author": "Ian He",
@@ -24,7 +23,7 @@
     "@nestjs/event-emitter": "^0.0.2",
     "@nestjs/platform-express": "^7.6.1",
     "@nestjs/schedule": "^0.4.2",
-    "@polkadot/api": "^4.15.1",
+    "@polkadot/api": "^4.16.2",
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-vm2": "latest",

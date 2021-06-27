@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.16.2] - 2021-06-28
+### Changed
+- Bump polkadot/api to 4.16.2 (#363)
+
 ## [0.16.1] - 2021-06-22
 ### Added
 - add dictionary feature to accelerate indexing speed

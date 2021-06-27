@@ -2,7 +2,7 @@ name: "Release"
 on:
   push:
     branches:
-      - main
+      - update-polkadot-4.16.2
     paths-ignore:
       - '.github/workflows/**'
   workflow_dispatch:
