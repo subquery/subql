@@ -6,19 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.0] - 2021-06-25
+### Added
+- Add an external dictionary feature to massively improve indexing speed.
+  - Enable by `--network-dictionary=<dictionary_HTTP_url>` or in `project.yaml` - [read more](https://doc.subquery.network/run/run.html#using-a-dictionary) (#342)
+  - Add dictionary service to fetch dictionary from external GraphQL API (#342)
+  - Add additional block number buffer in fetch service to handle incoming dictionary data (#342)
+### Changed
+- replace vm2 with @subql/x-vm2 (#358)
+- Update other dependencies (#358)
+
 ## [0.16.2] - 2021-06-28
 ### Changed
 - Bump polkadot/api to 4.16.2 (#363)
 
 ## [0.16.1] - 2021-06-22
 ### Added
-- add dictionary feature to accelerate indexing speed
-### Changed
-- replace vm2 with @subql/x-vm2
-
-## [0.16.1] - 2021-06-22
-### Added
-- add arg for enable/disable timestamp created_at and updated_at though `--timestamp-field` (#352)
+- Add arg for enable/disable timestamp created_at and updated_at though `--timestamp-field` (#352)
 
 ## [0.16.0] - 2021-06-22
 ### Changed
