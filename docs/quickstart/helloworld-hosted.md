@@ -1,15 +1,15 @@
 # Hello World (SubQuery hosted)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery in a few easy steps.
+The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
 
-We will take the simple starter project and everything we've learned thus far and instead of running it locally within Docker, we'll take advantage of SubQuery's hosting infrastructure. In otherwords, we let SubQuery do all the heavy lifting.
+We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In otherwords, we let SubQuery do all the heavy lifting running and managing production infrastructure.
 
 ## Learning objectives
 
 At the end of this quick start, you should:
 
 - understand the required pre-requisites
-- be able host a project in SubQuery
+- be able host a project in [SubQuery Projects](https://project.subquery.network/)
 - run a simple query to get the block height of the Polkadot mainnet using the playground
 - run a simple GET query to get the block height of the Polkadot mainnet using cURL
 
@@ -23,7 +23,7 @@ You will need:
 
 - a GitHub account
 
-## Step 1: create your project
+## Step 1: Create your project
 
 Let's create a project called subql_hellowworld and run the obligatory install, codegen and build with your favourite package manager.
 
@@ -36,19 +36,19 @@ yarn build
 
 Do NOT run the docker commands though.
 
-## Step 2: create a GitHub repo
+## Step 2: Create a GitHub repo
 
-In GitHub, create a new repository. Provide a name and choose your visibility and initial preferences. Here, everything is kept as the default for now.
+In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
 
 ![create github repo](../../assets/github_create_new_repo.png)
 
-Take note of your GitHub URL.
+Take note of your GitHub URL, this must be public for SubQuery to access it.
 
 ![create github repo](../../assets/github_repo_url.png)
 
 ## Step 3: push to GitHub
 
-Back in your project directory, initialise it as a GitHub directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
 
 ```shell
 git init
@@ -95,7 +95,7 @@ The push command means "please push my code TO the origin repo FROM my master lo
 
 ![First commit](../../assets/first_commit.png)
 
-Now that you have got your code into GitHub, let's look at how we can host it in SubQuery.
+Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
 
 ## Step 4: create your project
 
@@ -103,13 +103,13 @@ Navigate to [https://project.subquery.network](https://project.subquery.network)
 
 ![Welcome to SubQuery projects](../../assets/welcome_to_subquery_projects.png)
 
-Then create a project,
+Then create a new project,
 
 ![Welcome to SubQuery projects](../../assets/subquery_create_project.png)
 
-and fill in the various fields with the appropriate details.
+And fill in the various fields with the appropriate details.
 
-- **GitHub account:** If you have more than one GitHub accounts, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
+- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
 - **Project Name:** Give your project a name here.
 - **Subtitle:** Provide a subtitle for your project.
 - **Description:** Explain what your SubQuery project does.
@@ -122,23 +122,23 @@ When you click create, you'll be taken to your dashboard.
 
 ![SubQuery project dashboard](../../assets/subquery_project_dashboard.png)
 
-The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated and in particular the deployment details.
+The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
 
 ## Step 5: deploy your project
 
-Now that you have created your project within SubQuery, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
 
 You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
 
 ![Deploy to production slot](../../assets/deploy_production_slot.png)
 
-- **Commit Hash of new Version:** From GitHub copy the full commit hash of the version of your SubQuery project codebase that you want deployed
+- **Commit Hash of new Version:** From GitHub select the correct commit of the SubQuery project codebase that you want deployed
 - **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [@subql/node](https://www.npmjs.com/package/@subql/node)
 - **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [@subql/query](https://www.npmjs.com/package/@subql/query)
 
-Because we only have one commit, we will have nothing in the drop down. We'll also work with the latest version of the indexer and query version so we will accept the defaults and then click "Deploy Update".
+Because we only have one commit, there is only a single option in the drop down. We'll also work with the latest version of the indexer and query version so we will accept the defaults and then click "Deploy Update".
 
-You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
+You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery's managed infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
 
 ![Deployment processing](../../assets/deployment_processing.png)
 
@@ -181,4 +181,4 @@ Readability is not a concern here as you will probably have some front end code 
 
 ## Summary
 
-In this SubQuery hosted quick start we showed how quickly and easily it was to take a Subql project and deploy it to SubQuery where all the infrastructure is provided for your convenience. There is an inbuilt playground for running various queries as well as an API endpoing for your code to integrate with.
+In this SubQuery hosted quick start we showed how quickly and easily it was to take a Subql project and deploy it to [SubQuery Projects](https://project.subquery.network) where all the infrastructure is provided for your convenience. There is an inbuilt playground for running various queries as well as an API endpoing for your code to integrate with.
