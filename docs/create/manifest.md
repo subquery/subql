@@ -123,7 +123,6 @@ repository: "https://github.com/onfinality-io/subql-examples"
 schema: "./schema.graphql"
 network:
   endpoint: "ws://host.kittychain.io/public-ws"
-  dictionary: "
   types: {
     "KittyIndex": "u32",
     "Kitty": "[u8; 16]"
