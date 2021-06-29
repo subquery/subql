@@ -20,6 +20,7 @@ import { BlockContent, ProjectIndexFilters } from './types';
 
 const logger = getLogger('fetch');
 const FINALIZED_BLOCK_TIME_VARIANCE = 5;
+const DICTIONARY_MAX_QUERY_SIZE = 10000;
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
@@ -196,9 +197,11 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
       if (this.useDictionary) {
+        const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         try {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
+            queryEndBlock,
             this.nodeConfig.batchSize,
             this.projectIndexFilters,
           );
@@ -211,7 +214,10 @@ export class FetchService implements OnApplicationShutdown {
             const { batchBlocks } = dictionary;
             if (batchBlocks.length === 0) {
               this.setLatestBufferedHeight(
-                dictionary._metadata.lastProcessedHeight,
+                Math.min(
+                  queryEndBlock - 1,
+                  dictionary._metadata.lastProcessedHeight,
+                ),
               );
             } else {
               this.blockNumberBuffer.putAll(batchBlocks);

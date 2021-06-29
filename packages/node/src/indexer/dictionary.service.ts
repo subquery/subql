@@ -32,13 +32,22 @@ export class DictionaryService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
+  /**
+   *
+   * @param startBlock
+   * @param queryEndBlock this block number will limit the max query range, increase dictionary query speed
+   * @param batchSize
+   * @param indexFilters
+   */
   async getDictionary(
     startBlock: number,
+    queryEndBlock: number,
     batchSize: number,
     indexFilters: ProjectIndexFilters,
   ): Promise<Dictionary> {
     const query = this.dictionaryQuery(
       startBlock,
+      queryEndBlock,
       batchSize,
       indexFilters.existEventHandler,
       indexFilters.existExtrinsicHandler,
@@ -97,6 +106,7 @@ export class DictionaryService implements OnApplicationShutdown {
   //generate dictionary query
   private dictionaryQuery(
     startBlock: number,
+    queryEndBlock: number,
     batchSize: number,
     existEventHandler: boolean,
     existExtrinsicHandler: boolean,
@@ -136,7 +146,7 @@ export class DictionaryService implements OnApplicationShutdown {
         ]},`);
       });
       const eventQuery = `events(filter:{
-    blockHeight:{greaterThan:"${startBlock}"},
+    blockHeight:{greaterThanOrEqualTo:"${startBlock}",  lessThan: "${queryEndBlock}"},
     or:[
      ${eventFilter}
     ]
@@ -157,7 +167,7 @@ export class DictionaryService implements OnApplicationShutdown {
         ]},`);
       });
       const extrinsicQueryQuery = `extrinsics(filter:{
-    blockHeight:{greaterThan:"${startBlock}"},
+    blockHeight:{greaterThanOrEqualTo:"${startBlock}", lessThan: "${queryEndBlock}"},
     or:[
      ${extrinsicFilter}
     ]
