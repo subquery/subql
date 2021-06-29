@@ -46,7 +46,7 @@ Take note of your GitHub URL, this must be public for SubQuery to access it.
 
 ![create github repo](../../assets/github_repo_url.png)
 
-## Step 3: push to GitHub
+## Step 3: Push to GitHub
 
 Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
 
@@ -97,15 +97,15 @@ The push command means "please push my code TO the origin repo FROM my master lo
 
 Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
 
-## Step 4: create your project
+## Step 4: Create your project
 
 Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
 
-![Welcome to SubQuery projects](../../assets/welcome_to_subquery_projects.png)
+![Welcome to SubQuery Projects](../../assets/welcome_to_subquery_projects.png)
 
 Then create a new project,
 
-![Welcome to SubQuery projects](../../assets/subquery_create_project.png)
+![Welcome to SubQuery Projects](../../assets/subquery_create_project.png)
 
 And fill in the various fields with the appropriate details.
 
@@ -120,11 +120,11 @@ And fill in the various fields with the appropriate details.
 
 When you click create, you'll be taken to your dashboard.
 
-![SubQuery project dashboard](../../assets/subquery_project_dashboard.png)
+![SubQuery Project dashboard](../../assets/subquery_project_dashboard.png)
 
 The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
 
-## Step 5: deploy your project
+## Step 5: Deploy your project
 
 Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
 
@@ -146,7 +146,7 @@ The deployment is now running.
 
 ![Deployment running](../../assets/deployment_running.png)
 
-## Step 6: testing your project
+## Step 6: Testing your project
 
 To test your project, click on the 3 ellipsis and select "View on SubQuery Explorer".
 
@@ -156,7 +156,7 @@ This will take you to the ever familiar "Playground" where you can click the pla
 
 ![Subquery playground](../../assets/subquery_playground.png)
 
-## Step 7: bonus step
+## Step 7: Bonus step
 
 For the astute amongst us, you will recall that in the learning objectives, the last point was to run a simple GET query. To do this, we will need to grab the "Query Endpoint" displayed in the deployment details.
 
