@@ -7,8 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.17.1] - 2021-06-29
+Upgrade priority: High.
 ### Fixed
-- Fix query greater than problem, query with max range to speed up dictionary (#365)
+- Fix an edge case for dictionary query, add blocknumber max range to speed up dictionary (#365)
 
 ## [0.17.0] - 2021-06-25
 ### Added
