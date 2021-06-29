@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SubqlKind } from '@subql/common';
+import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
 
@@ -25,6 +25,7 @@ describe('DictionaryService', () => {
 
     const batchSize = 30;
     const startBlock = 1;
+    const endBlock = 10001;
     const indexFilters = {
       existBlockHandler: false,
       existEventHandler: true,
@@ -38,6 +39,7 @@ describe('DictionaryService', () => {
     };
     const dic = await dictionaryService.getDictionary(
       startBlock,
+      endBlock,
       batchSize,
       indexFilters,
     );
@@ -52,6 +54,7 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(project);
     const batchSize = 30;
     const startBlock = 1;
+    const endBlock = 10001;
     const indexFilters = {
       existBlockHandler: false,
       existEventHandler: true,
@@ -65,6 +68,7 @@ describe('DictionaryService', () => {
     };
     const dic = await dictionaryService.getDictionary(
       startBlock,
+      endBlock,
       batchSize,
       indexFilters,
     );
@@ -76,6 +80,7 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(project);
     const batchSize = 30;
     const startBlock = 400000000;
+    const endBlock = 400010000;
     const indexFilters = {
       existBlockHandler: false,
       existEventHandler: true,
@@ -89,9 +94,33 @@ describe('DictionaryService', () => {
     };
     const dic = await dictionaryService.getDictionary(
       startBlock,
+      endBlock,
       batchSize,
       indexFilters,
     );
     expect(dic._metadata).toBeDefined();
+  }, 500000);
+
+  it('test query the correct range', async () => {
+    const project = testSubqueryProject();
+    const dictionaryService = new DictionaryService(project);
+
+    const batchSize = 30;
+    const startBlock = 1;
+    const endBlock = 10001;
+    const indexFilters = {
+      existBlockHandler: false,
+      existEventHandler: true,
+      existExtrinsicHandler: true,
+      eventFilters: [],
+      extrinsicFilters: [{ module: 'timestamp', method: 'set' }],
+    };
+    const dic = await dictionaryService.getDictionary(
+      startBlock,
+      endBlock,
+      batchSize,
+      indexFilters,
+    );
+    expect(dic.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
   }, 500000);
 });
