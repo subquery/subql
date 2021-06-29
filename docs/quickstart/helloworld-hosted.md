@@ -17,6 +17,12 @@ At the end of this quick start, you should:
 
 This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
 
+## Video guide
+
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/b-ba8-zPOoo" frameborder="0" allowfullscreen="true"></iframe>
+</figure>
+
 ## Pre-requisites
 
 You will need:
