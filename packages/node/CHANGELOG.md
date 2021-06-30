@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+
+## [0.17.2] - 2021-07-01
+Upgrade priority: High.
 ### Fixed
-- fix get runtimeVersion failed when fetch service initialization
-- set useDictionary to false when one of the event/extrinsic filters are not provided
+- fix get runtimeVersion failed when fetch service initialization (#367)
+- set useDictionary to false when one of the event/extrinsic filters are not provided (#367)
 
 ## [0.17.1] - 2021-06-29
 Upgrade priority: High.
