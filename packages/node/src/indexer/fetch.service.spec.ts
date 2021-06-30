@@ -252,7 +252,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',
@@ -314,7 +314,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',
@@ -375,7 +375,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',
@@ -430,7 +430,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',

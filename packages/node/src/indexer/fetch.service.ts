@@ -149,7 +149,7 @@ export class FetchService implements OnApplicationShutdown {
   async init(): Promise<void> {
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary =
-      !!this.projectIndexFilters || !this.project.network.dictionary;
+      !!this.projectIndexFilters && !!this.project.network.dictionary;
     await this.getFinalizedBlockHead();
   }
 
