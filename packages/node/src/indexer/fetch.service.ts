@@ -80,6 +80,15 @@ export class FetchService implements OnApplicationShutdown {
             case SubqlKind.CallHandler: {
               response.existExtrinsicHandler = true;
               if (
+                !handler.filter ||
+                handler.filter === null ||
+                handler.filter.module === undefined ||
+                handler.filter.method === undefined
+              ) {
+                this.useDictionary = false;
+              } else if (
+                handler.filter.module &&
+                handler.filter.method &&
                 response.extrinsicFilters.findIndex(
                   (extrinsic) =>
                     extrinsic.module === handler.filter.module &&
@@ -93,6 +102,15 @@ export class FetchService implements OnApplicationShutdown {
             case SubqlKind.EventHandler: {
               response.existEventHandler = true;
               if (
+                !handler.filter ||
+                handler.filter === null ||
+                handler.filter.module === undefined ||
+                handler.filter.method === undefined
+              ) {
+                this.useDictionary = false;
+              } else if (
+                handler.filter.module &&
+                handler.filter.method &&
                 response.eventFilters.findIndex(
                   (event) =>
                     event.module === handler.filter.module &&
@@ -300,7 +318,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private isUseDictionary(): boolean {
-    if (!this.project.network.dictionary) {
+    if (!this.project.network.dictionary || this.useDictionary === false) {
       return false;
     } else if (this.projectIndexFilters.existBlockHandler) {
       return false;

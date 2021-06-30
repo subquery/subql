@@ -9,7 +9,7 @@ function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
     endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    dictionary: 'https://api.subquery.network/sq/jiqiang90/polkadot-map',
+    dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
     types: {
       TestType: 'u32',
     },
