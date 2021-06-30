@@ -27,9 +27,6 @@ describe('DictionaryService', () => {
     const startBlock = 1;
     const endBlock = 10001;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },
@@ -56,9 +53,6 @@ describe('DictionaryService', () => {
     const startBlock = 1;
     const endBlock = 10001;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },
@@ -82,9 +76,6 @@ describe('DictionaryService', () => {
     const startBlock = 400000000;
     const endBlock = 400010000;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },

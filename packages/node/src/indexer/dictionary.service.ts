@@ -49,8 +49,6 @@ export class DictionaryService implements OnApplicationShutdown {
       startBlock,
       queryEndBlock,
       batchSize,
-      indexFilters.existEventHandler,
-      indexFilters.existExtrinsicHandler,
       indexFilters.eventFilters,
       indexFilters.extrinsicFilters,
     );
@@ -108,8 +106,6 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    existEventHandler: boolean,
-    existExtrinsicHandler: boolean,
     indexEvents?: SubqlEventFilter[],
     indexExtrinsics?: SubqlCallFilter[],
   ): string {
@@ -136,7 +132,7 @@ export class DictionaryService implements OnApplicationShutdown {
         }        
       }`;
     baseQuery = baseQuery.concat(metaQuery, specVersionQuery);
-    if (existEventHandler && indexEvents.length !== 0) {
+    if (indexEvents.length > 0) {
       indexEvents.map((event) => {
         eventFilter = eventFilter.concat(`
         {
@@ -157,7 +153,7 @@ export class DictionaryService implements OnApplicationShutdown {
   }`;
       baseQuery = baseQuery.concat(eventQuery);
     }
-    if (existExtrinsicHandler && indexExtrinsics.length !== 0) {
+    if (indexExtrinsics.length > 0) {
       indexExtrinsics.map((extrinsic) => {
         extrinsicFilter = extrinsicFilter.concat(`
         {
