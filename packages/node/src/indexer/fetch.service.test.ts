@@ -17,19 +17,16 @@ function testSubqueryProject(): SubqueryProject {
       TestType: 'u32',
     },
   };
-  project.dataSources = [];
-  return project;
-}
-
-function testSubqueryDictionaryProject(): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    types: {
-      TestType: 'u32',
+  project.dataSources = [
+    {
+      name: 'runtime',
+      kind: SubqlKind.Runtime,
+      startBlock: 1,
+      mapping: {
+        handlers: [{ handler: 'handleTest', kind: SubqlKind.EventHandler }],
+      },
     },
-  };
-  project.dataSources = [];
+  ];
   return project;
 }
 
@@ -100,12 +97,12 @@ describe('FetchService', () => {
     expect(getMetaSpy).toBeCalledTimes(2);
   }, 100000);
 
-  it('not use dictionary if filters not defined in datasource', async () => {
+  it('not use dictionary if dictionary is not defined in project config', async () => {
     const batchSize = 20;
     const project = testSubqueryProject();
-    //set dictionary to a different network
-    project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+    const apiService = new ApiService(project, new EventEmitter2());
+    await apiService.init();
+    //filter is defined
     project.dataSources = [
       {
         name: 'runtime',
@@ -114,13 +111,50 @@ describe('FetchService', () => {
         mapping: {
           handlers: [
             {
-              handler: 'handleBond',
+              handler: 'handleEvent',
               kind: 'substrate/EventHandler',
+              filter: { module: 'staking', method: 'Reward' },
             },
           ],
         },
       },
     ];
+    const dictionaryService = new DictionaryService(project);
+    const fetchService = new FetchService(
+      apiService,
+      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
+      new EventEmitter2(),
+    );
+    const nextEndBlockHeightSpy = jest.spyOn(
+      fetchService as any,
+      `nextEndBlockHeight`,
+    );
+    const dictionaryValidationSpy = jest.spyOn(
+      fetchService as any,
+      `dictionaryValidation`,
+    );
+    await fetchService.init();
+    const loopPromise = fetchService.startLoop(29230);
+    // eslint-disable-next-line @typescript-eslint/require-await
+    fetchService.register(async (content) => {
+      //29250
+      if (content.block.block.header.number.toNumber() === 29240) {
+        fetchService.onApplicationShutdown();
+      }
+    });
+    await loopPromise;
+    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(nextEndBlockHeightSpy).toBeCalled();
+  }, 500000);
+
+  it('not use dictionary if filters not defined in datasource', async () => {
+    const batchSize = 20;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const dictionaryService = new DictionaryService(project);
@@ -158,7 +192,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',
@@ -206,14 +240,12 @@ describe('FetchService', () => {
     expect(nextEndBlockHeightSpy).toBeCalled();
   }, 500000);
 
-  it('set useDictionary to false if dictionary metadata not match with the api', async () => {
+  it('not use dictionary if one of the handler filter module or method is not defined', async () => {
     const batchSize = 20;
     const project = testSubqueryProject();
-    //set dictionary to different network
-    //set to a kusama network and use polkadot dictionary
-    project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
+    //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/polkadot-map';
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.dataSources = [
       {
         name: 'runtime',
@@ -222,12 +254,72 @@ describe('FetchService', () => {
         mapping: {
           handlers: [
             {
-              handler: 'handleBond',
+              handler: 'handleEvent',
               kind: 'substrate/EventHandler',
-              filter: {
-                module: 'staking',
-                method: 'Bonded',
-              },
+              filter: { module: 'staking', method: 'Reward' },
+            },
+            //missing method will set useDictionary to false
+            {
+              handler: 'handleEvent',
+              kind: 'substrate/EventHandler',
+              filter: { module: 'staking' },
+            },
+          ],
+        },
+      },
+    ];
+
+    const apiService = new ApiService(project, new EventEmitter2());
+    await apiService.init();
+    const dictionaryService = new DictionaryService(project);
+    const fetchService = new FetchService(
+      apiService,
+      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
+      new EventEmitter2(),
+    );
+    const nextEndBlockHeightSpy = jest.spyOn(
+      fetchService as any,
+      `nextEndBlockHeight`,
+    );
+    const dictionaryValidationSpy = jest.spyOn(
+      fetchService as any,
+      `dictionaryValidation`,
+    );
+    await fetchService.init();
+    const loopPromise = fetchService.startLoop(29230);
+    // eslint-disable-next-line @typescript-eslint/require-await
+    fetchService.register(async (content) => {
+      //29250
+      if (content.block.block.header.number.toNumber() === 29240) {
+        fetchService.onApplicationShutdown();
+      }
+    });
+    await loopPromise;
+    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(nextEndBlockHeightSpy).toBeCalled();
+  }, 500000);
+
+  it('set useDictionary to false if dictionary metadata not match with the api', async () => {
+    const batchSize = 20;
+    const project = testSubqueryProject();
+    //set dictionary to different network
+    //set to a kusama network and use polkadot dictionary
+    project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubqlKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: 'substrate/EventHandler',
+              filter: { module: 'staking', method: 'Reward' },
             },
           ],
         },

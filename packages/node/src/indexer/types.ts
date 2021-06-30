@@ -15,9 +15,6 @@ export interface BlockContent {
 }
 
 export interface ProjectIndexFilters {
-  existBlockHandler: boolean;
-  existEventHandler: boolean;
-  existExtrinsicHandler: boolean;
   eventFilters: SubqlEventFilter[];
   extrinsicFilters: SubqlCallFilter[];
 }

@@ -5,7 +5,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { SubqlKind } from '@subql/common';
+import { SubqlCallFilter, SubqlEventFilter, SubqlKind } from '@subql/common';
 import { isUndefined, range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
@@ -33,7 +33,6 @@ export class FetchService implements OnApplicationShutdown {
   private parentSpecVersion: number;
   private useDictionary: boolean;
   private projectIndexFilters: ProjectIndexFilters;
-  private bufferAllowSize: number;
 
   constructor(
     private apiService: ApiService,
@@ -48,8 +47,6 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
-    this.projectIndexFilters = this.getIndexFilters();
-    this.useDictionary = this.isUseDictionary();
   }
 
   onApplicationShutdown(): void {
@@ -60,49 +57,56 @@ export class FetchService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  getIndexFilters(): ProjectIndexFilters {
+  getIndexFilters(): ProjectIndexFilters | undefined {
+    const eventFilters: SubqlEventFilter[] = [];
+    const extrinsicFilters: SubqlCallFilter[] = [];
     const dataSources = this.project.dataSources.filter(
       (ds) =>
         !ds.filter?.specName ||
         ds.filter.specName === this.api.runtimeVersion.specName.toString(),
     );
-    const response: ProjectIndexFilters = {
-      existBlockHandler: false,
-      existEventHandler: false,
-      existExtrinsicHandler: false,
-      eventFilters: [],
-      extrinsicFilters: [],
-    };
     for (const ds of dataSources) {
       if (ds.kind === SubqlKind.Runtime) {
         for (const handler of ds.mapping.handlers) {
           switch (handler.kind) {
             case SubqlKind.BlockHandler:
-              response.existBlockHandler = true;
-              break;
+              return;
             case SubqlKind.CallHandler: {
-              response.existExtrinsicHandler = true;
               if (
-                response.extrinsicFilters.findIndex(
-                  (extrinsic) =>
-                    extrinsic.module === handler.filter.module &&
-                    extrinsic.method === handler.filter.method,
-                ) <= -1
+                handler.filter?.module !== undefined &&
+                handler.filter?.method !== undefined
               ) {
-                response.extrinsicFilters.push(handler.filter);
+                if (
+                  extrinsicFilters.findIndex(
+                    (event) =>
+                      event.module === handler.filter.module &&
+                      event.method === handler.filter.method,
+                  ) < 0
+                ) {
+                  extrinsicFilters.push(handler.filter);
+                }
+              } else {
+                return;
               }
               break;
             }
             case SubqlKind.EventHandler: {
-              response.existEventHandler = true;
               if (
-                response.eventFilters.findIndex(
-                  (event) =>
-                    event.module === handler.filter.module &&
-                    event.method === handler.filter.method,
-                ) <= -1
+                handler.filter?.module !== undefined &&
+                handler.filter?.method !== undefined
               ) {
-                response.eventFilters.push(handler.filter);
+                eventFilters.push(handler.filter);
+                if (
+                  eventFilters.findIndex(
+                    (event) =>
+                      event.module === handler.filter.module &&
+                      event.method === handler.filter.method,
+                  ) < 0
+                ) {
+                  eventFilters.push(handler.filter);
+                }
+              } else {
+                return;
               }
               break;
             }
@@ -111,7 +115,7 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
     }
-    return response;
+    return { eventFilters, extrinsicFilters };
   }
 
   register(next: (value: BlockContent) => Promise<void>): () => void {
@@ -143,8 +147,12 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
+    this.projectIndexFilters = this.getIndexFilters();
+    this.useDictionary =
+      !!this.projectIndexFilters && !!this.project.network.dictionary;
     await this.getFinalizedBlockHead();
   }
+
   @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
@@ -297,21 +305,6 @@ export class FetchService implements OnApplicationShutdown {
       endBlockHeight = this.latestFinalizedHeight;
     }
     return endBlockHeight;
-  }
-
-  private isUseDictionary(): boolean {
-    if (!this.project.network.dictionary) {
-      return false;
-    } else if (this.projectIndexFilters.existBlockHandler) {
-      return false;
-    } else if (
-      (this.projectIndexFilters.existEventHandler &&
-        this.projectIndexFilters.eventFilters.length !== 0) ||
-      (this.projectIndexFilters.existExtrinsicHandler &&
-        this.projectIndexFilters.extrinsicFilters.length !== 0)
-    ) {
-      return true;
-    }
   }
 
   private dictionaryValidation(

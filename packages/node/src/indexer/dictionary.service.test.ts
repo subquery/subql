@@ -9,7 +9,7 @@ function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
     endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    dictionary: 'https://api.subquery.network/sq/jiqiang90/polkadot-map',
+    dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
     types: {
       TestType: 'u32',
     },
@@ -27,9 +27,6 @@ describe('DictionaryService', () => {
     const startBlock = 1;
     const endBlock = 10001;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },
@@ -50,15 +47,12 @@ describe('DictionaryService', () => {
   it('return undefined when dictionary api failed', async () => {
     const project = testSubqueryProject();
     project.network.dictionary =
-      'https://api.subquery.network/sq/jiqiang90/not-exist';
+      'https://api.subquery.network/sq/subquery/dictionary-not-exist';
     const dictionaryService = new DictionaryService(project);
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },
@@ -82,9 +76,6 @@ describe('DictionaryService', () => {
     const startBlock = 400000000;
     const endBlock = 400010000;
     const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
       eventFilters: [
         { module: 'staking', method: 'Bonded' },
         { module: 'balances', method: 'Reward' },
