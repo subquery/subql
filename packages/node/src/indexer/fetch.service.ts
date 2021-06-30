@@ -33,7 +33,6 @@ export class FetchService implements OnApplicationShutdown {
   private parentSpecVersion: number;
   private useDictionary: boolean;
   private projectIndexFilters: ProjectIndexFilters;
-  private bufferAllowSize: number;
 
   constructor(
     private apiService: ApiService,
@@ -48,8 +47,6 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
-    this.projectIndexFilters = this.getIndexFilters();
-    this.useDictionary = this.isUseDictionary();
   }
 
   onApplicationShutdown(): void {
@@ -143,8 +140,11 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
+    this.projectIndexFilters = this.getIndexFilters();
+    this.useDictionary = this.isUseDictionary();
     await this.getFinalizedBlockHead();
   }
+
   @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
