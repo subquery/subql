@@ -47,6 +47,13 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    trace: {
+      demandOption: false,
+      describe:
+        'Show trace information to console output. will forcefully set log level to trace',
+      type: 'boolean',
+      default: false,
+    },
     'network-endpoint': {
       demandOption: false,
       type: 'string',

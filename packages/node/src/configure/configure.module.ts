@@ -58,6 +58,8 @@ export class ConfigureModule {
 
     if (config.debug) {
       setLevel('debug');
+    } else if (config.trace) {
+      setLevel('trace');
     }
 
     const projectPath = path.resolve(

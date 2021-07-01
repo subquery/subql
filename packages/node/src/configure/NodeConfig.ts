@@ -18,6 +18,7 @@ export interface IConfig {
   readonly batchSize: number;
   readonly timeout: number;
   readonly debug: boolean;
+  readonly trace: boolean;
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
@@ -37,6 +38,7 @@ const DEFAULT_CONFIG = {
   timeout: 20,
   preferRange: false,
   debug: false,
+  trace: false,
   queryLimit: 100,
   indexCountLimit: 10,
   timestampField: true,
@@ -101,6 +103,10 @@ export class NodeConfig implements IConfig {
 
   get debug(): boolean {
     return this._config.debug;
+  }
+
+  get trace(): boolean {
+    return this._config.trace;
   }
 
   get preferRange(): boolean {
