@@ -27,6 +27,8 @@ export class MetricEventListener {
     private processedBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_using_dictionary')
+    private usingDictionaryMetric: Gauge<string>,
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
@@ -61,5 +63,10 @@ export class MetricEventListener {
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeightMetric.set(blockPayload.height);
+  }
+
+  @OnEvent(IndexerEvent.UsingDictionary)
+  handleUsingDictionary({ value }: EventPayload<number>) {
+    this.usingDictionaryMetric.set(value);
   }
 }

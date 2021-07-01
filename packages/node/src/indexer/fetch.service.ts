@@ -150,6 +150,9 @@ export class FetchService implements OnApplicationShutdown {
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary =
       !!this.projectIndexFilters && !!this.project.network.dictionary;
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+      value: Number(this.useDictionary),
+    });
     await this.getFinalizedBlockHead();
   }
 
@@ -234,7 +237,6 @@ export class FetchService implements OnApplicationShutdown {
             this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
               value: this.blockNumberBuffer.size,
             });
-
             continue; // skip nextBlockRange() way
           }
           // else use this.nextBlockRange()
@@ -314,6 +316,9 @@ export class FetchService implements OnApplicationShutdown {
     if (metaData.genesisHash !== this.api.genesisHash.toString()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
+      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+        value: Number(this.useDictionary),
+      });
       return false;
     }
     if (metaData.lastProcessedHeight < startBlockHeight) {
