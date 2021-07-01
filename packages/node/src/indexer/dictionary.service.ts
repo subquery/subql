@@ -13,6 +13,7 @@ import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { getYargsOption } from '../yargs';
 import { ProjectIndexFilters } from './types';
 
 export type Dictionary = {
@@ -22,6 +23,7 @@ export type Dictionary = {
   // specVersions: number[];
 };
 const logger = getLogger('dictionary');
+const { argv } = getYargsOption();
 
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
@@ -40,7 +42,8 @@ export class DictionaryService implements OnApplicationShutdown {
    * @param batchSize
    * @param indexFilters
    */
-  @profiler()
+
+  @profiler(argv.profiler)
   async getDictionary(
     startBlock: number,
     queryEndBlock: number,

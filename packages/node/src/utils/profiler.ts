@@ -10,10 +10,13 @@ function isPromise(e: any): boolean {
 }
 const logger = getLogger('profiler');
 
-function printCost(start: Date, end: Date, target: any, method: string): void {
-  logger.trace(
-    `${target.constructor.name}, ${method}, ${end.getTime() - start.getTime()}`,
-  );
+function printCost(
+  start: Date,
+  end: Date,
+  target: string,
+  method: string,
+): void {
+  logger.info(`${target}, ${method}, ${end.getTime() - start.getTime()} ms`);
 }
 export function profiler(enabled: boolean = true): any {
   return (target: any, name: string, descriptor: PropertyDescriptor): void => {
@@ -26,19 +29,41 @@ export function profiler(enabled: boolean = true): any {
         if (isPromise(res)) {
           res.then(
             (_: any) => {
-              printCost(start, new Date(), target, name);
+              printCost(start, new Date(), target.constructor.name, name);
               return _;
             },
             (err: any) => {
-              printCost(start, new Date(), target, name);
+              printCost(start, new Date(), target.constructor.name, name);
               throw err;
             },
           );
         } else {
-          printCost(start, new Date(), target, name);
+          printCost(start, new Date(), target.constructor.name, name);
         }
         return res;
       };
     }
   };
 }
+
+export const profilerWrap =
+  (method: any, target: any, name: string): any =>
+  (...args) => {
+    const start = new Date();
+    const res = method(...args);
+    if (isPromise(res)) {
+      res.then(
+        (_: any) => {
+          printCost(start, new Date(), target, name);
+          return _;
+        },
+        (err: any) => {
+          printCost(start, new Date(), target, name);
+          throw err;
+        },
+      );
+    } else {
+      printCost(start, new Date(), target, name);
+    }
+    return res;
+  };

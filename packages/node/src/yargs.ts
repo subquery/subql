@@ -47,10 +47,9 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
-    trace: {
+    profiler: {
       demandOption: false,
-      describe:
-        'Show trace information to console output. will forcefully set log level to trace',
+      describe: 'Show profiler information to console output',
       type: 'boolean',
       default: false,
     },

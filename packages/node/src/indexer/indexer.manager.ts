@@ -11,7 +11,9 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
+import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
@@ -22,6 +24,7 @@ import { BlockContent } from './types';
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('indexer');
+const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
@@ -41,6 +44,7 @@ export class IndexerManager {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  @profiler(argv.profiler)
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: block.block.header.number.toNumber(),
@@ -180,7 +184,7 @@ export class IndexerManager {
         const suffix = await this.nextSubquerySchemaSuffix();
         projectSchema = `subquery_${suffix}`;
         const schemas = await this.sequelize.showAllSchemas(undefined);
-        if (!((schemas as unknown) as string[]).includes(projectSchema)) {
+        if (!(schemas as unknown as string[]).includes(projectSchema)) {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
