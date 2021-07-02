@@ -11,6 +11,7 @@ export enum IndexerEvent {
   BlocknumberQueueSize = 'blocknumber_queue_size',
   NetworkMetadata = 'network_metadata',
   UsingDictionary = 'using_dictionary',
+  SkipDictionary = 'skip_dictionary',
 }
 
 export interface ProcessBlockPayload {

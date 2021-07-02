@@ -253,6 +253,7 @@ export class FetchService implements OnApplicationShutdown {
           // else use this.nextBlockRange()
         } catch (e) {
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
+          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
       // the original method: fill next batch size of blocks
@@ -331,12 +332,14 @@ export class FetchService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
         value: Number(this.useDictionary),
       });
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
     }
     if (metaData.lastProcessedHeight < startBlockHeight) {
       logger.warn(
         `Dictionary indexed block is behind current indexing block height`,
       );
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
     }
     return true;
