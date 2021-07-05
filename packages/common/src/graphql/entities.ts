@@ -14,8 +14,8 @@ import {
   isNonNullType,
   isObjectType,
 } from 'graphql';
+import {Logger} from '../logger';
 import {DirectiveName} from './constant';
-
 import {buildSchema} from './schema';
 import {
   FieldScalar,
@@ -27,6 +27,9 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
+
+const logger = new Logger({level: 'info'});
+const entityLogger = logger.getLogger(`entities`);
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string) {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
@@ -74,13 +77,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           to: typeString,
           foreignKey: `${field.name}Id`,
         } as GraphQLRelationsType);
-        if (typeString !== 'ID') {
-          newModel.indexes.push({
-            unique: false,
-            fields: [`${field.name}Id`],
-            using: IndexType.HASH,
-          });
-        }
+        newModel.indexes.push({
+          unique: false,
+          fields: [`${field.name}Id`],
+          using: IndexType.HASH,
+        });
       }
       // If is derivedFrom
       else if (entityNameSet.includes(typeString) && derivedFromDirectValues) {
@@ -116,7 +117,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           });
         } else if (typeString !== 'ID' && entityNameSet.includes(typeString)) {
           //is foreign key
-          continue;
+          entityLogger.warn(`Entity ${entity.name} foreign key field ${field.name} @index is ignored`);
         } else {
           throw new Error(`index can not be added on field ${field.name}`);
         }
