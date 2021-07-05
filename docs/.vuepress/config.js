@@ -29,6 +29,7 @@ module.exports = {
           '/quickstart/quickstart.md',
           '/quickstart/helloworld-localhost.md',
           '/quickstart/understanding-helloworld.md',
+          '/quickstart/helloworld-hosted.md',
         ]
       },
       {

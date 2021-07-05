@@ -18,7 +18,7 @@ This guide is geared towards new developers who have some development experience
 ## Video guide
 
 <figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/k6iqLbzrU4g" frameborder="0" allowfullscreen="true"></iframe>
+  <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
 ## Pre-requisites
