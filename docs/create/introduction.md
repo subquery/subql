@@ -34,7 +34,16 @@ Following map provides an overview of the directory structure of a SubQuery proj
     L index.ts
     L mappings
       L mappingHandlers.ts
+  L .gitignore      
 ```
+
+You need to install dependencies before developing.
+
+```
+yarn install
+```
+
+This will create a new directory `node_modules`, that is already in `.gitignore`.
 
 ## Code Generation
 
