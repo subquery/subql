@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.1] - 2021-07-26
+### Fixed
+- Fix add index on foreign key field by default (#371)
+
 ## [0.9.0] - 2021-06-25
 ### Added
 - Add metadata type for query and additional rule of dictionary for project validation(#342)
