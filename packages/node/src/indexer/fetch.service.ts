@@ -10,8 +10,10 @@ import { isUndefined, range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
+import { profiler, profilerWrap } from '../utils/profiler';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
@@ -21,6 +23,15 @@ import { BlockContent, ProjectIndexFilters } from './types';
 const logger = getLogger('fetch');
 const FINALIZED_BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
+const { argv } = getYargsOption();
+
+const fetchBlocksBatches = argv.profiler
+  ? profilerWrap(
+      SubstrateUtil.fetchBlocksBatches,
+      'SubstrateUtil',
+      'fetchBlocksBatches',
+    )
+  : SubstrateUtil.fetchBlocksBatches;
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
@@ -150,6 +161,9 @@ export class FetchService implements OnApplicationShutdown {
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary =
       !!this.projectIndexFilters && !!this.project.network.dictionary;
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+      value: Number(this.useDictionary),
+    });
     await this.getFinalizedBlockHead();
   }
 
@@ -234,12 +248,12 @@ export class FetchService implements OnApplicationShutdown {
             this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
               value: this.blockNumberBuffer.size,
             });
-
             continue; // skip nextBlockRange() way
           }
           // else use this.nextBlockRange()
         } catch (e) {
           logger.debug(`Fetch dictionary stopped: ${e.message}`);
+          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
       // the original method: fill next batch size of blocks
@@ -265,7 +279,7 @@ export class FetchService implements OnApplicationShutdown {
       const metadataChanged = await this.fetchMeta(
         bufferBlocks[bufferBlocks.length - 1],
       );
-      const blocks = await SubstrateUtil.fetchBlocksBatches(
+      const blocks = await fetchBlocksBatches(
         this.api,
         bufferBlocks,
         metadataChanged ? undefined : this.parentSpecVersion,
@@ -282,6 +296,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
+  @profiler(argv.profiler)
   async fetchMeta(height: number): Promise<boolean> {
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
@@ -314,12 +329,17 @@ export class FetchService implements OnApplicationShutdown {
     if (metaData.genesisHash !== this.api.genesisHash.toString()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
+      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+        value: Number(this.useDictionary),
+      });
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
     }
     if (metaData.lastProcessedHeight < startBlockHeight) {
       logger.warn(
         `Dictionary indexed block is behind current indexing block height`,
       );
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
     }
     return true;

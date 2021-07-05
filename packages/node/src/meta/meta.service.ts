@@ -22,6 +22,7 @@ export class MetaService {
   private targetHeight: number;
   private networkMeta: NetworkMetadataPayload;
   private apiConnected: boolean;
+  private usingDictionary: boolean;
   private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
@@ -38,6 +39,7 @@ export class MetaService {
       polkadotSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
+      usingDictionary: this.usingDictionary,
       ...this.networkMeta,
     };
   }
@@ -72,5 +74,10 @@ export class MetaService {
   @OnEvent(IndexerEvent.InjectedApiConnected)
   handleInjectedApiConnected({ value }: EventPayload<number>) {
     this.injectedApiConnected = !!value;
+  }
+
+  @OnEvent(IndexerEvent.UsingDictionary)
+  handleUsingDictionary({ value }: EventPayload<number>) {
+    this.usingDictionary = !!value;
   }
 }

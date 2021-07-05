@@ -45,6 +45,14 @@ import { MetaService } from './meta.service';
       name: 'subql_indexer_blocknumber_queue_size',
       help: 'The size of fetched block number queue',
     }),
+    makeGaugeProvider({
+      name: 'subql_indexer_using_dictionary',
+      help: 'The status of indexer is using the dictionary',
+    }),
+    makeGaugeProvider({
+      name: 'subql_indexer_skip_dictionary_count',
+      help: 'The number of times indexer been skip use dictionary',
+    }),
     MetaService,
     HealthService,
   ],

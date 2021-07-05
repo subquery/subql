@@ -12,6 +12,8 @@ import {
 } from '../indexer/events';
 
 export class MetricEventListener {
+  private skipDictionaryCount = 0;
+
   constructor(
     @InjectMetric('subql_indexer_api_connected')
     private apiConnectedMetric: Gauge<string>,
@@ -27,6 +29,10 @@ export class MetricEventListener {
     private processedBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_using_dictionary')
+    private usingDictionaryMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_skip_dictionary_count')
+    private skipDictionaryCountMetric: Gauge<string>,
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
@@ -61,5 +67,16 @@ export class MetricEventListener {
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeightMetric.set(blockPayload.height);
+  }
+
+  @OnEvent(IndexerEvent.UsingDictionary)
+  handleUsingDictionary({ value }: EventPayload<number>) {
+    this.usingDictionaryMetric.set(value);
+  }
+
+  @OnEvent(IndexerEvent.SkipDictionary)
+  handleSkipDictionary({ value }: EventPayload<number>) {
+    this.skipDictionaryCount += 1;
+    this.skipDictionaryCountMetric.set(this.skipDictionaryCount);
   }
 }
