@@ -15,7 +15,6 @@ import {
   isObjectType,
 } from 'graphql';
 import {DirectiveName} from './constant';
-
 import {buildSchema} from './schema';
 import {
   FieldScalar,
@@ -60,7 +59,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
     for (const field of Object.values(entity.getFields())) {
       const typeString = extractType(field.type).toString();
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
-
+      const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       //If is a basic scalar type
       if (Object.values(FieldScalar).includes(typeString)) {
         newModel.fields.push(packEntityField(typeString, field, false));
@@ -74,6 +73,11 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
           to: typeString,
           foreignKey: `${field.name}Id`,
         } as GraphQLRelationsType);
+        newModel.indexes.push({
+          unique: false,
+          fields: [`${field.name}Id`],
+          using: IndexType.HASH,
+        });
       }
       // If is derivedFrom
       else if (entityNameSet.includes(typeString) && derivedFromDirectValues) {
@@ -101,7 +105,6 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
         throw new Error(`${typeString} is not an valid type`);
       }
       // handle indexes
-      const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       if (indexDirectiveVal) {
         if (typeString !== 'ID' && Object.values(FieldScalar).includes(typeString)) {
           newModel.indexes.push({
@@ -109,11 +112,14 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
             fields: [field.name],
           });
         } else if (typeString !== 'ID' && entityNameSet.includes(typeString)) {
-          newModel.indexes.push({
-            unique: indexDirectiveVal.unique,
-            fields: [`${field.name}Id`],
-            using: IndexType.HASH,
-          });
+          if (indexDirectiveVal.unique) {
+            const fkIndex = newModel.indexes.find(
+              (idx) => idx.fields.length === 1 && idx.fields[0] === `${field.name}Id`
+            );
+            if (fkIndex) {
+              fkIndex.unique = true;
+            }
+          }
         } else {
           throw new Error(`index can not be added on field ${field.name}`);
         }
