@@ -164,7 +164,7 @@ describe('utils that handle schema.graphql', () => {
     const graphqlSchema = gql`
       type Fruit @entity {
         id: ID!
-        apple: Apple @index
+        apple: Apple
         banana: [Banana] @index(unique: true)
       }
       type Apple @entity {
@@ -178,6 +178,7 @@ describe('utils that handle schema.graphql', () => {
     const entities = getAllEntitiesRelations(schema);
     expect(entities.models?.[0].indexes[0].fields).toEqual(['appleId']);
     expect(entities.models?.[0].indexes[0].using).toEqual('hash');
+    expect(entities.models?.[0].indexes[0].unique).toBe(false);
     expect(entities.models?.[0].indexes[1].unique).toBe(true);
   });
 

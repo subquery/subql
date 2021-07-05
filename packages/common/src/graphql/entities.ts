@@ -115,9 +115,12 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
             unique: indexDirectiveVal.unique,
             fields: [field.name],
           });
-        } else if (typeString !== 'ID' && entityNameSet.includes(typeString)) {
-          //is foreign key
-          entityLogger.warn(`Entity ${entity.name} foreign key field ${field.name} @index is ignored`);
+        } else if (typeString !== 'ID' && entityNameSet.includes(typeString) && indexDirectiveVal.unique) {
+          newModel.indexes.map((index) => {
+            if (index.fields.includes(`${field.name}Id`)) {
+              index.unique = indexDirectiveVal.unique;
+            }
+          });
         } else {
           throw new Error(`index can not be added on field ${field.name}`);
         }
