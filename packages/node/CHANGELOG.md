@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Fixed - 2021-07-05
+- fix default add index on foreign field
 ### Added
 - add profiler to monitoring indexer performance
 - add metrics to listen status of using dictionary and number of times it been skipped.
