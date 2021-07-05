@@ -14,7 +14,6 @@ import {
   isNonNullType,
   isObjectType,
 } from 'graphql';
-import {Logger} from '../logger';
 import {DirectiveName} from './constant';
 import {buildSchema} from './schema';
 import {
@@ -27,9 +26,6 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
-
-const logger = new Logger({level: 'info'});
-const entityLogger = logger.getLogger(`entities`);
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string) {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
