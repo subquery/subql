@@ -75,7 +75,7 @@ For more information on how to write your own SubQuery, check out our documentat
 
 ### GraphQL Model Generation
 
-In order to [index](http://localhost:8080/run/run.html) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+In order to [index](https://doc.subquery.network/run/run.html) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
 
 ```shell
 # Yarn
