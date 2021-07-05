@@ -11,9 +11,9 @@ import {
   TargetBlockPayload,
 } from '../indexer/events';
 
-let skipDictionaryCount = 0;
-
 export class MetricEventListener {
+  private skipDictionaryCount = 0;
+
   constructor(
     @InjectMetric('subql_indexer_api_connected')
     private apiConnectedMetric: Gauge<string>,
@@ -76,7 +76,7 @@ export class MetricEventListener {
 
   @OnEvent(IndexerEvent.SkipDictionary)
   handleSkipDictionary({ value }: EventPayload<number>) {
-    skipDictionaryCount += 1;
-    this.skipDictionaryCountMetric.set(skipDictionaryCount);
+    this.skipDictionaryCount += 1;
+    this.skipDictionaryCountMetric.set(this.skipDictionaryCount);
   }
 }
