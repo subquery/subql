@@ -479,4 +479,21 @@ describe('FetchService', () => {
     expect((fetchService as any).useDictionary).toBeTruthy();
     expect((fetchService as any).latestBufferedHeight).toBe(14900);
   }, 500000);
+
+  it('fill the number into buffer with correct size', () => {
+    const apiService = mockApiService();
+    const batchSize = 50;
+    const project = testSubqueryProject();
+    const dictionaryService = new DictionaryService(project);
+    const fetchService = new FetchService(
+      apiService,
+      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      project,
+      dictionaryService,
+      new EventEmitter2(),
+    );
+    (fetchService as any).latestFinalizedHeight = 1000;
+    const end = (fetchService as any).nextEndBlockHeight(100);
+    expect(end).toEqual(100 + batchSize - 1);
+  });
 });
