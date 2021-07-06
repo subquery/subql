@@ -258,7 +258,7 @@ export class FetchService implements OnApplicationShutdown {
       }
       // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(startBlockHeight);
-      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight));
+      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
     }
   }
