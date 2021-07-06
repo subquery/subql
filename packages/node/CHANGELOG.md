@@ -5,11 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.17.4] - 2021-07-06
+Upgrade priority: High. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3 due to some blocks are missed when indexing.
 ### Fixed
-- Fix problem when filling the block number buffer missing the last number which has caused some block records are missing
+- Fix problem when filling the block number buffer missing the last number which has caused some block records are missing. (#378)
 
 ## [0.17.3] - 2021-07-06
-Upgrade priority: High.
+Upgrade priority: High. 
 ### Fixed
 - Fix add index on foreign key field by default (#371)
 ### Added
