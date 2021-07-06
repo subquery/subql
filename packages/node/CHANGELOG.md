@@ -5,8 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.17.4] - 2021-07-06
+Upgrade priority: High.
 ### Fixed
-- Fix problem when filling the block number buffer missing the last number which has caused some block records are missing
+- Fix problem when filling the block number buffer missing the last number which has caused some block records are missing. (#378)
 
 ## [0.17.3] - 2021-07-06
 Upgrade priority: High.
