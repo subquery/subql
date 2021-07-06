@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.18.0] - 2021-07-06
-Upgrade priority: High. Recommend for all projects to upgrade.
+Upgrade priority: High. Recommend for all projects to upgrade. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3
 ### Fixed
-- Fix metric listener handle skip dictionary
+- Fix metric listener handle skip dictionary (#380)
 
 ## [0.17.4] - 2021-07-06
 Upgrade priority: High. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3 due to some blocks are missed when indexing.
