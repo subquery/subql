@@ -75,7 +75,7 @@ export class MetricEventListener {
   }
 
   @OnEvent(IndexerEvent.SkipDictionary)
-  handleSkipDictionary({ value }: EventPayload<number>) {
+  handleSkipDictionary() {
     this.skipDictionaryCount += 1;
     this.skipDictionaryCountMetric.set(this.skipDictionaryCount);
   }
