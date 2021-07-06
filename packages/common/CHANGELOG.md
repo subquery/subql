@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.1] - 2021-07-26
 ### Fixed
-- Fix add index on foreign key field by default (#371)
+- Fixed bug that prevented indexes from being added automatically on foreign keys (#371)
 
 ## [0.9.0] - 2021-06-25
 ### Added

@@ -36,7 +36,7 @@ We currently supporting flowing scalars types:
 
 To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field. 
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added for JSON fields in the database, but only for enhance query service performance purpose.
+However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
 
 Here is an example.
 
@@ -44,7 +44,7 @@ Here is an example.
 type User @entity {
   id: ID!
   name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! @index # By default indexes are not unique, index by foreign key field 
+  title: Title! # Indexes are automatically added to foreign key field 
 }
 
 type Title @entity {

@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.17.3] - 2021-07-06
 Upgrade priority: High.
 ### Fixed
-- Fix add index on foreign key field by default (#371)
+- Fixed bug that prevented indexes from being added automatically on foreign keys (#371)
 ### Added
 - add profiler to monitoring indexer performance (#369)
 - add metrics to listen status of using dictionary and number of times it been skipped. (#369)
