@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.17.4] - 2021-07-06
-Upgrade priority: High. Require re-indexing if the project previous deployed with node v0.17.1 to v0.17.3 due to some blocks are missed when indexing.
+Upgrade priority: High. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3 due to some blocks are missed when indexing.
 ### Fixed
 - Fix problem when filling the block number buffer missing the last number which has caused some block records are missing. (#378)
 
