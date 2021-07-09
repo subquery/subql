@@ -29,6 +29,18 @@ describe('NodeConfig', () => {
     expect(config.configDir).toBeTruthy();
   });
 
+  it('support read from js', () => {
+    const config = NodeConfig.fromFile(
+      path.join(__dirname, '../../test/config.js'),
+    );
+    expect(config).toBeInstanceOf(NodeConfig);
+    expect(config).toMatchObject({
+      subquery: '../../../../subql-example/extrinsics',
+      subqueryName: 'extrinsics',
+    });
+    expect(config.configDir).toBeTruthy();
+  });
+
   it('throw error for unknown configs', () => {
     expect(() =>
       NodeConfig.fromFile(path.join(__dirname, '../../test/config.toml')),
