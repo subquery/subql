@@ -52,7 +52,7 @@ Using a full chain dictionary can dramatically speed up the processing of a SubQ
 
 A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain, and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](/create/manifest.md)), or alternatively specify it at run time using the following command:
+You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](/docs/create/manifest.md)), or alternatively specify it at run time using the following command:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
