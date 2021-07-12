@@ -34,7 +34,7 @@ dataSources:
 ```
 
 - `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. 
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](/run/run.md#using-a-dictionary)
+- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](/docs/run/run.md#using-a-dictionary)
 - `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied. 
   - `kind` only supports `substrate/Runtime` for now.
   - `startBlock` specifies the block height to start indexing from.
