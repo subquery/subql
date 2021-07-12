@@ -106,11 +106,14 @@ export class ApiService implements OnApplicationShutdown {
       value: 1,
     });
     this.patchedApi = patchedApi;
-    this.patchApi();
+    await this.patchApi();
     return this.patchedApi;
   }
 
-  private patchApi(registry?: Registry): void {
+  private async patchApi(
+    registry?: Registry,
+    blockHash?: BlockHash,
+  ): Promise<void> {
     if (registry) {
       Object.defineProperty(this.patchedApi, 'registry', {
         value: registry,
@@ -118,7 +121,9 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
-    this.patchApiQuery(this.patchedApi);
+    if (blockHash) {
+      await this.patchApiQuery(this.patchedApi, blockHash);
+    }
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
@@ -126,16 +131,13 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash, inject = false): Promise<void> {
+  async setBlockhash(blockHash: BlockHash): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
+    const { registry } = await this.api.getBlockRegistry(blockHash);
     this.currentBlockHash = blockHash;
-    if (inject) {
-      const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
-      this.patchedApi.injectMetadata(metadata, true, registry);
-      this.patchApi(registry);
-    }
+    await this.patchApi(registry, blockHash);
   }
 
   private replaceToAtVersion(
@@ -151,10 +153,7 @@ export class ApiService implements OnApplicationShutdown {
     original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
     apiType: 'promise' | 'rxjs',
   ): QueryableStorageEntry<'promise' | 'rxjs', AnyTuple> {
-    const newEntryFunc = this.replaceToAtVersion(
-      original,
-      'at',
-    ) as QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>;
+    const newEntryFunc = original;
     newEntryFunc.at = NOT_SUPPORT('at');
     newEntryFunc.creator = original.creator;
     newEntryFunc.entries = this.replaceToAtVersion(original, 'entriesAt');
@@ -222,7 +221,7 @@ export class ApiService implements OnApplicationShutdown {
         return ret;
       }
     }
-    const ret = (NOT_SUPPORT('api.rpc.*.*') as unknown) as RpcMethodResult<
+    const ret = NOT_SUPPORT('api.rpc.*.*') as unknown as RpcMethodResult<
       T,
       AnyFunction
     >;
@@ -246,8 +245,12 @@ export class ApiService implements OnApplicationShutdown {
       combineLatest(keys.map((key) => newEntryFunc(key)))) as any;
   }
 
-  private patchApiQuery(api: ApiPromise): void {
-    (api as any)._query = Object.entries(api.query).reduce(
+  private async patchApiQuery(
+    api: ApiPromise,
+    blockHash: BlockHash,
+  ): Promise<void> {
+    const apiAt = await api.at(blockHash);
+    (api as any)._query = Object.entries(apiAt.query).reduce(
       (acc, [module, moduleStorageItems]) => {
         acc[module] = Object.entries(moduleStorageItems).reduce(
           (accInner, [storageName, storageEntry]) => {
