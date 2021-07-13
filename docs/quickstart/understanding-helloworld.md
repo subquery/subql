@@ -6,7 +6,7 @@ In the [Hello World quick start guide](helloworld-localhost.md), we ran through 
 
 The first command we ran was `subql init --starter subqlHelloWorld`.
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.html#configure-and-build-the-starter-project), you will mainly be working on the following files:
+This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
 
 - The Manifest in `project.yaml`
 - The GraphQL Schema in `schema.graphql`

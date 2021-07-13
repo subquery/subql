@@ -1,7 +1,7 @@
 # Running SubQuery Locally
 
 This guide works through how to run a local SubQuery node on your own infrastructure, which includes both the indexer and query service.
-Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](/publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
 ## Using Docker
 
@@ -52,7 +52,7 @@ Using a full chain dictionary can dramatically speed up the processing of a SubQ
 
 A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain, and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](/create/manifest.md)), or alternatively specify it at run time using the following command:
+You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or alternatively specify it at run time using the following command:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
@@ -125,6 +125,6 @@ npm install -g @subql/query
 export DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
-Make sure the project name is same as the project name when you [initialize the project](/quickstart/quickstart.md#initialise-the-starter-subquery-project). Also check the environment variables are correct.
+Make sure the project name is same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also check the environment variables are correct.
 
 After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
