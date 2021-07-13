@@ -49,7 +49,7 @@ You'll be asked certain questions as the SubQuery project is initalised:
 - Version (Required): Enter a custom version number or use the default (`1.0.0`)
 - License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
 
-After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](/create/introduction.html#directory-structure).
+After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
 
 Last, under the project directory, run following command to install the new project's dependencies.
 
@@ -71,7 +71,7 @@ In the starter package that you just initialised, we have provided a standard co
 - The GraphQL Schema in `schema.graphql`
 - The Mapping functions in `src/mappings/` directory
 
-For more information on how to write your own SubQuery, check out our documentation under [Create a Project](/create/introduction)
+For more information on how to write your own SubQuery, check out our documentation under [Create a Project](../create/introduction.md)
 
 ### GraphQL Model Generation
 
@@ -105,11 +105,11 @@ npm run-script build
 
 Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
 
-[_Skip this and publish your new project to SubQuery Projects_](/publish/publish)
+[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
 
 ### Run your SubQuery Project
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](./run/run)
+All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
 
 Under the project directory run following command:
 
@@ -125,7 +125,7 @@ Open your browser and head to [http://localhost:3000](http://localhost:3000).
 
 You should see a GraphQL playground is showing in the explorer and the schemas that ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language.](/query/graphql.html).
+For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language.](../query/graphql.md).
 
 ```graphql
 {
@@ -145,4 +145,4 @@ For a new SubQuery starter project, you can try the following query to get a tas
 
 Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
 
-[Publish your new project to SubQuery Projects](/publish/publish.html)
+[Publish your new project to SubQuery Projects](../publish/publish.md)

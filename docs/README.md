@@ -11,13 +11,13 @@ SubQuery allows every Substrate/Polkadot team to process and query their data. T
 3. Lastly, we'll explain how to upload SubQuery projects to the hosted SubQuery console so you don't need to worry about running infrastructure.
 
 ## Create a SubQuery project
-You can follow our [Quick Start Guide](/quickstart/quickstart.md) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
+You can follow our [Quick Start Guide](./quickstart/quickstart.md) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
 
 You'll need [Typescript](https://www.typescriptlang.org/) and  [Node](https://nodejs.org/en/).
 
 ## Start using your project
 #### Publish Project to the SubQuery Explorer
-Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](/publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](./publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
 #### Run your own Local Indexer and Query Service
 We'll cover how to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
