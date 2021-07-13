@@ -14,4 +14,4 @@ On the top right of the playground, you'll find a *Docs* button that will open a
 
 ![SubQuery Documentation](https://static.subquery.network/media/explorer/explorer-documentation.png)
 
-[Learn more about the GraphQL Query language.](../query/graphql.html)
+[Learn more about the GraphQL Query language.](./query/graphql.html)
