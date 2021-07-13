@@ -54,8 +54,7 @@ export class IndexerManager {
     this.storeService.setTransaction(tx);
 
     try {
-      const inject = block.specVersion !== this.prevSpecVersion;
-      await this.apiService.setBlockhash(block.block.hash, inject);
+      await this.apiService.setBlockhash(block.block.hash);
 
       const dataSources = this.project.dataSources.filter(
         (ds) =>
