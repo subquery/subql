@@ -56,6 +56,8 @@ export class NodeConfig implements IConfig {
       content = parseJson(rawContent.toString(), filePath);
     } else if (fileInfo.ext === '.yaml' || fileInfo.ext === '.yml') {
       content = yaml.load(rawContent.toString()) as IConfig;
+    } else if (fileInfo.ext === '.js') {
+      content = require(filePath);
     } else {
       throw new Error(
         `extension ${fileInfo.ext} of provided config file not supported`,
