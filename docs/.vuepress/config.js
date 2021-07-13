@@ -66,6 +66,11 @@ module.exports = {
           '/query/query.md',
           '/query/graphql.md'
         ]
+      },
+      {
+        title: 'Tutorials & Examples',
+        path: '/tutorials_examples/introduction',
+        children: []
       }
     ],
   },
