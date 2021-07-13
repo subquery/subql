@@ -114,6 +114,7 @@ export class ApiService implements OnApplicationShutdown {
     registry?: Registry,
     blockHash?: BlockHash,
   ): Promise<void> {
+    //To support api.findCall & api.findError
     if (registry) {
       Object.defineProperty(this.patchedApi, 'registry', {
         value: registry,
@@ -175,6 +176,7 @@ export class ApiService implements OnApplicationShutdown {
         newEntryFunc as QueryableStorageEntry<'rxjs', AnyTuple>,
       );
     }
+    // wait polkadot/api fix isssue #3763 to support multi
     newEntryFunc.multi = ((args: any[]) => {
       const keys = args.map((arg) => {
         const key = new StorageKey(
@@ -182,6 +184,11 @@ export class ApiService implements OnApplicationShutdown {
           original.key(
             ...(original.creator.meta.type.isDoubleMap ? arg : [arg]),
           ),
+        );
+        console.log(
+          JSON.stringify([
+            ...(original.creator.meta.type.isDoubleMap ? arg : [arg]),
+          ]),
         );
         key.setMeta(original.creator.meta);
         return key;
