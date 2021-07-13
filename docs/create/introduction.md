@@ -8,11 +8,11 @@ In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran throu
 2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](/create/manifest)
 3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](/create/graphql)
 4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](/create/mapping)
-5. Generate you code, build, and publish to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](/quickstart/quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](/quickstart/quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
 
 ## Directory Structure
 
-Following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
 
 ```
 - project-name
