@@ -26,7 +26,7 @@ Let's start by clicking on "Create Project". You'll be taken to the New Project 
 - **Name**
 - **Subtitle**
 - **Description**
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](/create/introduction.html#directory-structure)).
+- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](../create/introduction.html#directory-structure)).
 - **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
 ![Create your first Project](https://static.subquery.network/media/projects/projects-create.png)
 
@@ -51,6 +51,6 @@ Once your deployment has succesfully completed and our nodes have indexed your d
 
 ![Project being deployed and synced](https://static.subquery.network/media/projects/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](/query/query.html).
+Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.html).
 
 ![Projects in SubQuery Explorer](https://static.subquery.network/media/projects/projects-explorer.png)

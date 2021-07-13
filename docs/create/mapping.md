@@ -30,7 +30,7 @@ A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe591
 
 You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of events will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](/create/manifest.html#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of events will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](../create/manifest.html#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -163,7 +163,7 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
 
 #### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](/create/manifest.html). 
+We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](../create/manifest.html). 
 
 Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
 - `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions 

@@ -1,7 +1,7 @@
 # Running SubQuery Locally
 
 This guide works through how to run a local SubQuery node on your own infrastructure, which includes both the indexer and query service.
-Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](/publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
 ## Using Docker
 
@@ -125,6 +125,6 @@ npm install -g @subql/query
 export DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
-Make sure the project name is same as the project name when you [initialize the project](/quickstart/quickstart.md#initialise-the-starter-subquery-project). Also check the environment variables are correct.
+Make sure the project name is same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also check the environment variables are correct.
 
 After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
