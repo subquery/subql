@@ -39,7 +39,7 @@ dataSources:
   - `kind` only supports `substrate/Runtime` for now.
   - `startBlock` specifies the block height to start indexing from.
   - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
 
 ## Network Filters 
 
@@ -94,9 +94,9 @@ Following table explains filters supported by different handlers.
 
 | Handler                  | Supported filter                                          |
 |---------------------------|----------------------------------------------------|
-| [BlockHandler](./mapping.html#block-handler) | `specVersion` |
-| [EventHandler](./mapping.html#event-handler) | `module`,`method` |
-| [CallHandler](./mapping.html#call-handler) | `module`,`method` ,`success`|
+| [BlockHandler](./mapping.md#block-handler) | `specVersion` |
+| [EventHandler](./mapping.md#event-handler) | `module`,`method` |
+| [CallHandler](./mapping.md#call-handler) | `module`,`method` ,`success`|
 
 
 -  Module and method filters are supported on any substrate based chain.
