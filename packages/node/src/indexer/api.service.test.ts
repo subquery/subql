@@ -128,6 +128,18 @@ describe('ApiService', () => {
     ).toThrow(/is not supported/);
   }, 30000);
 
+  it('api.at,xxx,xxx are removed, ', async () => {
+    const apiService = await prepareApiService();
+    const api = apiService.getApi();
+    const blockhash = await api.rpc.chain.getBlockHash(6721189);
+    const blockhash2 = await api.rpc.chain.getBlockHash(8332044);
+
+    const patchedApi = await apiService.getPatchedApi();
+    await apiService.setBlockhash(blockhash);
+
+    expect(() => patchedApi.at(blockhash2)).toThrow(/is not supported/);
+  }, 300000);
+
   it('xxx.xxx.multi with input parameter is an array', async () => {
     const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
     const account2 = 'F3opxRbN5ZbjJNU511Kj2TLuzFcDq9BGduA9TgiECafpg29';

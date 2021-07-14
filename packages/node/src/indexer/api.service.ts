@@ -122,6 +122,7 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
+    this.patchAt(this.patchedApi);
     if (blockHash) {
       await this.patchApiQuery(this.patchedApi, blockHash);
     }
@@ -256,7 +257,7 @@ export class ApiService implements OnApplicationShutdown {
     api: ApiPromise,
     blockHash: BlockHash,
   ): Promise<void> {
-    const apiAt = await api.at(blockHash);
+    const apiAt = await this.api.at(blockHash);
     (api as any)._query = Object.entries(apiAt.query).reduce(
       (acc, [module, moduleStorageItems]) => {
         acc[module] = Object.entries(moduleStorageItems).reduce(
@@ -408,5 +409,9 @@ export class ApiService implements OnApplicationShutdown {
       },
       {},
     );
+  }
+
+  private patchAt(api: ApiPromise): void {
+    (api as any).at = NOT_SUPPORT('api.at.*');
   }
 }
