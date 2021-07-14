@@ -122,10 +122,10 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
-    this.patchAt(this.patchedApi);
     if (blockHash) {
       await this.patchApiQuery(this.patchedApi, blockHash);
     }
+    this.patchApiAt(this.patchedApi);
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
@@ -411,7 +411,7 @@ export class ApiService implements OnApplicationShutdown {
     );
   }
 
-  private patchAt(api: ApiPromise): void {
-    (api as any).at = NOT_SUPPORT('api.at.*');
+  private patchApiAt(api: ApiPromise): void {
+    (api as any).at = NOT_SUPPORT('api.at()');
   }
 }
