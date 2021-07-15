@@ -24,6 +24,9 @@ export interface TargetBlockPayload {
   height: number;
 }
 
+export interface BestBlockPayload {
+  height: number;
+}
 export interface EventPayload<T> {
   value: T;
 }

@@ -192,7 +192,7 @@ export class FetchService implements OnApplicationShutdown {
       const bestHeader = await this.api.rpc.chain.getHeader();
       const currentBestHeight = bestHeader.number.toNumber();
       if (this.latestBestHeight !== currentBestHeight) {
-        this.latestFinalizedHeight = currentBestHeight;
+        this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
           height: this.latestBestHeight,
         });

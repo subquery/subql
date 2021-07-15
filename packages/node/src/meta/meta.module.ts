@@ -38,6 +38,10 @@ import { MetaService } from './meta.service';
       help: 'The latest finalized block height',
     }),
     makeGaugeProvider({
+      name: 'subql_indexer_best_block_height',
+      help: 'The latest best block height',
+    }),
+    makeGaugeProvider({
       name: 'subql_indexer_block_queue_size',
       help: 'The size of fetched block queue',
     }),
