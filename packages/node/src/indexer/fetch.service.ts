@@ -166,6 +166,7 @@ export class FetchService implements OnApplicationShutdown {
       value: Number(this.useDictionary),
     });
     await this.getFinalizedBlockHead();
+    await this.getBestBlockHead();
   }
 
   @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
@@ -187,6 +188,13 @@ export class FetchService implements OnApplicationShutdown {
       }
     } catch (e) {
       logger.error(e, `Having a problem when get finalized block`);
+    }
+  }
+
+  async getBestBlockHead() {
+    if (!this.api) {
+      logger.debug(`Skip fetch best block until API is ready`);
+      return;
     }
     try {
       const bestHeader = await this.api.rpc.chain.getHeader();
