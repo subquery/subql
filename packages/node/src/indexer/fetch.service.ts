@@ -35,6 +35,7 @@ const fetchBlocksBatches = argv.profiler
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
+  private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
@@ -186,6 +187,18 @@ export class FetchService implements OnApplicationShutdown {
       }
     } catch (e) {
       logger.error(e, `Having a problem when get finalized block`);
+    }
+    try {
+      const bestHeader = await this.api.rpc.chain.getHeader();
+      const currentBestHeight = bestHeader.number.toNumber();
+      if (this.latestBestHeight !== currentBestHeight) {
+        this.latestFinalizedHeight = currentBestHeight;
+        this.eventEmitter.emit(IndexerEvent.BlockBest, {
+          height: this.latestBestHeight,
+        });
+      }
+    } catch (e) {
+      logger.error(e, `Having a problem when get best block`);
     }
   }
 
