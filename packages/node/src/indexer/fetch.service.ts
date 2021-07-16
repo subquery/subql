@@ -21,7 +21,7 @@ import { IndexerEvent } from './events';
 import { BlockContent, ProjectIndexFilters } from './types';
 
 const logger = getLogger('fetch');
-const FINALIZED_BLOCK_TIME_VARIANCE = 5;
+const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const { argv } = getYargsOption();
 
@@ -169,7 +169,7 @@ export class FetchService implements OnApplicationShutdown {
     await this.getBestBlockHead();
   }
 
-  @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
@@ -191,6 +191,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getBestBlockHead() {
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
