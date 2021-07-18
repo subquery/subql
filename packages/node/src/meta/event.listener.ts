@@ -5,6 +5,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Gauge } from 'prom-client';
 import {
+  BestBlockPayload,
   EventPayload,
   IndexerEvent,
   ProcessBlockPayload,
@@ -29,6 +30,8 @@ export class MetricEventListener {
     private processedBlockHeight: Gauge<string>,
     @InjectMetric('subql_indexer_target_block_height')
     private targetHeightMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_best_block_height')
+    private bestHeightMetric: Gauge<string>,
     @InjectMetric('subql_indexer_using_dictionary')
     private usingDictionaryMetric: Gauge<string>,
     @InjectMetric('subql_indexer_skip_dictionary_count')
@@ -67,6 +70,11 @@ export class MetricEventListener {
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeightMetric.set(blockPayload.height);
+  }
+
+  @OnEvent(IndexerEvent.BlockBest)
+  handleBestBlock(blockPayload: BestBlockPayload) {
+    this.bestHeightMetric.set(blockPayload.height);
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)

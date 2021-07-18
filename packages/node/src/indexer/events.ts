@@ -5,6 +5,7 @@ export enum IndexerEvent {
   ApiConnected = 'api_connected',
   InjectedApiConnected = 'injected_api_connected',
   BlockTarget = 'block_target_height',
+  BlockBest = 'block_best_height',
   BlockProcessing = 'block_processing_height',
   BlockLastProcessed = 'block_processed_height',
   BlockQueueSize = 'block_queue_size',
@@ -23,6 +24,9 @@ export interface TargetBlockPayload {
   height: number;
 }
 
+export interface BestBlockPayload {
+  height: number;
+}
 export interface EventPayload<T> {
   value: T;
 }

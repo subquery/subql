@@ -21,7 +21,7 @@ import { IndexerEvent } from './events';
 import { BlockContent, ProjectIndexFilters } from './types';
 
 const logger = getLogger('fetch');
-const FINALIZED_BLOCK_TIME_VARIANCE = 5;
+const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const { argv } = getYargsOption();
 
@@ -35,6 +35,7 @@ const fetchBlocksBatches = argv.profiler
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
+  private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
@@ -165,9 +166,10 @@ export class FetchService implements OnApplicationShutdown {
       value: Number(this.useDictionary),
     });
     await this.getFinalizedBlockHead();
+    await this.getBestBlockHead();
   }
 
-  @Interval(FINALIZED_BLOCK_TIME_VARIANCE * 1000)
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
@@ -186,6 +188,26 @@ export class FetchService implements OnApplicationShutdown {
       }
     } catch (e) {
       logger.error(e, `Having a problem when get finalized block`);
+    }
+  }
+
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
+  async getBestBlockHead() {
+    if (!this.api) {
+      logger.debug(`Skip fetch best block until API is ready`);
+      return;
+    }
+    try {
+      const bestHeader = await this.api.rpc.chain.getHeader();
+      const currentBestHeight = bestHeader.number.toNumber();
+      if (this.latestBestHeight !== currentBestHeight) {
+        this.latestBestHeight = currentBestHeight;
+        this.eventEmitter.emit(IndexerEvent.BlockBest, {
+          height: this.latestBestHeight,
+        });
+      }
+    } catch (e) {
+      logger.error(e, `Having a problem when get best block`);
     }
   }
 
