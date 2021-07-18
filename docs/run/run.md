@@ -23,12 +23,10 @@ A SubQuery node is an implementation that extracts substrate-based blockchain da
 ### Installation
 
 ```shell
-# Yarn
-yarn global add @subql/node
-
 # NPM
 npm install -g @subql/node
 ```
+We **DO NOT** suggest `yarn global` due to its poor dependency management might lead to an error.
 
 Once installed, you can can start a node
 
@@ -112,12 +110,10 @@ If local mode is not used, a new Postgres schema with the initial `subquery_ ` a
 ### Installation
 
 ```shell
-# Yarn
-yarn global add @subql/query
-
 # NPM
 npm install -g @subql/query
 ```
+We **DO NOT** suggest `yarn global` due to its poor dependency management might lead to an error.
 
 ### Runing the Query service
 

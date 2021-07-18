@@ -16,15 +16,14 @@ If you haven't already, we suggest that you familiarise yourself with the [termi
 
 ### Install the SubQuery CLI
 
-Install SubQuery CLI globally on your terminal by using Yarn or NPM:
+Install SubQuery CLI globally on your terminal by using NPM:
 
 ```shell
-# Yarn
-yarn global add @subql/cli
-
 # NPM
 npm install -g @subql/cli
 ```
+
+We **DO NOT** suggest `yarn global` due to its poor dependency management might lead to an error
 
 You can then run help to see available commands and usage provide by CLI
 
