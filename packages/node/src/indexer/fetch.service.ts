@@ -150,7 +150,7 @@ export class FetchService implements OnApplicationShutdown {
                 e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
               }`,
             );
-            await delay(5);
+            process.exit(1);
           }
         }
       }
