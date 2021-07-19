@@ -4283,7 +4283,7 @@ __metadata:
     "@types/sequelize": ^4.28.9
     "@types/supertest": ^2.0.10
     "@types/tar": ^4.0.4
-    "@types/yargs": ^16.0.3
+    "@types/yargs": ^16.0.4
     "@willsoto/nestjs-prometheus": ^3.0.0
     app-module-path: ^2.2.0
     dayjs: ^1.10.5
@@ -4301,7 +4301,7 @@ __metadata:
     supertest: ^6.1.3
     tar: ^6.1.0
     typescript: ^4.1.3
-    yargs: ^17.0.1
+    yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
   languageName: unknown
@@ -4325,7 +4325,7 @@ __metadata:
     "@types/jest": ^26.0.23
     "@types/lodash": ^4.14.170
     "@types/rimraf": ^3.0.0
-    "@types/yargs": ^15.0.13
+    "@types/yargs": ^16.0.4
     apollo-server-express: ^2.25.2
     express-pino-logger: ^6.0.0
     graphile-build: ^4.12.0
@@ -4341,7 +4341,7 @@ __metadata:
     rimraf: ^3.0.2
     rxjs: ^6.6.3
     typescript: ^4.1.3
-    yargs: ^17.0.1
+    yargs: ^16.2.0
   bin:
     subql-query: ./bin/run
   languageName: unknown
@@ -5150,7 +5150,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^15.0.0, @types/yargs@npm:^15.0.13":
+"@types/yargs@npm:^15.0.0":
   version: 15.0.13
   resolution: "@types/yargs@npm:15.0.13"
   dependencies:
@@ -5168,12 +5168,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/yargs@npm:^16.0.3":
-  version: 16.0.3
-  resolution: "@types/yargs@npm:16.0.3"
+"@types/yargs@npm:^16.0.4":
+  version: 16.0.4
+  resolution: "@types/yargs@npm:16.0.4"
   dependencies:
     "@types/yargs-parser": "*"
-  checksum: 84b8f617742b4a86f334838152cbc8d2fae4cc2568a81c4d54a9a9c7a6dc926f4fb21c3cb9d34cad895ab4f020041e28bcfe16348a34d370a2833450750ccd66
+  checksum: 929334a45c548f78e5aa756282b8abe17c0c7233eaaf414795808ab36a5f9957b3bc8c84151429d919fd2ac04ed2ce99853a85aea65823b4f669643656a3c65e
   languageName: node
   linkType: hard
 
@@ -21723,9 +21723,9 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"yargs@npm:^17.0.1":
-  version: 17.0.1
-  resolution: "yargs@npm:17.0.1"
+"yargs@npm:^16.2.0":
+  version: 16.2.0
+  resolution: "yargs@npm:16.2.0"
   dependencies:
     cliui: ^7.0.2
     escalade: ^3.1.1
@@ -21734,7 +21734,7 @@ typescript@^4.1.3:
     string-width: ^4.2.0
     y18n: ^5.0.5
     yargs-parser: ^20.2.2
-  checksum: a7969b48d2dea129a7d4fcc3f13e88d4f94bacbd24f720b2ce19946fa9facc42cfed89c059d953091241f4e9e9000ed9dbf86e4bb4b6ceb3a26af10ddebdd0b2
+  checksum: a79ce1f043021cd645de1ffebb6149541d382ba68f4a6b5eca5d2ad65af51893371bbd78e240dc3b6cf0cbb419511ba5bda715dec992e4266e6863ea49f14feb
   languageName: node
   linkType: hard
 

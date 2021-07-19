@@ -92,5 +92,5 @@ export function getYargsOption() {
 }
 
 export function argv(arg: string): unknown {
-  return yargv[arg];
+  return getYargsOption().argv[arg];
 }
