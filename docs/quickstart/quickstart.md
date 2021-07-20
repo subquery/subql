@@ -23,7 +23,7 @@ Install SubQuery CLI globally on your terminal by using NPM:
 npm install -g @subql/cli
 ```
 
-We **DO NOT** suggest `yarn global` due to its poor dependency management might lead to an error
+Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
 
 You can then run help to see available commands and usage provide by CLI
 
