@@ -2,7 +2,7 @@ module.exports = {
   locales: {
     '/': {
       lang: 'English',
-      title: 'SubQuery Guide',
+      title: 'SubQuery Docs',
       description: 'SubQuery is a open-source tool to provide a complete process and query data solution to every substrate project and will become core infrastructure for the Polkadot ecosystem.'
     },
   },

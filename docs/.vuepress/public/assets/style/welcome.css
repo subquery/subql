@@ -1,0 +1,294 @@
+body .theme-default-content:not(.custom) {
+    max-width: inherit;
+    width: auto;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+.page {
+  padding-bottom: 0;
+}
+.page-edit {
+  display: none;
+}
+.page-nav {
+  display: none;
+}
+.top2Sections {
+  background: url('/assets/img/frame.png') no-repeat -90px center;
+  background-size: 560px 397px;
+}
+.main {
+    max-width: 1440px;
+    min-width: 960px;
+    width: auto;
+    margin: 0 auto;
+    color: #2C3E50;
+  }
+.main > div {
+  padding: 0 90px;
+}
+  .welcomeWords {
+    padding: 68px 28px 58px;
+    margin-bottom: 80px;
+    background: linear-gradient(123.79deg, rgba(67, 136, 221, 0.05) 3.65%, rgba(255, 69, 129, 0.05) 100%);
+  }
+  .welcomeWords > div {
+    height: 460px;
+    background: url('/assets/img/welcome_img.svg') no-repeat right;
+    background-size: 480px 420px;
+  }
+  .welcomeWords .welcomeTitle {
+    border: 0;
+    margin-top: 110px;
+    margin-bottom: 18px;
+    font-size: 38px;
+    height: 85px;
+    line-height: 85px;
+    padding-right: 20px;
+    display: inline-block;
+    background: url('/assets/img/wordCycle.svg') no-repeat right top;
+  }
+  .welcomeWords .welcomeTitle span {
+    color: #3EAF7C;
+    padding-left: 8px;
+  }
+  .welcomeWords p {
+    width: 600px;
+    font-size: 22px;
+    margin: 0;
+  }
+  @media screen and (max-width: 1440px) {
+    .welcomeWords p {
+      width: 560px;
+    }
+  }
+  
+  .startSection > div {
+    height: 360px;
+    padding-left: 500px;
+    background: url('/assets/img/startSection_img.svg') no-repeat left top;
+    background-size: 480px 420px;
+    padding-top: 70px;
+    margin-bottom: 140px;
+  }
+  .startSection .title {
+    font-size: 38px;
+    color: #2C3E50;
+    border: 0;
+  }
+  .startSection p {
+    margin-bottom: 40px;
+  }
+  .startSection .title span {
+    color: #3EAF7C;
+  }
+  .button {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 16px;
+    line-height: 24px;
+    text-align: center;
+    position: relative;
+    background: linear-gradient(-90deg,#ff4581,#4388dd);
+  }
+  .button:after {
+    content: "";
+    position: absolute;
+    background-color: #fff;
+    left: 1px;
+    top: 1px;
+    width: calc(100% - 2px);
+    height: calc(100% - 2px);
+    border-radius: 20px;
+  }
+
+  .button span {
+    position: relative;
+    z-index: 1;
+    line-height: 40px;
+    background: linear-gradient(270deg ,#ff4581,#4388dd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 14px;
+}
+.theme-default-content:not(.custom) a.button:hover {
+    text-decoration: none;
+}
+
+.faqSection .title {
+  border: 0;
+  font-size: 38px;
+  margin-bottom: 32px;
+}
+.list {
+    display: grid;
+    grid-gap: 30px;
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 140px;
+    grid-template-columns: 1fr 1fr 1fr;
+}
+.list li {
+    background: linear-gradient(-90deg,#ff4581,#4388dd);
+    border-radius: 8px;
+    position: relative;
+}
+.list li div {
+    position: relative;
+    z-index: 1;
+    padding: 40px 32px;
+    text-align: center;
+}
+.list li:after {
+  content: "";
+  position: absolute;
+  background-color: #fff;
+  left: 1px;
+  top: 1px;
+  width: calc(100% - 2px);
+  height: calc(100% - 2px);
+  border-radius: 8px;
+}
+.list li div img {
+    margin-bottom: 40px;
+}
+.list li div span {
+    display: block;
+    font-size: 20px;
+    line-height: 28px;
+    font-weight: bolder;
+    margin-bottom: 16px;
+}
+.list li div p {
+    font-weight: 16px;
+    line-height: 24px;
+    margin-bottom: 0;
+}
+.faqSection > div {
+  padding-right: 490px;
+  min-height: 460px;
+  padding-bottom: 140px;
+  background: url('/assets/img/faq_img.svg') no-repeat right 84px;
+}
+.faqSection .current .content {
+  display: block;
+}
+.faqSection .current .title {
+  background: url('/assets/img/nag-circle.svg') no-repeat left;
+}
+.faqList {
+  list-style: none;
+  padding-left: 0;
+}
+.faqList li {
+  background: #FFFFFF;
+  border: 1px solid #D9D9D9;
+  box-sizing: border-box;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  padding: 24px;
+}
+.faqList .title {
+  background: url('/assets/img/plus-circle.svg') no-repeat left;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 24px;
+  padding-left: 42px;
+  margin-bottom: 0;
+}
+.faqList li:not(.current):hover {
+  cursor: pointer;
+  background: linear-gradient(123.79deg, rgba(67, 136, 221, 0.05) 3.65%, rgba(255, 69, 129, 0.05) 100%);
+}
+.faqList .content {
+  display: none;
+}
+
+.lastIntroduce {
+  border: 1px solid #D9D9D9;
+  padding: 48px;
+  border-radius: 8px;
+  margin-bottom: 31px;
+  padding-left: 400px;
+
+}
+.lastIntroduce h5 {
+  font-weight: 600;
+  font-size: 38px;
+  line-height: 42px;
+  margin: 0 0 32px 0;
+}
+.lastIntroduce_1 {
+  background: url('/assets/img/lastIntroduce_1.svg') no-repeat 46px center;
+}
+.lastIntroduce_2 {
+  margin-bottom: 140px;
+  background: url('/assets/img/lastIntroduce_2.svg') no-repeat 46px center;
+}
+.connectSection {
+  font-size: 16px;
+  display: flex;
+}
+.connectSection .email {
+  width: 350px;
+  padding-right: 100px;
+  vertical-align: top;
+}
+.connectSection .email a {
+  color: #4388DD;
+}
+.connectWay {
+  padding-top: 32px;
+  height: 149px;
+  padding-bottom: 30px;
+}
+.connectWay a {
+  font-size: 0;
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  background-repeat: no-repeat;
+  background-size: cover;
+  margin-right: 32px;
+}
+.connectMatrix {
+  background-image: url(/assets/img/connectMatrix.png);
+}
+.connectTelegram {
+  background-image: url(/assets/img/connectTelegram.png);
+}
+.connectTwitter {
+  background-image: url(/assets/img/connectTwitter.png);
+}
+.connectMedium {
+  background-image: url(/assets/img/connectMedium.png);
+}
+.connectGithub {
+  background-image: url(/assets/img/connectGithub.png);
+}
+.connectLinkedin {
+  background-image: url(/assets/img/connectLinkedin.png);
+}
+.connectDiscord {
+  background-image: url(/assets/img/connectDiscord.png);
+}
+.footer {
+  background: linear-gradient(279.44deg, #FF4581 14.25%, #4388DD 85.75%);
+  line-height: 48px;
+  height: 48px;
+  font-size: 16px;
+}
+.footer div {
+  color: #fff;
+}
+.more {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 22px;
+  height: 22px;
+  color: #3EAF7C;
+  padding-right: 20px;
+  background: url(/assets/img/arrow.svg) no-repeat right;
+}

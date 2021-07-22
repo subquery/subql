@@ -1,33 +1,119 @@
-# Welcome to SubQuery!
-![open grant logo](https://raw.githubusercontent.com/w3f/General-Grants-Program/master/src/badge_black.svg)
-
-**SubQuery enables better dApps by making decentralised data more accessible**
-
-SubQuery allows every Substrate/Polkadot team to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help Polkadot/Substrate projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract Polkadot network data in only minutes and at no cost.
-
-**In this Guide**
-1. We're going to show you how to create your first SubQuery project from scratch using real world examples.
-2. We'll cover how to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
-3. Lastly, we'll explain how to upload SubQuery projects to the hosted SubQuery console so you don't need to worry about running infrastructure.
-
-## Create a SubQuery project
-You can follow our [Quick Start Guide](./quickstart/quickstart.md) to learn how to create, initialize, build, and pack a new SubQuery Project using the [`@subql/cli`](https://www.npmjs.com/package/@subql/cli) tool.
-
-You'll need [Typescript](https://www.typescriptlang.org/) and  [Node](https://nodejs.org/en/).
-
-## Start using your project
-#### Publish Project to the SubQuery Explorer
-Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](./publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
-
-#### Run your own Local Indexer and Query Service
-We'll cover how to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
-
-You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
-
-You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
-
-## Terminology
-- SubQuery Project (*where the magic happens*): A definition ([`@subql/cli`](https://www.npmjs.com/package/@subql/cli)) of how a SubQuery Node should traverse and aggregate a projects network and how the data should the transformed and stored to enable useful GraphQL queries 
-- SubQuery Node (*where the work is done*): A package ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) that will accept a SubQuery project definiton, and run a node that constantly indexes a connected network to a database
-- SubQuery Query Service (*where we get the data from*): A package ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) that interacts with the GraphQL API of a deployed SubQuery node to query and view the indexed data
-- GraphQL (*how we query the data*): A query langage for APIs that is specifically suited for flexible graph based data - see [graphql.org](https://graphql.org/learn/)
+<link rel="stylesheet" href="/assets/style/welcome.css" as="style" />
+<div class="top2Sections">
+  <section class="welcomeWords">
+    <div class="main">
+      <div>
+        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
+        <p>A place where to find everything you need to know to about what SubQuery is and what it can do for you.</p>
+      </div>
+    </div>
+  </section>
+  <section class="startSection main">
+    <div>
+      <h2 class="title">Quick Start <span>Guide</span></h2>
+      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
+      </p>
+      <a href="" class="button"><span>Get started</span></a>
+    </div>
+  </section>
+</div>
+<div class="main">
+  <div>
+    <ul class="list">
+      <li>
+        <div>
+          <img src="/assets/img/tutorialsIcon.svg" />
+          <span>Tutorials and Examples</span>
+          <p>Learning is doing so here we provide lots of tutorials and examples of how to build various SubQuery projects.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <img src="/assets/img/docsIcon.svg" />
+          <span>Technical Reference Docs</span>
+          <p>A list of shortcut references to help you, the developers quickly find what you need to keep building your awesome applications.</p>
+        </div>
+      </li>
+      <li>
+        <div>
+          <img src="/assets/img/networkIcon.svg" />
+          <span>The SubQuery Network</span>
+          <p>SubQuery’s future is a decentralised network where indexers and consumers are rewarded.</p>
+        </div>
+      </li>
+    </ul>
+  </div>
+</div>
+<section class="faqSection main">
+  <div>
+    <h2 class="title">FAQ</h2>
+    <ul class="faqList">
+      <li>
+        <div class="title">How to run SubQuery in a Docker container?</div>
+        <div class="content">
+          <p>...</p>
+          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        </div>
+      </li>
+      <li>
+        <div class="title">How to change the start block number?</div>
+        <div class="content">
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nec, sit aliquet mauris vehicula aenean. Pellentesque quisque tellus amet arcu nulla. Auctor mauris arcu eget quam sem ut amet, diam dignissim. Feugiat orci, maecenas at facilisi erat turpis varius adipiscing sollicitudin. Faucibus lorem tincidunt at phasellus risus.</p>
+          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        </div>
+      </li>
+      <li>
+        <div class="title">How to change the batch size?</div>
+        <div class="content">
+          <p>...</p>
+          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        </div>
+      </li>
+      <li>
+        <div class="title">What is the difference between a staging slot and a production slot?</div>
+        <div class="content">
+          <p>...</p>
+          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        </div>
+      </li>
+    </ul>
+  </div>
+</section>
+<section class="main">
+  <div>
+    <div class="lastIntroduce lastIntroduce_1">
+        <h5>Partnerships</h5>
+        <p>Interested in joining our journey in becoming the largest decentralised blockchain data provider in the world? Learn how we can help you build better dApps by allowing anyone to reliably find and consume data faster.</p>
+        <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+    </div>
+    <div class="lastIntroduce lastIntroduce_2">
+        <h5>Customer Support</h5>
+        <p>Have a question? Interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our discord community and receive support from our passionate community members. </p>
+        <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+    </div>
+    </div>
+</section>
+<section class="main connectSection">
+  <div class="email">
+    <span>Contact us</span>
+    <a href="mailto:hello@subquery.network">hello@subquery.network</a>
+  </div>
+  <div>
+    <div>Follow us on social</div>
+    <div class="connectWay">
+      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
+      <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
+      <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
+      <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
+      <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
+      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">matrix</a>
+      <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>
+    </div>
+  </div>
+</section>
+</div>
+</div>
+<div class="footer">
+  <div class="main"><div>SubQuery © 2021</div></div>
+</div>
+<script charset="utf-8" src="/assets/js/welcome.js"></script>
