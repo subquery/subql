@@ -20,9 +20,21 @@ iframe {
   min-width: 960px;
   width: auto;
 }
+@media screen and (max-width: 419px) {
+  .theme-default-content:not(.custom) {
+    max-width: auto;
+    min-width: auto;
+    width: auto;
+  }
+}
 .nav-links .icon.outbound {
   display: none;
 }
 .nav-links .nav-item a:hover {
   border-bottom: 2px solid #46bd87;
+}
+@media screen and (max-width: 719px) {
+  .navbar a .can-hide {
+    display: inline-block;
+  }
 }

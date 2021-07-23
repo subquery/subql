@@ -21,25 +21,31 @@
   <div>
     <ul class="list">
       <li>
-        <div>
-          <img src="/assets/img/tutorialsIcon.svg" />
-          <span>Tutorials and Examples</span>
-          <p>Learning is doing so here we provide lots of tutorials and examples of how to build various SubQuery projects.</p>
-        </div>
+        <a href="">
+          <div>
+            <img src="/assets/img/tutorialsIcon.svg" />
+            <span>Tutorials and Examples</span>
+            <p>Learning is doing so here we provide lots of tutorials and examples of how to build various SubQuery projects.</p>
+          </div>
+        </a>
       </li>
       <li>
-        <div>
-          <img src="/assets/img/docsIcon.svg" />
-          <span>Technical Reference Docs</span>
-          <p>A list of shortcut references to help you, the developers quickly find what you need to keep building your awesome applications.</p>
-        </div>
+        <a href="">
+          <div>
+            <img src="/assets/img/docsIcon.svg" />
+            <span>Technical Reference Docs</span>
+            <p>A list of shortcut references to help you, the developers quickly find what you need to keep building your awesome applications.</p>
+          </div>
+        </a>
       </li>
       <li>
-        <div>
-          <img src="/assets/img/networkIcon.svg" />
-          <span>The SubQuery Network</span>
-          <p>SubQuery’s future is a decentralised network where indexers and consumers are rewarded.</p>
-        </div>
+        <a href="">
+          <div>
+            <img src="/assets/img/networkIcon.svg" />
+            <span>The SubQuery Network</span>
+            <p>SubQuery’s future is a decentralised network where indexers and consumers are rewarded.</p>
+          </div>
+        </a>
       </li>
     </ul>
   </div>
