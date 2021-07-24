@@ -4,7 +4,7 @@
     <div class="main">
       <div>
         <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>A place where to find everything you need to know to about what SubQuery is and what it can do for you.</p>
+        <p>This is a place where you can find everything you need to know to about what SubQuery is and what it can do for you.</p>
       </div>
     </div>
   </section>
@@ -13,7 +13,7 @@
       <h2 class="title">Quick Start <span>Guide</span></h2>
       <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
       </p>
-      <a href="" class="button"><span>Get started</span></a>
+      <a href="/quickstart/helloworld-localhost.html" class="button"><span>Get started</span></a>
     </div>
   </section>
 </div>
@@ -21,7 +21,7 @@
   <div>
     <ul class="list">
       <li>
-        <a href="">
+        <a href="/tutorials_examples/introduction.html">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>Tutorials and Examples</span>
@@ -55,10 +55,10 @@
     <h2 class="title">FAQ</h2>
     <ul class="faqList">
       <li>
-        <div class="title">How to run SubQuery in a Docker container?</div>
+        <div class="title">What is SubQuery?</div>
         <div class="content">
-          <p>...</p>
-          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+          <p>SubQuery is </p>
+          <a class="more" href="faqs/faqs.html#what-is-subquery">READ MORE</a>
         </div>
       </li>
       <li>
@@ -94,7 +94,7 @@
     </div>
     <div class="lastIntroduce lastIntroduce_2">
         <h5>Customer Support</h5>
-        <p>Have a question? Interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our discord community and receive support from our passionate community members. </p>
+        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our <a href="https://discord.com/invite/78zg8aBSMG">discord community </a>and receive support from our passionate community members. </p>
         <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
     </div>
     </div>

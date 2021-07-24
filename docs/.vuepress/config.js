@@ -70,6 +70,13 @@ module.exports = {
       {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
+        children: [
+          '/tutorials_examples/howto.md',
+        ]
+      },
+      {
+        title: 'FAQs',
+        path: '/faqs/faqs.md',
         children: []
       }
     ],
