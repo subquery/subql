@@ -4,7 +4,7 @@
     <div class="main">
       <div>
         <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>This is a place where you can find everything you need to know to about what SubQuery is and what it can do for you.</p>
+        <p>This is a place where you can learn how SubQuery can help you explore and transform chain data to build faster and more intuitive dApps</p>
       </div>
     </div>
   </section>
@@ -30,20 +30,20 @@
         </a>
       </li>
       <li>
-        <a href="">
+        <a href="/create/introduction.html">
           <div>
             <img src="/assets/img/docsIcon.svg" />
             <span>Technical Reference Docs</span>
-            <p>A list of shortcut references to help you, the developers quickly find what you need to keep building your awesome applications.</p>
+            <p>A list of shortcut references to developers quickly find what you need to build awesome applications.</p>
           </div>
         </a>
       </li>
       <li>
-        <a href="">
+        <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
             <span>The SubQuery Network</span>
-            <p>SubQuery’s future is a decentralised network where indexers and consumers are rewarded.</p>
+            <p>SubQuery’s future will be a decentralised network where indexers and consumers are rewarded.</p>
           </div>
         </a>
       </li>
@@ -57,7 +57,7 @@
       <li>
         <div class="title">What is SubQuery?</div>
         <div class="content">
-          <p>SubQuery is an open source project that allows developers to build queries to extract data from blockchains to power their applications. </p>
+          <p>SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.</p>
           <a class="more" href="faqs/faqs.html#what-is-subquery">READ MORE</a>
         </div>
       </li>
@@ -70,14 +70,15 @@
       <li>
         <div class="title">How can I contribute or give feedback to SubQuery?</div>
         <div class="content">
-          <p>We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (coming soon). </p>
+          <p>We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guidelines (coming soon). </p>
           <a class="more" href="faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">READ MORE</a>
         </div>
       </li>
       <li>
-        <div class="title">Does hosting my project in SubQuery project cost?</div>
+        <div class="title">How much does it cost to host my project in SubQuery Projects?</div>
         <div class="content">
-          <p>No, hosting your project is absolutely free. This is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="quickstart/helloworld-hosted.html">Hello World (SubQuery hosted)</a> tutorial.</p>
+          <p>Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
+          <a class="more" href="publish/publish.html">HOSTING YOUR PROJECT</a>
         </div>
       </li>
     </ul><br>
@@ -87,14 +88,14 @@
 <section class="main">
   <div>
     <div class="lastIntroduce lastIntroduce_1">
-        <h5>Partnerships</h5>
-        <p>Interested in joining our journey in becoming the largest decentralised blockchain data provider in the world? Learn how we can help you build better dApps by allowing anyone to reliably find and consume data faster.</p>
-        <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        <h5>Integrating with your Custom Chain?</h5>
+        <p>Whether you're building a new parachain or an entirely new blockchain on Substrate - SubQuery can help you index and troubleshoot your chain's data. SubQuery is designed to easily integrate with a custom Substrate based chain.</p>
+        <a class="more" href="create/mapping.html#custom-substrate-chains">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</a>
     </div>
     <div class="lastIntroduce lastIntroduce_2">
-        <h5>Customer Support</h5>
-        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our <a href="https://discord.com/invite/78zg8aBSMG">discord community </a>and receive support from our passionate community members. </p>
-        <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+        <h5>Support and Contribute</h5>
+        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our Discord community and receive support from our passionate community members. </p>
+        <a class="more" href="https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
     </div>
     </div>
 </section>
