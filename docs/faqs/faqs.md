@@ -2,11 +2,31 @@
 
 ## What is SubQuery?
 
-SubQuery is an open source project that allows developers to build queries to extract data from a blockchain to power their applications.
+SubQuery is an open source project that allows developers to build queries to extract data from blockchains to power their applications.
 
 SubQuery also provides free, production grade hosting of nodes for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best.
 
 ## What is the best way to get started with SubQuery?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.html).
+The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.html). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query. 
+
+## How can I contribute or give feedback to SubQuery?
+
+We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA). 
+
+To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+
+## Does hosting my project in SubQuery project cost? 
+
+No, hosting your project is absolutely free. This is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](http://localhost:8080/quickstart/helloworld-hosted.html) tutorial.
+
+## What are deployment slots? 
+
+Deployment slots are the equivalent of development environments. For example, in any software organisation there is normally a development environment and a production environment as a minimum, ignoring localhost that is. Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up. 
+
+SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button. 
+
+## What is the advantage of a staging slot?
+
+The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the seperate environment allows you to test your new code without affecting production.
 

@@ -57,32 +57,31 @@
       <li>
         <div class="title">What is SubQuery?</div>
         <div class="content">
-          <p>SubQuery is </p>
+          <p>SubQuery is an open source project that allows developers to build queries to extract data from blockchains to power their applications. </p>
           <a class="more" href="faqs/faqs.html#what-is-subquery">READ MORE</a>
         </div>
       </li>
       <li>
-        <div class="title">How to change the start block number?</div>
+        <div class="title">What is the best way to get started with SubQuery?</div>
         <div class="content">
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nec, sit aliquet mauris vehicula aenean. Pellentesque quisque tellus amet arcu nulla. Auctor mauris arcu eget quam sem ut amet, diam dignissim. Feugiat orci, maecenas at facilisi erat turpis varius adipiscing sollicitudin. Faucibus lorem tincidunt at phasellus risus.</p>
-          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+          <p>The best way to get started with SubQuery is to try out our <a href="/quickstart/helloworld-localhost.html">Hello World tutorial</a>. This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query. </p>
         </div>
       </li>
       <li>
-        <div class="title">How to change the batch size?</div>
+        <div class="title">How can I contribute or give feedback to SubQuery?</div>
         <div class="content">
-          <p>...</p>
-          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+          <p>We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (coming soon). </p>
+          <a class="more" href="faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">READ MORE</a>
         </div>
       </li>
       <li>
-        <div class="title">What is the difference between a staging slot and a production slot?</div>
+        <div class="title">Does hosting my project in SubQuery project cost?</div>
         <div class="content">
-          <p>...</p>
-          <a class="more" href="quickstart/quickstart.html#preparation">READ MORE</a>
+          <p>No, hosting your project is absolutely free. This is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="quickstart/helloworld-hosted.html">Hello World (SubQuery hosted)</a> tutorial.</p>
         </div>
       </li>
-    </ul>
+    </ul><br>
+    For further frequently asked questions, please see our <a href="faqs/faqs.html">FAQ's</a> page.    
   </div>
 </section>
 <section class="main">
