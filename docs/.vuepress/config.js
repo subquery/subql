@@ -75,6 +75,11 @@ module.exports = {
         ]
       },
       {
+        title: 'Technical References',
+        path: '/',
+        children: []
+      },
+      {
         title: 'FAQs',
         path: '/faqs/faqs.md',
         children: []
