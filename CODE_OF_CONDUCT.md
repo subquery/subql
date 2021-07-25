@@ -15,6 +15,7 @@ diverse, inclusive, and healthy community.
 Examples of behavior that contributes to a positive environment for our
 community include:
 
+* Supporting for new contributors by providing help and pointing them to the right examples and documentation 
 * Demonstrating empathy and kindness toward other people
 * Using welcoming and inclusive language
 * Being respectful of differing opinions, viewpoints, and experiences
@@ -58,9 +59,10 @@ representative at an online or offline event.
 SubQuery encourage all communities to resolve issues on their own whenever possible. 
 This builds a broader and deeper understanding and ultimately a healthier interaction. 
 In the event that an issue cannot be resolved locally, please feel free to report your concerns by 
-contacting help@subquery.network. 
+contacting support@subquery.network. 
 
 All complaints will be reviewed and investigated promptly and fairly. SubQuery will respect the privacy and security of the reporter of any incident.
+
 All reports will be reviewed by a multi-person team and will result in a response that 
 is deemed necessary and appropriate to the circumstances. Where additional perspectives are needed, 
 the team may seek insight from others with relevant expertise or experience. The confidentiality
@@ -68,7 +70,5 @@ of the person reporting the incident will be kept at all times. Involved parties
 
 ## Attribution
 
-This Code of Conduct is adapted from the [Contributor Covenant][homepage],
-version 2.0, available at
-https://www.contributor-covenant.org/version/2/0/code_of_conduct.html.
+This Code of Conduct is adapted from version 2.0 of the [Contributor Covenant](https://www.contributor-covenant.org/version/2/0/code_of_conduct.html)
 
