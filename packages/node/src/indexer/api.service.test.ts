@@ -60,7 +60,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(1);
     const validators = await api.query.session.validators.at(blockhash);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     const [patchedValidators, currentValidators] = await Promise.all([
       patchedApi.query.session.validators(),
       api.query.session.validators(),
@@ -73,7 +73,7 @@ describe('ApiService', () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     const patchedApi = await apiService.getPatchedApi();
     const apiResults = await api.query.staking.erasStakers.at(
       blockhash,
@@ -101,7 +101,7 @@ describe('ApiService', () => {
     } else {
       blockhash = await api.rpc.chain.getBlockHash(4401243);
     }
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
 
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
@@ -115,31 +115,6 @@ describe('ApiService', () => {
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
   }, 30000);
 
-  it('.query.*.*.at are removed, ', async () => {
-    const apiService = await prepareApiService();
-    const api = apiService.getApi();
-    const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    const patchedApi = await apiService.getPatchedApi();
-    await apiService.setBlockhash(blockhash);
-
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
-    expect(() =>
-      patchedApi.query.staking.erasRewardPoints.at(blockhash),
-    ).toThrow(/is not supported/);
-  }, 30000);
-
-  it('api.at,xxx,xxx are removed, ', async () => {
-    const apiService = await prepareApiService();
-    const api = apiService.getApi();
-    const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    const blockhash2 = await api.rpc.chain.getBlockHash(8332044);
-
-    const patchedApi = await apiService.getPatchedApi();
-    await apiService.setBlockhash(blockhash);
-
-    expect(() => patchedApi.at(blockhash2)).toThrow(/is not supported/);
-  }, 300000);
-
   it('xxx.xxx.multi with input parameter is an array', async () => {
     const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
     const account2 = 'F3opxRbN5ZbjJNU511Kj2TLuzFcDq9BGduA9TgiECafpg29';
@@ -151,7 +126,7 @@ describe('ApiService', () => {
       await api.query.system.account.at(blockhash, account1),
       await api.query.system.account.at(blockhash, account2),
     ]);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     const [patchedMultiResults, currentMulti] = await Promise.all([
       patchedApi.query.system.account.multi([account1, account2]),
@@ -170,7 +145,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     const multiResults = await Promise.all([
       await api.query.staking.erasStakers.at(
         blockhash,
@@ -196,7 +171,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
 
     const multiResults = await Promise.all([
       api.query.timestamp.now.at(blockhash),
@@ -231,7 +206,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
 
     const multiResults = await Promise.all([
       api.query.timestamp.now.at(blockhash),
@@ -270,7 +245,7 @@ describe('ApiService', () => {
     const callIndexOfBatch = api.tx.utility.batch.callIndex;
     // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
     const blockhash = await api.rpc.chain.getBlockHash(1);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
     const registry2 = patchedApi.registry;
     const call = patchedApi.findCall(callIndexOfBatch);
     expect(call?.method).not.toBe('batch');
@@ -284,7 +259,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
 
     const blockhash = await api.rpc.chain.getBlockHash(4401242);
-    await apiService.setBlockhash(blockhash);
+    await apiService.setBlockhash(blockhash, true);
 
     const b1 = await patchedApi.rpc.chain.getBlock();
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
