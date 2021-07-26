@@ -1,6 +1,6 @@
 # Hello World (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. The aim of this quick start is to show you how you get the default starter project running in Docker in a few simple steps.
+Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
 
 ## Learning objectives
 
@@ -157,7 +157,7 @@ $ tsc -b
 
 ## Step 5: docker-compose
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`
+Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
 
 This will kick everything into life where eventually you will get blocks being fetched.
 
