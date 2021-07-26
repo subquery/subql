@@ -33,6 +33,13 @@ module.exports = {
         ]
       },
       {
+        title: 'Installation',
+        path: '/install/install',
+        children: [
+          '/install/install.md'
+        ]
+      },
+      {
         title: 'Create a Project',
         path: '/create/introduction',
         children: [
@@ -72,6 +79,7 @@ module.exports = {
         path: '/tutorials_examples/introduction',
         children: [
           '/tutorials_examples/howto.md',
+          '/tutorials_examples/terminology.md',
         ]
       },
       {
