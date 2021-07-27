@@ -111,7 +111,7 @@ module.exports = {
     ],
   ],
   markdown: {
-    extractHeaders: ['h2','h3','h4']
+    extractHeaders: ['h2','h3','h4'],
   }
 }
 

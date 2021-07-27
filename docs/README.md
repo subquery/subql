@@ -77,7 +77,7 @@
       <li>
         <div class="title">How much does it cost to host my project in SubQuery Projects?</div>
         <div class="content">
-          <p>Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
+          <p>Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
           <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTING YOUR PROJECT</a>
         </div>
       </li>
