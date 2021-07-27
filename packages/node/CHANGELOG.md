@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.19.0] - 2021-07-27
-Upgrade priority: Medium. Recommend to upgrade in order to support for v14 metadata parsing
+Upgrade priority: Minor. Recommend to upgrade in order to support for v14 metadata parsing
 ### Changed
 - Bump polkadot/api to 5.2.1 (#402)
 ### Fixed
