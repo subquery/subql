@@ -118,6 +118,7 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
+    this.patchApiAt(this.patchedApi);
     this.patchApiQuery(this.patchedApi);
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
@@ -398,5 +399,9 @@ export class ApiService implements OnApplicationShutdown {
       },
       {},
     );
+  }
+
+  private patchApiAt(api: ApiPromise): void {
+    (api as any).at = NOT_SUPPORT('api.at()');
   }
 }
