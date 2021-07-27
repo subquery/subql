@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.0] - 2021-07-27
+Upgrade priority: Medium. Recommend to upgrade in order to support for v14 metadata parsing
+### Changed
+- Bump polkadot/api to 5.2.1 (#402)
+### Fixed
+- Disable api.at() in patched api (#402)
+- Fix snake case for Foreign key, Unique index constraint (#382)
+- Fix `subql-node --help` not display full options.(#396)
+### Added
+- Expose best block height in meta (#392)
+
+
 ## [0.18.0] - 2021-07-06
 Upgrade priority: High. Recommend for all projects to upgrade. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3
 ### Fixed
