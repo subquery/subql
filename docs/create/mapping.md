@@ -7,7 +7,7 @@ Mappings are written in a subset of TypeScript called AssemblyScript which can b
 - These mappings are also exported in `src/index.ts`
 - The mappings files are reference in `project.yaml` under the mapping handlers.
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler) and [Call Handlers](#call-handler).
+There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
 
 ## Block Handler
 
@@ -30,7 +30,7 @@ A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe591
 
 You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of events will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -58,17 +58,17 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provide an extrinsic property which extends the events among this block. Additionally it records the success status of this extrinsic.
+The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
 
 ## Query States
 Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities. 
 
-These are the interface we currently support:
+These are the interfaces we currently support:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
 - [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
 
-These are the interface we do **NOT** support currently:
+These are the interfaces we do **NOT** support currently:
 - ~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
@@ -87,7 +87,7 @@ See an example of using this API in our [validator-threshold](https://github.com
 We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. 
 A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that takes `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted.
+Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted.
 We have also modified these methods to take the current indexing block hash by default. 
 
 ```typescript
@@ -104,12 +104,13 @@ const b2 = await api.rpc.chain.getBlock();
 
 ## Modules and Libraries
 
-In order to improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
 
-Please note this is an **experimental features** and you may encounter bugs or issues that many negatively impact on your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+
 ### Built-in modules 
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path` . 
+Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`. 
 
 Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import. 
 
@@ -126,7 +127,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 ### Third-party libraries
 
-Due to the limitations of the virtual machine in our sandbox, currently we only support third-party libraries written by **CommonJS**. 
+Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**. 
 
 We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error. 
  
@@ -136,7 +137,7 @@ SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
 You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
+In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
 
 ### Preparation
 

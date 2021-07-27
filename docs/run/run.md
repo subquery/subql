@@ -1,24 +1,24 @@
 # Running SubQuery Locally
 
-This guide works through how to run a local SubQuery node on your own infrastructure, which includes both the indexer and query service.
+This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service.
 Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
 ## Using Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here.
+An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
 
-Under the project directory run following command:
+Under the project directory run the following command:
 ```shell
 docker-compose pull && docker-compose up
 ```
 It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
 
-## Running a Indexer (subql/node)
+## Running an Indexer (subql/node)
 
 Requirements:
 - [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project, and saves it into a Postgres database.
+A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
 
 ### Installation
 
@@ -30,7 +30,7 @@ yarn global add @subql/node
 npm install -g @subql/node
 ```
 
-Once installed, you can can start a node
+Once installed, you can start a node with the following command:
 
 ```shell
 subql-node <command>
@@ -48,11 +48,11 @@ subql-node -f your-project-path
 
 #### Using a Dictionary
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases we've seen indexing performance increases of up to 10x.
+Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain, and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or alternatively specify it at run time using the following command:
+You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
@@ -68,7 +68,7 @@ export DB_HOST=localhost
 export DB_POST=5432
 subql-node -f your-project-path 
 ````
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) is able to establish connection to it.
+Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
 
 #### Specify a configuration file
 
@@ -76,7 +76,7 @@ Depending on the configuration of your Postgres database (e.g. a different datab
 subql-node -c your-project-config.yml
 ````
 
-This will point the query node to a configure file which can be in YAML or JSON format. Check out the example below.
+This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -95,9 +95,7 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ````
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance.
-Increasing the batch-size to adjust the number of blocks fetched and will decrease the overall processing time.
-The current default batch-size is 100.
+When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
 
 #### Local mode
 ````
@@ -119,12 +117,12 @@ yarn global add @subql/query
 npm install -g @subql/query
 ```
 
-### Runing the Query service
+### Running the Query service
 
 ````
 export DB_HOST=localhost
 subql-query --name <project_name> --playground
 ````
-Make sure the project name is same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also check the environment variables are correct.
+Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
 
 After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
