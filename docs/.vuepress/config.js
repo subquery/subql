@@ -23,13 +23,6 @@ module.exports = {
         path: '/',
       },
       {
-        title: 'Start Here',
-        path: '/starthere/starthere',
-        children: [
-          '/starthere/starthere.md',
-        ]
-      },
-      {
         title: 'Quick Start Guide',
         path: '/quickstart/quickstart',
         children: [
