@@ -95,7 +95,7 @@
     <div class="lastIntroduce lastIntroduce_2">
         <h5>Support and Contribute</h5>
         <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our Discord community and receive support from our passionate community members. </p>
-        <a class="more" href="https://doc.subquery.network/https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
+        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
     </div>
     </div>
 </section>
