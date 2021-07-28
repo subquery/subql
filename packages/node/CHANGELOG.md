@@ -7,16 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [0.18.1] - 2021-07-27
-Upgrade priority: Low. Upgrade to support the addition of types.
+Upgrade priority: Low. Upgrade only to support a new `polkadot/api` version and for types.
 ### Changed
-- Bump polkadot/api to 5.2.1 (#402)
+- Bump `polkadot/api` to 5.2.1 (#402)
 ### Fixed
-- Disable api.at() in patched api (#402)
-- Fix snake case for Foreign key, Unique index constraint (#382)
-- Fix `subql-node --help` not display full options.(#396)
+- Disable `api.at()` in patched API (#402)
+- Fix to improve snake case handling for foreign keys and unique index constraint (#382)
+- Fix `subql-node --help` so that it displays full options (#396)
 ### Added
 - Expose best block height in meta (#392)
-
 
 ## [0.18.0] - 2021-07-06
 Upgrade priority: High. Recommend for all projects to upgrade. Require re-indexing if the project previous deployed with node v0.17.0 to v0.17.3
