@@ -4,7 +4,7 @@
     <div class="main">
       <div>
         <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>This is a place where you can learn how SubQuery can help you explore and transform chain data to build faster and more intuitive dApps</p>
+        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
       </div>
     </div>
   </section>
@@ -25,7 +25,7 @@
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>Tutorials and Examples</span>
-            <p>Learning is doing so here we provide lots of tutorials and examples of how to build various SubQuery projects.</p>
+            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
           </div>
         </a>
       </li>
@@ -34,7 +34,7 @@
           <div>
             <img src="/assets/img/docsIcon.svg" />
             <span>Technical Reference Docs</span>
-            <p>A list of shortcut references to developers quickly find what you need to build awesome applications.</p>
+            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
           </div>
         </a>
       </li>
@@ -43,7 +43,7 @@
           <div>
             <img src="/assets/img/networkIcon.svg" />
             <span>The SubQuery Network</span>
-            <p>SubQuery’s future will be a decentralised network where indexers and consumers are rewarded.</p>
+            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
           </div>
         </a>
       </li>
