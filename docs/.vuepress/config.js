@@ -2,7 +2,7 @@ module.exports = {
   locales: {
     '/': {
       lang: 'English',
-      title: 'SubQuery Guide',
+      title: 'SubQuery Docs',
       description: 'SubQuery is a open-source tool to provide a complete process and query data solution to every substrate project and will become core infrastructure for the Polkadot ecosystem.'
     },
   },
@@ -30,6 +30,13 @@ module.exports = {
           '/quickstart/helloworld-localhost.md',
           '/quickstart/understanding-helloworld.md',
           '/quickstart/helloworld-hosted.md',
+        ]
+      },
+      {
+        title: 'Installation',
+        path: '/install/install',
+        children: [
+          '/install/install.md'
         ]
       },
       {
@@ -70,6 +77,14 @@ module.exports = {
       {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
+        children: [
+          '/tutorials_examples/howto.md',
+          '/tutorials_examples/terminology.md',
+        ]
+      },
+      {
+        title: 'FAQs',
+        path: '/faqs/faqs.md',
         children: []
       }
     ],
@@ -84,7 +99,7 @@ module.exports = {
     ],
   ],
   markdown: {
-    extractHeaders: ['h2','h3','h4']
+    extractHeaders: ['h2','h3','h4'],
   }
 }
 

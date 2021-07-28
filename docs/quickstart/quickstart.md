@@ -42,7 +42,7 @@ subql init --starter PROJECT_NAME
 You'll be asked certain questions as the SubQuery project is initalised:
 
 - Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
-- RPC endpoint (Required): Provide a wss URL to a running RPC enpoint that will be used by default for this poject. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
+- RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
 - Authors (Required): Enter the owner of this SubQuery project here
 - Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
 - Version (Required): Enter a custom version number or use the default (`1.0.0`)
@@ -74,7 +74,7 @@ For more information on how to write your own SubQuery, check out our documentat
 
 ### GraphQL Model Generation
 
-In order to [index](https://doc.subquery.network/run/run.html) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
 
 ```shell
 # Yarn
@@ -122,9 +122,9 @@ It may take some time to download the required packages ([`@subql/node`](https:/
 
 Open your browser and head to [http://localhost:3000](http://localhost:3000).
 
-You should see a GraphQL playground is showing in the explorer and the schemas that ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
+You should see a GraphQL playground is showing in the explorer and the schemas that are ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language.](../query/graphql.md).
+For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
 
 ```graphql
 {

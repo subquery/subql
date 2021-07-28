@@ -16,13 +16,13 @@ To create your first project, head to [project.subquery.network](https://project
 
 ![Projects Login](https://static.subquery.network/media/projects/projects-dashboard.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application. If you have a GitHub organisations accounts connected, you can use the switcher on the header to change to between your personal account and your organisation account. Projects created in an organisation account are shared between members in that GitHub organisation.
+SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application. If you have a GitHub organisations accounts connected, you can use the switcher on the header to change between your personal account and your organisation account. Projects created in an organisation account are shared between members in that GitHub organisation.
 ![Switch between GitHub accounts](https://static.subquery.network/media/projects/projects-account-switcher.png)
 
 #### Create your First Project
 
 Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
-- **GitHub account:** If you have more than one GitHub accounts, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
+- **GitHub account:** If you have more than one GitHub account, select which account this project will be created under. Projects created in a GitHub organisation account are shared between members in that organisation.
 - **Name**
 - **Subtitle**
 - **Description**
@@ -38,7 +38,7 @@ Create your project and you'll see it on your SubQuery Project's list. *We're al
 While creating a project will setup the display behaviour of the project, you must deploy a version of it before it becomes operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
 
 With your new project, you'll see a Deploy New Version button. Click this, and fill in the required information about the deployment:
-- **Commit Hash of new Version:** From GitHub copy the full commit hash of the version of your SubQuery project codebase that you want deployed
+- **Commit Hash of new Version:** From GitHub, copy the full commit hash of the version of your SubQuery project codebase that you want deployed
 - **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [`@subql/node`](https://www.npmjs.com/package/@subql/node)
 - **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [`@subql/query`](https://www.npmjs.com/package/@subql/query)
 
@@ -51,6 +51,6 @@ Once your deployment has succesfully completed and our nodes have indexed your d
 
 ![Project being deployed and synced](https://static.subquery.network/media/projects/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in-browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
 
 ![Projects in SubQuery Explorer](https://static.subquery.network/media/projects/projects-explorer.png)

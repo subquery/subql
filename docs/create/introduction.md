@@ -1,11 +1,11 @@
 # Creating a SubQuery Project
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the worklow when creating your own project and the key files you'll be working with.
+In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
 ## The Basic Workflow
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your own SubQuery project.
+Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
-1. Initalise your project using `subql init PROJECT_NAME`
+1. Initialise your project using `subql init PROJECT_NAME`
 2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
 3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
 4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
@@ -42,11 +42,11 @@ Whenever you change your GraphQL entities, you must regenerate your types direct
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contains generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
 
 ## Build
 
-In order run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
 
 Run the build command from the project's root directory.
 
@@ -60,7 +60,7 @@ npm run-script build
 
 ## Logging
 
-The `console.log` method is **no longer supported**. Instead a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
 
 ```typescript
 logger.info('Info level message');

@@ -3,14 +3,14 @@
 ## Defining Entities
 
 The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery.
-To learn more about how writing in GraphQL schema language, we recommend checking out on [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
 **Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
 ### Entites
 Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
-Non nullable fields in the entity are indicated by `!`. Please see the example below:
+Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
 ```graphql
 type Example @entity {
@@ -115,9 +115,9 @@ type Passport @entity {
 
 ### One-to-Many relationships
 
-You can use square brackets to indicate that a field type includes multiple entities
+You can use square brackets to indicate that a field type includes multiple entities.
 
-Example: A person can have multipe accounts
+Example: A person can have multiple accounts.
 
 ```graphql
 type Person @entity {
@@ -134,7 +134,7 @@ type Account @entity {
 ### Many-to-Many relationships
 A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup)
+Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
 
 ```graphql
 type Person @entity {
@@ -158,7 +158,7 @@ type Group @entity {
 
 Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
 
-Example, an account can have multiple transfers, and each transfer has a source and destination account.
+For example, an account can have multiple transfers, and each transfer has a source and destination account.
 
 This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table. 
 
@@ -178,7 +178,7 @@ type Transfer @entity {
 
 ### Reverse Lookups
 
-To enable reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
 
 This creates a virtual field on the entity that can be queried.
 
@@ -234,9 +234,9 @@ type User @entity {
 
 ### Querying JSON fields
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering as each time it performs a text search, it is on the entire entity.
+The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the the first 5 users own phone numbers that contains '0064'.
+However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
