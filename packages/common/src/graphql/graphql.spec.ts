@@ -41,6 +41,40 @@ describe('utils that handle schema.graphql', () => {
     expect(() => buildSchemaFromDocumentNode(graphqlSchema)).toThrow();
   });
 
+  it('throw error for union/enum/interface type', () => {
+    const graphqlSchema = gql`
+      type Test @entity {
+        id: ID!
+        unionKind: unionResult
+        enumKind: enumResult
+        who: Character
+      }
+      interface Character {
+        id: ID!
+        name: String!
+      }
+      union unionResult = Human | Droid | Starship
+      type Human @entity {
+        id: ID!
+      }
+      type Droid @entity {
+        id: ID!
+      }
+      type Starship @entity {
+        id: ID!
+      }
+      enum enumResult {
+        NEWHOPE
+        EMPIRE
+        JEDI
+      }
+    `;
+    expect(() => {
+      const schema = buildSchemaFromDocumentNode(graphqlSchema);
+      getAllEntitiesRelations(schema);
+    }).toThrow(/Not support/);
+  });
+
   it('can extract nested models and relations from the schema', () => {
     const graphqlSchema = gql`
       type Account @entity {

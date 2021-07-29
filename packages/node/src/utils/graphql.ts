@@ -27,7 +27,9 @@ export function modelsTypeToModelAttributes(
       allowNull = false;
     }
     const columnOption: ModelAttributeColumnOptions<any> = {
-      type: SEQUELIZE_TYPE_MAPPING[field.type],
+      type: field.isArray
+        ? SEQUELIZE_TYPE_MAPPING.Json
+        : SEQUELIZE_TYPE_MAPPING[field.type],
       allowNull,
       primaryKey: field.type === 'ID',
     };
