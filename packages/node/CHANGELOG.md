@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.2] - 2021-07-29
+Upgrade priority: High. Fix failed to store schema object array in correct format in database.
+### Fixed
+- When the schema object type is an array convert to Jsonb type (#406)
+
+
 ## [0.18.1] - 2021-07-27
 Upgrade priority: Low. Upgrade only to support a new `polkadot/api` version and for types.
 ### Changed

@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.2] - 2021-07-29
+### Fixed
+- Fix types in entities, also add validation for schema input types. (#406)
+
 ## [0.9.1] - 2021-07-26
 ### Fixed
 - Fixed bug that prevented indexes from being added automatically on foreign keys (#371)
