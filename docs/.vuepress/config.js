@@ -3,7 +3,7 @@ module.exports = {
     '/': {
       lang: 'English',
       title: 'SubQuery Docs',
-      description: 'SubQuery is a open-source tool to provide a complete process and query data solution to every substrate project and will become core infrastructure for the Polkadot ecosystem.'
+      description: 'Explore and transform your chain data to build intuitive dApps faster!.'
     },
   },
   themeConfig: {
@@ -86,6 +86,16 @@ module.exports = {
         title: 'FAQs',
         path: '/faqs/faqs.md',
         children: []
+      },
+      {
+        title: 'Miscellaneous',
+        path: '/miscellaneous/contributing',
+        children: [
+          '/miscellaneous/contributing.md',
+          '/miscellaneous/social_media.md',
+          '/miscellaneous/branding.md',
+          '/miscellaneous/ambassadors.md',
+        ]
       }
     ],
   },
