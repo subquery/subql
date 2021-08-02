@@ -2,7 +2,7 @@
 
 SubQuery is an active project that maintains and communicates with our followers through many social media channels. 
 
-It is our aim to always listen and engage with our loyal community, please join the conversation and send us your ideas or questions!
+It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
 
 ## Official SubQuery Communities
 
@@ -15,7 +15,7 @@ It is our aim to always listen and engage with our loyal community, please join 
 - [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
 - [LinkedIn](https://www.linkedin.com/company/subquery)
 
-## Unoffical SubQuery Communities
+## Unofficial SubQuery Communities
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happen within them.
+These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
 
