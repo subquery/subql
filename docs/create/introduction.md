@@ -32,7 +32,7 @@ The following map provides an overview of the directory structure of a SubQuery 
 
 For example:
 
-![SubQuery diretory structure](../../assets/subQuery_directory_stucture.png)
+![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
 
 ## Code Generation
 
@@ -70,14 +70,14 @@ logger.warn('Warning level message');
 
 To use `logger.info` or `logger.warn`, just place the line into your mapping file.
 
-![logging.info](../../assets/logging_info.png)
+![logging.info](/assets/img/logging_info.png)
 
 To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
 
 If you are running a docker container, add this line to your `docker-compose.yaml` file.
 
-![logging.debug](../../assets/logging_debug.png)
+![logging.debug](/assets/img/logging_debug.png)
 
 You should now see the new logging in the terminal screen.
 
-![logging.debug](../../assets/subquery_logging.png)
+![logging.debug](/assets/img/subquery_logging.png)

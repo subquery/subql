@@ -46,11 +46,11 @@ Do NOT run the docker commands though.
 
 In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
 
-![create github repo](../../assets/github_create_new_repo.png)
+![create github repo](/assets/img/github_create_new_repo.png)
 
 Take note of your GitHub URL, this must be public for SubQuery to access it.
 
-![create github repo](../../assets/github_repo_url.png)
+![create github repo](/assets/img/github_repo_url.png)
 
 ## Step 3: Push to GitHub
 
@@ -99,7 +99,7 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
 
-![First commit](../../assets/first_commit.png)
+![First commit](/assets/img/first_commit.png)
 
 Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
 
@@ -107,11 +107,11 @@ Now that you have got your code into GitHub, let's look at how we can host it in
 
 Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
 
-![Welcome to SubQuery Projects](../../assets/welcome_to_subquery_projects.png)
+![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
 
 Then create a new project,
 
-![Welcome to SubQuery Projects](../../assets/subquery_create_project.png)
+![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
 
 And fill in the various fields with the appropriate details.
 
@@ -122,11 +122,11 @@ And fill in the various fields with the appropriate details.
 - **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
 - **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
 
-![Create SubQuery parameters](../../assets/create_subquery_project_parameters.png)
+![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
 
 When you click create, you'll be taken to your dashboard.
 
-![SubQuery Project dashboard](../../assets/subquery_project_dashboard.png)
+![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
 
 The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
 
@@ -136,7 +136,7 @@ Now that you have created your project within SubQuery Projects, setting up the 
 
 You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
 
-![Deploy to production slot](../../assets/deploy_production_slot.png)
+![Deploy to production slot](/assets/img/deploy_production_slot.png)
 
 - **Commit Hash of new Version:** From GitHub select the correct commit of the SubQuery project codebase that you want deployed
 - **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [@subql/node](https://www.npmjs.com/package/@subql/node)
@@ -146,27 +146,27 @@ Because we only have one commit, there is only a single option in the drop down.
 
 You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery's managed infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
 
-![Deployment processing](../../assets/deployment_processing.png)
+![Deployment processing](/assets/img/deployment_processing.png)
 
 The deployment is now running.
 
-![Deployment running](../../assets/deployment_running.png)
+![Deployment running](/assets/img/deployment_running.png)
 
 ## Step 6: Testing your project
 
 To test your project, click on the 3 ellipsis and select "View on SubQuery Explorer".
 
-![View Subquery project](../../assets/view_on_subquery.png)
+![View Subquery project](/assets/img/view_on_subquery.png)
 
 This will take you to the ever familiar "Playground" where you can click the play button and see the results of the query.
 
-![Subquery playground](../../assets/subquery_playground.png)
+![Subquery playground](/assets/img/subquery_playground.png)
 
 ## Step 7: Bonus step
 
 For the astute amongst us, you will recall that in the learning objectives, the last point was to run a simple GET query. To do this, we will need to grab the "Query Endpoint" displayed in the deployment details.
 
-![Query endpoing](../../assets/query_endpoint.png)
+![Query endpoing](/assets/img/query_endpoint.png)
 
 You can then send a GET request to this endpoint either using your favourite client such as [Postman](https://www.postman.com/) or [Mockoon](https://mockoon.com/) or via cURL in your terminal. For simplicity, cURL will be shown below.
 

@@ -12,7 +12,7 @@ This does the heavy lifting and creates a whole bunch of files for you. As noted
 - The GraphQL Schema in `schema.graphql`
 - The Mapping functions in `src/mappings/` directory
 
-![key subql files](../../assets/main_subql_files.png)
+![key subql files](/assets/img/main_subql_files.png)
 
 These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
 
@@ -24,19 +24,19 @@ The next thing we did was `yarn install`. `npm install` can be used as well.
 
 What yarn does is look at the `package.json` file and download various other dependencies. Looking at the `package.json` file, it doesn't look like there are many dependencies, but when you run the command, you'll notice that 18,983 files are added. This is because each dependency will also have its own dependencies.
 
-![key subql files](../../assets/dependencies.png)
+![key subql files](/assets/img/dependencies.png)
 
 ## yarn codegen
 
 Then we ran `yarn codegen` or `npm run-script codegen`. What this does is fetch the GraphQL schema (in the `schema.graphql`) and generates the associated typescript model files (Hence the output files will have a .ts extension). You should never change any of these generated files, only change the source `schema.graphql` file.
 
-![key subql files](../../assets/typescript.png)
+![key subql files](/assets/img/typescript.png)
 
 ## yarn build
 
 `yarn build` or `npm run-script build` was then executed. This should be familiar for seasoned programmers. It creates a distribution folder performing things such as code optimisation preparing for a deployment.
 
-![key subql files](../../assets/distribution_folder.png)
+![key subql files](/assets/img/distribution_folder.png)
 
 ## docker-compose
 

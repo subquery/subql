@@ -196,7 +196,7 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 SubQuery playground on localhost.
 
-![playground localhost](../../assets/subql_playground.png)
+![playground localhost](/assets/img/subql_playground.png)
 
 The block count in the playground should match the block count (technically the block height) in the terminal as well.
 
