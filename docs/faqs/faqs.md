@@ -32,9 +32,9 @@ The main benefit of using a staging slot is that it allows you to prepare a new 
 
 The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
 
-# What are extrinsics?
+## What are extrinsics?
 
-An extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
 
 Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author. 
 
