@@ -7,7 +7,7 @@ To learn more about how to write in GraphQL schema language, we recommend checki
 
 **Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
-### Entites
+### Entities
 Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
 Non-nullable fields in the entity are indicated by `!`. Please see the example below:
