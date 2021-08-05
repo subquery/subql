@@ -20,8 +20,11 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
+import { PoiService } from './poi.service';
+import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
@@ -43,6 +46,7 @@ export class IndexerManager {
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
+    protected poiService: PoiService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -52,12 +56,15 @@ export class IndexerManager {
 
   @profiler(argv.profiler)
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
+    const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height: block.block.header.number.toNumber(),
+      height: blockHeight,
       timestamp: Date.now(),
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
+
+    let poiBlockHash: Uint8Array;
 
     try {
       const inject = block.specVersion !== this.prevSpecVersion;
@@ -100,6 +107,20 @@ export class IndexerManager {
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save({ transaction: tx });
+      const operationHash = this.storeService.getOperationMerkleRoot();
+
+      const poiBlock = PoiBlock.create(
+        blockHeight,
+        block.block.header.hash.toHex(),
+        operationHash,
+        await this.poiService.getLatestPoiBlockHash(),
+        this.project.path, //projectId // TODO, define projectId
+      );
+      poiBlock.mmrRoot = Buffer.from(
+        `mmr${block.block.header.hash.toString()}`,
+      );
+      poiBlockHash = poiBlock.hash;
+      await this.storeService.setPoi(tx, poiBlock);
     } catch (e) {
       await tx.rollback();
       throw e;
@@ -108,8 +129,10 @@ export class IndexerManager {
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
     this.prevSpecVersion = block.specVersion;
 
+    this.poiService.setLatestPoiBlockHash(poiBlockHash);
+
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
-      height: block.block.header.number.toNumber(),
+      height: blockHeight,
       timestamp: Date.now(),
     });
   }
@@ -121,6 +144,8 @@ export class IndexerManager {
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.initVM();
+    await this.ensureMetadata(this.subqueryState.dbSchema);
+    await this.poiService.init(this.subqueryState.dbSchema);
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
@@ -162,6 +187,22 @@ export class IndexerManager {
     }
   }
 
+  private async ensureMetadata(schema: string) {
+    const metadataRepo = MetadataFactory(this.sequelize, schema);
+    //block offset should only been create once, never update.
+    //if change offset will require re-index and re-sync poi
+    const blockOffset = await metadataRepo.findOne({
+      where: { key: 'blockOffset' },
+    });
+    if (!blockOffset) {
+      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+      await metadataRepo.create({
+        key: 'blockOffset',
+        value: offsetValue,
+      });
+    }
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
@@ -180,7 +221,6 @@ export class IndexerManager {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
-
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
