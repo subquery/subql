@@ -1,0 +1,16 @@
+project_identifier_env: CROWDIN_PROJECT_ID
+api_key_env: CROWDIN_API_KEY
+base_path: /docs/
+preserve_hierarchy: true
+files:
+  - source: /*.md
+    translation: /%locale%/%original_file_name%
+    languages_mapping:
+      locale:
+        zh-CN: zh
+        de: de
+        id: id
+        it: it
+        ru: ru
+        uk: uk
+        vi: vi
