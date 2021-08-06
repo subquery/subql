@@ -17,6 +17,7 @@ export class HealthService {
   private currentProcessingHeight?: number;
   private currentProcessingTimestamp?: number;
   private blockTime = 6000;
+  private indexerTimeout = 900000;
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
@@ -48,7 +49,7 @@ export class HealthService {
     }
     if (
       !this.currentProcessingTimestamp ||
-      Date.now() - this.currentProcessingTimestamp > this.blockTime * 10
+      Date.now() - this.currentProcessingTimestamp > this.indexerTimeout
     ) {
       throw new Error('Indexer is not healthy');
     }
