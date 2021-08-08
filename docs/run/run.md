@@ -68,7 +68,7 @@ export DB_USER=postgres
 export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
-export DB_POST=5432
+export DB_PORT=5432
 subql-node -f your-project-path 
 ````
 
