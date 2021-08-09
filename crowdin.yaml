@@ -14,3 +14,26 @@ files:
         ru: ru
         uk: uk
         vi: vi
+        
+
+files:
+  - source: /docs/*.md
+    translation: /docs/%two_letters_code%/%original_file_name%
+  - source: /docs/create/*.md
+    translation: /docs/%two_letters_code%/create/%original_file_name%
+  - source: /docs/faqs/*.md
+    translation: /docs/%two_letters_code%/faqs/%original_file_name%
+  - source: /docs/install/*.md
+    translation: /docs/%two_letters_code%/install/%original_file_name%
+  - source: /docs/miscellaneous/*.md
+    translation: /docs/%two_letters_code%/miscellaneous/%original_file_name%
+  - source: /docs/publish/*.md
+    translation: /docs/%two_letters_code%/publish/%original_file_name%
+  - source: /docs/query/*.md
+    translation: /docs/%two_letters_code%/query/%original_file_name%
+  - source: /docs/quickstart/*.md
+    translation: /docs/%two_letters_code%/quickstart/%original_file_name%
+  - source: /docs/run/*.md
+    translation: /docs/%two_letters_code%/run/%original_file_name%
+  - source: /docs/tutorials_examples/*.md
+    translation: /docs/%two_letters_code%/tutorials_examples/%original_file_name%
