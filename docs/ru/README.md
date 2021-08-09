@@ -4,16 +4,16 @@
     <div class="main">
       <div>
         <h2 class="welcomeTitle">Welcome to SubQuery’s Russian <span>Docs</span></h2>
-        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
+        <p>Исследуйте и преобразуйте ваши цепные данные для создания интуитивных dApps быстрее!</p>
       </div>
     </div>
   </section>
   <section class="startSection main">
     <div>
-      <h2 class="title">Quick Start <span>Guide</span></h2>
-      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
+      <h2 class="title">Быстрый старт <span>руководства</span></h2>
+      <p>Понимание SubQuery, используя традиционный пример Hello World. Использование шаблона проекта в окружении Docker , вы можете быстро запустить узел и начать запрашивать блокчейн всего за несколько минут с помощью нескольких простых команд.
       </p>
-      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Get started</span></a>
+      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Начать работу</span></a>
     </div>
   </section>
 </div>
@@ -24,8 +24,8 @@
         <a href="https://doc.subquery.network/tutorials_examples/introduction.html">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
-            <span>Tutorials and Examples</span>
-            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
+            <span>Учебные материалы и примеры</span>
+            <p>Обучение, делая. Учебники и примеры по созданию различных проектов SubQuery.</p>
           </div>
         </a>
       </li>
@@ -34,7 +34,7 @@
           <div>
             <img src="/assets/img/docsIcon.svg" />
             <span>Technical Reference Docs</span>
-            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
+            <p>Написанные разработчиками для разработчиков. Найдите то, что нужно для быстрого создания приложений.</p>
           </div>
         </a>
       </li>
@@ -42,8 +42,8 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>The SubQuery Network</span>
-            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
+            <span>Подзапросы Сеть</span>
+            <p>Децентрализованное будущее SubQuery. Подробнее о том, как вознаграждены индексаторы и потребители.</p>
           </div>
         </a>
       </li>
@@ -52,33 +52,33 @@
 </div>
 <section class="faqSection main">
   <div>
-    <h2 class="title">FAQ</h2>
+    <h2 class="title">ЧАВО</h2>
     <ul class="faqList">
       <li>
-        <div class="title">What is SubQuery?</div>
+        <div class="title">Что такое SubQuery?</div>
         <div class="content">
-          <p>SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.</p>
-          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-subquery">READ MORE</a>
+          <p>SubQuery - это проект с открытым исходным кодом, который позволяет разработчикам индексировать, преобразовывать и запрашивать данные цепи Substrate для питания своих приложений.</p>
+          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-subquery">ПРОЧИТАЙТЕ ЕЩЕ</a>
         </div>
       </li>
       <li>
-        <div class="title">What is the best way to get started with SubQuery?</div>
+        <div class="title">Какой лучший способ начать работу с SubQuery?</div>
         <div class="content">
-          <p>The best way to get started with SubQuery is to try out our <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html">Hello World tutorial</a>. This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query. </p>
+          <p>Лучший способ начать работу с SubQuery - попробовать наш <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html">урок «Приветствуем мир»</a>. Это простая 5-минутная прогулка по скачиванию стартового шаблона, создание проекта, а затем с помощью Docker для запуска узла на локальном хосте и выполнения простого запроса. </p>
         </div>
       </li>
       <li>
-        <div class="title">How can I contribute or give feedback to SubQuery?</div>
+        <div class="title">Как я могу внести свой вклад или оставить отзыв на SubQuery?</div>
         <div class="content">
-          <p>We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guidelines (coming soon). </p>
-          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">READ MORE</a>
+          <p>Мы любим вносить свой вклад и обратную связь с сообществом. Чтобы помочь коду, форкните репозиторий интересов и внесите изменения. Затем отправьте PR или Pull Request. Ах, не забудьте проверить тоже! Также ознакомьтесь с нашими рекомендациями по внесению взносов (скоро). </p>
+          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">ПРОЧИТАЙТЕ ЕЩЕ</a>
         </div>
       </li>
       <li>
-        <div class="title">How much does it cost to host my project in SubQuery Projects?</div>
+        <div class="title">Сколько стоит разместить мой проект в SubQuery проектах?</div>
         <div class="content">
-          <p>Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
-          <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTING YOUR PROJECT</a>
+          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ вернуть сообществу свои деньги. Чтобы научиться размещать ваш проект у нас, ознакомьтесь с учебником <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a>.</p>
+          <a class="more" href="https://doc.subquery.network/publish/publish.html">ДОСТАВИТЬ ПРОЦЕСС</a>
         </div>
       </li>
     </ul><br>
@@ -88,24 +88,24 @@
 <section class="main">
   <div>
     <div class="lastIntroduce lastIntroduce_1">
-        <h5>Integrating with your Custom Chain?</h5>
-        <p>Whether you're building a new parachain or an entirely new blockchain on Substrate - SubQuery can help you index and troubleshoot your chain's data. SubQuery is designed to easily integrate with a custom Substrate based chain.</p>
-        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</a>
+        <h5>Интеграция с вашей собственной цепочкой?</h5>
+        <p>Создаете ли вы новый парактив или совершенно новый блокчейн в Substrate - SubQuery может помочь вам индексировать и диагностировать данные цепочки. SubQuery разработан для того, чтобы легко интегрироваться с пользовательской цепочкой Substrate.</p>
+        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">УЗНАЙТЕ КАК ИНТЕГРАЦИВАТЬ С ВАШИМ ИЗМЕНЕНИЕМ</a>
     </div>
     <div class="lastIntroduce lastIntroduce_2">
-        <h5>Support and Contribute</h5>
-        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our Discord community and receive support from our passionate community members. </p>
-        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
+        <h5>Поддержка и Пожертвование</h5>
+        <p>У Вас есть вопрос или интересно узнать больше или как Вы можете помочь? Мы будем рады услышать от вас. Пожалуйста, свяжитесь с нами по электронной почте или через социальные сети по ссылкам ниже. Нужен технический опыт? Присоединяйтесь к нашему сообществу Discord и получите поддержку от наших страстных членов сообщества. </p>
+        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">ПРИСОЕДИНЯЙТЕСЬ С УПРАВЛЕНИЕМ</a>
     </div>
     </div>
 </section>
 <section class="main connectSection">
   <div class="email">
-    <span>Contact us</span>
+    <span>Свяжитесь с нами</span>
     <a href="mailto:hello@subquery.network">hello@subquery.network</a>
   </div>
   <div>
-    <div>Follow us on social</div>
+    <div>Подпишитесь на нас в социальных сетях</div>
     <div class="connectWay">
       <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
       <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
@@ -119,6 +119,6 @@
 </section>
 </div> </div>
 <div class="footer">
-  <div class="main"><div>SubQuery © 2021</div></div>
+  <div class="main"><div>Подзапрос © 2021</div></div>
 </div>
 <script charset="utf-8" src="/assets/js/welcome.js"></script>
