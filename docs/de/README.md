@@ -117,8 +117,7 @@
     </div>
   </div>
 </section>
-</div>
-</div>
+</div> </div>
 <div class="footer">
   <div class="main"><div>SubQuery © 2021</div></div>
 </div>
