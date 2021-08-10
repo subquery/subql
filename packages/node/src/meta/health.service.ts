@@ -3,6 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { NodeConfig } from '../configure/NodeConfig';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
@@ -17,7 +18,13 @@ export class HealthService {
   private currentProcessingHeight?: number;
   private currentProcessingTimestamp?: number;
   private blockTime = 6000;
-  private indexerTimeout = 900000;
+  private defaultHealthTimeout = 960000;
+  private configHealthTimeout: number;
+
+  constructor(protected nodeConfig: NodeConfig) {
+    // health timeout always 1 mins longer than indexer timeout
+    this.configHealthTimeout = (this.nodeConfig.timeout + 60) * 1000;
+  }
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
@@ -49,7 +56,8 @@ export class HealthService {
     }
     if (
       !this.currentProcessingTimestamp ||
-      Date.now() - this.currentProcessingTimestamp > this.indexerTimeout
+      Date.now() - this.currentProcessingTimestamp >
+        Math.max(this.defaultHealthTimeout, this.configHealthTimeout)
     ) {
       throw new Error('Indexer is not healthy');
     }
