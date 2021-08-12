@@ -1,37 +1,47 @@
-# Quick Start Guide
-
-In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
+This page with guide you through creating a starter SubQuery Project that can be used as a framework for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
 
 At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
 
-If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
+# Local Development
 
-## Preparation
+This guide uses Docker for local development and deployment. It covers the following steps:
 
-### Local Development Environment
+1. Set up the SubQuery CLI and its dependencies
+2. Initialise a starter SubQuery Project
+3. Configure and build the SubQuery Project
+4. Deploy the SubQuery Project with Docker
+5. Query the SubQuery Project using Localhost
 
-- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.
-- Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
-- SubQuery Nodes require Docker
+## 1. Set up the SubQuery CLI and its dependencies
 
-### Install the SubQuery CLI
+1. Ensure Yarn **and/or** NPM (package manager) is installed:
+   
+```shell
+# NPM
+npm -v
 
-Install SubQuery CLI globally on your terminal by using NPM:
+# Yarn
+yarn -v
+``` 
+**NOTE:** If missing, you can follow these links to install them: [Yarn](https://classic.yarnpkg.com/en/docs/install/) or [NPM](https://www.npmjs.com/get-npm).
 
+2. With Yarn or NPM installed, you can now run the following to install the SubQuery CLI:
 ```shell
 # NPM
 npm install -g @subql/cli
+
+# Yarn
+yarn global add @subql/cli
 ```
-
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
-
-You can then run help to see available commands and usage provide by CLI
+You can then run the following command to see what is available for use with the SubQuery CLI:
 
 ```shell
 subql help
 ```
 
-## Initialise the Starter SubQuery Project
+## 2. Initialise a starter SubQuery Project
+
+
 
 Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
 
