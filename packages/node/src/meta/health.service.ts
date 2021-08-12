@@ -11,6 +11,8 @@ import {
   TargetBlockPayload,
 } from '../indexer/events';
 
+const DEFAULT_TIMEOUT = 900000;
+
 @Injectable()
 export class HealthService {
   private recordBlockHeight?: number;
@@ -18,12 +20,13 @@ export class HealthService {
   private currentProcessingHeight?: number;
   private currentProcessingTimestamp?: number;
   private blockTime = 6000;
-  private defaultHealthTimeout = 960000;
-  private configHealthTimeout: number;
+  private healthTimeout: number;
 
   constructor(protected nodeConfig: NodeConfig) {
-    // health timeout always 1 mins longer than indexer timeout
-    this.configHealthTimeout = (this.nodeConfig.timeout + 60) * 1000;
+    this.healthTimeout = Math.max(
+      DEFAULT_TIMEOUT,
+      this.nodeConfig.timeout * 1000,
+    );
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
@@ -56,8 +59,7 @@ export class HealthService {
     }
     if (
       !this.currentProcessingTimestamp ||
-      Date.now() - this.currentProcessingTimestamp >
-        Math.max(this.defaultHealthTimeout, this.configHealthTimeout)
+      Date.now() - this.currentProcessingTimestamp > this.healthTimeout
     ) {
       throw new Error('Indexer is not healthy');
     }
