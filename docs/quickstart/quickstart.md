@@ -41,38 +41,45 @@ subql help
 
 ## 2. Initialise a starter SubQuery Project
 
-
-
-Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
+1. Make sure you are inside the directory in which you want to create a SubQuery project, and run the following command while replacing `PROJECT_NAME` with the name of your project:
 
 ```shell
 subql init --starter PROJECT_NAME
 ```
 
-You'll be asked certain questions as the SubQuery project is initalised:
+- `Git repository` is optional. It's the Git URL to your project's repo.
+- `RPC endpoint` is required. It's the running RPC endpoint you project points to. You can use the default endpoint provided `wss://polkadot.api.onfinality.io/public-ws` or provide your own.
+- `Authors` is required. It's the name of the project's creator.
+- `Description` is optional. It's a short description of your project.
+- `Version` is required. It's the project's version number. You can use the default value `1.0.0` or provide your own.
+- `License` is required. It's the software license for your project. You can use the default `Apache-2.0` or provide your own.
 
-- Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
-- RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Required): Enter the owner of this SubQuery project here
-- Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
-- Version (Required): Enter a custom version number or use the default (`1.0.0`)
-- License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
+**NOTE:** You can press your `ENTER` or `RETURN` key to accept the default vialue (it may be empty). **`Authors` is the only mandatory field**. You may need to cancel out of the process with `Ctrl+C` once you see `PROJECT_NAME is ready` 
 
-After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
+This will create a new folder inside your directory named after your PROJECT_NAME. This folder contains all of the necessary files needed to deploy a working SubQuery Project.
 
-Last, under the project directory, run following command to install the new project's dependencies.
+2. Change your working directory into the new folder:
 
 ```shell
 cd PROJECT_NAME
+```
+
+3. While in the new folder, install dependencies of your SubQuery Project:
+
+```shell
+# NPM
+npm install
 
 # Yarn
 yarn install
-
-# NPM
-npm install
 ```
 
-## Configure and Build the Starter Project
+**NOTE:** This may take a few seconds dependent on your internet connection.
+
+
+
+
+## 3. Configure and build the SubQuery Project
 
 In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
 
