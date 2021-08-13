@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { getLogger } from '../utils/logger';
 import { HealthService } from './health.service';
+
+const logger = getLogger('health');
 
 @Controller('health')
 export class HealthController {
@@ -13,6 +16,7 @@ export class HealthController {
     try {
       this.healthService.getHealth();
     } catch (e) {
+      logger.error(e, e.message);
       throw new HttpException(
         {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
