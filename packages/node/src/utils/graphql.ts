@@ -62,11 +62,10 @@ export function modelsTypeToModelAttributes(
             `Bytea: store.get() returned type is not buffer type`,
           );
         }
-        const setValue = u8aToHex(bufferToU8a(dataValue));
-        return setValue ? setValue.toString() : null;
+        return u8aToHex(bufferToU8a(dataValue));
       };
       columnOption.set = function (val: unknown) {
-        if (isNull(val)) {
+        if (!val || isNull(val)) {
           this.setDataValue(field.name, null);
         } else if (isHex(val)) {
           const setValue = u8aToBuffer(hexToU8a(val));
