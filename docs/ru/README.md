@@ -3,15 +3,15 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
+        <h2 class="welcomeTitle">Добро пожаловать в SubQuery’s <span>Docs</span></h2>
+        <p>Изучите и преобразуйте свои ончейн данные, чтобы быстрее создавать интуитивно понятные приложения!</p>
       </div>
     </div>
   </section>
   <section class="startSection main">
     <div>
-      <h2 class="title">Quick Start <span>Guide</span></h2>
-      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
+      <h2 class="title">Быстрый старт <span>руководства</span></h2>
+      <p>Понимайте SubQuery, используя традиционный пример Hello World. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
       </p>
       <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Get started</span></a>
     </div>
