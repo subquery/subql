@@ -58,13 +58,13 @@ subql init --starter PROJECT_NAME
 
 This will create a new folder inside your directory named after your PROJECT_NAME. This folder contains all of the necessary files needed to deploy a working SubQuery Project.
 
-2. Change your working directory into the new folder:
+1. Change your working directory into the new folder:
 
 ```shell
 cd PROJECT_NAME
 ```
 
-3. While in the new folder, install dependencies of your SubQuery Project:
+2. Then, while in the new folder, install dependencies of your SubQuery Project:
 
 ```shell
 # NPM
@@ -76,66 +76,60 @@ yarn install
 
 **NOTE:** This may take a few seconds dependent on your internet connection.
 
-
-
-
 ## 3. Configure and build the SubQuery Project
 
-In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
-
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
-
-For more information on how to write your own SubQuery, check out our documentation under [Create a Project](../create/introduction.md)
-
-### GraphQL Model Generation
-
-In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+1. Generate TypeScript from the GraphQL schema:
 
 ```shell
-# Yarn
-yarn codegen
-
 # NPM
 npm run-script codegen
+
+# Yarn
+yarn codegen
 ```
 
-You'll find the generated models in the `/src/types/models` directory
+**NOTE:** This step must be done Whenever changes are made to the schema file in order to regenerate your types directory.
 
-## Build the Project
-
-In order run your SubQuery Project on a locally hosted SubQuery Node, you need to build your work.
-
-Run the build command from the project's root directory.
+2. Then, build your code so that it can run on a locally hosted SubQuery Node:
 
 ```shell
-# Yarn
-yarn build
-
 # NPM
 npm run-script build
+
+# Yarn
+yarn build
 ```
 
-## Running and Querying your Starter Project
+## 4. Deploy the SubQuery Project with Docker
 
-Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+The easiest way to run a SubQuery node locally is by using Docker which is what this guide will show. If you want to skip this and deploy your project using SubQuery Projects, our managed service, you can follow this guide: [Publish your new project to SubQuery Projects](../publish/publish.md)
 
-[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+1. Ensure Docker is installed:
 
-### Run your SubQuery Project
+```shell
+docker -v
+```
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
+**NOTE:** If missing, you can follow this link to install it: [Docker](https://docs.docker.com/get-docker/)
 
-Under the project directory run following command:
+2. Then, in your projects directory, start up a Docker container:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+**NOTE:** It may take some time to download the required packages when starting the Docker container for the first time, but shortly you will see blocks being fetched:
 
-### Query your Project
+```shell
+# Example Snippet
+subquery-node_1   | 2021-06-05T22:20:41.122Z <fetch> INFO fetch block [201, 300]
+graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
+```
+
+
+
+
+## 5. Query the SubQuery Project using Localhost
 
 Open your browser and head to [http://localhost:3000](http://localhost:3000).
 
