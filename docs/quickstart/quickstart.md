@@ -1,4 +1,4 @@
-This page with guide you through creating a starter SubQuery Project that can be used as a framework for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
+This section will guide you through creating a starter SubQuery Project that can be used as a framework for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
 
 At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
 
@@ -122,37 +122,28 @@ docker-compose pull && docker-compose up
 
 ```shell
 # Example Snippet
-subquery-node_1   | 2021-06-05T22:20:41.122Z <fetch> INFO fetch block [201, 300]
-graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
+subquery-node_1   | 2021-08-13T13:56:16.898Z <fetch> INFO fetch block [301,361], total 61 blocks
+subquery-node_1   | 2021-08-13T13:56:17.426Z <fetch> INFO fetch block [362,381], total 20 blocks
+subquery-node_1   | 2021-08-13T13:56:17.951Z <fetch> INFO fetch block [382,398], total 17 blocks
 ```
-
-
-
 
 ## 5. Query the SubQuery Project using Localhost
 
-Open your browser and head to [http://localhost:3000](http://localhost:3000).
+1. Navigate to [http://localhost:3000](http://localhost:3000) in your browser to access a GraphQL playground where you can test and see the results of querys made to your project.
 
-You should see a GraphQL playground is showing in the explorer and the schemas that are ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
-
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
+2. Then you can try the following query to pull the 10 most recent block heights fetched by your SubQuery Node: 
 
 ```graphql
 {
   query {
-    starterEntities(first: 10) {
+    starterEntities(first: 10, orderBy: FIELD1_DESC) {
       nodes {
         field1
-        field2
-        field3
       }
     }
   }
 }
-```
+```   
 
-## Next Steps
+## FAQ
 
-Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
-
-[Publish your new project to SubQuery Projects](../publish/publish.md)
