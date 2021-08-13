@@ -2,14 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  u8aToU8a,
-  isU8a,
   isHex,
   hexToU8a,
   u8aToBuffer,
   u8aToHex,
   bufferToU8a,
-  u8aToString,
   isBuffer,
   isNull,
 } from '@polkadot/util';
