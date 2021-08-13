@@ -269,7 +269,7 @@ After the updates, the paths in the config will look like this (without the comm
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above.
-
+And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -283,3 +283,43 @@ export async function kittyApiHandler(): Promise<void> {
 ```
 
 **If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+
+### Custom chain rpc calls
+
+To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. 
+You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+```yaml
+...
+  types: {
+    "KittyIndex": "u32",
+    "Kitty": "[u8; 16]",
+  }
+  typesBundle: {
+    spec: {
+      chainname: {
+        rpc: {
+          kitties: {
+            getKittyPrice:{
+                description: string,
+                params: [
+                  {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isHistoric: true,
+                    isOptional: false
+                  },
+                  {
+                    name: 'kittyIndex',
+                    type: 'KittyIndex',
+                    isOptional: false
+                  }
+                ],
+                type: "Balance",
+            }
+          }
+        }
+      }
+    }
+  }
+
+```

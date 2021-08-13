@@ -5,7 +5,12 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import { buildSchema, getAllEntitiesRelations, SubqlKind } from '@subql/common';
+import {
+  buildSchema,
+  getAllEntitiesRelations,
+  SubqlKind,
+  SubqlRuntimeDatasource,
+} from '@subql/common';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
@@ -32,6 +37,7 @@ export class IndexerManager {
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
+  private filteredDataSources: SubqlRuntimeDatasource[];
 
   constructor(
     protected apiService: ApiService,
@@ -56,21 +62,7 @@ export class IndexerManager {
     try {
       const inject = block.specVersion !== this.prevSpecVersion;
       await this.apiService.setBlockhash(block.block.hash, inject);
-
-      const dataSources = this.project.dataSources.filter(
-        (ds) =>
-          ds.startBlock <= block.block.header.number.toNumber() &&
-          (!ds.filter?.specName ||
-            ds.filter.specName === this.api.runtimeVersion.specName.toString()),
-      );
-      if (dataSources.length === 0) {
-        logger.error(
-          `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
-        );
-        process.exit(1);
-      }
-
-      for (const ds of dataSources) {
+      for (const ds of this.filteredDataSources) {
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
@@ -105,17 +97,17 @@ export class IndexerManager {
         }
         // TODO: support Ink! and EVM
       }
-
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
-      await this.subqueryState.save();
-      this.fetchService.latestProcessed(block.block.header.number.toNumber());
-      this.prevSpecVersion = block.specVersion;
+      await this.subqueryState.save({ transaction: tx });
     } catch (e) {
       await tx.rollback();
       throw e;
     }
     await tx.commit();
+    this.fetchService.latestProcessed(block.block.header.number.toNumber());
+    this.prevSpecVersion = block.specVersion;
+
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: block.block.header.number.toNumber(),
       timestamp: Date.now(),
@@ -136,7 +128,7 @@ export class IndexerManager {
         // FIXME: retry before exit
         process.exit(1);
       });
-
+    this.filteredDataSources = this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
   }
 
@@ -244,5 +236,29 @@ export class IndexerManager {
       },
     );
     return Number(nextval);
+  }
+
+  private filterDataSources(): SubqlRuntimeDatasource[] {
+    const dataSourcesFilteredSpecName = this.project.dataSources.filter(
+      (ds) =>
+        !ds.filter?.specName ||
+        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
+    );
+    if (dataSourcesFilteredSpecName.length === 0) {
+      logger.error(
+        `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
+      );
+      process.exit(1);
+    }
+    const dataSourcesFilteredStartBlock = dataSourcesFilteredSpecName.filter(
+      (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
+    );
+    if (dataSourcesFilteredStartBlock.length === 0) {
+      logger.error(
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
+      );
+      process.exit(1);
+    }
+    return dataSourcesFilteredStartBlock;
   }
 }

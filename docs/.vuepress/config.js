@@ -3,8 +3,8 @@ module.exports = {
     '/': {
       lang: 'English',
       title: 'SubQuery Docs',
-      description: 'Explore and transform your chain data to build intuitive dApps faster!.'
-    },
+      description: 'Explore and transform your chain data to build intuitive dApps faster!.',
+    }
   },
   themeConfig: {
     logo: '/assets/img/logo.png',
