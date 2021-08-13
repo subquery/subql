@@ -1,6 +1,18 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+  u8aToU8a,
+  isU8a,
+  isHex,
+  hexToU8a,
+  u8aToBuffer,
+  u8aToHex,
+  bufferToU8a,
+  u8aToString,
+  isBuffer,
+  isNull,
+} from '@polkadot/util';
 import { GraphQLModelsType } from '@subql/common/graphql/types';
 import { ModelAttributes, DataTypes } from 'sequelize';
 import { ModelAttributeColumnOptions } from 'sequelize/types/lib/model';
@@ -13,7 +25,7 @@ const SEQUELIZE_TYPE_MAPPING = {
   Date: 'timestamp',
   BigDecimal: 'numeric',
   Boolean: 'boolean',
-  Bytes: 'bytea',
+  Bytea: DataTypes.BLOB,
   Json: DataTypes.JSONB,
 };
 
@@ -40,6 +52,33 @@ export function modelsTypeToModelAttributes(
       };
       columnOption.set = function (val: unknown) {
         this.setDataValue(field.name, val?.toString());
+      };
+    }
+    if (field.type === 'Bytea') {
+      columnOption.get = function () {
+        const dataValue = this.getDataValue(field.name);
+        if (!dataValue) {
+          return null;
+        }
+        if (!isBuffer(dataValue)) {
+          throw new Error(
+            `Bytea: store.get() returned type is not buffer type`,
+          );
+        }
+        const setValue = u8aToHex(bufferToU8a(dataValue));
+        return setValue ? setValue.toString() : null;
+      };
+      columnOption.set = function (val: unknown) {
+        if (isNull(val)) {
+          this.setDataValue(field.name, null);
+        } else if (isHex(val)) {
+          const setValue = u8aToBuffer(hexToU8a(val));
+          this.setDataValue(field.name, setValue);
+        } else {
+          throw new Error(
+            `input for Bytea type is only support unprefixed hex`,
+          );
+        }
       };
     }
     acc[field.name] = columnOption;
