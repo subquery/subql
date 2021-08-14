@@ -94,18 +94,18 @@
     </div>
     <div class="lastIntroduce lastIntroduce_2">
         <h5>Поддержка и содействие</h5>
-        <p>У Вас есть вопрос или интересно узнать больше или как Вы можете помочь? Мы будем рады услышать от вас. Пожалуйста, свяжитесь с нами по электронной почте или через социальные сети по ссылкам ниже. Нужна техническая экспертиза? Join our Discord community and receive support from our passionate community members. </p>
-        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
+        <p>У Вас есть вопрос или интересно узнать больше или как Вы можете помочь? Мы будем рады услышать от вас. Пожалуйста, свяжитесь с нами по электронной почте или через социальные сети по ссылкам ниже. Нужна техническая экспертиза? Присоединяйтесь к нашему сообществу Discord и получите поддержку от наших членов сообщества. </p>
+        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">ПРИСОЕДИНЯЙТЕСЬ К ОБСУЖДЕНИЮ В ДИСКОРДЕ</a>
     </div>
     </div>
 </section>
 <section class="main connectSection">
   <div class="email">
-    <span>Contact us</span>
+    <span>Свяжитесь с нами</span>
     <a href="mailto:hello@subquery.network">hello@subquery.network</a>
   </div>
   <div>
-    <div>Follow us on social</div>
+    <div>Подпишитесь на нас в социальных сетях</div>
     <div class="connectWay">
       <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
       <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
