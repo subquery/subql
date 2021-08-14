@@ -96,6 +96,13 @@ module.exports = {
           '/miscellaneous/branding.md',
           '/miscellaneous/ambassadors.md',
         ]
+      },
+      {
+        title: 'References',
+        path: '/references/references',
+        children: [
+          '/references/references.md',
+        ]
       }
     ],
   },
