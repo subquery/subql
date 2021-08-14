@@ -77,12 +77,12 @@
       <li>
         <div class="title">Сколько стоит разместить мой проект в SubQuery?</div>
         <div class="content">
-          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ вернуть сообщество в будущем. To learn how to host your project with us, please check out the <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
-          <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTING YOUR PROJECT</a>
+          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ вернуть сообщество в будущем. Чтобы научиться размещать ваш проект вместе с нами, ознакомьтесь с обучением <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a>.</p>
+          <a class="more" href="https://doc.subquery.network/publish/publish.html">Организуйте ваш проект</a>
         </div>
       </li>
     </ul><br>
-    For further frequently asked questions, please see our <a href="https://doc.subquery.network/faqs/faqs.html">FAQ's</a> page.    
+    Для получения ответов на часто задаваемые вопросы пожалуйста, посмотрите наш <a href="https://doc.subquery.network/faqs/faqs.html">FAQ</a>.    
   </div>
 </section>
 <section class="main">
