@@ -1,21 +1,21 @@
-# GraphQL Schema
+# Схема GraphQL
 
-## Defining Entities
+## Определение объектов
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+Файл `schema.graphql` определяет различные схемы GraphQL. Из-за того, как работает язык запросов GraphQL, схема файлов по сути диктует форму ваших данных из SubQuery. Чтобы узнать больше о том, как писать в GraphQL-языке мы рекомендуем проверить [Schemas and Type](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Важно: При внесении каких-либо изменений в файл, убедитесь, что вы регенерируете директорию типов, используя следующую команду `yarn codegen`**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Сущности
+Каждая сущность должна определить свои требуемые поля `id` с типом `ID!`. Он используется в качестве первичного ключа и уникален между всеми сущностями одного типа.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Поля, не допускающие значения NULL, в сущности обозначены `! `. Пожалуйста, смотрите пример ниже:
 
 ```graphql
-type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+напечатайте Пример @entity {
+  id: ID! поле # id всегда необходимо заполнять и оно должно выглядеть следующим образом
+  name: String! # Это обязательное поле для заполнения
+  address: String # Это необязательное поле
 }
 ```
 
