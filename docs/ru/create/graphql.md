@@ -28,10 +28,10 @@
 - `BigInt`
 - `Дата`
 - `Логический`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `<EntityName>` для вложенных сущностей связей вы можете использовать определенное имя сущности в качестве одного из полей. Пожалуйста, смотрите в [Entity Relationships](#entity-relationships).
+- `JSON` может также хранить структурированные данные, см. [JSON type](#json-type)
 
-## Indexing by non-primary-key field
+## Индексирование с помощью не первичного ключа
 
 To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
 
