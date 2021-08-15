@@ -19,15 +19,15 @@
 }
 ```
 
-### Supported scalars and types
+### Поддерживаемые скаляры и типы
 
-We currently supporting flowing scalars types:
+В настоящее время мы поддерживаем следующие скалярные типы:
 - `ID`
 - `Int`
-- `String`
+- `Строка`
 - `BigInt`
-- `Date`
-- `Boolean`
+- `Дата`
+- `Логический`
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
 - `JSON` can alternatively store structured data, please see [JSON type](#json-type)
 
