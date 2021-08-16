@@ -33,22 +33,22 @@
 
 ## Индексирование с помощью не первичного ключа
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Чтобы улучшить производительность поисковых запросов, индексируйте выбранные области просто внедрив аннотацию `@index` в поле непервичного ключа.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Тем не менее, мы не позволяем пользователям добавлять аннотации `@index` к любому объекту [JSON](#json-type). По умолчанию, индексы автоматически добавляются к внешним ключам и для полей JSON в базе данных, но только для повышения производительности службы запросов.
 
-Here is an example.
+Вот пример.
 
 ```graphql
-type User @entity {
+тип пользователя @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  имя: String! @index(unique: true) # уникальное может быть установлено в true или false
+  title: Title! # Индексы автоматически добавляются в поле внешнего ключа 
 }
 
-type Title @entity {
+тип Title @entity {
   id: ID!  
-  name: String! @index(unique:true)
+  имя: String! @index(unique:true)
 }
 ```
 Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
