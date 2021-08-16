@@ -51,9 +51,9 @@
   имя: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Предполагая, что мы знали имя этого пользователя, но мы не знаем его точное значение id, вместо того, чтобы извлекать всех пользователей, а затем фильтровать их по имени, мы можем добавить `@index` за полем имени. Это делает поиск гораздо более быстрее, и мы можем дополнительно пройти `unique: true` для обеспечения уникальности.
 
-**If a field is not unique, the maximum result set size is 100**
+**Если поле не уникальное, то максимальный размер набора результатов равен 100**
 
 When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
 
