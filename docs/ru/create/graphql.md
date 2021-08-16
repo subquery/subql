@@ -55,81 +55,81 @@
 
 **Если поле не уникальное, то максимальный размер набора результатов равен 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Когда выполняется генерация кода, автоматически создастся `getByName` в соответствии с моделью `User` </code>, и внешний ключ `title` создаст метод `getByTitleId</0>,
+к которым оба могут быть напрямую доступны в функции сопоставления.</p>
 
-```sql
-/* Prepare a record for title entity */
+<pre><code class="sql">/* Подготовить запись заголовка */
 INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
-```
+`</pre>
 
 ```typescript
-// Handler in mapping function
+// Обработчик в функции сопоставления
 import {User} from "../types/models/User"
 import {Title} from "../types/models/Title"
 
-const jack = await User.getByName('Jack Sparrow');
+const jack = await User. etByName('Jack Sparrow');
 
 const captainTitle = await Title.getByName('Captain');
 
-const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
+const pirateLords = await User.getByTitleId(captainTitle.id); // Список всех капитанов
 ```
 
-## Entity Relationships
+## Связи субъектов
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Сущность часто имеет вложенные отношения с другими субъектами. Установка значения поля на другое имя объекта определит связь между этими двумя объектами по умолчанию.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Различные отношения объектов (один-на-один, и многие) могут быть настроены с помощью приведенных ниже примеров.
 
 ### One-to-One Relationships
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Отношения «один к одному» используются по умолчанию, когда только один объект сопоставляется с другим.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Пример: паспорт будет принадлежать только одному человеку, и у человека есть только один паспорт (в данном примере):
 
 ```graphql
-type Person @entity {
+тип Person @entity {
   id: ID!
 }
 
-type Passport @entity {
+тип Passport @entity {
   id: ID!
-  owner: Person!
+  владелец: Человек!
 }
 ```
 
-or
+или
 
 ```graphql
-type Person @entity {
+тип Person @entity {
   id: ID!
-  passport: Passport!
+  паспорт: Passport!
 }
 
-type Passport @entity {
+тип Passport @entity {
   id: ID!
-  owner: Person!
+  владелец: Person!
 }
 ```
 
-### One-to-Many relationships
+### Отношения от одного до нескольких
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Вы можете использовать квадратные скобки, чтобы указать, что тип поля включает несколько сущностей.
 
-Example: A person can have multiple accounts.
+Пример: Человек может иметь несколько учетных записей.
 
 ```graphql
-type Person @entity {
+тип Person @entity {
   id: ID!
-  accounts: [Account] 
+  аккаунты: [Account] 
 }
 
-type Account @entity {
+тип аккаунта @entity {
   id: ID!
-  publicAddress: String!
+  публичный адрес: String!
 }
 ```
 
-### Many-to-Many relationships
+### Отношения "многие ко многим"
 A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
 Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
