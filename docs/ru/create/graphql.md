@@ -80,7 +80,7 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // Список в
 
 Различные отношения объектов (один-на-один, и многие) могут быть настроены с помощью приведенных ниже примеров.
 
-### One-to-One Relationships
+### Индивидуальные отношения
 
 Отношения «один к одному» используются по умолчанию, когда только один объект сопоставляется с другим.
 
@@ -130,33 +130,33 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // Список в
 ```
 
 ### Отношения "многие ко многим"
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+Отношения «многие ко многим» могут быть достигнуты путем реализации объекта сопоставления для соединения двух других объектов.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Пример: каждый человек является частью нескольких групп (PersonGroup), а в группах есть несколько разных людей (PersonGroup).
 
 ```graphql
-type Person @entity {
+тип Person @entity {
   id: ID!
-  name: String!
-  groups: [PersonGroup]
+  имя: String!
+  группы: [PersonGroup]
 }
 
-type PersonGroup @entity {
+тип PersonGroup @entity {
   id: ID!
-  person: Person!
-  Group: Group!
+  человек: Person!
+  Группа: Group!
 }
 
-type Group @entity {
+тип Group @entity {
   id: ID!
-  name: String!
+  имя: String!
   persons: [PersonGroup]
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+Кроме того, можно создать соединение одной и той же сущности в нескольких полях средней сущности.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Например, учетная запись может иметь несколько переводов, и каждая передача имеет исходную и целевую учетные записи.
 
 This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
 
