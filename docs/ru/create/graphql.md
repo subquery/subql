@@ -233,17 +233,17 @@ type Transfer @entity {
 
 Недостатком использования файлов типа JSON является слабое влияние на эффективность запроса при фильтрации, поскольку каждый раз, когда выполняется текстовый поиск, он выполняется по всему объекту.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Тем не менее, влияние на нашу работу по поисковым запросам все еще приемлемо. Вот пример того, как использовать `contains` оператора в запросе GraphQL на JSON файл, чтобы найти пять первых пользователей, у которых есть номер телефона, содержащий '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#Чтобы найти первых 5 пользователей телефоны которых содержат '0064'.
 
 query{
-  user(
-    first: 5,
+  пользователь (
+    первый: 5,
     filter: {
       contactCard: {
-        contains: [{ phone: "0064" }]
+        содержит : [{ phone: "0064" }]
     }
 }){
     nodes{
