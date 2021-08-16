@@ -192,46 +192,46 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // Список в
 
 type Transfer @entity {
   id: ID!
-  amount: BigInt
-  from: Account!
-  to: Account!
+  сумма: BigInt
+  от: Account!
+  от: Account!
 }
 ```
 
-## JSON type
+## Тип JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Мы поддерживаем сохранение данных в формате JSON, что является быстрым способом хранения структурированных данных. Мы автоматически сгенерируем соответствующие интерфейсы JSON для запроса данных и сэкономим время для определения и управления сущностями.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Мы рекомендуем пользователям использовать тип JSON в следующих сценариях:
+- Хранение структурированных данных в одном поле более управляемо, чем создание нескольких отдельных сущностей.
+- Сохранение произвольных пользовательских настроек ключа / значения (где значение может быть логическим, текстовым или числовым, и вы не хотите иметь отдельные столбцы для разных типов данных)
+- Схема является волатильной и часто меняется
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### Определить директиву JSON
+Определите свойство как тип JSON файла, добавив аннотацию `jsonField` в объекте. Это автоматически создаст интерфейсы для всех JSON объектов в вашем проекте в `types/interfaces.ts`, и вы можете получить доступ к ним в функции сопоставления.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+В отличие от объекта, директивный jsonField объект не требует поля ` id `. Объект JSON также способен соединиться с другими объектами JSON.
 
 ````graphql
-type AddressDetail @jsonField {
-  street: String!
-  district: String!
+тип AddressDetail @jsonField {
+  улица: String!
+  округ: String!
 }
 
-type ContactCard @jsonField {
-  phone: String!
-  address: AddressDetail # Nested JSON
+введите ContactCard @jsonField {
+  телефон: String!
+  адрес: AddressDetail # Вложенный JSON
 }
 
-type User @entity {
+тип User @entity {
   id: ID! 
-  contact: [ContactCard] # Store a list of JSON objects
+  контакт: [ContactCard] # Сохраните список JSON объектов
 }
 ````
 
-### Querying JSON fields
+### Запрос полей JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+Недостатком использования файлов типа JSON является слабое влияние на эффективность запроса при фильтрации, поскольку каждый раз, когда выполняется текстовый поиск, он выполняется по всему объекту.
 
 However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
