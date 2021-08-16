@@ -158,34 +158,34 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // Список в
 
 Например, учетная запись может иметь несколько переводов, и каждая передача имеет исходную и целевую учетные записи.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Это установит двусторонние отношения между двумя аккаунтами (от и до) через таблицу передачи.
 
 ```graphql
-type Account @entity {
+тип Account @entity {
   id: ID!
-  publicAddress: String!
+  публичный адрес: String!
 }
 
-type Transfer @entity {
+тип Transfer @entity {
   id: ID!
-  amount: BigInt
-  from: Account!
+  сумма: BigInt
+  от: Account!
   to: Account!
 }
 ```
 
-### Reverse Lookups
+### Обратные запросы
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Чтобы разрешить обратный поиск объекта в отношении, присоедините ` @dehibitedFrom ` к полю и укажите на его поле обратного просмотра другого объекта.
 
-This creates a virtual field on the entity that can be queried.
+Это создает виртуальное поле на объекте, который может быть запрошен.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+Передача «от» учетной записи доступна из объекта аккаунта путем установки значения sentTransfer или receiveTransfer, полученного из соответствующих полей from или to.
 
 ```graphql
-type Account @entity {
+тип Account @entity {
   id: ID!
-  publicAddress: String!
+  публичный адрес: String!
   sentTransfers: [Transfer] @derivedFrom(field: "from")
   receivedTransfers: [Transfer] @derivedFrom(field: "to")
 }
