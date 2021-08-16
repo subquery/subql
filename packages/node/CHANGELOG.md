@@ -5,11 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.18.3] - 2021-08-16
 ### Fixed
-- Improve data sources filtering handling and error messages
+- Improve data sources filtering handling and error messages (#417)
 ### Changed
-- Adjust health check time to be the same as indexer timeout, or a minimum of 900 seconds. Also, log error when it is not healthy
-- Update Polkadot/api to 5.5.1
+- Adjust health check time to be the same as indexer timeout, or a minimum of 900 seconds. Also, log error when it is not healthy (#420)
+- Update Polkadot/api to 5.5.1 (#433)
 
 ## [0.18.2] - 2021-07-29
 Upgrade priority: High. Fix failed to store schema object array in correct format in database.
