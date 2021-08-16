@@ -28,13 +28,13 @@ SubQuery в настоящее время имеет два доступных �
 
 ## В чем преимущество промежуточного слота?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+Основное преимущество использования промежуточного слота состоит в том, что он позволяет вам подготовить новую версию вашего проекта SubQuery, не раскрывая ее публично. Вы можете подождать, пока промежуточный слот переиндексирует все данные, не затрагивая рабочие приложения.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+Промежуточный слот не отображается публично в [Explorer](https://explorer.subquery.network/) и имеет уникальный URL, который видим только вам. И, конечно же, отдельная среда позволяет вам тестировать новый код, не ущерба вашему производству.
 
-## What are extrinsics?
+## Что такое надстройки?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+Если вы уже знакомы с понятиями блокчейна, вы можете подумать о дополнительных функциях, сопоставимых с транзакциями. Однако более формально надстройками является часть информации, которая поступает извне цепи и включена в блок. Есть три категории надстроек. Они являются неотъемлемыми элементами, подписанными транзакциями и неподписанными транзакциями.
 
 Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
 
