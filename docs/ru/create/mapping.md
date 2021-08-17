@@ -1,17 +1,17 @@
-# Mapping
+# Сопоставление
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+Функции сопоставления определяют, как данные цепи преобразуются в оптимизированные GraphQL-сущности, которые мы ранее определили в файле `schema.graphql`.
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+Сопоставления написаны в подгруппе TypeScript называется AssemblyScript, который может быть скомпилирован в WASM (WebAssembly).
+- Сопоставления определяются в директории `src/mapappings` и экспортируются как функция
+- Эти сопоставления также экспортированы в `src/index.ts`
+- Файлы сопоставлений являются ссылками в `project.yaml` под обработчиками сопоставлений.
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+Существует три класса функций сопоставления;  [Block handlers](#block-handler), [Event Handlers](#event-handler), и [Call Handlers](#call-handler).
 
-## Block Handler
+## Обработчик блоков
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+Вы можете использовать обработчики блоков для создания информации каждый раз, когда новый блок прикрепляется к цепочке Substrate, например номер блока. Для достижения этой цели, определенный BlockHandler будет вызываться один раз для каждого блока.
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -24,31 +24,31 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) является расширенным интерфейсом типа [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), но также включает в себя `specVersion` и `timestamp`.
 
-## Event Handler
+## Обработчик событий
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+Вы можете использовать обработчики событий для сбора информации, когда определенные события включены в новый блок. События, входящие в стандартное время выполнения Substrate, и блок могут содержать несколько событий.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+Во время обработки события в качестве аргумента с напечатанными входами и выходами, обработчик событий будет получать подстрочное событие. Любой тип события запустит сопоставление, позволяя активность с источником данных для захвата. Вы должны использовать [Mapping Filters](./manifest.md#mapping-filters) в вашем манифесте для фильтрации событий, чтобы сократить время, необходимое для индексирования данных и улучшения производительности сопоставления.
 
 ```ts
-import {SubstrateEvent} from "@subql/types";
+импортировать {SubstrateEvent} из "@subql/types";
 
 export async function handleEvent(event: SubstrateEvent): Promise<void> {
     const {event: {data: [account, balance]}} = event;
-    // Retrieve the record by its ID
-    const record = new starterEntity(event.extrinsic.block.block.header.hash.toString());
-    record.field2 = account.toString();
-    record.field3 = (balance as Balance).toBigInt();
-    await record.save();
+    // Получение записи по ее ID
+    const запись = new starterEntity(event). xtrinsic.block.block.header.hash.toString());
+    record.field2 = account. oString();
+    record.field3 = (баланс как баланс).toBigInt();
+    ожидание record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) является расширенным интерфейсом типа [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Помимо данных события, он также включает в себя `id` (блок к которому принадлежит это событие) и дополнительным внутри этого блока.
 
-## Call Handler
+## Обработчик вызовов
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+Обработчики вызовов используются, когда вы хотите запечатлеть информацию о некоторых substrate extrinsics.
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -58,17 +58,17 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) расширяет [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Назначенный `id` (блок, к которому принадлежит), и предоставляет дополнительное свойство, которое расширяет события среди этого блока. Кроме того, он регистрирует успешный статус этой надбавки.
 
-## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+## Состояния запроса
+Наша цель - охватить все источники данных для пользователей для сопоставления обработчиков (более чем три типа событий интерфейса выше). Поэтому мы выставили некоторые из интерфейсов @polkadot/api для увеличения возможностей.
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+Это интерфейсы, которые мы поддерживаем в настоящее время:
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) будет запрашивать <strong>current</strong> блок.
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) сделает несколько запросов типа <strong>same</strong> в текущем блоке.
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) сделает несколько запросов <strong>разных типов</strong> в текущем блоке.
 
-These are the interfaces we do **NOT** support currently:
+Это интерфейсы, которые мы **НЕ** поддерживаем сейчас:
 - ~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
@@ -80,31 +80,31 @@ These are the interfaces we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) варианте использования.
 
-## RPC calls
+## RPC-вызовы
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+Мы также поддерживаем некоторые методы API RPC, которые являются удалёнными вызовами, которые позволяют функции сопоставления взаимодействовать с реальным узлом, запросом и отправкой. Основной предпосылкой подзапроса является то, что он детерминирует и, следовательно, держать последовательные результаты мы разрешаем только исторические RPC-вызовы.
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+Документы в [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) предоставляют некоторые методы, которые используют `BlockHash` в качестве входного параметра (e. . `в?: BlockHash`), которые теперь разрешены. Мы также изменили эти методы, чтобы получить по умолчанию хэш текущего блока индексации.
 
 ```typescript
-// Let's say we are currently indexing a block with this hash number
+// Скажем, мы сейчас индексируем блок с этим хэшем номером
 const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
 
-// Original method has an optional input is block hash
-const b1 = await api.rpc.chain.getBlock(blockhash);
+// Оригинальный метод имеет необязательный входной блок хэш
+const b1 = ожидание api. pc.chain.getBlock(blockhash);
 
-// It will use the current block has by default like so
+// Он будет использовать текущий блок по умолчанию так:
 const b2 = await api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- Для [Custom Substrate Chains](#custom-substrate-chains) RPC звонки смотрите [usage](#usage).
 
-## Modules and Libraries
+## Модули и Библиотеки
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+Для улучшения возможностей обработки данных SubQuery, мы разрешили некоторые встроенные модули NodeJS для запущенных функций сопоставления в [песочнице](#the-sandbox), и разрешили пользователям звонить в сторонние библиотеки.
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+Пожалуйста, обратите внимание, что это **экспериментальная функция** и вы можете столкнуться с ошибками или проблемами, которые могут негативно повлиять на ваши функции сопоставления. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
 
 ### Built-in modules
 
