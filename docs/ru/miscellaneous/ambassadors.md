@@ -8,11 +8,11 @@
 
 ## Во что мы верим
 
-Our team came together with the shared vision to build the foundations of a flexible and inclusive data service for the Polkadot ecosystem.
+Наша команда собралась вместе, разделяя общие взгляды на создание основ гибкой и всеобъемлющей базы данных для экосистемы Polkadot.
 
-**Built by developers, for developers:** SubQuery is a growing community that focuses on providing the best products and services for our developers, and builders in our ecosystem. SubQuery is only successful if the Polkadot ecosystem is successful, and so everything we do is with our customers in mind.
+**Создано разработчиками, для разработчиков:** SubQuery - растущее сообщество, фокусирующееся на предоставлении лучших продуктов и услуг для наших разработчиков, и разработчиков работающих в нашей экосистеме. SubQuery будет успешно функционировать только в том случае, если экосистема Polkadot будет успешно функционировать, поэтому все, что мы делаем, мы делаем с учетом интересов наших клиентов.
 
-**Integrity and Accountability:** We have team members in Auckland, Shanghai, and Sydney so remote work is important to us. We expect that our team is empowered and works autonomously together to achieve our goals. A key requirement for this is for our team to be accountable for their actions and maintain their integrity.
+**Целостность и подотчетность:** У нас есть члены команды в Окленде, Шанхае и Сиднее, поэтому для нас важна удаленная работа. We expect that our team is empowered and works autonomously together to achieve our goals. A key requirement for this is for our team to be accountable for their actions and maintain their integrity.
 
 **Inclusive Guidance and Support:** Blockchain is hard, and everyone needs help sometimes. There is no such thing as a stupid question in our community and everyone in our team is expected to help support our users. We learn some of the most valuable insights about our service (and how we can improve it) directly from our community.
 
