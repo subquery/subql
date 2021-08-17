@@ -1,12 +1,12 @@
-# Ambassador Program
+# Амбассадорская программа
 
-![Ambassador Banner Image](/assets/img/ambassador_banner.png)
+![Изображение баннера амбассадора](/assets/img/ambassador_banner.png)
 
-We understand that one of our biggest strengths is our community, and with your help, we want to grow and establish local ambassadors for communities around the world.
+Мы понимаем, что одна из наших самых сильных сторон - это наше сообщество, и с вашей помощью мы хотим расти и создавать локальных амбассадоров в сообществах по всему миру.
 
-[Apply Now!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
+[Подай заявку сейчас!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
 
-## What we Believe In
+## Во что мы верим
 
 Our team came together with the shared vision to build the foundations of a flexible and inclusive data service for the Polkadot ecosystem.
 
