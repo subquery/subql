@@ -39,16 +39,16 @@ dataSources:
 - `dataSources` определяет данные, которые будут отфильтрованы и извлечены, а также расположение обработчика карты для применения преобразования данных.
   - `kind` поддерживает только `substrate/Runtime` сейчас.
   - `startBlock` определяет высоту блока для начала индексации.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+  - `filter` фильтрует источник данных для выполнения по сетевому имени спецификации конечной точки, см. [сетевые фильтры](#network-filters)
+  - `mapping.handlers` выведет список всех [mapping functions](./mapping.md) и соответствующих типов обработчиков, с дополнительными [mapping filters](#mapping-filters).
 
-## Network Filters
+## Сетевые Фильтры
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Обычно пользователь создаст SubQuery и будет повторно использовать его как для тестнетов, так и для майннет среды(например, Polkadot и Kusama). Между сетями различные опции, вероятно, отличаются (например, стартовый блок индекса). Поэтому мы позволяем пользователям определять различные детали для каждого источника данных, что означает, что один проект SubQuery по-прежнему может использоваться в нескольких сетях.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Пользователи могут добавить `filter` на `dataSources` для решения о том, какой источник данных запускать в каждой сети.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+Ниже приведен пример, который показывает различные источники данных как для Polkadot так и для Kusama.
 
 ```yaml
 ...
@@ -77,45 +77,45 @@ dataSources:
     mapping: *mymapping # can reuse or change
 ```
 
-## Mapping Filters
+## Фильтры сопоставления
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Фильтры сопоставления являются чрезвычайно полезной функцией, чтобы решить, что блок, событие или надпись вызовут обработчик сопоставления.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Фильтры сопоставления являются необязательными, но рекомендуются, поскольку они значительно уменьшают объем данных, обрабатываемых вашим проектом SubQuery и повышают производительность индексации.
 
 ```yaml
-#Example filter from callHandler
+#Пример фильтра из callHandler
 filter: 
    module: balances
    method: Deposit
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+В следующей таблице описываются фильтры поддерживаемые различными обработчиками.
 
-| Handler                                    | Supported filter             |
-| ------------------------------------------ | ---------------------------- |
-| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
-| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
-| [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
+| Handler                                         | Поддерживаемый фильтр        |
+| ----------------------------------------------- | ---------------------------- |
+| [Обработчик блоков](./mapping.md#block-handler) | `специализация`              |
+| [EventHandler](./mapping.md#event-handler)      | `module`,`method`            |
+| [CallHandler](./mapping.md#call-handler)        | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Фильтры модулей и методов поддерживаются в любой блокчейн цепи, построенной на Substrate.
+- `success` фильтр принимает логическое значение и может быть использован для фильтрации дополнительных по его статусу успеха.
+- `specVersion` определяет диапазон версии спецификации для блока substrate. The following examples describe how to set version ranges.
 
 ```yaml
 filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+  specVersion: [23, 24] #Index блок с specVersion в диапазоне от 23 до 24 (включительно).
+  specVersion: [100]      #Index блок со спецификацией больше или равно 100.
+  specVersion: [null, 23] #Индекс блок со специализацией менее 23.
 ```
 
-## Custom Chains
+## Пользовательские цепочки
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Вы можете проиндексировать данные из пользовательских цепей, включив в `project.yaml`. Объявить конкретные типы, поддерживаемые блокчейном в `network.types`. Мы поддерживаем дополнительные типы, используемые модулями выполнения substrate.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+Также поддерживаются `typesAlias`, `typesBundle`, `typesChain`, и `typesSpec`.
 
 ``` yml
 specVersion: "0.0.1"
@@ -123,8 +123,8 @@ description: "This subquery indexes kitty's birth info"
 repository: "https://github.com/onfinality-io/subql-examples"
 schema: "./schema.graphql"
 network:
-  endpoint: "ws://host.kittychain.io/public-ws"
-  types: {
+  endpoint: "ws://host.kittychain. o/public-ws"
+  типы: {
     "KittyIndex": "u32",
     "Kitty": "[u8; 16]"
   }
@@ -134,11 +134,11 @@ dataSources:
   - name: runtime
     kind: substrate/Runtime
     startBlock: 1
-    filter:  #Optional
+    filter: #Optional
       specName: kitty-chain 
     mapping:
       handlers:
-        - handler: handleKittyBred
+        - handleKittyBred
           kind: substrate/CallHandler
           filter:
             module: kitties
