@@ -2,7 +2,7 @@
 
 The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+The Manifest can be in either YAML or JSON format. В этом документе мы будем использовать YAML во всех примерах. Ниже приведен стандартный пример базового `project.yaml`.
 
 ``` yml
 specVersion: "0.0.1"
@@ -31,13 +31,14 @@ dataSources:
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
+
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
+- `network. \endpoint` определяет конечную точку wss или ws для индексирования блокчейна - **Это должно быть полный архивный узел**.
+- `network.dictionary` при необходимости предоставляет HTTP конечную точку полного словаря для ускорения обработки - см. [Running an Indexer](../run/run.md#using-a-dictionary)
+- `dataSources` определяет данные, которые будут отфильтрованы и извлечены, а также расположение обработчика карты для применения преобразования данных.
+  - `kind` поддерживает только `substrate/Runtime` сейчас.
+  - `startBlock` определяет высоту блока для начала индексации.
   - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
   - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
 
