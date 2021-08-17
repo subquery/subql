@@ -12,7 +12,7 @@
 
 **Создано разработчиками, для разработчиков:** SubQuery - растущее сообщество, фокусирующееся на предоставлении лучших продуктов и услуг для наших разработчиков, и разработчиков работающих в нашей экосистеме. SubQuery будет успешно функционировать только в том случае, если экосистема Polkadot будет успешно функционировать, поэтому все, что мы делаем, мы делаем с учетом интересов наших клиентов.
 
-**Целостность и подотчетность:** У нас есть члены команды в Окленде, Шанхае и Сиднее, поэтому для нас важна удаленная работа. We expect that our team is empowered and works autonomously together to achieve our goals. A key requirement for this is for our team to be accountable for their actions and maintain their integrity.
+**Целостность и подотчетность:** У нас есть члены команды в Окленде, Шанхае и Сиднее, поэтому для нас важна удаленная работа. Мы надеемся, что наша сможет работать автономна для достижения наших совместных целей. Ключевым требованием для нашей команды является принятие ответственности за свои действия и за их добросовестность.
 
 **Inclusive Guidance and Support:** Blockchain is hard, and everyone needs help sometimes. There is no such thing as a stupid question in our community and everyone in our team is expected to help support our users. We learn some of the most valuable insights about our service (and how we can improve it) directly from our community.
 
