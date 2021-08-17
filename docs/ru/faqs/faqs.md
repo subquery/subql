@@ -38,8 +38,8 @@ SubQuery в настоящее время имеет два доступных �
 
 Inherent Extrinsics - это части информации, которые не подписаны и вставляются в блок автором блока.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+Внешние подписанные транзакции - это транзакции, которые содержат подпись учетной записи, выданного транзакцией. Они должны заплатить комиссию за включение транзакции в цепочку.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+Неподписанные транзакции – это транзакции, которые не содержат подписи счета, который выдает транзакцию. Неподписанные транзакции должны использоваться с осторожностью, потому что никто не платит комиссию, так как она подписана. Из-за этого в очереди транзакций отсутствует экономическая логика для предотвращения спама.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+Для получения дополнительной информации нажмите [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
