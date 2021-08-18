@@ -76,5 +76,5 @@ export enum FieldScalar {
   String = 'String',
   Date = 'Date',
   Boolean = 'Boolean',
-  Bytea = 'Bytea',
+  Bytes = 'Bytes',
 }

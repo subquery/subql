@@ -22,7 +22,7 @@ const SEQUELIZE_TYPE_MAPPING = {
   Date: 'timestamp',
   BigDecimal: 'numeric',
   Boolean: 'boolean',
-  Bytea: DataTypes.BLOB,
+  Bytes: DataTypes.BLOB,
   Json: DataTypes.JSONB,
 };
 
@@ -51,7 +51,7 @@ export function modelsTypeToModelAttributes(
         this.setDataValue(field.name, val?.toString());
       };
     }
-    if (field.type === 'Bytea') {
+    if (field.type === 'Bytes') {
       columnOption.get = function () {
         const dataValue = this.getDataValue(field.name);
         if (!dataValue) {
@@ -59,7 +59,7 @@ export function modelsTypeToModelAttributes(
         }
         if (!isBuffer(dataValue)) {
           throw new Error(
-            `Bytea: store.get() returned type is not buffer type`,
+            `Bytes: store.get() returned type is not buffer type`,
           );
         }
         return u8aToHex(bufferToU8a(dataValue));
@@ -72,7 +72,7 @@ export function modelsTypeToModelAttributes(
           this.setDataValue(field.name, setValue);
         } else {
           throw new Error(
-            `input for Bytea type is only support unprefixed hex`,
+            `input for Bytes type is only support unprefixed hex`,
           );
         }
       };
