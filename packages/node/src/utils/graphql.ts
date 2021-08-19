@@ -65,7 +65,7 @@ export function modelsTypeToModelAttributes(
         return u8aToHex(bufferToU8a(dataValue));
       };
       columnOption.set = function (val: unknown) {
-        if (!val || isNull(val)) {
+        if (val === undefined || isNull(val)) {
           this.setDataValue(field.name, null);
         } else if (isHex(val)) {
           const setValue = u8aToBuffer(hexToU8a(val));
