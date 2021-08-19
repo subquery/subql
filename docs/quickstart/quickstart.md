@@ -144,6 +144,3 @@ subquery-node_1   | 2021-08-13T13:56:17.951Z <fetch> INFO fetch block [382,398],
   }
 }
 ```   
-
-## FAQ
-
