@@ -5,25 +5,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-### Changed
-- Update Polkadot/api to 5.5.2 
-### Added
-- support interpret Bytea type 
 
-## [0.18.3] - 2021-08-16
+## [0.20.0] - 2021-08-20
+### Changed
+- Update Polkadot/api to 5.5.2 (#439)
+### Added
+- support interpret Bytea type (#432)
+
+## [0.19.2] - 2021-08-16
 ### Fixed
 - Improve data sources filtering handling and error messages (#417)
 ### Changed
 - Adjust health check time to be the same as indexer timeout, or a minimum of 900 seconds. Also, log error when it is not healthy (#420)
 - Update Polkadot/api to 5.5.1 (#433)
 
-## [0.18.2] - 2021-07-29
+## [0.19.1] - 2021-07-29
 Upgrade priority: High. Fix failed to store schema object array in correct format in database.
 ### Fixed
 - When the schema object type is an array convert to Jsonb type (#406)
 
 
-## [0.18.1] - 2021-07-27
+## [0.19.0] - 2021-07-27
 Upgrade priority: Low. Upgrade only to support a new `polkadot/api` version and for types.
 ### Changed
 - Bump `polkadot/api` to 5.2.1 (#402)
