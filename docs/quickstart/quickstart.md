@@ -1,3 +1,4 @@
+# Introduction
 This section will guide you through creating a starter SubQuery Project that can be used as a framework for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
 
 At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
@@ -25,14 +26,13 @@ yarn -v
 ``` 
 **NOTE:** If missing, you can follow these links to install them: [Yarn](https://classic.yarnpkg.com/en/docs/install/) or [NPM](https://www.npmjs.com/get-npm).
 
-2. With Yarn or NPM installed, you can now run the following to install the SubQuery CLI:
+2. With NPM installed, you can now run the following to install the SubQuery CLI:
 ```shell
 # NPM
 npm install -g @subql/cli
-
-# Yarn
-yarn global add @subql/cli
 ```
+Please note that we DO NOT encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+
 You can then run the following command to see what is available for use with the SubQuery CLI:
 
 ```shell
@@ -48,11 +48,11 @@ subql init --starter PROJECT_NAME
 ```
 
 - `Git repository` is optional. It's the Git URL to your project's repo.
-- `RPC endpoint` is required. It's the running RPC endpoint you project points to. You can use the default endpoint provided `wss://polkadot.api.onfinality.io/public-ws` or provide your own.
+- `RPC endpoint` is optional. It's the running RPC endpoint you project points to. You can use the default endpoint provided `wss://polkadot.api.onfinality.io/public-ws` or provide your own.
 - `Authors` is required. It's the name of the project's creator.
 - `Description` is optional. It's a short description of your project.
-- `Version` is required. It's the project's version number. You can use the default value `1.0.0` or provide your own.
-- `License` is required. It's the software license for your project. You can use the default `Apache-2.0` or provide your own.
+- `Version` is optional. It's the project's version number. You can use the default value `1.0.0` or provide your own.
+- `License` is optional. It's the software license for your project. You can use the default `Apache-2.0` or provide your own.
 
 **NOTE:** You can press your `ENTER` or `RETURN` key to accept the default vialue (it may be empty). **`Authors` is the only mandatory field**. You may need to cancel out of the process with `Ctrl+C` once you see `PROJECT_NAME is ready` 
 
@@ -88,7 +88,7 @@ npm run-script codegen
 yarn codegen
 ```
 
-**NOTE:** This step must be done Whenever changes are made to the schema file in order to regenerate your types directory.
+**NOTE:** This step must be done whenever changes are made to the schema file in order to regenerate your types directory.
 
 2. Then, build your code so that it can run on a locally hosted SubQuery Node:
 
@@ -144,3 +144,9 @@ subquery-node_1   | 2021-08-13T13:56:17.951Z <fetch> INFO fetch block [382,398],
   }
 }
 ```   
+
+# Next steps
+
+This is a very brief run down of how to get started. For a more detailed breakdown with a video guide check out [Hello World (localhost + Docker)](https://doc.subquery.network/quickstart/helloworld-localhost.html). 
+
+If you are interested in how you can host your project with SubQuery Projects, checkout [HelloWorld (SubQuery hosted)](https://doc.subquery.network/quickstart/helloworld-hosted.html)
