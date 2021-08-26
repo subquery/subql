@@ -77,15 +77,12 @@ export class Logger {
 
   getLogger(category: string): Pino.Logger {
     if (!this.childLoggers[category]) {
-      this.childLoggers[category] = this.pino.child({category, level: this.pino.level});
+      this.childLoggers[category] = this.pino.child({category});
     }
     return this.childLoggers[category];
   }
 
   setLevel(level: LevelWithSilent): void {
     this.pino.level = level;
-    for (const childLogger of Object.values(this.childLoggers)) {
-      childLogger.level = level;
-    }
   }
 }
