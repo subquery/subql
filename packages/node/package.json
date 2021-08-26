@@ -18,6 +18,7 @@
     "subql-node": "./bin/run"
   },
   "dependencies": {
+    "@apollo/client": "^3.4.9",
     "@nestjs/common": "^7.6.9",
     "@nestjs/core": "^7.6.1",
     "@nestjs/event-emitter": "^0.0.2",
@@ -44,7 +45,6 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.7",
     "@nestjs/testing": "^7.6.9",
     "@types/app-module-path": "^2.2.0",
