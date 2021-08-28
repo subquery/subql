@@ -194,7 +194,6 @@ This means that using a dictionary can reduce the amount of data that the indexe
 
 ### When is a dictionary NOT useful? 
 
-When [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) are used to grab data from a chain, every block needs to be processed. Therefore, using a dictionary in this case, does not provide any advantage and the indexer will automatically switch to the default non-dictionary approach. 
+When [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) are used to grab data from a chain, every block needs to be processed. Therefore, using a dictionary in this case does not provide any advantage and the indexer will automatically switch to the default non-dictionary approach. 
 
-Also, when dealing with events or extrinsic that occurs or exists in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage.
-Also, when dealing with events or extrinsic that occurs or exists in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage.
+Also, when dealing with events or extrinsic that occurs or exists in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage. Also, when dealing with events or extrinsic that occur or exist in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage.
