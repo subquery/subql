@@ -5,6 +5,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.20.2] - 2021-08-28
+Upgrade priority: High. Any project that uses the dictionary service and defined both event filter and extrinsic filter in its manifest should be re-indexed.
+### Fixed
+- Solve the missing block height of the event/extrinsic in the batch returned by the dictionary service  (#452)
+
 ## [0.20.1] - 2021-08-27
 ### Fixed
 - Deprecated warnings (#448)
