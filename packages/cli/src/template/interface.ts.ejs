@@ -4,7 +4,7 @@
 <% props.jsonInterfaces.forEach(function(interface){ %>
 export interface <%= helper.upperFirst(interface.interfaceName) %> {
 <% interface.fields.forEach(function(field){ %>
-    <%= field.name %><%= field.nullable ? "?" : "" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
+    <%= field.name %><%= field.required ? "" : "?" %>: <%= field.type %><%= field.isArray ? "[]" : "" %>;
 <% }); %>
 }
 
