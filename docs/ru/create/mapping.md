@@ -80,7 +80,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) варианте использования.
+Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) варианте использования.
 
 ## RPC-вызовы
 
@@ -135,7 +135,7 @@ SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
 You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
+In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
 
 ### Preparation
 
@@ -158,7 +158,7 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
+Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
 
 #### Type definitions
 We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
