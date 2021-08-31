@@ -78,7 +78,10 @@ module.exports = {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
         children: [
-          '/tutorials_examples/howto.md',
+          '/tutorials_examples/block-height.md',
+          '/tutorials_examples/batch-size.md',
+          '/tutorials_examples/run-indexer.md',
+          '/tutorials_examples/dictionary.md',
           '/tutorials_examples/terminology.md',
         ]
       },
