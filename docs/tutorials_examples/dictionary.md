@@ -28,7 +28,7 @@ When a dictionary is NOT used, an indexer will fetch every block data via the po
 
 ## What happens when a dictionary IS used?
 
-When a dictionary IS used, the indexer will first take the event filter as parameters and merge this into a GraphQL query. It then uses the dictionary's API to obtain a list of relevant block heights only that contains the specific events. Often this is substantially less than 100 if the default is used. 
+When a dictionary IS used, the indexer will first take the call and event filters as parameters and merge this into a GraphQL query. It then uses the dictionary's API to obtain a list of relevant block heights only that contains the specific events and extrinsics. Often this is substantially less than 100 if the default is used. 
 
 For example, imagine a situation where you're indexing transfer events. Not all blocks have this event (in the image below there are no transfer events in blocks 3 and 4).
 

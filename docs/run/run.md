@@ -61,6 +61,8 @@ You can add the dictionary endpoint in your `project.yaml` file (see [Manifest F
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
+[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+
 #### Connect to database
 
 ```
