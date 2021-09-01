@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Changed
+- Update Polkadot/api to 5.7.1
 
 ## [0.20.2] - 2021-08-28
 Upgrade priority: High. Any project that uses the dictionary service and defined both event filter and extrinsic filter in its manifest should be re-indexed.
