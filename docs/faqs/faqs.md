@@ -44,55 +44,6 @@ Unsigned transactions extrinsics are transactions that do not contain a signatur
 
 For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
 
-## How to check your node health?
-
-There are 2 URL resources available to check your SubQuery node health. 
-
-```shell
-/meta
-/health
-```
-
-Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
-
-```bash
-{
-    "targetHeight": 6692385,
-    "bestHeight": 6692389,
-    "indexerNodeVersion": "0.19.1",
-    "uptime": 12.566230083,
-    "polkadotSdkVersion": "5.4.1",
-    "apiConnected": true,
-    "injectedApiConnected": true,
-    "usingDictionary": false,
-    "chain": "Polkadot",
-    "specName": "polkadot",
-    "genesisHash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "blockTime": 6000
-}
-```
-
-`http://localhost:3000/health` will return HTTP 200 if successful. 
-
-A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
-
-```shell
-{
-    "status": 500,
-    "error": "Indexer is not healthy"
-}
-```
-
-If an incorrect URL is used, a 404 not found error will be returned.
-
-```shell
-{
-"statusCode": 404,
-"message": "Cannot GET /healthy",
-"error": "Not Found"
-}
-```
-
 ## What is the endpoint for the Kusama network?
 
 The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
