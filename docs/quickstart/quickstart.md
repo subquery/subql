@@ -1,5 +1,5 @@
 # Introduction
-This section will guide you through creating a starter SubQuery Project that can be used as a framework for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
+This section will guide you through creating a starter SubQuery Project that can be used as a starting point for your own project, and that you can deploy either to a local environment (e.g. using Docker) or to [SubQuery Projects](https://project.subquery.network/) (our managed service).
 
 At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
 
