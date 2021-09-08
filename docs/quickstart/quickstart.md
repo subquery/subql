@@ -58,17 +58,25 @@ subql init --starter PROJECT_NAME
 
 This will create a new folder inside your directory named after your PROJECT_NAME. This folder contains all of the necessary files needed to deploy a working SubQuery Project.
 
-1. Change your working directory into the new folder:
+1. Change your working directory into the new folder and install dependencies of your SubQuery Project.
 
-```shell
-cd PROJECT_NAME
-```
+<code-group>
+  <code-block title="YARN" active>
+  ```shell
+  cd PROJECT_NAME
+  yarn install
+  ```
+  </code-block>
 
-2. Then, while in the new folder, install dependencies of your SubQuery Project:
+  <code-block title="NPM">
+  ```bash
+  cd PROJECT_NAME
+  npm install
+  ```
+  </code-block>
+</code-group>
 
-```shell
-# NPM
-npm install
+## Configure and Build the Starter Project
 
 # Yarn
 yarn install
@@ -80,9 +88,23 @@ yarn install
 
 1. Generate TypeScript from the GraphQL schema:
 
-```shell
-# NPM
-npm run-script codegen
+
+<code-group>
+  <code-block title="YARN" active>
+  ```shell
+  yarn codegen
+  ```
+  </code-block>
+
+  <code-block title="NPM">
+  ```bash
+  npm run-script codegen
+  ```
+  </code-block>
+</code-group>
+
+You'll find the generated models in the `/src/types/models` directory
+
 
 # Yarn
 yarn codegen
@@ -92,13 +114,19 @@ yarn codegen
 
 2. Then, build your code so that it can run on a locally hosted SubQuery Node:
 
-```shell
-# NPM
-npm run-script build
+<code-group>
+  <code-block title="YARN" active>
+  ```shell
+  yarn build
+  ```
+  </code-block>
 
-# Yarn
-yarn build
-```
+  <code-block title="NPM">
+  ```bash
+  npm run-script build
+  ```
+  </code-block>
+</code-group>
 
 ## 4. Deploy the SubQuery Project with Docker
 

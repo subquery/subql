@@ -1,4 +1,4 @@
-# GraphQL Schema
+# GraphQL方案
 
 ## Defining Entities
 

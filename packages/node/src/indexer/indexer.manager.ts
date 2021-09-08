@@ -99,14 +99,15 @@ export class IndexerManager {
       }
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
-      await this.subqueryState.save();
-      this.fetchService.latestProcessed(block.block.header.number.toNumber());
-      this.prevSpecVersion = block.specVersion;
+      await this.subqueryState.save({ transaction: tx });
     } catch (e) {
       await tx.rollback();
       throw e;
     }
     await tx.commit();
+    this.fetchService.latestProcessed(block.block.header.number.toNumber());
+    this.prevSpecVersion = block.specVersion;
+
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: block.block.header.number.toNumber(),
       timestamp: Date.now(),

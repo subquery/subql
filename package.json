@@ -31,7 +31,7 @@
     "vuepress-plugin-fulltext-search": "^2.2.1"
   },
   "resolutions": {
-    "@polkadot/api": "5.2.1"
+    "@polkadot/api": "5.7.1"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",

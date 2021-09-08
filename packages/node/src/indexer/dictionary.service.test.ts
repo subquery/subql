@@ -114,4 +114,32 @@ describe('DictionaryService', () => {
     );
     expect(dic.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
   }, 500000);
+
+  it('use minimum value of event/extrinsic returned block as batch end block', async () => {
+    const project = testSubqueryProject();
+    const dictionaryService = new DictionaryService(project);
+    const batchSize = 50;
+    const startBlock = 333300;
+    const endBlock = 340000;
+    const indexFilters = {
+      //last event at block 333524
+      eventFilters: [
+        { module: 'session', method: 'NewSession' },
+        { module: 'staking', method: 'EraPayout' },
+        { module: 'staking', method: 'Reward' },
+      ],
+      //last extrinsic at block 339186
+      extrinsicFilters: [
+        { module: 'staking', method: 'payoutStakers' },
+        { module: 'utility', method: 'batch' },
+      ],
+    };
+    const dic = await dictionaryService.getDictionary(
+      startBlock,
+      endBlock,
+      batchSize,
+      indexFilters,
+    );
+    expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
+  }, 500000);
 });

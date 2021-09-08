@@ -6,6 +6,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.2] - 2021-09-01
+### Fixed
+- Fix codegen template for jsonField optional field (#459)
+
+## [0.11.1] - 2021-08-27
+### Fixed
+- Deprecated warnings (#448)
+
+## [0.11.0] - 2021-08-20
+### Added
+- Support Bytea type in Cli (#432)
+
 ## [0.10.0] - 2021-06-25
 ### Changed
 - Update dependencies (#358)
