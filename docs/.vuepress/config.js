@@ -1,4 +1,6 @@
-module.exports = {
+const { config } = require("vuepress-theme-hope");
+
+module.exports = config({
   locales: {
     '/': {
       lang: 'English',
@@ -21,10 +23,12 @@ module.exports = {
       {
         title: 'Welcome to SubQuery',
         path: '/',
+        collapsable: false,
       },
       {
         title: 'Quick Start Guide',
         path: '/quickstart/quickstart',
+        collapsable: false,
         children: [
           '/quickstart/quickstart.md',
           '/quickstart/helloworld-localhost.md',
@@ -35,6 +39,7 @@ module.exports = {
       {
         title: 'Installation',
         path: '/install/install',
+        collapsable: false,
         children: [
           '/install/install.md'
         ]
@@ -42,6 +47,7 @@ module.exports = {
       {
         title: 'Create a Project',
         path: '/create/introduction',
+        collapsable: false,
         children: [
           '/create/introduction.md',
           '/create/manifest.md',
@@ -52,6 +58,7 @@ module.exports = {
       {
         title: 'Run a Project',
         path: '/run/run',
+        collapsable: false,
         children: [
           '/run/run.md',
           '/run/sandbox.md',
@@ -60,6 +67,7 @@ module.exports = {
       {
         title: 'Publish a Project',
         path: '/publish/publish',
+        collapsable: false,
         children: [
           '/publish/publish.md',
           '/publish/upgrade.md',
@@ -69,6 +77,7 @@ module.exports = {
       {
         title: 'Query your Data',
         path: '/query/query',
+        collapsable: false,
         children: [
           '/query/query.md',
           '/query/graphql.md'
@@ -77,6 +86,7 @@ module.exports = {
       {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
+        collapsable: false,
         children: [
           '/tutorials_examples/block-height.md',
           '/tutorials_examples/batch-size.md',
@@ -88,11 +98,13 @@ module.exports = {
       {
         title: 'FAQs',
         path: '/faqs/faqs.md',
+        collapsable: false,
         children: []
       },
       {
         title: 'Miscellaneous',
         path: '/miscellaneous/contributing',
+        collapsable: false,
         children: [
           '/miscellaneous/contributing.md',
           '/miscellaneous/social_media.md',
@@ -103,6 +115,7 @@ module.exports = {
       {
         title: 'References',
         path: '/references/references',
+        collapsable: false,
         children: [
           '/references/references.md',
         ]
@@ -121,6 +134,6 @@ module.exports = {
   markdown: {
     extractHeaders: ['h2','h3','h4'],
   }
-}
+})
 
 
