@@ -19,16 +19,17 @@ module.exports = config({
       { text: 'GitHub', link: 'https://github.com/subquery/subql', target: '_blank', rel: '' },
     ],
     sidebarDepth: 2,
+    themeColor: false,
     sidebar: [
       {
         title: 'Welcome to SubQuery',
         path: '/',
-        collapsable: false,
+        collapsable: true,
       },
       {
         title: 'Quick Start Guide',
         path: '/quickstart/quickstart',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/quickstart/quickstart.md',
           '/quickstart/helloworld-localhost.md',
@@ -39,7 +40,7 @@ module.exports = config({
       {
         title: 'Installation',
         path: '/install/install',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/install/install.md'
         ]
@@ -47,7 +48,7 @@ module.exports = config({
       {
         title: 'Create a Project',
         path: '/create/introduction',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/create/introduction.md',
           '/create/manifest.md',
@@ -58,7 +59,7 @@ module.exports = config({
       {
         title: 'Run a Project',
         path: '/run/run',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/run/run.md',
           '/run/sandbox.md',
@@ -67,7 +68,7 @@ module.exports = config({
       {
         title: 'Publish a Project',
         path: '/publish/publish',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/publish/publish.md',
           '/publish/upgrade.md',
@@ -77,7 +78,7 @@ module.exports = config({
       {
         title: 'Query your Data',
         path: '/query/query',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/query/query.md',
           '/query/graphql.md'
@@ -86,7 +87,7 @@ module.exports = config({
       {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/tutorials_examples/block-height.md',
           '/tutorials_examples/batch-size.md',
@@ -98,13 +99,13 @@ module.exports = config({
       {
         title: 'FAQs',
         path: '/faqs/faqs.md',
-        collapsable: false,
+        collapsable: true,
         children: []
       },
       {
         title: 'Miscellaneous',
         path: '/miscellaneous/contributing',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/miscellaneous/contributing.md',
           '/miscellaneous/social_media.md',
@@ -115,7 +116,7 @@ module.exports = config({
       {
         title: 'References',
         path: '/references/references',
-        collapsable: false,
+        collapsable: true,
         children: [
           '/references/references.md',
         ]
