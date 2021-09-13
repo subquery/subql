@@ -89,6 +89,7 @@ module.exports = config({
         path: '/tutorials_examples/introduction',
         collapsable: true,
         children: [
+          '/tutorials_examples/introduction',
           '/tutorials_examples/block-height.md',
           '/tutorials_examples/batch-size.md',
           '/tutorials_examples/run-indexer.md',
@@ -133,8 +134,6 @@ module.exports = config({
     ],
   ],
   markdown: {
-    extractHeaders: ['h2','h3','h4'],
+    extractHeaders: ['h2', 'h3'],
   }
 })
-
-
