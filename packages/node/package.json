@@ -32,6 +32,8 @@
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.5",
     "lodash": "^4.17.21",
+    "merkle-mountain-range": "^2.0.0",
+    "merkle-tools": "^1.4.1",
     "parse-json": "^5.2.0",
     "pg": "^8.6.0",
     "pino": "^6.11.3",

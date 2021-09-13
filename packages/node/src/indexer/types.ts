@@ -3,6 +3,7 @@
 
 import { SubqlCallFilter, SubqlEventFilter } from '@subql/common';
 import {
+  Entity,
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -18,3 +19,14 @@ export interface ProjectIndexFilters {
   eventFilters: SubqlEventFilter[];
   extrinsicFilters: SubqlCallFilter[];
 }
+
+export enum OperationType {
+  Set = 'Set',
+  Remove = 'Remove',
+}
+
+export type OperationEntity = {
+  operation: OperationType;
+  entityType: string;
+  data: Entity | string;
+};
