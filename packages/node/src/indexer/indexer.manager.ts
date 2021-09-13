@@ -107,20 +107,21 @@ export class IndexerManager {
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
       await this.subqueryState.save({ transaction: tx });
-      const operationHash = this.storeService.getOperationMerkleRoot();
-
-      const poiBlock = PoiBlock.create(
-        blockHeight,
-        block.block.header.hash.toHex(),
-        operationHash,
-        await this.poiService.getLatestPoiBlockHash(),
-        this.project.path, //projectId // TODO, define projectId
-      );
-      poiBlock.mmrRoot = Buffer.from(
-        `mmr${block.block.header.hash.toString()}`,
-      );
-      poiBlockHash = poiBlock.hash;
-      await this.storeService.setPoi(tx, poiBlock);
+      if (this.nodeConfig.proofOfIndex) {
+        const operationHash = this.storeService.getOperationMerkleRoot();
+        const poiBlock = PoiBlock.create(
+          blockHeight,
+          block.block.header.hash.toHex(),
+          operationHash,
+          await this.poiService.getLatestPoiBlockHash(),
+          this.project.path, //projectId // TODO, define projectId
+        );
+        poiBlock.mmrRoot = Buffer.from(
+          `mmr${block.block.header.hash.toString()}`,
+        );
+        poiBlockHash = poiBlock.hash;
+        await this.storeService.setPoi(tx, poiBlock);
+      }
     } catch (e) {
       await tx.rollback();
       throw e;
@@ -128,9 +129,9 @@ export class IndexerManager {
     await tx.commit();
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
     this.prevSpecVersion = block.specVersion;
-
-    this.poiService.setLatestPoiBlockHash(poiBlockHash);
-
+    if (this.nodeConfig.proofOfIndex) {
+      this.poiService.setLatestPoiBlockHash(poiBlockHash);
+    }
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: blockHeight,
       timestamp: Date.now(),
@@ -145,7 +146,9 @@ export class IndexerManager {
     await this.initDbSchema();
     await this.initVM();
     await this.ensureMetadata(this.subqueryState.dbSchema);
-    await this.poiService.init(this.subqueryState.dbSchema);
+    if (this.nodeConfig.proofOfIndex) {
+      await this.poiService.init(this.subqueryState.dbSchema);
+    }
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {

@@ -148,7 +148,9 @@ export class StoreService {
           throw new Error('Relation type is not supported');
       }
     }
-    this.poiRepo = PoiFactory(this.sequelize, schema);
+    if (this.config.proofOfIndex) {
+      this.poiRepo = PoiFactory(this.sequelize, schema);
+    }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
     await this.sequelize.sync();

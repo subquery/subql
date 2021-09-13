@@ -18,12 +18,13 @@ export class StoreOperations {
 
   private operationEntityToUint8Array(operation: OperationEntity): Uint8Array {
     const dataBufferArray: Uint8Array[] = [];
-    if (
-      operation.operation === OperationType.Remove &&
-      isString(operation.data)
-    ) {
+    if (operation.operation === OperationType.Remove) {
       //remove case
-      dataBufferArray.push(Buffer.from(operation.data));
+      if (isString(operation.data)) {
+        dataBufferArray.push(Buffer.from(operation.data));
+      } else {
+        throw new Error(`Remove operation only accept data in string type`);
+      }
     } else {
       const operationModel = this.models.find(
         ({ name }) => name === operation.entityType,
