@@ -20038,6 +20038,17 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"rlp@npm:^2.2.3":
+  version: 2.2.6
+  resolution: "rlp@npm:2.2.6"
+  dependencies:
+    bn.js: ^4.11.1
+  bin:
+    rlp: bin/rlp
+  checksum: 58777508e10d6ec39efcb14f85fd80dc07f549a60dfc51f1b59c62a5e1d32ef92ff6721f77aa767dfb41f2c5027c408c79dcbd1c63aa38915714969600ecd9d7
+  languageName: node
+  linkType: hard
+
 "rollup-plugin-terser@npm:^7.0.0":
   version: 7.0.2
   resolution: "rollup-plugin-terser@npm:7.0.2"
@@ -20063,17 +20074,6 @@ fsevents@~2.3.1:
   bin:
     rollup: dist/bin/rollup
   checksum: 459ac36f8d325385a6b66522bf60ea4ae1400b405de30d7c64c483cc875dbf11c4f6c352d796b2ec634a567a6db1ff1c48fe29d434354c1330c88bb187c539b4
-  languageName: node
-  linkType: hard
-
-"rlp@npm:^2.2.3":
-  version: 2.2.6
-  resolution: "rlp@npm:2.2.6"
-  dependencies:
-    bn.js: ^4.11.1
-  bin:
-    rlp: bin/rlp
-  checksum: 58777508e10d6ec39efcb14f85fd80dc07f549a60dfc51f1b59c62a5e1d32ef92ff6721f77aa767dfb41f2c5027c408c79dcbd1c63aa38915714969600ecd9d7
   languageName: node
   linkType: hard
 

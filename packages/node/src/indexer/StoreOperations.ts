@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { u8aConcat, numberToU8a, u8aToBuffer } from '@polkadot/util';
+import { u8aConcat, numberToU8a, u8aToBuffer, isString } from '@polkadot/util';
 import { GraphQLModelsType } from '@subql/common/graphql/types';
 import { Entity } from '@subql/types';
 import MerkleTools from 'merkle-tools';
@@ -18,7 +18,10 @@ export class StoreOperations {
 
   private operationEntityToUint8Array(operation: OperationEntity): Uint8Array {
     const dataBufferArray: Uint8Array[] = [];
-    if (operation.operation === OperationType.Remove) {
+    if (
+      operation.operation === OperationType.Remove &&
+      isString(operation.data)
+    ) {
       //remove case
       dataBufferArray.push(Buffer.from(operation.data));
     } else {
