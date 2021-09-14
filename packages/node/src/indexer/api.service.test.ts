@@ -10,10 +10,13 @@ import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
 import { ApiService } from './api.service';
 
-function testSubqueryProject(): SubqueryProject {
+const WS_ENDPOINT = 'wss://kusama.api.onfinality.io/public-ws';
+const HTTP_ENDPOINT = 'https://kusama.api.onfinality.io/public';
+
+function testSubqueryProject(endpoint: string): SubqueryProject {
   const project = new SubqueryProject();
   project.network = {
-    endpoint: 'wss://kusama.api.onfinality.io/public-ws',
+    endpoint,
     types: {
       TestType: 'u32',
     },
@@ -29,10 +32,15 @@ describe('ApiService', () => {
     return app?.close();
   });
 
-  const prepareApiService = async (): Promise<ApiService> => {
+  const prepareApiService = async (
+    endpoint: string = WS_ENDPOINT,
+  ): Promise<ApiService> => {
     const module = await Test.createTestingModule({
       providers: [
-        { provide: SubqueryProject, useFactory: testSubqueryProject },
+        {
+          provide: SubqueryProject,
+          useFactory: () => testSubqueryProject(endpoint),
+        },
         ApiService,
       ],
       imports: [EventEmitterModule.forRoot()],
@@ -359,4 +367,13 @@ describe('ApiService', () => {
     expect(expectedValidators1).toEqual(vs1);
     expect(expectedValidators2).toEqual(vs2);
   }, 300000);
+
+  it('support http provider', async () => {
+    const apiService = await prepareApiService(HTTP_ENDPOINT);
+    const api = apiService.getApi();
+    const patchedApi = await apiService.getPatchedApi();
+    const blockhash = await api.rpc.chain.getBlockHash(1);
+    await apiService.setBlockhash(blockhash, true);
+    await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
+  }, 30000);
 });
