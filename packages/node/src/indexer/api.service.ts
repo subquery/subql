@@ -3,7 +3,7 @@
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
 import {
   ApiInterfaceRx,
   ApiOptions,
@@ -30,6 +30,7 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
+  private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -43,8 +44,14 @@ export class ApiService implements OnApplicationShutdown {
 
   async init(): Promise<ApiService> {
     const { network } = this.project;
+    let provider;
+    if (network.endpoint.startsWith('ws')) {
+      provider = new WsProvider(network.endpoint);
+    } else if (network.endpoint.startsWith('http')) {
+      provider = new HttpProvider(network.endpoint);
+    }
     const apiOption: ApiOptions = {
-      provider: new WsProvider(network.endpoint),
+      provider,
     };
     assign(
       apiOption,
@@ -56,6 +63,7 @@ export class ApiService implements OnApplicationShutdown {
         'typesSpec',
       ]),
     );
+    this.apiOption = apiOption;
     this.api = await ApiPromise.create(apiOption);
     this.networkMeta = {
       chain: this.api.runtimeChain.toString(),
@@ -85,7 +93,13 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-    const patchedApi = this.getApi().clone();
+    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged
+    const {
+      network: { endpoint },
+    } = this.project;
+    const patchedApi = endpoint.startsWith('ws')
+      ? this.getApi().clone()
+      : new ApiPromise(this.apiOption);
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',
