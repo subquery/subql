@@ -144,9 +144,8 @@ export class IndexerManager {
           await this.poiService.getLatestPoiBlockHash(),
           this.project.path, //projectId // TODO, define projectId
         );
-        poiBlock.mmrRoot = Buffer.from(
-          `mmr${block.block.header.hash.toString()}`,
-        );
+        await this.poiService.appendMmrNode(poiBlock);
+        poiBlock.mmrRoot = await this.poiService.getFileBaseLatestMmr();
         poiBlockHash = poiBlock.hash;
         await this.storeService.setPoi(tx, poiBlock);
       }
