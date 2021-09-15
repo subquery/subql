@@ -8,19 +8,19 @@ The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/package
 
 Install SubQuery CLI globally on your terminal by using Yarn or NPM:
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   yarn global add @subql/cli
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   npm install -g @subql/cli
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 You can then run help to see available commands and usage provide by CLI:
 
@@ -33,19 +33,19 @@ A SubQuery node is an implementation that extracts substrate-based blockchain da
 
 Install SubQuery node globally on your terminal by using Yarn or NPM:
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   yarn global add @subql/node
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   npm install -g @subql/node
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 Once installed, you can can start a node with:
 
@@ -60,18 +60,18 @@ The SubQuery query library provides a service that allows you to query your proj
 
 Install SubQuery query globally on your terminal by using Yarn or NPM:
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   yarn global add @subql/query
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   npm install -g @subql/query
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 > Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step also. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. 
