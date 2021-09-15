@@ -4475,6 +4475,8 @@ __metadata:
     rimraf: ^3.0.2
     simple-git: ^2.31.0
     tslib: ^2.1.0
+    webpack: ^5.52.1
+    webpack-merge: ^5.8.0
   bin:
     subql: ./bin/run
   languageName: unknown
@@ -9115,6 +9117,17 @@ __metadata:
     strip-ansi: ^6.0.0
     wrap-ansi: ^7.0.0
   checksum: c49ac1d13f6dda4beaa11b26f62867e0e9892eb985951187d7c691793e0fe08b9bc15cedfaf4dc6d2e9a4d1516704c0c9dcb671ebcd758dbabb18b5d757fbdb5
+  languageName: node
+  linkType: hard
+
+"clone-deep@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "clone-deep@npm:4.0.1"
+  dependencies:
+    is-plain-object: ^2.0.4
+    kind-of: ^6.0.2
+    shallow-clone: ^3.0.0
+  checksum: b0146d66cabc7e609d23d10155dcc88e2f74b03539b3b65f8a05f889500e2a78b6c6265a744445d009d512a1afa16836f62aa5737d462027142984c2d41130c8
   languageName: node
   linkType: hard
 
@@ -20557,6 +20570,15 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"shallow-clone@npm:^3.0.0":
+  version: 3.0.1
+  resolution: "shallow-clone@npm:3.0.1"
+  dependencies:
+    kind-of: ^6.0.2
+  checksum: e329e054c286f0681fd8a9e5c353999519332f12510a99e189ea9cfa0337adb6f1414639d44493418ef6790a693b78c354525269f5db25a9feddd8b4d7891a62
+  languageName: node
+  linkType: hard
+
 "shebang-command@npm:^1.2.0":
   version: 1.2.0
   resolution: "shebang-command@npm:1.2.0"
@@ -20844,6 +20866,16 @@ fsevents@~2.3.1:
     buffer-from: ^1.0.0
     source-map: ^0.6.0
   checksum: 59d4efaae97755155b078413ecba63517e3ef054cc7ab767bbd30e6f3054be2ae8e8f5cce7eef53b7eb93e98fe27a58dd8f5e7abfb13144ba420ddaf5267bbb2
+  languageName: node
+  linkType: hard
+
+"source-map-support@npm:~0.5.20":
+  version: 0.5.20
+  resolution: "source-map-support@npm:0.5.20"
+  dependencies:
+    buffer-from: ^1.0.0
+    source-map: ^0.6.0
+  checksum: 2c5821ee94732b2ddbb1e1d9e61ed76ef00f72415fa686ab96d5f5c711789d55424866fa7d6c493beea380e44418053d86ec490b82c101008eac311463da84a9
   languageName: node
   linkType: hard
 
@@ -21790,8 +21822,8 @@ fsevents@~2.3.1:
   linkType: hard
 
 "terser-webpack-plugin@npm:^5.1.3":
-  version: 5.2.3
-  resolution: "terser-webpack-plugin@npm:5.2.3"
+  version: 5.2.4
+  resolution: "terser-webpack-plugin@npm:5.2.4"
   dependencies:
     jest-worker: ^27.0.6
     p-limit: ^3.1.0
@@ -21808,7 +21840,7 @@ fsevents@~2.3.1:
       optional: true
     uglify-js:
       optional: true
-  checksum: 6a02ce7683789b9e45a3582376e2173862754ddc5d33c18bd8f3adda16581c11947bdd3eea26e7040e5a66971352f0c3063d2cba9d932a5eda01f9ea8dc15fca
+  checksum: 6ba5e19dcfbb81643d8a4865e841ea0b2ad2e59ab59528fd1617fed3139113a0cee682c65223f9f4176d16cda49076f2430a33fbef132908a4a1b1a6cab4ef77
   languageName: node
   linkType: hard
 
@@ -21825,7 +21857,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"terser@npm:^5.0.0, terser@npm:^5.7.2":
+"terser@npm:^5.0.0":
   version: 5.7.2
   resolution: "terser@npm:5.7.2"
   dependencies:
@@ -21848,6 +21880,19 @@ fsevents@~2.3.1:
   bin:
     terser: bin/terser
   checksum: f96abd0fb4595a1cbc875df661eceb7ae97cf05996f5327e38f16b5bf0c685296ab81d00a34059f6ca292bbba5eeed31ed7e51d2bf5d7cf6534a1a31aff0db86
+  languageName: node
+  linkType: hard
+
+"terser@npm:^5.7.2":
+  version: 5.8.0
+  resolution: "terser@npm:5.8.0"
+  dependencies:
+    commander: ^2.20.0
+    source-map: ~0.7.2
+    source-map-support: ~0.5.20
+  bin:
+    terser: bin/terser
+  checksum: 2c139adc565793d6df72136c667b410e6f424b56b72c039efe23b3b3036e4ac9015338a75d8cf9e19293d257caa26963a120996076ecb76d5f1077289afbfb4d
   languageName: node
   linkType: hard
 
@@ -23528,6 +23573,16 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
+"webpack-merge@npm:^5.8.0":
+  version: 5.8.0
+  resolution: "webpack-merge@npm:5.8.0"
+  dependencies:
+    clone-deep: ^4.0.1
+    wildcard: ^2.0.0
+  checksum: ee3ff2cc97de7f35a80a81c7f0f211ceb12aa392344fae4e1c4d3e0090b5222e90a784af2eb886948bc0023e275c239961b0177f9b09f23da97e720006db9d1a
+  languageName: node
+  linkType: hard
+
 "webpack-node-externals@npm:2.5.2":
   version: 2.5.2
   resolution: "webpack-node-externals@npm:2.5.2"
@@ -23556,9 +23611,9 @@ typescript@^4.1.3:
   linkType: hard
 
 "webpack-sources@npm:^3.2.0":
-  version: 3.2.0
-  resolution: "webpack-sources@npm:3.2.0"
-  checksum: 6813e2937fb9be8748702ac44052676e7f9d972cdd798e481d2bbc9f3512e0a668229c7f97a287d24d6f2e9e73dd4b71da0801d149656bbac532548b35c1b718
+  version: 3.2.1
+  resolution: "webpack-sources@npm:3.2.1"
+  checksum: 629f5c96323b27d753fb4c20d85043f255ab4759464a19aab1081a8bcfeefac2d0453a11c9a32927d0f4fad5a99187124ddc9a01b0f6601861d3e2ea25e4a647
   languageName: node
   linkType: hard
 
@@ -23637,9 +23692,9 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.38.1":
-  version: 5.52.0
-  resolution: "webpack@npm:5.52.0"
+"webpack@npm:^5.38.1, webpack@npm:^5.52.1":
+  version: 5.52.1
+  resolution: "webpack@npm:5.52.1"
   dependencies:
     "@types/eslint-scope": ^3.7.0
     "@types/estree": ^0.0.50
@@ -23670,7 +23725,7 @@ typescript@^4.1.3:
       optional: true
   bin:
     webpack: bin/webpack.js
-  checksum: 0bf96774d6fd09d64cb1b2c694809ae53171930513d17264ec9e8957eb64701495320153a85cede8d6789fb276636fc588182af3ed1ed42d60261b4277c22287
+  checksum: cb153a5a00695b0898e9111ff07c62545dc59e1078b074797ae86bea1c5ebf7c2379ca0862e646f9bebf580fbdc7da715c2ed861e2baa33e1ac5f9f8ecbcc351
   languageName: node
   linkType: hard
 
@@ -23837,6 +23892,13 @@ typescript@^4.1.3:
   dependencies:
     string-width: ^4.0.0
   checksum: 729c30582e49bdcb1372216eedfd71d1640a1344a4b4e970bc9f33d575b56b130f530b383fbab2cf2bcffb76ea4357e6a66939778d8de91ca66037651d94e01a
+  languageName: node
+  linkType: hard
+
+"wildcard@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "wildcard@npm:2.0.0"
+  checksum: 207baede4d6d41fc1aefcc4727c95ca6f29eaaf4d66478665fe0ac17232709637426ae96fd79deb3b68da3564e7bde7f2be63e5c3665ac8f63ee92364c0a2dd3
   languageName: node
   linkType: hard
 
