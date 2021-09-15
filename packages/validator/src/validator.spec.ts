@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {commonRules, RequireBuildScript, RequireCliDep, RequireCodegenScript} from './rules';
+import {commonRules} from './rules';
 import {Validator} from './validator';
 
 describe('Validator', () => {
@@ -15,8 +15,8 @@ describe('Validator', () => {
 
   it('should validate get reports', async () => {
     const result = await v.getValidateReports();
-    expect(result.length).toBe(5);
-    expect(result.filter((r) => r.valid).length).toBe(5);
+    expect(result.length).toBe(6);
+    expect(result.filter((r) => r.valid).length).toBe(6);
   });
 
   it('should return validate result', async () => {

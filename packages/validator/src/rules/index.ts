@@ -5,3 +5,4 @@ export * from './rule';
 export * from './require-build-script';
 export * from './require-codegen-script';
 export * from './require-cli-dep';
+export * from './require-valid-manifest';
