@@ -32,7 +32,7 @@
     "vuepress-plugin-right-anchor": "^0.5.3"
   },
   "resolutions": {
-    "@polkadot/api": "5.7.1"
+    "@polkadot/api": "5.9.1"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",
