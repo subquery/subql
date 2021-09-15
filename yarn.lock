@@ -4475,7 +4475,7 @@ __metadata:
     rimraf: ^3.0.2
     simple-git: ^2.31.0
     tslib: ^2.1.0
-    webpack: ^5.52.1
+    webpack: 4
     webpack-merge: ^5.8.0
   bin:
     subql: ./bin/run
@@ -21471,7 +21471,7 @@ fsevents@~2.3.1:
     pretty-quick: ^3.1.1
     regenerator-runtime: ^0.13.8
     ts-jest: ^26.5.3
-    ts-loader: ^8.0.14
+    ts-loader: 8
     ts-node: ^9.1.1
     tsconfig-paths: ^3.9.0
     typescript: ^4.1.3
@@ -22198,6 +22198,22 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"ts-loader@npm:8":
+  version: 8.3.0
+  resolution: "ts-loader@npm:8.3.0"
+  dependencies:
+    chalk: ^4.1.0
+    enhanced-resolve: ^4.0.0
+    loader-utils: ^2.0.0
+    micromatch: ^4.0.0
+    semver: ^7.3.4
+  peerDependencies:
+    typescript: "*"
+    webpack: "*"
+  checksum: 7915f4494b23889606696da0eaed509254bd8cbda23d52776f48f487f787c1b84edf197efffbf03582ba5e1f5cbfa84d31f144ce6357e8b33e552592b821e778
+  languageName: node
+  linkType: hard
+
 "ts-loader@npm:^7.0.3":
   version: 7.0.5
   resolution: "ts-loader@npm:7.0.5"
@@ -22210,22 +22226,6 @@ fsevents@~2.3.1:
   peerDependencies:
     typescript: "*"
   checksum: 4f55f2c9f53b7f0562558b25d2015f4b7a592d91245ce4e059ea0231ff755033dc3b29939f6f7012ba644593f70f656ce8a89354474a7b1741da642b04f17942
-  languageName: node
-  linkType: hard
-
-"ts-loader@npm:^8.0.14":
-  version: 8.0.15
-  resolution: "ts-loader@npm:8.0.15"
-  dependencies:
-    chalk: ^4.1.0
-    enhanced-resolve: ^4.0.0
-    loader-utils: ^2.0.0
-    micromatch: ^4.0.0
-    semver: ^7.3.4
-  peerDependencies:
-    typescript: "*"
-    webpack: "*"
-  checksum: bf47ef147ae56af9d4e1c3ed2eb43815c850ed04524a4b2043b5f679fd92859016323521a76c62bea42391242da9dd1da8dd0e5ec8f7158e6206b9d97ff90b43
   languageName: node
   linkType: hard
 
@@ -23617,44 +23617,7 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"webpack@npm:5.9.0":
-  version: 5.9.0
-  resolution: "webpack@npm:5.9.0"
-  dependencies:
-    "@types/eslint-scope": ^3.7.0
-    "@types/estree": ^0.0.45
-    "@webassemblyjs/ast": 1.9.0
-    "@webassemblyjs/helper-module-context": 1.9.0
-    "@webassemblyjs/wasm-edit": 1.9.0
-    "@webassemblyjs/wasm-parser": 1.9.0
-    acorn: ^8.0.4
-    browserslist: ^4.14.5
-    chrome-trace-event: ^1.0.2
-    enhanced-resolve: ^5.3.1
-    eslint-scope: ^5.1.1
-    events: ^3.2.0
-    glob-to-regexp: ^0.4.1
-    graceful-fs: ^4.2.4
-    json-parse-better-errors: ^1.0.2
-    loader-runner: ^4.1.0
-    mime-types: ^2.1.27
-    neo-async: ^2.6.2
-    pkg-dir: ^4.2.0
-    schema-utils: ^3.0.0
-    tapable: ^2.1.1
-    terser-webpack-plugin: ^5.0.3
-    watchpack: ^2.0.0
-    webpack-sources: ^2.1.1
-  peerDependenciesMeta:
-    webpack-cli:
-      optional: true
-  bin:
-    webpack: bin/webpack.js
-  checksum: 8534b14b722938fdf216efc5e17318335790fa0160d498c3623078e5e341a227afd9f65d659f985d588d3ee5ed0a37a7adec917b10b3a719b6fea8b76ebc1d92
-  languageName: node
-  linkType: hard
-
-"webpack@npm:^4.8.1":
+"webpack@npm:4, webpack@npm:^4.8.1":
   version: 4.46.0
   resolution: "webpack@npm:4.46.0"
   dependencies:
@@ -23692,7 +23655,44 @@ typescript@^4.1.3:
   languageName: node
   linkType: hard
 
-"webpack@npm:^5.38.1, webpack@npm:^5.52.1":
+"webpack@npm:5.9.0":
+  version: 5.9.0
+  resolution: "webpack@npm:5.9.0"
+  dependencies:
+    "@types/eslint-scope": ^3.7.0
+    "@types/estree": ^0.0.45
+    "@webassemblyjs/ast": 1.9.0
+    "@webassemblyjs/helper-module-context": 1.9.0
+    "@webassemblyjs/wasm-edit": 1.9.0
+    "@webassemblyjs/wasm-parser": 1.9.0
+    acorn: ^8.0.4
+    browserslist: ^4.14.5
+    chrome-trace-event: ^1.0.2
+    enhanced-resolve: ^5.3.1
+    eslint-scope: ^5.1.1
+    events: ^3.2.0
+    glob-to-regexp: ^0.4.1
+    graceful-fs: ^4.2.4
+    json-parse-better-errors: ^1.0.2
+    loader-runner: ^4.1.0
+    mime-types: ^2.1.27
+    neo-async: ^2.6.2
+    pkg-dir: ^4.2.0
+    schema-utils: ^3.0.0
+    tapable: ^2.1.1
+    terser-webpack-plugin: ^5.0.3
+    watchpack: ^2.0.0
+    webpack-sources: ^2.1.1
+  peerDependenciesMeta:
+    webpack-cli:
+      optional: true
+  bin:
+    webpack: bin/webpack.js
+  checksum: 8534b14b722938fdf216efc5e17318335790fa0160d498c3623078e5e341a227afd9f65d659f985d588d3ee5ed0a37a7adec917b10b3a719b6fea8b76ebc1d92
+  languageName: node
+  linkType: hard
+
+"webpack@npm:^5.38.1":
   version: 5.52.1
   resolution: "webpack@npm:5.52.1"
   dependencies:

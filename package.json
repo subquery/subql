@@ -23,7 +23,7 @@
     "pretty-quick": "^3.1.1",
     "regenerator-runtime": "^0.13.8",
     "ts-jest": "^26.5.3",
-    "ts-loader": "^8.0.14",
+    "ts-loader": "8",
     "ts-node": "^9.1.1",
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.1.3",
