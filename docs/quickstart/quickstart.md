@@ -52,21 +52,21 @@ After the initialisation process is complete, you should see a folder with your 
 
 Last, under the project directory, run following command to install the new project's dependencies.
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   cd PROJECT_NAME
   yarn install
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   cd PROJECT_NAME
   npm install
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 ## Configure and Build the Starter Project
 
@@ -82,19 +82,19 @@ For more information on how to write your own SubQuery, check out our documentat
 
 In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   yarn codegen
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   npm run-script codegen
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 You'll find the generated models in the `/src/types/models` directory
 
@@ -104,19 +104,19 @@ In order run your SubQuery Project on a locally hosted SubQuery Node, you need t
 
 Run the build command from the project's root directory.
 
-<code-group>
-  <code-block title="YARN" active>
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
   ```shell
   yarn build
   ```
-  </code-block>
+  </CodeGroupItem>
 
-  <code-block title="NPM">
+  <CodeGroupItem title="NPM">
   ```bash
   npm run-script build
   ```
-  </code-block>
-</code-group>
+  </CodeGroupItem>
+</CodeGroup>
 
 ## Running and Querying your Starter Project
 

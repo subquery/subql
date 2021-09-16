@@ -125,10 +125,14 @@ Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/met
 
 ```bash
 {
-    "targetHeight": 6692385,
-    "bestHeight": 6692389,
+    "currentProcessingHeight": 1000699,
+    "currentProcessingTimestamp": 1631517883547,
+    "targetHeight": 6807295,
+    "bestHeight": 6807298,
     "indexerNodeVersion": "0.19.1",
-    "uptime": 12.566230083,
+    "lastProcessedHeight": 1000699,
+    "lastProcessedTimestamp": 1631517883555,
+    "uptime": 41.151789063,
     "polkadotSdkVersion": "5.4.1",
     "apiConnected": true,
     "injectedApiConnected": true,
