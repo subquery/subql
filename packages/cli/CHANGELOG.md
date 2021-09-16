@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2021-09-16
+### Added
+- Adds command `subql build` which webpacks the project code into a single file (#475)
+
 ## [0.11.2] - 2021-09-01
 ### Fixed
 - Fix codegen template for jsonField optional field (#459)
