@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import child from 'child_process';
 import {lstatSync, readFileSync} from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
@@ -20,6 +19,11 @@ const getBaseConfig = (dir: string, outputPath: string): webpack.Configuration =
         test: /\.tsx?$/,
         exclude: /node_modules/,
         loader: require.resolve('ts-loader'),
+        options: {
+          compilerOptions: {
+            declaration: false,
+          },
+        },
       },
     ],
   },
