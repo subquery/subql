@@ -202,6 +202,8 @@ Typically this would be set in your manifest file but below shows an example of 
 subql-node -f . -d "https://api.subquery.network/sq/subquery/dictionary-polkadot"
 ```
 
+[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+
 
 ## subql-query
 

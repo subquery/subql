@@ -6,6 +6,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.0] - 2021-09-16
+Upgrade priority: Low. 
+### Changed
+- Update Polkadot/api to 5.9.1 (#476)
+### Added
+- Api service support http(s) endpoint (#474)
+- Add Proof-of-index service allow generate and record the hash of indexed work. User can enable this feature through the `--proof-of-work` command. Please note that this feature is currently in an experimental stage. (#443)
+
+## [0.20.3] - 2021-09-01
+Upgrade priority: Low. This upgrade improve decode the block with large amount of parameters in the extrinsic.
+### Changed
+- Update Polkadot/api to 5.7.1 (#460)
+
 ## [0.20.2] - 2021-08-28
 Upgrade priority: High. Any project that uses the dictionary service and defined both event filter and extrinsic filter in its manifest should be re-indexed.
 ### Fixed

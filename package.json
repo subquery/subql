@@ -28,10 +28,11 @@
     "tsconfig-paths": "^3.9.0",
     "typescript": "^4.1.3",
     "vuepress": "1.8.2",
-    "vuepress-plugin-fulltext-search": "^2.2.1"
+    "vuepress-plugin-fulltext-search": "^2.2.1",
+    "vuepress-plugin-right-anchor": "^0.5.3"
   },
   "resolutions": {
-    "@polkadot/api": "5.5.2"
+    "@polkadot/api": "5.9.1"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",
@@ -41,5 +42,8 @@
     "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --detectOpenHandles",
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
+  },
+  "dependencies": {
+    "vuepress-theme-hope": "^1.20.2"
   }
 }

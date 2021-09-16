@@ -8,6 +8,7 @@ import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { PoiService } from './poi.service';
 import { StoreService } from './store.service';
 
 @Module({
@@ -19,6 +20,7 @@ import { StoreService } from './store.service';
     FetchService,
     BenchmarkService,
     DictionaryService,
+    PoiService,
   ],
   exports: [],
 })
