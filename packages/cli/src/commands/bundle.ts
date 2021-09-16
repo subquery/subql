@@ -84,7 +84,7 @@ export default class Bundle extends Command {
           const info = stats.toJson();
 
           reject(info.errors[0]);
-          this.log(info.errors[0]);
+          this.log(info.errors[0].details);
           return;
         }
 

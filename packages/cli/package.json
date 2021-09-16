@@ -19,8 +19,9 @@
     "ejs": "^3.1.6",
     "rimraf": "^3.0.2",
     "simple-git": "^2.31.0",
+    "ts-loader": "^9.2.5",
     "tslib": "^2.1.0",
-    "webpack": "4",
+    "webpack": "^5.52.1",
     "webpack-merge": "^5.8.0"
   },
   "devDependencies": {
