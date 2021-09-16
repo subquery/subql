@@ -1,28 +1,39 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import {
+  isBlockHandlerProcessor,
+  isCallHandlerProcessor,
+  isEventHandlerProcessor,
+} from '@subql/common/project/utils';
+import {
   buildSchema,
   getAllEntitiesRelations,
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSrouceV0_0_1,
-  SubqlKind,
-  SubqlRuntimeDatasource,
 } from '@subql/common';
+import {
+  SubqlCustomDatasource,
+  SubqlDataSource,
+  SubqlHandlerKind,
+  SubqlNetworkFilter,
+  SubqlRuntimeDatasource,
+} from '@subql/types';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { getDsPlugin } from './datasourcePlugins/helper';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
@@ -69,7 +80,10 @@ export class IndexerManager {
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
-  private filteredDataSources: SubqlRuntimeDatasource[];
+  private filteredDataSources: (
+    | SubqlRuntimeDatasource
+    | SubqlCustomDatasource<string, SubqlNetworkFilter>
+  )[];
 
   constructor(
     protected apiService: ApiService,
@@ -99,15 +113,15 @@ export class IndexerManager {
       await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.filteredDataSources) {
         const vm = this.vms[this.getDataSourceEntry(ds)];
-        if (ds.kind === SubqlKind.Runtime) {
+        if (isRuntimeDs(ds)) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
-              case SubqlKind.BlockHandler:
+              case SubqlHandlerKind.Block:
                 if (SubstrateUtil.filterBlock(block, handler.filter)) {
                   await vm.securedExec(handler.handler, [block]);
                 }
                 break;
-              case SubqlKind.CallHandler: {
+              case SubqlHandlerKind.Call: {
                 const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
                   extrinsics,
                   handler.filter,
@@ -117,7 +131,7 @@ export class IndexerManager {
                 }
                 break;
               }
-              case SubqlKind.EventHandler: {
+              case SubqlHandlerKind.Event: {
                 const filteredEvents = SubstrateUtil.filterEvents(
                   events,
                   handler.filter,
@@ -128,6 +142,57 @@ export class IndexerManager {
                 break;
               }
               default:
+            }
+          }
+        } else if (isCustomDs(ds)) {
+          const plugin = getDsPlugin(ds.kind);
+          for (const handler of ds.mapping.handlers) {
+            const processor = plugin.handlerProcessors[handler.kind];
+            if (isBlockHandlerProcessor(processor)) {
+              const transformedOutput = processor.transformer(block, ds);
+              if (
+                processor.filterProcessor(handler.filter, transformedOutput, ds)
+              ) {
+                await this.vm.securedExec(handler.handler, [transformedOutput]);
+              }
+            } else if (isCallHandlerProcessor(processor)) {
+              const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
+                extrinsics,
+                processor.baseFilter,
+              );
+              for (const extrinsic of filteredExtrinsics) {
+                const transformedOutput = processor.transformer(extrinsic, ds);
+                if (
+                  processor.filterProcessor(
+                    handler.filter,
+                    transformedOutput,
+                    ds,
+                  )
+                ) {
+                  await this.vm.securedExec(handler.handler, [
+                    transformedOutput,
+                  ]);
+                }
+              }
+            } else if (isEventHandlerProcessor(processor)) {
+              const filteredEvents = SubstrateUtil.filterEvents(
+                events,
+                processor.baseFilter,
+              );
+              for (const event of filteredEvents) {
+                const transformedOutput = processor.transformer(event, ds);
+                if (
+                  processor.filterProcessor(
+                    handler.filter,
+                    transformedOutput,
+                    ds,
+                  )
+                ) {
+                  await this.vm.securedExec(handler.handler, [
+                    transformedOutput,
+                  ]);
+                }
+              }
             }
           }
         }
@@ -264,6 +329,7 @@ export class IndexerManager {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
+
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
@@ -321,7 +387,7 @@ export class IndexerManager {
     return Number(nextval);
   }
 
-  private filterDataSources(): SubqlRuntimeDatasource[] {
+  private filterDataSources(): SubqlDataSource[] {
     const dataSourcesFilteredSpecName = this.getDataSourcesForSpecName();
     if (dataSourcesFilteredSpecName.length === 0) {
       logger.error(
@@ -341,7 +407,7 @@ export class IndexerManager {
     return dataSourcesFilteredStartBlock;
   }
 
-  private getDataSourcesForSpecName(): SubqlRuntimeDatasource[] {
+  private getDataSourcesForSpecName(): SubqlDataSource[] {
     return this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
@@ -351,7 +417,7 @@ export class IndexerManager {
     );
   }
 
-  private getDataSourceEntry(dataSource: SubqlRuntimeDatasource): string {
+  private getDataSourceEntry(dataSource: SubqlDataSource): string {
     if (isRuntimeDataSourceV0_2_0(dataSource)) {
       return dataSource.mapping.file;
     } else {
