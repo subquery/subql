@@ -1,4 +1,4 @@
-# Connect to your New Project
+# Connect to your new project
 
 Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed Query endpoint.
 

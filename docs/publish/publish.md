@@ -1,4 +1,4 @@
-# Publish your SubQuery Project
+# Publish your SubQuery project
 
 ## Benefits of hosting your project with SubQuery
 - We'll run your SubQuery projects for you in a high performance, scalable, and managed public service

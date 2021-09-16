@@ -1,4 +1,4 @@
-# Deploy a New Version of your SubQuery Project
+# Deploy a new version of your SubQuery project
 
 ## Guidelines
 
@@ -8,7 +8,11 @@ Although you have the freedom to always upgrade and deploy new versions of your 
 
 ## Deploy Changes
 
-Login to SubQuery Projects, and find the project that you want to deploy a new version of. Under Deployment Details you'll see three dots in the top right, click on the Deploy New Version button.
+Log into SubQuery Projects and select the project you want to deploy a new version of. You can use the staging slot which is an isolated environment where you can test your changes. You can also delete the project or promote to the production slot when ready.
+
+![Staging slot](/assets/img/staging_slot.png)
+
+Under Deployment Details you'll see three dots in the top right. Click on the Deploy New Version button.
 
 ![Deploy new version to your Project](https://static.subquery.network/media/projects/projects-second-deploy.png)
 
