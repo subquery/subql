@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {plainToProjectManifest, validateProjectManifest} from '@subql/common/project';
+import {validateProjectManifest} from '@subql/common/project';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
 
@@ -13,9 +13,11 @@ export class RequireValidManifest implements Rule {
   validate(ctx: Context): boolean {
     const schema = ctx.data.schema;
 
-    const manifest = plainToProjectManifest(schema);
-    const errors = validateProjectManifest(manifest);
-
-    return !errors.length;
+    try {
+      validateProjectManifest(schema, ['0.0.1']);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }

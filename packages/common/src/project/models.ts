@@ -6,6 +6,7 @@ import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   Allow,
   ArrayMaxSize,
+  Equals,
   IsArray,
   IsBoolean,
   IsEnum,
@@ -17,7 +18,8 @@ import {
 } from 'class-validator';
 import {SubqlKind} from './constants';
 import {
-  ProjectManifest,
+  ProjectManifestV0_0_1,
+  ProjectManifestV0_0_2,
   SubqlBlockFilter,
   SubqlCallFilter,
   SubqlEventFilter,
@@ -25,9 +27,10 @@ import {
   SubqlHandler,
   SubqlMapping,
   SubqlRuntimeDatasource,
+  ProjectManifestBase,
 } from './types';
 
-export class ProjectNetwork implements RegisteredTypes {
+export class ProjectNetworkV0_0_1 implements RegisteredTypes {
   @IsString()
   endpoint: string;
   @IsString()
@@ -50,25 +53,58 @@ export class ProjectNetwork implements RegisteredTypes {
   typesSpec?: Record<string, RegistryTypes>;
 }
 
-export class ProjectManifestImpl implements ProjectManifest {
+export class FileType {
+  @IsString()
+  file: string;
+}
+
+export class ProjectNetworkV0_0_2 {
+  @IsString()
+  genesisHash: string;
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => FileType)
+  chaintypes: FileType;
+}
+
+export class ProjectManifestBaseImpl implements ProjectManifestBase {
   @Allow()
   definitions: object;
   @IsString()
   description: string;
-  @ValidateNested()
-  @Type(() => ProjectNetwork)
-  @IsObject()
-  network: ProjectNetwork;
   @IsString()
   repository: string;
-  @IsString()
-  schema: string;
   @IsString()
   specVersion: string;
   @IsArray()
   @ValidateNested()
   @Type(() => RuntimeDataSource)
   dataSources: RuntimeDataSource[];
+}
+
+export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_1 {
+  @Equals('0.0.1')
+  specVersion: string;
+  @ValidateNested()
+  @Type(() => ProjectNetworkV0_0_1)
+  @IsObject()
+  network: ProjectNetworkV0_0_1;
+  @IsString()
+  schema: string;
+}
+
+export class ProjectManifestV0_0_2Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_2 {
+  @Equals('0.2.0')
+  specVersion: string;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ProjectNetworkV0_0_2)
+  network: ProjectNetworkV0_0_2;
+  @IsObject()
+  @ValidateNested()
+  @Type(() => FileType)
+  schema: FileType;
 }
 
 export class BlockFilter implements SubqlBlockFilter {

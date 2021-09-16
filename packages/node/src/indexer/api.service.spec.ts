@@ -3,7 +3,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ProjectNetwork } from '@subql/common/project/models';
+import { ProjectNetworkV0_0_1 as ProjectNetwork } from '@subql/common/project/models';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
 import { ApiService } from './api.service';

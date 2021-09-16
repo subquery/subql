@@ -3,10 +3,10 @@
 
 import {
   loadProjectManifest,
-  ProjectManifest,
+  ProjectManifestV0_0_1 as ProjectManifest,
   SubqlDataSource,
 } from '@subql/common';
-import { ProjectNetwork } from '@subql/common/project/models';
+import { ProjectNetworkV0_0_1 as ProjectNetwork } from '@subql/common/project/models';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 
@@ -16,7 +16,7 @@ export class SubqueryProject implements ProjectManifest {
   static async create(path: string): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
     const project = new SubqueryProject();
-    const source = loadProjectManifest(projectPath);
+    const source = loadProjectManifest(projectPath, ['0.0.1']);
     Object.assign(project, source);
     project.path = projectPath;
     project.dataSources.map(function (dataSource) {

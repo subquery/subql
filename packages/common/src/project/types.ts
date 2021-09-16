@@ -4,19 +4,36 @@
 import {RegistryTypes} from '@polkadot/types/types';
 import {SubqlKind} from './constants';
 
-export interface ProjectManifest {
+export type SpecVersion = '0.0.1' | '0.0.2';
+
+export interface ProjectManifestBase {
   specVersion: string;
   description: string;
   repository: string;
 
+  dataSources: SubqlDataSource[];
+}
+
+export interface ProjectManifestV0_0_1 extends ProjectManifestBase {
   schema: string;
 
   network: {
     endpoint: string;
     customTypes?: RegistryTypes;
   };
+}
 
-  dataSources: SubqlDataSource[];
+export interface ProjectManifestV0_0_2 extends ProjectManifestBase {
+  schema: {
+    file: string;
+  };
+
+  network: {
+    genesisHash: string;
+    chaintypes: {
+      file: string;
+    };
+  };
 }
 
 // [startSpecVersion?, endSpecVersion?] closed range

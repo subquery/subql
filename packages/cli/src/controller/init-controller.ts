@@ -4,7 +4,7 @@
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifest} from '@subql/common';
+import {ProjectManifestV0_0_1 as ProjectManifest} from '@subql/common';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
