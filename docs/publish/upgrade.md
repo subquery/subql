@@ -14,7 +14,7 @@ Log into SubQuery Projects and select the project you want to deploy a new versi
 
 Under Deployment Details you'll see three dots in the top right. Click on the Deploy New Version button.
 
-![Deploy new version to your Project](https://static.subquery.network/media/projects/projects-second-deploy.png)
+![Deploy new version to your Project](/assets/img/projects-second-deploy.png)
 
 #### Upgrade to the Latest Indexer and Query Service
 
@@ -27,6 +27,6 @@ Fill in the Commit Hash from GitHub (copy the full commit hash) of the version o
 ## Next Steps - Connect to your Project
 Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
 
-![Project being deployed and synced](https://static.subquery.network/media/projects/projects-deploy-sync.png)
+![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
 
 Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
