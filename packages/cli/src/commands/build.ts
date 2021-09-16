@@ -8,11 +8,11 @@ import webpack from 'webpack';
 import {merge} from 'webpack-merge';
 import Validate from './validate';
 
-const getBaseConfig = (dir: string, outputPath: string): webpack.Configuration => ({
+const getBaseConfig = (dir: string, outputPath: string, development?: boolean): webpack.Configuration => ({
   target: 'node',
-  mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+  mode: development ? 'development' : 'production',
   entry: path.join(dir, 'src/index.ts'),
-  devtool: 'inline-source-map',
+  devtool: development && 'inline-source-map',
   module: {
     rules: [
       {
@@ -45,12 +45,14 @@ export default class Build extends Command {
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
+    mode: flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
   };
 
   async run(): Promise<void> {
     const {flags} = this.parse(Build);
 
     const directory = flags.location ? path.resolve(flags.location) : process.cwd();
+    const isDev = flags.mode === 'development' || flags.mode === 'dev';
 
     if (!lstatSync(directory).isDirectory()) {
       this.error('Argument `location` is not a valid directory');
@@ -68,12 +70,12 @@ export default class Build extends Command {
     const outputPath = path.resolve(pjson.main || 'dist/index.js');
 
     const config = merge(
-      getBaseConfig(directory, outputPath)
+      getBaseConfig(directory, outputPath, isDev)
       // Can allow projects to override webpack config here
     );
 
     // Use webpack to build TS code and package into a single file
-    this.log('Building code');
+    this.log(`Building code${isDev ? ' with development mode' : ''}`);
     await new Promise((resolve, reject) => {
       webpack(config).run((error, stats) => {
         if (error) {
