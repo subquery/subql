@@ -93,6 +93,7 @@ module.exports = config({
           '/tutorials_examples/batch-size.md',
           '/tutorials_examples/run-indexer.md',
           '/tutorials_examples/dictionary.md',
+          '/tutorials_examples/debug-projects.md',
           '/tutorials_examples/terminology.md',
         ]
       },

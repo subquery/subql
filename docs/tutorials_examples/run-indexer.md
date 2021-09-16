@@ -1,4 +1,4 @@
-# How to Run an Indexer Node?
+# How to run an indexer node?
 
 ## Video guide
 

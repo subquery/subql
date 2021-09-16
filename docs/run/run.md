@@ -161,6 +161,23 @@ If an incorrect URL is used, a 404 not found error will be returned.
 }
 ```
 
+#### Debug your project
+
+Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+
+```shell
+node --inspect-brk <path to subql-node> -f <path to subQuery project>
+```
+
+For example:
+```shell
+node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
+Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+```
+Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out 
+[How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## Running a Query Service (subql/query)
 
 ### Installation
