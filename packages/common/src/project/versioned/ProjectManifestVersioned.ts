@@ -8,9 +8,6 @@ import {validateSync} from 'class-validator';
 import {IProjectManifest, SubqlDataSource} from '../types';
 
 export type VersionedProjectManifest = {specVersion: string};
-export interface Constructor<T> {
-  new (...args: any[]): T;
-}
 
 const SUPPORTED_VERSIONS = {
   v0_0_1: ProjectManifestV0_0_1Impl,
