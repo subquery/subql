@@ -1,4 +1,4 @@
-# How to Change the Blockchain Fetching Batch Size?
+# How to change the blockchain fetching batch size?
 
 ## Video guide
 

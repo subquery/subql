@@ -1,4 +1,4 @@
-# How does a SubQuery Dictionary Work?
+# How does a SubQuery dictionary work?
 
 The whole idea of a generic dictionary project is to index all the data from a blockchain and record the events, extrinsics, and its types (module and method) in a database in order of block height. Another project can then query this `network.dictionary` endpoint instead of the default `network.endpoint` defined in the manifest file. 
 

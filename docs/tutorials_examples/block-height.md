@@ -1,4 +1,4 @@
-# How to Start at a Different Block Height?
+# How to start at a different block height?
 
 ## Video guide
 
