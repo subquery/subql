@@ -3,11 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {
-  ProjectManifestVersioned,
-  VersionedProjectManifest,
-} from '@subql/common/project/versioned/ProjectManifestVersioned';
 import yaml from 'js-yaml';
+import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 function loadFromFile(file: string): unknown {
   let filePath = file;

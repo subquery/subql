@@ -1,11 +1,11 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestV0_0_1Impl} from '@subql/common/project/versioned/v0_0_1/model';
-import {ProjectManifestV0_0_2Impl} from '@subql/common/project/versioned/v0_0_2/model';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {IProjectManifest, SubqlDataSource} from '../types';
+import {ProjectManifestV0_0_1Impl} from './v0_0_1';
+import {ProjectManifestV0_0_2Impl} from './v0_0_2';
 
 export type VersionedProjectManifest = {specVersion: string};
 
