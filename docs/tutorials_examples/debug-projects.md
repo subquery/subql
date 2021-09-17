@@ -3,7 +3,7 @@
 ## Video guide
 
 <figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/tba" frameborder="0" allowfullscreen="true"></iframe>
+  <iframe src="https://www.youtube.com/embed/6NlaO-YN2q4" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
 ## Introduction
