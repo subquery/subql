@@ -157,14 +157,19 @@ function mockDictionaryService3(): DictionaryService {
 }
 
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    types: {
-      TestType: 'u32',
-    },
-  };
-  project.dataSources = [];
+  const project = new SubqueryProject(
+    {
+      specVersion: '0.0.1',
+      network: {
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+        types: {
+          TestType: 'u32',
+        },
+      },
+      dataSources: [],
+    } as any,
+    '',
+  );
   return project;
 }
 
@@ -253,7 +258,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -315,7 +320,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -376,7 +381,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -431,7 +436,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,

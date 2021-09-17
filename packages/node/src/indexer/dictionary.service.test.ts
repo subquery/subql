@@ -6,15 +6,21 @@ import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
-    types: {
-      TestType: 'u32',
-    },
-  };
-  project.dataSources = [];
+  const project = new SubqueryProject(
+    {
+      specVersion: '0.0.1',
+      network: {
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+        dictionary:
+          'https://api.subquery.network/sq/subquery/dictionary-polkadot',
+        types: {
+          TestType: 'u32',
+        },
+      },
+      dataSources: [],
+    } as any,
+    '',
+  );
   return project;
 }
 

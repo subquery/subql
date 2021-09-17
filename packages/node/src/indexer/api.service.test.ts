@@ -14,13 +14,18 @@ const WS_ENDPOINT = 'wss://kusama.api.onfinality.io/public-ws';
 const HTTP_ENDPOINT = 'https://kusama.api.onfinality.io/public';
 
 function testSubqueryProject(endpoint: string): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint,
-    types: {
-      TestType: 'u32',
-    },
-  };
+  const project = new SubqueryProject(
+    {
+      specVersion: '0.0.1',
+      network: {
+        endpoint,
+        types: {
+          TestType: 'u32',
+        },
+      },
+    } as any,
+    '',
+  );
   return project;
 }
 

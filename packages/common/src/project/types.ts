@@ -1,39 +1,19 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {RegistryTypes} from '@polkadot/types/types';
 import {SubqlKind} from './constants';
 
-export type SpecVersion = '0.0.1' | '0.0.2';
-
-export interface ProjectManifestBase {
+export interface IProjectManifest {
   specVersion: string;
   description: string;
   repository: string;
-
   dataSources: SubqlDataSource[];
-}
-
-export interface ProjectManifestV0_0_1 extends ProjectManifestBase {
   schema: string;
-
-  network: {
-    endpoint: string;
-    customTypes?: RegistryTypes;
-  };
 }
 
-export interface ProjectManifestV0_0_2 extends ProjectManifestBase {
-  schema: {
-    file: string;
-  };
-
-  network: {
-    genesisHash: string;
-    chaintypes: {
-      file: string;
-    };
-  };
+export interface ProjectNetworkConfig {
+  endpoint: string;
+  dictionary?: string;
 }
 
 // [startSpecVersion?, endSpecVersion?] closed range
@@ -93,7 +73,7 @@ export interface SubqlRuntimeDatasource extends SubqlDatasource {
 }
 
 export interface SubqlNetworkFilter {
-  specName: String;
+  specName: string;
 }
 
 export type SubqlDataSource = SubqlRuntimeDatasource;
