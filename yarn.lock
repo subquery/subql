@@ -267,7 +267,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@apollo/client@npm:^3.4.9":
+"@apollo/client@npm:3.4.9":
   version: 3.4.9
   resolution: "@apollo/client@npm:3.4.9"
   dependencies:
@@ -4504,7 +4504,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"
   dependencies:
-    "@apollo/client": ^3.4.9
+    "@apollo/client": 3.4.9
     "@nestjs/common": ^7.6.9
     "@nestjs/core": ^7.6.1
     "@nestjs/event-emitter": ^0.0.2
@@ -22168,11 +22168,11 @@ fsevents@~2.3.1:
   linkType: hard
 
 "ts-invariant@npm:^0.9.0":
-  version: 0.9.1
-  resolution: "ts-invariant@npm:0.9.1"
+  version: 0.9.3
+  resolution: "ts-invariant@npm:0.9.3"
   dependencies:
     tslib: ^2.1.0
-  checksum: a8f37248fc69c85198e495ec1894a670a6978bc03ef110dfe1e48eef9b73f2d4fb111df9b25f02fd33ab8cc64ba9476607200c3e617e89dc77fd8dcc6bb45476
+  checksum: c3f21931f9deae9492d7033d5d3fae1fc6dc9f981ede8636b66f5954854539b78683d2e2d1f6f9fd7cc185d354e1cf5aefdbabd017a2abcce19fad01d08da8c8
   languageName: node
   linkType: hard
 
@@ -24521,11 +24521,11 @@ typescript@^4.1.3:
   linkType: hard
 
 "zen-observable-ts@npm:^1.1.0":
-  version: 1.2.0
-  resolution: "zen-observable-ts@npm:1.2.0"
+  version: 1.2.2
+  resolution: "zen-observable-ts@npm:1.2.2"
   dependencies:
     zen-observable: 0.8.15
-  checksum: 58058bddeecffdc0a527e321a7766922c19f0f176d9236d51d02a6d8b23e0a855c25593d9e71b5e102d50d9452ea908c7af9704f605e1de062e39ddcccf0792d
+  checksum: 5f2011d239df95e3f1bb6b5f40c1ee9732cc8118ae3cce36d393bc6237f1be417b62c1605990f9520005a23c9ed0ba999bcd68d526fab1bffe684afaeeee6baa
   languageName: node
   linkType: hard
 
