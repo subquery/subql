@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.21.1] - 2021-09-18
+Upgrade priority: High. Node in the previous release failed to start due to apollo/client dependency issue, and this patch release includes the fix.
+### Fixed
+- Fixed apollo/client dependency issue (#482)
+
 ## [0.21.0] - 2021-09-16
 Upgrade priority: Low. 
 ### Changed
