@@ -5,8 +5,9 @@ import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
-import {createProject} from '../controller/init-controller';
+import {createProject, installDependencies} from '../controller/init-controller';
 import {ProjectSpec} from '../types';
+import Codegen from './codegen';
 
 export default class Init extends Command {
   static description = 'Init a scaffold subquery project';
@@ -16,6 +17,10 @@ export default class Init extends Command {
     starter: flags.boolean({
       default: true,
     }),
+    location: flags.string({char: 'l', description: 'local folder to create the project in'}),
+    'skip-install': flags.boolean({description: 'Skip installing dependencies'}),
+    'skip-codegen': flags.boolean({description: 'Skip graphql codegen'}),
+    npm: flags.boolean({description: 'Force using NPM instead of yarn'}),
   };
 
   static args = [
@@ -29,10 +34,12 @@ export default class Init extends Command {
     const {args, flags} = this.parse(Init);
     const project = {} as ProjectSpec;
 
+    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+
     project.name = args.projectName
       ? args.projectName
       : await cli.prompt('Project name', {default: 'subql-starter', required: true});
-    if (fs.existsSync(path.join(process.cwd(), `${project.name}`))) {
+    if (fs.existsSync(path.join(location, `${project.name}`))) {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
     project.repository = await cli.prompt('Git repository', {required: false});
@@ -48,12 +55,25 @@ export default class Init extends Command {
     if (flags.starter && project.name) {
       cli.action.start('Init the starter package');
       try {
-        await createProject(process.cwd(), project);
-        cli.action.stop(`${project.name} is ready`);
+        const projectPath = await createProject(location, project);
+        cli.action.stop();
+
+        if (!flags['skip-install']) {
+          cli.action.start('Installing dependencies');
+          installDependencies(projectPath, flags.npm);
+          cli.action.stop();
+        }
+
+        if (!flags['skip-codegen']) {
+          cli.action.start('Generating graphql code');
+          await Codegen.run(['-l', projectPath]);
+          cli.action.stop();
+        }
+
+        this.log(`${project.name} is ready`);
       } catch (e) {
         /* handle all errors here */
-        console.error(e.message);
-        process.exit(1);
+        this.error(e.message);
       }
     }
   }
