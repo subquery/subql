@@ -1,11 +1,14 @@
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+//[object Object]
+// SPDX-License-Identifier: Apache-2.0
+
 import childProcess from 'child_process';
-import {createProject} from './init-controller';
-import {uploadToIpfs} from './publish-controller';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
+import {createProject} from './init-controller';
+import {uploadToIpfs} from './publish-controller';
 
 const projectSpec = {
   name: 'mocked_starter',

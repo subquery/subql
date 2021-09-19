@@ -1,13 +1,13 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {loadProjectManifest} from '@subql/common';
 import fs from 'fs';
-import IPFS from 'ipfs-http-client';
 import path from 'path';
+import {loadProjectManifest} from '@subql/common';
+import IPFS from 'ipfs-http-client';
 
 // https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#filecontent
-type FileContent = Uint8Array | String | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
+type FileContent = Uint8Array | string | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
 
 // https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#fileobject
 type FileObject = {

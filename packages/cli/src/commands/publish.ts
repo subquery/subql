@@ -4,8 +4,8 @@
 import {lstatSync} from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
-import Build from './build';
 import {uploadToIpfs} from '../controller/publish-controller';
+import Build from './build';
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
