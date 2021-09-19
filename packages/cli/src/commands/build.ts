@@ -67,7 +67,7 @@ export default class Build extends Command {
 
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
-    const outputPath = path.resolve(pjson.main || 'dist/index.js');
+    const outputPath = path.resolve(directory, pjson.main || 'dist/index.js');
 
     const config = merge(
       getBaseConfig(directory, outputPath, isDev)
