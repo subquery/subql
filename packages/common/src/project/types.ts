@@ -76,7 +76,7 @@ export interface SubqlRuntimeDatasource extends SubqlDatasource {
 }
 
 export interface SubqlNetworkFilter {
-  specName: String;
+  specName: string;
 }
 
 export type SubqlDataSource = SubqlRuntimeDatasource;
