@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqlKind } from '@subql/common';
+import { ProjectManifestVersioned, SubqlKind } from '@subql/common';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { ApiService } from './api.service';
@@ -11,7 +11,7 @@ import { FetchService } from './fetch.service';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject(
-    {
+    new ProjectManifestVersioned({
       specVersion: '0.0.1',
       network: {
         endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
@@ -29,7 +29,7 @@ function testSubqueryProject(): SubqueryProject {
           },
         },
       ],
-    } as any,
+    } as any),
     '',
   );
   return project;
