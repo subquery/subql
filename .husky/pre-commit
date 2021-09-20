@@ -1,4 +1,5 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn pretty-quick --staged --pattern 'packages/*/src/**/*'
+# concurrent disabled to eslint and prettier work together
+npx lint-staged --concurrent false
