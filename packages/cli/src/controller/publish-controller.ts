@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {loadProjectManifest} from '@subql/common';
 import IPFS from 'ipfs-http-client';
+import yaml from 'js-yaml';
 
 // https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#filecontent
 type FileContent = Uint8Array | string | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
@@ -58,8 +59,26 @@ function getFiles(projectDir: string): FileObject[] {
 }
 
 function getFileObject(rootPath: string, filePath: string): FileObject {
+  const relPath = path.relative(rootPath, filePath).replace(/\\/g, '/');
+
+  if (path.extname(filePath).includes('.yaml')) {
+    return {
+      path: relPath,
+      content: minifyYaml(fs.readFileSync(filePath, 'utf8')),
+    };
+  }
+
   return {
-    path: path.relative(rootPath, filePath).replace(/\\/g, '/'),
+    path: relPath,
     content: fs.createReadStream(filePath),
   };
+}
+
+function minifyYaml(raw: string): string {
+  const doc = yaml.load(raw);
+
+  return yaml.dump(doc, {
+    sortKeys: true,
+    condenseFlow: true,
+  });
 }
