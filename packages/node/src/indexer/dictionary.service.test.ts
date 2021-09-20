@@ -1,13 +1,14 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ProjectManifestVersioned } from '@subql/common';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject(
-    {
+    new ProjectManifestVersioned({
       specVersion: '0.0.1',
       network: {
         endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
@@ -18,7 +19,7 @@ function testSubqueryProject(): SubqueryProject {
         },
       },
       dataSources: [],
-    } as any,
+    } as any),
     '',
   );
   return project;

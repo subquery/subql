@@ -3,7 +3,6 @@
 
 import {
   loadProjectManifest,
-  IProjectManifest,
   SubqlDataSource,
   ProjectNetworkConfig,
   ProjectManifestVersioned,
@@ -35,7 +34,8 @@ export class SubqueryProject {
   constructor(manifest: ProjectManifestVersioned, path: string) {
     this._projectManifest = manifest;
     this._path = path;
-    manifest.asImpl.dataSources.forEach(function (dataSource) {
+
+    manifest.dataSources.forEach(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
         if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
         dataSource.startBlock = 1;
@@ -48,10 +48,12 @@ export class SubqueryProject {
   }
 
   get network(): ProjectNetworkConfig {
-    if (this._projectManifest.specVersion === '0.0.1') {
+    if (this._projectManifest.isV0_0_1) {
       return this._projectManifest.asV0_0_1.network;
     }
-    throw new Error('not implemented');
+    throw new Error(
+      `unsupported specVersion: ${this._projectManifest.specVersion}`,
+    );
   }
 
   get path(): string {

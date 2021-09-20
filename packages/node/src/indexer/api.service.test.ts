@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
+import { ProjectManifestVersioned } from '@subql/common';
 import { take } from 'rxjs/operators';
 import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
@@ -15,7 +16,7 @@ const HTTP_ENDPOINT = 'https://kusama.api.onfinality.io/public';
 
 function testSubqueryProject(endpoint: string): SubqueryProject {
   const project = new SubqueryProject(
-    {
+    new ProjectManifestVersioned({
       specVersion: '0.0.1',
       network: {
         endpoint,
@@ -23,7 +24,8 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
           TestType: 'u32',
         },
       },
-    } as any,
+      dataSources: [],
+    } as any),
     '',
   );
   return project;

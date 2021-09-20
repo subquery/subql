@@ -10,8 +10,8 @@ import {ProjectManifestV0_0_2Impl} from './v0_0_2';
 export type VersionedProjectManifest = {specVersion: string};
 
 const SUPPORTED_VERSIONS = {
-  v0_0_1: ProjectManifestV0_0_1Impl,
-  v0_0_2: ProjectManifestV0_0_2Impl,
+  '0.0.1': ProjectManifestV0_0_1Impl,
+  '0.0.2': ProjectManifestV0_0_2Impl,
 };
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[keyof typeof SUPPORTED_VERSIONS]>;
