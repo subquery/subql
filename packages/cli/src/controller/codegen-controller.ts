@@ -4,13 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {
-  getAllEntitiesRelations,
-  buildSchema,
-  loadProjectManifest,
-  getAllJsonObjects,
-  setJsonObjectType,
-} from '@subql/common';
+import {getAllEntitiesRelations, loadProjectManifest, getAllJsonObjects, setJsonObjectType} from '@subql/common';
 import {GraphQLEntityField, GraphQLJsonFieldType, GraphQLEntityIndex} from '@subql/common/graphql/types';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
@@ -148,7 +142,7 @@ export async function codegen(projectPath: string): Promise<void> {
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
-  const manifest = loadProjectManifest(projectPath, ['0.0.1']);
+  const manifest = loadProjectManifest(projectPath);
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   if (exportTypes.interfaces || exportTypes.models) {
