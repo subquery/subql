@@ -25,6 +25,7 @@ export interface IConfig {
   readonly indexCountLimit: number;
   readonly timestampField: boolean;
   readonly proofOfIndex: boolean;
+  readonly mmrPath?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -124,6 +125,12 @@ export class NodeConfig implements IConfig {
 
   get proofOfIndex(): boolean {
     return this._config.proofOfIndex;
+  }
+
+  get mmrPath(): string {
+    return this._config.mmrPath
+      ? this._config.mmrPath
+      : path.join(__dirname, `../../../../mmrs/${this.subqueryName}.mmr`);
   }
 
   merge(config: Partial<IConfig>): this {

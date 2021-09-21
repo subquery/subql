@@ -26,6 +26,7 @@ import { ApiService } from './api.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
+import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox } from './sandbox';
@@ -75,6 +76,7 @@ export class IndexerManager {
     protected storeService: StoreService,
     protected fetchService: FetchService,
     protected poiService: PoiService,
+    protected mmrService: MmrService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -93,7 +95,6 @@ export class IndexerManager {
     this.storeService.setTransaction(tx);
 
     let poiBlockHash: Uint8Array;
-
     try {
       await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.filteredDataSources) {
@@ -144,8 +145,6 @@ export class IndexerManager {
           await this.poiService.getLatestPoiBlockHash(),
           this.project.path, //projectId // TODO, define projectId
         );
-        await this.poiService.appendMmrNode(poiBlock);
-        poiBlock.mmrRoot = await this.poiService.getFileBaseLatestMmr();
         poiBlockHash = poiBlock.hash;
         await this.storeService.setPoi(tx, poiBlock);
       }
@@ -174,6 +173,7 @@ export class IndexerManager {
     await this.ensureMetadata(this.subqueryState.dbSchema);
     if (this.nodeConfig.proofOfIndex) {
       await this.poiService.init(this.subqueryState.dbSchema);
+      await this.mmrService.init(this.subqueryState.dbSchema);
     }
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
@@ -184,6 +184,13 @@ export class IndexerManager {
       });
     this.filteredDataSources = this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
+
+    if (this.nodeConfig.proofOfIndex) {
+      void this.mmrService.syncFileBaseFromPoi().catch((err) => {
+        logger.error(err, 'failed to sync poi to mmr');
+        process.exit(1);
+      });
+    }
 
     for (const ds of this.filteredDataSources) {
       const entry = this.getDataSourceEntry(ds);
