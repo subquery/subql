@@ -48,7 +48,7 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
 }
 
 async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileContent): Promise<string> {
-  const result = await ipfs.add(content, {pin: true, cidVersion: 1});
+  const result = await ipfs.add(content, {pin: true, cidVersion: 0});
   return result.cid.toString();
 }
 
