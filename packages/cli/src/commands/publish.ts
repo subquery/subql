@@ -13,7 +13,6 @@ export default class Publish extends Command {
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
     ipfs: flags.string({description: 'IPFS gateway endpoint', default: 'http://localhost:5001/api/v0'}),
-    verbose: flags.boolean(),
   };
 
   async run(): Promise<void> {
@@ -34,17 +33,8 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SupQuery project to ipfs');
-    const results = await uploadToIpfs(flags.ipfs, directory);
+    const cid = await uploadToIpfs(flags.ipfs, directory);
 
-    if (flags.verbose) {
-      results.forEach((result) => {
-        this.log(`Uploaded file path="${result.path}" cid="${result.cid.toString()}"`);
-      });
-    }
-
-    // Last item is the wrwpped directory
-    const directoryHash = results[results.length - 1].cid.toString();
-
-    this.log(`SubQuery Project uploaded to IPFS: ${directoryHash}`);
+    this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

@@ -43,17 +43,8 @@ describe('Cli publish', () => {
   });
 
   it('should upload appropriate files to IPFS', async () => {
-    const results = await uploadToIpfs('http://localhost:5001/api/v0', projectDir);
+    const cid = await uploadToIpfs('http://localhost:5001/api/v0', projectDir);
 
-    expect(results.length).toBe(6);
-
-    expect(results.find((result) => result.path === 'project.yaml')).toBeDefined();
-    expect(results.find((result) => result.path === 'schema.graphql')).toBeDefined();
-    expect(results.find((result) => result.path === 'dist/index.js')).toBeDefined();
-
-    // Expect a result for the directory
-    const dir = results[results.length - 1];
-    expect(dir.path).toBe('');
-    expect(dir.cid.toString()).toBeDefined();
+    expect(cid).toBeDefined();
   });
 });

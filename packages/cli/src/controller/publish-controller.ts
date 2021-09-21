@@ -18,60 +18,38 @@ type FileObject = {
   mtime?: Date | number[] | {secs: number; nsecs?: number};
 };
 
-type IterableType<T> = T extends AsyncIterable<infer U> ? U : T extends Iterable<infer U> ? U : T;
-
-type AddResult = IterableType<ReturnType<IPFS.IPFSHTTPClient['addAll']>>;
-
-export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Promise<AddResult[]> {
+export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Promise<string> {
   const ipfs = IPFS.create({url: ipfsEndpoint});
 
-  const files = getFiles(projectDir);
-
-  const pendingResults = ipfs.addAll(files, {
-    wrapWithDirectory: true,
-    pin: true, // Theres no guarantee the server will respect this
-  });
-
-  const results: AddResult[] = [];
-
-  for await (const res of pendingResults) {
-    results.push(res);
-  }
-
-  return results;
-}
-
-function getFiles(projectDir: string): FileObject[] {
   const projectManifestPath = path.resolve(projectDir, 'project.yaml');
   const manifest = loadProjectManifest(projectManifestPath);
-  const schemaPath = path.resolve(projectDir, manifest.schema);
 
   if (manifest.specVersion === '0.0.1') {
     const packageJsonPath = path.resolve(projectDir, 'package.json');
-    const codePath = JSON.parse(fs.readFileSync(packageJsonPath).toString()).main;
 
-    return [projectManifestPath, schemaPath, packageJsonPath, path.resolve(projectDir, codePath)].map((path) =>
-      getFileObject(projectDir, path)
+    const codePath = JSON.parse(fs.readFileSync(packageJsonPath).toString()).main;
+    const schemaPath = manifest.schema;
+
+    const [codeCid, schemaCid] = await Promise.all(
+      [codePath, schemaPath].map((filePath) =>
+        uploadFile(ipfs, fs.createReadStream(path.resolve(projectDir, filePath))).then((cid) => `ipfs://` + cid)
+      )
     );
+
+    // Update references in schema
+    manifest.schema = schemaCid;
+    // (manifest as any).main = codeCid;
+  } else {
+    throw new Error('Unsupported project manifest spec');
   }
 
-  throw new Error('Unsupported project manifest spec');
+  // Upload schema
+  return uploadFile(ipfs, minifyYaml(JSON.stringify(manifest)));
 }
 
-function getFileObject(rootPath: string, filePath: string): FileObject {
-  const relPath = path.relative(rootPath, filePath).replace(/\\/g, '/');
-
-  if (path.extname(filePath).includes('.yaml')) {
-    return {
-      path: relPath,
-      content: minifyYaml(fs.readFileSync(filePath, 'utf8')),
-    };
-  }
-
-  return {
-    path: relPath,
-    content: fs.createReadStream(filePath),
-  };
+async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileContent): Promise<string> {
+  const result = await ipfs.add(content, {pin: true, cidVersion: 1});
+  return result.cid.toString();
 }
 
 function minifyYaml(raw: string): string {
