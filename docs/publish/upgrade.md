@@ -8,13 +8,16 @@ Although you have the freedom to always upgrade and deploy new versions of your 
 
 ## Deploy Changes
 
-Log into SubQuery Projects and select the project you want to deploy a new version of. You can use the staging slot which is an isolated environment where you can test your changes. You can also delete the project or promote to the production slot when ready.
+Log into SubQuery Project and select the project you want to deploy a new version of. You can choose to either deploy to the production or staging slot. These two slots are isolated environments and each has their own databases and synchronise independently. 
+
+We recommend deploying to your staging slot for testing purposes. You can then promote it to production with zero downtime.
+
+The staging slot is perfect for:
+* Validating changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
+* Warming up and indexing data for an updated SubQuery project to eliminate downtime in your dApp
+* Preparing a new release for your SubQuery Project without exposing it publicly. The staging slot is not shown to the public in the Explorer and has a unique URL that is visible only to you.
 
 ![Staging slot](/assets/img/staging_slot.png)
-
-Under Deployment Details you'll see three dots in the top right. Click on the Deploy New Version button.
-
-![Deploy new version to your Project](/assets/img/projects-second-deploy.png)
 
 #### Upgrade to the Latest Indexer and Query Service
 
