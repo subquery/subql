@@ -5,6 +5,7 @@ import {Context} from '../context';
 import {RequireBuildScript} from './require-build-script';
 import {RequireCliDep} from './require-cli-dep';
 import {RequireCodegenScript} from './require-codegen-script';
+import {RequireValidManifest} from './require-valid-manifest';
 
 export enum RuleType {
   PackageJSON = 'packageJSON',
@@ -19,4 +20,9 @@ export interface Rule {
   validate(ctx: Context): boolean;
 }
 
-export const commonRules: Rule[] = [new RequireBuildScript(), new RequireCodegenScript(), new RequireCliDep()];
+export const commonRules: Rule[] = [
+  new RequireBuildScript(),
+  new RequireCodegenScript(),
+  new RequireCliDep(),
+  new RequireValidManifest(),
+];

@@ -4,13 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {
-  getAllEntitiesRelations,
-  buildSchema,
-  loadProjectManifest,
-  getAllJsonObjects,
-  setJsonObjectType,
-} from '@subql/common';
+import {getAllEntitiesRelations, loadProjectManifest, getAllJsonObjects, setJsonObjectType} from '@subql/common';
 import {GraphQLEntityField, GraphQLJsonFieldType, GraphQLEntityIndex} from '@subql/common/graphql/types';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';

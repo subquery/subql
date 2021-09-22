@@ -16,6 +16,7 @@
     "/dist"
   ],
   "dependencies": {
+    "@subql/common": "workspace:*",
     "axios": "^0.21.1",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"
