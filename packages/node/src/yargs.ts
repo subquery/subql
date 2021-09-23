@@ -88,6 +88,12 @@ export function getYargsOption() {
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'proof-of-index': {
+      demandOption: false,
+      describe: 'Enable/disable proof of index',
+      type: 'boolean',
+      default: false,
+    },
   });
 }
 

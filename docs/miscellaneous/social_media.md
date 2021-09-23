@@ -19,3 +19,9 @@ It is our aim to always listen and engage with our loyal community so please joi
 
 These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
 
+### Telegram
+
+[SubQuery Russia](https://t.me/SubQuery_russia)
+[SubQuery Russia](https://t.me/SubQueryRu)
+[SubQuery Vietnam](https://t.me/subqueryvietnam)
+[SubQuery Vietnam Announcement](https://t.me/subqueryannvn)

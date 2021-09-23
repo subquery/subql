@@ -5,6 +5,12 @@ body .theme-default-content:not(.custom) {
     padding-right: 0;
     padding-bottom: 0;
 }
+.page-title {
+  display: none;
+}
+.has-anchor .page:not(.blog) {
+  padding-right: 0;
+}
 .page {
   padding-bottom: 0;
 }
@@ -63,7 +69,7 @@ body .theme-default-content:not(.custom) {
     line-height: 85px;
     padding-right: 20px;
     display: inline-block;
-    background: url('/assets/img/wordCycle.svg') no-repeat right top;
+    /* background: url('/assets/img/wordCycle.svg') no-repeat right top; */
   }
   .welcomeWords .welcomeTitle span {
     color: #3EAF7C;

@@ -1,20 +1,27 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ProjectManifestVersioned } from '@subql/common';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
-    types: {
-      TestType: 'u32',
-    },
-  };
-  project.dataSources = [];
+  const project = new SubqueryProject(
+    new ProjectManifestVersioned({
+      specVersion: '0.0.1',
+      network: {
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+        dictionary:
+          'https://api.subquery.network/sq/subquery/dictionary-polkadot',
+        types: {
+          TestType: 'u32',
+        },
+      },
+      dataSources: [],
+    } as any),
+    '',
+  );
   return project;
 }
 
@@ -113,5 +120,33 @@ describe('DictionaryService', () => {
       indexFilters,
     );
     expect(dic.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
+  }, 500000);
+
+  it('use minimum value of event/extrinsic returned block as batch end block', async () => {
+    const project = testSubqueryProject();
+    const dictionaryService = new DictionaryService(project);
+    const batchSize = 50;
+    const startBlock = 333300;
+    const endBlock = 340000;
+    const indexFilters = {
+      //last event at block 333524
+      eventFilters: [
+        { module: 'session', method: 'NewSession' },
+        { module: 'staking', method: 'EraPayout' },
+        { module: 'staking', method: 'Reward' },
+      ],
+      //last extrinsic at block 339186
+      extrinsicFilters: [
+        { module: 'staking', method: 'payoutStakers' },
+        { module: 'utility', method: 'batch' },
+      ],
+    };
+    const dic = await dictionaryService.getDictionary(
+      startBlock,
+      endBlock,
+      batchSize,
+      indexFilters,
+    );
+    expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
 });

@@ -10,7 +10,7 @@ const {version: packageVersion} = require('../../../package.json');
 
 const indexerUrl = argv('indexer') as string | undefined;
 
-type MetaData = {
+type Meta = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
@@ -24,9 +24,9 @@ type MetaData = {
 
 const metaCache = {
   queryNodeVersion: packageVersion,
-} as MetaData;
+} as Meta;
 
-export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
+export const GetMetaPlugin = makeExtendSchemaPlugin((build) => {
   setAsyncInterval(async () => {
     let health;
     let meta;
@@ -50,7 +50,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
 
   return {
     typeDefs: gql`
-      type _Metadata {
+      type _Meta {
         lastProcessedHeight: Int
         lastProcessedTimestamp: Date
         targetHeight: Int
@@ -62,12 +62,12 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
         queryNodeVersion: String
       }
       extend type Query {
-        _metadata: _Metadata
+        _meta: _Meta
       }
     `,
     resolvers: {
       Query: {
-        _metadata: () => metaCache,
+        _meta: () => metaCache,
       },
     },
   };

@@ -5,7 +5,12 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import { buildSchema, getAllEntitiesRelations, SubqlKind } from '@subql/common';
+import {
+  buildSchema,
+  getAllEntitiesRelations,
+  SubqlKind,
+  SubqlRuntimeDatasource,
+} from '@subql/common';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
@@ -15,8 +20,11 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
+import { PoiService } from './poi.service';
+import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox } from './sandbox';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
@@ -32,11 +40,13 @@ export class IndexerManager {
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
+  private filteredDataSources: SubqlRuntimeDatasource[];
 
   constructor(
     protected apiService: ApiService,
     protected storeService: StoreService,
     protected fetchService: FetchService,
+    protected poiService: PoiService,
     protected sequelize: Sequelize,
     protected project: SubqueryProject,
     protected nodeConfig: NodeConfig,
@@ -46,31 +56,20 @@ export class IndexerManager {
 
   @profiler(argv.profiler)
   async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
+    const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height: block.block.header.number.toNumber(),
+      height: blockHeight,
       timestamp: Date.now(),
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
 
+    let poiBlockHash: Uint8Array;
+
     try {
       const inject = block.specVersion !== this.prevSpecVersion;
       await this.apiService.setBlockhash(block.block.hash, inject);
-
-      const dataSources = this.project.dataSources.filter(
-        (ds) =>
-          ds.startBlock <= block.block.header.number.toNumber() &&
-          (!ds.filter?.specName ||
-            ds.filter.specName === this.api.runtimeVersion.specName.toString()),
-      );
-      if (dataSources.length === 0) {
-        logger.error(
-          `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
-        );
-        process.exit(1);
-      }
-
-      for (const ds of dataSources) {
+      for (const ds of this.filteredDataSources) {
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
@@ -105,19 +104,36 @@ export class IndexerManager {
         }
         // TODO: support Ink! and EVM
       }
-
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
-      await this.subqueryState.save();
-      this.fetchService.latestProcessed(block.block.header.number.toNumber());
-      this.prevSpecVersion = block.specVersion;
+      await this.subqueryState.save({ transaction: tx });
+      if (this.nodeConfig.proofOfIndex) {
+        const operationHash = this.storeService.getOperationMerkleRoot();
+        const poiBlock = PoiBlock.create(
+          blockHeight,
+          block.block.header.hash.toHex(),
+          operationHash,
+          await this.poiService.getLatestPoiBlockHash(),
+          this.project.path, //projectId // TODO, define projectId
+        );
+        poiBlock.mmrRoot = Buffer.from(
+          `mmr${block.block.header.hash.toString()}`,
+        );
+        poiBlockHash = poiBlock.hash;
+        await this.storeService.setPoi(tx, poiBlock);
+      }
     } catch (e) {
       await tx.rollback();
       throw e;
     }
     await tx.commit();
+    this.fetchService.latestProcessed(block.block.header.number.toNumber());
+    this.prevSpecVersion = block.specVersion;
+    if (this.nodeConfig.proofOfIndex) {
+      this.poiService.setLatestPoiBlockHash(poiBlockHash);
+    }
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
-      height: block.block.header.number.toNumber(),
+      height: blockHeight,
       timestamp: Date.now(),
     });
   }
@@ -129,6 +145,10 @@ export class IndexerManager {
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.initVM();
+    await this.ensureMetadata(this.subqueryState.dbSchema);
+    if (this.nodeConfig.proofOfIndex) {
+      await this.poiService.init(this.subqueryState.dbSchema);
+    }
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
@@ -136,7 +156,7 @@ export class IndexerManager {
         // FIXME: retry before exit
         process.exit(1);
       });
-
+    this.filteredDataSources = this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
   }
 
@@ -170,6 +190,22 @@ export class IndexerManager {
     }
   }
 
+  private async ensureMetadata(schema: string) {
+    const metadataRepo = MetadataFactory(this.sequelize, schema);
+    //block offset should only been create once, never update.
+    //if change offset will require re-index and re-sync poi
+    const blockOffset = await metadataRepo.findOne({
+      where: { key: 'blockOffset' },
+    });
+    if (!blockOffset) {
+      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+      await metadataRepo.create({
+        key: 'blockOffset',
+        value: offsetValue,
+      });
+    }
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
@@ -188,7 +224,6 @@ export class IndexerManager {
           await this.sequelize.createSchema(projectSchema, undefined);
         }
       }
-
       project = await this.subqueryRepo.create({
         name,
         dbSchema: projectSchema,
@@ -244,5 +279,29 @@ export class IndexerManager {
       },
     );
     return Number(nextval);
+  }
+
+  private filterDataSources(): SubqlRuntimeDatasource[] {
+    const dataSourcesFilteredSpecName = this.project.dataSources.filter(
+      (ds) =>
+        !ds.filter?.specName ||
+        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
+    );
+    if (dataSourcesFilteredSpecName.length === 0) {
+      logger.error(
+        `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
+      );
+      process.exit(1);
+    }
+    const dataSourcesFilteredStartBlock = dataSourcesFilteredSpecName.filter(
+      (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
+    );
+    if (dataSourcesFilteredStartBlock.length === 0) {
+      logger.error(
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
+      );
+      process.exit(1);
+    }
+    return dataSourcesFilteredStartBlock;
   }
 }

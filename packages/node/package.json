@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "0.19.1",
+  "version": "0.21.2-0",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -18,12 +18,13 @@
     "subql-node": "./bin/run"
   },
   "dependencies": {
+    "@apollo/client": "3.4.9",
     "@nestjs/common": "^7.6.9",
     "@nestjs/core": "^7.6.1",
     "@nestjs/event-emitter": "^0.0.2",
     "@nestjs/platform-express": "^7.6.1",
     "@nestjs/schedule": "^0.4.2",
-    "@polkadot/api": "^5.2.1",
+    "@polkadot/api": "^5.9.1",
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-vm2": "latest",
@@ -31,6 +32,8 @@
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.5",
     "lodash": "^4.17.21",
+    "merkle-mountain-range": "^2.0.0",
+    "merkle-tools": "^1.4.1",
     "parse-json": "^5.2.0",
     "pg": "^8.6.0",
     "pino": "^6.11.3",
@@ -44,7 +47,6 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^7.5.4",
     "@nestjs/schematics": "^7.2.7",
     "@nestjs/testing": "^7.6.9",
     "@types/app-module-path": "^2.2.0",

@@ -43,7 +43,7 @@ import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 import {argv} from '../../yargs';
-import {GetMetadataPlugin} from './GetMetadataPlugin';
+import {GetMetaPlugin} from './GetMetaPlugin';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
@@ -103,5 +103,5 @@ export const plugins = [
 ];
 
 if (argv(`indexer`)) {
-  plugins.push(GetMetadataPlugin);
+  plugins.push(GetMetaPlugin);
 }

@@ -42,7 +42,7 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>SubQuery 网络</span>
+            <span>SubQuery Network</span>
             <p>SubQuery 的分散未来。 阅读更多关于如何奖励索引器和消费者的信息。</p>
           </div>
         </a>
@@ -112,7 +112,7 @@
       <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
       <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
       <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
-      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix"></a>
+      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">matrix</a>
       <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>
     </div>
   </div>

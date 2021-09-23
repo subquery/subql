@@ -50,13 +50,19 @@ In order to run your SubQuery Project on a locally hosted SubQuery Node, you nee
 
 Run the build command from the project's root directory.
 
-```shell
-# Yarn
-yarn build
+<CodeGroup>
+  <CodeGroupItem title="YARN" active>
+  ```shell
+  yarn build
+  ```
+  </CodeGroupItem>
 
-# NPM
-npm run-script build
-```
+  <CodeGroupItem title="NPM">
+  ```bash
+  npm run-script build
+  ```
+  </CodeGroupItem>
+</CodeGroup>
 
 ## Logging
 

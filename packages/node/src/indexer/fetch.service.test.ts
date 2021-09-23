@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqlKind } from '@subql/common';
+import { ProjectManifestVersioned, SubqlKind } from '@subql/common';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { ApiService } from './api.service';
@@ -10,23 +10,28 @@ import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject();
-  project.network = {
-    endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    types: {
-      TestType: 'u32',
-    },
-  };
-  project.dataSources = [
-    {
-      name: 'runtime',
-      kind: SubqlKind.Runtime,
-      startBlock: 1,
-      mapping: {
-        handlers: [{ handler: 'handleTest', kind: SubqlKind.EventHandler }],
+  const project = new SubqueryProject(
+    new ProjectManifestVersioned({
+      specVersion: '0.0.1',
+      network: {
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+        types: {
+          TestType: 'u32',
+        },
       },
-    },
-  ];
+      dataSources: [
+        {
+          name: 'runtime',
+          kind: SubqlKind.Runtime,
+          startBlock: 1,
+          mapping: {
+            handlers: [{ handler: 'handleTest', kind: SubqlKind.EventHandler }],
+          },
+        },
+      ],
+    } as any),
+    '',
+  );
   return project;
 }
 
@@ -103,7 +108,7 @@ describe('FetchService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     //filter is defined
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -193,7 +198,7 @@ describe('FetchService', () => {
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -246,7 +251,7 @@ describe('FetchService', () => {
     //set dictionary to a different network
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,
@@ -309,7 +314,7 @@ describe('FetchService', () => {
     project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.dataSources = [
+    project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
         kind: SubqlKind.Runtime,

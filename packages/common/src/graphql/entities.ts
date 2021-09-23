@@ -150,7 +150,7 @@ function packEntityField(
 }
 
 function packJSONField(
-  typeString: String,
+  typeString: string,
   field: GraphQLField<any, any>,
   jsonObject: GraphQLJsonObjectType
 ): GraphQLEntityField {

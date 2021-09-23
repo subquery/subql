@@ -171,6 +171,9 @@ docs/.vuepress/.caches
 # Local History for Visual Studio Code
 .history/
 
+#package-lock.json
+package-lock.json
+
 .data
 lib
 

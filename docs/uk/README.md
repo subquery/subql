@@ -119,6 +119,6 @@
 </section>
 </div> </div>
 <div class="footer">
-  <div class="main"><div>Підзапит © 2021</div></div>
+  <div class="main"><div>SubQuery © 2021</div></div>
 </div>
 <script charset="utf-8" src="/assets/js/welcome.js"></script>

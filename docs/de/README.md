@@ -81,7 +81,7 @@
           <a class="more" href="https://doc.subquery.network/publish/publish.html">DEIN PROJEKT HOSTENLOS</a>
         </div>
       </li>
-    </ul><br>
+    </ul>
     Weitere häufig gestellte Fragen finden Sie auf unserer <a href="https://doc.subquery.network/faqs/faqs.html">FAQ-Seite</a>.    
   </div>
 </section>
@@ -119,6 +119,6 @@
 </section>
 </div> </div>
 <div class="footer">
-  <div class="main"><div>Unterabfrage © 2021</div></div>
+  <div class="main"><div>SubQuery © 2021</div></div>
 </div>
 <script charset="utf-8" src="/assets/js/welcome.js"></script>

@@ -80,7 +80,7 @@ These are the interfaces we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
+See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
 
 ## RPC calls
 
@@ -137,7 +137,7 @@ SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
 You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
+In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
 
 ### Preparation
 
@@ -161,7 +161,7 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
+Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
 
 #### Type definitions
 We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md). 
@@ -269,7 +269,7 @@ After the updates, the paths in the config will look like this (without the comm
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above.
-
+And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -283,3 +283,43 @@ export async function kittyApiHandler(): Promise<void> {
 ```
 
 **If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+
+### Custom chain rpc calls
+
+To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. 
+You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+```yaml
+...
+  types: {
+    "KittyIndex": "u32",
+    "Kitty": "[u8; 16]",
+  }
+  typesBundle: {
+    spec: {
+      chainname: {
+        rpc: {
+          kitties: {
+            getKittyPrice:{
+                description: string,
+                params: [
+                  {
+                    name: 'at',
+                    type: 'BlockHash',
+                    isHistoric: true,
+                    isOptional: false
+                  },
+                  {
+                    name: 'kittyIndex',
+                    type: 'KittyIndex',
+                    isOptional: false
+                  }
+                ],
+                type: "Balance",
+            }
+          }
+        }
+      }
+    }
+  }
+
+```
