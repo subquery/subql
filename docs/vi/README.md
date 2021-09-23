@@ -3,7 +3,7 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
+        <h2 class="welcomeTitle">Welcome to SubQuery’s Vietnamese <span>Docs</span></h2>
         <p>Explore and transform your chain data to build intuitive dApps faster!</p>
       </div>
     </div>
