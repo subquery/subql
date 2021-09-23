@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { u8aToHex } from '@polkadot/util';
+import { u8aToHex, u8aEq } from '@polkadot/util';
 import { MMR } from 'merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -11,10 +11,8 @@ import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { FileBasedDb, keccak256FlyHash } from '../vendor/merkle-mountain-range';
-import { BlockedQueue } from './BlockedQueue';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-import { PoiService } from './poi.service';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
@@ -25,32 +23,24 @@ const DEFAULT_FETCH_RANGE = 100;
 export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
   private blockOffset: number;
-  private schema: string;
-  private metadataRepo: any;
+  private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
-  private poiBlocksBuffer: BlockedQueue<ProofOfIndex>;
   private mmrStartHeight: number;
 
   constructor(
     protected nodeConfig: NodeConfig,
     protected project: SubqueryProject,
     protected sequelize: Sequelize,
-    private poiService: PoiService,
-  ) {
-    this.poiBlocksBuffer = new BlockedQueue<ProofOfIndex>(
-      DEFAULT_FETCH_RANGE * 3,
-    );
-  }
+  ) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;
   }
 
   async init(schema: string): Promise<void> {
-    this.schema = schema;
-    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
-    this.poiRepo = PoiFactory(this.sequelize, this.schema);
+    this.metadataRepo = MetadataFactory(this.sequelize, schema);
+    this.poiRepo = PoiFactory(this.sequelize, schema);
     this.blockOffset = await this.fetchBlockOffsetFromDb();
     this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.mmrStartHeight =
@@ -97,7 +87,7 @@ export class MmrService implements OnApplicationShutdown {
     if (poiBlock.mmrRoot === null) {
       poiBlock.mmrRoot = mmrValue;
       await poiBlock.save();
-    } else if (u8aToHex(poiBlock.mmrRoot) !== u8aToHex(mmrValue)) {
+    } else if (!u8aEq(poiBlock.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${id}, Poi mmr ${u8aToHex(
           poiBlock.mmrRoot,
