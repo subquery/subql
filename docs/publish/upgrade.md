@@ -10,10 +10,10 @@ Although you have the freedom to always upgrade and deploy new versions of your 
 
 Log into SubQuery Project and select the project you want to deploy a new version of. You can choose to either deploy to the production or staging slot. These two slots are isolated environments and each has their own databases and synchronise independently. 
 
-We recommend deploying to your staging slot for testing purposes. You can then promote it to production with zero downtime.
+We recommend deploying to your staging slot only for final staging testing or when you need to resync your project data. You can then promote it to production with zero downtime. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
 
 The staging slot is perfect for:
-* Validating changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
+* Final validation of changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
 * Warming up and indexing data for an updated SubQuery project to eliminate downtime in your dApp
 * Preparing a new release for your SubQuery Project without exposing it publicly. The staging slot is not shown to the public in the Explorer and has a unique URL that is visible only to you.
 
