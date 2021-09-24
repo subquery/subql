@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {RegisteredTypes} from '@polkadot/types/types';
+import { RegisteredTypes } from '@polkadot/types/types';
 import { ProjectManifestVersioned } from '@subql/common';
-import { SubqueryProject } from "./project.model";
+import { SubqueryProject } from './project.model';
 
 const chainTypes: RegisteredTypes = {
   types: {
@@ -27,47 +27,43 @@ const chainTypes: RegisteredTypes = {
   },
   typesChain: { chain2: { TestType5: 'test' } },
   typesSpec: { spec3: { TestType6: 'test' } },
-}
-
+};
 
 const manifestV0_0_1 = new ProjectManifestVersioned({
   specVersion: '0.0.1',
   network: {
     endpoint: '',
     ...chainTypes,
-  }
+  },
 } as any);
 
 describe('SubqueryProject', () => {
-
   let project: SubqueryProject;
 
   describe('Manifest v0.0.1', () => {
-
     beforeEach(() => {
       project = new SubqueryProject(manifestV0_0_1, '', {});
     });
 
-
     it('can get the chain types', () => {
       expect(project.chainTypes).toMatchObject(chainTypes);
     });
-  })
+  });
 
   describe('Manifest v0.0.2', () => {
-
     beforeEach(async () => {
-      const projectDir = path.resolve(__dirname, '../../test/projectFixture/v0.0.2');
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.0.2',
+      );
       project = await SubqueryProject.create(projectDir, {});
-    })
+    });
 
     it('can get the chain types', () => {
       expect(project.chainTypes).toMatchObject(chainTypes);
     });
 
-
     it('should throw if networkRegisty doesnt provide an endpoint', () => {
-
       expect(() => project.network).toThrow();
     });
   });

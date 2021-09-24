@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import { plainToClass } from 'class-transformer';
-import { validateSync } from 'class-validator';
-import parseJson from 'parse-json';
 import path from 'path';
+import {plainToClass} from 'class-transformer';
+import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
-import { ChainTypes } from './models';
+import parseJson from 'parse-json';
+import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 export function loadFromJsonOrYaml(file: string): unknown {
@@ -39,7 +39,6 @@ export function loadProjectManifest(file: string): ProjectManifestVersioned {
   projectManifest.validate();
   return projectManifest;
 }
-
 
 export function parseChainTypes(raw: unknown): ChainTypes {
   const chainTypes = plainToClass(ChainTypes, raw);

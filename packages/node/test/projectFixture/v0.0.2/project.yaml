@@ -1,5 +1,7 @@
 # project.yaml
 specVersion: "0.0.2"
+
+name: ""
 version: "0.0.0"
 description: ""
 repository: "https://github.com/subquery/subql-starter"

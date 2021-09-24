@@ -26,7 +26,7 @@ jest.setTimeout(30000);
 const projectSpec = {
   name: 'mocked_starter',
   repository: '',
-  endpoint: 'wss://rpc.polkadot.io/public-ws',
+  network: '0x',
   author: 'jay',
   description: 'this is test for init controller',
   version: '',
