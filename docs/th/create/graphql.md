@@ -1,8 +1,8 @@
 # GraphQL Schema
 
-## Defining Entities
+## การกำหนด Entities
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+ไฟล์ `schema.graphql` กำหนด GraphQL schemas ต่างๆ เนื่องจากวิธีการทำงานของภาษา GraphQL query, ไฟล์สคีมาจึงกำหนดรูปร่างของข้อมูลของคุณจาก SubQuery To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
 **Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
