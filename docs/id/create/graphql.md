@@ -1,12 +1,12 @@
-# GraphQL Schema
+# Pelajari lebih lanjut tentang GraphQL
 
-## Defining Entities
+## Menentukan Entitas
 
 The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Penting: Saat Anda membuat perubahan apa pun ke file skema, mohon memastikan bahwa Anda meregenerasi direktori jenis Anda dengan perintah berikut `yarn codegen`**
 
-### Entities
+### Entitas
 Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
 Non-nullable fields in the entity are indicated by `!`. Please see the example below:
@@ -19,9 +19,9 @@ type Example @entity {
 }
 ```
 
-### Supported scalars and types
+### Skalar dan jenis yang didukung
 
-We currently supporting flowing scalars types:
+Kami saat ini mendukung jenis skalar:
 - `ID`
 - `Int`
 - `String`
@@ -29,15 +29,15 @@ We currently supporting flowing scalars types:
 - `Date`
 - `Boolean`
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `JSON` secara alternatif bisa menyimpan data yang terstruktur, mohon lihat [jenis JSON](#json-type)
 
-## Indexing by non-primary-key field
+## Mengindeks berdasarkan bidang kunci non primer
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Untuk meningkatkan performa kueri, indeks bidang entitas dengan mengimplementasikan anotasi `@index` di bidang kunci non primer.
 
 However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
 
-Here is an example.
+Berikut sebuah contoh.
 
 ```graphql
 type User @entity {
@@ -53,12 +53,12 @@ type Title @entity {
 ```
 Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
 
-**If a field is not unique, the maximum result set size is 100**
+**Jika sebuah bidang tidak unik, ukuran hasil maksimalnya adalah 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Saat pembuatan kode berjalan, ini akan secara otomatis membuat `getByName` di bawah model `User`, dan bidang kunci asing `title` akan membuat metode `getByTitleId`, yang keduanya bisa diakses langsung di fungsi pemetaan.
 
 ```sql
-/* Prepare a record for title entity */
+/* Persiapkan catatan untuk entitas judul */
 INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 ```
 
@@ -74,17 +74,17 @@ const captainTitle = await Title.getByName('Captain');
 const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
-## Entity Relationships
+## Hubungan Entitas
 
 An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Hubungan entitas berbeda (satu per satu, satu ke banyak, dan banyak ke banyak) bisa dikonfigurasikan menggunakan contoh di bawah ini.
 
-### One-to-One Relationships
+### Hubungan Satu Per Satu
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Hubungan satu per satu adalah hubungan default saat hanya satu entitas yang dipetakan.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Contoh: Sebuah paspor hanya milik satu orang saja dan satu orang hanya memiliki satu paspor (dalam contoh ini):
 
 ```graphql
 type Person @entity {
@@ -111,11 +111,11 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### Hubungan Satu ke Banyak
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Anda bisa menggunakan tanda kurung siku untuk mengindikasikan bahwa sebuah jenis bidang menyertakan beberapa entitas.
 
-Example: A person can have multiple accounts.
+Contoh: Seseorang bisa memiliki beberapa akun.
 
 ```graphql
 type Person @entity {
@@ -129,10 +129,10 @@ type Account @entity {
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### Hubungan Banyak ke Banyak
+Hubungan banyak ke banyak bisa diraih dengan mengimplementasikan entitas pemetaan untuk menghubungkan dua entitas lainnya.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Contoh: Setiap orang merupakan bagian dari beberapa kelompok (PersonGroup) dan kelompok memiliki beberapa orang berbeda (PersonGroup).
 
 ```graphql
 type Person @entity {
@@ -154,11 +154,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+Memungkinkan juga halnya untuk membuat koneksi entitas yang sama di beberapa bidang entitas tengah.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Contohnya, sebuah akun bisa memiliki beberapa transfer, dan masing-masing transfer memiliki sumber dan akun tujuan.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Ini akan mendasarkan hubungan dua arah antara dua Akun (dari dan ke) melalui tabel Transfer.
 
 ```graphql
 type Account @entity {
@@ -174,13 +174,13 @@ type Transfer @entity {
 }
 ```
 
-### Reverse Lookups
+### Pencarian Terbalik
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Untuk menyalakan pencarian terbalik di sebuah entitas ke hubungan, lampirkan `@derivedFrom` ke bidang dan tunjuk ke bidang pencarian terbaliknya di entitas lain.
 
-This creates a virtual field on the entity that can be queried.
+Ini menciptakan bidang virtual pada entitas yang bisa dikuerikan.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+Transfer "dari" sebuah Akun bisa diakses dari entitas Akun dengan mengatur transferTerkirim atau transferDiterima dari bidang dari atau ke.
 
 ```graphql
 type Account @entity {
@@ -198,16 +198,16 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## Jenis JSON
 
 We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Kami menyarankan pengguna menggunakan jenis JSON di skenario berikut:
+- Saat menyimpan data terstruktur di satu bidang lebih bisa diatur daripada membuat beberapa entitas berbeda.
+- Menyimpan kunci yang berubah-ubah/preferensi nilai pengguna (di mana nilai bisa menjadi boolean, tekstual, atau numerik, dan Anda tidak ingin memiliki kolom terpisah untuk jenis data berbeda)
+- Skema ini tidak stabil dan sering berubah
 
-### Define JSON directive
+### Menentukan direktif JSON
 Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
 
 Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
@@ -229,9 +229,9 @@ type User @entity {
 }
 ````
 
-### Querying JSON fields
+### Mengkueri bidang JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+Kekurangan menggunakan jenis JSON adalah dampak sekilas pada efisiensi kueri saat memfilter, karena setiap kali melakukan pencarian teks, begitu pula di seluruh entitas.
 
 However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
