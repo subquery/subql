@@ -1,59 +1,59 @@
-# Running SubQuery Locally
+# Chạy SubQuery trên môi trường local
 
 This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
-## Using Docker
+## Sử dụng Docker
 
 An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
 
-Under the project directory run the following command:
+Trong thư mục dự án, hãy chạy lệnh sau:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+Trong lần đầu tiên có thể bạn sẽ mất chút thời gian để tải xuống các package cần thiết ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) và Postgres), nhưng sau đó node SubQuery sẽ nhanh chóng được khởi chạy.
 
-## Running an Indexer (subql/node)
+## Khởi chạy bộ lập chỉ mục (Indexer) (subql/node)
 
-Requirements:
+Cần có:
 
 - [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+Một node SubQuery sẽ triển khai trích xuất dữ liệu blockchain dựa trên chất nền (substrate) cho mỗi dự án SubQuery và lưu nó vào cơ sở dữ liệu Postgres.
 
-### Installation
+### Cài đặt
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn global` vì khâu quản lý phụ thuộc của nó rất kém, có thể dẫn đến sai sót trong dây chuyền.
 
-Once installed, you can start a node with the following command:
+Sau khi cài đặt, bạn có thể khởi chạy một node bằng lệnh sau:
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### Các lệnh chính
 
 The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
 
-#### Point to local project path
+#### Trỏ đến đường dẫn dự án trên môi trường local
 
 ```
 subql-node -f your-project-path
 ```
 
-#### Using a Dictionary
+#### Sử dụng Từ điển
 
 Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+Bộ từ điển này sẽ lập sẵn đầy đủ chỉ mục về vị trí của tất cả các sự kiện và yếu tố ngoại vi (extrinsics) trong blockchain liên quan và cho phép dịch vụ node của bạn chuyển đến các vị trí hợp lý khi lập chỉ mục thay vì phải kiểm tra từng block.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+Bạn có thể trực tiếp thêm điểm cuối (endpoint) của từ điển vào tệp `project.yaml` (xem [Tệp kê khai (Manifest)](../create/manifest.md)) hoặc chỉ định điểm cuối tại thời điểm chạy bằng lệnh sau:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
@@ -61,7 +61,7 @@ subql-node --network-dictionary=https://api.subquery.network/sq/subquery/diction
 
 [Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
 
-#### Connect to database
+#### Kết nối với cơ sở dữ liệu
 
 ```
 export DB_USER=postgres
@@ -89,7 +89,7 @@ batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### Thay đổi kích thước lô tìm nạp block
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -101,7 +101,7 @@ Result:
 
 When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
 
-#### Local mode
+#### Chế độ local
 
 ```
 subql-node -f your-project-path --local
@@ -109,7 +109,7 @@ subql-node -f your-project-path --local
 
 For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn global` vì khâu quản lý phụ thuộc của nó rất kém, có thể dẫn đến sai sót trong dây chuyền.
 
 
 #### Check your node health
@@ -179,9 +179,9 @@ For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
 Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
-## Running a Query Service (subql/query)
+## Khởi chạy Dịch vụ Truy vấn (subql/query)
 
-### Installation
+### Cài đặt
 
 ```shell
 # NPM
@@ -190,7 +190,7 @@ npm install -g @subql/query
 
 Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
 
-### Running the Query service
+### Menjalankan layanan Kueri
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
 Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
