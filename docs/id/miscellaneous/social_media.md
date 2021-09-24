@@ -17,7 +17,7 @@ Merupakan tujuan kami untuk selalu mendengarkan dan terlibat dengan komunitas se
 
 ## Komunitas SubQuery Tidak Resmi
 
-Komunitas ini tidak dimoderasi oleh tim SubQuery, tetapi duta kami mungkin ada di sana untuk memberikan dukungan. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+Komunitas ini tidak dimoderasi oleh tim SubQuery, tetapi duta kami mungkin ada di sana untuk memberikan dukungan. Harap berhati-hati terhadap penipuan karena SubQuery **tidak** bertanggung jawab atas apa yang terjadi di dalamnya.
 
 ### Telegram
 
