@@ -1,20 +1,20 @@
-# The Sandbox
+# Sandbox
 
-In our envisioned usage scenario, the SubQuery node is usually run by a trusted host, and the code of the SubQuery project submitted by the user to the node is not entirely trustworthy.
+Theo hình dung của chúng tôi về cách sử dụng, node SubQuery thường được chạy trên một máy chủ đáng tin cậy, còn mã nguồn của dự án SubQuery do người dùng gửi đến node thì lại không thể tin cậy tuyệt đối.
 
 Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This:
 
-- Runs untrusted code securely in an isolated context and malicious code will not access the network and file system of the host unless through the exposed interface we injected into the sandbox.
+- Khởi chạy những đoạn code có rủi ro một cách an toàn trong môi trường biệt lập, mã độc sẽ không thể truy cập vào mạng và hệ thống tệp của máy chủ lưu trữ trừ khi thông qua giao diện tiếp xúc mà chúng tôi đã đưa vào sandbox.
 
-- Securely calls methods and exchanges data and callbacks between sandboxes.
+- Gọi các phương thức, trao đổi dữ liệu và gọi lại function giữa các sandbox một cách an toàn.
 
-- Is immune to many known methods of attack.
+- Có khả năng miễn dịch với nhiều phương pháp tấn công đã biết.
 
 
-## Restriction
+## Hạn chế
 
-- To limit access to certain built-in modules, only `assert`, `buffer`, `crypto`,`util` and `path` are whitelisted.
+- Để giới hạn quyền truy cập vào một số modul tích hợp sẵn, chỉ có modul `assert`, `buffer`, `crypto`,`util` và `path` mới được đưa vào danh sách trắng (whitelist).
 
-- We support [3rd party modules](../create/mapping.md#third-party-libraries) written in **CommonJS** and **hybrid** libraries like `@polkadot/*` that use ESM as default.
+- Chúng tôi hỗ trợ [các modul của bên thứ 3](../create/mapping.md#third-party-libraries) được viết trong các thư viện **CommonJS** và **lai (hybrid)** như `@polkadot/*` (sử dụng ESM làm mặc định).
 
-- Any modules using `HTTP` and `WebSocket` are forbidden.
+- Bất kỳ modul nào sử dụng `HTTP` và `WebSocket` đều bị cấm.
