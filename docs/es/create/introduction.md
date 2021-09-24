@@ -1,8 +1,8 @@
-# Creating a SubQuery Project
+# Tutorials & Examples
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+En la guía [de inicio rápido](/quickstart/quickstart.md) encontraremos un ejemplo para darle una muestra de lo que es SubQuery y cómo funciona. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
-## The Basic Workflow
+## SubQuery Examples
 Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
 1. Initialise your project using `subql init PROJECT_NAME`
@@ -30,7 +30,7 @@ The following map provides an overview of the directory structure of a SubQuery 
   L .gitignore
 ```
 
-For example:
+Example
 
 ![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
 
