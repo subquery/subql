@@ -1,16 +1,16 @@
-# Connect to your New Project
+# Подключитесь к вашему новому проекту
 
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed Query endpoint.
+После того, как ваше развертывание будет успешно завершено и наши узлы проиндексируют ваши данные из цепочки, вы сможете подключиться к своему проекту через отображаемую конечную точку запроса.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![Проект развернут и синхронизирован](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started.
+Кроме того, вы можете щелкнуть по трем точкам рядом с названием вашего проекта и просмотреть его в SubQuery Explorer. Там вы можете использовать в браузере игровую площадку для начала.
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![Проекты в SubQuery Explorer](/assets/img/projects-explorer.png)
 
-# Learn more about GraphQL
+# Подробнее о GraphQL
 
-You can follow the [official GraphQL guide here](https://graphql.org/learn/) to learn more about GraphQL, how it works, and how to use it:
-- There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
-- For an in-depth learning experience with practical tutorials, see [How to GraphQL](https://www.howtographql.com/).
-- Check out the free online course, [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
+Вы можете следовать [ официальному руководству по GraphQL здесь ](https://graphql.org/learn/), чтобы узнать больше о GraphQL, как он работает и как его использовать:
+- Есть библиотеки, которые помогут вам реализовать GraphQL на [разных языках](https://graphql.org/code/)
+- Информацию об углубленном обучении с практическими уроками см. в [How to GraphQL](https://www.howtographql.com/).
+- Ознакомьтесь с бесплатным онлайн-курсом, [Исследование GraphQL: язык запроса API](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
