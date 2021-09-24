@@ -1,12 +1,12 @@
-# Installing SubQuery
+# Cài đặt SubQuery
 
 There are various components required when creating a SubQuery project. The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) tool is used to create SubQuery projects. The [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) component is required to run an indexer. The [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) library is required to generate queries.
 
-## Install @subql/cli
+## Cài đặt @subql/cli
 
-The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) library helps to create a project framework or scaffold meaning you don't have to start from scratch.
+Thư viện [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) giúp tạo khung hoặc giàn cho dự án, nghĩa là bạn không phải bắt đầu từ đầu.
 
-Install SubQuery CLI globally on your terminal by using Yarn or NPM:
+Cài đặt SubQuery CLI trên toàn cầu trên thiết bị đầu cuối (terminal) của bạn bằng cách sử dụng Yarn hoặc NPM:
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global add @subql/cli ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install -g @subql/cli ``` </CodeGroupItem> </CodeGroup>
