@@ -23,7 +23,7 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
     if (key === 'network-registry') {
       try {
         value = JSON.parse(value as string);
-      } catch(e) {
+      } catch (e) {
         throw new Error('Argument `network-registry` is not valid JSON');
       }
     }
@@ -74,7 +74,10 @@ export class ConfigureModule {
     );
 
     const project = async () => {
-      const p = await SubqueryProject.create(projectPath, config.networkRegistry).catch((err) => {
+      const p = await SubqueryProject.create(
+        projectPath,
+        config.networkRegistry,
+      ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });

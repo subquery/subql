@@ -49,6 +49,6 @@
   },
   "lint-staged": {
     "*.ts": "eslint --cache --fix",
-    "*": "pretty-quick --staged --pattern 'packages/*/src/**/*"
+    "*": "pretty-quick --staged --pattern 'packages/*/src/**/*'"
   }
 }

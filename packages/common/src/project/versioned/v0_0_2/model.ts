@@ -3,7 +3,7 @@
 
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import { Mapping, RuntimeDataSourceBase } from '../../models';
+import {Mapping, RuntimeDataSourceBase} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
 import {ProjectManifestV0_0_2, RuntimeDataSourceV0_0_2, SubqlMappingV0_0_2} from './types';
 
@@ -27,7 +27,10 @@ export class ProjectMappingV0_0_2 extends Mapping {
   file: string;
 }
 
-export class RuntimeDataSourceV0_0_2Impl extends RuntimeDataSourceBase<SubqlMappingV0_0_2> implements RuntimeDataSourceV0_0_2 {
+export class RuntimeDataSourceV0_0_2Impl
+  extends RuntimeDataSourceBase<SubqlMappingV0_0_2>
+  implements RuntimeDataSourceV0_0_2
+{
   @Type(() => ProjectMappingV0_0_2)
   @ValidateNested()
   mapping: SubqlMappingV0_0_2;

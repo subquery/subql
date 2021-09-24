@@ -3,7 +3,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
+import {loadFromJsonOrYaml} from '@subql/common';
 import {IPackageJson} from 'package-json-type';
 import {Reader} from './reader';
 
@@ -26,7 +26,7 @@ export class LocalReader implements Reader {
 
     try {
       return loadFromJsonOrYaml(file);
-    } catch(e) {
+    } catch (e) {
       return undefined;
     }
   }

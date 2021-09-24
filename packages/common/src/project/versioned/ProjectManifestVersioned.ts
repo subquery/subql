@@ -87,5 +87,4 @@ export class ProjectManifestVersioned implements IProjectManifest {
   get repository(): string {
     return this._impl.repository;
   }
-
 }

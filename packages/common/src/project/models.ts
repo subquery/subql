@@ -3,7 +3,17 @@
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
-import {ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
 import {SubqlKind} from './constants';
 import {
   SubqlBlockFilter,

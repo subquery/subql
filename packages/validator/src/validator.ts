@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ProjectManifestVersioned, VersionedProjectManifest } from '@subql/common';
+import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common';
 import {Context} from './context';
 import {Reader, ReaderFactory} from './readers';
 import {Rule, RuleType} from './rules';
@@ -31,14 +31,12 @@ export class Validator {
 
     const schema = new ProjectManifestVersioned(rawSchema as VersionedProjectManifest);
 
-    reports.push(
-      {
-        name: 'project-yaml-file',
-        description: 'A valid `project.yaml` file must exist in the root directory of the project',
-        valid: !!pkg,
-        skipped: false,
-      }
-    );
+    reports.push({
+      name: 'project-yaml-file',
+      description: 'A valid `project.yaml` file must exist in the root directory of the project',
+      valid: !!pkg,
+      skipped: false,
+    });
 
     if (schema.isV0_0_1) {
       reports.push({

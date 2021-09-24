@@ -30,7 +30,7 @@ describe('sandbox for subql-node', () => {
         store: undefined,
         api: undefined,
         root: path.resolve(__dirname, '../../test/sandbox'),
-        entry: './main.js'
+        entry: './main.js',
       },
       new NodeConfig({ subquery: '', subqueryName: '' }),
     );

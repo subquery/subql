@@ -3,7 +3,7 @@
 
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import { RuntimeDataSourceBase, ChainTypes } from '../../models';
+import {RuntimeDataSourceBase, ChainTypes} from '../../models';
 import {ProjectNetworkConfig, SubqlMapping, SubqlNetworkFilter} from '../../types';
 import {ProjectManifestBaseImpl} from '../base';
 import {ProjectManifestV0_0_1, RuntimeDataSrouceV0_0_1} from './types';
@@ -21,7 +21,10 @@ export class NetworkFilter implements SubqlNetworkFilter {
   specName: string;
 }
 
-export class RuntimeDataSourceV0_0_1Impl extends RuntimeDataSourceBase<SubqlMapping> implements RuntimeDataSrouceV0_0_1 {
+export class RuntimeDataSourceV0_0_1Impl
+  extends RuntimeDataSourceBase<SubqlMapping>
+  implements RuntimeDataSrouceV0_0_1
+{
   @IsOptional()
   @ValidateNested()
   @Type(() => NetworkFilter)

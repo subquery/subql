@@ -52,10 +52,7 @@ export class ApiService implements OnApplicationShutdown {
     const apiOption: ApiOptions = {
       provider,
     };
-    assign(
-      apiOption,
-      chainTypes,
-    );
+    assign(apiOption, chainTypes);
     this.api = await ApiPromise.create(apiOption);
     this.networkMeta = {
       chain: this.api.runtimeChain.toString(),
@@ -75,8 +72,13 @@ export class ApiService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
 
-    if (network.genesisHash && network.genesisHash !== this.networkMeta.genesisHash) {
-      throw new Error(`Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`);
+    if (
+      network.genesisHash &&
+      network.genesisHash !== this.networkMeta.genesisHash
+    ) {
+      throw new Error(
+        `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
+      );
     }
 
     return this;

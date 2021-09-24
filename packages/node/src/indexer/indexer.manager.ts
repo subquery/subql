@@ -179,10 +179,12 @@ export class IndexerManager {
     this.fetchService.register((block) => this.indexBlock(block));
 
     // Start VM for each data source
-    this.vms = await Promise.all(this.filteredDataSources.map(dataSource => {
-      const entry = this.getDataSourceEntry(dataSource);
-      return this.initVM(entry);
-    }));
+    this.vms = await Promise.all(
+      this.filteredDataSources.map((dataSource) => {
+        const entry = this.getDataSourceEntry(dataSource);
+        return this.initVM(entry);
+      }),
+    );
   }
 
   private async initVM(entry: string): Promise<IndexerSandbox> {
@@ -192,15 +194,16 @@ export class IndexerManager {
         store: this.storeService.getStore(),
         api,
         root: this.project.path,
-        entry
+        entry,
       },
       this.nodeConfig,
     );
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName()
-      .map((item) => item.startBlock ?? 1);
+    const startBlocksList = this.getDataSourcesForSpecName().map(
+      (item) => item.startBlock ?? 1,
+    );
     if (startBlocksList.length === 0) {
       logger.error(
         `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
@@ -324,10 +327,11 @@ export class IndexerManager {
 
   private getDataSourcesForSpecName(): SubqlRuntimeDatasource[] {
     const specName = this.api.runtimeVersion.specName.toString();
-    return this.project.dataSources.filter(ds =>
-      isRuntimeDataSourceV0_0_2(ds) ||
-      !!(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
-      (ds as RuntimeDataSrouceV0_0_1).filter.specName === specName
+    return this.project.dataSources.filter(
+      (ds) =>
+        isRuntimeDataSourceV0_0_2(ds) ||
+        !!(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
+        (ds as RuntimeDataSrouceV0_0_1).filter.specName === specName,
     );
   }
 

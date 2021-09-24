@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {RegisteredTypes} from '@polkadot/types/types';
+import { RegisteredTypes } from '@polkadot/types/types';
 import {
   loadProjectManifest,
   parseChainTypes,
@@ -13,7 +13,7 @@ import {
   manifestIsV0_0_2,
   loadFromJsonOrYaml,
 } from '@subql/common';
-import {pick} from 'lodash';
+import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 import { NetworkRegistry } from './NodeConfig';
@@ -25,7 +25,10 @@ export class SubqueryProject {
   private _projectManifest: ProjectManifestVersioned;
   private _networkRegistry: NetworkRegistry;
 
-  static async create(path: string, networkRegistry: NetworkRegistry): Promise<SubqueryProject> {
+  static async create(
+    path: string,
+    networkRegistry: NetworkRegistry,
+  ): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
     const projectManifest = loadProjectManifest(projectPath);
     return new SubqueryProject(projectManifest, projectPath, networkRegistry);
@@ -40,7 +43,11 @@ export class SubqueryProject {
     // return project;
   }
 
-  constructor(manifest: ProjectManifestVersioned, path: string, networkRegistry: NetworkRegistry) {
+  constructor(
+    manifest: ProjectManifestVersioned,
+    path: string,
+    networkRegistry: NetworkRegistry,
+  ) {
     this._projectManifest = manifest;
     this._path = path;
     this._networkRegistry = networkRegistry;
@@ -69,7 +76,10 @@ export class SubqueryProject {
 
       const network = this._networkRegistry[genesisHash];
 
-      if (!network) throw new Error(`Unable to get network endpoint. genesisHash="${genesisHash}"`);
+      if (!network)
+        throw new Error(
+          `Unable to get network endpoint. genesisHash="${genesisHash}"`,
+        );
 
       return {
         ...network,
@@ -104,7 +114,7 @@ export class SubqueryProject {
         'typesBundle',
         'typesChain',
         'typesSpec',
-      ])
+      ]);
     }
 
     if (manifestIsV0_0_2(impl)) {
@@ -112,7 +122,9 @@ export class SubqueryProject {
         return;
       }
 
-      const rawChainTypes = loadFromJsonOrYaml(path.join(this._path, impl.network.chaintypes.file));
+      const rawChainTypes = loadFromJsonOrYaml(
+        path.join(this._path, impl.network.chaintypes.file),
+      );
 
       return parseChainTypes(rawChainTypes);
     }

@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { parseChainTypes } from '@subql/common';
+import {parseChainTypes} from '@subql/common';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
 
@@ -11,7 +11,6 @@ export default class RequireValidChainTypes implements Rule {
   description = 'Specified chain types file must match the polkadot RegistryTypes';
 
   async validate(ctx: Context): Promise<boolean> {
-
     if (ctx.data.schema.isV0_0_1) return true;
 
     const schema = ctx.data.schema.asV0_0_2;
@@ -23,7 +22,7 @@ export default class RequireValidChainTypes implements Rule {
       const rawChainTypes = await ctx.reader.getFile(schema.network.chaintypes.file);
       parseChainTypes(rawChainTypes);
       return true;
-    } catch(e) {
+    } catch (e) {
       return false;
     }
   }

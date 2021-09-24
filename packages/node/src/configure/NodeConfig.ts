@@ -8,7 +8,10 @@ import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';
 
-export type NetworkRegistry = Record<string /*genesisHash*/, ProjectNetworkConfig>;
+export type NetworkRegistry = Record<
+  string /*genesisHash*/,
+  ProjectNetworkConfig
+>;
 
 export interface IConfig {
   readonly configDir?: string;
@@ -33,7 +36,6 @@ export interface IConfig {
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
   Pick<IConfig, 'subqueryName' | 'subquery'>;
 
-
 const DEFAULT_CONFIG = {
   localMode: false,
   batchSize: 100,
@@ -48,7 +50,8 @@ const DEFAULT_CONFIG = {
     /* TODO provide a default list */
     '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': {
       endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-      dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
+      dictionary:
+        'https://api.subquery.network/sq/subquery/dictionary-polkadot',
     },
   },
 };
@@ -62,11 +65,9 @@ export class NodeConfig implements IConfig {
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
 
-    const config = assign(
-      loadFromJsonOrYaml(filePath),
-      configFromArgs,
-      { configDir: fileInfo.dir}
-    ) as IConfig;
+    const config = assign(loadFromJsonOrYaml(filePath), configFromArgs, {
+      configDir: fileInfo.dir,
+    }) as IConfig;
     return new NodeConfig(config);
   }
 
