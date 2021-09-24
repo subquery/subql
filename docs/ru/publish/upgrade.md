@@ -1,6 +1,6 @@
 # Deploy a New Version of your SubQuery Project
 
-## Guidelines
+## Руководство
 
 Although you have the freedom to always upgrade and deploy new versions of your SubQuery project, please be considerate during this process if your SubQuery project is public for the world. Some key points to note:
 - If your upgrade is a breaking change, either create a new project (e.g. `My SubQuery Project V2`) or give your community plenty of warning of the change through social media channels.
@@ -28,7 +28,7 @@ If you just want to upgrade to the latest indexer ([`@subql/node`](https://www.n
 Fill in the Commit Hash from GitHub (copy the full commit hash) of the version of your SubQuery project codebase that you want deployed. This will cause a longer downtime depending on the time it takes to index the current chain. You can always report back here for progress.
 
 ## Next Steps - Connect to your Project
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
+После успешного завершения установки и успешного индексирования нашими узлами ваших данных из цепочки, вы сможете подключиться к вашему проекту через отображенную конечную точку запроса GraphQL Query.
 
 ![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
 
