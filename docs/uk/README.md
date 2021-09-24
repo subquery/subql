@@ -13,7 +13,7 @@
       <h2 class="title">Quick Start <span>Guide</span></h2>
       <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
       </p>
-      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Get started</span></a>
+      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Починаємо</span></a>
     </div>
   </section>
 </div>
@@ -52,7 +52,7 @@
 </div>
 <section class="faqSection main">
   <div>
-    <h2 class="title">FAQ</h2>
+    <h2 class="title">ЧаПи (Часті Питання)</h2>
     <ul class="faqList">
       <li>
         <div class="title">What is SubQuery?</div>
@@ -107,13 +107,13 @@
   <div>
     <div>Follow us on social</div>
     <div class="connectWay">
-      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
-      <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
-      <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
-      <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
-      <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
-      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">matrix</a>
-      <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>
+      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">діскорд</a>
+<a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">Твіттер</a>
+<a href="https://medium.com/@subquery" target="_blank" class="connectMedium">Медіум</a>
+<a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">Телеграм</a>
+<a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">Гітхаб</a>
+<a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">Матрікс</a>
+<a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">Лінкедін</a>
     </div>
   </div>
 </section>
