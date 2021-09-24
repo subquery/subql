@@ -1,23 +1,23 @@
-# Social Media Links
+# Ссылки в социальных сетях
 
-SubQuery is an active project that maintains and communicates with our followers through many social media channels.
+SubQuery - это активный проект, который поддерживает и общается с нашими последователями через множество социальных сетей.
 
-It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
+Наша цель - всегда прислушиваться к нашему лояльному сообществу и взаимодействовать с ним, поэтому, пожалуйста, присоединяйтесь к беседам и отправляйте нам свои идеи или вопросы!
 
-## Official SubQuery Communities
+## Официальные комьюнити SubQuery
 
-- [Discord](https://discord.com/invite/78zg8aBSMG) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
-- [Twitter](https://twitter.com/subquerynetwork)
+- [ Discord ](https://discord.com/invite/78zg8aBSMG) (основное сообщество с выделенными каналами технической поддержки)
+- [Medium](https://subquery.medium.com) (основной канал объявлений)
+- [Твиттер](https://twitter.com/subquerynetwork)
 - [WeChat]()
-- [Telegram](https://t.me/subquerynetwork) (Announcements channel only)
+- [Telegram](https://t.me/subquerynetwork) (только канал объявлений)
 - [GitHub](https://github.com/SubQuery/subql)
 - [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
 - [LinkedIn](https://www.linkedin.com/company/subquery)
 
-## Unofficial SubQuery Communities
+## Неофициальные комьюнити SubQuery
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+Эти сообщества не модерируются командой SubQuery, но наши представители могут быть там для оказания поддержки. Пожалуйста, будьте осторожны с мошенниками, поскольку SubQuery ** не ** несет ответственности за ваше взаимодействии с ними.
 
 ### Telegram
 
