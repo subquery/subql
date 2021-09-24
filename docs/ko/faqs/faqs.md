@@ -1,53 +1,53 @@
 # 자주 묻는 질문
 
-## What is SubQuery?
+## 서브 쿼리가 무엇인가요?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+서브 쿼리는 개발자가 어플리케이션을 실행하기 위해서 기판 체인데이터를 인덱스화, 변환 및 조회할 수 있는 오픈소스 프로젝트입니다.
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+서브 쿼리는 또한 개발자가 인프라를 관리하는 책임을 제거하고 개발자가 최선의 일을 할 수 있도록 프로젝트를 무료로 프로덕션 수준으로 호스팅할 수도 있습니다.
 
-## What is the best way to get started with SubQuery?
+## 서브 쿼리를 시작하는 가장 좋은 방법은 무엇입가요?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+서브 쿼리를 시작하는 가장 좋은 방법은[Hello World tutorial](../quickstart/helloworld-localhost.md) 을 사용해 하는 것입니다. 이는 스타터 템플릿을 다운로드 받고, 프로젝트를 구축하고, 다커를 사용하여 로컬 호스트에서 노드를 실행하고, 간단한 쿼리를 실행하는 간단한 절차입니다.
 
-## How can I contribute or give feedback to SubQuery?
+## 서브 쿼리에게 어떻게 기여 또는 피드백을 줄 수 있을까요?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+저희는 커뮤니티로부터의 공헌과 피드백을 매우 좋아합니다. 코드를 제공하려면 관심있는 저장소를 분기하여 변경합니다. 다음으로 PR 또는 풀 요구를 요청하세요. 아, 시험해 보는 것도 잊지말세요! 또, 기여 가이드 라인(TBA) 도 봐 주세요.
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+피드백에 대해서는 hello@subquery.network 에 문의해 주시거나, [discord channel](https://discord.com/invite/78zg8aBSMG)채널에서 말해주세요.
 
-## How much does it cost to host my project in SubQuery Projects?
+## 서브 쿼리 프로젝트에서 프로젝트를 호스트하는 데 얼마나 드나요?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+서브 쿼리 프로젝트에서 당신의 프로젝트를 호스트하는 것은 무료입니다 - 이는 저희들이 커뮤니티에 환원하는 방법입니다. 프로젝트의 호스트 방법에 대해서는, [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md)튜토리얼을 참조해 주세요.
 
-## What are deployment slots?
+## 전개 슬롯이 뭐죠?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+전개 슬롯은 개발 환경에 해당하는 [SubQuery Projects](https://project.subquery.network) 기능입니다. 예를 들어 어느 소프트웨어 조직에서나 개발환경과 실제 가동환경이 최소한 존재합니다(로컬호스트는 무시됩니다). 통상, 조직의 요구와 개발 설정에 따라, 스테이징이나 프로비저닝전의 환경, 또 QA등의 추가 환경이 포함됩니다.
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+서브 쿼리에는 현재 2개의 슬롯이 있습니다. 스테이징 슬롯 및 실제 가동 슬롯. 그러면 개발자는 서브 쿼리를 스테이징 환경에 배치하고 버튼 클릭 한번으로 "실가동 환경으로 승격"할 수 있습니다.
 
-## What is the advantage of a staging slot?
+## 스테이징 슬롯의 장점은 무엇인가요?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+스테이징 슬롯을 사용하는 주요 장점은 서브 쿼리 프로젝트의 새로운 릴리즈를 공개하지 않고도 준비할 수 있습니다. 스테이징 슬롯이 실제 가동 애플리케이션에 영향을 주지 않고 모든 데이터를 재인덱스화할 때까지 기다릴 수 있습니다.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+스테이징 슬롯은, [Explorer](https://explorer.subquery.network/)에서는 일반에는 공개되지 않고, 유저만이 참조할 수 있는 일의 URL이 있습니다. 물론 다른 환경에서는 생산에 영향을 주지 않고 새로운 코드를 테스트할 수 있습니다.
 
-## What are extrinsics?
+## 외인성이란 무엇인가요?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+이미 블록체인 개념에 익숙하다면 외인성은 거래에 필적한다고 생각할 수 있습니다. 그러나 더 공식적으로 외인성은 사슬 밖에서 와서 블록에 포함된 정보의 일부입니다. 외인성에는 3개의 카테고리가 있습니다. 이것들은 고유의 것, 서명된 거래, 서명되지 않은 거래들입니다.
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+고유 외인성은 서명되지 않았고 블록 작성자에 의해 블록에 삽입되기만 하는 정보입니다.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+서명된 트랜잭션 외부 정보는 트랜잭션을 발행한 계정의 서명을 포함하는 트랜잭션입니다. 이들은 거래를 체인에 포함시키기 위해 수수료를 물게 돼 있다.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+서명이 없는 트랜잭션은 트랜잭션을 발행한 계정의 서명을 포함하지 않는 트랜잭션입니다. 서명되어 있기 때문에 수수료를 납부하는 사람이 없으므로 서명되지 않은 외부 거래는 주의가 필요합니다. 그래서 트랜잭션 큐는 스팸을 방지하기 위한 경제 논리가 부족합니다.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+상세한 것에 대하여는, [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics) 을 클릭해 주세요.
 
-## What is the endpoint for the Kusama network?
+## Kusama 네트워크의 엔드포인트는 무엇입니까?
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+Kusama 네트워크의 network.endpoint는 `wss://kusama.api.onfinality.io/public-ws`입니다.
 
-## What is the endpoint for the Polkadot mainnet network?
+## Polkadot 메인넷 네트워크의 엔드포인트는 무엇입니까?
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+Polkadot 네트워크의 network.endpoint는 `wss://polkadot.api.onfinality.io/public-ws`입니다.
