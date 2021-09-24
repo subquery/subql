@@ -1,13 +1,13 @@
 # GraphQL Schema
 
-## Defining Entities
+## Xác định các thực thể
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+` schema.graphql ` xác định các schema GraphQL khác nhau. Do cách thức hoạt động của ngôn ngữ truy vấn GraphQL, schema về cơ bản sẽ chỉ ra hình dạng dữ liệu của bạn từ SubQuery. Để tìm hiểu thêm về cách viết bằng ngôn ngữ schema GraphQL, chúng tôi khuyên bạn nên xem [ Schema và Các Thể Loại](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Quan trọng: Khi bạn thực hiện bất kỳ thay đổi nào đối với tệp schema, hãy đảm bảo rằng bạn tạo lại thư mục loại của mình bằng lệnh sau ` fiber codegen `**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Các thực thể
+Mỗi thực thể phải xác định các trường bắt buộc của nó ` id ` với loại ` ID! `. It is used as the primary key and unique among all entities of the same type.
 
 Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
