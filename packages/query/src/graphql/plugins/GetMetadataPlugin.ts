@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import url from 'url';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
@@ -10,7 +9,7 @@ const {version: packageVersion} = require('../../../package.json');
 
 const indexerUrl = argv('indexer') as string | undefined;
 
-type Meta = {
+type Metadata = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
@@ -24,9 +23,9 @@ type Meta = {
 
 const metaCache = {
   queryNodeVersion: packageVersion,
-} as Meta;
+} as Metadata;
 
-export const GetMetaPlugin = makeExtendSchemaPlugin((build) => {
+export const GetMetadataPlugin = makeExtendSchemaPlugin((build) => {
   setAsyncInterval(async () => {
     let health;
     let meta;
@@ -50,7 +49,7 @@ export const GetMetaPlugin = makeExtendSchemaPlugin((build) => {
 
   return {
     typeDefs: gql`
-      type _Meta {
+      type _Metadata {
         lastProcessedHeight: Int
         lastProcessedTimestamp: Date
         targetHeight: Int
@@ -62,12 +61,12 @@ export const GetMetaPlugin = makeExtendSchemaPlugin((build) => {
         queryNodeVersion: String
       }
       extend type Query {
-        _meta: _Meta
+        _metadata: _Metadata
       }
     `,
     resolvers: {
       Query: {
-        _meta: () => metaCache,
+        _metadata: () => metaCache,
       },
     },
   };
