@@ -1,16 +1,16 @@
-# Connect to your New Project
+# Kết nối đến Dự Án Mới của bạn
 
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed Query endpoint.
+Sau khi quá trình triển khai của bạn hoàn tất thành công và các node của chúng tôi đã lập chỉ mục dữ liệu của bạn từ chuỗi, bạn sẽ có thể kết nối đến dự án của mình thông qua Query endpoint được hiển thị.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![Các dự án đang được triển khai và đồng bộ](/assets/img/projects-deploy-sync.png)
 
 Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started.
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![Các dự án trong trình khám phá truy vấn con](/assets/img/projects-explorer.png)
 
-# Learn more about GraphQL
+# Tìm hiểu thêm về GraphQL
 
-You can follow the [official GraphQL guide here](https://graphql.org/learn/) to learn more about GraphQL, how it works, and how to use it:
-- There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
-- For an in-depth learning experience with practical tutorials, see [How to GraphQL](https://www.howtographql.com/).
-- Check out the free online course, [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
+Bạn có thể làm theo [hướng dẫn GraphQL chính thức tại đây](https://graphql.org/learn/) để tìm hiểu thêm về GraphQL, cách thức hoạt động và cách sử dụng:
+- Có nhiều thư viện để giúp bạn thực thi GraphQL trong [nhiều ngôn ngữ khác nhau](https://graphql.org/code/)
+- Để hiểu sâu hơn bằng các hướng dẫn thực hành, hãy xem qua [Cách để GraphQL](https://www.howtographql.com/).
+- Tìm hiểu khóa học online miễn phí, [Khám phá GraphQL: Một Ngôn Ngữ Query dành cho APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
