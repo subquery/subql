@@ -1,19 +1,19 @@
-# Branding Materials
+# Materi Merek
 
-**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
+**Semua fitur merek SubQuery adalah hak milik dan kami memperlakukan merek kami dengan sangat serius.**
 
-If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
+Jika Anda memilih untuk menggunakan merek dagang, logo, desain, atau fitur merek lainnya, harap ikuti panduan di sini dengan cermat atau hubungi kami melalui media sosial untuk klarifikasi.
 
-If in doubt, please ask!
+Jika ragu, silakan bertanya!
 
-## Exportable Figma File
+## File Figma yang Dapat Diekspor
 
 Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
 
-[Figma - SubQuery Brand Resources](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
+[Figma - Sumber Daya Merek SubQuery](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 
-## Brand Assets Package
+## Paket Aset Merek
 
-A smaller ZIP package of brand assets
+Paket aset merek dengan file ZIP yang lebih kecil
 
 [public_branding.zip](https://static.subquery.network/public_branding.zip)
