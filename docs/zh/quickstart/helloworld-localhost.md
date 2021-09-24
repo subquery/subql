@@ -1,35 +1,35 @@
 # Hello World (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+欢迎使用 SubQuery Hello World 快速入门。 快速入门旨在通过几个简单的步骤向您展示如何在 Docker 中运行默认的启动项目。
 
-## Learning objectives
+## 学习目标
 
-At the end of this quick start, you should:
+在本快速入门结束时，您应该：
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- 了解所需的先决条件
+- 了解基本的常用命令
+- 能够导航到 localhost:3000 并查看 playground
+- 运行一个简单的查询来获取 Polkadot 主网的区块高度
 
-## Intended audience
+## 目标受众
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+本指南面向具有一些开发经验并有兴趣了解更多关于 SubQuery 的新开发人员。
 
-## Video guide
+## 视频指南
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## 先决条件
 
-You will need:
+您会需要：
 
-- yarn or npm package manager
+- yarn 或 npm 软件包管理器
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+您可以在终端中运行以下命令来查看您是否已经拥有这些先决条件。
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+对于更高级的用户，复制并粘贴以下内容：
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+这应该返回：(对于 npm 用户，用 npm 替换 yarn）
 
 ```shell
 My yarn version is: 1.22.10
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If you get the above, then you are good to go. If not, follow these links to install them:
+如果你得到了上面的内容，那么你就可以开始了。 如果没有，请按照以下链接安装它们：
 
 - [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Step 1: Initialise project
+## 1. 第1步：初始化项目
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+开始使用 SubQuery 的第一步是运行 `subql init` 命令。 让我们初始化一个名为 `subqlHelloWorld` 的启动项目。 请注意，只有作者是强制性的。 其他所有内容都在下面都是空着的。
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -73,7 +73,7 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+请不要忘记切换到这个新目录。
 
 ```shell
 cd subqlHelloWorld
@@ -81,7 +81,7 @@ cd subqlHelloWorld
 
 ## 2. Step 2: Install dependencies
 
-Now do a yarn or node install to install the various dependencies.
+现在执行 yarn 或 node install 以安装各种依赖包。
 
 <CodeGroup> # Yarn yarn install # NPM npm install
 
@@ -105,7 +105,7 @@ success Saved lockfile.
 
 ## 3. Step 3: Generate code
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+现在运行 `yarn codegen` 生成来自 GraphQL schema 的Typescript。
 
 <CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
 
@@ -127,9 +127,9 @@ $ ./node_modules/.bin/subql codegen
 
 **Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
 
-## 4. Step 4: Build code
+## 4. `yarn build` 示例
 
-The next step is to build the code with `yarn build`.
+下一步是使用 `yarn building` 来构建代码。
 
 <CodeGroup> # Yarn yarn build # NPM npm run-script build
 
@@ -142,9 +142,9 @@ $ tsc -b
 
 ## 5. Run Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`. Run `docker-compose pull && docker-compose up`.
+使用 Docker 可以让您非常快速地运行此示例，因为 Docker 中提供所有必需的基础设施。 运行 `docker-compose praw && docker-compose up`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+这将把一切都变成现实，最终，您将获得正在被获取的区块。
 
 ```shell
 > #SNIPPET
@@ -170,7 +170,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ## 6. Browse playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+导航到 http://localhost:3000/， 并将下面的查询粘贴到屏幕左侧，然后点击播放按钮。
 
 ```
 {
@@ -185,12 +185,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+在 localhost 上的 SubQuery playground
 
 ![playground localhost](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+Playground 中的区块计数也应与终端中的区块计数（严格来说是区块高度）相匹配。
 
-## Summary
+## 概括
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+在这个快速入门中，我们演示了在 Docker 环境中启动和运行一个初始项目的基本步骤，然后导航到 localhost:3000，并运行查询以返回主网 Polkadot network 的区块号。
