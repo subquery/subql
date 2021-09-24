@@ -19,6 +19,14 @@ type Args = ReturnType<typeof getYargsOption>['argv'];
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
+
+    if (key === 'network-registry') {
+      try {
+        value = JSON.parse(value as string);
+      } catch(e) {
+        throw new Error('Argument `network-registry` is not valid JSON');
+      }
+    }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
   }, {});
@@ -66,17 +74,21 @@ export class ConfigureModule {
     );
 
     const project = async () => {
-      const p = await SubqueryProject.create(projectPath).catch((err) => {
+      const p = await SubqueryProject.create(projectPath, config.networkRegistry).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
 
-      if (config.networkEndpoint) {
-        p.network.endpoint = config.networkEndpoint;
+      // Overwrite project manifest v0.0.1 endpoint and dictionary
+      if (p.projectManifest.isV0_0_1) {
+        if (config.networkEndpoint) {
+          p.network.endpoint = config.networkEndpoint;
+        }
+        if (config.networkDictionary) {
+          p.network.dictionary = config.networkDictionary;
+        }
       }
-      if (config.networkDictionary) {
-        p.network.dictionary = config.networkDictionary;
-      }
+
       return p;
     };
 

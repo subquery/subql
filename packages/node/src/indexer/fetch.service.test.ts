@@ -31,6 +31,7 @@ function testSubqueryProject(): SubqueryProject {
       ],
     } as any),
     '',
+    {},
   );
   return project;
 }

@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+import { loadFromJsonOrYaml, ProjectNetworkConfig } from '@subql/common';
 import { last } from 'lodash';
-import parseJson from 'parse-json';
 import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';
+
+export type NetworkRegistry = Record<string /*genesisHash*/, ProjectNetworkConfig>;
 
 export interface IConfig {
   readonly configDir?: string;
@@ -21,6 +21,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
+  readonly networkRegistry: NetworkRegistry;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -32,6 +33,7 @@ export interface IConfig {
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
   Pick<IConfig, 'subqueryName' | 'subquery'>;
 
+
 const DEFAULT_CONFIG = {
   localMode: false,
   batchSize: 100,
@@ -42,6 +44,13 @@ const DEFAULT_CONFIG = {
   indexCountLimit: 10,
   timestampField: true,
   proofOfIndex: false,
+  networkRegistry: {
+    /* TODO provide a default list */
+    '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': {
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot',
+    },
+  },
 };
 
 export class NodeConfig implements IConfig {
@@ -52,19 +61,13 @@ export class NodeConfig implements IConfig {
     configFromArgs?: Partial<IConfig>,
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
-    const rawContent = fs.readFileSync(filePath);
-    let content: IConfig;
-    if (fileInfo.ext === '.json') {
-      content = parseJson(rawContent.toString(), filePath);
-    } else if (fileInfo.ext === '.yaml' || fileInfo.ext === '.yml') {
-      content = yaml.load(rawContent.toString()) as IConfig;
-    } else {
-      throw new Error(
-        `extension ${fileInfo.ext} of provided config file not supported`,
-      );
-    }
-    content = assign(content, configFromArgs, { configDir: fileInfo.dir });
-    return new NodeConfig(content);
+
+    const config = assign(
+      loadFromJsonOrYaml(filePath),
+      configFromArgs,
+      { configDir: fileInfo.dir}
+    ) as IConfig;
+    return new NodeConfig(config);
   }
 
   constructor(config: MinConfig) {
@@ -93,8 +96,16 @@ export class NodeConfig implements IConfig {
     return this._config.batchSize;
   }
 
+  get networkEndpoint(): string | undefined {
+    return this._config.networkEndpoint;
+  }
+
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get networkRegistry(): NetworkRegistry {
+    return this._config.networkRegistry;
   }
 
   get timeout(): number {
@@ -110,10 +121,6 @@ export class NodeConfig implements IConfig {
 
   get outputFmt(): 'json' | undefined {
     return this._config.outputFmt;
-  }
-
-  get networkEndpoint(): string | undefined {
-    return this._config.networkEndpoint;
   }
 
   get logLevel(): LevelWithSilent {

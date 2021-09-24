@@ -12,17 +12,17 @@ describe('sandbox for subql-node', () => {
     vm.removeAllListeners();
   });
 
-  it('resolve entry from package.json', () => {
-    vm = new IndexerSandbox(
-      {
-        store: undefined,
-        api: undefined,
-        root: path.resolve(__dirname, '../../test/sandbox'),
-      },
-      new NodeConfig({ subquery: '', subqueryName: '' }),
-    );
-    expect(vm.entry).toEqual('./main.js');
-  });
+  // it('resolve entry from package.json', () => {
+  //   vm = new IndexerSandbox(
+  //     {
+  //       store: undefined,
+  //       api: undefined,
+  //       root: path.resolve(__dirname, '../../test/sandbox'),
+  //     },
+  //     new NodeConfig({ subquery: '', subqueryName: '' }),
+  //   );
+  //   expect(vm.entry).toEqual('./main.js');
+  // });
 
   it('wait until promise resolved', async () => {
     vm = new IndexerSandbox(
@@ -30,6 +30,7 @@ describe('sandbox for subql-node', () => {
         store: undefined,
         api: undefined,
         root: path.resolve(__dirname, '../../test/sandbox'),
+        entry: './main.js'
       },
       new NodeConfig({ subquery: '', subqueryName: '' }),
     );

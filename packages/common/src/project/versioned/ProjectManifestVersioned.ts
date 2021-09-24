@@ -16,6 +16,14 @@ const SUPPORTED_VERSIONS = {
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[keyof typeof SUPPORTED_VERSIONS]>;
 
+export function manifestIsV0_0_1(manifest: IProjectManifest): manifest is ProjectManifestV0_0_1Impl {
+  return manifest.specVersion === '0.0.1';
+}
+
+export function manifestIsV0_0_2(manifest: IProjectManifest): manifest is ProjectManifestV0_0_2Impl {
+  return manifest.specVersion === '0.0.2';
+}
+
 export class ProjectManifestVersioned implements IProjectManifest {
   private _impl: ProjectManifestImpls;
 
@@ -61,7 +69,11 @@ export class ProjectManifestVersioned implements IProjectManifest {
   }
 
   get schema(): string {
-    return this._impl.schema;
+    if (manifestIsV0_0_1(this._impl)) {
+      return this._impl.schema;
+    }
+
+    return this._impl.schema.file;
   }
 
   get specVersion(): string {
@@ -75,4 +87,5 @@ export class ProjectManifestVersioned implements IProjectManifest {
   get repository(): string {
     return this._impl.repository;
   }
+
 }

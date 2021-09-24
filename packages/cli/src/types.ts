@@ -4,7 +4,7 @@
 export interface ProjectSpec {
   name: string;
   repository?: string;
-  endpoint: string;
+  network: string;
   author: string;
   description?: string;
   version: string;

@@ -5,7 +5,7 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestV0_0_1 as ProjectManifest} from '@subql/common';
+import {ProjectManifestV0_0_2 as ProjectManifest} from '@subql/common';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
@@ -16,7 +16,7 @@ const STARTER_PATH = 'https://github.com/subquery/subql-starter';
 export async function createProject(localPath: string, project: ProjectSpec): Promise<string> {
   const projectPath = path.join(localPath, project.name);
   try {
-    await simpleGit().clone(STARTER_PATH, projectPath);
+    await simpleGit().clone(STARTER_PATH, projectPath, ['-b', 'v0.0.2', '--single-branch']);
   } catch (e) {
     throw new Error('Failed to clone starter template from git');
   }
@@ -58,8 +58,10 @@ async function prepareManifest(projectPath: string, project: ProjectSpec): Promi
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
   const data = yaml.load(manifest) as ProjectManifest;
   data.description = project.description ?? data.description;
-  data.network.endpoint = project.endpoint;
+  data.network.genesisHash = project.network;
   data.repository = project.repository ?? '';
+  data.version = project.version;
+  data.name = project.name;
   const newYaml = yaml.dump(data);
   await fs.promises.writeFile(yamlPath, newYaml, 'utf8');
 }

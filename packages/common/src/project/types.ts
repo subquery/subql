@@ -3,17 +3,17 @@
 
 import {SubqlKind} from './constants';
 
-export interface IProjectManifest {
+export interface IProjectManifest<M extends SubqlMapping = SubqlMapping> {
   specVersion: string;
   description: string;
   repository: string;
-  dataSources: SubqlDataSource[];
-  schema: string;
+  dataSources: SubqlDataSource<M>[];
 }
 
 export interface ProjectNetworkConfig {
   endpoint: string;
   dictionary?: string;
+  genesisHash?: string;
 }
 
 // [startSpecVersion?, endSpecVersion?] closed range
@@ -60,15 +60,14 @@ export interface SubqlMapping {
   handlers: SubqlHandler[];
 }
 
-export interface SubqlDatasource {
+export interface SubqlDatasource<M extends SubqlMapping> {
   name: string;
   kind: SubqlKind;
-  filter?: SubqlNetworkFilter;
   startBlock?: number;
-  mapping: SubqlMapping;
+  mapping: M;
 }
 
-export interface SubqlRuntimeDatasource extends SubqlDatasource {
+export interface SubqlRuntimeDatasource<M extends SubqlMapping = SubqlMapping> extends SubqlDatasource<M> {
   kind: SubqlKind.Runtime;
 }
 
@@ -76,4 +75,4 @@ export interface SubqlNetworkFilter {
   specName: string;
 }
 
-export type SubqlDataSource = SubqlRuntimeDatasource;
+export type SubqlDataSource<M extends SubqlMapping = SubqlMapping> = SubqlRuntimeDatasource<M>;

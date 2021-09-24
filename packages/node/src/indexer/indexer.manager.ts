@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -8,6 +9,8 @@ import { ApiPromise } from '@polkadot/api';
 import {
   buildSchema,
   getAllEntitiesRelations,
+  isRuntimeDataSourceV0_0_2,
+  RuntimeDataSrouceV0_0_1,
   SubqlKind,
   SubqlRuntimeDatasource,
 } from '@subql/common';
@@ -34,9 +37,25 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('indexer');
 const { argv } = getYargsOption();
 
+function getProjectEntry(root: string): string {
+  const pkgPath = path.join(root, 'package.json');
+  try {
+    const content = fs.readFileSync(pkgPath).toString();
+    const pkg = JSON.parse(content);
+    if (!pkg.main) {
+      return './dist';
+    }
+    return pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
+  } catch (err) {
+    throw new Error(
+      `can not find package.json within directory ${this.option.root}`,
+    );
+  }
+}
+
 @Injectable()
 export class IndexerManager {
-  private vm: IndexerSandbox;
+  private vms: IndexerSandbox[];
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
@@ -69,13 +88,14 @@ export class IndexerManager {
     try {
       const inject = block.specVersion !== this.prevSpecVersion;
       await this.apiService.setBlockhash(block.block.hash, inject);
-      for (const ds of this.filteredDataSources) {
+      for (const [index, ds] of this.filteredDataSources.entries()) {
+        const vm = this.vms[index];
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
               case SubqlKind.BlockHandler:
                 if (SubstrateUtil.filterBlock(block, handler.filter)) {
-                  await this.vm.securedExec(handler.handler, [block]);
+                  await vm.securedExec(handler.handler, [block]);
                 }
                 break;
               case SubqlKind.CallHandler: {
@@ -84,7 +104,7 @@ export class IndexerManager {
                   handler.filter,
                 );
                 for (const e of filteredExtrinsics) {
-                  await this.vm.securedExec(handler.handler, [e]);
+                  await vm.securedExec(handler.handler, [e]);
                 }
                 break;
               }
@@ -94,7 +114,7 @@ export class IndexerManager {
                   handler.filter,
                 );
                 for (const e of filteredEvents) {
-                  await this.vm.securedExec(handler.handler, [e]);
+                  await vm.securedExec(handler.handler, [e]);
                 }
                 break;
               }
@@ -144,7 +164,6 @@ export class IndexerManager {
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
-    await this.initVM();
     await this.ensureMetadata(this.subqueryState.dbSchema);
     if (this.nodeConfig.proofOfIndex) {
       await this.poiService.init(this.subqueryState.dbSchema);
@@ -158,27 +177,29 @@ export class IndexerManager {
       });
     this.filteredDataSources = this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
+
+    // Start VM for each data source
+    this.vms = await Promise.all(this.filteredDataSources.map(dataSource => {
+      const entry = this.getDataSourceEntry(dataSource);
+      return this.initVM(entry);
+    }));
   }
 
-  private async initVM(): Promise<void> {
+  private async initVM(entry: string): Promise<IndexerSandbox> {
     const api = await this.apiService.getPatchedApi();
-    this.vm = new IndexerSandbox(
+    return new IndexerSandbox(
       {
         store: this.storeService.getStore(),
         api,
         root: this.project.path,
+        entry
       },
       this.nodeConfig,
     );
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.project.dataSources
-      .filter(
-        (ds) =>
-          !ds.filter?.specName ||
-          ds.filter.specName === this.api.runtimeVersion.specName.toString(),
-      )
+    const startBlocksList = this.getDataSourcesForSpecName()
       .map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {
       logger.error(
@@ -282,11 +303,7 @@ export class IndexerManager {
   }
 
   private filterDataSources(): SubqlRuntimeDatasource[] {
-    const dataSourcesFilteredSpecName = this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
-    );
+    const dataSourcesFilteredSpecName = this.getDataSourcesForSpecName();
     if (dataSourcesFilteredSpecName.length === 0) {
       logger.error(
         `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
@@ -303,5 +320,22 @@ export class IndexerManager {
       process.exit(1);
     }
     return dataSourcesFilteredStartBlock;
+  }
+
+  private getDataSourcesForSpecName(): SubqlRuntimeDatasource[] {
+    const specName = this.api.runtimeVersion.specName.toString();
+    return this.project.dataSources.filter(ds =>
+      isRuntimeDataSourceV0_0_2(ds) ||
+      !!(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
+      (ds as RuntimeDataSrouceV0_0_1).filter.specName === specName
+    );
+  }
+
+  private getDataSourceEntry(dataSource: SubqlRuntimeDatasource): string {
+    if (isRuntimeDataSourceV0_0_2(dataSource)) {
+      return dataSource.mapping.file;
+    } else {
+      return getProjectEntry(this.project.path);
+    }
   }
 }

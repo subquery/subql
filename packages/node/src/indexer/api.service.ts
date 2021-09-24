@@ -16,7 +16,7 @@ import { RpcInterface } from '@polkadot/rpc-core/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
-import { assign, pick } from 'lodash';
+import { assign } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -30,7 +30,6 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
-  private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -43,8 +42,8 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   async init(): Promise<ApiService> {
-    const { network } = this.project;
-    let provider;
+    const { chainTypes, network } = this.project;
+    let provider: WsProvider | HttpProvider;
     if (network.endpoint.startsWith('ws')) {
       provider = new WsProvider(network.endpoint);
     } else if (network.endpoint.startsWith('http')) {
@@ -55,15 +54,8 @@ export class ApiService implements OnApplicationShutdown {
     };
     assign(
       apiOption,
-      pick(network, [
-        'types',
-        'typesAlias',
-        'typesBundle',
-        'typesChain',
-        'typesSpec',
-      ]),
+      chainTypes,
     );
-    this.apiOption = apiOption;
     this.api = await ApiPromise.create(apiOption);
     this.networkMeta = {
       chain: this.api.runtimeChain.toString(),
@@ -82,6 +74,11 @@ export class ApiService implements OnApplicationShutdown {
     this.api.on('disconnected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
+
+    if (network.genesisHash && network.genesisHash !== this.networkMeta.genesisHash) {
+      throw new Error(`Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`);
+    }
+
     return this;
   }
 
@@ -93,13 +90,7 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged
-    const {
-      network: { endpoint },
-    } = this.project;
-    const patchedApi = endpoint.startsWith('ws')
-      ? this.getApi().clone()
-      : new ApiPromise(this.apiOption);
+    const patchedApi = this.getApi().clone();
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',
