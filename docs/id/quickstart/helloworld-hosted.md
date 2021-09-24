@@ -2,7 +2,7 @@
 
 Tujuan dari quick start ini adalah untuk menunjukkan bagaimana Anda dapat menjalankan proyek starter default pada SubQuery Projects (layanan terkelola kami) dengan beberapa langkah mudah.
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+Kita akan mengambil proyek starter sederhana (dan semua yang telah kami pelajari sejauh ini) tetapi alih-alih menjalankannya secara lokal pada Docker, kita akan memanfaatkan infrastruktur hosting SubQuery yang terkelola. Dengan kata lain, kita akan membiarkan SubQuery melakukan semua pekerjaan berat, menjalankan, dan mengelola infrastruktur produksi.
 
 ## Tujuan Pembelajaran
 
@@ -29,7 +29,7 @@ Anda akan memerlukan:
 
 - akun GitHub
 
-## 1. Create your project
+## 1. Buatlah proyek Anda
 
 Mari membuat proyek bernama subql_hallowworld dan menjalankan instalasi wajib, codegen, dan bangun dengan package manager favorit Anda.
 
@@ -42,9 +42,9 @@ yarn build
 
 JANGAN jalankan perintah docker.
 
-## 2. Create a GitHub repo
+## 2. Buatlah repo GitHub
 
-In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
+Pada GitHub, buatlah repositori publik baru. Berikan nama dan atur visibilitas Anda ke publik. Di sini, semuanya akan disimpan sebagai default untuk saat ini.
 
 ![buat repo github](/assets/img/github_create_new_repo.png)
 
@@ -52,9 +52,9 @@ Catat URL GitHub Anda, ini harus bersifat publik agar SubQuery dapat mengaksesny
 
 ![buat repo github](/assets/img/github_repo_url.png)
 
-## 3. Push to GitHub
+## 3. Push ke GitHub
 
-Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Kembali ke direktori proyek Anda, inisialisasi ini sebagai direktori git. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
 
 ```shell
 git init
