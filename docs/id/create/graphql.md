@@ -2,20 +2,20 @@
 
 ## Menentukan Entitas
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+File `schema.graphql` menentukan berbagai skema GraphQL. Karena cara kerja bahasa kueri GraphQL, file skema pada dasarnya menentukan bentuk data Anda dari SubQuery. Untuk mempelajari lebih lanjut tentang bagaimana cara menulis di bahasa skema GraphQL, kami menyarankan untuk memeriksa [Skema dan Jenis](https://graphql.org/learn/schema/#type-language).
 
 **Penting: Saat Anda membuat perubahan apa pun ke file skema, mohon memastikan bahwa Anda meregenerasi direktori jenis Anda dengan perintah berikut `yarn codegen`**
 
 ### Entitas
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+Masing-masing entitas harus menentukan bidangnya yang diperlukan `id` dengan jenis `ID!`. Digunakan sebagai kunci utama dan unik di antara semua entitas berjenis sama.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Bidang yang tidak bisa di null diindikasikan dengan `!`. Mohon lihat contoh di bawah ini:
 
 ```graphql
-type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+type Contoh @entity {
+  id: ID! # bidang id selalu diperlukan dan harus terlihat seperti ini
+  name: String! # Ini adalah bidang yang diperlukan
+  address: String # Ini adalah bidang opsional
 }
 ```
 
@@ -28,22 +28,22 @@ Kami saat ini mendukung jenis skalar:
 - `BigInt`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+- `<EntityName>` untuk entitas hubungan yang bersarang, Anda bisa menggunakan nama entitas yang ditentukan sebagai salah satu bidang. Mohon lihat di [Hubungan Entitas](#entity-relationships).
 - `JSON` secara alternatif bisa menyimpan data yang terstruktur, mohon lihat [jenis JSON](#json-type)
 
 ## Mengindeks berdasarkan bidang kunci non primer
 
 Untuk meningkatkan performa kueri, indeks bidang entitas dengan mengimplementasikan anotasi `@index` di bidang kunci non primer.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Akan tetapi, kami tidak mengizinkan pengguna untuk menambahkan anotasi `@index` di obyek [JSON](#json-type) apa pun. Secara default, indeks secara otomatis ditambahkan ke kunci asing dan bidang JSON mana pun di database, tetapi hanya untuk mendorong performa layanan kueri.
 
 Berikut sebuah contoh.
 
 ```graphql
-type User @entity {
+type Pengguna @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  name: String! @index(unique: true) # unique bisa diatur menjadi true atau false
+  title: Title! # Indeks secara otomatis ditambahkan ke bidang kunci asing
 }
 
 type Title @entity {
@@ -51,7 +51,7 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Berasumsi kita mengetahui nama pengguna ini, tetapi kita tidak mengetahui nilai id persisnya, daripada mengekstrak semua pengguna dan kemudian memfilter berdasarkan nama kita bisa menambahkan `@index`di belakang bidang nama. Ini menjadikan kueri jauh lebih cepat dan kita bisa dengan tambahan melewati `unique: true`untuk memastikan keunikan.
 
 **Jika sebuah bidang tidak unik, ukuran hasil maksimalnya adalah 100**
 
@@ -76,7 +76,7 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Cap
 
 ## Hubungan Entitas
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Entitas sering kali telah menyarangkan hubungan dengan entitas lain. Mengatur nilai bidang ke nama entitas lain akan menentukan hubungan satu per satu di antara dua entitas ini secara default.
 
 Hubungan entitas berbeda (satu per satu, satu ke banyak, dan banyak ke banyak) bisa dikonfigurasikan menggunakan contoh di bawah ini.
 
@@ -97,7 +97,7 @@ type Passport @entity {
 }
 ```
 
-or
+atau
 
 ```graphql
 type Person @entity {
@@ -200,7 +200,7 @@ type Transfer @entity {
 
 ## Jenis JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Kami mendukung penyimpanan data sebagai jenis JSON, yang merupakan cara cepat untuk menyimpan data terstruktur. Kami akan secara otomatis menghasilkan antarmuka JSON yang berkaitan untuk mengkueri data ini dan menghemat waktu Anda menentukan dan mengatur entitas.
 
 Kami menyarankan pengguna menggunakan jenis JSON di skenario berikut:
 - Saat menyimpan data terstruktur di satu bidang lebih bisa diatur daripada membuat beberapa entitas berbeda.
@@ -208,9 +208,9 @@ Kami menyarankan pengguna menggunakan jenis JSON di skenario berikut:
 - Skema ini tidak stabil dan sering berubah
 
 ### Menentukan direktif JSON
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+Menentukan properti sebagai jenis JSON dengan menambahkan anotasi `jsonField` di entitas. Ini akan secara otomatis menghasilkan antarmuka untuk semua obyek JSON di proyek Anda di bawah `types/interfaces.ts`, dan Anda bisa mengaksesnya di fungsi pemetaan Anda.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+Tidak seperti entitas, obyek direktif jsonField tidak memerlukan bidang `id` apa pun. Obyek JSON juga bisa bersarang dengan obyek JSON lainnya.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -233,10 +233,10 @@ type User @entity {
 
 Kekurangan menggunakan jenis JSON adalah dampak sekilas pada efisiensi kueri saat memfilter, karena setiap kali melakukan pencarian teks, begitu pula di seluruh entitas.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Akan tetapi, dampaknya masih bisa diterima di layanan kueri kami. Berikut sebuah contoh cara menggunakan operator `contains` di kueri GraphQL pada bidang JSON untuk mencari 5 pengguna pertama yang memiliki nomor telepon yang mengandung '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#Untuk mencari 5 pengguna pertama yang memiliki nomor telepon yang mengandung '0064'.
 
 query{
   user(
