@@ -1,6 +1,6 @@
 # Terminology
 
-- SubQuery Project (*where the magic happens*): A definition ([`@subql/cli`](https://www.npmjs.com/package/@subql/cli)) of how a SubQuery Node should traverse and aggregate a projects network and how the data should the transformed and stored to enable useful GraphQL queries
-- SubQuery Node (*where the work is done*): A package ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) that will accept a SubQuery project definiton, and run a node that constantly indexes a connected network to a database
-- SubQuery Query Service (*where we get the data from*): A package ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) that interacts with the GraphQL API of a deployed SubQuery node to query and view the indexed data
-- GraphQL (*how we query the data*): A query langage for APIs that is specifically suited for flexible graph based data - see [graphql.org](https://graphql.org/learn/)
+- Dự án SubQuery (*nơi phép màu nảy sinh*): Định nghĩa ([`@subql/cli`](https://www.npmjs.com/package/@subql/cli)) về cách SubQuery Node sẽ đi qua và tổng hợp một mạng dự án, về cách dữ liệu sẽ được chuyển đổi và lưu trữ để kích hoạt các truy vấn GraphQL hữu ích
+- SubQuery Node (*nơi công việc được hoàn thành*): package này ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) sẽ chấp nhận định nghĩa của dự án SubQuery và chạy một node có tác dụng liên tục lập Index cho mạng được kết nối gắn với một cơ sở dữ liệu
+- Dịch vụ truy vấn SubQuery (*nơi để lấy dữ liệu*): Package này ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) tương tác với API GraphQL của một Node SubQuery đã được triển khai để truy vấn và xem dữ liệu được lập Index
+- GraphQL (*cách để truy vấn dữ liệu*): Đây là một ngôn ngữ truy vấn dành cho các API, đặc biệt phù hợp với dữ liệu dựa trên biểu đồ linh hoạt - xem [graphql.org](https://graphql.org/learn/)
