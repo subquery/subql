@@ -1,56 +1,56 @@
-# Quick Start Guide
+# Panduan Memulai Cepat
 
-In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
+Dalam panduan Mulai Cepat ini, kita akan membuat proyek awal sederhana yang dapat Anda gunakan sebagai kerangka kerja untuk mengembangkan Proyek SubQuery Anda sendiri.
 
-At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
+Di akhir panduan ini, Anda akan memiliki proyek SubQuery yang berjalan pada node SubQuery dengan titik akhir GraphQL tempat dimana Anda dapat membuat kueri data.
 
-If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
+Jika Anda belum melakukannya, sebaiknya Anda membiasakan diri dengan [terminologi](../#terminology) yang digunakan di SubQuery.
 
-## Preparation
+## Persiapan
 
-### Local Development Environment
+### Lingkungan Pengembangan Lokal
 
-- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.
-- Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
-- SubQuery Nodes require Docker
+- [Naskah](https://www.typescriptlang.org/) diperlukan untuk mengkompilasi proyek dan menentukan tipe.
+- Baik CLI SubQuery dan Project yang dihasilkan memiliki dependensi dan memerlukan versi modern [Node](https://nodejs.org/en/).
+- Node SubQuery membutuhkan Docker
 
-### Install the SubQuery CLI
+### Pasang CLI SubQuery
 
-Install SubQuery CLI globally on your terminal by using NPM:
+Pasang SubQuery CLI secara global di terminal Anda dengan menggunakan NPM:
 
 ```shell
 # NPM
 npm install -g @subql/cli
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Harap dicatat bahwa kami **JANGAN** mendorong penggunaan `global benang` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan kesalahan di masa mendatang.
 
-You can then run help to see available commands and usage provide by CLI
+Kemudian Anda dapat menjalankan bantuan untuk melihat perintah dan penggunaan yang tersedia yang telah disediakan oleh CLI
 
 ```shell
-subql help
+bantuan subql
 ```
 
-## Initialise the Starter SubQuery Project
+## Inisialisasi Proyek SubQuery Pemula
 
-Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
+Di dalam direktori tempat Anda ingin membuat proyek SubQuery, cukup ganti `NAMA_PROYEK` dengan milik Anda dan jalankan perintah:
 
 ```shell
 subql init --starter PROJECT_NAME
 ```
 
-You'll be asked certain questions as the SubQuery project is initalised:
+Anda akan ditanya pertanyaan tertentu saat proyek SubQuery diinisialisasi:
 
-- Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
+- Repositori Git (Pilihan): Berikan URL Git ke repo tempat proyek SubQuery ini akan dihosting (saat dihosting di Penjelajah SubQuery)
 - RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Required): Enter the owner of this SubQuery project here
-- Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
-- Version (Required): Enter a custom version number or use the default (`1.0.0`)
-- License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
+- Penulis (Diperlukan): Masukkan pemilik proyek SubQuery ini di sini
+- Deskripsi (Pilihan): Anda dapat memberikan paragraf singkat tentang proyek Anda yang menjelaskan data apa yang ada di dalamnya dan apa yang dapat dilakukan pengguna dengannya
+- Versi (Diperlukan): Masukkan nomor versi khusus atau gunakan default (`1.0.0`)
+- Lisensi (Diperlukan): Berikan lisensi perangkat lunak untuk proyek ini atau terima default (`Apache-2.0`)
 
 After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
 
-Last, under the project directory, run following command to install the new project's dependencies.
+Terakhir, di bawah direktori proyek, jalankan perintah berikut untuk memasang dependensi proyek baru.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
