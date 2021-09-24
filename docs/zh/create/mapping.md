@@ -65,8 +65,8 @@ Our goal is to cover all data sources for users for mapping handlers (more than 
 
 These are the interfaces we currently support:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) 将在当前块上进行多个 <strong>相同</strong> 类型的查询。
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) 将在当前块进行<strong>不同</strong>类型的多个查询。
 
 These are the interfaces we do **NOT** support currently:
 - ~~api.tx.*~~
@@ -80,7 +80,7 @@ These are the interfaces we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
+See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
 ## RPC calls
 
@@ -135,11 +135,11 @@ SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
 You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
+In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
 
 ### Preparation
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+在项目 `src` 文件夹下创建一个新的目录 `api-interface` 来存储所有需要并生成的文件。 We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
 
 #### Metadata
 
@@ -158,7 +158,7 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
+Next, copy and paste the output to a JSON file. Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
 
 #### Type definitions
 We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
@@ -190,17 +190,6 @@ export default {
                     type: 'BlockHash',
                     isHistoric: true,
                     isOptional: false
-                },
-                {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                }
-            ],
-            type: 'Balance'
-        }
-    }
-}
 ```
 
 #### Packages
@@ -225,7 +214,6 @@ Here is a simplified version of `package.json`. Here is a simplified version of 
     "@polkadot/typegen": "^4.9.2",
     "ts-node": "^8.6.2"
   }
-}
 ```
 
 ### Type generation
@@ -281,7 +269,7 @@ export async function kittyApiHandler(): Promise<void> {
 
 ### Custom chain rpc calls
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. 您可以在 `project.yml` 中定义 `typesBundle`。 You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
 ```yaml
 ...
   ...
@@ -303,18 +291,5 @@ To support customised chain RPC calls, we must manually inject RPC definitions f
                     isHistoric: true,
                     isOptional: false
                   },
-                  {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                  }
-                ],
-                type: "Balance",
-            }
-          }
-        }
-      }
-    }
-  }
 
 ```
