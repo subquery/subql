@@ -1,4 +1,4 @@
-# Frequently Asked Questions
+# 자주 묻는 질문
 
 ## What is SubQuery?
 
