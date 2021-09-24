@@ -2,12 +2,12 @@
 
 ## การกำหนด Entities
 
-ไฟล์ `schema.graphql` กำหนด GraphQL schemas ต่างๆ เนื่องจากวิธีการทำงานของภาษา GraphQL query, ไฟล์สคีมาจึงกำหนดรูปร่างของข้อมูลของคุณจาก SubQuery To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+ไฟล์ `schema.graphql` กำหนด GraphQL schemas ต่างๆ เนื่องจากวิธีการทำงานของภาษา GraphQL query, ไฟล์สคีมาจึงกำหนดรูปร่างของข้อมูลของคุณจาก SubQuery หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับวิธีการเขียนในภาษาสคีมา GraphQL เราขอแนะนำให้ตรวจสอบ [สคีมาและประเภท](https://graphql.org/learn/schema/#type-language)
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**สำคัญ: เมื่อคุณทำการเปลี่ยนแปลงใดๆ กับไฟล์สคีมา โปรดตรวจสอบให้แน่ใจว่าคุณได้สร้างไดเร็กทอรี types ของคุณใหม่ด้วยคำสั่ง `yarn codegen`**
 
 ### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+แต่ละเอนทิตีต้องกำหนดฟิลด์ `id` ที่จำเป็นด้วยประเภทของ `ID!` มันถูกใช้เป็น primary key และไม่ซ้ำกันในเอนทิตีทั้งหมดที่เป็นประเภทเดียวกัน
 
 Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
