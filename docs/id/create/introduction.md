@@ -1,9 +1,9 @@
 # Tutorial & Contoh
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+Di panduan [mulai cepat](/quickstart/quickstart.md), kami dengan sangat cepat memberikan contoh untuk menjelaskan pada Anda apa itu SubQuery dan bagaimana cara kerjanya. Di sini kita akan melihat lebih dekat alur kerja saat membuat proyek Anda dan file kunci yang akan Anda ikut sertakan.
 
 ## Contoh SubQuery
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+Sebagian contoh berikut akan mengasumsikan Anda telah berhasil menginisialisasi paket pemula di bagian [Mulai cepat](../quickstart/quickstart.md). Dari paket pemula itu, kita akan berjalan melewati proses standar untuk menyesuaikan dan mengimplementasikan proyek SubQuery Anda.
 
 1. Inisialisasi proyek Anda menggunakan `subql init PROJECT_NAME`
 2. Perbarui file Manifest (`project.yaml`) untuk menyertakan informasi tentang blockchain Anda, dan entitas yang akan Anda petakan - lihat [File Manifest](./manifest.md)
@@ -42,7 +42,7 @@ Kapan pun Anda mengubah entitas GraphQL Anda, Anda harus menghasilkan ulang dire
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Ini akan menciptakan direktori baru (atau memperbarui yang ada)`src/types` yang berisi kelas entitas yang dihasilkan untuk setiap jenis yang telah Anda tentukan sebelumnya di `schema.graphql`. Kelas-kelas ini memberikan pemuatan entitas berjenis aman, membaca dan menuliskan akses ke bidang entitas - lihat lebih banyak tentang proses ini di [Skema GraphQL](./graphql.md).
 
 ## Bentuk
 
@@ -55,7 +55,7 @@ Jalankan perintah bentuk dari direktori proyek.
 
 ## Logging
 
-The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+Metode `console.log` **tidak lagi didukung**. Modul `logger` telah dimasukkan ke dalam jenis, yang berarti kami bisa mendukung logger yang bisa menerima berbagai tingkat logging.
 
 ```typescript
 logger.info('Info level message');
@@ -67,7 +67,7 @@ Untuk menggunakan `logger.info` atau `logger.warn`, tempatkan barisannya ke file
 
 ![logging.info](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Tambahkan `--log-level=debug` ke baris perintah Anda.
 
 Jika Anda sedang menjalankan docker container, tambahkan barisan ini ke file `docker-compose.yaml` Anda.
 
