@@ -54,7 +54,7 @@ export class StoreOperations {
               );
               break;
             case 'String':
-              dataBufferArray.push(Buffer.from(fieldValue));
+              dataBufferArray.push(Buffer.from(fieldValue.toString()));
               break;
             default:
               dataBufferArray.push(Buffer.from(JSON.stringify(fieldValue)));
