@@ -30,7 +30,7 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 
 Вы можете использовать обработчики событий для сбора информации, когда определенные события включены в новый блок. События, входящие в стандартное время выполнения Substrate, и блок могут содержать несколько событий.
 
-Во время обработки события в качестве аргумента с напечатанными входами и выходами, обработчик событий будет получать подстрочное событие. Любой тип события запустит сопоставление, позволяя активность с источником данных для захвата. Вы должны использовать [Mapping Filters](./manifest.md#mapping-filters) в вашем манифесте для фильтрации событий, чтобы сократить время, необходимое для индексирования данных и улучшения производительности сопоставления.
+Во время обработки события в качестве аргумента с напечатанными входами и выходами, обработчик событий будет получать подстрочное событие. Любой тип события запускает сопоставление, позволяя фиксировать действия с источником данных. Вы должны использовать [Mapping Filters](./manifest.md#mapping-filters) в вашем манифесте для фильтрации событий, чтобы сократить время, необходимое для индексирования данных и улучшения производительности сопоставления.
 
 ```ts
 импортировать {SubstrateEvent} из "@subql/types";
@@ -80,7 +80,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) варианте использования.
+Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) варианте использования.
 
 ## RPC-вызовы
 
@@ -104,187 +104,170 @@ const b2 = await api.rpc.chain.getBlock();
 
 Для улучшения возможностей обработки данных SubQuery, мы разрешили некоторые встроенные модули NodeJS для запущенных функций сопоставления в [песочнице](#the-sandbox), и разрешили пользователям звонить в сторонние библиотеки.
 
-Пожалуйста, обратите внимание, что это **экспериментальная функция** и вы можете столкнуться с ошибками или проблемами, которые могут негативно повлиять на ваши функции сопоставления. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+Пожалуйста, обратите внимание, что это **экспериментальная функция** и вы можете столкнуться с ошибками или проблемами, которые могут негативно повлиять на ваши функции сопоставления. Пожалуйста, сообщите о любых ошибках, создав вопрос в [GitHub](https://github.com/subquery/subql).
 
-### Built-in modules
+### Встроенные модули
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+В настоящее время мы разрешаем следующие модули NodeJS:`assert`, `buffer`, `crypto`, `util`, and `path`.
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+Вместо того, чтобы импортировать весь модуль, мы рекомендуем импортировать только нужный метод(ы). Некоторые методы в этих модулях могут иметь неподдерживаемые зависимости и не будут выполнены при импорте.
 
 ```ts
-import {hashMessage} from "ethers/lib/utils"; //Good way
-import {utils} from "ethers" //Bad way
+импортировать {hashMessage} из "ethers/lib/utils"; //Хороший способ
+импорта {utils} из "ethers" //Некорректный
 
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+    const record = new starterEntity(extrinsic. lock.block.header.hash.toString());
     record.field1 = hashMessage('Hello');
-    await record.save();
+    ожидание записи.save();
 }
 ```
 
-### Third-party libraries
+### Сторонние библиотеки
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+Из-за ограничений виртуальной машины в песочнице мы поддерживаем только сторонние библиотеки, написанные **CommonJS**.
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+Мы также поддерживаем **гибридную библиотеку** , такую как `@polkadot/*` , использующую ESM по умолчанию. Однако, если другие библиотеки зависят от модулей в формате **ESM** , виртуальная машина **НЕ** компилирует и возвращает ошибку.
 
-## Custom Substrate Chains
+## Кастомные Substrate цепи
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+Subquery может быть использован не только в Polkadot или Kusama.
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+Вы можете использовать кастомную Substrate цепь, и мы предоставляем инструменты для импорта типов, интерфейсов и дополнительных методов, автоматически используя [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
+В следующих разделах мы используем наш [набор](https://github.com/subquery/subql-examples/tree/main/kitty) для объяснения процесса интеграции.
 
-### Preparation
+### Подготовка
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+Создайте новый каталог `api-интерфейсов` в папке проекта `src` для хранения всех необходимых и сгенерированных файлов. Мы также создаем каталог `api-interfaces/kitties` , так как хотим добавить декорирование в API из модуля `наборов`.
 
-#### Metadata
+#### Метаданные
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
+Нам нужны метаданные для создания реальных конечных точек API. В примере c котятами мы используем конечную точку из локальной тестовой сети, и она предоставляет дополнительные типы. Выполните шаги в [настройках метаданных PolkadotJS](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) , чтобы получить метаданные узла из конечной точки **HTTP**.
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+или из его **веб-сокета** с помощью [`websocet`](https://github.com/vi/websocat):
 
 ```shell
-//Install the websocat
+//Установить websocat
 brew install websocat
 
-//Get metadata
+//Получить метаданные
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
+Далее скопируйте и вставьте вывод в файл JSON. В нашем [примере c котятами](https://github.com/subquery/subql-examples/tree/main/kitty), мы создали `api-interface/kitty.json`.
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### Определения типов
+Мы предполагаем, что пользователь знает конкретные типы и поддержку RPC из цепочки, и она определена в [Манифесте](./manifest.md).
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+Следующие [типа установки](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), мы создаем :
+- `src/api-interfaces/definitions.ts` - экспортирует все определения подпапок
 
 ```ts
-export { default as kitties } from './kitties/definitions';
+экспортировать { default as kitties } из './kitties/definitions';
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kitties/definitions.ts` - определения типа для модуля котят
 ```ts
-export default {
-    // custom types
-    types: {
-        Address: "AccountId",
-        LookupSource: "AccountId",
+экспорт по умолчанию {
+    // пользовательские типы
+    : {
+        Адрес: "AccountId",
+        Справка: "ID клиента",
         KittyIndex: "u32",
         Kitty: "[u8; 16]"
     },
-    // custom rpc : api.rpc.kitties.getKittyPrice
+    // custom rpc : api. pc.kitties. etKittyPrice
     rpc: {
         getKittyPrice:{
             description: 'Get Kitty price',
-            params: [
-                {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
-                    isOptional: false
-                },
-                {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                }
-            ],
-            type: 'Balance'
-        }
-    }
-}
+            параметр: [
+                {name: 'at', тип: 'BlockHash', История: правда, необязательно: false}, {name: 'kittyIndex', тип: 'KittyIndex', необязательно: ложно}], type: 'Баланс'}}}
 ```
 
-#### Packages
+#### Пакеты
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- В пакете `. son` файл, не забудьте добавить `@polkadot/typegen` в качестве зависимостей для разработки и `@polkadot/api` как обычную зависимость (в идеале ту же версию). Нам также нужно `ts-node` в качестве зависимости для разработки, чтобы помочь нам запустить скрипты.
+- Мы добавляем скрипты для запуска обоих типов; `generate:defs` и метаданных `generate:meta` generators (в таком порядке, чтобы метаданные могли использовать типы).
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+Вот упрощённая версия `package.json`. Убедитесь, что в разделе **скрипты** имя пакета верно, и каталоги верны.
 
 ```json
 {
   "name": "kitty-birthinfo",
   "scripts": {
-    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kitty-birthinfo/api-interfaces --input ./src/api-interfaces",
-    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kitty-birthinfo/api-interfaces --endpoint ./src/api-interfaces/kitty.json --output ./src/api-interfaces --strict"
+    "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kitty-birthinfo/api-interfaces --input . src/api-interfaces",
+    "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kitty-birthinfo/api-interfaces --endpoint . src/api-interfaces/kitty.json --output ./src/api-interfaces --strict"
   },
   "dependencies": {
-    "@polkadot/api": "^4.9.2"
+    "@polkadot/api": "^4.9. "
   },
   "devDependencies": {
-    "typescript": "^4.1.3",
+    "typescript": "^4.1. ",
     "@polkadot/typegen": "^4.9.2",
     "ts-node": "^8.6.2"
   }
 }
 ```
 
-### Type generation
+### Генерация типов
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+Теперь, когда подготовка завершена, мы готовы генерировать типы и метаданные. Выполните следующие команды:
 
 ```shell
-# Yarn to install new dependencies
+# Для установки новых зависимостей
 yarn
 
-# Generate types
+# Генерировать типы
 yarn generate:defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+В каждой папке модулей (например, `/ kitties`) теперь должен быть сгенерированный `types.ts`, который определяет все интерфейсы из определений этих модулей, а также файл `index.ts`, который их все экспортирует.
 
 ```shell
-# Generate metadata
+# Сгенерировать метаданные
 yarn generate:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+Эта команда сгенерирует метаданные и новые api-дополнения к API. Поскольку мы не хотим использовать встроенный API, нам нужно будет заменить их, добавив явное переопределение в нашем `tsconfig.
+После обновления пути в конфигурации будут выглядеть следующим образом (без комментариев):</p>
 
-```json
-{
+<pre><code class="json">{
   "compilerOptions": {
-      // this is the package name we use (in the interface imports, --package for generators) */
-      "kitty-birthinfo/*": ["src/*"],
-      // here we replace the @polkadot/api augmentation with our own, generated from chain
-      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      // replace the augmented types with our own, as generated from definitions
-      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
-    }
-}
-```
+      // это имя пакета, которое мы используем (в импорте интерфейса, --пакет для генераторов)*/
+      "Информация о рождении/*": ["src/*"],
+      // здесь мы заменим добавление @polkadot/api своим генерируется из цепи
+      "@polkadot/api/augment": ["src/interfaces/augment-api. s"],
+      // заменить дополненные типы собственными, в соответствии с определениями
+      "@polkadot/types/augment": ["src/interfaces/augment-types.
+`</pre>
 
-### Usage
+### Использование
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+Теперь в функции сопоставления, мы можем показать, как метаданные и типы на самом деле украшают API. Конечная точка RPC будет поддерживать модули и методы, описанные выше. Для использования пользовательского вызова rpc см. раздел [Пользовательские вызовы rpc цепи](#custom-chain-rpc-calls)
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
-    const nextKittyId = await api.query.kitties.nextKittyId();
-    // return the Kitty type, input parameters types are AccountId and KittyIndex
-    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info(`Next kitty id ${nextKittyId}`)
-    //Custom rpc, set undefined to blockhash
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
+    const nextKittyId = await api. веер. itties. extKittyId();
+    // возвращаем тип Kitty, тип входных параметров: AccountId и KittyIndex
+    const allKitties = await api. uery.kitties.kitties('xxxxxxx',123)
+    logger. nfo(`Следующий id котика ${nextKittyId}`)
+    //Другой rpc, установка не определена для blockhash
+    const kittyPrice = ожидание api. pc.kitties.getKittyPrice(неизвестно, nextKittyId);
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**Если вы хотите опубликовать этот проект нашему исследователю, пожалуйста, включите сгенерированные файлы в `src/api-интерфейсы`.**
 
-### Custom chain rpc calls
+### Пользовательские вызовы в цепочке rpc
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+Для поддержки пользовательских вызовов в цепочке RPC мы должны вручную вставить определения RPC для `typesBundle`, что позволяет конфигурацию для каждой точки. Вы можете определить `typesBundle` в `project.yml`. И пожалуйста, помните только `isHistoric` тип звонков поддерживается.
 ```yaml
 ...
-  types: {
+  типы: {
     "KittyIndex": "u32",
     "Kitty": "[u8; 16]",
   }
@@ -295,25 +278,7 @@ To support customised chain RPC calls, we must manually inject RPC definitions f
           kitties: {
             getKittyPrice:{
                 description: string,
-                params: [
-                  {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
-                    isOptional: false
-                  },
-                  {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                  }
-                ],
-                type: "Balance",
-            }
-          }
-        }
-      }
-    }
-  }
+                параметров: [
+                  {name: 'at', тип: 'BlockHash', История: правда, необязательно: false}, {name: 'kittyIndex', тип: 'KittyIndex', необязательно: ложно}], тип: "Баланс", }}}}
 
 ```
