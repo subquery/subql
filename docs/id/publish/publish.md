@@ -1,14 +1,14 @@
-# Publish your SubQuery Project
+# Publikasikan Proyek SubQuery Anda
 
-## Benefits of hosting your project with SubQuery
-- We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
-- This service is being provided to the community for free!
-- You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
-- We're integrated with GitHub, so anyone in your GitHub organisations will be able to view shared organisation projects
+## Manfaat menghosting proyek Anda dengan SubQuery
+- Kami akan menjalankan proyek SubQuery untuk Anda dalam layanan publik berkinerja tinggi, skalabel, dan terkelola
+- Layanan ini disediakan untuk komunitas secara gratis!
+- Anda dapat menjadikan proyek Anda publik sehingga akan dicantumkan di [SubQuery Explorer](https://explorer.subquery.network) dan siapa saja di seluruh dunia dapat melihatnya
+- Kami terintegrasi dengan GitHub, jadi siapa pun di organisasi GitHub Anda dapat melihat proyek organisasi bersama
 
-## Create your First Project
+## Buat Proyek Pertama Anda
 
-#### Login to SubQuery Projects
+#### Masuk ke Proyek SubQuery
 
 Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
 
@@ -16,36 +16,36 @@ To create your first project, head to [project.subquery.network](https://project
 
 On first login, you will be asked to authorize SubQuery. We only need your email address to identify your account, and we don't use any other data from your GitHub account for any other reasons. In this step, you can also request or grant access to your GitHub Organization account so you can post SubQuery projects under your GitHub Organization instead of your personal account.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![Cabut persetujuan dari akun GitHub](/assets/img/project_auth_request.png)
 
 SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application.
 
-![Projects Login](/assets/img/projects-dashboard.png)
+![Masuk Proyek](/assets/img/projects-dashboard.png)
 
 If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
 
-![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
+![Beralih antar akun GitHub](/assets/img/projects-account-switcher.png)
 
-#### Create your First Project
+#### Buat Proyek Pertama Anda
 
 Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
 - **GitHub account:** If you have more than one GitHub account, select which account this project will be created under. Projects created in a GitHub organisation account are shared between members in that organisation.
-- **Name**
+- **Nama**
 - **Subtitle**
-- **Description**
+- **Deskripsi**
 - **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](../create/introduction.md#directory-structure)).
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community! ![Create your first Project](/assets/img/projects-create.png)
+- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community! ![Buat Proyek pertama Anda](/assets/img/projects-create.png)
 
 Create your project and you'll see it on your SubQuery Project's list. *We're almost there! We just need to deploy a new version of it.*
 
 ![Created Project with no deployment](/assets/img/projects-no-deployment.png)
 
-#### Deploy your first Version
+#### Terapkan Versi pertama Anda
 
 While creating a project will setup the display behaviour of the project, you must deploy a version of it before it becomes operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
 
 With your new project, you'll see a Deploy New Version button. Click this, and fill in the required information about the deployment:
-- **Commit Hash of new Version:** From GitHub, copy the full commit hash of the version of your SubQuery project codebase that you want deployed
+- **Komit Hash Versi baru:** Dari GitHub, salin hash komit penuh versi basis kode proyek SubQuery yang ingin Anda terapkan
 - **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [`@subql/node`](https://www.npmjs.com/package/@subql/node)
 - **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [`@subql/query`](https://www.npmjs.com/package/@subql/query)
 
@@ -53,7 +53,7 @@ With your new project, you'll see a Deploy New Version button. Click this, and f
 
 If deployed successfully, you'll see the indexer start working and report back progress on indexing the current chain. This process may take time until it reaches 100%.
 
-## Next Steps - Connect to your Project
+## Langkah Selanjutnya - Hubungkan ke Proyek Anda
 Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
 
 ![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
@@ -62,7 +62,7 @@ Alternatively, you can click on the three dots next to the title of your project
 
 ![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
 
-## Add GitHub Organization Account to SubQuery Projects
+## Tambahkan Akun Organisasi GitHub ke Proyek SubQuery
 
 It is common to publish your SubQuery project under the name of your GitHub Organization account rather than your personal GitHub account. At any point your can change your currently selected account on [SubQuery Projects](https://project.subquery.network) using the account switcher.
 
