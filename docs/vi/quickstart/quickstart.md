@@ -1,56 +1,56 @@
-# Quick Start Guide
+# Hướng dẫn nhanh
 
-In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
+Trong hướng dẫn Bắt đầu Nhanh này, chúng ta sẽ tạo một dự án khởi động đơn giản mà bạn có thể được sử dụng làm khuôn khổ để phát triển Dự án SubQuery cho chính mình.
 
-At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
+Ở cuối hướng dẫn này, bạn sẽ có một dự án SubQuery đang hoạt động chạy trên nút SubQuery với điểm cuối GraphQL mà có thể truy vấn dữ liệu từ đó.
 
-If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
+Nếu chưa có, chúng tôi khuyên bạn nên tự làm quen với [thuật ngữ](../#terminology) được sử dụng trong SubQuery.
 
-## Preparation
+## Sự chuẩn bị
 
-### Local Development Environment
+### Môi trường phát triển địa phương
 
-- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.
-- Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
-- SubQuery Nodes require Docker
+- [Chỉ định loại](https://www.typescriptlang.org/) được yêu cầu để biên dịch dự án và xác định các loại.
+- Cả SubQuery CLI và Dự án đã tạo đều có phụ thuộc và yêu cầu phiên bản hiện đại [Node](https://nodejs.org/en/).
+- SubQuery Nodes yêu cầu Docker
 
-### Install the SubQuery CLI
+### Cài đặt CLI SubQuery
 
-Install SubQuery CLI globally on your terminal by using NPM:
+Cài đặt SubQuery CLI trên toàn cầu trên thiết bị đầu cuối của bạn bằng cách sử dụng NPM:
 
 ```shell
 # NPM
 npm install -g @subql/cli
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn toàn cầu` do việc quản lý phụ thuộc kém có thể dẫn đến sai sót trong dây chuyền.
 
-You can then run help to see available commands and usage provide by CLI
+Sau đó, bạn có thể chạy trợ giúp để xem các lệnh có sẵn và cách sử dụng do CLI cung cấp
 
 ```shell
 subql help
 ```
 
-## Initialise the Starter SubQuery Project
+## Khởi tạo Dự án SubQuery Starter
 
-Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
+Bên trong thư mục mà bạn muốn tạo một dự án SubQuery, chỉ cần thay thế `PROJECT_NAME` bằng của riêng bạn và chạy lệnh:
 
 ```shell
 subql init --starter PROJECT_NAME
 ```
 
-You'll be asked certain questions as the SubQuery project is initalised:
+Bạn sẽ được hỏi một số câu hỏi nhất định khi dự án SubQuery được khởi động:
 
-- Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
+- Kho lưu trữ Git (Tùy chọn): Cung cấp URL Git cho kho lưu trữ dự án SubQuery này (khi được lưu trữ trong SubQuery Explorer)
 - RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Required): Enter the owner of this SubQuery project here
-- Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
-- Version (Required): Enter a custom version number or use the default (`1.0.0`)
-- License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
+- Tác giả (Bắt buộc): Nhập chủ sở hữu của dự án SubQuery này tại đây
+- Mô tả (Tùy chọn): Bạn có thể cung cấp một đoạn văn ngắn về dự án của mình, mô tả dự án chứa dữ liệu gì và người dùng có thể làm gì với dự án
+- Phiên bản (Bắt buộc): Nhập số phiên bản tùy chỉnh hoặc sử dụng giá trị mặc định (`1.0.0`)
+- Giấy phép (Bắt buộc): Cung cấp giấy phép phần mềm cho dự án này hoặc chấp nhận mặc định (`Apache-2.0`)
 
 After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
 
-Last, under the project directory, run following command to install the new project's dependencies.
+Cuối cùng, trong thư mục dự án, chạy lệnh sau để cài đặt các phụ thuộc của dự án mới.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
