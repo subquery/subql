@@ -76,10 +76,11 @@ export class SubqueryProject {
 
       const network = this._networkRegistry[genesisHash];
 
-      if (!network)
+      if (!network) {
         throw new Error(
           `Unable to get network endpoint. genesisHash="${genesisHash}"`,
         );
+      }
 
       return {
         ...network,
