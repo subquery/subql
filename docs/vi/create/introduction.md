@@ -1,9 +1,9 @@
-# Creating a SubQuery Project
+# Tạo một dự án SubQuery mới
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+Trong hướng dẫn [ bắt đầu nhanh ](/quickstart/quickstart.md), chúng tôi đã đưa ra một ví dụ để bạn hiểu SubQuery là gì và nó hoạt động như thế nào. Ở đây chúng ta sẽ xem xét kỹ hơn quy trình làm việc khi tạo dự án của bạn và các tập tin chính mà bạn sẽ làm việc.
 
-## The Basic Workflow
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+## Quy trình làm việc
+Một vài ví dụ sau sẽ xem như bạn đã khởi tạo thành công gói khởi động trong phần [ Bắt đầu nhanh ](../quickstart/quickstart.md). From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
 1. Initialise your project using `subql init PROJECT_NAME`
 2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
