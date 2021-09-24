@@ -2,34 +2,34 @@
 
 Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
 
-## Learning objectives
+## Tujuan Pembelajaran
 
-At the end of this quick start, you should:
+Di akhir quick start ini, Anda harus:
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- memahami prasyarat yang diperlukan
+- memahami perintah umum dasar
+- dapat menavigasi ke localhost:3000 dan melihat playground
+- menjalankan kueri sederhana untuk mendapatkan tinggi blok dari mainnet Polkadot
 
-## Intended audience
+## Audiens yang dituju
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Panduan ini ditujukan bagi para pengembang baru yang memiliki pengalaman pengembangan dan tertarik untuk mempelajari lebih lanjut tentang SubQuery.
 
-## Video guide
+## Panduan video
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Prasyarat
 
-You will need:
+Anda akan memerlukan:
 
-- yarn or npm package manager
+- package manager yarn atau npm
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+Anda dapat menjalankan perintah berikut di terminal untuk melihat apakah Anda sudah memiliki salah satu prasyarat ini.
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+Untuk pengguna yang lebih mahir, copy dan paste berikut ini:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+Ini harus kembali: (untuk pengguna npm, ganti yarn dengan npm)
 
 ```shell
 My yarn version is: 1.22.10
@@ -53,7 +53,7 @@ My docker version is: Docker version 20.10.5, build 55c4c88
 
 If you get the above, then you are good to go. If not, follow these links to install them:
 
-- [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
+- [yarn](https://classic.yarnpkg.com/en/docs/install/) atau [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
@@ -73,7 +73,7 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+Jangan lupa untuk pindah ke direktori baru ini.
 
 ```shell
 cd subqlHelloWorld
@@ -81,7 +81,7 @@ cd subqlHelloWorld
 
 ## 2. Install dependencies
 
-Now do a yarn or node install to install the various dependencies.
+Sekarang lakukan instal yarn atau node untuk menginstal berbagai dependencies.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
@@ -102,7 +102,7 @@ success Saved lockfile.
 
 ## 3. Generate code
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+Sekarang jalankan `yarn codegen` untuk menghasilkan TypeScript dari skema GraphQL.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
@@ -122,11 +122,11 @@ $ ./node_modules/.bin/subql codegen
 ✨  Done in 1.02s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**Peringatan** Ketika perubahan dibuat pada file skema, harap ingat untuk menjalankan kembali `yarn codegen` untuk membuat ulang direktori jenis Anda.
 
 ## 4. Build code
 
-The next step is to build the code with `yarn build`.
+Langkah selanjutnya adalah membuat kode dengan `yarn build`.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
@@ -144,7 +144,7 @@ $ tsc -b
 
 Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+Ini akan menendang segalanya menjadi hidup di mana pada akhirnya Anda akan mendapatkan blok terambil.
 
 ```shell
 > #SNIPPET
@@ -164,7 +164,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ## 6. Browse playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+Arahkan ke http://localhost:3000/ dan paste kueri di bawah ini ke sisi kiri layar lalu tekan tombol putar atau play.
 
 ```
 {
@@ -179,12 +179,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+Playground SubQuery pada localhost.
 
-![playground localhost](/assets/img/subql_playground.png)
+![localhost playground](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+Jumlah blok pada playground harus sesuai dengan jumlah blok (secara teknis tinggi blok) di terminal juga.
 
-## Summary
+## Ringkasan
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+Dalam quick start ini, kami mendemonstrasikan langkah-langkah dasar untuk mengaktifkan dan menjalankan proyek pemula di dalam lingkungan Docker dan kemudian menavigasi ke localhost:3000 dan menjalankan kueri untuk mengembalikan nomor blok jaringan Polkadot mainnet.
