@@ -8,7 +8,7 @@ Jika ragu, silakan bertanya!
 
 ## File Figma yang Dapat Diekspor
 
-Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
+File Figma kami memiliki koleksi lengkap semua aset merek (logo, font, warna, gambar, dll.) untuk diekspor.
 
 [Figma - Sumber Daya Merek SubQuery](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 
