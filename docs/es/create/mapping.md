@@ -58,17 +58,17 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+El [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extiende [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Se le asigna un `id` (el bloque al que pertenece este extrínseco) y proporciona una propiedad extrínseca que extiende los eventos entre este bloque. Además, registra el estado de éxito de este extrínseco.
 
-## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+## Estados de Consulta
+Nuestro objetivo es cubrir todas las fuentes de datos para los usuarios de los manejadores de mapeo (más de los tres tipos de eventos de la interfaz anterior). Por lo tanto, hemos expuesto algunas de las interfaces @polkadot/api para aumentar las capacidades.
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+Estas son las interfaces que actualmente soportamos:
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) consultará el bloque <strong></strong> actual.
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) hará múltiples consultas del mismo tipo <strong></strong> en el bloque actual.
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) hará múltiples consultas de <strong>diferentes</strong> tipos en el bloque actual.
 
-These are the interfaces we do **NOT** support currently:
+Estas son las interfaces que actualmente no soportamos **NOT**:
 - ~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
@@ -82,35 +82,35 @@ These are the interfaces we do **NOT** support currently:
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
-## RPC calls
+## Llamadas RPC
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+También soportamos algunos métodos RPC API que son llamadas remotas que permiten que la función de mapeo interactúe con el nodo real, la consulta y el envío. Un núcleo principal de SubQuery es que es determinista, y por lo tanto, para mantener los resultados consistentes sólo permitimos llamadas históricas RPC.
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+Documentos en [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) proporcionan algunos métodos que toman `BlockHash` como parámetro de entrada (e.. `en?: BlockHash`), que ahora están permitidos. También hemos modificado estos métodos para tomar el hash del bloque de indexación actual por defecto.
 
 ```typescript
-// Let's say we are currently indexing a block with this hash number
+// Digamos que actualmente estamos indexando un bloque con este número hash
 const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
 
-// Original method has an optional input is block hash
-const b1 = await api.rpc.chain.getBlock(blockhash);
+// El método original tiene una entrada opcional es el hash del bloque
+const b1 = await api. pc.chain.getBlock(blockhash);
 
-// It will use the current block has by default like so
+// Utilizará el bloque actual por defecto como
 const b2 = await api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- Para [cadenas personalizadas de Substrate](#custom-substrate-chains) llamadas RPC, vea [uso](#usage).
 
-## Modules and Libraries
+## Módulos y librerías
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+Para mejorar las capacidades de procesamiento de datos de SubQuery, hemos permitido algunos de los módulos incorporados de NodeJS para ejecutar funciones de mapeo en el [sandbox](#the-sandbox), y han permitido a los usuarios llamar a bibliotecas de terceros.
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+Tenga en cuenta que esta es una **característica experimental** y puede encontrar errores o problemas que pueden afectar negativamente a sus funciones de mapeo. Por favor, informe de cualquier error que encuentre creando un problema en [GitHub](https://github.com/subquery/subql).
 
-### Built-in modules
+### Módulos incorporados
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+Actualmente, permitimos los siguientes módulos de NodeJS: `assert`, `buffer`, `crypto`, `util`, y `path`.
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+En lugar de importar todo el módulo, recomendamos importar sólo los método(s) requeridos que usted necesita. Algunos métodos en estos módulos pueden tener dependencias que no están soportadas y fallarán al importar.
 
 ```ts
 import {hashMessage} from "ethers/lib/utils"; //Good way
@@ -123,27 +123,27 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-### Third-party libraries
+### Librería de terceros
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+Debido a las limitaciones de la máquina virtual en nuestro sandbox, actualmente sólo soportamos bibliotecas de terceros escritas por **CommonJS**.
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+También soportamos una librería **híbrida** como `@polkadot/*` que utiliza ESM como valor predeterminado. Sin embargo, si cualquier otra librería depende de cualquier módulo en formato **ESM**, la máquina virtual **NO** compilará y devolverá un error.
 
-## Custom Substrate Chains
+## Cadenas de Substrate Personalizadas
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+SubQuery puede ser usado en cualquier cadena basada en Substrate, no sólo en Polkadot o Kusama.
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+Puede utilizar una cadena personalizada basada en Substrate y proporcionamos herramientas para importar tipos, interfaces y métodos adicionales automáticamente usando [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
 In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
 
-### Preparation
+### Preparación
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+Crear un nuevo directorio `api-interfaces` bajo la carpeta `src` del proyecto para almacenar todos los archivos necesarios y generados. También creamos un directorio `api-interfaces/kitties` ya que queremos añadir decoración en la API desde el módulo `kitties`.
 
-#### Metadata
+#### Metadatos
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Siga los pasos de [configuración de metadatos PolkadotJS](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) para recuperar los metadatos de un nodo de su punto final **HTTP**.
+Necesitamos metadatos para generar los puntos finales actuales de la API. En el ejemplo del kitty utilizamos un punto final de una red de pruebas local, y proporciona tipos adicionales. Siga los pasos de [configuración de metadatos PolkadotJS](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) para recuperar los metadatos de un nodo de su punto final **HTTP**.
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
