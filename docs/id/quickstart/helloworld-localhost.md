@@ -1,6 +1,6 @@
 # Hello World (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+Selamat datang di quick start SubQuery Hello World ini. Quick start ini bertujuan untuk menunjukkan kepada Anda cara menjalankan proyek starter default di Docker dengan beberapa langkah sederhana.
 
 ## Tujuan Pembelajaran
 
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+Jika Anda mendapatkan hal di atas, maka Anda siap untuk lanjut. Jika tidak, ikuti tautan ini untuk menginstalnya:
 
 - [yarn](https://classic.yarnpkg.com/en/docs/install/) atau [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Initialise project
+## 1. Inisialisasi proyek
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+Langkah pertama saat memulai dengan SubQuery adalah menjalankan perintah `subql init`. Mari kita inisialisasi proyek awal dengan nama `subqlHelloWorld`. Perhatikan bahwa hanya author yang wajib diisi. Segala sesuatu yang lain dibiarkan kosong di bawah.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -79,14 +79,14 @@ Jangan lupa untuk pindah ke direktori baru ini.
 cd subqlHelloWorld
 ```
 
-## 2. Install dependencies
+## 2. Instal dependencies
 
 Sekarang lakukan instal yarn atau node untuk menginstal berbagai dependencies.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn install`
+Contoh `yarn install`
 
 ```shell
 > yarn install
@@ -100,14 +100,14 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## 3. Generate code
+## 3. Hasilkan kode
 
 Sekarang jalankan `yarn codegen` untuk menghasilkan TypeScript dari skema GraphQL.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn codegen`
+Contoh `yarn codegen`
 
 ```shell
 > yarn codegen
@@ -124,14 +124,14 @@ $ ./node_modules/.bin/subql codegen
 
 **Peringatan** Ketika perubahan dibuat pada file skema, harap ingat untuk menjalankan kembali `yarn codegen` untuk membuat ulang direktori jenis Anda.
 
-## 4. Build code
+## 4. Membuat kode
 
 Langkah selanjutnya adalah membuat kode dengan `yarn build`.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn build`
+Contoh `yarn build`
 
 ```shell
 > yarn build
@@ -140,9 +140,9 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Run Docker
+## 5. Jalankan Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+Dengan menggunakan Docker memungkinkan Anda menjalankan contoh ini dengan sangat cepat karena semua infrastruktur yang diperlukan dapat tersediakan di dalam image Docker. Jalankan `docker-compose pull && docker-compose up`.
 
 Ini akan menendang segalanya menjadi hidup di mana pada akhirnya Anda akan mendapatkan blok terambil.
 
@@ -162,7 +162,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## 6. Jelajahi playground
 
 Arahkan ke http://localhost:3000/ dan paste kueri di bawah ini ke sisi kiri layar lalu tekan tombol putar atau play.
 
