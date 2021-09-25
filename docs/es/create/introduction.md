@@ -42,7 +42,7 @@ Cada vez que cambie sus entidades en GraphQL, debe regenerar su directorio de ti
 yarn codegen
 ```
 
-Esto creará un nuevo directorio (o actualizará el existente) `src/types` que contienen clases de entidad generadas para cada tipo que haya definido previamente en `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Esto creará un nuevo directorio (o actualizará el existente) `src/types` que contienen clases de entidad generadas para cada tipo que haya definido previamente en `schema.graphql`. Estas clases proporcionan la carga de entidad segura de tipos, acceso de lectura y escritura a los campos de la entidad - vea más sobre este proceso en [el esquema GraphQL](./graphql.md).
 
 ## Compilar
 
