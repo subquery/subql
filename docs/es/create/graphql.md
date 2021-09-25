@@ -28,14 +28,14 @@ Actualmente soportamos tipos de escalares fluidos:
 - `BigInt`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `<EntityName>` para entidades de relación anidadas, puede utilizar el nombre de la entidad definida como uno de los campos. Consulte [Relaciones con Entidad](#entity-relationships).
+- `JSON` puede almacenar datos estructurados alternativamente, consulte [tipo JSON](#json-type)
 
-## Indexing by non-primary-key field
+## Indexando por campo de clave no primaria
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Para mejorar el rendimiento de la consulta, indexar un campo de entidad simplemente implementando la anotación `@index` en un campo de clave no primaria.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Sin embargo, no permitimos que los usuarios añadan anotación `@index` en cualquier objeto [JSON](#json-type). Por defecto, los índices se añaden automáticamente a las claves foráneas y para los campos JSON en la base de datos, pero sólo para mejorar el rendimiento del servicio de consultas.
 
 Here is an example.
 
@@ -53,19 +53,19 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Asumiendo que conocíamos el nombre de este usuario, pero no conocemos el valor exacto del id, en lugar de extraer todos los usuarios y luego filtrar por nombre podemos añadir `@index` detrás del campo nombre. Esto hace que la consulta sea mucho más rápida y además podemos pasar el `único: verdadero` para asegurar la unidad.
 
-**If a field is not unique, the maximum result set size is 100**
+**Si un campo no es único, el tamaño máximo del conjunto de resultados es 100**
 
 When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
 
 ```sql
-/* Prepare a record for title entity */
-INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
+/* Prepara un registro para la entidad de título */
+INSERT INTO títulos (id, nombre) VALUES ('id_1', 'capitán')
 ```
 
 ```typescript
-// Handler in mapping function
+// Manejar en función de mapeo
 import {User} from "../types/models/User"
 import {Title} from "../types/models/Title"
 
@@ -73,20 +73,20 @@ const jack = await User.getByName('Jack Sparrow');
 
 const captainTitle = await Title.getByName('Captain');
 
-const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
+const pirateLords = await User.getByTitleId(captainTitle.id); // Lista de todos los Captaines
 ```
 
-## Entity Relationships
+## Relaciones de Entidades
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Una entidad a menudo tiene relaciones anidadas con otras entidades. Establecer el valor del campo a otro nombre de entidad definirá una relación uno a uno entre estas dos entidades por defecto.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Diferentes relaciones de entidad (uno a uno, uno a muchos, y muchos-a-muchos) pueden configurarse usando los ejemplos siguientes.
 
-### One-to-One Relationships
+### Relaciones de uno a uno
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Las relaciones de uno a uno son el valor por defecto cuando sólo una entidad es asignada a otra.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Ejemplo: Un pasaporte sólo pertenecerá a una persona y una persona sólo tiene un pasaporte (en este ejemplo):
 
 ```graphql
 type Person @entity {
@@ -101,7 +101,7 @@ type Passport @entity {
 }
 ```
 
-or
+o
 
 ```graphql
 type Person @entity {
@@ -115,11 +115,11 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### Relación Uno-A-Muchos
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Puede usar corchetes cuadrados para indicar que un tipo de campo incluye múltiples entidades.
 
-Example: A person can have multiple accounts.
+Ejemplo: Una persona puede tener múltiples cuentas.
 
 ```graphql
 type Person @entity {
@@ -135,10 +135,10 @@ type Passport @entity {
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### Relación Muchos-A-Muchos
+Una relación muchos-a-muchos puede lograrse implementando una entidad de mapeo para conectar las otras dos entidades.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Ejemplo: Cada persona es parte de múltiples grupos (PersonGrup) y los grupos tienen múltiples personas diferentes (PersonGrup).
 
 ```graphql
 type Person @entity {
