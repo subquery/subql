@@ -42,7 +42,7 @@ Bất cứ khi nào bạn thay đổi các thực thể GraphQL của mình, b�
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Thao tác này sẽ tạo một thư mục mới (hoặc cập nhật thư mục `src/styles` hiện có chứa các lớp thực thể được tạo cho mỗi loại mà bạn đã xác định trước đó trong `schema.graphql`. Các lớp này cung cấp quyền truy cập tải, đọc và ghi thực thể an toàn về kiểu đối với các trường thực thể - xem thêm về quy trình này trong [Lược đồ GraphQL](./graphql.md).
 
 ## Xây dựng
 
@@ -53,9 +53,9 @@ Chạy lệnh xây dựng từ thư mục gốc của dự án.
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-## Logging
+## Ghi nhật ký
 
-The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+Phương thức `console.log` **không còn được hỗ trợ**. Thay vào đó, mô-đun `logger` đã được đưa vào các loại, có nghĩa là chúng tôi có thể hỗ trợ trình ghi nhật ký có thể chấp nhận các cấp độ ghi nhật ký khác nhau.
 
 ```typescript
 logger.info('Info level message');
@@ -67,7 +67,7 @@ logger.warn('Warning level message');
 
 ![logging.info](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+Để sử dụng `logger.debug`, cần thực hiện thêm một bước. Thêm `--log-level = debug` vào dòng lệnh của bạn.
 
 Nếu bạn đang chạy vùng chứa docker, hãy thêm dòng này vào tệp `docker-comp.yaml` của bạn.
 
