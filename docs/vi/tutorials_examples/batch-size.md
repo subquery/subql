@@ -1,16 +1,16 @@
-# How to change the blockchain fetching batch size?
+# Làm cách nào để thay đổi kích thước lô tìm nạp blockchain?
 
-## Video guide
+## Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giới thiệu
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+Kích thước lô mặc định là 100, nhưng điều này có thể được thay đổi bằng cách sử dụng lệnh bổ sung ` --batch-size = xx `.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+Bạn cần làm điều này bằng dòng lệnh như một cờ bổ sung hoặc nếu bạn đang sử dụng Docker, hãy sửa đổi docker-compos.yml thành:
 
 ```shell
 subquery-node:
@@ -33,8 +33,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+Ví dụ này đặt kích thước lô thành 50.
 
-## Why change the batch size?
+## Tại sao phải thay đổi kích thước lô?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. 
+Việc sử dụng kích thước lô nhỏ hơn có thể làm giảm mức sử dụng bộ nhớ và không khiến người dùng bị treo cho các truy vấn lớn. Nói cách khác, ứng dụng của bạn có thể phản hồi nhanh hơn. 
