@@ -7,15 +7,15 @@
 **Quan trọng: Khi bạn thực hiện bất kỳ thay đổi nào đối với tệp lược đồ, hãy đảm bảo rằng bạn tạo lại thư mục loại của mình bằng lệnh sau `yarn codegen`**
 
 ### Thực thể
-Mỗi thực thể phải xác định các trường bắt buộc của nó ` id ` với loại ` ID! `. It is used as the primary key and unique among all entities of the same type.
+Mỗi thực thể phải xác định các trường bắt buộc của nó ` id ` với loại ` ID! `. Nó được sử dụng làm khóa chính và duy nhất giữa tất cả các thực thể cùng loại.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Các trường không thể nullable trong thực thể được biểu thị bằng `!`. Vui lòng xem ví dụ dưới đây:
 
 ```graphql
 type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+  id: ID! # trường id luôn là bắt buộc và phải trông như thế này 
+  name: String! # Đây là một lĩnh vực cần thiết
+  address: String # Đây là một trường tùy chọn 
 }
 ```
 
@@ -28,22 +28,22 @@ Chúng tôi hiện đang hỗ trợ các loại vô hướng sau:
 - `BigInt`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+- `<EntityName>`đối với các thực thể quan hệ lồng nhau, bạn có thể sử dụng tên của thực thể đã xác định làm một trong các trường. Vui lòng xem trong [Mối quan hệ thực thể](#entity-relationships).
 - `JSON` có thể lưu trữ dữ liệu có cấu trúc theo cách khác, vui lòng xem [loại JSON](#json-type)
 
 ## Lập chỉ mục theo trường không phải khóa chính
 
 Để cải thiện hiệu suất truy vấn, chỉ cần lập chỉ mục trường thực thể bằng cách thêm chú thích `@index` trên trường không phải khóa chính.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Tuy nhiên, chúng tôi không cho phép người dùng thêm chú thích `@index` trên bất kỳ đối tượng [JSON](#json-type) nào. Theo mặc định, các chỉ mục được tự động thêm vào khóa ngoại và cho các trường JSON trong cơ sở dữ liệu, nhưng chỉ để nâng cao hiệu suất truy vấn.
 
 Đây là một ví dụ.
 
 ```graphql
 type User @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  name: String! @index(unique: true) # duy nhất có thể được đặt thành true hoặc false 
+  title: Title! # Chỉ mục được tự động thêm vào trường khóa ngoại 
 }
 
 type Title @entity {
@@ -51,7 +51,7 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Giả sử chúng tôi biết tên của người dùng này, nhưng chúng tôi không biết giá trị id chính xác, thay vì trích xuất tất cả người dùng và sau đó lọc theo tên, chúng tôi có thể thêm `@index` vào phía sau trường tên. Điều này làm cho việc truy vấn nhanh hơn nhiều và chúng tôi cũng có thể chuyển `unique: true` để đảm bảo tính duy nhất.
 
 **Nếu một trường không phải là duy nhất, kích thước danh sách kết quả tối đa là 100**
 
@@ -76,7 +76,7 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Cap
 
 ## Mối quan hệ thực thể
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Một thực thể thường có các mối quan hệ lồng nhau với các thực thể khác. Đặt giá trị trường thành một tên thực thể khác sẽ xác định mối quan hệ một-một giữa hai thực thể này theo mặc định.
 
 Các mối quan hệ thực thể khác nhau (một-một, một-nhiều và nhiều-nhiều) có thể được định cấu hình bằng cách sử dụng các ví dụ bên dưới.
 
@@ -200,7 +200,7 @@ type Transfer @entity {
 
 ## Loại JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Chúng tôi đang hỗ trợ lưu dữ liệu dưới dạng JSON, đây là một cách nhanh chóng để lưu trữ dữ liệu có cấu trúc. Chúng tôi sẽ tự động tạo các giao diện JSON tương ứng để truy vấn dữ liệu này và giúp bạn tiết kiệm thời gian xác định và quản lý các thực thể.
 
 Chúng tôi khuyên người dùng sử dụng loại JSON trong các trường hợp sau:
 - Khi lưu trữ dữ liệu có cấu trúc trong một trường sẽ dễ quản lý hơn so với việc tạo nhiều thực thể riêng biệt.
@@ -208,9 +208,9 @@ Chúng tôi khuyên người dùng sử dụng loại JSON trong các trường 
 - Lược đồ dễ thay đổi và thay đổi thường xuyên
 
 ### Xác định chiều JSON
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+Xác định thuộc tính dưới dạng kiểu JSON bằng cách thêm chú thích `jsonField` trong thực thể. Thao tác này sẽ tự động tạo giao diện cho tất cả các đối tượng JSON trong dự án của bạn dưới `type/interface.ts` và bạn có thể truy cập chúng trong chức năng ánh xạ của mình.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+Không giống như thực thể, đối tượng chỉ thị jsonField không yêu cầu bất kỳ trường `id` nào. Một đối tượng JSON cũng có thể lồng ghép với các đối tượng JSON khác.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -233,10 +233,10 @@ type User @entity {
 
 Hạn chế của việc sử dụng các loại JSON ảnh hưởng nhỏ đến hiệu quả truy vấn khi lọc, vì mỗi lần nó thực hiện tìm kiếm văn bản, nó sẽ nằm trên toàn bộ thực thể.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Tuy nhiên, tác động vẫn có thể chấp nhận được trong dịch vụ truy vấn của chúng tôi. Dưới đây là ví dụ về cách sử dụng toán tử `chứa` trong truy vấn GraphQL trên trường JSON để tìm 5 người dùng đầu tiên sở hữu số điện thoại có chứa '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+# Để tìm 5 số điện thoại của người dùng đầu tiên có chứa '0064'.
 
 query{
   user(
