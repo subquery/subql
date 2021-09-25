@@ -1,12 +1,12 @@
-# Branding Materials
+# Material de Marca
 
-**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
+**Todas las características de la marca de SubQuery son propietarias y nos tomamos nuestra marca extremadamente en serio.**
 
-If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
+Si opta por utilizar cualquier marca registrada, logotipos, diseños u otras características de marca, por favor siga cuidadosamente las directrices aquí o comuníquese con nosotros a través de los medios de comunicación sociales para aclaración.
 
-If in doubt, please ask!
+En caso de duda, por favor, pregunte!
 
-## Exportable Figma File
+## Archivo de Figma exportable
 
 Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
 
