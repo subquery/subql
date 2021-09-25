@@ -8,15 +8,15 @@ Algunos de los siguientes ejemplos asumirán que ha iniciado con éxito el paque
 1. Inicia tu proyecto usando `subql init PROJECT_NAME`
 2. Actualizar el archivo de manifiesto ( ` project.yaml `) para incluir información sobre tu blockchain, y las entidades que vas a mapear - ver [Archivo de manifiesto](./manifest.md)
 3. Crear entidades GraphQL en tu esquema (`schema.graphql`) que definen la forma de los datos que extraerás y persistirá para la consulta - vea [Esquema GraphQL](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
+4. Agrega todas las funciones de mapeo (por ejemplo, `mappingHandlers.ts`) que desea invocar para transformar los datos de cadena a las entidades GraphQL que ha definido - vea [Mapeo](./mapping.md)
 5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
 
-## Directory Structure
+## Estructura del Directorio
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+El siguiente mapa proporciona una visión general de la estructura de directorio de un proyecto de SubQuery cuando se ejecuta el comando `init`.
 
 ```
-- project-name
+- nombre-proyecto
   L package.json
   L project.yaml
   L README.md
@@ -32,11 +32,11 @@ The following map provides an overview of the directory structure of a SubQuery 
 
 Example
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![Estructura de directorios de SubQuery](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## Generación de Código
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+Cada vez que cambie sus entidades en GraphQL, debe regenerar su directorio de tipos con el siguiente comando.
 
 ```
 yarn codegen
