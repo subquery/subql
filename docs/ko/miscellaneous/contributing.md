@@ -1,14 +1,14 @@
-# Contributing To SubQuery
+# SubQuery에 기여하기
 
-Welcome and a big thank you for considering contributing to this SubQuery project! Together we can pave the way to a more decentralised future.
+SubQuery 프로젝트에 도움을 주려는 여러분을 환영하고 깊은 감사의 말씀을 드립니다. 우리는 함께 보다 탈중화된 미래를 위한 길을 마련할 수 있습니다.
 
-> This documentation is actively maintained by the SubQuery team. We welcome your contributions, you can do so by forking our GitHub project and making changes to all the documentation markdown files under the `docs` directory.
+> 이 문서는 SubQuery 팀이 적극적으로 관리합니다. 여러분의 기여를 환영합니다. 여러분은 GitHub 프로젝트를 분리하고 `docs` 디렉토리 하위의 모든 문서 마크다운 파일을 변경하면 됩니다.
 
-What follows is a set of guidelines (not rules) for contributing to SubQuery. Following these guidelines will help us make the contribution process easy and effective for everyone involved. It also communicates that you agree to respect the time of the developers managing and developing this project. In return, we will reciprocate that respect by addressing your issue, considering changes, collaborating on improvements, and helping you finalise your pull requests.
+다음은 SubQuery에 기여하는데에 있어서의 일련의 지침(규칙이 아님)입니다. 이 지침을 따르면 관련된 모든 사람이 기여하는 프로세스를 쉽고 효과적으로 만드는 데 도움이 됩니다. 또한 이 프로젝트를 관리하고 개발하는 개발자의 시간을 존중하는 데 동의한다는 것을 의미합니다. 그 대가로, 우리는 귀하의 문제를 해결하고, 변경 사항을 고려하고, 개선을 위해 협력하고, pull request들을 완료하는 데 도움을 줄 것입니다.
 
-## Code of Conduct
+## 행동 강령
 
-We take our open source community projects and responsibility seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md).
+우리는 오픈 소스 커뮤니티 프로젝트와 책임을 진지하게 받아들이고 우리 자신과 다른 기여자들에게 높은 수준의 커뮤니케이션을 요구합니다. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md).
 
 ## Getting started
 
