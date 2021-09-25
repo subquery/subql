@@ -2,7 +2,7 @@
 
 Dalam skenario penggunaan yang kami bayangkan, node SubQuery biasanya dijalankan oleh host tepercaya, dan kode proyek SubQuery yang dikirimkan oleh pengguna ke node yang tidak sepenuhnya dapat dipercaya.
 
-Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This:
+Beberapa kode berbahaya kemungkinan akan menyerang host atau bahkan membahayakannya, dan menyebabkan kerusakan pada data proyek lain di host yang sama. Oleh karena itu, kami menggunakan mekanisme keamanan sandbox [VM2](https://www.npmjs.com/package/vm2) untuk mengurangi risiko. Yaitu:
 
 - Menjalankan kode tidak tepercaya dengan aman dalam konteks yang terisolasi dan kode berbahaya tidak akan mengakses jaringan dan sistem file host kecuali melalui interface terbuka yang kami masukkan ke dalam sandbox.
 
