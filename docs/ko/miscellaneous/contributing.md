@@ -8,47 +8,47 @@ SubQuery 프로젝트에 도움을 주려는 여러분을 환영하고 깊은 �
 
 ## 행동 강령
 
-우리는 오픈 소스 커뮤니티 프로젝트와 책임을 진지하게 받아들이고 우리 자신과 다른 기여자들에게 높은 수준의 커뮤니케이션을 요구합니다. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md).
+우리는 오픈 소스 커뮤니티 프로젝트와 책임을 진지하게 받아들이고 우리 자신과 다른 기여자들에게 높은 수준의 커뮤니케이션을 요구합니다. 이 프로젝트에 참여하고 기여함으로써, 귀하는 당사의 [행동 강령](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md)을 준수하는 데 동의합니다.
 
-## Getting started
+## 시작하기
 
-Contributions to our repositories are made through Issues and Pull Requests (PRs). A few general guidelines that cover both:
+우리 저장소에 대한 기여는 Issues 및 Pull Requests (PRs)를 통해 이루어집니다. 두 가지에 대한 몇개의 일반 지침:
 
-* Search for existing Issues and PRs before creating your own.
-* We work hard to makes sure issues are handled in promptly but, depending on the impact, it could take a while to investigate the root cause. A friendly @ mention in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
+* 본인의 것을 만들기 전에 기존의 Issues 및 PRs를 검색하십시오.
+* 우리는 문제가 신속하게 처리될 수 있도록 열심히 노력하고 있지만, 영향 정도에 따라 근본 원인을 조사하는 데 시간이 걸릴 수 있습니다. 귀하의 문제가 막힌 경우 제출자 또는 기여자에 대한 댓글에서 친밀한 @ 의 언급은 관심을 끄는 데 도움이 될 수 있습니다.
 
-## How to Contribute
+## 기여하는 방법
 
-### Reporting Bugs
+### 버그 신고
 
-Bugs are tracked as GitHub issues. When logging an issue, explain the problem and include additional details to help maintainers reproduce the problem:
+버그는 GitHub 문제로 추적됩니다. 문제를 기록할 때, 문제를 설명하고 유지 관리자가 문제를 재현해서 확인할 수 있도록 추가 세부정보를 포함해야 합니다.
 
-* Use a clear and descriptive title for the issue to identify the problem.
-* Describe the exact steps to reproduce the problem.
-* Describe the behavior you observed after following the steps.
-* Explain which behavior you expected to see instead and why.
-* Include screenshots if possible.
+* 문제를 식별하기 위해 문제에 대해 명확하고 자세한 제목을 사용합니다.
+* 문제를 재현 확인하기 위한 정확한 단계를 설명합니다.
+* 단계들을 수행한 후에 당신이 관찰했던 동작을 설명하십시오.
+* 귀하가 기대 예상했던 동작과 그 이유를 설명하세요.
+* 가능하다면 스크린샷을 첨부하세요.
 
-### Submitting Pull Requests
+### Pull Requests 제출
 
-In general, we follow the "fork-and-pull" Git workflow
+일반적으로 "fork-and-pull" Git 작업 방식을 따릅니다.
 
-* Fork the repository to your own Github account
-* Clone the project to your machine
-* Create a branch locally with a succinct but descriptive name
-* Commit changes to the branch
-* Following any formatting and testing guidelines specific to this repo
-* Push changes to your fork
-* Open a PR in our repository
+* 저장소를 자신의 Github 계정에 포크하세요.
+* 자신의 기기에 프로젝트를 복사하세요.
+* 간결하지만 자세한 이름을 사용하여 로컬에서 브랜치를 만드세요.
+* 브랜치에 변화를 적용하세요
+* 이 저장소와 관련된 형식 및 테스트 지침 준수합니다.
+* 변경사항을 귀하의 포크에 적용합니다.
+* 우리 저장소에 있는 PR을 열어봅니다.
 
-## Coding Conventions
+## 코딩 규칙
 
-### Git Commit Messages
+### Git 커밋 메시지
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
+* 현재 시제 사용 ("추가된 기능"이 아닌 "기능 추가")
+* 명령형 문장 사용 ("커서를 다음으로 이동"이 아니라 "다음으로 커서 이동")
+* 첫 번째 줄은 72자 이하로 제한하십시오.
 
-### JavaScript Styleguide
+### 자바스크립트 스타일 지침
 
-* All JavaScript code is linted with Prettier and ESLint
+* 모든 JavaScript 코드는 Prettier 및 ESLint로 연결됩니다.
