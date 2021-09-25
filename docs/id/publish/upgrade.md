@@ -17,7 +17,7 @@ Slot pementasan sangat cocok untuk:
 * Pemanasan dan pengindeksan data untuk proyek SubQuery yang diperbarui untuk menghilangkan waktu henti di dApp Anda
 * Mempersiapkan rilis baru untuk Proyek SubQuery Anda tanpa mengeksposnya secara publik. Slot pementasan tidak ditampilkan kepada publik di Explorer dan memiliki URL unik yang hanya dapat dilihat oleh Anda.
 
-![Staging slot](/assets/img/staging_slot.png)
+![Slot pementasan](/assets/img/staging_slot.png)
 
 #### Tingkatkan ke Latest Indexer and Query Service
 
