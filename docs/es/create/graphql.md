@@ -1,15 +1,15 @@
 # Learn more about GraphQL
 
-## Defining Entities
+## Definiendo entidades
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
+El archivo `schema.graphql` define los diversos esquemas GraphQL. Debido a la forma en que funciona el lenguaje de consulta GraphQL, el archivo de esquema esencialmente dicta la forma de sus datos de SubQuery. There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Importante: Cuando haga cambios en el archivo de esquema, por favor, asegúrate de regenerar el directorio de tus tipos con el siguiente comando `yarn codegen`**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Entidades
+Cada entidad debe definir sus campos requeridos `id` con el tipo de `ID!`. Se utiliza como la clave primaria y única entre todas las entidades del mismo tipo.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Los campos no nulables en la entidad están indicados por `!`. Por favor vea el ejemplo a continuación:
 
 ```graphql
 type Example @entity {
@@ -19,9 +19,9 @@ type Example @entity {
 }
 ```
 
-### Supported scalars and types
+### Escalares y tipos soportados
 
-We currently supporting flowing scalars types:
+Actualmente soportamos tipos de escalares fluidos:
 - `ID`
 - `Int`
 - `String`
