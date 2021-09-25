@@ -8,7 +8,7 @@
 
 ## Giới thiệu
 
-Để gỡ lỗi các dự án SubQuery, chẳng hạn như thong qua mã, đặt điểm ngắt và kiểm tra các biến, bạn sẽ phải sử dụng trình kiểm tra Node.js kết hợp với các công cụ dành cho nhà phát triển Chrome.
+Để gỡ lỗi các dự án SubQuery, chẳng hạn như bước qua mã, đặt điểm ngắt và kiểm tra các biến, bạn sẽ phải sử dụng trình kiểm tra Node.js kết hợp với các công cụ dành cho nhà phát triển Chrome.
 
 ## Node inspector
 
@@ -21,17 +21,17 @@ node --inspect-brk <path to subql-node> -f <path to subQuery project>
 Ví dụ:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
-Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
-For help, see: https://nodejs.org/en/docs/inspector
-Debugger attached.
+Đang nghe trình gỡ lỗi ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+Để được trợ giúp, hãy xem: https://nodejs.org/en/docs/ins Inspector
+Đã đính kèm trình gỡ lỗi.
 ```
 
 ## Chrome devtools
 
-Open up Chrome DevTools and navigate to the Sources tab. Note that clicking on the green icon will open up a new window.
+Mở Chrome DevTools và điều hướng đến tab Sources. Lưu ý rằng nhấp vào biểu tượng màu xanh lá cây sẽ mở ra một cửa sổ mới.
 
 ![node inspect](/assets/img/node_inspect.png)
 
-Navigate to Filesystem and add your project folder to the workspace. Then open the dist > mappings folder and select the code you wish to debug. Then step through the code as with any standard debugging tool.
+Điều hướng đến Filesystem và thêm thư mục dự án của bạn vào không gian làm việc. Sau đó, mở dist > thư mục ánh xạ và chọn mã bạn muốn gỡ lỗi. Sau đó, bước qua mã như với bất kỳ công cụ gỡ lỗi tiêu chuẩn nào.
 
 ![debugging projects](/assets/img/debugging_projects.png)
