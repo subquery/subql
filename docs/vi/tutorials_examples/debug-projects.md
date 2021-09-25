@@ -1,24 +1,24 @@
-# How to debug a SubQuery project?
+# Làm thế nào để gỡ lỗi một dự án SubQuery?
 
-## Video guide
+## Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/6NlaO-YN2q4" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giới thiệu
 
-In order to debug SubQuery projects such as stepping through code, setting breakpoints, and inspecting variables, you will have to use a Node.js inspector in conjunction with Chrome developer tools.
+Để gỡ lỗi các dự án SubQuery, chẳng hạn như thong qua mã, đặt điểm ngắt và kiểm tra các biến, bạn sẽ phải sử dụng trình kiểm tra Node.js kết hợp với các công cụ dành cho nhà phát triển Chrome.
 
 ## Node inspector
 
-Run the following command in a terminal screen.
+Chạy lệnh sau trong màn hình đầu cuối.
 
 ```shell
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+Ví dụ:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
