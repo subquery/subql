@@ -1,53 +1,53 @@
-# Frequently Asked Questions
+# Preguntas Frecuentes
 
-## What is SubQuery?
+## ¿Qué es SubQuery?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQuery es un proyecto de código abierto que permite a los desarrolladores indexar, transformar y consultar datos en cadena de Substrate para potenciar sus aplicaciones.
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+SubQuery también proporciona alojamiento gratuito con grado de producción de proyectos para desarrolladores, eliminando la responsabilidad de la infraestructura de gestión y dejar que los desarrolladores hagan lo que hacen mejor - construir.
 
-## What is the best way to get started with SubQuery?
+## ¿Cuál es la mejor manera de comenzar con SubQuery?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+La mejor manera de empezar con SubQuery es probar nuestro [tutorial de Hola Mundo](../quickstart/helloworld-localhost.md). Este es un simple paseo de 5 minutos para descargar la plantilla de inicio, construir el proyecto, y luego usar Docker para ejecutar un nodo en su localhost y ejecutar una simple consulta.
 
-## How can I contribute or give feedback to SubQuery?
+## ¿Cómo puedo contribuir o dar comentarios a SubQuery?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+Nos encantan las contribuciones y comentarios de la comunidad. Para contribuir con el código, bifurca el repositorio de interés y realice sus cambios. Luego envíe un PR o Pull Request. ¡Oh, no te olvides del test probar también! Consulte también nuestras líneas de guía de contribuciones (TBA).
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+Para dar comentarios, contáctanos a hello@subquery.network o salta a nuestro [canal de discord](https://discord.com/invite/78zg8aBSMG)
 
-## How much does it cost to host my project in SubQuery Projects?
+## ¿Cuánto cuesta alojar mi proyecto en SubQuery Projects?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+Hospedar tu proyecto en SubQuery Projects es absolutamente gratuito - es nuestra manera de devolver a la comunidad. Para aprender cómo alojar tu proyecto con nosotros, por favor revisa el tutorial [Hola Mundo (hospedado en SubQuery)](../quickstart/helloworld-hosted.md).
 
-## What are deployment slots?
+## ¿Qué son las ranuras de despliegue?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+Las ranuras de despliegue son una característica en [SubQuery Proyects](https://project.subquery.network) que es el equivalente a un entorno de desarrollo. Por ejemplo, en cualquier organización de software normalmente hay un entorno de desarrollo y un entorno de producción como mínimo (ignorando que localhost lo está). Normalmente se incluyen entornos adicionales como la puesta en escena y pre-prod o incluso el QA dependiendo de las necesidades de la organización y de su configuración de desarrollo.
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery tiene actualmente dos espacios disponibles. Una ranura de montaje y una ranura de producción. Esto permite a los desarrolladores desplegar su SubQuery en el entorno de instalación y si todo va bien, "promover a la producción" con el clic de un botón.
 
-## What is the advantage of a staging slot?
+## ¿Cuál es la ventaja de una rama en escena?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+El principal beneficio de usar una ranura de montaje es que te permite preparar una nueva versión de tu proyecto SubQuery sin exponerlo públicamente. Puede esperar a que la ranura de puesta en escena vuelva a indexar todos los datos sin afectar a sus aplicaciones de producción.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+El espacio para escenarios no se muestra al público en el [explorador](https://explorer.subquery.network/) y tiene una URL única que solo es visible para usted. Y, por supuesto, el entorno separado le permite probar su nuevo código sin afectar a la producción.
 
-## What are extrinsics?
+## ¿Qué son los extrínsecos?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+Si ya estás familiarizado con los conceptos de blockchain, puedes pensar en los extrinsecos como comparables a las transacciones. Sin embargo, más formalmente un extrínseco es una pieza de información que viene de fuera de la cadena y está incluida en un bloque. Hay tres categorías de extrínsecos. Son inherentes, transacciones firmadas y transacciones no firmadas.
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+Los extrínsecos inherentes son piezas de información que no están firmadas y sólo insertadas en un bloque por el autor del bloque.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+Los extrinsics de transacción firmada son transacciones que contienen una firma de la cuenta que emitió la transacción. Pagarán una comisión para que la transacción esté incluida en la cadena.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+Las transacciones extrínsecas no firmadas son transacciones que no contienen una firma de la cuenta que emitió la transacción. Las transacciones extrínsecas no firmadas deben ser utilizadas con cuidado porque no hay nadie que pague una cuota, porque está firmada. Debido a esto, la cola de transacciones carece de lógica económica para prevenir el spam.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+Para más información, haz clic [aquí](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
 
-## What is the endpoint for the Kusama network?
+## ¿Cuál es el punto final para la red Kusama?
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+El network.endpoint para la red de Kusama es `wss://kusama.api.onfinality.io/public-ws`.
 
-## What is the endpoint for the Polkadot mainnet network?
+## ¿Cuál es el punto final para la red principal Polkadot?
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+El network.endpoint para la red Polkadot es `wss://polkadot.api.onfinality.io/public-ws`.
