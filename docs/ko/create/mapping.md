@@ -82,11 +82,11 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 See an example of using this API in our [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) example use case.
 
-## RPC calls
+## RPC 콜
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+또한 매핑 기능이 실제 노드와 상호작용할 수 있도록 하는 원격호출인 일부 API RPC 방법을 지원합니다. SubQuery의 핵심 전제는 결정론적이기 때문에, 결과의 일관성을 유지하기 위해 RPC 호출 이력만을 허용하는 것입니다.
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) 의 문서에서는, `BlockHash`를 입력 파라미터로서 사용하는 방법가 몇개 준비되어 있습니다 (예. `at?: BlockHash`)는 허가가 되었습니다. 또한 기본적으로 현재의 인덱스 블록 해시를 사용하도록 이들 방법을 수정했다.
 
 ```typescript
 // Let's say we are currently indexing a block with this hash number
@@ -98,19 +98,19 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 // It will use the current block has by default like so
 const b2 = await api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- [Custom Substrate Chains](#custom-substrate-chains)RPC 콜에 대해서는,[usage](#usage)을 참조해 주세요.
 
-## Modules and Libraries
+## 모듈 및 라이브러리
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+SubQuery의 데이터 처리 기능을 개선하기 위해 일부 노드를 허용되었고, [sandbox](#the-sandbox)에서 매핑기능을 실행하기 위한 NodeJS의 삽입모듈로 사용자는 제 3자 라이브러리에 콜이 가능합니다.
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+이는 **experimental feature**으로 매핑 기능에 악영향을 미치는 버그 또는 문제가 발생할 가능성이 있음을 주의해 주십시오. [GitHub](https://github.com/subquery/subql) 에서 문제가 발생했을 경우는, 버그를 보고해 주세요.
 
-### Built-in modules
+### 임베디드 모듈
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+현재 다음 NodeJS 모듈을 허용합니다: `assert`, `buffer`, `crypto`, `util`, 와 `path`.
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+모듈 전체를 가져오기를 하는 것이 아니라 필요한 방법만 가져오기를 할 것을 권장합니다. 이러한 모듈의 일부 방식은 지원되지 않기 때문에 가져오기를 실패하는 의존관계가 있을 수 있습니다.
 
 ```ts
 import {hashMessage} from "ethers/lib/utils"; //Good way
@@ -123,32 +123,32 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-### Third-party libraries
+### 제 3자의 라이브러리
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+샌드박스에 있는 가상 머신의 제한으로 인해 현재는 **CommonJS**이 생성한 제 3자 라이브러리만을 지원합니다.
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+ESM 를 디폴트로 사용하는 `@polkadot/*`과 같은**hybrid** 라이브러리도 서포트하고 있습니다. 그러나, 다른 라이브러리가 **ESM** 형식의 모듈에 의존하고 있는 경우, 가상 머신은**NOT** 컴파일 하고 에러를 반환합니다.
 
-## Custom Substrate Chains
+## 커스텀 Substrate 체인
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+SubQuery는 Polkadot이나 Kusama 뿐만 아니라 Substrate 기반의 체인에서도 사용이 가능합니다.
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+사용자 지정 Substrate 기반 체인을 사용할 수 있으며 [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/)을 사용하여 타입, 인터페이스 및 추가 방법을 자동으로 들여오게 하는 도구를 제공합니다.
 
 In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
 
-### Preparation
+### 준비
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+프로젝트 `src` 폴더 아래에 새 디렉토리`api-interfaces` 를 생성하여 필요한 파일과 생성된 파일을 모두 저장합니다. 또한 `kitties`모듈에서 API에 데코레이션을 추가하기 위해`api-interfaces/kitties`디렉토리도 만듭니다.
 
 #### Metadata
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
+실제 API 엔드포인트를 생성하려면 Metadata가 필요합니다. Kitty의 예에서는 로컬 테스트망의 엔드포인트를 사용하여 추가 유형을 제공합니다. [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) 의 순서에 따라서, 노드의 Metadata를 **HTTP** 엔드 포인트에서 취득하세요.
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+또는, **websocket** 엔드 포인트로부터 [`websocat`](https://github.com/vi/websocat)의 도움을 참조해 주세요:
 
 ```shell
 //Install the websocat
@@ -158,19 +158,19 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
+다음에, 출력을 JSON 파일에 복사와 붙여넣기를 합니다. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### 유형 정의
+여기에서는 사용자가 체인으로부터 특정 유형과 RPC 지원을 알고 있는 것을 전제로 하고 있으며 이는 [Manifest](./manifest.md)에서 정의되어 있습니다.
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+[ 유형 설정 ](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup)에 따라 다음을 생성합니다.
+- < 0 > srcapi-interfaces definitions.ts < 0 >: 모든 서브폴더 정의를 내보냅니다.
 
 ```ts
 export { default as kitties } from './kitties/definitions';
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kitties/definitions.ts` - kitties 모듈의 유형 정의
 ```ts
 export default {
     // custom types
@@ -203,12 +203,12 @@ export default {
 }
 ```
 
-#### Packages
+#### 패키지
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- `package.json` 파일, 개발 의존 관계로서 `@polkadot/typegen`를 추가해, 통상의 의존 관계로서 `@polkadot/api`을 추가합니다(같은 버전을 사용합니다). 또한 스크립트를 실행하는 데 도움이 되는 개발 종속성으로 ` ts-node ` 도 필요합니다.
+- 두 유형을 모두 수행할 스크립트를 추가합니다: `generate:defs` 와 Metadata `generate:meta` 생성기(Metadata가 타입을 사용할 수 있도록 하기 위해입니다).
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+다음으로, `package.json` 패키지의 간이 버젼입니다. **scripts** 섹션의 패키지명이 올바르고, 디렉토리가 유효한 것을 확인합니다.
 
 ```json
 {
@@ -228,26 +228,26 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
 }
 ```
 
-### Type generation
+### 타이프 생성
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+준비가 완료되었으므로 타입과 Metadata를 생성할 준비가 되었습니다. 다음 명령을 수행합니다:
 
 ```shell
-# Yarn to install new dependencies
-yarn
+# 새로운 의존성을 설치하기 위한 Yarn
+실
 
-# Generate types
-yarn generate:defs
+# 유형 생성
+원사 생성: defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+각 모듈 폴더(예 `/kitties`)에는 이 모듈의 정의에서 모든 인터페이스를 정의하는 생성된 `types.ts` 이 있으며 모든 인터페이스를 내보내는 파일 `index.ts` 이 있습니다.
 
 ```shell
-# Generate metadata
+# 메타데이터 생성
 yarn generate:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+이 명령어는 API의 Metadata와 새로운 api-augment를 생성합니다. 임베디드 API를 사용하고 싶지 않기 때문에 `tsconfig.json`에 명시적인 오버라이드를 추가해 교체할 필요가 있습니다. 업데이트 후 설정 내 경로는 다음과 같습니다(코멘트 없이):
 
 ```json
 {
@@ -262,9 +262,9 @@ This command will generate the metadata and a new api-augment for the APIs. As w
 }
 ```
 
-### Usage
+### 사용방법
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+매핑 기능을 통해 Metadata와 타입이 실제로 API를 어떻게 장식하는지 보여줄 수 있습니다. RPC 엔드포인트는 위에서 선언한 모듈 및 방식을 지원합니다. 커스텀 rpc 콜을 사용하려면, 섹션 [Custom chain rpc calls](#custom-chain-rpc-calls)을 참조해 주세요.
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -277,11 +277,11 @@ export async function kittyApiHandler(): Promise<void> {
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**이 프로젝트를 탐색기에 공개하려면 생성된 파일을 `src/api-interfaces` 에 포함해야 합니다.**
 
-### Custom chain rpc calls
+### 커스텀 체인 rpc 콜
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+커스터마이즈된 체인RPC 콜을 지원하려면 `typesBundle` 의 RPC 정의를 수동으로 삽입하여 사양별 설정을 가능하게 해야 합니다. `project.yml` 에서 `typesBundle`을 정의할 수 있습니다. 또, `isHistoric` 타입의 콜만이 서포트되고 있는 것에 주의해 주세요.
 ```yaml
 ...
   types: {
