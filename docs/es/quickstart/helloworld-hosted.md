@@ -1,8 +1,8 @@
-# Hello World (SubQuery hosted)
+# Hola Mundo (hospedado en SubQuery)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+El objetivo de este rápido inicio es mostrar cómo puede conseguir que el proyecto inicial por defecto se ejecute en SubQuery Projects (nuestro servicio administrado) en unos pocos pasos.
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+Tomaremos el simple proyecto inicial (y todo lo que hemos aprendido hasta ahora) pero en lugar de ejecutarlo localmente dentro de Docker, aprovecharemos la infraestructura de alojamiento administrada por SubQuery. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
 
 ## Learning objectives
 
@@ -115,75 +115,75 @@ Then create a new project,
 
 And fill in the various fields with the appropriate details.
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
-- **Project Name:** Give your project a name here.
-- **Subtitle:** Provide a subtitle for your project.
-- **Description:** Explain what your SubQuery project does.
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
+- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Los proyectos creados en una cuenta de la organización de GitHub son compartidos entre los miembros de esa organización de GitHub.
+- **Nombre del proyecto:** Dale un nombre a tu proyecto aquí.
+- **Subtítulo:** Proporcione un subtítulo para su proyecto.
+- **Descripción:** Explica lo que hace tu proyecto de SubQuery.
+- **URL del repositorio de GitHub:** Esta debe ser una URL válida de GitHub para un repositorio público que contiene su proyecto de SubQuery. El archivo schema.graphql debe estar en la raíz de su directorio.
+- **Ocultar proyecto:** Si se selecciona, esto ocultará el proyecto del explorador público de SubQuery. ¡Mantén esta opción sin seleccionar si quieres compartir tu SubQuery con la comunidad!
 
-![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
+![Crear parámetros de SubQuery](/assets/img/create_subquery_project_parameters.png)
 
-When you click create, you'll be taken to your dashboard.
+Cuando hagas clic en crear, serás llevado a tu panel de control.
 
-![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
+![Panel de SubQuery del proyecto](/assets/img/subquery_project_dashboard.png)
 
-The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
+El panel de control contiene mucha información útil como la red que está usando, la URL del repositorio de GitHub del código fuente que está ejecutando, cuando fue creado y actualizado, y en particular los detalles de implementación.
 
 ## 5. Step 5: Deploy your project
 
-Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+Ahora que ha creado su proyecto en SubQuery Projects, configurando el comportamiento de la pantalla, el siguiente paso es desplegar su proyecto haciéndolo operativo. Desplegar una versión activa una nueva operación de indexación de SubQuery para iniciar, y configurar el servicio de consultas requerido para comenzar a aceptar solicitudes GraphQL. También puede desplegar nuevas versiones a proyectos existentes aquí.
 
-You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
+Usted puede elegir desplegar en varios entornos tales como una ranura para producción o un espacio para escenas. Aquí vamos a desplegar en una ranura de producción. Al hacer clic en el botón "Desplegar" aparece una pantalla con los siguientes campos:
 
-![Deploy to production slot](/assets/img/deploy_production_slot.png)
+![Desplegar a la ranura de producción](/assets/img/deploy_production_slot.png)
 
-- **Commit Hash of new Version:** From GitHub select the correct commit of the SubQuery project codebase that you want deployed
-- **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [@subql/node](https://www.npmjs.com/package/@subql/node)
-- **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [@subql/query](https://www.npmjs.com/package/@subql/query)
+- **Commit Hash de la nueva versión:** Desde GitHub seleccione el commit correcto del código base del proyecto SubQuery que desea desplegar
+- **Versión del indexador:** Esta es la versión del servicio de nodos de SubQuery en la que desea ejecutar esta SubQuery. Ver [@subql/node](https://www.npmjs.com/package/@subql/node)
+- **Versión de consulta:** Esta es la versión del servicio de consulta de SubQuery en la que desea ejecutar esta SubQuery. Ver [@subql/query](https://www.npmjs.com/package/@subql/query)
 
-Because we only have one commit, there is only a single option in the drop down. We'll also work with the latest version of the indexer and query version so we will accept the defaults and then click "Deploy Update".
+Dado que solo tenemos un compromiso, solo hay una opción en la caída hacia abajo. También trabajaremos con la última versión del indexador y la versión de consulta, así que aceptaremos los valores por defecto y luego haremos clic en "Desplegar actualización".
 
-You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery's managed infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
+Luego verás tu despliegue en el estado "Procesando". Aquí, tu código se está desplegando en la infraestructura administrada de SubQuery. Básicamente, un servidor se está volviendo sobre la demanda y se está proporcionando para usted. ¡Esto tomará unos minutos así que tenemos tiempo para tomar un café!
 
-![Deployment processing](/assets/img/deployment_processing.png)
+![Procesamiento de despliegue](/assets/img/deployment_processing.png)
 
-The deployment is now running.
+El despliegue ya está en marcha.
 
-![Deployment running](/assets/img/deployment_running.png)
+![Despliegue en ejecución](/assets/img/deployment_running.png)
 
 ## 6. Step 6: Testing your project
 
-To test your project, click on the 3 ellipsis and select "View on SubQuery Explorer".
+Para probar su proyecto, haga clic en los 3 ellipsis y seleccione "Ver en SubQuery Explorer".
 
-![View Subquery project](/assets/img/view_on_subquery.png)
+![Ver proyecto de SubQuery](/assets/img/view_on_subquery.png)
 
-This will take you to the ever familiar "Playground" where you can click the play button and see the results of the query.
+Esto le llevará al siempre familiar "Playground" donde puede hacer clic en el botón de reproducción y ver los resultados de la consulta.
 
-![Subquery playground](/assets/img/subquery_playground.png)
+![Zona de juego SubQuery](/assets/img/subquery_playground.png)
 
 ## 7. Step 7: Bonus step
 
-For the astute amongst us, you will recall that in the learning objectives, the last point was to run a simple GET query. To do this, we will need to grab the "Query Endpoint" displayed in the deployment details.
+Para el astuto entre nosotros, recordarán que en los objetivos de aprendizaje, el último punto fue ejecutar una simple consulta de GET. Para hacer esto, necesitaremos tomar el "Query Endpoint" que se muestra en los detalles de la implementación.
 
 ![Query endpoing](/assets/img/query_endpoint.png)
 
-You can then send a GET request to this endpoint either using your favourite client such as [Postman](https://www.postman.com/) or [Mockoon](https://mockoon.com/) or via cURL in your terminal. For simplicity, cURL will be shown below.
+A continuación, puede enviar una solicitud GET a este endpoint utilizando su cliente favorito, como [Postman](https://www.postman.com/) o [Mockoon](https://mockoon.com/) o vía cURL en su terminal. Para la simplicidad, cURL se mostrará a continuación.
 
-The curl command to run is:
+El comando curl a ejecutar es:
 
 ```shell
 curl https://api.subquery.network/sq/seandotau/subqueryhelloworld -d "query=query { starterEntities (first: 5, orderBy: CREATED_AT_DESC) { totalCount nodes { id field1 field2 field3 } } }"
 ```
 
-giving the results of:
+proporcionando los resultados de:
 
 ```shell
 {"data":{"starterEntities":{"totalCount":23098,"nodes":[{"id":"0x29dfe9c8e5a1d51178565c2c23f65d249b548fe75a9b6d74cebab777b961b1a6","field1":23098,"field2":null,"field3":null},{"id":"0xab7d3e0316a01cdaf9eda420cf4021dd53bb604c29c5136fef17088c8d9233fb","field1":23097,"field2":null,"field3":null},{"id":"0x534e89bbae0857f2f07b0dea8dc42a933f9eb2d95f7464bf361d766a644d17e3","field1":23096,"field2":null,"field3":null},{"id":"0xd0af03ab2000a58b40abfb96a61d312a494069de3670b509454bd06157357db6","field1":23095,"field2":null,"field3":null},{"id":"0xc9f5a92f4684eb039e11dffa4b8b22c428272b2aa09aff291169f71c1ba0b0f7","field1":23094,"field2":null,"field3":null}]}}}
 
 ```
 
-Readability is not a concern here as you will probably have some front end code to consume and parse this JSON response.
+La capacidad de lectura no es una preocupación aquí ya que probablemente tendrá algún código de frente para consumir y analizar esta respuesta JSON.
 
 ## Summary
 
