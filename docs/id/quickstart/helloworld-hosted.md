@@ -54,7 +54,7 @@ Catat URL GitHub Anda, ini harus bersifat publik agar SubQuery dapat mengaksesny
 
 ## 3. Push ke GitHub
 
-Kembali ke direktori proyek Anda, inisialisasi ini sebagai direktori git. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Kembali ke direktori proyek Anda, inisialisasi ini sebagai direktori git. Jika tidak, Anda mungkin akan mendapatkan kesalahan "fatal: not a git repository (or any of the parent directories): .git"
 
 ```shell
 git init
@@ -97,13 +97,13 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 ```
 
-The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
+Perintah push berarti "tolong push kode saya KE repo origin DARI repo lokal master saya". Refreshing GitHub harus menampilkan semua kode di GitHub.
 
 ![Commit pertama](/assets/img/first_commit.png)
 
 Sekarang setelah Anda memasukkan kode ke GitHub, mari kita lihat bagaimana kita dapat meng-host-nya pada SubQuery Projects.
 
-## 4. Create your project
+## 4. Buatlah proyek Anda
 
 Navigasikan ke [https://project.subquery.network](https://project.subquery.network) dan masuk dengan akun GitHub Anda.
 
@@ -115,12 +115,12 @@ Kemudian buatlah proyek baru,
 
 Dan isi berbagai bidang dengan detail yang sesuai.
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
+- **Akun GitHub:** Jika Anda memiliki lebih dari satu akun GitHub, pilihlah akun yang dipakai untuk membuat proyek ini. Proyek yang dibuat di akun organisasi GitHub akan dibagikan di antara anggota di dalam organisasi itu.
 - **Nama Proyek:** Berikan nama proyek Anda di sini.
 - **Subtitle:** Berikan subtitle untuk proyek Anda.
 - **Deskripsi:** Jelaskan apa yang dilakukan proyek SubQuery Anda.
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
+- **URL Repositori GitHub:** Ini harus berupa URL GitHub yang valid untuk repositori publik yang berisikan proyek SubQuery Anda. File schema.graphql harus berada di dalam root direktori Anda.
+- **Sembunyikan proyek:** Apabila dipilih, ini akan menyembunyikan proyek Anda dari para penjelajah SubQuery publik. Biarkan ini tidak terpilih jika Anda ingin membagikan SubQuery Anda dengan komunitas!
 
 ![Buat parameter SubQuery](/assets/img/create_subquery_project_parameters.png)
 
