@@ -10,9 +10,9 @@
 
 Secara otomatis, semua proyek starter memulai sinkronisasi blockchain dari block genesis. Dengan kata lain, dari block 1. Untuk blockchain besar, ini biasanya membutuhkan beberapa hari atau bahkan minggu untuk sepenuhnya sinkronisasi.
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+Untuk mulai sinkronisasi node SubQuery dari tinggi bukan-nol, yang perlu dilakukan hanyalah memodifikasi file project.yaml dan mengubah kunci startBlock.
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+Berikut adalah file project.yaml di mana block mulainya sudah diatur ke 1.000.000
 
 ```shell
 specVersion: 0.0.1
@@ -32,18 +32,18 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-## Why not start from zero?
+## Kenapa tidak mulai dari nol?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+Alasan utamanya adalah karena ini bisa mengurangi waktu sinkronisasi blockchain. Artinya jika anda hanya tertarik pada transaksi di 3 bulan terakhir, anda bisa hanya mengsinkronisasi hasil 3 bulan terakhir, dengan begitu mengurangi waktu menunggu dan anda bisa mulai pengembangan lebih cepat.
 
-## What are the drawbacks of not starting from zero?
+## Apa kekurangan tidak memulai dari nol?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+Kekurangan paling jelas adalah anda tidak akan bisa melakukan query data di blockchain untuk block yang tidak anda miliki.
 
-## How to figure out the current blockchain height?
+## Bagaimana cara mengetahui tinggi blockchain saat ini?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+Jika menggunakan jaringan Polkadot, anda bisa mengunjungi [https://polkascan.io/](https://polkascan.io/), pilih jaringannya, dan lihat "Finalised Block".
 
-## Do I have to do a rebuild or a codegen?
+## Apa saya harus membangun ulang atau codegen?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+Tidak. Karena anda memodifikasi file project.yaml, yang merupakan file konfigurasi, anda tidak perlu membangun ulang atau menghasilkan lagi kode typescript-nya.
