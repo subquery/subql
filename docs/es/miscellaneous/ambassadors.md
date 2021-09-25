@@ -50,8 +50,8 @@ Los Embajadores de SubQuery pueden contribuir a través de cuatro áreas princip
 
 **Creación de contenido:** Tenemos una larga lista de contenido y material de soporte que necesitamos ayuda para crear. Recuerda, nuestro éxito depende de la capacidad de nuestros clientes para construir cosas asombrosas en nuestro servicio, así que necesitamos su ayuda para que esto sea más fácil. El contenido incluye vídeos, infográficos, tutoriales, animaciones o cualquier otro material relacionado, para informar, educar o inspirar a los miembros de la comunidad dentro del ecosistema de SubQuery. SubQuery apoyará a los Creadores de Contenido proporcionando activos y experiencia de marca. También usaremos los canales de marketing de SubQuery para aumentar el interes sobre tu contenido (y tú).
 
-**Translation:** Our customers don’t just speak English! We need your help making SubQuery more accessible by translating our content into your own language, as well as helping sharing the word to our international community.
+**Traducción:** ¡Nuestros clientes no solo hablan inglés! Necesitamos tu ayuda para que SubQuery sea más accesible traduciendo nuestro contenido a tu propio idioma, además de ayudar a compartir la palabra a nuestra comunidad internacional.
 
-**Community Moderation:** Moderators will help grow the SubQuery community by ensuring that official community channels are active and engaging. SubQuery will support Moderators by promoting the channels that they monitor, as well as provide guidelines for our expectations.
+**Moderación de la comunidad:** Los moderadores ayudarán a hacer crecer la comunidad de SubQuery asegurando que los canales oficiales de la comunidad estén activos y participantes. SubQuery apoyará a los moderadores promoviendo los canales que monitor, así como proveerá pautas para nuestras expectativas.
 
-[Apply Now!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
+[¡Aplica ahora!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
