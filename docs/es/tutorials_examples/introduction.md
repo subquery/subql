@@ -1,14 +1,14 @@
-# Tutorials & Examples
+# Tutoriales & Ejemplos
 
-Here we will list our tutorials and explore various examples to help you get up and running in the easiest and fastest manner.
+Aquí listaremos nuestros tutoriales y exploraremos varios ejemplos para ayudarle a ponerse en marcha de la manera más fácil y rápida.
 
 ## SubQuery Examples
 
 
 
-## SubQuery Example Projects
+## Proyectos de Ejemplo de SubQuery
 
-| Example                                                                                       | Description                                                                                                              | Topics                                                                                                                        |
+| Ejemplo                                                                                       | Description                                                                                                              | Topics                                                                                                                        |
 | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | [extrinsic-finalized-block](https://github.com/subquery/tutorials-extrinsic-finalised-blocks) | Indexes extrinsics so they can be queried by their hash                                                                  | The simplest example with a __block handler__ function                                                                        |
 | [block-timestamp](https://github.com/subquery/tutorials-block-timestamp)                      | Indexes timestamp of each finalized block                                                                                | Another simple __call handler__ function                                                                                      |
