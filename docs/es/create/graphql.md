@@ -37,7 +37,7 @@ Para mejorar el rendimiento de la consulta, indexar un campo de entidad simpleme
 
 Sin embargo, no permitimos que los usuarios añadan anotación `@index` en cualquier objeto [JSON](#json-type). Por defecto, los índices se añaden automáticamente a las claves foráneas y para los campos JSON en la base de datos, pero sólo para mejorar el rendimiento del servicio de consultas.
 
-Here is an example.
+Aquí tienes un ejemplo:
 
 ```graphql
 type User @entity {
@@ -166,11 +166,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+Además, es posible crear una conexión de la misma entidad en múltiples campos de la entidad media.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Por ejemplo, una cuenta puede tener múltiples transferencias, y cada transferencia tiene una cuenta de origen y destino.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Esto establecerá una relación bidireccional entre dos Cuentas (de y a) a través de la tabla Transferencia.
 
 ```graphql
 type Account @entity {
@@ -190,13 +190,13 @@ ID!
 }
 ```
 
-### Reverse Lookups
+### Búsqueda inversa
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Para habilitar una búsqueda inversa en una entidad a una relación, adjunta `@derivedFrom` al campo y apunta a su campo de búsqueda inversa de otra entidad.
 
-This creates a virtual field on the entity that can be queried.
+Esto crea un campo virtual en la entidad que se puede consultar.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+La transferencia "de" una Cuenta es accesible desde la entidad de la Cuenta estableciendo la transferencia de sentencias o la transferencia recibida teniendo su valor derivado del respectivo de o a los campos.
 
 ```graphql
 type Account @entity {
@@ -217,19 +217,19 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## Tipo JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Estamos soportando guardar datos como un tipo JSON, que es una forma rápida de almacenar datos estructurados. Generaremos automáticamente interfaces JSON correspondientes para consultar estos datos y ahorraremos tiempo definiendo y gestionando entidades.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Recomendamos que los usuarios usen el tipo JSON en los siguientes escenarios:
+- Al almacenar datos estructurados en un solo campo es más manejable que la creación de múltiples entidades separadas.
+- Guardando las preferencias de usuario clave/valor arbitrario (donde el valor puede ser booleano, textual, o numérico, y no quiere tener columnas separadas para diferentes tipos de datos)
+- El esquema es volátil y cambia con frecuencia
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### Definir la directiva JSON
+Define la propiedad como un tipo JSON agregando la anotación `jsonField` en la entidad. Esto automáticamente generará interfaces para todos los objetos JSON en su proyecto bajo `types/interfaces.ts`, y puedes acceder a ellos desde tu función de mapeo.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+A diferencia de la entidad, el objeto de directiva jsonField no requiere ningún campo `id`. Un objeto JSON también es capaz de anidar con otros objetos JSON.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -252,14 +252,14 @@ type User @entity {
 }
 ````
 
-### Querying JSON fields
+### Consultando campos JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+El inconveniente del uso de tipos JSON es un ligero impacto en la eficiencia de la consulta al filtrar, como cada vez que realiza una búsqueda de texto, se encuentra en toda la entidad.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Sin embargo, el impacto sigue siendo aceptable en nuestro servicio de consultas. Aquí hay un ejemplo de cómo utilizar el operador `contains` en la consulta GraphQL en un campo JSON para encontrar los 5 primeros usuarios que poseen un número de teléfono que contiene '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#Para encontrar los primeros 5 usuarios de los números de teléfono contienen '0064'.
 
 query{
   user(
