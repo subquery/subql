@@ -1,18 +1,18 @@
-# How to start at a different block height?
+# Làm thế nào để bắt đầu ở một block height khác?
 
-## Video guide
+## Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/ZiNSXDMHmBk" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giới thiệu
 
-By default, all starter projects start synchronising the blockchain from the genesis block. In otherwords, from block 1. For large blockchains, this can typically take days or even weeks to fully synchronise.
+Theo mặc định, tất cả các dự án khởi động bắt đầu đồng bộ hóa chuỗi khối từ khối khởi đầu. Nói cách khác, từ khối 1. Đối với các blockchains lớn, điều này thường có thể mất vài ngày hoặc thậm chí vài tuần để đồng bộ hóa hoàn toàn.
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+Để bắt đầu đồng bộ hóa nút SubQuery từ height khác 0, tất cả những gì bạn phải làm là sửa đổi tệp project.yaml của mình và thay đổi khóa startBlock.
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+Dưới đây là tệp project.yaml trong đó khối bắt đầu đã được đặt thành 1.000.000
 
 ```shell
 specVersion: 0.0.1
@@ -32,18 +32,18 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-## Why not start from zero?
+## Tại sao không bắt đầu từ con số không?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+Lý do chính là nó có thể giảm thời gian đồng bộ hóa blockchain. Điều này có nghĩa là nếu bạn chỉ quan tâm đến các giao dịch trong 3 tháng gần nhất, bạn chỉ có thể đồng bộ hóa giá trị 3 tháng gần nhất nghĩa là thời gian chờ đợi ít hơn và bạn có thể bắt đầu phát triển của mình nhanh hơn.
 
-## What are the drawbacks of not starting from zero?
+## Hạn chế của việc không bắt đầu từ con số 0 là gì?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+Hạn chế rõ ràng nhất sẽ là bạn sẽ không thể truy vấn dữ liệu trên blockchain cho các khối mà bạn không có.
 
-## How to figure out the current blockchain height?
+## Làm thế nào để tìm ra chiều cao blockchain hiện tại?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+Nếu bạn đang sử dụng mạng Polkadot, bạn có thể truy cập [ https://polkascan.io/ ](https://polkascan.io/), chọn mạng và sau đó xem hình "Khối được hoàn thiện".
 
-## Do I have to do a rebuild or a codegen?
+## Tôi có phải xây dựng lại hoặc tạo mã không?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+Không. Bởi vì bạn đang sửa đổi tệp project.yaml, về cơ bản là tệp cấu hình, bạn sẽ không phải xây dựng lại hoặc tạo lại mã typecript.
