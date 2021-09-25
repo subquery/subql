@@ -1,16 +1,16 @@
-# How to change the blockchain fetching batch size?
+# Bagaimana cara mengubah ukuran blockchain fetching batch?
 
-## Video guide
+## Panduan video
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Pengenalan
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+Ukuran batch default adalah 100, tapi ini bisa diubah menggunakan perintah ekstra `--batch-size=xx`.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+Anda perlu memasukkannya ke garis perintah sebagai extra flag atau jika menggunakan Docker, modifikasi file docker-compose.yml dengan:
 
 ```shell
 subquery-node:
@@ -33,8 +33,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+Contoh ini mengatur ukuran batch (batch size) ke 50.
 
-## Why change the batch size?
+## Kenapa mengubah ukuran batch?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. 
+Menggunakan ukuran batch yang lebih kecil bisa mengurangi penggunaan memori dan tidak membuat pengguna menunggu untuk query yang besar. Dengan kata lain, aplikasi anda bisa jadi lebih responsif. 
