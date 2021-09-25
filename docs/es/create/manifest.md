@@ -1,8 +1,8 @@
-# Manifest File
+# Archivo del manifiesto
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+El Manifiesto `project.yaml` puede ser visto como un punto de entrada de tu proyecto y define la mayoría de los detalles sobre cómo SubQuery indexará y transformará los datos en cadena.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+El manifiesto puede estar en formato YAML o JSON. En este documento, utilizaremos YAML en todos los ejemplos. A continuación se muestra un ejemplo estándar de un `project.yaml` básico.
 
 ``` yml
 specVersion: "0.0.1"
@@ -33,50 +33,50 @@ dataSources:
           kind: substrate/CallHandler
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
+- `network.endpoint` define el punto final wss o ws del blockchain a ser indexado - **Este debe ser un nodo de archivo completo**.
 - `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+- `dataSources` define los datos que serán filtrados y extraídos y la ubicación del manejador de función de mapeo para que la transformación de datos sea aplicada.
+  - `kind` solo soporta `substrate/Runtime` por ahora.
+  - `startBlock` especifica la altura del bloque para comenzar a indexar.
+  - `filter` filtrará la fuente de datos a ejecutar por el nombre de la especificación de punto final de red, vea [network filters](#network-filters)
+  - `mapping.handlers` listará todas las [funciones de mapeo](./mapping.md) y sus correspondientes tipos de manejador, con [filtros de mapeo](#mapping-filters) adicionales.
 
-## Network Filters
+## Filtros de Red
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Generalmente el usuario creará una SubQuery y esperará reutilizarla tanto para sus entornos de testnet como para mainnet (por ejemplo, Polkadot y Kusama). Entre redes, es probable que varias opciones sean diferentes (por ejemplo, el bloque de inicio del índice). Por lo tanto, permitimos a los usuarios definir diferentes detalles para cada fuente de datos, lo que significa que un proyecto de SubQuery puede ser utilizado en múltiples redes.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Los usuarios pueden agregar un `filtro` en `fuentes de datos` para decidir qué fuente de datos ejecutar en cada red.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+A continuación hay un ejemplo que muestra diferentes fuentes de datos para las redes Polkadot y Kusama.
 
 ```yaml
 ...
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: "ws://polkadot.api.onfinality. o/public-ws"
 
-#Create a template to avoid redundancy
-definitions:
-  mapping: &mymapping
+#Crea una plantilla para evitar redundancia
+definiciones:
+  mapeo: &mymapping
     handlers:
       - handler: handleBlock
         kind: substrate/BlockHandler
 
-dataSources:
+dataources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
+    filter: #Opcional
         specName: polkadot
     startBlock: 1000
-    mapping: *mymapping #use template here
+    mapeo: *mymapping #use la plantilla aquí
   - name: kusamaRuntime
     kind: substrate/Runtime
     filter: 
         specName: kusama
     startBlock: 12000 
-    mapping: *mymapping # can reuse or change
+    mapeo: *mymapping # puede reutilizar o cambiar
 ```
 
-## Mapping Filters
+## Filtros de mapeo
 
 Los filtros de mapeo son una característica extremadamente útil para decidir qué bloque, evento, o extrínseco activará un manejador de mapeo.
 
