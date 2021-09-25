@@ -1,17 +1,17 @@
-# Mapping
+# 맵핑
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+매핑 기능는 체인데이터를 이전 `schema.graphql` 파일에 정의한 최적화된 GraphQL 엔티티로 변환하는 방법을 정의합니다.
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+매핑은 WASM (WebAssembly) 으로 컴파일할 수 있는 AssemblyScript라고 불리는 TypeScript의 서브셋에 기술됩니다.
+- 매핑은 `src/mappings` 디렉토리에 정의되며 기능로 내보냅니다.
+- 이들 매핑도 `src/index.ts`으로 수출 됩니다.
+- 매핑 파일은 매핑 핸들러의 `project.yaml`으로 참조됩니다.
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+매핑 기능에는, [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler)의 3 개의 클래스가 있습니다.
 
-## Block Handler
+## 블록 핸들러
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+블록 핸들러를 사용하여 새로운 블록이 Substrate 체인에 접속될 때마다 정보를 캡처할 수 있습니다, 예: 블록 번호. 이를 실현하기 위해 정의된 블록 핸들러가 블록마다 1회 호출됩니다.
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -24,13 +24,13 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) 은 [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/) 의 확장 인터페이스 타입 이지만, `specVersion` 및 `타임스탬프` 도 갖추고 있습니다.
 
-## Event Handler
+## 이벤트 핸들러
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+이벤트 핸들러를 사용하여 특정 이벤트가 새 블록에 포함될 때 정보를 캡처할 수 있습니다. 디폴트 Substrate 런타임 및 블록의 일부인 이벤트에는 여러 이벤트가 포함될 수 있습니다.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+처리중에 이벤트 핸들러는 이벤트 입력 및 출력타입을 가진 인수로서 Substrate 이벤트를 수신합니다. 임의의 유형의 이벤트가 매핑을 트리거하고 데이터 원본에서의 액티비티를 캡처할 수 있습니다. Manifest에서[Mapping Filters](./manifest.md#mapping-filters)을 사용하여 이벤트를 필터링하고 데이터 인덱스화에 걸리는 시간을 단축하고 매핑 퍼포먼스를 향상시켜야 합니다.
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -44,11 +44,11 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     await record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30)은,[이벤트 기록](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149)의 확장 인터페이스 타입입니다. 이벤트 데이터 외에 `id `(이 이벤트가 속한 블록) 및 이 블록 내부의 외부를 포함합니다.
 
 ## Call Handler
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+Call handlers는 특정 Substrate 외부의 정보를 캡처할 경우에 사용합니다.
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -58,17 +58,17 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21)은 [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170)을 확장합니다. `id` (이 외인성이 속하는 블록) 이 할당되어 이 블록 간에 이벤트를 확장하는 외인성 속성이 제공됩니다. 또, 이 외인성의 성공 상황을 기록합니다.
 
-## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+## Query 상태
+저희의 목표는 매핑 핸들러(상기의 3가지 인터페이스 이벤트 타입 이상) 에 대한 사용자의 모든 데이터 소스를 커버하는 것입니다. 따라서, 기능을 향상시키기 위해 일부 @polkadot/api 인터페이스를 공개했습니다.
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+현재 지원되는 인터페이스는 다음과 같습니다.
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) 은,<strong>현재의</strong>> 블록을 조회합니다.
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type)는 현재의 블록으로 <strong>같은</strong> 타입의 여러 Query를 생성합니다.
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types)은 현재 블럭으로 <strong>다른</strong> 타입의 여러 Query를 생성합니다.
 
-These are the interfaces we do **NOT** support currently:
+현재 서포트하고 있는 **않은** 인터페이스는, 다음과 같습니다.
 - ~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
