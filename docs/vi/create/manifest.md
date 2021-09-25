@@ -2,7 +2,7 @@
 
 Tệp Manifest `project.yaml` có thể được xem như một điểm đầu vào của dự án của bạn và nó xác định hầu hết các chi tiết về cách SubQuery sẽ lập chỉ mục và chuyển đổi dữ liệu chuỗi.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+Tệp kê khai có thể ở định dạng YAML hoặc JSON. Trong tài liệu này, chúng tôi sẽ sử dụng YAML trong tất cả các ví dụ. Dưới đây là ví dụ tiêu chuẩn về `project.yaml` cơ bản.
 
 ``` yml
 specVersion: "0.0.1"
@@ -13,7 +13,7 @@ schema: "./schema.graphql"
 
 network:
   endpoint: "wss://polkadot.api.onfinality.io/public-ws"
-  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
+  # Tùy chọn cung cấp điểm cuối HTTP của từ điển chuỗi đầy đủ để tăng tốc độ xử lý 
   dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
 
 dataSources:
@@ -26,7 +26,7 @@ dataSources:
           kind: substrate/BlockHandler
         - handler: handleEvent
           kind: substrate/EventHandler
-          filter: #Filter is optional but suggested to speed up event processing
+          filter: #Bộ lọc là tùy chọn nhưng được đề xuất để tăng tốc độ xử lý sự kiện 
             module: balances
             method: Deposit
         - handler: handleCall
@@ -43,7 +43,7 @@ dataSources:
 
 ## Bộ lọc mạng
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Thông thường người dùng sẽ tạo một SubQuery và mong muốn sử dụng lại nó cho cả môi trường testnet và mainnet của họ (ví dụ: Polkadot và Kusama). Giữa các mạng, các tùy chọn khác nhau có thể khác nhau (ví dụ: khối bắt đầu lập chỉ mục). Do đó, chúng tôi cho phép người dùng xác định các chi tiết khác nhau cho từng nguồn dữ liệu, có nghĩa là một dự án SubQuery vẫn có thể được sử dụng trên nhiều mạng.
 
 Người dùng có thể thêm `filter` trên `dataSources` để quyết định nguồn dữ liệu nào sẽ chạy trên mỗi mạng.
 
@@ -54,7 +54,7 @@ Dưới đây là một ví dụ hiển thị các nguồn dữ liệu khác nha
 network:
   endpoint: "wss://polkadot.api.onfinality.io/public-ws"
 
-#Create a template to avoid redundancy
+#Tạo một mẫu để tránh dư thừa 
 definitions:
   mapping: &mymapping
     handlers:
@@ -64,26 +64,26 @@ definitions:
 dataSources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
+    filter:  #Không bắt buộc 
         specName: polkadot
     startBlock: 1000
-    mapping: *mymapping #use template here
+    mapping: *mymapping #sử dụng mẫu ở đây 
   - name: kusamaRuntime
     kind: substrate/Runtime
     filter: 
         specName: kusama
     startBlock: 12000 
-    mapping: *mymapping # can reuse or change
+    mapping: *mymapping # có thể sử dụng lại hoặc thay đổi
 ```
 
 ## Bộ lọc ánh xạ
 
 Bộ lọc ánh xạ là một tính năng cực kỳ hữu ích để quyết định khối, sự kiện hoặc bên ngoài nào sẽ kích hoạt trình xử lý ánh xạ.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Chỉ dữ liệu đến thỏa mãn các điều kiện lọc sẽ được xử lý bởi các hàm ánh xạ. Bộ lọc ánh xạ là tùy chọn nhưng được khuyến nghị vì chúng làm giảm đáng kể lượng dữ liệu được xử lý bởi dự án SubQuery của bạn và sẽ cải thiện hiệu suất lập chỉ mục.
 
 ```yaml
-#Example filter from callHandler
+#Bộ lọc mẫu từ callHandler 
 filter: 
    module: balances
    method: Deposit
@@ -101,18 +101,18 @@ Bảng sau giải thích các bộ lọc được hỗ trợ bởi các trình x
 
 -  Bộ lọc mô-đun và phương pháp được hỗ trợ trên bất kỳ chuỗi dựa trên chất nền nào.
 - Bộ lọc `success` nhận một giá trị boolean và có thể được sử dụng để lọc phần bên ngoài theo trạng thái thành công của nó.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+- Bộ lọc `specVersion` chỉ định phạm vi phiên bản cụ thể cho khối chất nền. Các ví dụ sau đây mô tả cách đặt phạm vi phiên bản.
 
 ```yaml
 filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+  specVersion: [23, 24]   #Khối chỉ mục với specVersion trong khoảng từ 23 đến 24 (bao gồm).
+  specVersion: [100]      #Khối lập chỉ mục có specVersion lớn hơn hoặc bằng 100.
+  specVersion: [null, 23] #Index block với specVersion nhỏ hơn hoặc bằng 23.
 ```
 
 ## Chuỗi tùy chỉnh
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Bạn có thể lập chỉ mục dữ liệu từ các chuỗi tùy chỉnh bằng cách bao gồm các loại chuỗi trong `project.yaml`. Khai báo các loại cụ thể được blockchain này hỗ trợ trong `network.types`. Chúng tôi hỗ trợ các loại bổ sung được sử dụng bởi các mô-đun thời gian chạy chất nền.
 
 `stylesAlias`, `stylesBundle`, `stylesChain` và `stylesSpec` cũng được hỗ trợ.
 
@@ -133,7 +133,7 @@ dataSources:
   - name: runtime
     kind: substrate/Runtime
     startBlock: 1
-    filter:  #Optional
+    filter:  #Không bắt buộc 
       specName: kitty-chain 
     mapping:
       handlers:
