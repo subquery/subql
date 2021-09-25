@@ -78,43 +78,43 @@ dataSources:
 
 ## Mapping Filters
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Los filtros de mapeo son una característica extremadamente útil para decidir qué bloque, evento, o extrínseco activará un manejador de mapeo.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Sólo los datos entrantes que satisfagan las condiciones del filtro serán procesados por las funciones de mapeo. Los filtros de mapeo son opcionales, pero se recomiendan ya que reducen significativamente la cantidad de datos procesados por su proyecto SubQuery y mejorarán el rendimiento de indexación.
 
 ```yaml
-#Example filter from callHandler
+# Ejemplo de Filtro de callHandler
 filter: 
    module: balances
    method: Deposit
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+La siguiente tabla explica los filtros soportados por diferentes manejadores.
 
-| Handler                                    | Supported filter             |
-| ------------------------------------------ | ---------------------------- |
-| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
-| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
-| [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
+| Manejador                                          | Filtro soportado             |
+| -------------------------------------------------- | ---------------------------- |
+| [Manejador de bloques](./mapping.md#block-handler) | `specVersion`                |
+| [EventHandler](./mapping.md#event-handler)         | `module`,`method`            |
+| [CallHandler](./mapping.md#call-handler)           | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Los filtros de módulos y métodos son compatibles con cualquier cadena basada en substrate.
+- El filtro de `success` toma un valor booleano y puede ser utilizado para filtrar el extrínseco por su estado de éxito.
+- El filtro `specVersion` especifica el rango de versión especificada para un bloque de substrate. Los siguientes ejemplos describen cómo establecer los rangos de versiones.
 
 ```yaml
-filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+filtro:
+  specVersion: [23, 24] #Bloque de índice con specVersion entre 23 y 24 (incluido).
+  specVersion: [100]      #Bloque de índice con specVersion mayor o igual a 100.
+  specVersion: [null, 23] #Bloque de índice con specVersion menor o igual a 23.
 ```
 
-## Custom Chains
+## Cadenas Personalizadas
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Puede indexar datos de cadenas personalizadas incluyendo tipos de cadena en el `project.yaml`. Declara los tipos específicos soportados por esta blockchain en `network.types`. Soportamos los tipos adicionales usados por los módulos de tiempo de ejecución de substrate.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+`typesAlias`, `typesBundle`, `typesChain`, y `typesSpec` también son soportados.
 
 ``` yml
 specVersion: "0.0.1"
