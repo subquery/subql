@@ -1,17 +1,17 @@
-# Mapping
+# Mapeo
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+Las funciones de mapeo definen cómo se transforman los datos de la cadena en las entidades optimizadas GraphQL que hemos definido previamente en el archivo `schema.graphql`.
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+Los mapeos están escritos en un subconjunto de TypeScript llamado AssemblblyScript que se puede compilar en WASM (WebAssembly).
+- Los mapeos se definen en el directorio `src/mappings` y se exportan como una función
+- Estos mapeos también son exportados en `src/index.ts`
+- Los archivos de mapeo son referencia en `project.yaml` bajo los manejadores de mapeo.
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+Hay tres clases de funciones de mapeo: [Manejadores de bloques](#block-handler), [Manejadores de eventos](#event-handler)y [Manejadores de llamadas](#call-handler).
 
-## Block Handler
+## Manejador de bloques
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+Puede utilizar manejadores de bloques para capturar información cada vez que un nuevo bloque está conectado a la cadena Substrate, por ejemplo, el número de bloque. Para lograrlo, un BlockHandler definido será llamado una vez por cada bloque.
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -24,13 +24,13 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+Un [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) es un tipo de interfaz extendida de [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), pero también incluye la `specVersion` y `timestamp`.
 
-## Event Handler
+## Manejador del Evento
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+Puede utilizar manejadores de eventos para capturar información cuando ciertos eventos son incluidos en un nuevo bloque. Los eventos que son parte del tiempo de ejecución predeterminado de Substrate y un bloque pueden contener múltiples eventos.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+Durante el procesamiento, el manejador de eventos recibirá un evento de substrate como argumento con las entradas y salidas del evento. Cualquier tipo de evento activará el mapeo, permitiendo la captura de la actividad con la fuente de datos. Debe utilizar [Filtros de Mapeo](./manifest.md#mapping-filters) en su manifiesto para filtrar eventos para reducir el tiempo que toma indexar los datos y mejorar el rendimiento de mapeo.
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -44,11 +44,11 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     await record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+Un [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) es un tipo de interfaz extendida del [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Además de los datos del evento, también incluye una `id` (el bloque al que pertenece este evento) y el extrínseco dentro de este bloque.
 
-## Call Handler
+## Manejador de llamada
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+Los manejadores de llamadas se utilizan cuando se desea capturar información sobre ciertos substrate extrínsecos.
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -143,34 +143,34 @@ Create a new directory `api-interfaces` under the project `src` folder to store 
 
 #### Metadata
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
+We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Siga los pasos de [configuración de metadatos PolkadotJS](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) para recuperar los metadatos de un nodo de su punto final **HTTP**.
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+o desde su punto final **websocket** con la ayuda de [`websocat`](https://github.com/vi/websocat):
 
 ```shell
-//Install the websocat
+//Instalar el websocat
 brew install websocat
 
-//Get metadata
+//Obtener metadatos
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
+A continuación, copie y pegue la salida a un archivo JSON. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### Tipos de definición
+Asumimos que el usuario conoce los tipos específicos y el soporte RPC de la cadena, y está definido en el [Manifiesto](./manifest.md).
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+Siguiendo [tipos de configuración](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), creamos :
+- `src/api-interfaces/definitions.ts` - esto exporta todas las definiciones de la sub-carpeta
 
 ```ts
-export { default as kitties } from './kitties/definitions';
+exportar { default as kitties } desde './kitties/definitions';
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kitties/definitions.ts` - escriba definiciones para el módulo kitties
 ```ts
 export default {
     // custom types
@@ -203,12 +203,12 @@ export default {
 }
 ```
 
-#### Packages
+#### Paquetes
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- En el paquete `package.json`, asegúrate de añadir `@polkadot/typegen` como dependencia de desarrollo y `@polkadot/api` como dependencia regular (idealmente la misma versión). También necesitamos `ts-node` como una dependencia de desarrollo para ayudarnos a ejecutar los scripts.
+- Añadimos scripts para ejecutar ambos tipos; `generate:defs` y metadatos `generar:meta` generadores (en ese orden, así los metadatos pueden usar los tipos).
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+Aquí hay una versión simplificada de `package.json`. Asegúrate de que en la sección **scripts** el nombre del paquete es correcto y los directorios son válidos.
 
 ```json
 {
@@ -228,60 +228,60 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
 }
 ```
 
-### Type generation
+### Generación de Código
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+Ahora que la preparación está completa, estamos preparados para generar tipos y metadatas. Ejecutar los siguientes comandos:
 
 ```shell
-# Yarn to install new dependencies
+# Yarn para instalar nuevas dependencias
 yarn
 
-# Generate types
+# Genera tipos
 yarn generate:defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+En cada carpeta de módulos (por ejemplo, `/kitties`), ahora debería haber un manejador `types.ts` que define todas las interfaces de las definiciones de estos módulos, también un archivo `index.ts` que las exporta todas.
 
 ```shell
-# Generate metadata
+# Genera metadatos
 yarn generate:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+Este comando generará los metadatos y un nuevo complemento para las APIs. Como no queremos usar la API incorporada, necesitaremos reemplazarlos agregando una anulación explícita en nuestro `tsconfig.json`. Después de las actualizaciones, las rutas en la configuración se verán así (sin los comentarios):
 
 ```json
 {
   "compilerOptions": {
-      // this is the package name we use (in the interface imports, --package for generators) */
+      // este es el nombre del paquete que usamos (en la interfaz de importaciones, --package para generadors) */
       "kitty-birthinfo/*": ["src/*"],
-      // here we replace the @polkadot/api augmentation with our own, generated from chain
-      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      // replace the augmented types with our own, as generated from definitions
-      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+      // aquí reemplazamos la mejora @polkadot/api por la nuestra, generado desde la cadena
+      "@polkadot/api/augment": ["src/interfaces/augment-api. s"],
+      // reemplazar los tipos aumentados por los nuestros, as generated from definitions
+      "@polkadot/types/augment": ["src/interfaces/augment-types. s"]
     }
 }
 ```
 
-### Usage
+### Uso
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+Ahora en la función de mapeo, podemos mostrar cómo los metadatos y los tipos realmente decoran la API. El endpoint RPC soportará los módulos y métodos que declaramos anteriormente. Y para usar una llamada rpc personalizada, por favor vea la sección [Llamadas rpc de cadena personalizadas](#custom-chain-rpc-calls)
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
-    //return the KittyIndex type
-    const nextKittyId = await api.query.kitties.nextKittyId();
-    // return the Kitty type, input parameters types are AccountId and KittyIndex
-    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info(`Next kitty id ${nextKittyId}`)
-    //Custom rpc, set undefined to blockhash
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
+    // devuelve el tipo de Kitty
+    const nextKittyId = await api. Ojalá. entidades. extKittyId();
+    // devuelve el tipo Kitty, los tipos de parámetros de entrada son AccountId y KittyIndex
+    const allKitties = await api. uery.kitties.kitties('xxxxxxxxxx',123)
+    logger. nfo(`Next kitty id ${nextKittyId}`)
+    //Custom rpc, establecer indefinido a blockhash
+    const kittyPrice = await api. pc.kitties.getKittyPrice(undefined,nextKittyId);
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**Si desea publicar este proyecto en nuestro explorador, por favor incluya los archivos generados en `src/api-interfaces`.**
 
-### Custom chain rpc calls
+### Llamadas rpc de cadena personalizadas
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+Para soportar llamadas RPC personalizadas, debemos inyectar manualmente definiciones RPC para `typesBundle`, permitiendo la configuración por especificación. Puede definir el `typesBundle` en el `project.yml`. Y por favor recuerde que sólo se soportan los tipos de llamadas `isHistórico`.
 ```yaml
 ...
   types: {
