@@ -1,16 +1,16 @@
 # Connect to your New Project
 
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed Query endpoint.
+배포가 성공적으로 완료되고 노드가 체인에서 데이터를 인덱스화하면 표시된 Query 엔드 포인트를 통해 프로젝트에 접속할 수 있습니다.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![프로젝트 전개와 동기화](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started.
+프로젝트 제목 옆에 있는 3개의 점을 클릭하여 SubQuery 탐색기로 표시할 수도 있습니다. 브라우저 내의 플레이그라운드를 사용하여 시작할 수 있습니다.
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![SubQuery 탐색기 프로젝트](/assets/img/projects-explorer.png)
 
-# Learn more about GraphQL
+# GraphQL 상세
 
-You can follow the [official GraphQL guide here](https://graphql.org/learn/) to learn more about GraphQL, how it works, and how to use it:
-- There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
-- For an in-depth learning experience with practical tutorials, see [How to GraphQL](https://www.howtographql.com/).
-- Check out the free online course, [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
+[official GraphQL guide here](https://graphql.org/learn/)에 따라 GraphQL의 상세, 동작 방법 및 사용 방법을 확인할 수 있습니다.
+- [many different languages](https://graphql.org/code/)로 GraphQL을 구현하는 데 도움이 되는 라이브러리가 있습니다.
+- 실제 튜토리얼을 사용한 자세한 학습 경험은 [How to GraphQL](https://www.howtographql.com/)을 참조해 주세요.
+- 무료 온라인 코스 [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)을 확인하시기 바랍니다.
