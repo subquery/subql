@@ -97,7 +97,7 @@ success Saved lockfile.
 
 ## 3. Step 3: Generate code
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+Ahora ejecuta `yarn codegen` para generar Typescript desde el esquema GraphQL.
 
 <CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
 
@@ -112,7 +112,7 @@ $ ./node_modules/.bin/subql codegen
 * Models index generated !
 * Types index generated !
 ✨  Done in 1.02s.
-* Models index generated !
+* Tipo de índice generado!
 * Tipo de índice generado!
 ✨ Hecho en 0.06s.
 ```
@@ -139,7 +139,7 @@ $ tsc -b
 
 El uso de Docker le permite ejecutar este ejemplo muy rápidamente, ya que toda la infraestructura necesaria se puede proporcionar dentro de la imagen Docker. Ejecuta `docker-compose pull && docker-compose up`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+Esto hará que todo salga a la vida donde eventualmente conseguirás que se obtengan bloques.
 
 ```shell
 > #SNIPPET
