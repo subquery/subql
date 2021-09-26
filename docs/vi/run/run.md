@@ -4,7 +4,7 @@ Hướng dẫn này hoạt động thông qua cách chạy một node SubQuery c
 
 ## Sử dụng Docker
 
-Một giải pháp thay thế là chạy <strong> Docker Container </strong>, được xác định bởi tệp ` docker-compos.yml `. For a new project that has been just initialised you won't need to change anything here.
+Một giải pháp thay thế là chạy <strong> Docker Container </strong>, được xác định bởi tệp ` docker-compos.yml `. Đối với một dự án mới vừa được khởi tạo, bạn sẽ không cần phải thay đổi bất cứ điều gì ở đây.
 
 Trong thư mục dự án, hãy chạy lệnh sau:
 
@@ -18,7 +18,7 @@ Trong lần đầu tiên có thể bạn sẽ mất chút thời gian để tả
 
 Cần có:
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) database (version 12 hoặc cao hơn). Trong khi [SubQuery node](#start-a-local-subquery-node) đang lập chỉ mục chuỗi khối, dữ liệu trích xuất được lưu trữ trong một phiên bản cơ sở dữ liệu bên ngoài.
 
 Một node SubQuery sẽ triển khai trích xuất dữ liệu blockchain dựa trên chất nền (substrate) cho mỗi dự án SubQuery và lưu nó vào cơ sở dữ liệu Postgres.
 
@@ -39,7 +39,7 @@ subql-node <command>
 
 ### Các lệnh chính
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
+Các lệnh sau sẽ hỗ trợ bạn hoàn thành cấu hình của một node SubQuery và bắt đầu lập chỉ mục. Để tìm hiểu thêm, bạn luôn có thể chạy `--help`.
 
 #### Trỏ đến đường dẫn dự án trên môi trường local
 
@@ -49,7 +49,7 @@ subql-node -f your-project-path
 
 #### Sử dụng Từ điển
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
+Sử dụng từ điển chuỗi đầy đủ có thể tăng tốc đáng kể quá trình xử lý dự án SubQuery trong quá trình thử nghiệm hoặc trong lần lập chỉ mục đầu tiên của bạn. Trong một số trường hợp, chúng tôi đã thấy hiệu suất lập chỉ mục tăng lên đến 10 lần.
 
 Bộ từ điển này sẽ lập sẵn đầy đủ chỉ mục về vị trí của tất cả các sự kiện và yếu tố ngoại vi (extrinsics) trong blockchain liên quan và cho phép dịch vụ node của bạn chuyển đến các vị trí hợp lý khi lập chỉ mục thay vì phải kiểm tra từng block.
 
@@ -59,7 +59,7 @@ Bạn có thể trực tiếp thêm điểm cuối (endpoint) của từ điển
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+[Đọc thêm về cách hoạt động của Từ điển SubQuery](../tutorials_examples/dictionary.md).
 
 #### Kết nối với cơ sở dữ liệu
 
@@ -72,15 +72,15 @@ export DB_PORT=5432
 subql-node -f your-project-path 
 ````
 
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
+Tùy thuộc vào cấu hình cơ sở dữ liệu Postgres của bạn (ví dụ: mật khẩu cơ sở dữ liệu khác), hãy đảm bảo rằng cả trình chỉ mục (`subql/node`) và dịch vụ truy vấn (` subql/query`) đều có thể thiết lập kết nối với nó.
 
-#### Specify a configuration file
+#### Chỉ định tệp cấu hình
 
 ```
 subql-node -c your-project-config.yml
 ```
 
-This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
+Thao tác này sẽ trỏ nút truy vấn đến tệp cấu hình có thể ở định dạng YAML hoặc JSON. Kiểm tra ví dụ dưới đây.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -94,7 +94,7 @@ localMode:true
 ```
 subql-node -f your-project-path --batch-size 200
 
-Result:
+Kết quả:
 [IndexerManager] fetch block [203, 402]
 [IndexerManager] fetch block [403, 602]
 ```
