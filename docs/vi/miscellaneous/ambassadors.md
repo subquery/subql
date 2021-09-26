@@ -10,41 +10,41 @@ Chúng tôi hiểu rằng, một trong những thế mạnh lớn nhất của c
 
 Nhóm chúng tôi đã cùng nhau hợp tác với tầm nhìn chung là xây dựng nền tảng dịch vụ dữ liệu linh hoạt và toàn diện cho hệ sinh thái Polkadot.
 
-**Built by developers, for developers:** SubQuery is a growing community that focuses on providing the best products and services for our developers, and builders in our ecosystem. SubQuery is only successful if the Polkadot ecosystem is successful, and so everything we do is with our customers in mind.
+** Xây dựng bởi các nhà phát triển, dành cho các nhà phát triển:** SubQuery là một cộng đồng đang phát triển tập trung vào việc cung cấp các sản phẩm và dịch vụ tốt nhất cho các nhà phát triển và xây dựng trong hệ sinh thái của chúng tôi. Thành công của SubQuery phụ thuộc vào sự thành công của hệ sinh thái Polkadot, vì vậy mọi thứ chúng tôi làm đều hướng đến khách hàng của mình.
 
-**Integrity and Accountability:** We have team members in Auckland, Shanghai, and Sydney so remote work is important to us. We expect that our team is empowered and works autonomously together to achieve our goals. A key requirement for this is for our team to be accountable for their actions and maintain their integrity.
+**Minh bạch và Trách nhiệm:** Chúng tôi có các thành viên trong nhóm ở Auckland, Thượng Hải và Sydney nên làm việc từ xa rất quan trọng. Chúng tôi mong rằng cả nhóm luôn có động lực cùng nhau làm việc một cách tự chủ, độc lập để đạt được mục tiêu. Nhiệm vụ quan trọng để đạt được điều này là cả nhóm phải tự chịu trách nhiệm và luôn minh bạch đối với các hoạt động của họ.
 
-**Inclusive Guidance and Support:** Blockchain is hard, and everyone needs help sometimes. There is no such thing as a stupid question in our community and everyone in our team is expected to help support our users. We learn some of the most valuable insights about our service (and how we can improve it) directly from our community.
+**Hướng dẫn và Hỗ trợ Toàn diện:** Blockchain là một lĩnh vực rất khó, và nhều khi mọi người cũng cần được hỗ trợ. Trong cộng đồng của chúng tôi, không có câu hỏi nào là ngu ngốc, tất cả mọi người trong nhóm đều có trách nhiệm hỗ trợ các người dùng. Chúng tôi biết được rất nhiều thông tin giá trị về dịch vụ (và cách chúng tôi có thể cải thiện dịch vụ) trực tiếp từ cộng đồng của chúng tôi.
 
 ## Chương trình Đại sứ của Chúng tôi
 
-Our SubQuery Ambassador program aims to find community leaders passionate about Polkadot and SubQuery. We’re looking for self-starters that can spread the word about SubQuery in their local areas and provide support to new developers that want to use SubQuery to build amazing apps and services on Polkadot.
+Chương trình SubQuery Ambassador của chúng tôi nhằm mục đích tìm kiếm những nhà lãnh đạo cộng đồng có đam mê với Polkadot và SubQuery. Chúng tôi đang tìm kiếm những người có hoài bão, chủ động có thể lan toả giá trị của SubQuery trong cộng đồng của họ, và hỗ trợ các nhà phát triển mới muốn sử dụng SubQuery để xây dựng các ứng dụng và dịch vụ tuyệt vời trên Polkadot.
 
 ### Quyền lợi của Đại sứ
 
-At SubQuery, we work hard to achieve what we do. Similarly, Ambassadors are expected to commit some time when joining our team but will be rewarded with benefits.
+Tại SubQuery, chúng tôi làm việc chăm chỉ để đạt được mục tiêu. Tương tự, các nhà Đại sứ cần phải đóng góp công sức khi gia nhập nhóm của chúng tôi, nhưng bạn sẽ được hưởng nhiều quyền lợi tương xứng.
 
-**Funding and Support:** You may be rewarded for good work with early opportunities into private sales and bounties. Additionally, we’ll be providing funding grants for you to run community meetups.
+**Các khản Trợ cấp và Hỗ trợ:** Bạn có thể được thưởng do làm việc tốt và có cơ hội tham gia sớm vào các chương trình sale và bounty kín. Ngoài ra, chúng tôi sẽ cung cấp các khoản trợ cấp để bạn điều hành các buổi gặp mặt cộng đồng.
 
 **Quyền truy cập vào nhóm SubQuery:** Bạn sẽ có quyền truy cập trực tiếp vào core team của SubQuery và có cơ hội được đào tạo thực hành, tham gia AMA (giải đáp) độc quyền với các nhà lãnh đạo và nhà phát triển của chúng tôi, cũng như thông tin chi tiết về lộ trình phát triển của chúng tôi.
 
-**Network Development:** Expect to grow your professional network by being an Ambassador for one of the top Polkadot projects. Meet other ambassadors around the world and receive introductions to local Polkadot projects that we need to support locally. You might even get free entry to represent SubQuery in events in your local area.
+**Phát triển Mạng lưới:** Bạn chắc chắn sẽ mở rộng mạng lưới chuyên nghiệp của mình khi trở thành Đại sứ của một trong những dự án hàng đầu của Polkadot. Gặp gỡ các đại sứ khác trên toàn thế giới và được giới thiệu về các dự án Polkadot khác mà chúng tôi cần sự hỗ trợ địa phương. Bạn còn được tham gia miễn phí để đại diện SubQuery trong các sự kiện ở khu vực của bạn.
 
-**Swag and other free stuff:** Everyone likes free stuff! Receive an annual allocation of SubQuery swag that’ll make you stand out in the crowd. Plus additional allocation that you can share around at community events. You’ll also receive an exclusive NFT for your Ambassador status.
+**Swag và Đồ miễn phí khác:**Ai cũng thích đồ miễn phí! Nhận được lượng SubQuery swag phân phối hàng năm và trở nên thật nổi bật giữa đám đông. Bên cạnh đó là lượng phân phối khác bạn có thể chia sẻ tại các hoạt động cộng đồng. Bạn cũng sẽ nhận được một NFT độc quyền cho trong vai trò Đại sứ của bạn.
 
 ## Cách thực hoạt động của Chương trình
 
-Our Ambassador program has multiple tiers, each tier has different benefits and capabilities. You can move up tiers by participating in Ambassador activities and working hard for us.
+Chương trình Đại sứ của chúng tôi có nhiều cấp, mỗi cấp có những lợi ích và năng lực khác nhau. Bạn có thể thăng hạng bằng cách tham gia các hoạt động của Đại sứ và làm việc chăm chỉ.
 
-Once you have sent through an application, we will select candidates that align with our values. If selected you are placed in our trainee program and will receive an information package, expanding your understanding of SubQuery. After this, you can start to work through the trainee program by completing certain onboarding tasks (e.g. creating a SubQuery Project). We will host workshops throughout this process to support you.
+Sau khi bạn gửi đơn đăng ký, chúng tôi sẽ chọn những ứng viên phù hợp với giá trị của chúng tôi. Nếu được chọn, bạn sẽ được tham gia chương trình đào tạo của chúng tôi và nhận tài liệu tham khảo để mở rộng hiểu biết của bạn về SubQuery. Sau đó, bạn có thể bắt đầu làm việc thông qua chương trình đào tạo bằng cách hoàn thành một số nhiệm vụ làm quen công việc (ví dụ: tạo SubQuery Project). Chúng tôi sẽ tổ chức các workshop trong suốt quá trình này để hỗ trợ bạn.
 
-Once you pass the trainee program, you can call yourself a SubQuery ambassador and will be accepted into our full program. From here on you can continue to work through the program and progress up the tiers, earning more rewards and benefits as you climb the ranks.
+Sau khi hoàn thành chương trình đào tạo, bạn có thể tự gọi mình là Đại sứ SubQuery và sẽ được tham gia vào chương trình đầy đủ của chúng tôi. Từ đây trở đi, bạn có thể tiếp tục công việc thông qua chương trình đại sứ và thăng hạng dần dần, kiếm thêm nhiều phần thưởng và quyền lợi với mỗi lần thăng hạng.
 
 [Đăng ký Ngay!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
 
 ## Các Hoạt động của Đại sứ
 
-SubQuery Ambassadors are able to contribute through four main areas, including event management, content creation, translation, and community moderation. You can participate in as many areas as you want, you’re not bound to any single one.
+Đại sứ SubQuery có thể đóng góp qua bốn lĩnh vực chính, bao gồm quản lý sự kiện, sáng tạo nội dung, dịch thuật và kiểm duyệt cộng đồng. You can participate in as many areas as you want, you’re not bound to any single one.
 
 **Event Management:** Build local communities by hosting, organising, and managing different events. Building a local community will be a key part of growing the SubQuery community. SubQuery will support you by providing funding for events, sending swag/merchandise to be given away, as well as attending Q&As or online events as speakers or in AMA sessions.
 
