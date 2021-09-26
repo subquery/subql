@@ -4,7 +4,7 @@ Sau khi quá trình triển khai của bạn hoàn tất thành công và các n
 
 ![Các dự án đang được triển khai và đồng bộ](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started.
+Ngoài ra, bạn có thể nhấp vào ba dấu chấm bên cạnh tiêu đề dự án của mình và xem nó trên SubQuery Explorer. Ở đó, bạn có thể sử dụng sân chơi trong trình duyệt để bắt đầu.
 
 ![Các dự án trong trình khám phá truy vấn con](/assets/img/projects-explorer.png)
 
