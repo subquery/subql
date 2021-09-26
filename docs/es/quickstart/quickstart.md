@@ -1,54 +1,54 @@
-# Quick Start Guide
+# Guía de inicio rápido
 
-In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
+En esta guía de inicio rápido, vamos a crear un simple proyecto inicial que se puede utilizar como marco para desarrollar su propio Proyecto SubQuery.
 
-At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
+Al final de esta guía, tendrá un proyecto de SubQuery funcionando en un nodo de SubQuery con un endpoint GraphQL desde el que puede consultar datos.
 
-If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
+Si aún no lo has hecho, te sugerimos familiarizarte con la [terminología](../#terminology) utilizada en SubQuery.
 
-## Preparation
+## Preparación
 
-### Local Development Environment
+### Entorno de desarrollo local
 
-- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.
-- Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
-- SubQuery Nodes require Docker
+- [Typescript](https://www.typescriptlang.org/) es necesario para compilar el proyecto y definir tipos.
+- Tanto SubQuery CLI como el proyecto generado tienen dependencias y requieren una versión moderna [Node](https://nodejs.org/en/).
+- Los nodos SubQuery requieren Docker
 
-### Install the SubQuery CLI
+### Instalar SubQuery CLI
 
-Install SubQuery CLI globally on your terminal by using NPM:
+Instalar SubQuery CLI globalmente en tu terminal usando Yarn o NPM:
 
 ```shell
 # NPM
 npm install -g @subql/cli
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Tenga en cuenta que **NO** animamos el uso de `yarn global` debido a su mala gestión de dependencias que puede llevar a errores en la línea.
 
-You can then run help to see available commands and usage provide by CLI
+A continuación, puede ejecutar ayuda para ver los comandos disponibles y el uso proporcionado por CLI
 
 ```shell
 subql help
 ```
 
-## Initialise the Starter SubQuery Project
+## Inicializar el proyecto de SubQuery de Inicio
 
-Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
+Dentro del directorio en el que desea crear un proyecto de SubQuery, simplemente reemplace `PROJECT_NAME` con el propio y ejecute el comando:
 
 ```shell
 subql init --starter PROJECT_NAME
 ```
 
-You'll be asked certain questions as the SubQuery project is initalised:
+Se le harán ciertas preguntas ya que el proyecto de SubQuery está initalizado:
 
-- Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
-- RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Required): Enter the owner of this SubQuery project here
-- Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
-- Version (Required): Enter a custom version number or use the default (`1.0.0`)
-- License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
+- Repositorio Git (opcional): Proporcione una URL Git a un repositorio en el que este proyecto de SubQuery será alojado (cuando esté alojado en SubQuery Explorer)
+- Endpoint RPC (requerido): Proporcione una URL wss a un endpoint RPC en ejecución que se utilizará por defecto para este proyecto. Puede acceder rápidamente a los endpoints públicos para diferentes redes Polkadot o incluso crear su propio nodo privado dedicado usando [OnFinality](https://app.onfinality.io) o simplemente utilizar el punto final predeterminado de Polkadot.
+- Autores (requerido): Introduzca el propietario de este proyecto de Subconsulta aquí
+- Descripción (Opcional): Puede proporcionar un párrafo corto sobre su proyecto que describa qué datos contiene y qué pueden hacer los usuarios con él
+- Versión (Requerida): Introduzca un número de versión personalizado o utilice el predeterminado (`1.0.0`)
+- Licencia (Requerida): Proporcione la licencia de software para este proyecto o acepte el predeterminado (`Apache-2.0`)
 
-After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
+Después de completar el proceso de inicialización, debería ver una carpeta con el nombre de su proyecto que se ha creado dentro del directorio. El contenido de este directorio debe ser idéntico a lo que se muestra en la [estructura de directorio](../create/introduction.md#directory-structure).
 
 Last, under the project directory, run following command to install the new project's dependencies.
 
