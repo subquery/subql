@@ -42,7 +42,7 @@ subql init --starter PROJECT_NAME
 Bạn sẽ được hỏi một số câu hỏi nhất định khi dự án SubQuery được khởi động:
 
 - Kho lưu trữ Git (Tùy chọn): Cung cấp URL Git cho kho lưu trữ dự án SubQuery này (khi được lưu trữ trong SubQuery Explorer)
-- RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. Bạn có thể nhanh chóng truy cập các điểm cuối công khai cho các mạng Polkadot khác nhau hoặc thậm chí tạo nút chuyên dụng riêng của mình bằng cách sử dụng [ OnFinality ](https://app.onfinality.io) hoặc chỉ sử dụng điểm cuối Polkadot mặc định.
+- Điểm cuối RPC (Bắt buộc): Cung cấp URL wss tới điểm cuối RPC đang chạy sẽ được sử dụng theo mặc định cho dự án này. Bạn có thể nhanh chóng truy cập các điểm cuối công khai cho các mạng Polkadot khác nhau hoặc thậm chí tạo nút chuyên dụng riêng của mình bằng cách sử dụng [ OnFinality ](https://app.onfinality.io) hoặc chỉ sử dụng điểm cuối Polkadot mặc định.
 - Tác giả (Bắt buộc): Nhập chủ sở hữu của dự án SubQuery này tại đây
 - Mô tả (Tùy chọn): Bạn có thể cung cấp một đoạn văn ngắn về dự án của mình, mô tả dự án chứa dữ liệu gì và người dùng có thể làm gì với dự án
 - Phiên bản (Bắt buộc): Nhập số phiên bản tùy chỉnh hoặc sử dụng giá trị mặc định (`1.0.0`)
@@ -55,59 +55,59 @@ Cuối cùng, trong thư mục dự án, chạy lệnh sau để cài đặt cá
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
 
-## Configure and Build the Starter Project
+## Định cấu hình và xây dựng dự án dành cho người mới bắt đầu
 
-In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
+Trong gói khởi động mà bạn vừa khởi tạo, chúng tôi đã cung cấp cấu hình tiêu chuẩn cho dự án mới của bạn. Bạn sẽ chủ yếu làm việc trên các tệp sau:
 
 - The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- Lược đồ GraphQL trong `schema.graphql`
+- Các chức năng ánh xạ trong thư mục `src/mappings/`
 
-For more information on how to write your own SubQuery, check out our documentation under [Create a Project](../create/introduction.md)
+Để biết thêm thông tin về cách viết SubQuery của riêng bạn, hãy xem tài liệu của chúng tôi trong [Tạo dự án](../create/introduction.md)
 
-### GraphQL Model Generation
+### Tạo mô hình GraphQL
 
-In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+Để [lập chỉ mục](../run/run.md) dự án SubQuery của bạn, trước tiên bạn phải tạo các mô hình GraphQL bắt buộc mà bạn đã xác định trong tệp Sơ đồ GraphQL (`schema.graphql`). Chạy lệnh này trong thư mục gốc của thư mục dự án.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-You'll find the generated models in the `/src/types/models` directory
+Bạn sẽ tìm thấy các mô hình đã tạo trong thư mục `/src/types/models`
 
-## Build the Project
+## Xây dựng dự án
 
-In order run your SubQuery Project on a locally hosted SubQuery Node, you need to build your work.
+Để chạy Dự án SubQuery của bạn trên một Nút SubQuery được lưu trữ cục bộ, bạn cần phải xây dựng công việc của mình.
 
-Run the build command from the project's root directory.
+Chạy lệnh xây dựng từ thư mục gốc của dự án.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-## Running and Querying your Starter Project
+## Chạy và truy vấn dự án khởi đầu của bạn
 
-Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+Mặc dù bạn có thể nhanh chóng xuất bản dự án mới của mình lên[Dự án SubQuery](https://project.subquery.network) và truy vấn bằng cách sử dụng [Explorer](https://explorer.subquery.network),  của chúng tôi, cách dễ nhất để chạy các nút SubQuery cục bộ là trong vùng chứa Docker, nếu không  có Docker, bạn có thể cài đặt nó từ [docker.com](https://docs.docker.com/get-docker/).
 
-[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+[_Bỏ qua điều này và xuất bản dự án mới của bạn lên SubQuery Projects_](../publish/publish.md)
 
-### Run your SubQuery Project
+### Chạy Dự án SubQuery của bạn
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
+Tất cả cấu hình kiểm soát cách chạy nút SubQuery được xác định trong tệp `docker-compose.yml` file. Đối với một dự án mới vừa được khởi tạo, bạn sẽ không cần phải thay đổi bất kỳ điều gì nhưng có thể đọc thêm về tệp và cài đặt trong [phần Chạy dự án](../run/run.md) của chúng tôi
 
-Under the project directory run following command:
+Trong thư mục dự án chạy lệnh sau:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+Có thể mất một chút thời gian để tải xuống các gói bắt buộc ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) và Postgres) lần đầu tiên nhưng bạn sẽ sớm thấy lỗi đang chạy Nút SubQuery.
 
-### Query your Project
+### Truy vấn dự án của người dùng cá nhân
 
-Open your browser and head to [http://localhost:3000](http://localhost:3000).
+Mở trình duyệt của bạn và truy cập [ http://localhost:3000](http://localhost:3000).
 
-You should see a GraphQL playground is showing in the explorer and the schemas that are ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
+Bạn sẽ thấy một sân chơi GraphQL đang hiển thị trong trình thám hiểm và các lược đồ đã sẵn sàng để truy vấn. Ở trên cùng bên phải của sân chơi, bạn sẽ tìm thấy nút _Tài liệu_ sẽ mở bản vẽ tài liệu. Tài liệu này được tạo tự động và giúp bạn tìm thấy những thực thể và phương pháp nào bạn có thể truy vấn.
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
+Đối với dự án khởi động SubQuery mới, bạn có thể thử truy vấn sau để biết cách hoạt động của nó hoặc [tìm hiểu thêm về ngôn ngữ Truy vấn GraphQL](../query/graphql.md).
 
 ```graphql
 {
@@ -123,8 +123,8 @@ For a new SubQuery starter project, you can try the following query to get a tas
 }
 ```
 
-## Next Steps
+## Bước tiếp theo
 
-Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
+Xin chúc mừng, bạn hiện có một dự án SubQuery đang chạy cục bộ chấp nhận các yêu cầu API GraphQL cho dữ liệu mẫu. Trong hướng dẫn tiếp theo, chúng tôi sẽ chỉ cho bạn cách xuất bản dự án mới lên [Dự án SubQuery](https://project.subquery.network) và truy vấn nó bằng cách sử dụng [Explorer](https://explorer.subquery.network) của chúng tôi
 
-[Publish your new project to SubQuery Projects](../publish/publish.md)
+[Xuất bản dự án mới của bạn lên SubQuery Projects](../publish/publish.md)
