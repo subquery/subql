@@ -99,7 +99,7 @@ Kết quả:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+Khi chain được lập chỉ mục lần đầu tiên, việc tìm nạp (fetching) các block đơn lẻ sẽ làm giảm đáng kể hiệu suất. Phương thức tăng batch size để điều chỉnh số lượng block được tìm nạp sẽ giúp làm giảm thời gian xử lý tổng thể. Batch size mặc định hiện đang là 100.
 
 #### Chế độ local
 
@@ -107,19 +107,19 @@ When the indexer first indexes the chain, fetching single blocks will significan
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+Người dùng có thể để node chạy ở chế độ local nhằm phục vụ việc gỡ bug. Viêc chuyển sang chế độ local sẽ tạo các bảng Postgres trong sơ đồ `công khai` mặc định.
 
 Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn global` vì khâu quản lý phụ thuộc của nó rất kém, có thể dẫn đến sai sót trong dây chuyền.
 
 
-#### Check your node health
+#### Kiểm tra tình trạng nút của bạn
 
-There are 2 endpoints that you can use to check and monitor the health of a running SubQuery node.
+Có 2 điểm cuối mà bạn có thể sử dụng để kiểm tra và theo dõi tình trạng của một nút SubQuery đang chạy.
 
-- Health check endpoint that returns a simple 200 response
-- Metadata endpoint that includes additional analytics of your running SubQuery node
+- Điểm cuối kiểm tra sức khỏe trả về một phản hồi 200 đơn giản
+- Điểm cuối siêu dữ liệu bao gồm các phân tích bổ sung về nút SubQuery đang chạy của bạn
 
-Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
+Nối phần này vào URL cơ sở của nút SubQuery của bạn. Ví dụ: ` http: // localhost: 3000 / meta ` sẽ trả về:
 
 ```bash
 {
@@ -142,9 +142,9 @@ Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/met
 }
 ```
 
-`http://localhost:3000/health` will return HTTP 200 if successful.
+` http: // localhost: 3000 / health ` sẽ trả về HTTP 200 nếu thành công.
 
-A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
+Lỗi 500 sẽ được trả về nếu trình lập chỉ mục không khỏe mạnh. Điều này thường có thể được nhìn thấy khi nút đang khởi động.
 
 ```shell
 {
@@ -153,7 +153,7 @@ A 500 error will be returned if the indexer is not healthy. This can often be se
 }
 ```
 
-If an incorrect URL is used, a 404 not found error will be returned.
+Nếu một URL không chính xác được sử dụng, lỗi 404 not found sẽ được trả về.
 
 ```shell
 {
@@ -163,22 +163,22 @@ If an incorrect URL is used, a 404 not found error will be returned.
 }
 ```
 
-#### Debug your project
+#### Gỡ lỗi dự án của bạn
 
-Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+Sử dụng [ trình kiểm tra nút ](https://nodejs.org/en/docs/guides/debugging-getting-started/) để chạy lệnh sau.
 
 ```shell
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+Ví dụ:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
-Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
+Sau đó, mở các công cụ dành cho nhà phát triển Chrome, đi tới Nguồn > Hệ thống tệp và thêm dự án của bạn vào không gian làm việc và bắt đầu gỡ lỗi. Để biết thêm thông tin, hãy kiểm tra [ Cách gỡ lỗi dự án SubQuery ](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## Khởi chạy Dịch vụ Truy vấn (subql/query)
 
 ### Cài đặt
@@ -188,11 +188,11 @@ Then open up the Chrome dev tools, go to Source > Filesystem and add your projec
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn global` vì khâu quản lý phụ thuộc của nó rất kém, có thể dẫn đến sai sót trong dây chuyền.
 
 ### Menjalankan layanan Kueri
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+Đảm bảo rằng tên dự án này trùng với tên bạn đã đặt từ lúc [khởi tạo dự án](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Ngoài ra, hãy kiểm tra xem các biến môi trường đã chuẩn hay chưa.
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+Sau khi chạy thành công dịch vụ truy vấn subql, hãy mở trình duyệt và truy cập địa chỉ `http://localhost:3000`. Bạn sẽ thấy một GraphQL Playground hiển thị trong trình duyệt với sơ đồ đã sẵn sàng để truy vấn.
