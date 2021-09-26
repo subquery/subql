@@ -43,20 +43,20 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-물론, 위의 키들이 다른 값이 있는 경우, 그에 따라 조정하십시오. `env` 명령은 현재 환경 변수를 표시하며 이 프로세스는 이러한 값만 임시로 설정합니다. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+물론, 위의 키들이 다른 값이 있는 경우, 그에 따라 조정하십시오. `env` 명령은 현재 환경 변수를 표시하며 이 프로세스는 이러한 값만 임시로 설정합니다. 즉, 터미널 세션 동안에만 유효합니다. 영구적으로 설정하려면, 대신 ~/bash_profile에 저장하십시오.
 
-## Indexing a project
+## 프로젝트 인덱싱
 
-To start indexing a project, navigate into your project folder and run the following command:
+프로젝트 인덱싱을 시작하려면, 프로젝트 폴더로 이동하여 다음 명령을 실행합니다.
 
 ```shell
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+편한 프로젝트가 없다면, `git clone https://github.com/subquery/subql-helloworld`하십시오. 인덱서 노드가 작동하고 블록 인덱싱을 시작하는 것을 볼 수 있습니다.
 
-## Inspecting Postgres
+## Postgres 검사
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+Postgres로 이동하면, 두 개의 테이블이 생성된 것을 볼 수 있습니다. `public.subqueries` and `subquery_1.starter_entities`.
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries`는 시작 시 "현재 상태를 이해"하기 위해 인덱서가 확인하는 행을 하나만 포함하므로 계속되는 위치를 알 수 있습니다. `starter_entities` 테이블에는 인덱스가 포함되어 있습니다. 데이터를 보려면 `subquery_1.starter_entities에서 select(*)`를 실행합니다.
