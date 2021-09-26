@@ -14,7 +14,7 @@ Running an indexer node is another option outside of using Docker or having a pr
 
 Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
 
-## Install subql/node
+## Instalar subql/node
 
 Then to run a SubQuery node, run the following command:
 
@@ -53,10 +53,10 @@ To start indexing a project, navigate into your project folder and run the follo
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+Si no tienes un proyecto práctico, `git clone https://github.com/subquery/subql-helloworld`. Deberías ver el nodo indexador patear a la vida y comenzar a indexar bloques.
 
-## Inspecting Postgres
+## Inspección de Postgres
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+Si navega a Postgres, verá dos tablas creadas. `public.subqueries` y `subquery_1.starter_entities`.
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries` sólo contiene 1 fila de la que el indexador comprueba al inicio para "entender el estado actual" para que sepa desde dónde continuar. La tabla `starter_entities` contiene los índices. Para ver los datos, ejecute `select (*) desde subquery_1.starter_entities`.
