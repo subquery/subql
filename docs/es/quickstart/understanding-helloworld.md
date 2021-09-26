@@ -22,25 +22,25 @@ The next thing we did was `yarn install`. `npm install` can be used as well.
 
 > A short history lesson. Node Package Manager or npm was initially released in 2010 and is a tremendously popular package manager among JavaScript developers. It is the default package that is automatically installed whenever you install Node.js on your system. Yarn was initially released by Facebook in 2016 with the intention to address some of the performance and security shortcomings of working with npm (at that time).
 
-What yarn does is look at the `package.json` file and download various other dependencies. Looking at the `package.json` file, it doesn't look like there are many dependencies, but when you run the command, you'll notice that 18,983 files are added. This is because each dependency will also have its own dependencies.
+What yarn does is look at the `package.json` file and download various other dependencies. Mira el archivo`package.json`, no parece que haya muchas dependencias, pero cuando ejecutas el comando, notarás que se añaden 18.983 archivos. Esto se debe a que cada dependencia también tendrá sus propias dependencias.
 
-![key subql files](/assets/img/dependencies.png)
+![archivos subql clave](/assets/img/dependencies.png)
 
 ## yarn codegen
 
-Then we ran `yarn codegen` or `npm run-script codegen`. What this does is fetch the GraphQL schema (in the `schema.graphql`) and generates the associated typescript model files (Hence the output files will have a .ts extension). You should never change any of these generated files, only change the source `schema.graphql` file.
+Luego corrimos `yarn codegen` o `npm run-script codegen`. Lo que esto hace es obtener el esquema GraphQL (en el esquema `schema.graphql`) y genera los archivos de modelo de tipo asociados (por lo tanto, los archivos de salida tendrán una extensión .ts). Nunca debería cambiar ninguno de estos archivos generados, sólo cambiar el archivo fuente `schema.graphql`.
 
-![key subql files](/assets/img/typescript.png)
+![archivos subql clave](/assets/img/typescript.png)
 
 ## yarn build
 
-`yarn build` or `npm run-script build` was then executed. This should be familiar for seasoned programmers. It creates a distribution folder performing things such as code optimisation preparing for a deployment.
+`yarn build` o `npm run-script build` fue ejecutado. Esto debería ser familiar para programadores experimentados. Crea una carpeta de distribución que realiza cosas como la optimización del código preparándose para una implementación.
 
-![key subql files](/assets/img/distribution_folder.png)
+![archivos subql clave](/assets/img/distribution_folder.png)
 
 ## docker-compose
 
-The final step was the combined docker command `docker-compose pull && docker-compose up` (can be run separately as well). The `pull` command grabs all the required images from Docker Hub and the `up` command starts the container.
+El paso final fue el comando combinado docker `docker-compose pull && docker-compose up` (también se puede ejecutar por separado). El comando `pull` agarra todas las imágenes necesarias de Docker Hub y el comando `up` inicia el contenedor.
 
 ```shell
 > docker-compose pull
@@ -49,16 +49,16 @@ Pulling subquery-node   ... done
 Pulling graphql-engine  ... done
 ```
 
-When the container is started, you'll see the terminal spit out lots of text showing the status of the node and the GraphQL engine. It's when you see:
+Cuando el contenedor se inicia, verá que el terminal escupe un montón de texto mostrando el estado del nodo y el motor GraphQL. Es cuando se ve:
 
 ```
 subquery-node_1   | 2021-06-06T02:04:25.490Z <fetch> INFO fetch block [1, 100]
 ```
 
-that you know that the SubQuery node has started to synchronise.
+que sabe que el nodo SubQuery ha comenzado a sincronizar.
 
-## Summary
+## Resúmen
 
-Now that you've had an insight into what is happening under the covers, the question is where to from here? If you are feeling confident, you can jump into learning about how to [create a project](../create/introduction.md) and learn more about the three key files. The manifest file, the GraphQL schema, and the mappings file.
+Ahora que has tenido una visión de lo que está ocurriendo debajo de las cubiertas, la pregunta es ¿a dónde ir desde aquí? Si te sientes seguro, puedes ir aprendiendo sobre cómo [crear un proyecto](../create/introduction.md) y aprender más sobre los tres archivos clave. El archivo manifiesto, el esquema GraphQL y el archivo de mapeos.
 
-Otherwise, continue to our tutorials section where we look at how we can run this Hello World example on SubQuery's hosted infrastructure, we'll look at modifying the start block, and we'll take a deeper dive at running SubQuery projects by running readily available and open source projects.
+De lo contrario, continúe a nuestra sección de tutoriales donde veremos cómo podemos ejecutar este ejemplo de Hola Mundo en la infraestructura alojada de SubQuery. revisaremos la modificación del bloque de inicio, y haremos una inmersión más profunda en la ejecución de proyectos de SubQuery ejecutando proyectos de código abierto y de fácil acceso.
