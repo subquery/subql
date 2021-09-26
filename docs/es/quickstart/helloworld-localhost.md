@@ -1,35 +1,35 @@
-# Hello World (localhost + Docker)
+# Hola Mundo (host local + Docker)
 
-Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+Bienvenido a este inicio rápido de SubQuery Hola Mundo. El inicio rápido apunta a mostrarle cómo se ejecuta el proyecto inicial predeterminado en Docker en unos pocos pasos.
 
-## Learning objectives
+## Objetivos de aprendizaje
 
-At the end of this quick start, you should:
+Al final de este inicio rápido, deberías:
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- entender los requisitos requeridos
+- entender los comandos básicos comunes
+- ser capaz de navegar a localhost:3000 y ver el patio de juegos
+- ejecuta una simple consulta para obtener la altura del bloque del mainnet Polkadot
 
-## Intended audience
+## Audiencia intencionada
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Esta guía está dirigida a nuevos desarrolladores que tienen cierta experiencia de desarrollo y están interesados en aprender más sobre SubQuery.
 
-## Video guide
+## Guía en vídeo
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Pre-requisitos
 
-You will need:
+Necesitarás:
 
-- yarn or npm package manager
+- gestor de paquetes yarn o npm
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+Puede ejecutar los siguientes comandos en un terminal para ver si ya tiene alguno de estos requisitos previos.
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+Para usuarios más avanzados, copie y pegue lo siguiente:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+Esto debería regresar: (para usuarios de npm, reemplace yarn con npm)
 
 ```shell
 My yarn version is: 1.22.10
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+Si usted consigue lo anterior, entonces tiene luz verde para continuar. Si no, sigue estos enlaces para instalarlos:
 
-- [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
+- [yarn](https://classic.yarnpkg.com/en/docs/install/) o [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
 ## 1. Step 1: Initialise project
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+El primer paso al comenzar con SubQuery es ejecutar el comando `subql init`. Inicialicemos un proyecto inicial con el nombre `subqlHelloWorld`. Tenga en cuenta que sólo el autor es obligatorio. Todo lo demás queda vacío.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -71,7 +71,7 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+No olvides cambiar a este nuevo directorio.
 
 ```shell
 cd subqlHelloWorld
@@ -79,7 +79,7 @@ cd subqlHelloWorld
 
 ## 2. Step 2: Install dependencies
 
-Now do a yarn or node install to install the various dependencies.
+Ahora haga una instalación de yarn o node para instalar las distintas dependencias.
 
 <CodeGroup> # Yarn yarn install # NPM npm install
 
