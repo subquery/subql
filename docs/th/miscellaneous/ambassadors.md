@@ -36,9 +36,9 @@
 
 โปรแกรมแอมบาสเดอร์ของเรามีหลายระดับ โดยแต่ละระดับก็มีสิทธิประโยชน์และขีดความสามารถที่แตกต่างกัน คุณสามารถเลื่อนระดับได้โดยการเข้าร่วมกิจกรรมแอมบาสเดอร์และทำงานหนักเพื่อเรา
 
-Once you have sent through an application, we will select candidates that align with our values. If selected you are placed in our trainee program and will receive an information package, expanding your understanding of SubQuery. After this, you can start to work through the trainee program by completing certain onboarding tasks (e.g. creating a SubQuery Project). We will host workshops throughout this process to support you.
+เมื่อคุณส่งใบสมัครแล้ว เราจะคัดเลือกผู้สมัครที่สอดคล้องกับค่านิยมของเรา และหากได้รับเลือก คุณจะอยู่ในโปรแกรมฝึกหัดของเราและจะได้รับแพ็คเกจข้อมูล ซึ่งจะช่วยให้คุณมีความเข้าใจเกี่ยวกับ SubQuery มากขึ้น หลังจากนี้ คุณสามารถเริ่มทำงานผ่านโปรแกรมฝึกหัดโดยการทำงานปฐมนิเทศบางอย่างให้เสร็จสิ้น (เช่น การสร้างโปรเจกต์ SubQuery) โดยเราจะจัดเวิร์กช็อปตลอดกระบวนการนี้เพื่อให้ความช่วยเหลือกับคุณ
 
-Once you pass the trainee program, you can call yourself a SubQuery ambassador and will be accepted into our full program. From here on you can continue to work through the program and progress up the tiers, earning more rewards and benefits as you climb the ranks.
+เมื่อคุณผ่านโปรแกรมฝึกหัดแล้ว คุณจะสามารถเรียกตัวเองว่าแอมบาสเดอร์ SubQuery และจะได้เข้าร่วมโปรแกรมอย่างเต็มรูปแบบของเรา โดยคุณสามารถทำงานต่อไปในโปรแกรมและเลื่อนระดับขึ้น เพื่อรับรางวัลและสิทธิประโยชน์ที่มากขึ้นสำหรับระดับที่สูงขึ้น
 
 [สมัครเลย!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
 
