@@ -1,10 +1,10 @@
 # Chạy SubQuery trên môi trường local
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Hướng dẫn này hoạt động thông qua cách chạy một node SubQuery cục bộ trên cơ sở hạ tầng của bạn, bao gồm cả trình lập chỉ mục và dịch vụ truy vấn. Bạn không muốn lo lắng về việc chạy cơ sở hạ tầng SubQuery của riêng mình? SubQuery cung cấp miễn phí [ dịch vụ được lưu trữ được quản lý ](https://explorer.subquery.network) cho cộng đồng. [ Thực hiện theo hướng dẫn xuất bản của chúng tôi ](../publish/publish.md) để xem cách bạn có thể tải dự án của mình lên [ Dự án SubQuery ](https://project.subquery.network).
 
 ## Sử dụng Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+Một giải pháp thay thế là chạy <strong> Docker Container </strong>, được xác định bởi tệp ` docker-compos.yml `. For a new project that has been just initialised you won't need to change anything here.
 
 Trong thư mục dự án, hãy chạy lệnh sau:
 
