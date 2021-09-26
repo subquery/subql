@@ -1,20 +1,20 @@
-# The Sandbox
+# 샌드박스
 
-In our envisioned usage scenario, the SubQuery node is usually run by a trusted host, and the code of the SubQuery project submitted by the user to the node is not entirely trustworthy.
+우리가 구상한 사용 시나리오에서 SubQuery 노드는 일반적으로 신뢰할 수 있는 호스트에 의해 실행되며 사용자가 노드에 제출한 SubQuery 프로젝트의 코드는 완전히 신뢰할 수 없습니다.
 
-Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This:
+일부 악성 코드는 호스트를 공격하거나 손상시킬 수 있으며 동일한 호스트에 있는 다른 프로젝트의 데이터에 손상을 줄 수 있습니다. 따라서 [VM2](https://www.npmjs.com/package/vm2) 샌드박스 보안 메커니즘을 사용하여 위험을 줄입니다. 이것:
 
-- Runs untrusted code securely in an isolated context and malicious code will not access the network and file system of the host unless through the exposed interface we injected into the sandbox.
+- 격리된 컨텍스트에서 신뢰할 수 없는 코드를 안전하게 실행하고 샌드박스에 삽입된 노출된 인터페이스를 통하지 않는 한 악성 코드는 호스트의 네트워크 및 파일 시스템에 액세스하지 않습니다.
 
-- Securely calls methods and exchanges data and callbacks between sandboxes.
+- 안전하게 메서드를 호출하고 샌드박스 간에 데이터 및 콜백을 교환합니다.
 
-- Is immune to many known methods of attack.
+- 알려진 많은 공격 방법에 면역입니다.
 
 
-## Restriction
+## 제한
 
-- To limit access to certain built-in modules, only `assert`, `buffer`, `crypto`,`util` and `path` are whitelisted.
+- 특정 내장 모듈에 대한 액세스를 제한하려면 `assert`, `buffer`, `crypto`, `util` 및 `만 경로`가 허용됩니다.
 
-- We support [3rd party modules](../create/mapping.md#third-party-libraries) written in **CommonJS** and **hybrid** libraries like `@polkadot/*` that use ESM as default.
+- **CommonJS**로 작성된 [타사 모듈](../create/mapping.md#third-party-libraries)과 기본적으로 ESM을 사용하는 `@polkadot/*`와 같은 **하이브리드** 라이브러리를 지원합니다.
 
-- Any modules using `HTTP` and `WebSocket` are forbidden.
+- `HTTP` 및 `WebSocket`을 사용하는 모든 모듈은 금지됩니다.
