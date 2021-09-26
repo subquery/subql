@@ -16,15 +16,15 @@
 
 최초 로그인 후 SubQuery를 허용하도록 요청됩니다. 저희는 당신의 계정을 식별하기 위해 당신의 이메일 주소가 필요하며, 다른 이유로 당신의 깃허브 계정의 다른 데이터는 사용하지 않습니다. 이 단계에서는 깃허브 단체 계정에 대한 접근을 요청하거나 허용할 수도 있으며, 개인 계정이 아닌 깃허브 단체 아래에 SubQuery 프로젝트를 게시할 수 있습니다.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![깃허브 계정 승인 취소](/assets/img/project_auth_request.png)
 
 SubQuery Projects는 SubQuery 플랫폼에 업로드된 모든 호스트 프로젝트를 관리하는 곳입니다. 이 어플리케이션에서는 모든 프로젝트를 생성, 삭제, 업그레이드 할 수 있습니다.
 
-![Projects Login](/assets/img/projects-dashboard.png)
+![프로젝트 로그인](/assets/img/projects-dashboard.png)
 
 깃허브 단체 계정이 연결되어 있으면 머리글의 스위치를 사용하여 개인 계정과 깃허브 단체 계정을 변경할 수 있습니다. 깃허브 단체 계정으로 생성된 프로젝트는 해당 깃허브 단체 구성원간에 공유됩니다. 깃허브 단체 계정을 접속하려면 [follow the steps here](#add-github-organization-account-to-subquery-projects)를 따르세요.
 
-![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
+![깃허브 계정 간 전환](/assets/img/projects-account-switcher.png)
 
 #### 최초 프로젝트 생성
 
@@ -34,46 +34,46 @@ SubQuery Projects는 SubQuery 플랫폼에 업로드된 모든 호스트 프로�
 - **부제**
 - **설명**
 - **GitHub Repository URL:** SubQuery 프로젝트가 있는 퍼블릭 저장소에 대한 유효한 깃허브 URL이어야 합니다. `schema.graphql` 파일은, 디렉토리의 루트에 있을 필요가 있습니다([learn more about the directory structure](../create/introduction.md#directory-structure)).
-- **Hide project:** 선택하면 퍼블릭 SubQuery 탐색기에서 프로젝트가 숨겨집니다. SubQuery를 커뮤니티와 공유할 경우 이 항목을 삭제합니다. ![Create your first Project](/assets/img/projects-create.png)
+- **Hide project:** 선택하면 퍼블릭 SubQuery 탐색기에서 프로젝트가 숨겨집니다. SubQuery를 커뮤니티와 공유할 경우 이 항목을 삭제합니다. ![최초 프로젝트 생성](/assets/img/projects-create.png)
 
-프로젝트를 생성하면 SubQuery Project 목록에 프로젝트가 나타납니다. *We're almost there! We just need to deploy a new version of it. </p>
+프로젝트를 생성하면 SubQuery Project 목록에 프로젝트가 나타납니다. *거의 다 왔어요! We just need to deploy a new version of it.
 
-![Created Project with no deployment](/assets/img/projects-no-deployment.png)
+![전개 없이 생성된 프로젝트](/assets/img/projects-no-deployment.png)
 
-#### Deploy your first Version
+#### 첫 번째 버전 전개
 
-While creating a project will setup the display behaviour of the project, you must deploy a version of it before it becomes operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+프로젝트를 생성하면 프로젝트의 표시 동작이 설정되지만 실행 전에 버전을 전개해야 합니다. 버전을 배포하면 새로운 SubQuery 인덱스 작업이 시작되고 GraphQL 요구 수용을 시작하기 위해 필요한 Query 서비스가 설정됩니다. 여기서는 기존 프로젝트에 새로운 버전을 배포할 수도 있습니다.
 
-With your new project, you'll see a Deploy New Version button. Click this, and fill in the required information about the deployment:
-- **Commit Hash of new Version:** From GitHub, copy the full commit hash of the version of your SubQuery project codebase that you want deployed
-- **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [`@subql/node`](https://www.npmjs.com/package/@subql/node)
-- **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [`@subql/query`](https://www.npmjs.com/package/@subql/query)
+새로운 프로젝트에서는 새로운 버전 배포 버튼이 나타납니다. 이를 클릭하고 전개에 필요한 정보를 입력합니다:
+- **Commit Hash of new Version:** 깃허브에서, 전개하는 SubQuery 프로젝트 코드 베이스의 버전의 완전 커밋 해시를 복사 합니다.
+- **Indexer Version:** 이 SubQuery를 실행하는 SubQuery의 노드 서비스 버전입니다. [`@subql/node`](https://www.npmjs.com/package/@subql/node)를 보세요
+- **Query Version:** 이 SubQuery를 실행하는 SubQuery query 서비스 버전입니다. [`@subql/query`](https://www.npmjs.com/package/@subql/query)를 보세요
 
-![Deploy your first Project](https://static.subquery.network/media/projects/projects-first-deployment.png)
+![첫 번째 프로젝트 전개](https://static.subquery.network/media/projects/projects-first-deployment.png)
 
-If deployed successfully, you'll see the indexer start working and report back progress on indexing the current chain. This process may take time until it reaches 100%.
+배포에 성공하면 인덱스가 동작을 개시하여 현재 체인의 인덱스 작성 진행 상황을 다시 보고할 수 있습니다. 이 과정은 100%까지 시간이 걸릴 수 있습니다.
 
-## Next Steps - Connect to your Project
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
+## 다음 단계 - 프로젝트연결
+배포가 성공적으로 완료되고 노드가 체인에서 데이터를 인덱스화하면 표시된 GraphQL Query 엔드 포인트를 통해 프로젝트에 접속할 수 있습니다.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![프로젝트 전개와 동기화](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in-browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+프로젝트 제목 옆에 있는 3개의 점을 클릭하여 SubQuery Explorer로 표시할 수도 있습니다. 브라우저 내 플레이그라운드를 사용하여 시작할 수 있습니다 - [read more about how to user our Explorer here](../query/query.md) 이쪽을 참조해 주세요.
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![SubQuery 탐색기 프로젝트](/assets/img/projects-explorer.png)
 
-## Add GitHub Organization Account to SubQuery Projects
+## SubQuery 프로젝트에 깃허브 단체 계정 추가
 
-It is common to publish your SubQuery project under the name of your GitHub Organization account rather than your personal GitHub account. At any point your can change your currently selected account on [SubQuery Projects](https://project.subquery.network) using the account switcher.
+개인 깃허브 계정이 아닌 깃허브 단체 계정의 이름으로 SubQuery 프로젝트를 공개하는 것이 일반적입니다. 언제든지 계정 스위처를 사용하여 [SubQuery Projects](https://project.subquery.network)에서 현재 선택된 계정을 변경할 수 있습니다.
 
-![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
+![Git Hub 계정 간 전환](/assets/img/projects-account-switcher.png)
 
-If you can't see your GitHub Organization account listed in the switcher, the you may need to grant access to SubQuery for your GitHub Organization (or request it from an administrator). To do this, you first need to revoke permissions from your GitHub account to the SubQuery Application. To do this, login to your account settings in GitHub, go to Applications, and under the Authorized OAuth Apps tab, revoke SubQuery - [you can follow the exact steps here](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth). **Don't worry, this will not delete your SubQuery project and you will not lose any data.**
+스위처에 깃허브 단체 계정이 나타나지 않으면 깃허브 단체의 SubQuery 접근을 허용하거나 관리자에게 요청해야 합니다. 그러기 위해서는 먼저 깃허브 계정에서 SubQuery 신청서에 대한 권한을 취소해야 합니다. 이를 수행하려면 깃허브에서 계정 설정에 로그인하고 애플리케이션으로 이동하여 권한부여된 OAuth 앱 탭에서, SubQuery를 비활성화 합니다 - [you can follow the exact steps here](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth). ** 걱정하지 마세요, 이는 SubQuery 프로젝트는 삭제되지 않고 데이터도 잃지 않습니다. **
 
-![Revoke access to GitHub account](/assets/img/project_auth_revoke.png)
+![Git Hub 계정 접근을 비활성화합니다.](/assets/img/project_auth_revoke.png)
 
-Once you have revoked access, log out of [SubQuery Projects](https://project.subquery.network) and log back in again. You should be redirected to a page titled *Authorize SubQuery* where you can request or grant SubQuery access to your GitHub Organization account. If you don't have admin permissions, you must make a request for an adminstrator to enable this for you.
+접근을 취소하면 [SubQuery Projects](https://project.subquery.network) 에서 로그아웃 하고 다시 로그인 합니다. *Authorize SubQuery* 이라는 제목의 페이지로 리다이렉트 되어 깃허브 단체 계정에 대한 SubQuery 접근을 요구하거나 허용할 수 있습니다. 어드민 권한이 없는 경우 관리자에게 요청하여 이너블로 만들어야 합니다.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![Git Hub 계정 승인 취소](/assets/img/project_auth_request.png)
 
-Once this request has been approved by your administrator (or if are able to grant it youself), you will see the correct GitHub Organization account in the account switcher.
+이 요구가 관리자에 의해 승인되면(또는 직접 승인할 수 있는 경우) 계정전환기에 올바른 깃허브 단체 계정이 표시됩니다.
