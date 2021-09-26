@@ -18,7 +18,7 @@ Ejecuta el siguiente comando en tu terminal.
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+Por ejemplo:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
@@ -26,12 +26,12 @@ For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
 
-## Chrome devtools
+## Devtools de Chrome
 
-Open up Chrome DevTools and navigate to the Sources tab. Note that clicking on the green icon will open up a new window.
+Abra Chrome DevTools y vaya a la pestaña Fuentes. Tenga en cuenta que hacer clic en el icono verde abrirá una nueva ventana.
 
-![node inspect](/assets/img/node_inspect.png)
+![inpector del nodo](/assets/img/node_inspect.png)
 
-Navigate to Filesystem and add your project folder to the workspace. Then open the dist > mappings folder and select the code you wish to debug. Then step through the code as with any standard debugging tool.
+Vaya a Filesystem y añada la carpeta del proyecto al área de trabajo. Luego abra la carpeta dist > mapeos y seleccione el código que desea depurar. Luego pase por el código como cualquier herramienta de depuración estándar.
 
-![debugging projects](/assets/img/debugging_projects.png)
+![depuración de proyectos](/assets/img/debugging_projects.png)
