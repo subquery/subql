@@ -2,36 +2,36 @@
 
 El objetivo de este rápido inicio es mostrar cómo puede conseguir que el proyecto inicial por defecto se ejecute en SubQuery Projects (nuestro servicio administrado) en unos pocos pasos.
 
-Tomaremos el simple proyecto inicial (y todo lo que hemos aprendido hasta ahora) pero en lugar de ejecutarlo localmente dentro de Docker, aprovecharemos la infraestructura de alojamiento administrada por SubQuery. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+Tomaremos el simple proyecto inicial (y todo lo que hemos aprendido hasta ahora) pero en lugar de ejecutarlo localmente dentro de Docker, aprovecharemos la infraestructura de alojamiento administrada por SubQuery. En otras palabras, dejamos que SubQuery realice todas las tareas pesadas, corriendo y gestionando la infraestructura de producción.
 
-## Learning objectives
+## Objetivos de aprendizaje
 
-At the end of this quick start, you should:
+Al final de este inicio rápido, deberías:
 
-- understand the required pre-requisites
-- be able host a project in [SubQuery Projects](https://project.subquery.network/)
-- run a simple query to get the block height of the Polkadot mainnet using the playground
-- run a simple GET query to get the block height of the Polkadot mainnet using cURL
+- entender los requisitos requeridos
+- ser capaz de alojar un proyecto en [SubQuery Projects](https://project.subquery.network/)
+- ejecuta una simple consulta para obtener la altura del bloque del mainnet Polkadot usando el patio de juego
+- ejecuta una simple consulta GET para obtener la altura del bloque del mainnet Polkadot usando cURL
 
-## Intended audience
+## Audiencia intencionada
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Esta guía está dirigida a nuevos desarrolladores que tienen cierta experiencia de desarrollo y están interesados en aprender más sobre SubQuery.
 
-## Video guide
+## Guía en vídeo
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/b-ba8-zPOoo" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Pre-requisitos
 
-You will need:
+Necesitarás:
 
-- a GitHub account
+- tu cuenta de GitHub
 
 ## 1. Step 1: Create your project
 
-Let's create a project called subql_hellowworld and run the obligatory install, codegen and build with your favourite package manager.
+Vamos a crear un proyecto llamado subql_hellowworld y ejecutar la instalación obligatoria, el código y la compilación con tu gestor de paquetes favorito.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -40,35 +40,35 @@ yarn codegen
 yarn build
 ```
 
-Do NOT run the docker commands though.
+NO ejecute los comandos docker.
 
 ## 2. Step 2: Create a GitHub repo
 
-In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
+En GitHub, cree un nuevo repositorio público. Proporcione un nombre y establezca su visibilidad al público. Aquí, todo se mantiene como predeterminado por ahora.
 
-![create github repo](/assets/img/github_create_new_repo.png)
+![crear repositorio GitHub](/assets/img/github_create_new_repo.png)
 
-Take note of your GitHub URL, this must be public for SubQuery to access it.
+Tome nota de su URL de GitHub, esto debe ser público para SubQuery para acceder a ella.
 
-![create github repo](/assets/img/github_repo_url.png)
+![crear un repositorio en GitHub](/assets/img/github_repo_url.png)
 
 ## 3. Step 3: Push to GitHub
 
-Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Volver al directorio de tu proyecto, inicialízalo como un directorio git. De lo contrario, podría obtener el error "fatal: no un repositorio git (o cualquiera de los directorios padres): .git"
 
 ```shell
 git init
 ```
 
-Then add a remote repository with the command:
+A continuación, añada un repositorio remoto con el comando:
 
 ```shell
 git remote add origin https://github.com/seandotau/subqlHelloWorld.git
 ```
 
-This basically sets your remote repository to “https://github.com/seandotau/subqlHelloWorld.git” and gives it the name “origin” which is the standard nomenclature for a remote repository in GitHub.
+Esto básicamente establece su repositorio remoto en “https://github.com/seandotau/subqlHelloWorld.git” y le da el nombre “origin” que es la nomenclatura estándar para un repositorio remoto en GitHub.
 
-Next we add the code to our repo with the following commands:
+A continuación añadimos el código a nuestro repositorio con los siguientes comandos:
 
 ```shell
 > git add .
@@ -87,35 +87,35 @@ create mode 100644 tsconfig.json
 create mode 100644 yarn.lock
 > git push origin master
 Enumerating objects: 14, done.
-Counting objects: 100% (14/14), done.
-Delta compression using up to 12 threads
-Compressing objects: 100% (13/13), done.
-Writing objects: 100% (14/14), 59.35 KiB | 8.48 MiB/s, done.
-Total 14 (delta 0), reused 0 (delta 0)
-To https://github.com/seandotau/subqlHelloWorld.git
- * [new branch]      master -> master
+Objetos de cuenta: 100% (14/14), hecho.
+Compresión delta usando hasta 12 hilos
+Compresión de objetos: 100% (13/13), hecho.
+Objetos de escritura: 100% (14/14), 59.35 KiB | 8.48 MiB/s, hecho.
+Total 14 (delta 0), reutilizado 0 (delta 0)
+Para https://github.com/seandotau/subqlHelloWorld.git
+ * [nueva rama] master -> master
 
 ```
 
-The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
+El comando push significa "por favor empuje mi código al repositorio de origen DESDE mi repositorio local maestro". Actualizar GitHub debe mostrar todo el código en GitHub.
 
-![First commit](/assets/img/first_commit.png)
+![Primer commit](/assets/img/first_commit.png)
 
-Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
+Ahora que tienes tu código en GitHub, vamos a ver cómo podemos alojarlo en Proyectos de SubQuery.
 
-## 4. Create your project
+## 4. Cree su primer proyecto
 
-Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
+Ve a [https://project.subquery.network](https://project.subquery.network) e inicia sesión con tu cuenta de GitHub.
 
-![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
+![Bienvenido a los proyectos de SubQuery](/assets/img/welcome_to_subquery_projects.png)
 
-Then create a new project,
+Luego crea un nuevo proyecto,
 
-![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
+![Bienvenido a los proyectos de SubQuery](/assets/img/subquery_create_project.png)
 
-And fill in the various fields with the appropriate details.
+Y rellene los distintos campos con los detalles apropiados.
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Los proyectos creados en una cuenta de la organización de GitHub son compartidos entre los miembros de esa organización de GitHub.
+- **Cuenta de GitHub:** Si tienes más de una cuenta de GitHub, selecciona la cuenta bajo la que se creará este proyecto. Los proyectos creados en una cuenta de la organización de GitHub son compartidos entre los miembros de esa organización de GitHub.
 - **Nombre del proyecto:** Dale un nombre a tu proyecto aquí.
 - **Subtítulo:** Proporcione un subtítulo para su proyecto.
 - **Descripción:** Explica lo que hace tu proyecto de SubQuery.
@@ -185,6 +185,6 @@ proporcionando los resultados de:
 
 La capacidad de lectura no es una preocupación aquí ya que probablemente tendrá algún código de frente para consumir y analizar esta respuesta JSON.
 
-## Summary
+## Resúmen
 
-In this SubQuery hosted quick start we showed how quick and easy it was to take a Subql project and deploy it to [SubQuery Projects](https://project.subquery.network) where all the infrastructure is provided for your convenience. There is an inbuilt playground for running various queries as well as an API endpoint for your code to integrate with.
+En este inicio rápido de SubQuery mostramos lo rápido y fácil que fue tomar un proyecto Subql y desplegarlo en [SubQuery Projects](https://project.subquery.network) donde toda la infraestructura, se proporciona para su conveniencia. Hay un patio de juego inconstruido para ejecutar varias consultas, así como un endpoint API para que tu código se integre.
