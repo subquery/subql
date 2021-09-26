@@ -26,8 +26,8 @@
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>튜토리얼 및 예제</span>
             <p>직접 해보면서 배우기 다양한 서브쿼리 프로젝트를 빌드하는 방법에 대한 가이드 및 예시</p>
-           </div> Tutorials and examples on how to build various SubQuery projects.</p>
-          </div>
+           </div> 다양한 SubQuery 프로젝트를 구축하는 방법에 대한 자습서 및 예 </p>
+           </div>
         </a>
       </li>
       <li>
@@ -36,8 +36,8 @@
              <img src="/assets/img/docsIcon.svg" />
              <span>기술 참고 문서</span>
              <p>개발자가 개발자를 위해 작성한 것 멋진 디앱을 보다 쉽고 빠르게 구축하는 데 필요한 것을 찾아보세요.</p>
-           </div> Find what you need to build awesome dApps quickly.</p>
-          </div>
+           </div> 멋진 dApp을 빠르게 구축하는 데 필요한 것을 찾으십시오. </p>
+           </div>
         </a> </li>
 - <a href="https://static.subquery.network/whitepaper.pdf" target="_blank"> 
   
