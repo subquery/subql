@@ -1,4 +1,4 @@
-# Ambassador Program
+# โปรแกรมแอมบาสเดอร์
 
 ![Ambassador Banner Image](/assets/img/ambassador_banner.png)
 
