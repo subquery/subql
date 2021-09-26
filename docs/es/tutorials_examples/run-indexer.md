@@ -1,12 +1,12 @@
 # How to run an indexer node?
 
-## Video guide
+## Guía en vídeo
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Introducción
 
 Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
 
@@ -43,9 +43,9 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-Of course, if you have different values for the above keys, please adjust accordingly. Note that the `env` command will display the current environment variables and that this process only sets these values temporarily. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+Por supuesto, si tiene diferentes valores para las claves de arriba, por favor ajuste en consecuencia. Tenga en cuenta que el comando `env` mostrará las variables de entorno actuales y que este proceso sólo establece estos valores temporalmente. Es decir, sólo son válidos durante la sesión de la terminal. Para establecerlos permanentemente, guárdelos en tu ~/bash_profile en su lugar.
 
-## Indexing a project
+## Indexar un proyecto
 
 To start indexing a project, navigate into your project folder and run the following command:
 
