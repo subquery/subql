@@ -9,13 +9,17 @@ export default class Validate extends Command {
   static description = 'check a folder or github repo is a validate subquery project';
 
   static flags = {
-    location: flags.string({char: 'l', description: 'local folder or github repo url'}),
+    location: flags.string({char: 'l', description: 'local folder, github repo url or IPFS cid'}),
+    ipfs: flags.string({
+      description: 'IPFS gateway endpoint, used for validating projects on IPFS',
+      default: 'http://localhost:5001/api/v0',
+    }),
     silent: flags.boolean(),
   };
 
   async run(): Promise<void> {
     const {flags} = this.parse(Validate);
-    const v = new Validator(flags.location ?? process.cwd());
+    const v = new Validator(flags.location ?? process.cwd(), {ipfs: flags.ipfs});
     v.addRule(...commonRules);
 
     const reports = await v.getValidateReports();

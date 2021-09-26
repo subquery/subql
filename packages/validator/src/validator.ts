@@ -3,7 +3,7 @@
 
 import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common';
 import {Context} from './context';
-import {Reader, ReaderFactory} from './readers';
+import {Reader, ReaderFactory, ReaderOptions} from './readers';
 import {Rule, RuleType} from './rules';
 
 export interface Report {
@@ -17,8 +17,8 @@ export class Validator {
   private readonly reader: Reader;
   private readonly rules: Rule[] = [];
 
-  constructor(private readonly location: string) {
-    this.reader = ReaderFactory.create(location);
+  constructor(private readonly location: string, opts?: ReaderOptions) {
+    this.reader = ReaderFactory.create(location, opts);
   }
 
   addRule(...rules: Rule[]): void {
@@ -46,7 +46,7 @@ export class Validator {
       reports.push({
         name: 'package-json-file',
         description: 'A valid `package.json` file must exist in the root directory of the project',
-        valid: !!pkg,
+        valid: !!schema,
         skipped: false,
       });
     }

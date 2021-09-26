@@ -5109,6 +5109,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@types/js-yaml": ^4.0.1
     axios: ^0.21.1
+    ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
     package-json-type: ^1.0.3
   languageName: unknown
