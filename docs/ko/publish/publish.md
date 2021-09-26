@@ -1,42 +1,42 @@
 # Publish your SubQuery Project
 
-## Benefits of hosting your project with SubQuery
-- We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
-- This service is being provided to the community for free!
-- You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
-- We're integrated with GitHub, so anyone in your GitHub organisations will be able to view shared organisation projects
+## SubQuery를 사용하여 프로젝트를 호스팅하는 이점
+- SubQuery 프로젝트를 고성능, 확장성, 관리성 높은 공공서비스로 실행합니다.
+- 이 서비스는 커뮤니티에 무료로 제공되고 있어요!
+- 프로젝트를 공개하고 [SubQuery Explorer](https://explorer.subquery.network) 에 표시하며 전세계 누구라도 프로젝트를 참조할 수 있습니다.
+- 저희는 깃허브과 통합이 되어 있으므로 깃허브 단체에서 누구나 공유단체 프로젝트를 볼 수 있습니다.
 
-## Create your First Project
+## 최초 프로젝트 생성
 
-#### Login to SubQuery Projects
+#### SubQuery 프로젝트 로그인
 
-Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
+시작하기 전에 공개 깃허브 저장소에서 SubQuery 프로젝트가 온라인으로 되어 있는지 확인하세요. `schema.graphql` 파일은, 디렉토리의 루트에 있을 필요가 있습니다.
 
-To create your first project, head to [project.subquery.network](https://project.subquery.network). You'll need to authenticate with your GitHub account to login.
+첫 번째 프로젝트를 생성하려면 [project.subquery.network](https://project.subquery.network)로 이동합니다. 로그인을 하려면 깃허브 계정으로 인증해야 합니다.
 
-On first login, you will be asked to authorize SubQuery. We only need your email address to identify your account, and we don't use any other data from your GitHub account for any other reasons. In this step, you can also request or grant access to your GitHub Organization account so you can post SubQuery projects under your GitHub Organization instead of your personal account.
+최초 로그인 후 SubQuery를 허용하도록 요청됩니다. 저희는 당신의 계정을 식별하기 위해 당신의 이메일 주소가 필요하며, 다른 이유로 당신의 깃허브 계정의 다른 데이터는 사용하지 않습니다. 이 단계에서는 깃허브 단체 계정에 대한 접근을 요청하거나 허용할 수도 있으며, 개인 계정이 아닌 깃허브 단체 아래에 SubQuery 프로젝트를 게시할 수 있습니다.
 
 ![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application.
+SubQuery Projects는 SubQuery 플랫폼에 업로드된 모든 호스트 프로젝트를 관리하는 곳입니다. 이 어플리케이션에서는 모든 프로젝트를 생성, 삭제, 업그레이드 할 수 있습니다.
 
 ![Projects Login](/assets/img/projects-dashboard.png)
 
-If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
+깃허브 단체 계정이 연결되어 있으면 머리글의 스위치를 사용하여 개인 계정과 깃허브 단체 계정을 변경할 수 있습니다. 깃허브 단체 계정으로 생성된 프로젝트는 해당 깃허브 단체 구성원간에 공유됩니다. 깃허브 단체 계정을 접속하려면 [follow the steps here](#add-github-organization-account-to-subquery-projects)를 따르세요.
 
 ![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
 
-#### Create your First Project
+#### 최초 프로젝트 생성
 
-Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
-- **GitHub account:** If you have more than one GitHub account, select which account this project will be created under. Projects created in a GitHub organisation account are shared between members in that organisation.
-- **Name**
-- **Subtitle**
-- **Description**
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](../create/introduction.md#directory-structure)).
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community! ![Create your first Project](/assets/img/projects-create.png)
+먼저 "프로젝트 만들기"를 클릭합니다. 새 프로젝트 양식으로 이동합니다. 다음의 항목을 입력해 주세요(장래 변경할 수 있습니다):
+- **GitHub account:** 여러 개의 깃허브 계정이 있는 경우 이 프로젝트를 생성할 계정을 선택합니다. 깃허브 단체 계정으로 생성된 프로젝트는 단체내 구성원간에 공유됩니다.
+- **이름**
+- **부제**
+- **설명**
+- **GitHub Repository URL:** SubQuery 프로젝트가 있는 퍼블릭 저장소에 대한 유효한 깃허브 URL이어야 합니다. `schema.graphql` 파일은, 디렉토리의 루트에 있을 필요가 있습니다([learn more about the directory structure](../create/introduction.md#directory-structure)).
+- **Hide project:** 선택하면 퍼블릭 SubQuery 탐색기에서 프로젝트가 숨겨집니다. SubQuery를 커뮤니티와 공유할 경우 이 항목을 삭제합니다. ![Create your first Project](/assets/img/projects-create.png)
 
-Create your project and you'll see it on your SubQuery Project's list. *We're almost there! We just need to deploy a new version of it. </p>
+프로젝트를 생성하면 SubQuery Project 목록에 프로젝트가 나타납니다. *We're almost there! We just need to deploy a new version of it. </p>
 
 ![Created Project with no deployment](/assets/img/projects-no-deployment.png)
 
