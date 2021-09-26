@@ -113,15 +113,15 @@ $ ./node_modules/.bin/subql codegen
 * Types index generated !
 ✨  Done in 1.02s.
 * Models index generated !
-* Types index generated !
-✨  Done in 1.02s.
+* Tipo de índice generado!
+✨ Hecho en 0.06s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**Advertencia** Cuando se hacen cambios en el archivo de schema, por favor recuerde volver a ejecutar `yarn codegen` para regenerar el directorio de tipos.
 
 ## 4. Step 4: Build code
 
-The next step is to build the code with `yarn build`.
+El siguiente paso es construir el código con `yarn build`.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
@@ -135,9 +135,9 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Run Docker
+## 5. Ejecutar Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+El uso de Docker le permite ejecutar este ejemplo muy rápidamente, ya que toda la infraestructura necesaria se puede proporcionar dentro de la imagen Docker. Ejecuta `docker-compose pull && docker-compose up`.
 
 This will kick everything into life where eventually you will get blocks being fetched.
 
@@ -157,9 +157,9 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## 6. Navegar playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+Vaya a http://localhost:3000/ y pegue la siguiente consulta en el lado izquierdo de la pantalla y pulse el botón Reproducir.
 
 ```
 # Yarn
@@ -170,12 +170,12 @@ npm run-script build
 
 ```
 
-SubQuery playground on localhost.
+Zona de juegos SubQuery en localhost.
 
-![playground localhost](/assets/img/subql_playground.png)
+![local de playground](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+El número de bloques en el patio de juego debe coincidir con el número de bloques (técnicamente la altura del bloque) en la terminal también.
 
-## Summary
+## Resúmen
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+En este inicio rápido, demostramos los pasos básicos para poner en marcha un proyecto inicial dentro de un entorno Docker y luego navegamos a localhost:3000 y ejecutamos una consulta para devolver el número de bloque de la red mainnet Polkadot.
