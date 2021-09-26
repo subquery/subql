@@ -16,7 +16,7 @@ Lệnh này khá nặng và tạo ra một loạt các tập tin cho bạn. Như
 
 Những tập tin đó là cốt lõi của tất cả những gì chúng ta sẽ làm. Do đó, chúng tôi sẽ dành nhiều thời gian hơn cho các tệp này trong một bài viết khác. Mặc dù vậy, chúng ta chỉ cần biết rằng schema chứa mô tả dữ liệu mà người dùng có thể yêu cầu từ API SubQuery, tệp dự án yaml chứa các tham số kiểu "cấu hình" và tất nhiên là mappingHandlers viết bằng typescript chứa các hàm biến đổi dữ liệu.
 
-## yarn install
+## cài đặt yarn
 
 Tiếp theo chúng ta chạy lệnh `yarn install` hoặc là `npm install`.
 
@@ -26,33 +26,33 @@ Những điều yarn làm là nhìn vào tập tin `package.json` và tải về
 
 ![các tệp chính của subql](/assets/img/dependencies.png)
 
-## yarn codegen
+## mã yarn
 
 Tiếp theo chúng ta chạy lệnh `yarn codegen` hoặc `npm run-script codegen`. Lệnh đó sẽ đọc lược đồ GraphQL (ở trong tập tin `schema.graphql`) và tự tạo ra tập tin mẫu typescripts tương ứng (Do đó tập tin đầu ra sẽ có đuôi .ts). Bạn sẽ không bao giờ phải thay đổi những tập tin tự sinh ra, chỉ cần thay đổi tập tin nguồn `schema.graphql`.
 
 ![các tệp chính của subql](/assets/img/typescript.png)
 
-## yarn build
+## xây dựng yarn
 
 Chạy lệnh `yarn build` hoặc `npm run-script build`. Lệnh này rất quen thuộc với các lập trình viên có kinh nghiệm. Nó tạo ra một thư mục phân phối thực hiện những việc như tối ưu hóa mã chuẩn bị cho việc triển khai.
 
 ![các tệp chính của subql](/assets/img/distribution_folder.png)
 
-## docker-compose
+## soạn-docker
 
 Bước cuối cùng sẽ bao gồm các lệnh docker `docker-compose pull && docker-compose up` (có thể chạy độc lập cũng được). Lệnh `pull` kéo toàn bộ các ảnh yêu cầu từ Docker Hub và lệnh `up` sẽ dựng container.
 
 ```shell
-> docker-compose pull
-Pulling postgres        ... done
-Pulling subquery-node   ... done
-Pulling graphql-engine  ... done
+> docker-compose kéo
+Đang kéo postgres ... xong
+Đang kéo nút truy vấn con ... đã xong
+Đang kéo graphql-engine ... Xong
 ```
 
 Khi container khởi chạy, bạn sẽ thấy màn hình xổ ra rất nhiều dòng chữ thể hiện trạng thái của node và của GraphQL. Bạn sẽ thấy:
 
 ```
-subquery-node_1   | 2021-06-06T02:04:25.490Z <fetch> INFO fetch block [1, 100]
+truy vấn con-nút_1 | 2021-06-06T02:04:25.490Z <fetch> Khối tìm nạp INFO [1, 100]
 ```
 
 mà bạn biết rằng nút SubQuery đã bắt đầu đồng bộ hóa.
