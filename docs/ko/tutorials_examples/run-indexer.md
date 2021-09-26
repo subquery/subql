@@ -1,39 +1,39 @@
-# How to run an indexer node?
+# 인덱서 노드를 실행하는 방법은 무엇인가요?
 
-## Video guide
+## 비디오 가이드
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## 소개
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+인덱서 노드를 실행하는 것은 Docker를 사용하거나 [SubQuery 프로젝트](https://project.subquery.network/)에서 프로젝트를 호스팅하는 것 외에 다른 옵션입니다. 더 많은 시간과 노력이 필요하지만 SubQuery가 어떻게 작동하는지 이해하는 데 도움이 됩니다.
 
 ## Postgres
 
-Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
+인프라에서 인덱서 노드를 실행하려면 Postgres 데이터베이스를 설정해야 합니다. [여기](https://www.postgresql.org/download/)에서 Postgres를 설치하고 버전이 12 이상인지 확인할 수 있습니다.
 
-## Install subql/node
+## Subql/노드 설치
 
-Then to run a SubQuery node, run the following command:
+SubQuery 노드를 실행하려면, 다음 명령을 실행합니다.
 
 ```shell
 npm install -g @subql/node
 ```
 
-The -g flag means to install it globally which means on OSX, the location will be /usr/local/lib/node_modules.
+-g 플래그는 OSX에서 위치가 /usr/local/lib/node_modules가 됨을 의미하는 전역적으로 설치함을 의미합니다.
 
-Once installed, you can check the version by running:
+설치가 완료되면 다음을 실행하여 버전을 확인할 수 있습니다.
 
 ```shell
 > subql-node --version
 0.19.1
 ```
 
-## Setting DB configs
+## DB 구성 설정
 
-Next, you need to set the following environmental variables:
+다음으로, 다음 환경 변수를 설정해야 합니다.
 
 ```shell
 export DB_USER=postgres
@@ -43,7 +43,7 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-Of course, if you have different values for the above keys, please adjust accordingly. Note that the `env` command will display the current environment variables and that this process only sets these values temporarily. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+물론, 위의 키들이 다른 값이 있는 경우, 그에 따라 조정하십시오. `env` 명령은 현재 환경 변수를 표시하며 이 프로세스는 이러한 값만 임시로 설정합니다. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
 
 ## Indexing a project
 
