@@ -1,16 +1,16 @@
-# How to change the blockchain fetching batch size?
+# 블록체인 가져오기 배치 크기를 변경하는 방법은 무엇입니까?
 
-## Video guide
+## 비디오 가이드
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## 소개
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+기본 배치 크기는 100이지만 추가 명령 `--batch-size=xx`을 사용하여 변경할 수 있습니다.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+이를 추가 플래그로 명령줄에 추가하거나 Docker를 사용하는 경우 다음을 사용하여 docker-compose.yml을 수정해야 합니다.
 
 ```shell
 subquery-node:
@@ -33,8 +33,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+이 예에서는 배치 크기를 50으로 설정합니다.
 
-## Why change the batch size?
+## 배치 크기를 변경하는 이유는 무엇입니까?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. 
+더 작은 배치 크기를 사용하면 메모리 사용량을 줄이고 사용자가 큰 쿼리에 매달리지 않도록 할 수 있습니다. 즉, 애플리케이션의 응답성이 향상될 수 있습니다. 
