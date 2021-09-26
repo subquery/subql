@@ -1,28 +1,28 @@
-# Hello World Explained
+# Hola mundo explicado
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+En la guía de inicio rápido [Hola World](helloworld-localhost.md), corrimos algunos comandos simples y muy rápidamente conseguimos un ejemplo en ejecución. Esto le permitió asegurarse de que tenía todos los requisitos previos en su lugar y podía usar un patio de juego local para hacer una simple consulta para obtener sus primeros datos de SubQuery. Aquí, echamos un vistazo más de cerca a lo que significan todos esos comandos.
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+El primer comando que ejecutamos fue `subql init --starter subqlHelloWorld`.
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+Esto hace el trabajo pesado y crea un montón de archivos para usted. Como se indica en la [documentación oficial](quickstart.md#configure-and-build-the-starter-project), trabajará principalmente en los siguientes archivos:
 
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- El manifiesto en `project.yaml`
+- El esquema GraphQL en `schema.graphql`
+- Las funciones de mapeo en el directorio `src/mappings/`
 
-![key subql files](/assets/img/main_subql_files.png)
+![archivos subql clave](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+Estos archivos son el núcleo de todo lo que hacemos. Como tal, dedicaremos más tiempo a estos archivos en otro artículo. Sin embargo, por ahora sólo sabe que el esquema contiene una descripción de los datos que los usuarios pueden solicitar de la API de SubQuery, el archivo yaml del proyecto que contiene parámetros de tipo "configuración" y por supuesto el mapeo de Handlers conteniendo typescript que contiene funciones que transforman los datos.
 
 ## yarn install
 
-The next thing we did was `yarn install`. `npm install` can be used as well.
+Lo siguiente que hicimos fue `yarn install`. `npm install` también puede ser usado.
 
-> A short history lesson. Node Package Manager or npm was initially released in 2010 and is a tremendously popular package manager among JavaScript developers. It is the default package that is automatically installed whenever you install Node.js on your system. Yarn was initially released by Facebook in 2016 with the intention to address some of the performance and security shortcomings of working with npm (at that time).
+> Una breve lección de historia. Node Package Manager o npm se publicó inicialmente en 2010 y es un gestor de paquetes muy popular entre los desarrolladores de JavaScript. Es el paquete predeterminado que se instala automáticamente cuando instala Node.js en su sistema. Yarn fue lanzado inicialmente por Facebook en 2016 con la intención de abordar algunas de las deficiencias de rendimiento y seguridad de trabajar con npm (en ese momento).
 
-What yarn does is look at the `package.json` file and download various other dependencies. Mira el archivo`package.json`, no parece que haya muchas dependencias, pero cuando ejecutas el comando, notarás que se añaden 18.983 archivos. Esto se debe a que cada dependencia también tendrá sus propias dependencias.
+Lo que yarn hace es echar un vistazo al archivo `package.json` y descargar varias dependencias. Mira el archivo`package.json`, no parece que haya muchas dependencias, pero cuando ejecutas el comando, notarás que se añaden 18.983 archivos. Esto se debe a que cada dependencia también tendrá sus propias dependencias.
 
 ![archivos subql clave](/assets/img/dependencies.png)
 
