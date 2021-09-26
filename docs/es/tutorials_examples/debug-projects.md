@@ -1,18 +1,18 @@
-# How to debug a SubQuery project?
+# ¿Cómo depurar un proyecto SubQuery?
 
-## Video guide
+## Guía en vídeo
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/6NlaO-YN2q4" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Introducción
 
-In order to debug SubQuery projects such as stepping through code, setting breakpoints, and inspecting variables, you will have to use a Node.js inspector in conjunction with Chrome developer tools.
+Para depurar proyectos de SubQuery como pasar por el código, establecer puntos de interrupción y inspeccionar variables, tendrá que usar un Node.js inspector en conjunto con las herramientas de desarrollo de Chrome.
 
-## Node inspector
+## Inpector del nodo
 
-Run the following command in a terminal screen.
+Ejecuta el siguiente comando en tu terminal.
 
 ```shell
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
