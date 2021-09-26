@@ -1,8 +1,8 @@
-# Social Media Links
+# Enlaces a redes sociales
 
-SubQuery is an active project that maintains and communicates with our followers through many social media channels.
+SubQuery es un proyecto activo que mantiene y se comunica con nuestros seguidores a través de muchos canales de redes sociales.
 
-It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
+Nuestro objetivo es siempre escuchar y comprometerse con nuestra comunidad leal, así que por favor únase a la conversación y envíenos sus ideas o preguntas!
 
 ## Comunidades Oficiales de SubQuery
 
