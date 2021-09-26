@@ -1,4 +1,4 @@
-# How to run an indexer node?
+# ¿Cómo ejecutar un nodo indexador?
 
 ## Guía en vídeo
 
@@ -8,32 +8,32 @@
 
 ## Introducción
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+Ejecutar un nodo indexador es otra opción fuera de usar Docker o tener un proyecto alojado para usted en [SubQuery Projects](https://project.subquery.network/). Requiere más tiempo y esfuerzo, pero mejorará su comprensión de cómo trabaja SubQuery bajo las cubiertas.
 
 ## Postgres
 
-Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
+Ejecutar un nodo indexador en su infraestructura requerirá la configuración de una base de datos de Postgres. Puede instalar Postgres desde [aquí](https://www.postgresql.org/download/) y asegurarse de que la versión es 12 o mayor.
 
 ## Instalar subql/node
 
-Then to run a SubQuery node, run the following command:
+Luego para ejecutar un nodo SubQuery, ejecute el siguiente comando:
 
 ```shell
 npm install -g @subql/node
 ```
 
-The -g flag means to install it globally which means on OSX, the location will be /usr/local/lib/node_modules.
+El parámetro -g significa instalarlo globalmente, lo que significa que en OSX, la ubicación será /usr/local/lib/node_modules.
 
-Once installed, you can check the version by running:
+Una vez instalado, puede comprobar la versión ejecutando:
 
 ```shell
 > subql-node --version
 0.19.1
 ```
 
-## Setting DB configs
+## Configurando la Base de Datos
 
-Next, you need to set the following environmental variables:
+A continuación, necesita configurar las siguientes variables de entorno:
 
 ```shell
 export DB_USER=postgres
@@ -47,7 +47,7 @@ Por supuesto, si tiene diferentes valores para las claves de arriba, por favor a
 
 ## Indexar un proyecto
 
-To start indexing a project, navigate into your project folder and run the following command:
+Para comenzar a indexar un proyecto, navega en la carpeta de tu proyecto y ejecuta el siguiente comando:
 
 ```shell
 subql-node -f .
