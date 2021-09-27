@@ -1,46 +1,46 @@
-# Hello World Explained
+# Halo Dunia
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+Dalam [panduan memulai cepat Halo Dunia](helloworld-localhost.md), kami menjalankan beberapa perintah sederhana dan dengan sangat cepat mendapatkan contoh dan menjalankannya. Ini memungkinkan Anda untuk memastikan bahwa Anda memiliki semua prasyarat dan dapat menggunakan taman bermain lokal untuk membuat kueri sederhana guna mendapatkan data pertama Anda dari SubQuery. Di sini, kita melihat lebih dekat apa arti semua perintah itu.
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+Perintah pertama yang kami jalankan adalah `subql init --starter subqlHelloWorld`.
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+Ini melakukan pekerjaan berat dan membuat banyak file untuk Anda. Seperti disebutkan dalam [dokumentasi resmi](quickstart.md#configure-and-build-the-starter-project), Anda pastinya akan mengerjakan file-file berikut:
 
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- Manifes di `project.yaml`
+- Skema GraphQL di `schema.graphql`
+- Fungsi Pemetaan di direktori `src/mappings/`
 
-![key subql files](/assets/img/main_subql_files.png)
+![file subql kunci](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+File-file ini adalah inti dari semua yang kita lakukan. Karena itu, kami akan mendedikasikan lebih banyak waktu untuk file-file ini di artikel lain. Untuk saat ini, ketahuilah bahwa skema berisi deskripsi data yang dapat diminta pengguna dari SubQuery API, file yaml proyek yang berisi parameter tipe "konfigurasi" dan tentu saja mappingHandlers yang berisi Naskah yang mana berisi fungsi yang mengubah data.
 
-## yarn install
+## pemasangan yarn
 
-The next thing we did was `yarn install`. `npm install` can be used as well.
+Hal berikutnya yang kami lakukan adalah `yarn install`. `npm install` dapat digunakan juga.
 
-> A short history lesson. Node Package Manager or npm was initially released in 2010 and is a tremendously popular package manager among JavaScript developers. It is the default package that is automatically installed whenever you install Node.js on your system. Yarn was initially released by Facebook in 2016 with the intention to address some of the performance and security shortcomings of working with npm (at that time).
+> Pelajaran sejarah singkat. Node Package Manager atau npm awalnya dirilis pada tahun 2010 dan merupakan manajer paket yang sangat populer di kalangan pengembang JavaScript. Ini adalah paket default yang dipasang secara otomatis setiap kali Anda memasang Node.js di sistem Anda. Yarn awalnya dirilis oleh Facebook pada tahun 2016 dengan maksud untuk mengatasi beberapa kekurangan kinerja dan keamanan bekerja dengan npm (pada waktu itu).
 
-What yarn does is look at the `package.json` file and download various other dependencies. Looking at the `package.json` file, it doesn't look like there are many dependencies, but when you run the command, you'll notice that 18,983 files are added. This is because each dependency will also have its own dependencies.
+Apa yang dilakukan yarn adalah melihat file `package.json` dan mengunduh berbagai dependensi lainnya. Melihat file `package.json`, sepertinya tidak ada banyak dependensi, tetapi ketika Anda menjalankan perintah, Anda akan melihat bahwa 18.983 file ditambahkan. Ini karena setiap dependensi juga akan memiliki dependensinya sendiri.
 
-![key subql files](/assets/img/dependencies.png)
+![file subql kunci](/assets/img/dependencies.png)
 
-## yarn codegen
+## kodegen yarn
 
-Then we ran `yarn codegen` or `npm run-script codegen`. What this does is fetch the GraphQL schema (in the `schema.graphql`) and generates the associated typescript model files (Hence the output files will have a .ts extension). You should never change any of these generated files, only change the source `schema.graphql` file.
+Kemudian kita menjalankan `codegen yarn` atau `npm run-script codegen`. Apa yang dilakukan adalah mengambil skema GraphQL (dalam `schema.graphql`) dan menghasilkan file model TypeScript terkait (Oleh karena itu file output akan memiliki ekstensi .ts). Anda tidak boleh mengubah file yang dihasilkan, cukup ubah file `schema.graphql` sumber.
 
-![key subql files](/assets/img/typescript.png)
+![file subql kunci](/assets/img/typescript.png)
 
-## yarn build
+## pembuatan yarn
 
-`yarn build` or `npm run-script build` was then executed. This should be familiar for seasoned programmers. It creates a distribution folder performing things such as code optimisation preparing for a deployment.
+`yarn build` atau `npm run-script build` kemudian dieksekusi. Hal Ini pasti akrab bagi programmer berpengalaman. Itu membuat folder distribusi yang melakukan hal-hal seperti pengoptimalan kode yang mempersiapkan penyebaran.
 
-![key subql files](/assets/img/distribution_folder.png)
+![file subql kunci](/assets/img/distribution_folder.png)
 
 ## docker-compose
 
-The final step was the combined docker command `docker-compose pull && docker-compose up` (can be run separately as well). The `pull` command grabs all the required images from Docker Hub and the `up` command starts the container.
+Langkah terakhir adalah perintah docker gabungan `docker-compose pull &&  docker-compose up` (dapat dijalankan secara terpisah juga). Perintah `pull` mengambil semua gambar yang diperlukan dari Docker Hub dan perintah `up` memulai container.
 
 ```shell
 > docker-compose pull
@@ -49,16 +49,16 @@ Pulling subquery-node   ... done
 Pulling graphql-engine  ... done
 ```
 
-When the container is started, you'll see the terminal spit out lots of text showing the status of the node and the GraphQL engine. It's when you see:
+Saat kontainer dimulai, Anda akan melihat terminal mengeluarkan banyak teks yang menunjukkan status node dan mesin GraphQL. Saat itulah Anda melihat:
 
 ```
 subquery-node_1   | 2021-06-06T02:04:25.490Z <fetch> INFO fetch block [1, 100]
 ```
 
-that you know that the SubQuery node has started to synchronise.
+anda tahu bahwa node SubQuery telah disinkronkan.
 
-## Summary
+## Ringkasan
 
-Now that you've had an insight into what is happening under the covers, the question is where to from here? If you are feeling confident, you can jump into learning about how to [create a project](../create/introduction.md) and learn more about the three key files. The manifest file, the GraphQL schema, and the mappings file.
+Sekarang setelah Anda memiliki wawasan tentang apa yang terjadi di balik selimut, pertanyaannya adalah mau kemana mana setelah dari sini? Jika Anda merasa percaya diri, Anda dapat langsung mempelajari cara [membuat proyek](../create/introduction.md) dan mempelajari lebih lanjut tentang tiga file utama. File manifes, skema GraphQL, dan file pemetaan.
 
-Otherwise, continue to our tutorials section where we look at how we can run this Hello World example on SubQuery's hosted infrastructure, we'll look at modifying the start block, and we'll take a deeper dive at running SubQuery projects by running readily available and open source projects.
+Jika tidak, lanjutkan ke bagian tutorial kami di mana kami dapat menjalankan contoh Halo Dunia ini pada infrastruktur yang dihosting SubQuery, kami akan memodifikasi blok awal, dan kami akan menyelam lebih dalam di dalam menjalankan proyek SubQuery dengan menjalankan dan proyek sumber terbuka yang tersedia.

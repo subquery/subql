@@ -1,6 +1,6 @@
-## Terminology
+## 术语
 
-- SubQuery Project (*where the magic happens*): A definition ([`@subql/cli`](https://www.npmjs.com/package/@subql/cli)) of how a SubQuery Node should traverse and aggregate a projects network and how the data should the transformed and stored to enable useful GraphQL queries
-- SubQuery Node (*where the work is done*): A package ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) that will accept a SubQuery project definiton, and run a node that constantly indexes a connected network to a database
-- SubQuery Query Service (*where we get the data from*): A package ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) that interacts with the GraphQL API of a deployed SubQuery node to query and view the indexed data
-- GraphQL (*how we query the data*): A query langage for APIs that is specifically suited for flexible graph based data - see [graphql.org](https://graphql.org/learn/)
+- SubQuery 项目 (*魔法会在哪里发生*): 一个 SubQuery 节点定义([`@subql/cli`](https://www.npmjs.com/package/@subql/cli))
+- SubQuery 节点 (*工作完成了*): 一个包([`@subql/node`](https://www.npmjs.com/package/@subql/node)) 将接受一个 SubQuery 项目定义， 然后运行一个不断索引连接网络到数据库的节点
+- SubQuery 查询服务(*我们从其中获取数据*): 包([`@subql/quy`](https://www.npmjs.com/package/@subql/query)) 与已部署的 SubQuery 节点的 GraphQL API 交互以查询和查看索引数据
+- GraphQL (*我们如何查询数据*)：一个 API 的查询langage ，它特别适合于基于灵活图形的数据 - 查看 [graphql。 rg](https://graphql.org/learn/)

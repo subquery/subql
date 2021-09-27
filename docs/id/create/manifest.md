@@ -1,8 +1,8 @@
-# Manifest File
+# File Manifest
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+File Manifest `project.yaml` bisa dilihat sebagai titik masuk proyek Anda dan menentukan sebagian besar detil tentang bagaimana SubQuery akan mengindeks dan mengubah data chain.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+Manifest bisa dalam format YAML atau JSON. Dalam dokumen ini, kita akan menggunakan YAML di semua contoh. Di bawah ini merupakan contoh standar `project.yaml` standar.
 
 ``` yml
 specVersion: "0.0.1"
@@ -13,7 +13,7 @@ schema: "./schema.graphql"
 
 network:
   endpoint: "wss://polkadot.api.onfinality.io/public-ws"
-  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
+    # Secara opsional memberikan endpoint HTTP kamus chain lengkap untuk mempercepat pemrosesan
   dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
 
 dataSources:
@@ -26,35 +26,35 @@ dataSources:
           kind: substrate/BlockHandler
         - handler: handleEvent
           kind: substrate/EventHandler
-          filter: #Filter is optional but suggested to speed up event processing
+          filter: #Filter opsional tetapi disarankan untuk mempercepat pemrosesan acara
             module: balances
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+- `network.endpoint` menentukan endpoint wss atau ws blockchain untuk diindeks - **Harus merupakan node arsip lengkap**.
+- `network.dictionary` secara opsional memberikan endpoint HTTP kamus chain lengkap untuk mempercepat pemrosesan - lihat [Menjalankan Pengindeks](../run/run.md#using-a-dictionary)
+- `dataSources` menentukan data yang akan difilter dan diekstrak dan lokasi penanganan fungsi pemetaan untuk transformasi data untuk diaplikasikan.
+  - `kind` hanya mendukung `substrate/Runtime` untuk sekarang.
+  - `startBlock` menjelaskan tinggi balok untuk mulai diindeks.
+  - `filter` akan memfilter sumber data untuk berjalan pada nama spek endpoint jaringan, lihat [filter jaringan](#network-filters)
+  - `mapping.handlers` akan menuliskan semua [fungsi pemetaan](./mapping.md) dan jenis penanganannya yang berkaitan, dengan [filter pemetaan](#mapping-filters) tambahan.
 
-## Network Filters
+## Filter Jaringan
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Biasanya pengguna akan membuat SubQuery dan berharap untuk menggunakannya kembali untuk testnet dan mainnetnya (misalnya Polkadot dan Kusama). Biasanya pengguna akan membuat SubQuery dan berharap untuk menggunakannya kembali untuk testnet dan mainnetnya (misalnya Polkadot dan Kusama). Dengan demikian, kami mengizinkan pengguna untuk menentukan detil berbeda untuk masing-masing sumber data yang berarti bahwa satu proyek SubQuery masih bisa digunakan di beberapa jaringan berbeda.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Pengguna bisa menambahkan `filter` di `dataSources` untuk memutuskan sumber data mana untuk dijalankan di masing-masing jaringan.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+Di bawah ini merupakan contoh yang menunjukkan sumber data berbeda untuk jaringan Polkadot dan Kusama.
 
 ```yaml
 ...
 network:
   endpoint: "wss://polkadot.api.onfinality.io/public-ws"
 
-#Create a template to avoid redundancy
+#Buat template untuk menghindari kelebihan
 definitions:
   mapping: &mymapping
     handlers:
@@ -67,54 +67,54 @@ dataSources:
     filter:  #Optional
         specName: polkadot
     startBlock: 1000
-    mapping: *mymapping #use template here
+    mapping: *mymapping #gunakan template di sini
   - name: kusamaRuntime
     kind: substrate/Runtime
     filter: 
         specName: kusama
     startBlock: 12000 
-    mapping: *mymapping # can reuse or change
+    mapping: *mymapping  # bisa digunakan ulang atau diganti
 ```
 
-## Mapping Filters
+## Filter Pemetaan
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Filter pemetaan merupakan sebuah filter yang sangat berguna untuk memutuskan balok, acara, atau ekstrinsik apa yang akan memicu penanganan pemetaan.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Hanya data masuk yang memenuhi ketentuan filter yang akan diproses oleh fungsi pemetaan. Filter pemetaan opsional tetapi disarankan karena mengurangi jumlah data yang diproses oleh proyek SubQuery Anda secara signifikan dan akan meningkatkan performa pengindeksan.
 
 ```yaml
-#Example filter from callHandler
+#Contoh filter dari callHandler
 filter: 
    module: balances
    method: Deposit
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+Tabel berikut menjelaskan filter didukung oleh penanganan berbeda.
 
-| Handler                                    | Supported filter             |
+| Penanganan                                 | Filter yang didukung         |
 | ------------------------------------------ | ---------------------------- |
 | [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
 | [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Filter modul dan metode didukung di chain apa pun yang berbasis substrat.
+- Filter `success` membawa nilai boolean dan bisa digunakan untuk memfilter ekstrinsik berdasarkan status kesuksesannya.
+- Filter `specVersion` menentukan kisaran versi spek untuk balok substrat. Contoh berikut ini menjelaskan bagaimana cara mengatur kisaran versi.
 
 ```yaml
 filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+  specVersion: [23, 24]   #Balok indeks dengan specVersion antara 23 dan 24 (inklusif).
+  specVersion: [100]      #Balok indeks dengan specVersion lebih besar dari atau sama dengan 100.
+  specVersion: [null, 23] #Balok indeks dengan specVersion kurang dari atau sama dengan 23.
 ```
 
-## Custom Chains
+## Chain Kustom
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Anda bisa mengindeks data dari chain kustom dengan juga menyertakan indeks chain di `project.yaml`. Nyatakan jenis spesifik yang didukung oleh blockchain ini ini `network.types`. Kami mendukung jenis tambahan yang digunakan oleh modul runtime substrat.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` juga didukung.
 
 ``` yml
 specVersion: "0.0.1"

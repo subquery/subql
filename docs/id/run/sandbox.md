@@ -1,20 +1,20 @@
-# The Sandbox
+# Sandbox
 
-In our envisioned usage scenario, the SubQuery node is usually run by a trusted host, and the code of the SubQuery project submitted by the user to the node is not entirely trustworthy.
+Dalam skenario penggunaan yang kami bayangkan, node SubQuery biasanya dijalankan oleh host tepercaya, dan kode proyek SubQuery yang dikirimkan oleh pengguna ke node yang tidak sepenuhnya dapat dipercaya.
 
-Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This:
+Beberapa kode berbahaya kemungkinan akan menyerang host atau bahkan membahayakannya, dan menyebabkan kerusakan pada data proyek lain di host yang sama. Oleh karena itu, kami menggunakan mekanisme keamanan sandbox [VM2](https://www.npmjs.com/package/vm2) untuk mengurangi risiko. Yaitu:
 
-- Runs untrusted code securely in an isolated context and malicious code will not access the network and file system of the host unless through the exposed interface we injected into the sandbox.
+- Menjalankan kode tidak tepercaya dengan aman dalam konteks yang terisolasi dan kode berbahaya tidak akan mengakses jaringan dan sistem file host kecuali melalui interface terbuka yang kami masukkan ke dalam sandbox.
 
-- Securely calls methods and exchanges data and callbacks between sandboxes.
+- Meminta metode dengan aman dan bertukar data dan panggilan balik antar sandbox.
 
-- Is immune to many known methods of attack.
+- Kebal terhadap banyak metode serangan yang diketahui.
 
 
-## Restriction
+## Larangan
 
-- To limit access to certain built-in modules, only `assert`, `buffer`, `crypto`,`util` and `path` are whitelisted.
+- Untuk membatasi akses ke modul bawaan tertentu, hanya `nyatakan`, `buffer`, `crypto`,`util` dan ` jalur` dimasukkan dalam whitelist.
 
-- We support [3rd party modules](../create/mapping.md#third-party-libraries) written in **CommonJS** and **hybrid** libraries like `@polkadot/*` that use ESM as default.
+- Kami mendukung [modul pihak ketiga](../create/mapping.md#third-party-libraries) yang ditulis di **CommonJS** dan **hybrid** library seperti `@polkadot/*` yang menggunakan ESM sebagai default.
 
-- Any modules using `HTTP` and `WebSocket` are forbidden.
+- Semua modul yang menggunakan `HTTP` dan `WebSocket` dilarang.

@@ -1,8 +1,8 @@
-# Manifest File
+# Manifest-Datei
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+Die Datei Manifest `project.yaml` kann als Einstiegspunkt Ihres Projekts angesehen werden und definiert die meisten Details darüber, wie SubQuery die Kettendaten indiziert und transformiert.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+Das Manifest kann entweder im YAML- oder im JSON-Format vorliegen. In diesem Dokument verwenden wir YAML in allen Beispielen. Unten ist ein Standardbeispiel für eine einfache `project.yaml`.
 
 ``` yml
 specVersion: "0.0.1"
@@ -34,28 +34,28 @@ dataSources:
 ```
 
 - `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+- `network.dictionary` stellt optional den HTTP-Endpunkt eines vollständigen Kettenwörterbuchs bereit, um die Verarbeitung zu beschleunigen - siehe [Ausführen eines Indexers](../run/run.md#using-a-dictionary)
+- `dataSources` definiert die Daten, die gefiltert und extrahiert werden, sowie die Position des Mapping-Funktionshandlers für die anzuwendende Datentransformation.
+  - `kind` unterstützt vorerst nur `Substrat/Runtime`.
+  - `startBlock` gibt die Blockhöhe an, ab der die Indizierung gestartet werden soll.
+  - `filter` filtert die auszuführende Datenquelle nach dem Netzwerk-Endpunkt-Spezifikationsnamen, siehe [Netzwerkfilter](#network-filters)
+  - `mapping.handlers` listet alle [Mapping-Funktionen](./mapping.md) und ihre entsprechenden Handler-Typen mit zusätzlichen [Mapping-Filtern](#mapping-filters) auf.
 
-## Network Filters
+## Netzwerkfilter
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Normalerweise erstellt der Benutzer eine SubQuery und erwartet, sie sowohl für seine Testnet- als auch für seine Mainnet-Umgebungen (z. B. Polkadot und Kusama) wiederzuverwenden. Zwischen Netzwerken sind wahrscheinlich verschiedene Optionen unterschiedlich (z. B. Index-Startblock). Daher ermöglichen wir es Benutzern, für jede Datenquelle unterschiedliche Details zu definieren, was bedeutet, dass ein SubQuery-Projekt immer noch in mehreren Netzwerken verwendet werden kann.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Benutzer können einen `Filter` für `dataSources` hinzufügen, um zu entscheiden, welche Datenquelle in jedem Netzwerk ausgeführt werden soll.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+Unten sehen Sie ein Beispiel, das verschiedene Datenquellen für das Polkadot- und das Kusama-Netzwerk zeigt.
 
 ```yaml
 ...
 network:
   endpoint: "wss://polkadot.api.onfinality.io/public-ws"
 
-#Create a template to avoid redundancy
-definitions:
+#Erstellen Sie eine Vorlage, um Redundanzen zu vermeiden
+Definitionen:
   mapping: &mymapping
     handlers:
       - handler: handleBlock
@@ -76,49 +76,49 @@ dataSources:
     mapping: *mymapping # can reuse or change
 ```
 
-## Mapping Filters
+## Zuordnungsfilter
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Mapping-Filter sind eine äußerst nützliche Funktion, um zu entscheiden, welcher Block, welches Ereignis oder welcher Extrinsic einen Mapping-Handler auslöst.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Nur eingehende Daten, die die Filterbedingungen erfüllen, werden von den Mapping-Funktionen verarbeitet. Zuordnungsfilter sind optional, werden jedoch empfohlen, da sie die von Ihrem SubQuery-Projekt verarbeitete Datenmenge erheblich reduzieren und die Indexierungsleistung verbessern.
 
 ```yaml
-#Example filter from callHandler
-filter: 
-   module: balances
+#Beispielfilter von callHandler
+Filter: 
+    module: balances
    method: Deposit
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+In der folgenden Tabelle werden Filter erläutert, die von verschiedenen Handlern unterstützt werden.
 
-| Handler                                    | Supported filter             |
+| Handler                                    | Unterstützter Filter         |
 | ------------------------------------------ | ---------------------------- |
-| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
-| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
+| [Blockhandler](./mapping.md#block-handler) | `specVersion`                |
+| [Eventhandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Modul- und Methodenfilter werden auf jeder substratbasierten Kette unterstützt.
+- Der Filter `Erfolg` nimmt einen booleschen Wert an und kann verwendet werden, um den Extrinsischen nach seinem Erfolgsstatus zu filtern.
+- Der Filter `specVersion` gibt den Spezifikationsversionsbereich für einen Substratblock an. In den folgenden Beispielen wird beschrieben, wie Versionsbereiche festgelegt werden.
 
 ```yaml
 filter:
   specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+  specVersion: [100]      #Index Block mit specVersion größer oder gleich 100.
+  specVersion: [null, 23] #Indexblock mit specVersion kleiner oder gleich 23.
 ```
 
-## Custom Chains
+## Kundenspezifische Ketten
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Sie können Daten aus benutzerdefinierten Ketten indizieren, indem Sie auch Kettentypen in die `project.yaml` aufnehmen. Deklarieren Sie die spezifischen Typen, die von dieser Blockchain unterstützt werden, in `network.types`. Wir unterstützen die zusätzlichen Typen, die von Substrat-Laufzeitmodulen verwendet werden.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+`typesAlias`, `typesBundle`, `typesChain`, und `typesSpec` werden ebenfalls unterstützt.
 
 ``` yml
 specVersion: "0.0.1"
-description: "This subquery indexes kitty's birth info"
+description: "Diese SubQuery indiziert die Geburtsdaten von Kätzchen"
 repository: "https://github.com/onfinality-io/subql-examples"
 schema: "./schema.graphql"
 network:

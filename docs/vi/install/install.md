@@ -1,12 +1,12 @@
-# Installing SubQuery
+# Cài đặt SubQuery
 
-There are various components required when creating a SubQuery project.  The [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) component is required to run an indexer. The [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) library is required to generate queries.
+Có nhiều thành phần được yêu cầu để tạo một dự án SubQuery.  Thành phần [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) là bắt buộc để chạy trình chỉ mục. Thư viện [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) là bắt buộc để tạo các truy vấn.
 
-## Install @subql/cli
+## Cài đặt @subql/cli
 
-The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) library helps to create a project framework or scaffold meaning you don't have to start from scratch.
+Thư viện [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) giúp tạo khung hoặc giàn cho dự án, nghĩa là bạn không phải bắt đầu từ đầu.
 
-Install SubQuery CLI globally on your terminal by using Yarn or NPM:
+Cài đặt SubQuery CLI trên toàn cầu trên thiết bị đầu cuối (terminal) của bạn bằng cách sử dụng Yarn hoặc NPM:
 
 ```shell
 # Yarn
@@ -16,16 +16,16 @@ yarn global add @subql/cli
 npm install -g @subql/cli
 ```
 
-You can then run help to see available commands and usage provide by CLI:
+Sau đó, bạn có thể chạy trợ giúp để xem các lệnh có sẵn và cách sử dụng do CLI cung cấp:
 
 ```shell
 subql help
 ```
-## Install @subql/node
+## Cài đặt @subql/node
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+Nút SubQuery là một hành động trích xuất dữ liệu blockchain dựa trên chất nền cho mỗi dự án SubQuery và lưu nó vào cơ sở dữ liệu Postgres.
 
-Install SubQuery node globally on your terminal by using Yarn or NPM:
+Cài đặt nút SubQuery trên toàn cầu trên thiết bị đầu cuối của bạn bằng cách sử dụng Yarn hoặc NPM:
 
 ```shell
 # Yarn
@@ -35,18 +35,18 @@ yarn global add @subql/node
 npm install -g @subql/node
 ```
 
-Once installed, you can can start a node with:
+Sau khi cài đặt, bạn có thể tạo một nút bằng cách nhập:
 
 ```shell
 subql-node <command>
 ```
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure.
+> Lưu ý: Nếu bạn đang sử dụng Docker hoặc lưu trữ dự án của mình trên SubQuery Projects, bạn có thể bỏ qua bước này. Bởi vì nút SubQuery đã được cung cấp trong vùng chứa Docker và cơ sở hạ tầng lưu trữ.
 
-## Install @subql/query
+## Cài đặt @subql/query
 
-The SubQuery query library provides a service that allows you to query your project in a "playground" environment via your browser.
+Thư viện truy vấn SubQuery cung cấp dịch vụ cho phép bạn truy vấn dự án của mình trong môi trường "sân chơi" thông qua trình duyệt của bạn.
 
-Install SubQuery query globally on your terminal by using Yarn or NPM:
+Cài đặt truy vấn SubQuery trên toàn cầu trên thiết bị đầu cuối của bạn bằng cách sử dụng Yarn hoặc NPM:
 
 ```shell
 # Yarn
@@ -56,4 +56,4 @@ yarn global add @subql/query
 npm install -g @subql/query
 ```
 
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step also. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. 
+> Lưu ý: Nếu bạn đang sử dụng Docker hoặc lưu trữ dự án của mình trên SubQuery Projects, bạn cũng có thể bỏ qua bước này. Bởi vì nút SubQuery đã được cung cấp trong vùng chứa Docker và cơ sở hạ tầng lưu trữ. 

@@ -1,19 +1,19 @@
-# Creating a SubQuery Project
+# Membuat Proyek SubQuery
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+Di panduan [mulai cepat](/quickstart/quickstart.md), kami dengan sangat cepat memberikan contoh untuk menjelaskan pada Anda apa itu SubQuery dan bagaimana cara kerjanya. Di sini kita akan melihat lebih dekat alur kerja saat membuat proyek Anda dan file kunci yang akan Anda ikut sertakan.
 
-## The Basic Workflow
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+## Alur Kerja Dasar
+Sebagian contoh berikut akan mengasumsikan Anda telah berhasil menginisialisasi paket pemula di bagian [Mulai cepat](../quickstart/quickstart.md). Dari paket pemula itu, kita akan berjalan melewati proses standar untuk menyesuaikan dan mengimplementasikan proyek SubQuery Anda.
 
-1. Initialise your project using `subql init PROJECT_NAME`
-2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
-3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
-5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+1. Inisialisasi proyek Anda menggunakan `subql init PROJECT_NAME`
+2. Perbarui file Manifest (`project.yaml`) untuk menyertakan informasi tentang blockchain Anda, dan entitas yang akan Anda petakan - lihat [File Manifest](./manifest.md)
+3. Buat entitas GraphQL di skema Anda (`schema.graphql`) yang menentuakn bentuk data yang akan Anda ekstrak dan coba untuk kueri - lihat [Skema GraphQL](./graphql.md)
+4. Tambahkan semua fungsi pemetaan (mis `mappingHandlers.ts` yang ingin Anda minta untuk ubah data chainnya ke entitas GraphQL yang sudah Anda tentukan - lihat [Pemetaan](./mapping.md)
+5. Hasilkan, bentuk, dan terbitkan kode Anda ke Proyek SubQuery (atau jalankan di node lokal Anda) - lihat [Menjalankan dan Mengkueri Proyek Pemula Anda](./quickstart.md#running-and-querying-your-starter-project) di panduan mulai cepat kami.
 
-## Directory Structure
+## Struktur Direktori
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+Peta berikut ini memberikan gambaran struktur direktori proyek SubQuery saat perintah `init` berjalan.
 
 ```
 - project-name
@@ -30,25 +30,25 @@ The following map provides an overview of the directory structure of a SubQuery 
   L .gitignore
 ```
 
-For example:
+Contohnya:
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![Struktur direktori SubQuery](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## Pembuatan Kode
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+Kapan pun Anda mengubah entitas GraphQL Anda, Anda harus menghasilkan ulang direktori jenis Anda dengan perintah berikut.
 
 ```
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Ini akan menciptakan direktori baru (atau memperbarui yang ada)`src/types` yang berisi kelas entitas yang dihasilkan untuk setiap jenis yang telah Anda tentukan sebelumnya di `schema.graphql`. Kelas-kelas ini memberikan pemuatan entitas berjenis aman, membaca dan menuliskan akses ke bidang entitas - lihat lebih banyak tentang proses ini di [Skema GraphQL](./graphql.md).
 
-## Build
+## Bentuk
 
-In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+Untuk menjalankan Proyek SubQuery Anda di host Node SubQuery secara lokal, pertama-tama Anda perlu membentuk pekerjaan Anda.
 
-Run the build command from the project's root directory.
+Jalankan perintah bentuk dari direktori proyek.
 
 ```shell
 # Yarn
@@ -60,7 +60,7 @@ npm run-script build
 
 ## Logging
 
-The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+Metode `console.log` **tidak lagi didukung**. Modul `logger` telah dimasukkan ke dalam jenis, yang berarti kami bisa mendukung logger yang bisa menerima berbagai tingkat logging.
 
 ```typescript
 logger.info('Info level message');
@@ -68,16 +68,16 @@ logger.debug('Debugger level message');
 logger.warn('Warning level message');
 ```
 
-To use `logger.info` or `logger.warn`, just place the line into your mapping file.
+Untuk menggunakan `logger.info` atau `logger.warn`, tempatkan barisannya ke file pemetaan Anda.
 
 ![logging.info](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Untuk menggunakan `logger. debug`, langkah tambahan diperlukan.
 
-If you are running a docker container, add this line to your `docker-compose.yaml` file.
+Jika Anda sedang menjalankan docker container, tambahkan barisan ini ke file `docker-compose.yaml` Anda.
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-You should now see the new logging in the terminal screen.
+Anda sekarang akan melihat logging baru di layar terminal.
 
 ![logging.debug](/assets/img/subquery_logging.png)

@@ -1,17 +1,17 @@
-# Query your Project in SubQuery Explorer
+# Query Dự Án của bạn trong SubQuery Explorer
 
-[SubQuery Explorer](https://explorer.subquery.network) is an online hosted service (at [explorer.subquery.network](https://explorer.subquery.network)) that provides access to published SubQuery projects made by contributors in our community and managed by the SubQuery team. You can publish your own SubQuery projects to our explorer by following our guide to [Publish your SubQuery Project](../publish/publish.md).
+[SubQuery Explorer](https://explorer.subquery.network) là một dịch vụ được host online (tại [explorer.subquery.network](https://explorer.subquery.network)) cung cấp truy cập đến các dự án SubQuery được tạo ra bởi những người đóng góp trong cộng đồng và được quản lý bởi đội ngũ SubQuery. Bạn có thể xuất bản các dự án SubQuery của riêng mình đến explorer của chúng tôi bằng cách làm theo hướng dẫn sau đây của chúng tôi để [Xuất bản Dự Án SubQuery của bạn](../publish/publish.md).
 
 ![SubQuery Explorer](https://static.subquery.network/media/explorer/explorer-header.png)
 
-The SubQuery explorer makes getting started easy. We’re hosting these SubQuery projects online and allow anyone to query each for free. These managed nodes will be monitored and run by the SubQuery team at a performance level that will allow production apps to use and rely on them.
+SubQuery explorer giúp khởi đầu trở nên dễ dàng. Chúng tôi đang host các dự án SubQuery online và cho phép tất cả mọi người query từng cái miễn phí. Các node được quản lý sẽ do đội ngũ SubQuery giám sát và vận hành với mức hiệu năng cho phép các ứng dụng sản xuất sử dụng và phụ thuộc vào chúng.
 
-![SubQuery Project](https://static.subquery.network/media/explorer/explorer-project.png)
+![Dự Án SubQuery](https://static.subquery.network/media/explorer/explorer-project.png)
 
-You’ll also note that the SubQuery Explorer provides a playground for discovering available data with example queries - you can test queries directly in your browser without implementing code. Additionally, we’ve made some small improvements to our documentation to better support developers on their journey to better query and analyse the world’s Polkadot data.
+Bạn cũng sẽ thấy rằng SubQuery Explorer cung cấp một playground nhằm khám phá dữ liệu hiện có với nhiều query mẫu - bạn có thể kiểm tra các query trực tiếp trong trình duyệt mà không phải chạy code. Ngoài ra, chúng tôi đã thực hiện một số cải tiến nhỏ đối với tài liệu của mình để hỗ trợ tốt hơn cho các nhà phát triển trong hành trình truy vấn và phân tích dữ liệu Polkadot của thế giới.
 
-On the top right of the playground, you'll find a *Docs* button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query. In the example below we're using the [Sum Rewards SubQuery](https://explorer.subquery.network/subquery/OnFinality-io/sum-reward) to get the top 5 most rewarded accounts (in terms of staking revenue) on Polkadot that have never been slashed.
+Trên cùng bên phải của playground, bạn sẽ tìm thấy nút *Docs* giúp mở ra một mẫu tài liệu. Tài liệu này được tự động tạo ra và giúp bạn tìm kiếm các thực thể và phương pháp mà bạn có thể query. Trong ví dụ bên dưới chúng tôi đang sử dụng [Sum Rewards SubQuery](https://explorer.subquery.network/subquery/OnFinality-io/sum-reward) để lấy ra 5 tài khoản được thưởng nhiều nhất (liên quan đến stake doanh thu) trên Polkadot mà chưa từng bị cắt giảm.
 
-![SubQuery Documentation](https://static.subquery.network/media/explorer/explorer-documentation.png)
+![Tài Liệu SubQuery](https://static.subquery.network/media/explorer/explorer-documentation.png)
 
-[Learn more about the GraphQL Query language.](./graphql.md)
+[Tìm hiểu thêm về ngôn ngữ GraphQL Query.](./graphql.md)

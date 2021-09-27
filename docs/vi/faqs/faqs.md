@@ -1,45 +1,45 @@
-# Frequently Asked Questions
+# Các câu hỏi thường gặp
 
-## What is SubQuery?
+## SubQuery là gì?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQuery là một dự án mã nguồn mở cho phép các nhà phát triển chạy trình lập chỉ mục, chuyển đổi và truy vấn dữ liệu trên chuỗi Substrate để chạy các ứng dụng của họ.
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+SubQuery cũng cung cấp dịch vụ lưu trữ miễn phí, công suất lớn cho các dự án của các nhà phát triển; trút bỏ trách nhiệm của các nhà sản xuất trong việc quản lý cơ sở hạ tầng nữa, để họ tập trung làm việc mình giỏi nhất: lập trình.
 
-## What is the best way to get started with SubQuery?
+## Cách tốt nhất để bắt đầu sử dụng SubQuery là gì?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+Cách tốt nhất để bắt đầu sử dụng SubQuery là thực hiện [Hướng dẫn Hello World](../quickstart/helloworld-localhost.md) của chúng tôi. Đây là một hướng dẫn 5 phút đơn giản để tải xuống mẫu khởi động, xây dựng dự án và sau đó sử dụng Docker để chạy một nút trên máy chủ cục bộ của bạn và chạy một truy vấn đơn giản.
 
-## How can I contribute or give feedback to SubQuery?
+## Làm cách nào để tôi có thể đóng góp hoặc gửi phản hồi cho SubQuery?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+Chúng tôi rất trân trọng những đóng góp và phản hồi từ cộng đồng. Để đóng góp mã, hãy chia nhỏ kho lưu trữ quan tâm và thực hiện các thay đổi của bạn. Sau đó gửi PR hoặc Pull Request. Ồ, đừng quên kiểm tra lại nhé! Bạn nên tham khảo hướng dẫn đóng góp của chúng tôi (TBA/thông báo sau).
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+Để gửi phản hồi, hãy liên hệ với chúng tôi qua email hello@subquery.network hoặc truy cập [kênh discord](https://discord.com/invite/78zg8aBSMG) của chúng tôi
 
-## How much does it cost to host my project in SubQuery Projects?
+## Chi phí để lưu trữ dự án của tôi trong SubQuery Projects là bao nhiêu?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+Bạn có thể lưu trữ dự án trong SubQuery Projects hoàn toàn miễn phí - đó là cách chúng tôi đóng góp cho cộng đồng. Để tìm hiểu cách lưu trữ dự án của bạn với chúng tôi, vui lòng xem hướng dẫn [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md).
 
-## What are deployment slots?
+## Các vị trí triển khai là gì?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+Vị trí triển khai là một tính năng trong [SubQuery Projects](https://project.subquery.network) gần giống với môi trường phát triển. Ví dụ, trong bất kỳ tổ chức phần mềm nào tối thiểu đều có môi trường phát triển và môi trường sản xuất (không tính localhost). Thông thường, nó bao gồm các môi trường bổ sung như staging (dàn dựng) và pre-pod (tiền sản xuất) hoặc thậm chí là QA, tùy thuộc vào nhu cầu của tổ chức và sự phát triển của chúng được thiết lập.
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery hiện có sẵn hai vị trí. Một vị trí dàn dựng (staging slot) và một vị trí sản xuất (production slot). Điều này cho phép các nhà phát triển triển khai SubQuery của họ vào môi trường dàn dựng và để mọi thứ diễn ra tốt đẹp, sau đó chọn "thúc đẩy sản xuất" chỉ bằng một nút bấm.
 
-## What is the advantage of a staging slot?
+## Ưu điểm của vị trí dàn dựng là gì?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+Lợi ích chính của việc sử dụng vị trí dàn dựng là nó cho phép bạn chuẩn bị một bản phát hành mới cho dự án SubQuery của mình không cần công khai. Bạn có thể đợi vị trí dàn dựng lập chỉ mục lại tất cả dữ liệu mà không ảnh hưởng đến các ứng dụng sản xuất của bạn.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+Vị trí dàn dựng không được hiển thị công khai trong [ Explorer ](https://explorer.subquery.network/) và có một URL duy nhất chỉ hiển thị cho bạn. Và tất nhiên, môi trường riêng biệt này cho phép bạn kiểm tra mã mới của mình mà không ảnh hưởng đến quá trình sản xuất.
 
-## What are extrinsics?
+## Thông tin ngoại lai (extrinsics) là gì?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+Nếu bạn đã quen thuộc với các khái niệm blockchain, bạn có thể nghĩ thông tin ngoại lai gần giống với các giao dịch. Tuy nhiên, về mặt chính thức, thông tin ngoại lai là một đoạn thông tin đến từ bên ngoài chuỗi và được bao gồm trong một block. Có ba loại thông tin ngoại lai. Bao gồm: thông tin cố hữu, giao dịch đã ký và giao dịch chưa ký.
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+Thông tin ngoại lai cố hữu là những phần thông tin không được ký và chỉ được thêm vào block bởi tác giả của block.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+Giao dịch ngoại lai có chữ ký là các giao dịch có chứa chữ ký của tài khoản thực hiện giao dịch. Họ phải trả một khoản phí để giao dịch được đưa vào chuỗi.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+Các giao dịch ngoại lai không có chữ ký là các giao dịch không có chữ ký của tài khoản đã thực hiện giao dịch. Các giao dịch ngoại lai chưa được ký kết nên sử dụng cẩn thận vì không ai trả phí, vì nó đã được ký. Vì thế, danh sách chờ giao dịch không có logic kinh tế để tránh bị spam.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+Để biết thêm thông tin chi tiết, hãy nhấp vào [đây](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).

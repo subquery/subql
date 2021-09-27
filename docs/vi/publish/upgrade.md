@@ -1,28 +1,28 @@
-# Deploy a New Version of your SubQuery Project
+# Triển Khai Phiên Bản Mới cho Dự Án SubQuery của bạn
 
-## Guidelines
+## Hướng Dẫn
 
-Although you have the freedom to always upgrade and deploy new versions of your SubQuery project, please be considerate during this process if your SubQuery project is public for the world. Some key points to note:
-- If your upgrade is a breaking change, either create a new project (e.g. `My SubQuery Project V2`) or give your community plenty of warning of the change through social media channels.
-- Deploying a new SubQuery project version causes some downtime as the new version indexes the complete chain from the genesis block.
+Mặc dù bạn được tự do để luôn nâng cấp và triển khai các phiên bản mới cho dự án SubQuery của mình, vui lòng cân nhắc trong suốt quá trình này nếu dự án SubQuery của bạn đang công khai với thế giới. Một vài điểm quan trọng cần lưu ý:
+- Nếu nâng cấp của bạn là một thay đổi mang tính đột phá, hãy tạo một dự án mới (ví dụ `Dự Án SubQuery V2 Của Tôi`) hoặc đưa ra nhiều cảnh báo đến cộng đồng về sự thay đổi này thông qua các kênh mạng xã hội.
+- Việc triển khai phiên bản dự án SubQuery mới có thể dẫn đến thời gian chết vì phiên bản mới lập chỉ mục chuỗi hoàn chỉnh từ khối genesis.
 
-## Deploy Changes
+## Các Thay Đổi Triển Khai
 
-Login to SubQuery Projects, and find the project that you want to deploy a new version of. Under Deployment Details you'll see three dots in the top right, click on the Deploy New Version button.
+Đăng nhập vào Các Dự Án SubQuery, và tìm dự án mà bạn muốn triển khai phiên bản mới. Dưới Phần Thông Tin Triển Khai bạn sẽ thấy ba dấu chấm trên cùng bên phải, nhấp vào nút Deploy New Version.
 
-![Deploy new version to your Project](https://static.subquery.network/media/projects/projects-second-deploy.png)
+![Triển khai phiên bản mới đến Dự Án của bạn](https://static.subquery.network/media/projects/projects-second-deploy.png)
 
-#### Upgrade to the Latest Indexer and Query Service
+#### Nâng cấp lên Dịch Vụ Query và Trình Lập Chỉ Mục Mới Nhất
 
-If you just want to upgrade to the latest indexer ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) or query service ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) to take advantage of our regular performance and stability improvements, just select a newer versions of our packages and save. This will cause only a few minutes of downtime.
+Nếu bạn muốn nâng cấp lên trình lập chỉ mục mới nhất ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) hoặc dịch vụ query ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) để có lợi thế về khả năng cải thiện độ ổn định và hiệu năng thông thường của chúng tôi. Chỉ cần chọn ra các phiên bản mới hơn trong các gói của chúng tôi và lưu. Bước này sẽ chỉ tốn vài phút.
 
-#### Deploy New Version of your SubQuery Project
+#### Triển Khai Phiên Bản Mới Dự Án SubQuery của bạn
 
-Fill in the Commit Hash from GitHub (copy the full commit hash) of the version of your SubQuery project codebase that you want deployed. This will cause a longer downtime depending on the time it takes to index the current chain. You can always report back here for progress.
+Điền vào Commit Hash từ GitHub (sao chép toàn bộ commit hash) của phiên bản codebase dự án SubQuery mà bạn muốn triển khai. Bước này sẽ làm tốn nhiều thời gian hơn nữa tùy thuộc vào thời gian cần để lập chỉ mục chuỗi hiện tại. Bạn luôn có thể báo cáo tiến độ lại tại đây.
 
-## Next Steps - Connect to your Project
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
+## Các Bước Tiếp Theo - Kết nối đến Dự Án của bạn
+Sau khi quá trình triển khai hoàn tất thành công và các node đã lập chỉ mục dữ liệu của bạn từ chuỗi, bạn có thể kết nối đến dự án của mình thông qua endpoint GraphQL Query được hiển thị.
 
-![Project being deployed and synced](https://static.subquery.network/media/projects/projects-deploy-sync.png)
+![Dự án đang được triển khai và đồng bộ](https://static.subquery.network/media/projects/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+Bạn cũng có thể nhấp vào ba dấu chấm bên cạnh tiêu đề dự án của mình, và xem nó trên SubQuery Explorer. Tại đó bạn có thể sử dụng nền tảng trong trình duyệt để bắt đầu - [đọc thêm về cách thức sử dụng Explorer của chúng tôi tại đây](../query/query.md).

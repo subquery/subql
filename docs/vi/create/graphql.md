@@ -1,15 +1,15 @@
-# GraphQL Schema
+# Lược đồ GraphQL
 
-## Defining Entities
+## Xác định các thực thể
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+Tệp `schema.graphql` xác định các lược đồ GraphQL khác nhau. Do cách thức hoạt động của ngôn ngữ truy vấn GraphQL, tệp lược đồ về cơ bản chỉ ra hình dạng dữ liệu của bạn từ SubQuery. Để tìm hiểu thêm về cách viết bằng ngôn ngữ lược đồ GraphQL, chúng tôi khuyên bạn nên xem [Lược đồ và Các Loại](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Quan trọng: Khi bạn thực hiện bất kỳ thay đổi nào đối với tệp lược đồ, hãy đảm bảo rằng bạn tạo lại thư mục loại của mình bằng lệnh sau `yarn codegen`**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Thực thể
+Mỗi thực thể phải xác định các trường bắt buộc của nó `id` với loại `ID!`. Nó được sử dụng làm khóa chính và duy nhất giữa tất cả các thực thể cùng loại.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Các trường không thể nullable trong thực thể được biểu thị bằng `!`. Vui lòng xem ví dụ dưới đây:
 
 ```graphql
 type Example @entity {
@@ -19,25 +19,25 @@ type Example @entity {
 }
 ```
 
-### Supported scalars and types
+### Các loại và vô hướng được hỗ trợ
 
-We currently supporting flowing scalars types:
+Chúng tôi hiện đang hỗ trợ các loại vô hướng sau:
 - `ID`
 - `Int`
 - `String`
 - `BigInt`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `<EntityName>`đối với các thực thể quan hệ lồng nhau, bạn có thể sử dụng tên của thực thể đã xác định làm một trong các trường. Vui lòng xem trong [Mối quan hệ thực thể](#entity-relationships).
+- `JSON` có thể lưu trữ dữ liệu có cấu trúc theo cách khác, vui lòng xem [loại JSON](#json-type)
 
-## Indexing by non-primary-key field
+## Lập chỉ mục theo trường không phải khóa chính
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Để cải thiện hiệu suất truy vấn, chỉ cần lập chỉ mục trường thực thể bằng cách thêm chú thích `@index` trên trường không phải khóa chính.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Tuy nhiên, chúng tôi không cho phép người dùng thêm chú thích `@index` trên bất kỳ đối tượng [JSON](#json-type) nào. Theo mặc định, các chỉ mục được tự động thêm vào khóa ngoại và cho các trường JSON trong cơ sở dữ liệu, nhưng chỉ để nâng cao hiệu suất truy vấn.
 
-Here is an example.
+Đây là một ví dụ.
 
 ```graphql
 type User @entity {
@@ -51,11 +51,11 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Giả sử chúng tôi biết tên của người dùng này, nhưng chúng tôi không biết giá trị id chính xác, thay vì trích xuất tất cả người dùng và sau đó lọc theo tên, chúng tôi có thể thêm `@index` vào phía sau trường tên. Điều này làm cho việc truy vấn nhanh hơn nhiều và chúng tôi cũng có thể chuyển `unique: true` để đảm bảo tính duy nhất.
 
-**If a field is not unique, the maximum result set size is 100**
+**Nếu một trường không phải là duy nhất, kích thước danh sách kết quả tối đa là 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Khi quá trình tạo mã được chạy, thao tác này sẽ tự động tạo `getByName` theo mô hình `Người dùng` và trường khóa ngoại `title` sẽ tạo phương thức `getByTitleId`, mà cả hai đều có thể được truy cập trực tiếp trong chức năng ánh xạ.
 
 ```sql
 /* Prepare a record for title entity */
@@ -74,17 +74,17 @@ const captainTitle = await Title.getByName('Captain');
 const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
-## Entity Relationships
+## Mối quan hệ thực thể
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Một thực thể thường có các mối quan hệ lồng nhau với các thực thể khác. Đặt giá trị trường thành một tên thực thể khác sẽ xác định mối quan hệ một-một giữa hai thực thể này theo mặc định.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Các mối quan hệ thực thể khác nhau (một-một, một-nhiều và nhiều-nhiều) có thể được định cấu hình bằng cách sử dụng các ví dụ bên dưới.
 
-### One-to-One Relationships
+### Mối quan hệ một-một
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Mối quan hệ một-một là mặc định khi chỉ một thực thể duy nhất được ánh xạ tới một thực thể khác.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Ví dụ: Hộ chiếu sẽ chỉ thuộc về một người và một người chỉ có một hộ chiếu (trong ví dụ này):
 
 ```graphql
 type Person @entity {
@@ -111,11 +111,11 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### Mối quan hệ một-nhiều
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Bạn có thể sử dụng dấu ngoặc vuông để chỉ ra rằng một loại trường bao gồm nhiều thực thể.
 
-Example: A person can have multiple accounts.
+Ví dụ: Một người có thể có nhiều tài khoản.
 
 ```graphql
 type Person @entity {
@@ -129,10 +129,10 @@ type Account @entity {
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### Mối quan hệ nhiều-nhiều
+Mối quan hệ nhiều-nhiều có thể đạt được bằng cách triển khai một thực thể ánh xạ để kết nối hai thực thể khác.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Ví dụ: Mỗi người là một phần của nhiều nhóm (PersonGroup) và nhóm có nhiều người khác nhau (PersonGroup).
 
 ```graphql
 type Person @entity {
@@ -154,11 +154,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+Ngoài ra, có thể tạo kết nối của cùng một thực thể trong nhiều trường của thực thể giữa.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Ví dụ: một tài khoản có thể có nhiều lần chuyển tiền và mỗi lần chuyển có một tài khoản nguồn và tài khoản đích.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Điều này sẽ thiết lập mối quan hệ hai chiều giữa hai Tài khoản (từ và đến) thông qua bảng Chuyển khoản.
 
 ```graphql
 type Account @entity {
@@ -174,13 +174,13 @@ type Transfer @entity {
 }
 ```
 
-### Reverse Lookups
+### Tra cứu ngược
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Để kích hoạt tra cứu ngược đối với một thực thể theo một mối quan hệ, hãy đính kèm `@derivedFrom` vào trường và trỏ đến trường tra cứu ngược của thực thể khác.
 
-This creates a virtual field on the entity that can be queried.
+Điều này tạo ra một trường ảo trên thực thể có thể được truy vấn.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+Chuyển "từ" một Tài khoản có thể truy cập được từ thực thể Tài khoản bằng cách đặt sentTransfer hoặc receivedTransfer có giá trị của chúng bắt nguồn từ các trường từ hoặc đến tương ứng.
 
 ```graphql
 type Account @entity {
@@ -198,19 +198,19 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## Loại JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Chúng tôi đang hỗ trợ lưu dữ liệu dưới dạng JSON, đây là một cách nhanh chóng để lưu trữ dữ liệu có cấu trúc. Chúng tôi sẽ tự động tạo các giao diện JSON tương ứng để truy vấn dữ liệu này và giúp bạn tiết kiệm thời gian xác định và quản lý các thực thể.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Chúng tôi khuyên người dùng sử dụng loại JSON trong các trường hợp sau:
+- Khi lưu trữ dữ liệu có cấu trúc trong một trường sẽ dễ quản lý hơn so với việc tạo nhiều thực thể riêng biệt.
+- Lưu tùy chọn khóa/giá trị tùy ý của người dùng (trong đó giá trị có thể là boolean, văn bản hoặc số và bạn không muốn có các cột riêng biệt cho các kiểu dữ liệu khác nhau)
+- Lược đồ dễ thay đổi và thay đổi thường xuyên
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### Xác định chiều JSON
+Xác định thuộc tính dưới dạng kiểu JSON bằng cách thêm chú thích `jsonField` trong thực thể. Thao tác này sẽ tự động tạo giao diện cho tất cả các đối tượng JSON trong dự án của bạn dưới `type/interface.ts` và bạn có thể truy cập chúng trong chức năng ánh xạ của mình.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+Không giống như thực thể, đối tượng chỉ thị jsonField không yêu cầu bất kỳ trường `id` nào. Một đối tượng JSON cũng có thể lồng ghép với các đối tượng JSON khác.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -229,14 +229,14 @@ type User @entity {
 }
 ````
 
-### Querying JSON fields
+### Truy vấn các trường JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+Hạn chế của việc sử dụng các loại JSON ảnh hưởng nhỏ đến hiệu quả truy vấn khi lọc, vì mỗi lần nó thực hiện tìm kiếm văn bản, nó sẽ nằm trên toàn bộ thực thể.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Tuy nhiên, tác động vẫn có thể chấp nhận được trong dịch vụ truy vấn của chúng tôi. Dưới đây là ví dụ về cách sử dụng toán tử `chứa` trong truy vấn GraphQL trên trường JSON để tìm 5 người dùng đầu tiên sở hữu số điện thoại có chứa '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+# Để tìm 5 số điện thoại của người dùng đầu tiên có chứa '0064'.
 
 query{
   user(

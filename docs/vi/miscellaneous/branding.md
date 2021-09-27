@@ -1,19 +1,19 @@
-# Branding Materials
+# Vật liệu xây dựng thương hiệu
 
-**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
+**Tất cả các đặc điểm thương hiệu của SubQuery là độc quyền và chúng tôi rất coi trọng thương hiệu của mình.**
 
-If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
+Nếu bạn chọn sử dụng bất kỳ nhãn hiệu, biểu tượng, thiết kế hoặc đặc điểm nhãn hiệu nào khác, vui lòng thực hiện nghiêm túc các hướng dẫn tại đây hoặc liên hệ với chúng tôi qua phương tiện truyền thông xã hội để được giải thích rõ.
 
-If in doubt, please ask!
+Nếu có thắc mắc, xin hãy đặt câu hỏi!
 
-## Exportable Figma File
+## Tệp Figma có thể xuất
 
-Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
+Tệp Figma của chúng tôi có một bộ sưu tập đầy đủ tất cả các tài sản thương hiệu (biểu trưng, phông chữ, màu sắc, hình ảnh, v. v.) để xuất.
 
-[Figma - SubQuery Brand Resources](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
+[Figma - Tài nguyên thương hiệu SubQuery](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 
-## Brand Assets Package
+## Gói tài sản thương hiệu
 
-A smaller ZIP package of brand assets
+Một gói tài sản thương hiệu ZIP nhỏ hơn
 
 [public_branding.zip](https://static.subquery.network/public_branding.zip)

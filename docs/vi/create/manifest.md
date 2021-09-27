@@ -1,8 +1,8 @@
 # Manifest File
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+Tệp Manifest `project.yaml` có thể được xem như một điểm đầu vào của dự án của bạn và nó xác định hầu hết các chi tiết về cách SubQuery sẽ lập chỉ mục và chuyển đổi dữ liệu chuỗi.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+Tệp kê khai có thể ở định dạng YAML hoặc JSON. Trong tài liệu này, chúng tôi sẽ sử dụng YAML trong tất cả các ví dụ. Dưới đây là ví dụ tiêu chuẩn về `project.yaml` cơ bản.
 
 ``` yml
 specVersion: "0.0.1"
@@ -33,21 +33,21 @@ dataSources:
           kind: substrate/CallHandler
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+- `network.endpoint` xác định điểm cuối wss hoặc ws của chuỗi khối sẽ được lập chỉ mục - **Đây phải là một node lưu trữ đầy đủ**.
+- `network.dictionary` tùy chọn cung cấp điểm cuối HTTP của từ điển chuỗi đầy đủ để tăng tốc độ xử lý - xem [Chạy Trình lập chỉ mục](../run/run.md#using-a-dictionary)
+- `dataSources` xác định dữ liệu sẽ được lọc và trích xuất và vị trí của trình xử lý hàm ánh xạ để áp dụng chuyển đổi dữ liệu.
+  - `kind` hiện chỉ hỗ trợ `substrate/Runtime`.
+  - `startBlock` chỉ định chiều cao khối để bắt đầu lập chỉ mục.
+  - `filter` sẽ lọc nguồn dữ liệu để thực thi theo tên thông số điểm cuối của mạng, hãy xem [bộ lọc mạng](#network-filters)
+  - `mapping.handlers` sẽ liệt kê tất cả [các hàm ánh xạ](./mapping.md) và các loại trình xử lý tương ứng của chúng, với các bộ lọc ánh xạ [ bổ sung](#mapping-filters).
 
-## Network Filters
+## Bộ lọc mạng
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Thông thường người dùng sẽ tạo một SubQuery và mong muốn sử dụng lại nó cho cả môi trường testnet và mainnet của họ (ví dụ: Polkadot và Kusama). Giữa các mạng, các tùy chọn khác nhau có thể khác nhau (ví dụ: khối bắt đầu lập chỉ mục). Do đó, chúng tôi cho phép người dùng xác định các chi tiết khác nhau cho từng nguồn dữ liệu, có nghĩa là một dự án SubQuery vẫn có thể được sử dụng trên nhiều mạng.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Người dùng có thể thêm `filter` trên `dataSources` để quyết định nguồn dữ liệu nào sẽ chạy trên mỗi mạng.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+Dưới đây là một ví dụ hiển thị các nguồn dữ liệu khác nhau cho cả mạng Polkadot và Kusama.
 
 ```yaml
 ...
@@ -76,11 +76,11 @@ dataSources:
     mapping: *mymapping # can reuse or change
 ```
 
-## Mapping Filters
+## Bộ lọc ánh xạ
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Bộ lọc ánh xạ là một tính năng cực kỳ hữu ích để quyết định khối, sự kiện hoặc bên ngoài nào sẽ kích hoạt trình xử lý ánh xạ.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Chỉ dữ liệu đến thỏa mãn các điều kiện lọc sẽ được xử lý bởi các hàm ánh xạ. Bộ lọc ánh xạ là tùy chọn nhưng được khuyến nghị vì chúng làm giảm đáng kể lượng dữ liệu được xử lý bởi dự án SubQuery của bạn và sẽ cải thiện hiệu suất lập chỉ mục.
 
 ```yaml
 #Example filter from callHandler
@@ -90,18 +90,18 @@ filter:
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+Bảng sau giải thích các bộ lọc được hỗ trợ bởi các trình xử lý khác nhau.
 
-| Handler                                    | Supported filter             |
+| Handler                                    | Bộ lọc được hỗ trợ           |
 | ------------------------------------------ | ---------------------------- |
 | [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
 | [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Bộ lọc mô-đun và phương pháp được hỗ trợ trên bất kỳ chuỗi dựa trên chất nền nào.
+- Bộ lọc `success` nhận một giá trị boolean và có thể được sử dụng để lọc phần bên ngoài theo trạng thái thành công của nó.
+- Bộ lọc `specVersion` chỉ định phạm vi phiên bản cụ thể cho khối chất nền. Các ví dụ sau đây mô tả cách đặt phạm vi phiên bản.
 
 ```yaml
 filter:
@@ -110,11 +110,11 @@ filter:
   specVersion: [null, 23] #Index block with specVersion less than or equal 23.
 ```
 
-## Custom Chains
+## Chuỗi tùy chỉnh
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+Bạn có thể lập chỉ mục dữ liệu từ các chuỗi tùy chỉnh bằng cách bao gồm các loại chuỗi trong `project.yaml`. Khai báo các loại cụ thể được blockchain này hỗ trợ trong `network.types`. Chúng tôi hỗ trợ các loại bổ sung được sử dụng bởi các mô-đun thời gian chạy chất nền.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+`stylesAlias`, `stylesBundle`, `stylesChain` và `stylesSpec` cũng được hỗ trợ.
 
 ``` yml
 specVersion: "0.0.1"

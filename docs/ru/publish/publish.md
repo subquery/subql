@@ -1,28 +1,28 @@
-# Publish your SubQuery Project
+# Опубликовать ваш проект SubQuery
 
-## Benefits of hosting your project with SubQuery
-- We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
-- This service is being provided to the community for free!
-- You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
-- We're integrated with GitHub, so anyone in your GitHub organisations will be able to view shared organisation projects
+## Преимущества хостинга вашего проекта с SubQuery
+- Мы будем запускать ваши проекты SubQuery для вас в высокопроизводительной, масштабируемой и управляемой общедоступной службе
+- Эта услуга предоставляется сообществу бесплатно!
+- Вы можете сделать свои проекты общедоступными, чтобы они были перечислены в [ SubQuery Explorer ](https://explorer.subquery.network), и любой желающий мог их просматривать
+- Мы интегрированы с GitHub, поэтому любой в вашей организации GitHub сможет просматривать общие проекты организации
 
-## Create your First Project
+## Создайте свой первый проект
 
 #### Login to SubQuery Projects
 
-Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
+Перед началом убедитесь, что ваш проект SubQuery находится в общедоступном репозитории GitHub. Файл `schema.graphql` должен быть в корне вашей директории.
 
-To create your first project, head to [project.subquery.network](https://project.subquery.network). You'll need to authenticate with your GitHub account to login.
+Чтобы создать свой первый проект, перейдите на [project.subquery.network](https://project.subquery.network). Вам нужно авторизоваться с помощью вашей учетной записи GitHub, чтобы войти.
 
-On first login, you will be asked to authorize SubQuery. We only need your email address to identify your account, and we don't use any other data from your GitHub account for any other reasons. In this step, you can also request or grant access to your GitHub Organization account so you can post SubQuery projects under your GitHub Organization instead of your personal account.
+При первом входе вам будет предложено авторизовать SubQuery. Нам нужен только ваш адрес электронной почты, чтобы идентифицировать вашу учётную запись, и по другим причинам мы не используем никаких других данных из вашей учетной записи GitHub. На этом этапе вы также можете запросить или предоставить доступ к своей учетной записи GitHub Organization, чтобы вы могли публиковать проекты SubQuery в своей организации GitHub вместо своей личной учетной записи.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![Отозвать одобрение учетной записи GitHub](/assets/img/project_auth_request.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application.
+SubQuery Projects - это место, где вы управляете всеми размещенными проектами, загруженными на платформу SubQuery. Вы можете создавать, удалять и даже обновлять проекты всех из этого приложения.
 
-![Projects Login](https://static.subquery.network/media/projects/projects-dashboard.png)
+![Логин Проектов](https://static.subquery.network/media/projects/projects-dashboard.png)
 
-If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
+Если у вас есть учетные записи организации GitHub, можно использовать переключатель в заголовке для изменения между вашим персональным аккаунтом и вашей учетной записью организации GitHub. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
 
 ![Switch between GitHub accounts](https://static.subquery.network/media/projects/projects-account-switcher.png)
 

@@ -1,20 +1,20 @@
-# Tutorials
+# Hướng dẫn
 
-## How to start at a different block height?
+## Làm sao để bắt đầu tại một block khác với mặc định?
 
-### Video guide
+### Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/ZiNSXDMHmBk" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-### Introduction
+### Giới thiệu
 
-By default, all starter projects start synchronising the blockchain from the genesis block. In otherwords, from block 1. For large blockchains, this can typically take days or even weeks to fully synchronise.
+Theo mặc định, tất cả các dự án khởi động bắt đầu đồng bộ hóa blockchain từ khối nguyên thủy (Genesis Block). Nói cách khác, từ block số 1. Đối với các blockchain lớn, quá trình đồng bộ hóa này thường mất vài ngày, thậm chí là vài tuần để hoàn thành.
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+Để bắt đầu đồng bộ hóa node (nút) SubQuery từ một nấc độ cao block khác 0, bạn cần phải sửa đổi tệp project.yaml của mình và thay đổi key về block khởi đầu (startBlock).
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+Trong tệp project.yaml dưới đây, block khởi đầu đã được đặt thành 1.000.000
 
 ```shell
 specVersion: 0.0.1
@@ -34,35 +34,35 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-### Why not start from zero?
+### Tại sao lại không bắt đầu từ block 0?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+Nguyên nhân chủ yếu là vì làm vậy sẽ giúp giảm thời gian đồng bộ hóa blockchain. Điều này nghĩa là nếu chỉ quan tâm đến các giao dịch trong 3 tháng gần nhất, bạn có thể chỉ đồng bộ hóa những block trong 3 tháng gần nhất - như vậy thời gian đồng bộ sẽ ngắn hơn và bạn có thể nhanh chóng bắt tay vào công đoạn phát triển dự án.
 
-### What are the drawbacks of not starting from zero?
+### Hạn chế của việc này là gì?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+Hạn chế rõ ràng nhất sẽ là bạn sẽ không thể truy vấn dữ liệu trên blockchain đối với các block mà bạn không có.
 
-### How to figure out the current blockchain height?
+### Làm sao để biết blockchain hiện đang có nấc độ cao là bao nhiêu?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+Nếu đang sử dụng mạng Polkadot, bạn có thể truy cập vào trang [https://polkascan.io/](https://polkascan.io/), chọn mạng, sau đó xem tại mục "Block đã hoàn thiện".
 
-### Do I have to do a rebuild or a codegen?
+### Tôi có cần xây dựng hoặc tạo lại code không?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+Không. Bởi vì bạn đang sửa đổi tệp project.yaml (về cơ bản thì đây là tệp cấu hình), vậy nên bạn sẽ không phải xây dựng hoặc tạo lại code typecript.
 
-## How to change the blockchain fetching batch size?
+## Làm cách nào để thay đổi kích thước lô (batch size) khi tìm nạp blockchain?
 
-### Video guide
+### Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-### Introduction
+### Giới thiệu
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+Kích thước mặc định là 100, nhưng bạn có thể thay đổi bằng cách sử dụng lệnh bổ sung `--batch-size=xx`.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+Bạn cần thêm đoạn trên vào dòng lệnh để tạo thành một flag bổ sung, còn nếu bạn đang sử dụng Docker, hãy sửa đổi tệp docker-compos.yml như sau:
 
 ```shell
 subquery-node:
@@ -85,8 +85,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+Trong ví dụ này, batch size đã được đổi thành 50.
 
-### Why change the batch size?
+### Tại sao lại cần thay đổi batch size?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. However, more API calls are being made so if you are being charged on an I/O basis or if you have API limits somewhere in your chain, this could work to your disadvantage.
+Việc sử dụng batch size nhỏ hơn có thể làm giảm mức sử dụng bộ nhớ và không khiến người dùng bị treo khi muốn thực hiện các truy vấn lớn. Nói cách khác, ứng dụng của bạn sẽ có tốc độ phản hồi nhanh hơn. Tuy nhiên, làm vậy sẽ khiến có thêm nhiều lệnh gọi API được thực hiện, vậy nên nếu bạn bị tính phí trên cơ sở đầu vào/đầu ra hoặc blockchain của bạn có giới hạn API ở đâu đó thì điều này có thể gây bất lợi cho bạn.

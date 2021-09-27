@@ -22,7 +22,7 @@ SubQuery Projects is where you manage all your hosted projects uploaded to the S
 
 ![Projects Login](https://static.subquery.network/media/projects/projects-dashboard.png)
 
-If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
+If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. Um Ihr GitHub-Organisationskonto zu verbinden, können Sie [die Schritte hier ausführen](#add-github-organization-account-to-subquery-projects).
 
 ![Switch between GitHub accounts](https://static.subquery.network/media/projects/projects-account-switcher.png)
 

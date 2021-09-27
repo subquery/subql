@@ -1,20 +1,20 @@
-# Tutorials
+# Tutorial
 
-## How to start at a different block height?
+## Bagaimana cara mulai di tinggi block berbeda?
 
-### Video guide
+### Panduan video
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/ZiNSXDMHmBk" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-### Introduction
+### Pengenalan
 
-By default, all starter projects start synchronising the blockchain from the genesis block. In otherwords, from block 1. For large blockchains, this can typically take days or even weeks to fully synchronise.
+Secara otomatis, semua proyek starter memulai sinkronisasi blockchain dari block genesis. Dengan kata lain, dari block 1. Untuk blockchain besar, ini biasanya membutuhkan beberapa hari atau bahkan minggu untuk sepenuhnya sinkronisasi.
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+Untuk mulai sinkronisasi node SubQuery dari tinggi bukan-nol, yang perlu dilakukan hanyalah memodifikasi file project.yaml dan mengubah kunci startBlock.
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+Berikut adalah file project.yaml di mana block mulainya sudah diatur ke 1.000.000
 
 ```shell
 specVersion: 0.0.1
@@ -34,35 +34,35 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-### Why not start from zero?
+### Kenapa tidak mulai dari nol?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+Alasan utamanya adalah karena ini bisa mengurangi waktu sinkronisasi blockchain. Artinya jika anda hanya tertarik pada transaksi di 3 bulan terakhir, anda bisa hanya mengsinkronisasi hasil 3 bulan terakhir, dengan begitu mengurangi waktu menunggu dan anda bisa mulai pengembangan lebih cepat.
 
-### What are the drawbacks of not starting from zero?
+### Apa kekurangan tidak memulai dari nol?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+Kekurangan paling jelas adalah anda tidak akan bisa melakukan query data di blockchain untuk block yang tidak anda miliki.
 
-### How to figure out the current blockchain height?
+### Bagaimana cara mengetahui tinggi blockchain saat ini?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+Jika menggunakan jaringan Polkadot, anda bisa mengunjungi [https://polkascan.io/](https://polkascan.io/), pilih jaringannya, dan lihat "Finalised Block".
 
-### Do I have to do a rebuild or a codegen?
+### Apa saya harus membangun ulang atau codegen?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+Tidak. Karena anda memodifikasi file project.yaml, yang merupakan file konfigurasi, anda tidak perlu membangun ulang atau menghasilkan lagi kode typescript-nya.
 
-## How to change the blockchain fetching batch size?
+## Bagaimana cara mengubah ukuran blockchain fetching batch?
 
-### Video guide
+### Panduan video
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-### Introduction
+### Pengenalan
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+Ukuran batch default adalah 100, tapi ini bisa diubah menggunakan perintah ekstra `--batch-size=xx`.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+Anda perlu memasukkannya ke garis perintah sebagai extra flag atau jika menggunakan Docker, modifikasi file docker-compose.yml dengan:
 
 ```shell
 subquery-node:
@@ -85,8 +85,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+Contoh ini mengatur ukuran batch (batch size) ke 50.
 
-### Why change the batch size?
+### Kenapa mengubah ukuran batch?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. However, more API calls are being made so if you are being charged on an I/O basis or if you have API limits somewhere in your chain, this could work to your disadvantage.
+Menggunakan ukuran batch yang lebih kecil bisa mengurangi penggunaan memori dan tidak membuat pengguna menunggu untuk query yang besar. Dengan kata lain, aplikasi anda bisa jadi lebih responsif. Namun, akan ada lebih banyak panggilan API yang dilakukan jadi jika anda dikenakan biaya dengan basis I/O atau jika anda memiliki batasan API di chain anda, ini bisa menjadi sebuah kekurangan.
