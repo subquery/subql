@@ -162,7 +162,9 @@ export class StoreService {
   setTransaction(tx: Transaction) {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
-    this.operationStack = new StoreOperations(this.modelsRelations.models);
+    if (this.config.proofOfIndex) {
+      this.operationStack = new StoreOperations(this.modelsRelations.models);
+    }
   }
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
