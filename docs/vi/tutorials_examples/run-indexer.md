@@ -1,39 +1,39 @@
-# How to run an indexer node?
+# Làm thế nào để chạy một nút chỉ mục?
 
-## Video guide
+## Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giới thiệu
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+Chạy một nút chỉ mục là một tùy chọn khác ngoài việc sử dụng Docker hoặc có một dự án được lưu trữ cho bạn tại [ Dự án SubQuery ](https://project.subquery.network/). Nó đòi hỏi nhiều thời gian và nỗ lực hơn nhưng sẽ nâng cao hiểu biết của bạn về cách SubQuery hoạt động.
 
 ## Postgres
 
-Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
+Chạy một nút chỉ mục trên cơ sở hạ tầng của bạn sẽ yêu cầu thiết lập cơ sở dữ liệu Postgres. Bạn có thể cài đặt Postgres [ tại đây ](https://www.postgresql.org/download/) và đảm bảo phiên bản 12 trở lên.
 
-## Install subql/node
+## Cài đặt subql / node
 
-Then to run a SubQuery node, run the following command:
+Sau đó, để chạy một nút SubQuery, hãy chạy lệnh sau:
 
 ```shell
 npm install -g @subql/node
 ```
 
-The -g flag means to install it globally which means on OSX, the location will be /usr/local/lib/node_modules.
+Cờ -g có nghĩa là cài đặt nó trên toàn cầu, có nghĩa là trên OSX, vị trí sẽ là / usr / local / lib / node_modules.
 
-Once installed, you can check the version by running:
+Sau khi cài đặt, bạn có thể kiểm tra phiên bản bằng cách chạy:
 
 ```shell
 > subql-node --version
 0.19.1
 ```
 
-## Setting DB configs
+## Đặt cấu hình DB
 
-Next, you need to set the following environmental variables:
+Tiếp theo, bạn cần đặt các biến môi trường sau:
 
 ```shell
 export DB_USER=postgres
@@ -43,17 +43,17 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-Of course, if you have different values for the above keys, please adjust accordingly. Note that the `env` command will display the current environment variables and that this process only sets these values temporarily. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+Tất nhiên, nếu bạn có các giá trị khác nhau cho các phím trên, vui lòng điều chỉnh cho phù hợp. Lưu ý rằng lệnh ` env ` sẽ hiển thị các biến môi trường hiện tại và quá trình này chỉ đặt các giá trị này tạm thời. Có nghĩa là, chúng chỉ có hiệu lực trong khoảng thời gian của phiên đầu cuối. Để đặt chúng vĩnh viễn, hãy lưu trữ chúng trong ~/bash_profile của bạn.
 
-## Indexing a project
+## Lập chỉ mục một dự án
 
-To start indexing a project, navigate into your project folder and run the following command:
+Để bắt đầu lập chỉ mục một dự án, hãy điều hướng vào thư mục dự án của bạn và chạy lệnh sau:
 
 ```shell
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+Nếu bạn không có dự án nào hữu ích, hãy `git clone https://github.com/subquery/subql-helloworld`. Bạn sẽ thấy nút lập chỉ mục bắt đầu hoạt động và bắt đầu lập chỉ mục các khối.
 
 ## Inspecting Postgres
 
