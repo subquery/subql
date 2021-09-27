@@ -1,6 +1,6 @@
 # Cài đặt SubQuery
 
-Có nhiều thành phần được yêu cầu để tạo một dự án SubQuery.  Thành phần [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) là bắt buộc để chạy trình chỉ mục. Thư viện [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) là bắt buộc để tạo các truy vấn.
+Có nhiều thành phần được yêu cầu để tạo một dự án SubQuery. Thành phần [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) là bắt buộc để chạy trình chỉ mục. Thư viện [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) là bắt buộc để tạo các truy vấn.
 
 ## Cài đặt @subql/cli
 
@@ -21,6 +21,7 @@ Sau đó, bạn có thể chạy trợ giúp để xem các lệnh có sẵn và
 ```shell
 subql help
 ```
+
 ## Cài đặt @subql/node
 
 Nút SubQuery là một hành động trích xuất dữ liệu blockchain dựa trên chất nền cho mỗi dự án SubQuery và lưu nó vào cơ sở dữ liệu Postgres.
@@ -40,6 +41,7 @@ Sau khi cài đặt, bạn có thể tạo một nút bằng cách nhập:
 ```shell
 subql-node <command>
 ```
+
 > Lưu ý: Nếu bạn đang sử dụng Docker hoặc lưu trữ dự án của mình trên SubQuery Projects, bạn có thể bỏ qua bước này. Bởi vì nút SubQuery đã được cung cấp trong vùng chứa Docker và cơ sở hạ tầng lưu trữ.
 
 ## Cài đặt @subql/query
@@ -56,4 +58,4 @@ yarn global add @subql/query
 npm install -g @subql/query
 ```
 
-> Lưu ý: Nếu bạn đang sử dụng Docker hoặc lưu trữ dự án của mình trên SubQuery Projects, bạn cũng có thể bỏ qua bước này. Bởi vì nút SubQuery đã được cung cấp trong vùng chứa Docker và cơ sở hạ tầng lưu trữ. 
+> Lưu ý: Nếu bạn đang sử dụng Docker hoặc lưu trữ dự án của mình trên SubQuery Projects, bạn cũng có thể bỏ qua bước này. Bởi vì nút SubQuery đã được cung cấp trong vùng chứa Docker và cơ sở hạ tầng lưu trữ.

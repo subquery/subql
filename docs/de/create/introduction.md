@@ -3,6 +3,7 @@
 In der [Kurzanleitung](/quickstart/quickstart.md) haben wir sehr schnell ein Beispiel durchgespielt, um Ihnen einen Eindruck davon zu geben, was SubQuery ist und wie es funktioniert. Hier sehen wir uns den Workflow beim Erstellen Ihres Projekts und die Schlüsseldateien, mit denen Sie arbeiten, genauer an.
 
 ## Der grundlegende Arbeitsablauf
+
 Einige der folgenden Beispiele gehen davon aus, dass Sie das Startpaket im Abschnitt [Schnellstart](../quickstart/quickstart.md) erfolgreich initialisiert haben. Ausgehend von diesem Startpaket durchlaufen wir den Standardprozess zum Anpassen und Implementieren Ihres SubQuery-Projekts.
 
 1. Initialisieren Sie Ihr Projekt mit `subql init PROJECT_NAME`

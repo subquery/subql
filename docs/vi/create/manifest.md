@@ -4,17 +4,17 @@ Tệp Manifest `project.yaml` có thể được xem như một điểm đầu v
 
 Tệp kê khai có thể ở định dạng YAML hoặc JSON. Trong tài liệu này, chúng tôi sẽ sử dụng YAML trong tất cả các ví dụ. Dưới đây là ví dụ tiêu chuẩn về `project.yaml` cơ bản.
 
-``` yml
-specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+```yml
+specVersion: '0.0.1'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
 
-schema: "./schema.graphql"
+schema: './schema.graphql'
 
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
   # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
   - name: main
@@ -50,9 +50,10 @@ Người dùng có thể thêm `filter` trên `dataSources` để quyết địn
 Dưới đây là một ví dụ hiển thị các nguồn dữ liệu khác nhau cho cả mạng Polkadot và Kusama.
 
 ```yaml
-...
+
+---
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
 #Create a template to avoid redundancy
 definitions:
@@ -64,15 +65,15 @@ definitions:
 dataSources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
-        specName: polkadot
+    filter: #Optional
+      specName: polkadot
     startBlock: 1000
     mapping: *mymapping #use template here
   - name: kusamaRuntime
     kind: substrate/Runtime
-    filter: 
-        specName: kusama
-    startBlock: 12000 
+    filter:
+      specName: kusama
+    startBlock: 12000
     mapping: *mymapping # can reuse or change
 ```
 
@@ -84,10 +85,10 @@ Chỉ dữ liệu đến thỏa mãn các điều kiện lọc sẽ được x�
 
 ```yaml
 #Example filter from callHandler
-filter: 
-   module: balances
-   method: Deposit
-   success: true
+filter:
+  module: balances
+  method: Deposit
+  success: true
 ```
 
 Bảng sau giải thích các bộ lọc được hỗ trợ bởi các trình xử lý khác nhau.
@@ -98,8 +99,7 @@ Bảng sau giải thích các bộ lọc được hỗ trợ bởi các trình x
 | [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
-
--  Bộ lọc mô-đun và phương pháp được hỗ trợ trên bất kỳ chuỗi dựa trên chất nền nào.
+- Bộ lọc mô-đun và phương pháp được hỗ trợ trên bất kỳ chuỗi dựa trên chất nền nào.
 - Bộ lọc `success` nhận một giá trị boolean và có thể được sử dụng để lọc phần bên ngoài theo trạng thái thành công của nó.
 - Bộ lọc `specVersion` chỉ định phạm vi phiên bản cụ thể cho khối chất nền. Các ví dụ sau đây mô tả cách đặt phạm vi phiên bản.
 
@@ -116,25 +116,22 @@ Bạn có thể lập chỉ mục dữ liệu từ các chuỗi tùy chỉnh b�
 
 `stylesAlias`, `stylesBundle`, `stylesChain` và `stylesSpec` cũng được hỗ trợ.
 
-``` yml
-specVersion: "0.0.1"
+```yml
+specVersion: '0.0.1'
 description: "This subquery indexes kitty's birth info"
-repository: "https://github.com/onfinality-io/subql-examples"
-schema: "./schema.graphql"
+repository: 'https://github.com/onfinality-io/subql-examples'
+schema: './schema.graphql'
 network:
-  endpoint: "ws://host.kittychain.io/public-ws"
-  types: {
-    "KittyIndex": "u32",
-    "Kitty": "[u8; 16]"
-  }
+  endpoint: 'ws://host.kittychain.io/public-ws'
+  types: {'KittyIndex': 'u32', 'Kitty': '[u8; 16]'}
 # typesChain: { chain: { Type5: 'example' } }
 # typesSpec: { spec: { Type6: 'example' } }
 dataSources:
   - name: runtime
     kind: substrate/Runtime
     startBlock: 1
-    filter:  #Optional
-      specName: kitty-chain 
+    filter: #Optional
+      specName: kitty-chain
     mapping:
       handlers:
         - handler: handleKittyBred

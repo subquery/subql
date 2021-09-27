@@ -18,4 +18,3 @@ Mục đích của chúng tôi là lắng nghe và tương tác với cộng đ�
 ## Cộng đồng SubQuery không chính thức
 
 Những cộng đồng này không được kiểm duyệt bởi nhóm SubQuery, nhưng sẽ được hỗ trợ bởi các đại sứ của chúng tôi. Hãy cẩn thận với các trò gian lận vì SubQuery ** không ** chịu trách nhiệm về những gì xảy ra bên trong.
-

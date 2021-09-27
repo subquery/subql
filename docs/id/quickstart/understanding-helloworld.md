@@ -40,7 +40,7 @@ Kemudian kita menjalankan `codegen yarn` atau `npm run-script codegen`. Apa yang
 
 ## docker-compose
 
-Langkah terakhir adalah perintah docker gabungan `docker-compose pull &&  docker-compose up` (dapat dijalankan secara terpisah juga). Perintah `pull` mengambil semua gambar yang diperlukan dari Docker Hub dan perintah `up` memulai container.
+Langkah terakhir adalah perintah docker gabungan `docker-compose pull && docker-compose up` (dapat dijalankan secara terpisah juga). Perintah `pull` mengambil semua gambar yang diperlukan dari Docker Hub dan perintah `up` memulai container.
 
 ```shell
 > docker-compose pull

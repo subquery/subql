@@ -11,6 +11,7 @@
 # Подробнее о GraphQL
 
 Вы можете следовать [ официальному руководству по GraphQL здесь ](https://graphql.org/learn/), чтобы узнать больше о GraphQL, как он работает и как его использовать:
+
 - Есть библиотеки, которые помогут вам реализовать GraphQL на [разных языках](https://graphql.org/code/)
 - Информацию об углубленном обучении с практическими уроками см. в [How to GraphQL](https://www.howtographql.com/).
 - Ознакомьтесь с бесплатным онлайн-курсом, [Исследование GraphQL: язык запроса API](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).

@@ -75,39 +75,39 @@
         </div>
       </li>
       <li>
-        <div class="title">Wie viel kostet es, mein Projekt in SubQuery Projekten zu verteilen?</div>
+        <div class="title">Wie viel kostet es, mein Projekt in SubQuery-Projekten zu hosten?</div>
         <div class="content">
-          <p>Das Hosting Ihres Projekts in SubQuery Projects ist absolut kostenlos - es ist unsere Art, der Community zurückzugeben. Um zu erfahren, wie Sie Ihr Projekt bei uns hosten, schauen Sie sich bitte das <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hallo World (SubQuery Hosted) Tutorial</a> an.</p>
-          <a class="more" href="https://doc.subquery.network/publish/publish.html">DEIN PROJEKT HOSTENLOS</a>
+          <p>Das Hosten Ihres Projekts in SubQuery Projects ist absolut kostenlos - es ist unsere Art, der Community etwas zurückzugeben. Um zu erfahren, wie Sie Ihr Projekt bei uns hosten, lesen Sie bitte das Tutorial <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a>.</p>
+          <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTING IHRES PROJECTS</a>
         </div>
       </li>
-    </ul>
-    Weitere häufig gestellte Fragen finden Sie auf unserer <a href="https://doc.subquery.network/faqs/faqs.html">FAQ-Seite</a>.    
+    </ul><br>
+    Weitere häufig gestellte Fragen finden Sie auf unserer Seite <a href="https://doc.subquery.network/faqs/faqs.html">FAQs</a>.    
   </div>
 </section>
 <section class="main">
   <div>
     <div class="lastIntroduce lastIntroduce_1">
-        <h5>Integrieren in deine benutzerdefinierte Kette?</h5>
-        <p>Egal, ob Sie einen neuen Fallschirm oder eine völlig neue Blockchain auf Substrate bauen - SubQuery kann Ihnen helfen, die Daten Ihrer Kette zu indizieren und zu beheben. SubQuery ist für die einfache Integration in eine benutzerdefinierte Substrat-Kette konzipiert.</p>
-        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">LEARN WIE SIE MIT IHRER CHAIN EINZUGEN</a>
+        <h5>Integration in Ihre benutzerdefinierte Kette?</h5>
+        <p>Egal, ob Sie eine neue Parachain oder eine völlig neue Blockchain auf Substrate erstellen – SubQuery kann Ihnen helfen, die Daten Ihrer Kette zu indizieren und Fehler zu beheben. SubQuery wurde für die einfache Integration in eine benutzerdefinierte, auf Substraten basierende Kette entwickelt.</p>
+        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">LERNEN SIE, WIE SIE IN IHRE KETTE INTEGRIEREN</a>
     </div>
     <div class="lastIntroduce lastIntroduce_2">
-        <h5>Unterstützung und Beitrag</h5>
-        <p>Haben Sie Fragen oder Interesse, mehr zu erfahren oder wie Sie mitmachen können? Wir würden uns freuen, von dir zu hören. Bitte kontaktieren Sie uns per E-Mail oder Social Media über die untenstehenden Links. Benötigen Sie technische Expertise? Trete unserer Discord Community bei und erhalte Unterstützung von unseren leidenschaftlichen Community Mitgliedern. </p>
-        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">BEARBEITEN SIE DIE KONVERSATION AUF DISKORD</a>
+        <h5>Unterstützen und beitragen</h5>
+        <p>Haben Sie eine Frage oder möchten Sie mehr wissen oder wie Sie dazu beitragen können? Wir würden uns freuen, von dir zu hören. Bitte kontaktieren Sie uns per E-Mail oder Social Media über die untenstehenden Links. Benötigen Sie technische Expertise? Treten Sie unserer Discord-Community bei und erhalten Sie Unterstützung von unseren leidenschaftlichen Community-Mitgliedern. </p>
+        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">TEILNEHMEN DEM GESPRÄCH AUF DISCORD</a>
     </div>
     </div>
 </section>
 <section class="main connectSection">
   <div class="email">
-    <span>Kontaktiere uns</span>
+    <span>Kontaktieren Sie uns</span>
     <a href="mailto:hello@subquery.network">hello@subquery.network</a>
   </div>
   <div>
-    <div>Folgen Sie uns auf Sozial</div>
+    <div>Folgen Sie uns in den sozialen Netzwerken</div>
     <div class="connectWay">
-      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">Discord</a>
+      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
       <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
       <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
       <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>

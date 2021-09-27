@@ -4,17 +4,17 @@
 
 Манифест может быть в формате YAML или JSON. В этом документе мы будем использовать YAML во всех примерах. Ниже приведен стандартный пример базового `project.yaml`.
 
-``` yml
-specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+```yml
+specVersion: '0.0.1'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
 
-schema: "./schema.graphql"
+schema: './schema.graphql'
 
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
   # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
   - name: main
@@ -31,7 +31,6 @@ dataSources:
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
-
 ```
 
 - `network. \endpoint` определяет конечную точку wss или ws для индексирования блокчейна - **Это должно быть полный архивный узел**.
@@ -51,9 +50,10 @@ dataSources:
 Ниже приведен пример, который показывает различные источники данных как для Polkadot так и для Kusama.
 
 ```yaml
-...
+
+---
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
 #Create a template to avoid redundancy
 definitions:
@@ -65,15 +65,15 @@ definitions:
 dataSources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
-        specName: polkadot
+    filter: #Optional
+      specName: polkadot
     startBlock: 1000
     mapping: *mymapping #use template here
   - name: kusamaRuntime
     kind: substrate/Runtime
-    filter: 
-        specName: kusama
-    startBlock: 12000 
+    filter:
+      specName: kusama
+    startBlock: 12000
     mapping: *mymapping # can reuse or change
 ```
 
@@ -85,10 +85,10 @@ dataSources:
 
 ```yaml
 #Пример фильтра из callHandler
-filter: 
-   module: balances
-   method: Deposit
-   success: true
+filter:
+  module: balances
+  method: Deposit
+  success: true
 ```
 
 В следующей таблице описываются фильтры поддерживаемые различными обработчиками.
@@ -99,8 +99,7 @@ filter:
 | [EventHandler](./mapping.md#event-handler)      | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)        | `module`,`method` ,`success` |
 
-
--  Фильтры модулей и методов поддерживаются в любой блокчейн цепи, построенной на Substrate.
+- Фильтры модулей и методов поддерживаются в любой блокчейн цепи, построенной на Substrate.
 - `success` фильтр принимает логическое значение и может быть использован для фильтрации дополнительных по его статусу успеха.
 - `specVersion` определяет диапазон версии спецификации для блока substrate. Следующие примеры описывают, как установить диапазон версий.
 
@@ -117,7 +116,7 @@ filter:
 
 Также поддерживаются `typesAlias`, `typesBundle`, `typesChain`, и `typesSpec`.
 
-``` yml
+```yml
 specVersion: "0.0.1"
 description: "This subquery indexes kitty's birth info"
 repository: "https://github.com/onfinality-io/subql-examples"
@@ -135,7 +134,7 @@ dataSources:
     kind: substrate/Runtime
     startBlock: 1
     filter: #Optional
-      specName: kitty-chain 
+      specName: kitty-chain
     mapping:
       handlers:
         - handleKittyBred

@@ -3,6 +3,7 @@
 Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
 
 Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
+
 - Mappings are defined in the `src/mappings` directory and are exported as a function
 - These mappings are also exported in `src/index.ts`
 - The mappings files are reference in `project.yaml` under the mapping handlers.
@@ -14,13 +15,13 @@ There are three classes of mappings functions; [Block handlers](#block-handler),
 You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
 
 ```ts
-import {SubstrateBlock} from "@subql/types";
+import {SubstrateBlock} from '@subql/types';
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
-    // Create a new StarterEntity with the block hash as it's ID
-    const record = new starterEntity(block.block.header.hash.toString());
-    record.field1 = block.block.header.number.toNumber();
-    await record.save();
+  // Create a new StarterEntity with the block hash as it's ID
+  const record = new starterEntity(block.block.header.hash.toString());
+  record.field1 = block.block.header.number.toNumber();
+  await record.save();
 }
 ```
 
@@ -52,25 +53,28 @@ Call handlers are used when you want to capture information on certain substrate
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field4 = extrinsic.block.timestamp;
-    await record.save();
+  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+  record.field4 = extrinsic.block.timestamp;
+  await record.save();
 }
 ```
 
 The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
 
 ## Query States
+
 Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
 
 These are the interfaces we currently support:
+
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
 - [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
 
 These are the interfaces we do **NOT** support currently:
-- ~~api.tx.*~~
-- ~~api.derive.*~~
+
+- ~~api.tx.\*~~
+- ~~api.derive.\*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
@@ -98,6 +102,7 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 // It will use the current block has by default like so
 const b2 = await api.rpc.chain.getBlock();
 ```
+
 - For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
 
 ## Modules and Libraries
@@ -113,13 +118,13 @@ Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, 
 Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
 
 ```ts
-import {hashMessage} from "ethers/lib/utils"; //Good way
-import {utils} from "ethers" //Bad way
+import {hashMessage} from 'ethers/lib/utils'; //Good way
+import {utils} from 'ethers'; //Bad way
 
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field1 = hashMessage('Hello');
-    await record.save();
+  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+  record.field1 = hashMessage('Hello');
+  await record.save();
 }
 ```
 
@@ -148,6 +153,7 @@ We need metadata to generate the actual API endpoints. In the kitty example, we 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
+
 or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
 
 ```shell
@@ -161,46 +167,49 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
 
 #### Type definitions
+
 We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
 
 Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
+
 - `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
 
 ```ts
-export { default as kitties } from './kitties/definitions';
+export {default as kitties} from './kitties/definitions';
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+
 ```ts
 export default {
-    // custom types
-    types: {
-        Address: "AccountId",
-        LookupSource: "AccountId",
-        KittyIndex: "u32",
-        Kitty: "[u8; 16]"
+  // custom types
+  types: {
+    Address: 'AccountId',
+    LookupSource: 'AccountId',
+    KittyIndex: 'u32',
+    Kitty: '[u8; 16]',
+  },
+  // custom rpc : api.rpc.kitties.getKittyPrice
+  rpc: {
+    getKittyPrice: {
+      description: 'Get Kitty price',
+      params: [
+        {
+          name: 'at',
+          type: 'BlockHash',
+          isHistoric: true,
+          isOptional: false,
+        },
+        {
+          name: 'kittyIndex',
+          type: 'KittyIndex',
+          isOptional: false,
+        },
+      ],
+      type: 'Balance',
     },
-    // custom rpc : api.rpc.kitties.getKittyPrice
-    rpc: {
-        getKittyPrice:{
-            description: 'Get Kitty price',
-            params: [
-                {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
-                    isOptional: false
-                },
-                {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                }
-            ],
-            type: 'Balance'
-        }
-    }
-}
+  },
+};
 ```
 
 #### Packages
@@ -252,28 +261,29 @@ This command will generate the metadata and a new api-augment for the APIs. As w
 ```json
 {
   "compilerOptions": {
-      // this is the package name we use (in the interface imports, --package for generators) */
-      "kitty-birthinfo/*": ["src/*"],
-      // here we replace the @polkadot/api augmentation with our own, generated from chain
-      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      // replace the augmented types with our own, as generated from definitions
-      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
-    }
+    // this is the package name we use (in the interface imports, --package for generators) */
+    "kitty-birthinfo/*": ["src/*"],
+    // here we replace the @polkadot/api augmentation with our own, generated from chain
+    "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
+    // replace the augmented types with our own, as generated from definitions
+    "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+  }
 }
 ```
 
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
-    //return the KittyIndex type
-    const nextKittyId = await api.query.kitties.nextKittyId();
-    // return the Kitty type, input parameters types are AccountId and KittyIndex
-    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info(`Next kitty id ${nextKittyId}`)
-    //Custom rpc, set undefined to blockhash
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
+  //return the KittyIndex type
+  const nextKittyId = await api.query.kitties.nextKittyId();
+  // return the Kitty type, input parameters types are AccountId and KittyIndex
+  const allKitties = await api.query.kitties.kitties('xxxxxxxxx', 123);
+  logger.info(`Next kitty id ${nextKittyId}`);
+  //Custom rpc, set undefined to blockhash
+  const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined, nextKittyId);
 }
 ```
 
@@ -282,6 +292,7 @@ export async function kittyApiHandler(): Promise<void> {
 ### Custom chain rpc calls
 
 To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+
 ```yaml
 ...
   types: {

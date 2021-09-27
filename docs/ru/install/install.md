@@ -1,6 +1,6 @@
 # Установка SubQuery
 
-Для создании проекта SubQuery требуются различные компоненты.  Для запуска индексатора требуется компонент [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node). Для генерации запросов требуется библиотека [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query).
+Для создании проекта SubQuery требуются различные компоненты. Для запуска индексатора требуется компонент [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node). Для генерации запросов требуется библиотека [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query).
 
 ## Установка @subql/cli
 
@@ -21,6 +21,7 @@ npm install -g @subql/cli
 ```shell
 справка subql
 ```
+
 ## Установите @subql/node
 
 Узел SubQuery - это реализация, которая извлекает субстратегически данные блокчейна в рамках проекта SubQuery и сохраняет их в базу данных Postgres.
@@ -40,6 +41,7 @@ npm install -g @subql/node
 ```shell
 subql-узел <command>
 ```
+
 > Примечание: Если вы используете Docker или хостинг вашего проекта в проектах SubQuery вы можете пропустить этот шаг. Это происходит потому, что узел SubQuery уже находится в контейнере Docker и в инфраструктуре хостинга.
 
 ## Установите @subql/query
@@ -56,4 +58,4 @@ yarn global add @subql/query
 npm install -g @subql/query
 ```
 
-> Примечание: Если вы используете Docker или хостинг вашего проекта в проектах SubQuery вы можете пропустить этот шаг. Это происходит потому, что узел SubQuery уже находится в контейнере Docker и в инфраструктуре хостинга. 
+> Примечание: Если вы используете Docker или хостинг вашего проекта в проектах SubQuery вы можете пропустить этот шаг. Это происходит потому, что узел SubQuery уже находится в контейнере Docker и в инфраструктуре хостинга.

@@ -3,6 +3,7 @@
 Di panduan [mulai cepat](/quickstart/quickstart.md), kami dengan sangat cepat memberikan contoh untuk menjelaskan pada Anda apa itu SubQuery dan bagaimana cara kerjanya. Di sini kita akan melihat lebih dekat alur kerja saat membuat proyek Anda dan file kunci yang akan Anda ikut sertakan.
 
 ## Alur Kerja Dasar
+
 Sebagian contoh berikut akan mengasumsikan Anda telah berhasil menginisialisasi paket pemula di bagian [Mulai cepat](../quickstart/quickstart.md). Dari paket pemula itu, kita akan berjalan melewati proses standar untuk menyesuaikan dan mengimplementasikan proyek SubQuery Anda.
 
 1. Inisialisasi proyek Anda menggunakan `subql init PROJECT_NAME`

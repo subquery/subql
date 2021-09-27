@@ -67,8 +67,8 @@ export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-subql-node -f your-project-path 
-````
+subql-node -f your-project-path
+```
 
 Bergantung pada konfigurasi database Postgres Anda (misalnya kata sandi database yang berbeda), harap pastikan juga bahwa pengindeks (`subql/node`) dan layanan kueri (`subql/query`) dapat membuat koneksi ke sana.
 
@@ -121,6 +121,7 @@ npm install -g @subql/query
 Harap perhatikan bahwa kami **TIDAK** mendukung penggunaan `yarn global` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan error di masa mendatang.
 
 ### Menjalankan layanan Kueri
+
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
 Pastikan nama proyek sama dengan nama proyek saat Anda [menginisialisasi proyek](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Periksa juga variabel lingkungan sudah benar.

@@ -3,6 +3,7 @@
 Fungsi pemetaan menentukan bagaimana data chain diubah menjadi entitas GraphQL yang dioptimalkan yang sebelumnya telah kita tentukan di file `schema.graphql`.
 
 Pemetaan dituliskan di seubset TypeScript yang disebut Assembly Script yang bisa dikumpulkan menjadi WASM (Web Assembly).
+
 - Pemetaan ditentukan di direktori `src/mappings` dan diekspor sebagai sebuah fungsi
 - Pemetaan ini juga diekspor di `src/index.ts`
 - File pemetaan adalah referensi di `project.yaml` di bawah penanganan pemetaan.
@@ -14,13 +15,13 @@ Ada tiga kelas fungsi pemetaan;[Block handlers](#block-handler), [Event Handlers
 Anda bisa menggunakan penanganan balok untuk menangkap informasi setiap kali balok baru terlampir ke chain Substrat, misal balok angka. Untuk meraih ini, BlockHandler yang ditentukan akan dipanggil sekali untuk setiap balok.
 
 ```ts
-import {SubstrateBlock} from "@subql/types";
+import {SubstrateBlock} from '@subql/types';
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
-    // Buat baru dengan StarterEntity with the block hash as it's ID
-    const record = new starterEntity(block.block.header.hash.toString());
-    record.field1 = block.block.header.number.toNumber();
-    await record.save();
+  // Buat baru dengan StarterEntity with the block hash as it's ID
+  const record = new starterEntity(block.block.header.hash.toString());
+  record.field1 = block.block.header.number.toNumber();
+  await record.save();
 }
 ```
 
@@ -52,25 +53,28 @@ Penanganan telepon digunakan saat Anda ingin menangkap informasi pada ekstrinsik
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field4 = extrinsic.block.timestamp;
-    await record.save();
+  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+  record.field4 = extrinsic.block.timestamp;
+  await record.save();
 }
 ```
 
 [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) memperluas [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Ditandai `id` (balok yang merupakan milik ekstrinsik ini) dan memberikan properti ekstrinsik yang memperluas acara di antara balok ini. Tambahannya, mencatat status kesuksesan ekstrinsik ini.
 
 ## Keadaan Kueri
+
 Tujuan kami adalah menutupi semua sumber data untuk pengguna untuk penanganan pemetaan (lebih dari hanya tiga jenis acara antarmuka di atas). Dengan demikian, kami telah membuka sebagian antarmuka @polkadot/api untuk meningkatkan kemampuan.
 
 Berikut adalah antarmuka yang saat ini kami dukung:
+
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) akan mengkueri balok <strong>current</strong>.
 - [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) akan membuat beberapa jenis kueri yang <strong>sama</strong> di balok saat ini.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) akan membuat beberapa jenis kueri <strong>berbeda</strong> di balok saat ini.
 
 Berikut antarmuka yang **TIDAK** kami dukung saat ini:
-- ~~api.tx.*~~
-- ~~api.derive.*~~
+
+- ~~api.tx.\*~~
+- ~~api.derive.\*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
@@ -98,6 +102,7 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 // Akan menggunakan balok saat ini secara default
 const b2 = await api.rpc.chain.getBlock();
 ```
+
 - Untuk panggilan RPC [Chain Substrat Kustom](#custom-substrate-chains), lihat [penggunaan](#usage).
 
 ## Modul dan Perpustakaan
@@ -113,13 +118,13 @@ Saat ini, kami mengizinkan modul NodeJS berikut ini: `assert`, `buffer`, `crypto
 Daripada mengimpor seluruh modul, kami menyarankan hanya mengimpor metode diperlukan yang Anda butuhkan. Sebagian metode di modul-modul ini mungkin memiliki ketergantungan yang tidak didukung dan akan gagal pada pengimporan.
 
 ```ts
-import {hashMessage} from "ethers/lib/utils"; //Good way
-import {utils} from "ethers" //Bad way
+import {hashMessage} from 'ethers/lib/utils'; //Good way
+import {utils} from 'ethers'; //Bad way
 
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field1 = hashMessage('Hello');
-    await record.save();
+  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+  record.field1 = hashMessage('Hello');
+  await record.save();
 }
 ```
 
@@ -148,6 +153,7 @@ Kami memerlukan metadata untuk menghasilkan endpoint API yang sesungguhnya. Di c
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
+
 atau dari endpoint **websocket** dengan bantuan dari [`wesocat`](https://github.com/vi/websocat):
 
 ```shell
@@ -161,46 +167,49 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 Berikutnya, salin dan tempelkan output ke file JSON. Di [contoh anak kucing](https://github.com/subquery/subql-examples/tree/main/kitty) kami, kami telah membuat `api-interface.kitty.json`.
 
 #### Definisi jenis
+
 Kami menganggap bahwa pengguna tahu jenis spesifik dan dukungan RPC dari chain, dan didefinisikan di [Manifest](./manifest.md).
 
 Mengikuti [pengaturan jenis](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), kami membuat :
+
 - `src/api-interfaces/definitions.ts` - ini mengekspor semua definisi sub-folder
 
 ```ts
-export { default as kitties } from './kitties/definitions';
+export {default as kitties} from './kitties/definitions';
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - definisi jenis dari modul anak kucing
+
 ```ts
 export default {
-    // custom types
-    types: {
-        Address: "AccountId",
-        LookupSource: "AccountId",
-        KittyIndex: "u32",
-        Kitty: "[u8; 16]"
+  // custom types
+  types: {
+    Address: 'AccountId',
+    LookupSource: 'AccountId',
+    KittyIndex: 'u32',
+    Kitty: '[u8; 16]',
+  },
+  // custom rpc : api.rpc.kitties.getKittyPrice
+  rpc: {
+    getKittyPrice: {
+      description: 'Get Kitty price',
+      params: [
+        {
+          name: 'at',
+          type: 'BlockHash',
+          isHistoric: true,
+          isOptional: false,
+        },
+        {
+          name: 'kittyIndex',
+          type: 'KittyIndex',
+          isOptional: false,
+        },
+      ],
+      type: 'Balance',
     },
-    // custom rpc : api.rpc.kitties.getKittyPrice
-    rpc: {
-        getKittyPrice:{
-            description: 'Get Kitty price',
-            params: [
-                {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
-                    isOptional: false
-                },
-                {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                }
-            ],
-            type: 'Balance'
-        }
-    }
-}
+  },
+};
 ```
 
 #### Paket
@@ -252,28 +261,29 @@ Perintah ini akan menghasilkan metadata dan api-augment baru untuk API. Karena k
 ```json
 {
   "compilerOptions": {
-      // ini adalah nama paket yang kita gunakan (in the interface imports, --package for generators) */
-      "kitty-birthinfo/*": ["src/*"],
-      // di sini kita mengganti augmentasi @polkadot/api dengan milik kita sendiri, dihasilkan dari chain
-      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      // mengganti jenis tambahan dengan milik kita sendiri, seperti yang dihasilkan dari definisi
-      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
-    }
+    // ini adalah nama paket yang kita gunakan (in the interface imports, --package for generators) */
+    "kitty-birthinfo/*": ["src/*"],
+    // di sini kita mengganti augmentasi @polkadot/api dengan milik kita sendiri, dihasilkan dari chain
+    "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
+    // mengganti jenis tambahan dengan milik kita sendiri, seperti yang dihasilkan dari definisi
+    "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+  }
 }
 ```
 
 ### Penggunaan
 
 Sekarang di fungsi pemetaan, kita bisa menunjukkan bagaimana metadata dan jenis sebenarnya menghias API. Endpoint RPC akan mendukung modul dan metode yang kita nyatakan di atas. Dan untuk menggunakan panggilan rpc kustom, mohon lihat bagian [Panggilan rpc chain kustom](#custom-chain-rpc-calls)
+
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
-    //mengembalikan jenis KittyIndex
-    const nextKittyId = await api.query.kitties.nextKittyId();
-    //  mengembalikan jenis Kitty, jenis parameter input adalah AccountID dan KittyIndex
-    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info(`Next kitty id ${nextKittyId}`)
-    //Custom rpc, set undefined to blockhash
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
+  //mengembalikan jenis KittyIndex
+  const nextKittyId = await api.query.kitties.nextKittyId();
+  //  mengembalikan jenis Kitty, jenis parameter input adalah AccountID dan KittyIndex
+  const allKitties = await api.query.kitties.kitties('xxxxxxxxx', 123);
+  logger.info(`Next kitty id ${nextKittyId}`);
+  //Custom rpc, set undefined to blockhash
+  const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined, nextKittyId);
 }
 ```
 
@@ -282,6 +292,7 @@ export async function kittyApiHandler(): Promise<void> {
 ### Panggilan rpc chain kustom
 
 Untuk mendukung panggilan RPC chain yang dikustom, kami harus secara manual memasukkan definisi RPC untuk `typesBundle`, mengizinkan konfigurasi per-spek. Anda bisa menentukan `typesBundle` di `project.yml`. Dan mohon ingat hanya jenis panggilan `isHistoric` yang didukung.
+
 ```yaml
 ...
   types: {

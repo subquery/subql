@@ -7,6 +7,7 @@ Tệp `schema.graphql` xác định các lược đồ GraphQL khác nhau. Do c�
 **Quan trọng: Khi bạn thực hiện bất kỳ thay đổi nào đối với tệp lược đồ, hãy đảm bảo rằng bạn tạo lại thư mục loại của mình bằng lệnh sau `yarn codegen`**
 
 ### Thực thể
+
 Mỗi thực thể phải xác định các trường bắt buộc của nó `id` với loại `ID!`. Nó được sử dụng làm khóa chính và duy nhất giữa tất cả các thực thể cùng loại.
 
 Các trường không thể nullable trong thực thể được biểu thị bằng `!`. Vui lòng xem ví dụ dưới đây:
@@ -22,6 +23,7 @@ type Example @entity {
 ### Các loại và vô hướng được hỗ trợ
 
 Chúng tôi hiện đang hỗ trợ các loại vô hướng sau:
+
 - `ID`
 - `Int`
 - `String`
@@ -43,14 +45,15 @@ Tuy nhiên, chúng tôi không cho phép người dùng thêm chú thích `@inde
 type User @entity {
   id: ID!
   name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  title: Title! # Indexes are automatically added to foreign key field
 }
 
 type Title @entity {
-  id: ID!  
-  name: String! @index(unique:true)
+  id: ID!
+  name: String! @index(unique: true)
 }
 ```
+
 Giả sử chúng tôi biết tên của người dùng này, nhưng chúng tôi không biết giá trị id chính xác, thay vì trích xuất tất cả người dùng và sau đó lọc theo tên, chúng tôi có thể thêm `@index` vào phía sau trường tên. Điều này làm cho việc truy vấn nhanh hơn nhiều và chúng tôi cũng có thể chuyển `unique: true` để đảm bảo tính duy nhất.
 
 **Nếu một trường không phải là duy nhất, kích thước danh sách kết quả tối đa là 100**
@@ -64,8 +67,8 @@ INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 
 ```typescript
 // Handler in mapping function
-import {User} from "../types/models/User"
-import {Title} from "../types/models/Title"
+import {User} from '../types/models/User';
+import {Title} from '../types/models/Title';
 
 const jack = await User.getByName('Jack Sparrow');
 
@@ -120,7 +123,7 @@ Ví dụ: Một người có thể có nhiều tài khoản.
 ```graphql
 type Person @entity {
   id: ID!
-  accounts: [Account] 
+  accounts: [Account]
 }
 
 type Account @entity {
@@ -130,6 +133,7 @@ type Account @entity {
 ```
 
 ### Mối quan hệ nhiều-nhiều
+
 Mối quan hệ nhiều-nhiều có thể đạt được bằng cách triển khai một thực thể ánh xạ để kết nối hai thực thể khác.
 
 Ví dụ: Mỗi người là một phần của nhiều nhóm (PersonGroup) và nhóm có nhiều người khác nhau (PersonGroup).
@@ -203,16 +207,18 @@ type Transfer @entity {
 Chúng tôi đang hỗ trợ lưu dữ liệu dưới dạng JSON, đây là một cách nhanh chóng để lưu trữ dữ liệu có cấu trúc. Chúng tôi sẽ tự động tạo các giao diện JSON tương ứng để truy vấn dữ liệu này và giúp bạn tiết kiệm thời gian xác định và quản lý các thực thể.
 
 Chúng tôi khuyên người dùng sử dụng loại JSON trong các trường hợp sau:
+
 - Khi lưu trữ dữ liệu có cấu trúc trong một trường sẽ dễ quản lý hơn so với việc tạo nhiều thực thể riêng biệt.
 - Lưu tùy chọn khóa/giá trị tùy ý của người dùng (trong đó giá trị có thể là boolean, văn bản hoặc số và bạn không muốn có các cột riêng biệt cho các kiểu dữ liệu khác nhau)
 - Lược đồ dễ thay đổi và thay đổi thường xuyên
 
 ### Xác định chiều JSON
+
 Xác định thuộc tính dưới dạng kiểu JSON bằng cách thêm chú thích `jsonField` trong thực thể. Thao tác này sẽ tự động tạo giao diện cho tất cả các đối tượng JSON trong dự án của bạn dưới `type/interface.ts` và bạn có thể truy cập chúng trong chức năng ánh xạ của mình.
 
 Không giống như thực thể, đối tượng chỉ thị jsonField không yêu cầu bất kỳ trường `id` nào. Một đối tượng JSON cũng có thể lồng ghép với các đối tượng JSON khác.
 
-````graphql
+```graphql
 type AddressDetail @jsonField {
   street: String!
   district: String!
@@ -224,10 +230,10 @@ type ContactCard @jsonField {
 }
 
 type User @entity {
-  id: ID! 
+  id: ID!
   contact: [ContactCard] # Store a list of JSON objects
 }
-````
+```
 
 ### Truy vấn các trường JSON
 
@@ -238,15 +244,9 @@ Tuy nhiên, tác động vẫn có thể chấp nhận được trong dịch v�
 ```graphql
 # Để tìm 5 số điện thoại của người dùng đầu tiên có chứa '0064'.
 
-query{
-  user(
-    first: 5,
-    filter: {
-      contactCard: {
-        contains: [{ phone: "0064" }]
-    }
-}){
-    nodes{
+query {
+  user(first: 5, filter: {contactCard: {contains: [{phone: "0064"}]}}) {
+    nodes {
       id
       contactCard
     }

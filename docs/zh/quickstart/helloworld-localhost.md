@@ -57,7 +57,7 @@ My docker version is: Docker version 20.10.5, build 55c4c88
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 第1步：初始化项目
+## 第 1 步：初始化项目
 
 开始使用 SubQuery 的第一步是运行 `subql init` 命令。 让我们初始化一个名为 `subqlHelloWorld` 的启动项目。 请注意，只有作者是强制性的。 其他所有内容都在下面都是空着的。
 
@@ -79,7 +79,7 @@ Init the starter package... subqlHelloWorld is ready
 cd subqlHelloWorld
 ```
 
-## 第2步：安装依赖包
+## 第 2 步：安装依赖包
 
 现在执行 yarn 或 node install 以安装各种依赖包。
 
@@ -107,7 +107,7 @@ success Saved lockfile.
 
 ## 第 3 步：生成代码
 
-现在运行 `yarn codegen` 生成来自 GraphQL schema 的Typescript。
+现在运行 `yarn codegen` 生成来自 GraphQL schema 的 Typescript。
 
 ```shell
 # Yarn

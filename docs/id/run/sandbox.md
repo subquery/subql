@@ -10,7 +10,6 @@ Beberapa kode berbahaya kemungkinan akan menyerang host atau bahkan membahayakan
 
 - Kebal terhadap banyak metode serangan yang diketahui.
 
-
 ## Larangan
 
 - Untuk membatasi akses ke modul bawaan tertentu, hanya `nyatakan`, `buffer`, `crypto`,`util` dan ` jalur` dimasukkan dalam whitelist.

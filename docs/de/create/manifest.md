@@ -4,17 +4,17 @@ Die Datei Manifest `project.yaml` kann als Einstiegspunkt Ihres Projekts angeseh
 
 Das Manifest kann entweder im YAML- oder im JSON-Format vorliegen. In diesem Dokument verwenden wir YAML in allen Beispielen. Unten ist ein Standardbeispiel für eine einfache `project.yaml`.
 
-``` yml
-specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+```yml
+specVersion: '0.0.1'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
 
-schema: "./schema.graphql"
+schema: './schema.graphql'
 
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
   # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
   - name: main
@@ -50,9 +50,10 @@ Benutzer können einen `Filter` für `dataSources` hinzufügen, um zu entscheide
 Unten sehen Sie ein Beispiel, das verschiedene Datenquellen für das Polkadot- und das Kusama-Netzwerk zeigt.
 
 ```yaml
-...
+
+---
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
 #Erstellen Sie eine Vorlage, um Redundanzen zu vermeiden
 Definitionen:
@@ -64,15 +65,15 @@ Definitionen:
 dataSources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
-        specName: polkadot
+    filter: #Optional
+      specName: polkadot
     startBlock: 1000
     mapping: *mymapping #use template here
   - name: kusamaRuntime
     kind: substrate/Runtime
-    filter: 
-        specName: kusama
-    startBlock: 12000 
+    filter:
+      specName: kusama
+    startBlock: 12000
     mapping: *mymapping # can reuse or change
 ```
 
@@ -84,7 +85,7 @@ Nur eingehende Daten, die die Filterbedingungen erfüllen, werden von den Mappin
 
 ```yaml
 #Beispielfilter von callHandler
-Filter: 
+Filter:
     module: balances
    method: Deposit
    success: true
@@ -98,8 +99,7 @@ In der folgenden Tabelle werden Filter erläutert, die von verschiedenen Handler
 | [Eventhandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
-
--  Modul- und Methodenfilter werden auf jeder substratbasierten Kette unterstützt.
+- Modul- und Methodenfilter werden auf jeder substratbasierten Kette unterstützt.
 - Der Filter `Erfolg` nimmt einen booleschen Wert an und kann verwendet werden, um den Extrinsischen nach seinem Erfolgsstatus zu filtern.
 - Der Filter `specVersion` gibt den Spezifikationsversionsbereich für einen Substratblock an. In den folgenden Beispielen wird beschrieben, wie Versionsbereiche festgelegt werden.
 
@@ -116,25 +116,22 @@ Sie können Daten aus benutzerdefinierten Ketten indizieren, indem Sie auch Kett
 
 `typesAlias`, `typesBundle`, `typesChain`, und `typesSpec` werden ebenfalls unterstützt.
 
-``` yml
-specVersion: "0.0.1"
-description: "Diese SubQuery indiziert die Geburtsdaten von Kätzchen"
-repository: "https://github.com/onfinality-io/subql-examples"
-schema: "./schema.graphql"
+```yml
+specVersion: '0.0.1'
+description: 'Diese SubQuery indiziert die Geburtsdaten von Kätzchen'
+repository: 'https://github.com/onfinality-io/subql-examples'
+schema: './schema.graphql'
 network:
-  endpoint: "ws://host.kittychain.io/public-ws"
-  types: {
-    "KittyIndex": "u32",
-    "Kitty": "[u8; 16]"
-  }
+  endpoint: 'ws://host.kittychain.io/public-ws'
+  types: {'KittyIndex': 'u32', 'Kitty': '[u8; 16]'}
 # typesChain: { chain: { Type5: 'example' } }
 # typesSpec: { spec: { Type6: 'example' } }
 dataSources:
   - name: runtime
     kind: substrate/Runtime
     startBlock: 1
-    filter:  #Optional
-      specName: kitty-chain 
+    filter: #Optional
+      specName: kitty-chain
     mapping:
       handlers:
         - handler: handleKittyBred

@@ -67,8 +67,8 @@ export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-subql-node -f your-project-path 
-````
+subql-node -f your-project-path
+```
 
 Tùy thuộc vào cấu hình cơ sở dữ liệu Postgres của bạn (ví dụ: có một mật khẩu cơ sở dữ liệu khác), hãy đảm bảo rằng cả trình lập chỉ mục (`subql/node`) và dịch vụ truy vấn (`subql/query`) đều có thể kết nối với CSDL ấy.
 
@@ -121,6 +121,7 @@ npm install -g @subql/query
 Xin lưu ý rằng chúng tôi **KHÔNG** khuyến khích sử dụng `yarn global` vì khâu quản lý phụ thuộc của nó rất kém, có thể dẫn đến sai sót trong dây chuyền.
 
 ### Menjalankan layanan Kueri
+
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
 Đảm bảo rằng tên dự án này trùng với tên bạn đã đặt từ lúc [khởi tạo dự án](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Ngoài ra, hãy kiểm tra xem các biến môi trường đã chuẩn hay chưa.

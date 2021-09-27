@@ -3,6 +3,7 @@
 ## Hướng Dẫn
 
 Mặc dù bạn được tự do để luôn nâng cấp và triển khai các phiên bản mới cho dự án SubQuery của mình, vui lòng cân nhắc trong suốt quá trình này nếu dự án SubQuery của bạn đang công khai với thế giới. Một vài điểm quan trọng cần lưu ý:
+
 - Nếu nâng cấp của bạn là một thay đổi mang tính đột phá, hãy tạo một dự án mới (ví dụ `Dự Án SubQuery V2 Của Tôi`) hoặc đưa ra nhiều cảnh báo đến cộng đồng về sự thay đổi này thông qua các kênh mạng xã hội.
 - Việc triển khai phiên bản dự án SubQuery mới có thể dẫn đến thời gian chết vì phiên bản mới lập chỉ mục chuỗi hoàn chỉnh từ khối genesis.
 
@@ -21,6 +22,7 @@ Nếu bạn muốn nâng cấp lên trình lập chỉ mục mới nhất ([`@su
 Điền vào Commit Hash từ GitHub (sao chép toàn bộ commit hash) của phiên bản codebase dự án SubQuery mà bạn muốn triển khai. Bước này sẽ làm tốn nhiều thời gian hơn nữa tùy thuộc vào thời gian cần để lập chỉ mục chuỗi hiện tại. Bạn luôn có thể báo cáo tiến độ lại tại đây.
 
 ## Các Bước Tiếp Theo - Kết nối đến Dự Án của bạn
+
 Sau khi quá trình triển khai hoàn tất thành công và các node đã lập chỉ mục dữ liệu của bạn từ chuỗi, bạn có thể kết nối đến dự án của mình thông qua endpoint GraphQL Query được hiển thị.
 
 ![Dự án đang được triển khai và đồng bộ](https://static.subquery.network/media/projects/projects-deploy-sync.png)

@@ -14,8 +14,8 @@ We take our open source community projects and responsibility seriously and hold
 
 Contributions to our repositories are made through Issues and Pull Requests (PRs). A few general guidelines that cover both:
 
-* Search for existing Issues and PRs before creating your own.
-* We work hard to makes sure issues are handled in promptly but, depending on the impact, it could take a while to investigate the root cause. A friendly @ mention in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
+- Search for existing Issues and PRs before creating your own.
+- We work hard to makes sure issues are handled in promptly but, depending on the impact, it could take a while to investigate the root cause. A friendly @ mention in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
 
 ## How to Contribute
 
@@ -23,32 +23,32 @@ Contributions to our repositories are made through Issues and Pull Requests (PRs
 
 Bugs are tracked as GitHub issues. When logging an issue, explain the problem and include additional details to help maintainers reproduce the problem:
 
-* Use a clear and descriptive title for the issue to identify the problem.
-* Describe the exact steps to reproduce the problem.
-* Describe the behavior you observed after following the steps.
-* Explain which behavior you expected to see instead and why.
-* Include screenshots if possible.
+- Use a clear and descriptive title for the issue to identify the problem.
+- Describe the exact steps to reproduce the problem.
+- Describe the behavior you observed after following the steps.
+- Explain which behavior you expected to see instead and why.
+- Include screenshots if possible.
 
 ### Submitting Pull Requests
 
 In general, we follow the "fork-and-pull" Git workflow
 
-* Fork the repository to your own Github account
-* Clone the project to your machine
-* Create a branch locally with a succinct but descriptive name
-* Commit changes to the branch
-* Following any formatting and testing guidelines specific to this repo
-* Push changes to your fork
-* Open a PR in our repository
+- Fork the repository to your own Github account
+- Clone the project to your machine
+- Create a branch locally with a succinct but descriptive name
+- Commit changes to the branch
+- Following any formatting and testing guidelines specific to this repo
+- Push changes to your fork
+- Open a PR in our repository
 
 ## Coding Conventions
 
 ### Git Commit Messages
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
+- Use the present tense ("Add feature" not "Added feature")
+- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
+- Limit the first line to 72 characters or less
 
 ### JavaScript Styleguide
 
-* All JavaScript code is linted with Prettier and ESLint
+- All JavaScript code is linted with Prettier and ESLint

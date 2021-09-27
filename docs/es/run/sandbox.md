@@ -10,7 +10,6 @@ Some malicious code is likely to attack the host or even compromise it, and caus
 
 - Is immune to many known methods of attack.
 
-
 ## Restriction
 
 - To limit access to certain built-in modules, only `assert`, `buffer`, `crypto`,`util` and `path` are whitelisted.

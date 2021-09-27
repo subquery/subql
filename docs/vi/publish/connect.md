@@ -11,6 +11,7 @@ Bạn cũng có thể nhấp vào ba dấu chấm bên cạnh đề mục dự �
 # Tìm hiểu thêm về GraphQL
 
 Bạn có thể làm theo [hướng dẫn GraphQL chính thức tại đây](https://graphql.org/learn/) để tìm hiểu thêm về GraphQL, cách thức hoạt động và cách sử dụng:
+
 - Có nhiều thư viện để giúp bạn thực thi GraphQL trong [nhiều ngôn ngữ khác nhau](https://graphql.org/code/)
 - Để hiểu sâu hơn bằng các hướng dẫn thực hành, hãy xem qua [Cách để GraphQL](https://www.howtographql.com/).
 - Tìm hiểu khóa học online miễn phí, [Khám phá GraphQL: Một Ngôn Ngữ Query dành cho APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).

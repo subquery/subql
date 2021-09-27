@@ -67,8 +67,8 @@ export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-subql-node -f your-project-path 
-````
+subql-node -f your-project-path
+```
 
 Залежно від конфігурації вашої бази даних Postgres (наприклад, іншого пароля бази даних) переконайтеся, що індексатор (`subql/node`) та служба запитів (` subql/query`) можуть встановити з’єднання з нею.
 
@@ -121,6 +121,7 @@ npm install -g @subql/query
 Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
 
 ### Running the Query service
+
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
 Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.

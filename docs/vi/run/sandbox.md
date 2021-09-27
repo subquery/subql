@@ -10,7 +10,6 @@ Một số mã độc có khả năng tấn công hoặc thậm chí xâm phạm
 
 - Có khả năng miễn dịch với nhiều phương pháp tấn công đã biết.
 
-
 ## Hạn chế
 
 - Để giới hạn quyền truy cập vào một số modul tích hợp sẵn, chỉ có modul `assert`, `buffer`, `crypto`,`util` và `path` mới được đưa vào danh sách trắng (whitelist).

@@ -8,7 +8,7 @@ If in doubt, please ask!
 
 ## Exportable Figma File
 
-Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
+Our Figma file has a full collection of all brand assets (logos, fonts, colours, imagery etc) for export.
 
 [Figma - SubQuery Brand Resources](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 

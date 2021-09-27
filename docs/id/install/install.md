@@ -1,6 +1,6 @@
 # Memasang SubQuery
 
-Ada berbagai komponen yang diperlukan saat membuat proyek SubQuery.  Komponen [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) diperlukan untuk menjalankan pengindeks. Pustaka [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) diperlukan untuk menghasilkan kueri.
+Ada berbagai komponen yang diperlukan saat membuat proyek SubQuery. Komponen [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) diperlukan untuk menjalankan pengindeks. Pustaka [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) diperlukan untuk menghasilkan kueri.
 
 ## Pasang @subql/cli
 
@@ -21,6 +21,7 @@ Anda kemudian dapat menjalankan bantuan untuk melihat perintah dan penggunaan ya
 ```shell
 bantuan subql
 ```
+
 ## Pasang @subql/node
 
 Node SubQuery adalah implementasi yang mengekstrak data blockchain berbasis substrat per proyek SubQuery dan menyimpannya ke dalam database Postgres.
@@ -40,6 +41,7 @@ Setelah terpasang, Anda dapat memulai node dengan:
 ```shell
 subql-simpul <command>
 ```
+
 > Catatan: Jika Anda menggunakan Docker atau menyelenggarakan proyek Anda di Proyek SubQuery, Anda dapat melewati langkah ini. Ini karena node SubQuery sudah disediakan di wadah Docker dan penyelenggaraan infrastruktur.
 
 ## Pasang @subql/query
@@ -56,4 +58,4 @@ yarn global add @subql/query
 npm install -g @subql/query
 ```
 
-> Catatan: Jika Anda menggunakan Docker atau menyelenggarakan proyek Anda di Proyek SubQuery, Anda juga dapat melewati langkah ini. Ini karena node SubQuery sudah disediakan di wadah Docker dan penyelenggaraan infrastruktur. 
+> Catatan: Jika Anda menggunakan Docker atau menyelenggarakan proyek Anda di Proyek SubQuery, Anda juga dapat melewati langkah ini. Ini karena node SubQuery sudah disediakan di wadah Docker dan penyelenggaraan infrastruktur.
