@@ -1,146 +1,141 @@
-# Manifest File
+# Bildirim Dosyası
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+Manifest `project.yaml` dosyası projenizin giriş noktası olarak görülebilir ve SubQuery'nin zincir verilerini nasıl dizine alacağı ve dönüştüreceğine ilişkin ayrıntıların çoğunu tanımlar.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+Bildirim YAML veya JSON biçiminde olabilir. Bu belgede, tüm örneklerde YAML kullanacağız. Aşağıda temel `project.yaml` standart bir örneği verilmiştir.
 
 ``` yml
 specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+açıklama: ""
+depo: "https://github.com/subquery/subql-starter"
 
-schema: "./schema.graphql"
+şema: "./schema.graphql"
 
-network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
-  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
-
-dataSources:
-  - name: main
-    kind: substrate/Runtime
+ağ:
+  uç nokta: "wss://polkadot.api.onfinality.io/public-ws"
+  # İsteğe bağlı olarak, işlemeyi hızlandırmak için tam zincir sözlüğün HTTP uç noktasını sağlayın
+  sözlük: "https://api.subquery.network/sq/subquery/dictionary-polkadot"  veri Kaynakları:
+  - adı: ana
+    tür: substrat/Çalışma Zamanı
     startBlock: 1
-    mapping:
-      handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter: #Filter is optional but suggested to speed up event processing
-            module: balances
-            method: Deposit
-        - handler: handleCall
-          kind: substrate/CallHandler
+    eşleme:
+      Işleyici:
+        - işleyici: handleBlock
+          tür: substrat/BlockHandler
+        - işleyici: handleEvent
+          tür: substrat/EventHandler
+          filtre: #Filter isteğe bağlıdır, ancak olay işlemeyi hızlandırması önerilir
+            modül: dengeler
+            yöntem: Depozito
+        - işleyici: handleCall
+          tür: substrat/CallHandler
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
-- `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-  - `kind` only supports `substrate/Runtime` for now.
-  - `startBlock` specifies the block height to start indexing from.
-  - `filter` will filter the data source to execute by the network endpoint spec name, see [network filters](#network-filters)
-  - `mapping.handlers` will list all the [mapping functions](./mapping.md) and their corresponding handler types, with additional [mapping filters](#mapping-filters).
+- `network.endpoint`, dizine eklenecek blok zincirinin wss veya ws uç noktasını tanımlar - **Bu tam bir arşiv düğümü olmalıdır**.
+- `network.dictionary` isteğe bağlı olarak işlemeyi hızlandırmak için tam zincir sözlüğün HTTP uç noktasını sağlar - bkz[ Indexer çalıştırma](../tutorials_examples/dictionary.md).
+- `dataSources` filtre uygulanacak ve ayıklanacak verileri ve uygulanacak veri dönüşümü için eşleme işlevi işleyicisinin konumunu tanımlar.
+  - `kind` şimdilik yalnızca `substrate/Runtime` destekler.
+  - `startBlock` dizine eklenmeye başlanmasının blok yüksekliğini belirtir.
+  - `filter`, ağ uç noktası belirtimi adına göre yürütülecek veri kaynağına filtre uygular, bkz <>1>network filtreleri</a>
+  - `mapping.handlers` tüm [mapping işlevlerini](./mapping.md) ve bunlara karşılık gelen işleyici türlerini ek [mapping filtreleri](#mapping-filters) ile listeler.
 
-## Network Filters
+## Ağ Filtreleri
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
+Genellikle kullanıcı bir Alt Sorgu oluşturur ve bunu hem testnet hem de mainnet ortamları (örneğin Polkadot ve Kusama) için yeniden kullanmayı bekler. Ağlar arasında, çeşitli seçeneklerin farklı olması muhtemeldir (örneğin, dizin başlangıç bloğu). Bu nedenle, kullanıcıların her veri kaynağı için farklı ayrıntılar tanımlamasına izin veririz, bu da bir SubQuery projesinin birden çok ağda hala kullanılabileceği anlamına gelir.
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+Kullanıcılar, her ağda hangi veri kaynağının çalıştıracağına karar vermek için `dataSources` `filter` ekleyebilir.
 
-Below is an example that shows different data sources for both the Polkadot and Kusama networks.
+Aşağıda, hem Polkadot hem de Kusama ağları için farklı veri kaynaklarını gösteren bir örnek verilmiştir.
 
 ```yaml
 ...
-network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+ağ:
+  uç nokta: "wss://polkadot.api.onfinality.io/public-ws"
 
-#Create a template to avoid redundancy
-definitions:
-  mapping: &mymapping
-    handlers:
-      - handler: handleBlock
-        kind: substrate/BlockHandler
-
-dataSources:
-  - name: polkadotRuntime
-    kind: substrate/Runtime
-    filter:  #Optional
+Artıklığı önlemek için şablon #Create
+tanımlar:
+  eşleme: &
+    Işleyici:
+      - işleyici: handleBlock
+        tür: substrat/BlockHandlerveri Kaynakları:
+  - adı: polkadotRuntime
+    tür: substrat/Çalışma Zamanı
+    filtre: #Optional
         specName: polkadot
     startBlock: 1000
-    mapping: *mymapping #use template here
-  - name: kusamaRuntime
-    kind: substrate/Runtime
-    filter: 
+    haritalama: *mymapping #use şablonu burada
+  - adı: kusamaRuntime
+    tür: substrat/Çalışma Zamanı
+    filtre: 
         specName: kusama
     startBlock: 12000 
-    mapping: *mymapping # can reuse or change
+    eşleme: *mymapping # yeniden kullanabilir veya değiştirebilir
 ```
 
-## Mapping Filters
+## Eşleme Filtreleri
 
-Mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
+Eşleme filtreleri, hangi bloğun, olayın veya dış öğenin bir eşleme işleyicisini tetikleyeceğine karar vermek için son derece kullanışlı bir özelliktir.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Yalnızca filtre koşullarını karşılayan gelen veriler eşleme işlevleri tarafından işlenir. Eşleme filtreleri isteğe bağlıdır, ancak Alt Sorgu projeniz tarafından işlenen veri miktarını önemli ölçüde azalttıkları ve dizin oluşturma performansını artıracakları için önerilir.
 
 ```yaml
-#Example filter from callHandler
-filter: 
-   module: balances
-   method: Deposit
-   success: true
+Çağrı Işleyicisi'nden #Example filtresi
+filtre: 
+   modül: dengeler
+   yöntem: Depozito
+   başarı: true
 ```
 
-The following table explains filters supported by different handlers.
+Aşağıdaki tabloda, farklı işleyiciler tarafından desteklenen filtreler açıklanmaktadır.
 
-| Handler                                    | Supported filter             |
-| ------------------------------------------ | ---------------------------- |
-| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
-| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
-| [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
+| Işleyicisi                                    | Desteklenen filtre          |
+| --------------------------------------------- | --------------------------- |
+| [Blok işleyicisi](./mapping.md#block-handler) | `spec Sürümü`               |
+| [Olay İşleyicisi](./mapping.md#event-handler) | `module`,`method`           |
+| [Çağrı Işleyicisi](./mapping.md#call-handler) | `module`,`method` ,`sasası` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
+-  Modül ve yöntem filtreleri herhangi bir substrat tabanlı zincirde desteklenir.
+- `success` filtresi bir boole değeri alır ve dış çizgiyi başarı durumuna göre filtrelemek için kullanılabilir.
+- `specVersion` filtresi, bir substrat bloğunun belirtim sürüm aralığını belirtir. Aşağıdaki örneklerde sürüm aralıklarının nasıl ayarlandırılacağı açıklanmaktadır.
 
 ```yaml
-filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+filtre:
+  specVersion: [23, 24] #Index blok ile specVersion 23 ile 24 (dahil) arasında.
+  specVersion: [100] #Index bloğu specVersion büyük veya eşit 100.
+  specVersion: [null, 23] #Index bloğu specVersion küçük veya eşit 23.
 ```
 
-## Custom Chains
+## Özel Zincirler
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+`project.yaml` zincir türlerini de dahil larak özel zincirlerden veri dizine ekleyebilirsiniz. Bu blok zinciri tarafından desteklenen belirli türleri `network.types` bildirin. Substrat çalışma zamanı modülleri tarafından kullanılan ek türleri destekliyoruz.
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+`typesAlias`, `typesBundle`, `typesChain` ve `typesSpec` da desteklenir.
 
 ``` yml
 specVersion: "0.0.1"
-description: "This subquery indexes kitty's birth info"
-repository: "https://github.com/onfinality-io/subql-examples"
-schema: "./schema.graphql"
-network:
-  endpoint: "ws://host.kittychain.io/public-ws"
-  types: {
+açıklama: "Bu alt sorgu Kitty'nin doğum bilgilerini dizine alır"
+depo: "https://github.com/onfinality-io/subql-examples"
+şema: "./schema.graphql"
+ağ:
+  uç nokta: "ws://host.kittychain.io/public-ws"
+  türleri: {
     "KittyIndex": "u32",
-    "Kitty": "[u8; 16]"
-  }
-# typesChain: { chain: { Type5: 'example' } }
-# typesSpec: { spec: { Type6: 'example' } }
-dataSources:
-  - name: runtime
-    kind: substrate/Runtime
+    "Kedicik": "[u8; 16]"
+  }# typesChain: { zincir: { Type5: 'example' } }
+# typesSpec: { spec:  { Type6: 'example' } }
+veri Kaynakları:
+  - adı: çalışma zamanı
+    tür: substrat/Çalışma Zamanı
     startBlock: 1
-    filter:  #Optional
+    filtre: #Optional
       specName: kitty-chain 
-    mapping:
-      handlers:
-        - handler: handleKittyBred
-          kind: substrate/CallHandler
-          filter:
-            module: kitties
-            method: breed
-            success: true
+    eşleme:
+      Işleyici:
+        - işleyici: handleKittyBred
+          tür: substrat/CallHandler
+          filtre:
+            modül: kedicikler
+            yöntem: cins
+            başarı: true
 ```
