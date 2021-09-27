@@ -9,11 +9,11 @@ Aşağıdaki örneklerden bazıları, başlangıç paketini [Quick start](../qui
 <li>Bildirim dosyasını (<code>project.yaml`) blok zinciriniz ve eşleyeceğiniz varlıklar hakkında bilgi içerecek şekilde güncelleştirin - bkz[Manifest Dosyası](./manifest.md)
 3. Şemanızda (`schema.graphql`) ayıklayacağınız ve sorgulamak için sürdüreceğiniz verilerin şeklini tanımlayan GraphQL varlıkları oluşturun - bkz. [GraphQL Şeması](./graphql.md)
 4. Zincir verilerini tanımladığınız GraphQL varlıklarına dönüştürmek için çağırmak istediğiniz tüm eşleme işlevlerini (örneğin`mappingHandlers.ts`) ekleyin - bkz[Mapping](./mapping.md)
-5. Kodunuzu Alt Sorgu Projeleri'nde oluşturun, oluşturun ve yayımlayın (veya kendi yerel düğümünüzde çalıştırın) - hızlı başlangıç kılavuzumuzda [ Starter Projenizi Çalıştırma ve Sorgulama](./quickstart.md#running-and-querying-your-starter-project) bakın.
+5. Kodunuzu SubQuery Projects oluşturun, oluşturun ve yayımlayın (veya kendi yerel düğümünüzde çalıştırın) - hızlı başlangıç kılavuzumuzda [ Starter Projenizi Çalıştırma ve Sorgulama](./quickstart.md#running-and-querying-your-starter-project) bakın.
 
 ## Dizin Yapısı
 
-Aşağıdaki eşleme, `init` komutu çalıştırıldığında, Bir Alt Sorgu projesinin dizin yapısına genel bir bakış sağlar.
+Aşağıdaki eşleme, `init` komutu çalıştırıldığında, Bir SubQuery projesinin dizin yapısına genel bir bakış sağlar.
 
 ```
 - proje adı
@@ -32,7 +32,7 @@ Aşağıdaki eşleme, `init` komutu çalıştırıldığında, Bir Alt Sorgu pro
 
 Mesela:
 
-![Alt Sorgu dizin yapısı](/assets/img/subQuery_directory_stucture.png)
+![SubQuery dizin yapısı](/assets/img/subQuery_directory_stucture.png)
 
 ## Kod Oluşturma
 
@@ -46,7 +46,7 @@ Bu, daha önce `schema.graphql<` tanımladığınız her tür için oluşturulan
 
 ## Yapmak
 
-Alt Sorgu Projenizi yerel olarak barındırılan bir Alt Sorgu Düğümünde çalıştırmak için önce çalışmanızı oluşturmanız gerekir.
+SubQuery Project yerel olarak barındırılan bir SubQuery Node çalıştırmak için önce çalışmanızı oluşturmanız gerekir.
 
 Yapı komutunu projenin kök dizininden çalıştırın.
 
