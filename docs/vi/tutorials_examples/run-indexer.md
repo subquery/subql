@@ -55,8 +55,8 @@ subql-node -f .
 
 Nếu bạn không có dự án nào hữu ích, hãy `git clone https://github.com/subquery/subql-helloworld`. Bạn sẽ thấy nút lập chỉ mục bắt đầu hoạt động và bắt đầu lập chỉ mục các khối.
 
-## Inspecting Postgres
+## Kiểm tra Postgres
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+Nếu bạn điều hướng đến Postgres, bạn sẽ thấy hai bảng được tạo. `public.subqueries` và `subquery_1.starter_entities`.
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries` chỉ chứa 1 hàng mà trình lập chỉ mục kiểm tra khi khởi động để "hiểu trạng thái hiện tại" để nó biết phải tiếp tục từ đâu. Bảng `starter_entities` chứa các chỉ mục. Để xem dữ liệu, hãy chạy `select (*) from subquery_1.starter_entities`.
