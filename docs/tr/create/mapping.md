@@ -44,7 +44,7 @@ zaman uyumsuz işlevini dışa aktarma handleEvent(olay: SubstratEvent): Promise
     record.save();
 ```
 
-[Substrate Olayı](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) [Event Record](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) genişletilmiş arabirim türüdür. Olay verilerinin yanı sıra, bir `id` (bu olayın ait olduğu blok) ve bu bloğun dışsal iç kısmını da içerir.
+[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) [Event Record](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) genişletilmiş arabirim türüdür. Olay verilerinin yanı sıra, bir `id` (bu olayın ait olduğu blok) ve bu bloğun dışsal iç kısmını da içerir.
 
 ## Çağrı Işleyicisi
 
@@ -58,7 +58,7 @@ zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateEx
 }
 ```
 
-[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Bir `id` (bu dış öğenin ait olduğu blok) atanır ve olayları bu blok arasında genişleten dışsal bir özellik sağlar. Ayrıca, bu dışsal başarı durumunu kaydeder.
+[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21), [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170)'i genişletir. Bir `id` (bu dış öğenin ait olduğu blok) atanır ve olayları bu blok arasında genişleten dışsal bir özellik sağlar. Ayrıca, bu dışsal başarı durumunu kaydeder.
 
 ## Sorgu Durumları
 Amacımız, işleyicileri eşlemek için kullanıcılar için tüm veri kaynaklarını kapsamaktır (yukarıdaki üç arabirim olay türünden daha fazlası). Bu nedenle, yetenekleri artırmak için @polkadot /api arabirimlerinden bazılarını kullanıma açtık.
@@ -167,37 +167,37 @@ Kullanıcının zincirden belirli türleri ve RPC desteğini bildiğini ve [Mani
 - `src/api-interfaces/definitions.ts` - bu, tüm alt klasör tanımlarını dışa aktarıyor
 
 ```ts
-{default olarak './kitties/definitions' öğesinden {default olarak dışa aktar;
+'./kitties/definitions' dizininden { varsayılan olarak kitties } dışa aktarın;{ default as kitties };
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - kitties modülü için tür tanımları
 ```ts
-varsayılanı ver {
-    özel türler
-    türleri: {
-        Adres: "AccountId",
-        Arama Kaynağı: "AccountId",
+export default {
+    // custom types
+    types: {
+        Address: "AccountId",
+        LookupSource: "AccountId",
         KittyIndex: "u32",
         Kitty: "[u8; 16]"
     },
-    özel rpc : api.rpc.kitties.getKittyPrice
+    // custom rpc : api.rpc.kitties.getKittyPrice
     rpc: {
         getKittyPrice:{
-            açıklama: 'Kitty fiyat almak',
+            description: 'Get Kitty price',
             params: [
                 {
-                    adı: 'at',
-                    türü: 'BlockHash',
-                    isHistoric: doğru,
+                    name: 'at',
+                    type: 'BlockHash',
+                    isHistoric: true,
                     isOptional: false
                 },
                 {
-                    adı: 'kittyIndex',
-                    türü: 'KittyIndex',
+                    name: 'kittyIndex',
+                    type: 'KittyIndex',
                     isOptional: false
                 }
             ],
-            türü: 'Bakiye'
+            type: 'Balance'
         }
     }
 }
@@ -205,26 +205,27 @@ varsayılanı ver {
 
 #### Paket
 
-- `package.json` dosyasında, geliştirme bağımlılığı olarak `@polkadot/typegen` ve düzenli bağımlılık olarak `@polkadot/api` eklediğinizden emin olun (ideal olarak aynı sürüm). Ayrıca, komut dosyalarını çalıştırmamıza yardımcı olmak için geliştirme bağımlılığı olarak `ts düğümü` ihtiyacımız vardır.
+- `package.json` dosyasına, geliştirme bağımlılığı olarak `@polkadot/typegen` ve normal bir bağımlılık olarak `@polkadot/api` eklediğinizden emin olun ( ideal olarak aynı sürüm). Ayrıca, komut dosyalarını çalıştırmamıza yardımcı olmak için geliştirme bağımlılığı olarak `ts düğümü` ihtiyacımız vardır.
 - Her iki türü de çalıştırmak için komut dosyaları ekliyoruz; `generate:defs` ve meta veri `generate:meta` üreteçleri (bu sırada, meta veriler türleri kullanabilir).
 
 İşte `package.json` basitleştirilmiş bir sürümü. **scripts** bölümünde paket adının doğru olduğundan ve dizinlerin geçerli olduğundan emin olun.
 
 ```json
 {
-  "isim": "kitty-birthinfo",
-  "komut dosyaları": {
+  "name": "kitty-birthinfo",
+  "scripts": {
     "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kitty-birthinfo/api-interfaces --input ./src/api-interfaces",
     "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kitty-birthinfo/api-interfaces --endpoint ./src/api-interfaces/kitty.json --output ./src/api-interfaces --strict"
   },
-  "bağımlılıklar": {
+  "dependencies": {
     "@polkadot/api": "^4.9.2"
   },
   "devDependencies": {
-    "yazıscript": "^4.1.3",
+    "typescript": "^4.1.3",
     "@polkadot/typegen": "^4.9.2",
-    "ts düğümü": "^8.6.2"
+    "ts-node": "^8.6.2"
   }
+}
 ```
 
 ### Tür oluşturma
@@ -239,7 +240,7 @@ Iplik
 iplik oluşturma:defs
 ```
 
-Her modül klasöründe (örneğin `/kitties`), artık bu modüllerin tanımlarındaki tüm arabirimleri tanımlayan `types.ts`, ayrıca hepsini dışa veren bir dosya `index.ts` olmalıdır.
+Her modül klasöründe (örneğin `/kitties`), bu modüllerin tanımlarından tüm arayüzleri tanımlayan bir `types.ts` oluşturulmalıdır, ayrıca bir `index dosyası hepsini dışa aktaran.ts`.
 
 ```shell
 # Meta veriler oluştur
