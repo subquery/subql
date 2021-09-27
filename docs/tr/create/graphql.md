@@ -1,242 +1,293 @@
-# GraphQL Schema
+# GraphQ Şema
 
-## Defining Entities
+## Varlıkları Tanımlama
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+`schema.graphql` dosyası çeşitli GraphQL şemalarını tanımlar. GraphQL sorgu dilinin çalışma biçimi nedeniyle, şema dosyası temel olarak verilerinizin şeklini SubQuery'den belirler. GraphQL şema dilinde yazma hakkında daha fazla bilgi edinmek için [Schemas and Types](https://graphql.org/learn/schema/#type-language).'a göz atmanızı öneririz.
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Önemli: Şema dosyasında herhangi bir değişiklik yaptığınızda, lütfen aşağıdaki komutla türler dizininizi yeniden <>yarn codegen</code>**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Varlık
+Her varlık gerekli alanlarını < `ID!` türünde `id` olarak tanımlamalıdır. Birincil anahtar olarak kullanılır ve aynı türdeki tüm varlıklar arasında benzersizdir.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Varlıktaki null olmayan alanlar `!` ile gösterilir. Lütfen aşağıdaki örneğe bakın:
 
 ```graphql
-type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+örnek @entity { yazın
+  id: Kimlik! # kimlik alanı her zaman gereklidir ve böyle görünmelidir
+  adı: Dize! # Bu gerekli bir alan
+  adres: Dize # Bu isteğe bağlı bir alandır
 }
 ```
 
-### Supported scalars and types
+### Desteklenen skalerler ve türler
 
-We currently supporting flowing scalars types:
-- `ID`
+Şu anda akan skalers türlerini destekliyoruz:
+- `KİMLİĞİ`
 - `Int`
-- `String`
+- `Dizgi`
 - `BigInt`
-- `Date`
+- `Tarih`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `<EntityName>` iç içe geçmiş ilişki varlıkları için, tanımlanan varlığın adını alanlardan biri olarak kullanabilirsiniz. Lütfen [Entity Relations](#entity-relationships) bakın.
+- `JSON` yapılandırılmış verileri alternatif olarak depolayabilir, lütfen bkz[JSON türü](#json-type)
 
-## Indexing by non-primary-key field
+## Birincil anahtar olmayan alana göre dizin oluşturma
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Sorgu performansını artırmak için, yalnızca birincil anahtar olmayan bir alana `@index` ek açıklama uygulayarak bir varlık alanını dizine dizine ekleme.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Ancak, kullanıcıların herhangi bir <@index<JSON>@index<>/1> nesnesine >0>0<> ek açıklama eklemesine izin vermeyiz. Varsayılan olarak, dizinler otomatik olarak yabancı anahtarlara ve veritabanındaki JSON alanlarına eklenir, ancak yalnızca sorgu hizmeti performansını artırmak için.</p> 
 
-Here is an example.
+İşte bir örnek.
+
+
 
 ```graphql
-type User @entity {
-  id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
-}
+kullanıcı @entity { yazın
+  id: Kimlik!
+  adı: Dize! @index(benzersiz: doğru) # benzersiz doğru veya yanlış olarak ayarlanabilir  başlık: Başlık! # Dizinler otomatik olarak yabancı anahtar alanına eklenir
+ }
 
-type Title @entity {
-  id: ID!  
-  name: String! @index(unique:true)
+Title @entity { yazın
+   yaptım!  
+  adı: Dize! @index(benzersiz:doğru)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
 
-**If a field is not unique, the maximum result set size is 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Bu kullanıcının adını bildiğimizi varsayarsak, ancak tüm kullanıcıları ayıklamak ve sonra ada göre filtrelemek yerine tam kimlik değerini bilmiyoruz, ad alanının arkasına `@index` ekleyebiliriz. Bu, sorgulamayı çok daha hızlı hale getirir ve ayrıca benzersizliği sağlamak için `unique: true` geçirebiliriz. 
+
+**Bir alan benzersiz değilse, en büyük sonuç kümesi boyutu 100'dür**
+
+Kod oluşturma çalıştırıldığında, bu otomatik olarak `>Kullanıcı`> modeli altında `getByName<` oluşturur, ve yabancı anahtar alanı `title` `getByTitleId` yöntemi oluşturur, her ikisinde de eşleme işlevinde doğrudan erişilebilen.
+
+
 
 ```sql
-/* Prepare a record for title entity */
-INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
+/* Başlık varlığı için kayıt hazırlama */
+UNVANLARA EKLE (kimlik, ad) DEĞERLER ('id_1', 'Kaptan')
 ```
+
+
+
 
 ```typescript
-// Handler in mapping function
-import {User} from "../types/models/User"
-import {Title} from "../types/models/Title"
+Eşleme işlevinde işleyici
+{User} içinden ".. /types/models/User"
+{Title} içinden ".. /types/models/Title"
 
-const jack = await User.getByName('Jack Sparrow');
+const jack = User.getByName('Jack Sparrow');
 
-const captainTitle = await Title.getByName('Captain');
+const captainTitle = Title.getByName('Kaptan');
 
-const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
+const pirateLords = User.getByTitleId(captainTitle.id) bekliyor; Tüm Kaptanların listesi
 ```
 
-## Entity Relationships
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
 
-### One-to-One Relationships
+## Varlık İlişkileri
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Bir varlığın genellikle diğer varlıklarla iç içe geçmiş ilişkileri vardır. Alan değerini başka bir varlık adına ayarlamak, varsayılan olarak bu iki varlık arasında bire bir ilişki tanımlar.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Farklı varlık ilişkileri (bire bir, bire çok ve çok-çok) aşağıdaki örnekler kullanılarak yapılandırılabilir.
+
+
+
+### BireBir İlişkiler
+
+Yalnızca tek bir varlık başka bir varlıkla eşleştirildiğinde bire bir ilişkiler varsayılandır.
+
+Örnek: Pasaport yalnızca bir kişiye aittir ve bir kişinin yalnızca bir pasaportu vardır (bu örnekte):
+
+
 
 ```graphql
-type Person @entity {
-  id: ID!
+kişi @entity { yazın
+  id: Kimlik!
 }
 
-type Passport @entity {
-  id: ID!
-  owner: Person!
+Passport @entity { yazın
+  id: Kimlik!
+  sahibi: Kişi!
 }
 ```
 
-or
+
+veya 
+
+
 
 ```graphql
-type Person @entity {
-  id: ID!
-  passport: Passport!
+kişi @entity { yazın
+  id: Kimlik!
+  pasaport: Pasaport!
 }
 
-type Passport @entity {
-  id: ID!
-  owner: Person!
+Passport @entity { yazın
+  id: Kimlik!
+  sahibi: Kişi!
 }
 ```
 
-### One-to-Many relationships
 
-You can use square brackets to indicate that a field type includes multiple entities.
 
-Example: A person can have multiple accounts.
+
+### Bire Çok ilişkileri
+
+Alan türünün birden çok varlık içerdiğini belirtmek için köşeli ayraçları kullanabilirsiniz.
+
+Örnek: Bir kişinin birden fazla hesabı olabilir.
+
+
 
 ```graphql
-type Person @entity {
-  id: ID!
-  accounts: [Account] 
+kişi @entity { yazın
+  id: Kimlik!
+  hesaplar: [Hesap] 
 }
 
-type Account @entity {
-  id: ID!
-  publicAddress: String!
+Hesap @entity { yazın
+  id: Kimlik!
+  publicAddress: Dize!
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+
+
+### Çok-Çok ilişkileri
+
+Diğer iki varlığı bağlamak için bir eşleme varlığı uygulanarak çok-çok ilişkisi elde edilebilir.
+
+Örnek: Her kişi birden çok grubun (PersonGroup) bir parçasıdır ve grupların birden çok farklı kişisi (PersonGroup) vardır.
+
+
 
 ```graphql
-type Person @entity {
-  id: ID!
-  name: String!
-  groups: [PersonGroup]
+kişi @entity { yazın
+  id: Kimlik!
+  adı: Dize!
+  gruplar: [PersonGroup]
 }
 
-type PersonGroup @entity {
-  id: ID!
-  person: Person!
-  Group: Group!
+Type PersonGroup @entity {
+  id: Kimlik!
+  kişi: Kişi!
+  Grup: Grup!
 }
 
-type Group @entity {
-  id: ID!
-  name: String!
-  persons: [PersonGroup]
+Grup @entity { yazın
+  id: Kimlik!
+  adı: Dize!
+  kişiler: [PersonGroup]
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Ayrıca, orta varlığın birden çok alanında aynı varlığın bağlantısını oluşturmak mümkündür.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Örneğin, bir hesabın birden çok aktarımı olabilir ve her aktarımda bir kaynak ve hedef hesabı vardır.
+
+Bu, Transfer tablosu aracılığıyla iki Hesap (itibaren ve bu) arasında çift yönlü bir ilişki kuracaktır. 
+
+
 
 ```graphql
-type Account @entity {
-  id: ID!
-  publicAddress: String!
+hesap @entity { yazın
+  id: Kimlik!
+  publicAddress: Dize!
 }
 
-type Transfer @entity {
-  id: ID!
-  amount: BigInt
-  from: Account!
-  to: Account!
+Transfer @entity { yazın
+  id: Kimlik!
+  miktar: BigInt
+  itibaren: Hesap!
+  için: Hesap!
 }
 ```
 
-### Reverse Lookups
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
 
-This creates a virtual field on the entity that can be queried.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+### Geriye Doğru Aramalar
+
+Bir objede bir ilişki için geriye doğru aramayı etkinleştirmek için, alana `@derivedFrom` ekleyin ve başka bir varlığın geriye doğru arama alanının üzerine gelin.
+
+Bu, varlık üzerinde sorgulanabilecek bir sanal alan oluşturur.
+
+Bir Hesabı "Kimden" Aktar'a, sentTransfer veya receivedTransfer değerini ilgili alanlardan veya alanlardan türetilmiş olarak ayarlayarak Hesap varlığından erişilebilir.
+
+
 
 ```graphql
-type Account @entity {
-  id: ID!
-  publicAddress: String!
-  sentTransfers: [Transfer] @derivedFrom(field: "from")
-  receivedTransfers: [Transfer] @derivedFrom(field: "to")
+hesap @entity { yazın
+  id: Kimlik!
+  publicAddress: Dize!
+  sentTransfers: [Transfer] @derivedFrom(alan: "from")
+  receivedTransfers: [Transfer] @derivedFrom(alan: "to")
 }
 
-type Transfer @entity {
-  id: ID!
-  amount: BigInt
-  from: Account!
-  to: Account!
+Transfer @entity { yazın
+  id: Kimlik!
+  miktar: BigInt
+  itibaren: Hesap!
+  için: Hesap!
 }
 ```
 
-## JSON type
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+## JSON türü
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+Yapılandırılmış verileri depolamanın hızlı bir yolu olan verileri JSON türü olarak kaydetmeyi destekliyoruz. Bu verileri sorgulamak için otomatik olarak karşılık gelen JSON arabirimleri oluşturacağız ve varlıkları tanımlamak ve yönetmek için size zaman kazandıracağız.
+
+Kullanıcıların aşağıdaki senaryolarda JSON türünü kullanmalarını öneririz:
+
+- Yapılandırılmış verileri tek bir alanda depolamak, birden çok ayrı varlık oluşturmaktan daha yönetilebilir olduğunda.
+- Rasgele anahtar/değer kullanıcı tercihlerini kaydetme (burada değer boole, metinsel veya sayısal olabilir ve farklı veri türleri için ayrı sütunlara sahip olmak istemezsiniz)
+- Şema geçicidir ve sık sık değişir
+
+
+
+### JSON yönergesi tanımla
+
+Varlığa `jsonField` ek açıklaması ekleyerek özelliği JSON türü olarak tanımlayın. Bu, projenizdeki tüm JSON nesneleri için otomatik olarak `types/interfaces.ts` altında arabirimler oluşturur ve bunlara eşleme işlevinizden erişebilirsiniz.
+
+Varlığın aksine, jsonField yönerge nesnesi herhangi bir `id` alanı gerektirmez. Bir JSON nesnesi diğer JSON nesneleriyle de iç içe olabilir.
+
+
 
 ````graphql
-type AddressDetail @jsonField {
-  street: String!
-  district: String!
+addressDetail @jsonField { yazın
+  sokak: String!
+  bölge: String!
 }
 
-type ContactCard @jsonField {
-  phone: String!
-  address: AddressDetail # Nested JSON
+ContactCard @jsonField { yazın
+  telefon: String!
+  adres: AddressDetail # İç içe JSON
 }
 
-type User @entity {
-  id: ID! 
-  contact: [ContactCard] # Store a list of JSON objects
+Kullanıcı @entity { yazın
+  id: Kimlik! 
+  kişi: [ContactCard] # JSON nesnelerinin listesini depolayın
 }
 ````
 
-### Querying JSON fields
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+
+### JSON alanlarını sorgulama
+
+JSON türlerini kullanmanın dezavantajı, her metin araması yaptığında tüm varlık üzerinde olduğu gibi, filtreleme yaparken sorgu verimliliği üzerinde küçük bir etkidir.
+
+Ancak, etki sorgu hizmetimizde hala kabul edilebilir. '0064' içeren bir telefon numarasına sahip ilk 5 kullanıcıyı bulmak için JSON alanındaki GraphQL sorgusunda `contains` işlecinin nasıl kullanılacağına ilişkin bir örnek aşağıda verilmiştir.
+
+
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#To ilk 5 kullanıcının kendi telefon numaralarının '0064' içerdiğini bulun.
 
 query{
   user(
