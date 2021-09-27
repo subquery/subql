@@ -1,17 +1,17 @@
-# Hello World (SubQuery hosted)
+# Hello World (SubQuery 호스팅)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+이 빠른 시작의 목적은 몇 가지 간단한 단계를 통해 SubQuery 프로젝트(우리의 관리 서비스)에서 기본 스타터 프로젝트를 실행하는 방법을 보여주는 것입니다.
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+간단한 스타터 프로젝트(그리고 지금까지 배운 모든 것)를 사용하지만 Docker 내에서 로컬로 실행하는 대신 SubQuery의 관리 호스팅 인프라를 활용합니다. 즉, 우리는 SubQuery가 프로덕션 인프라를 실행하고 관리하는 모든 무거운 작업을 수행하도록 합니다.
 
-## Learning objectives
+## 학습 목표
 
-At the end of this quick start, you should:
+빠른 시작이 끝나면, 다음을 수행해야 합니다.
 
-- understand the required pre-requisites
-- be able host a project in [SubQuery Projects](https://project.subquery.network/)
-- run a simple query to get the block height of the Polkadot mainnet using the playground
-- run a simple GET query to get the block height of the Polkadot mainnet using cURL
+- 필요한 전제 조건을 이해
+- [SubQuery 프로젝트](https://project.subquery.network/)에서 프로젝트를 호스팅할 수 있습니다.
+- 플레이그라운드를 사용하여 Polkadot 메인넷의 블록 높이를 가져오는 간단한 쿼리를 실행합니다.
+- cURL을 사용하여 Polkadot 메인넷의 블록 높이를 가져오기 위해 간단한 GET 쿼리를 실행합니다.
 
 ## Intended audience
 
