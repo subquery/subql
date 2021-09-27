@@ -70,6 +70,11 @@ export function getYargsOption() {
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
     },
+    'error-stack-size': {
+      demandOption: false,
+      describe: 'Specify error stack size to be printed',
+      type: 'number',
+    },
     migrate: {
       demandOption: false,
       describe: 'Migrate db schema (for management tables only)',

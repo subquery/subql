@@ -9,11 +9,13 @@ import { argv } from '../yargs';
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const debug = argv('debug');
 const logLevel = argv('log-level') as string | undefined;
+const errorStackSize = argv('error-stack-size') as number | undefined;
 
 const logger = new Logger({
   level: debug ? 'debug' : logLevel,
   outputFormat: outputFmt,
   nestedKey: 'payload',
+  stackSize: errorStackSize,
 });
 
 export function getLogger(category: string): Pino.Logger {

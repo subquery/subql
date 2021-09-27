@@ -9,13 +9,21 @@ export interface LoggerOption {
   outputFormat?: 'json' | 'colored';
   level?: string;
   nestedKey?: string;
+  stackSize?: number;
+}
+
+function limitStack(stack: string, configSize: number): string {
+  const stackArray = stack.split(/\r\n|\r|\n/);
+  const reduceSize = Math.min(stackArray.length, configSize) + 1; //one additional line for error message
+  stackArray.splice(reduceSize);
+  return stackArray.join('\n');
 }
 
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel = 'info', nestedKey, outputFormat}: LoggerOption) {
+  constructor({level: logLevel = 'info', nestedKey, outputFormat, stackSize = 5}: LoggerOption) {
     this.pino = Pino({
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -35,7 +43,7 @@ export class Logger {
                     type: 'error',
                     name: value.name,
                     message: value.message,
-                    stack: value.stack,
+                    stack: limitStack(value.stack, stackSize),
                   };
                 } else {
                   return stringify(value);
