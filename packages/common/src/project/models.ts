@@ -1,23 +1,10 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {RegistryTypes, RegisteredTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
-import {
-  Allow,
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsEnum,
-  IsInt,
-  IsObject,
-  IsOptional,
-  IsString,
-  ValidateNested,
-} from 'class-validator';
+import {ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {SubqlKind} from './constants';
 import {
-  ProjectManifest,
   SubqlBlockFilter,
   SubqlCallFilter,
   SubqlEventFilter,
@@ -26,50 +13,6 @@ import {
   SubqlMapping,
   SubqlRuntimeDatasource,
 } from './types';
-
-export class ProjectNetwork implements RegisteredTypes {
-  @IsString()
-  endpoint: string;
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
-  @IsObject()
-  @IsOptional()
-  types?: RegistryTypes;
-  @IsObject()
-  @IsOptional()
-  typesAlias?: Record<string, OverrideModuleType>;
-  @IsObject()
-  @IsOptional()
-  typesBundle?: OverrideBundleType;
-  @IsObject()
-  @IsOptional()
-  typesChain?: Record<string, RegistryTypes>;
-  @IsObject()
-  @IsOptional()
-  typesSpec?: Record<string, RegistryTypes>;
-}
-
-export class ProjectManifestImpl implements ProjectManifest {
-  @Allow()
-  definitions: object;
-  @IsString()
-  description: string;
-  @ValidateNested()
-  @Type(() => ProjectNetwork)
-  @IsObject()
-  network: ProjectNetwork;
-  @IsString()
-  repository: string;
-  @IsString()
-  schema: string;
-  @IsString()
-  specVersion: string;
-  @IsArray()
-  @ValidateNested()
-  @Type(() => RuntimeDataSource)
-  dataSources: RuntimeDataSource[];
-}
 
 export class BlockFilter implements SubqlBlockFilter {
   @IsOptional()

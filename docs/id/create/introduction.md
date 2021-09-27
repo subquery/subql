@@ -1,8 +1,9 @@
-# Tutorial & Contoh
+# Membuat Proyek SubQuery
 
 Di panduan [mulai cepat](/quickstart/quickstart.md), kami dengan sangat cepat memberikan contoh untuk menjelaskan pada Anda apa itu SubQuery dan bagaimana cara kerjanya. Di sini kita akan melihat lebih dekat alur kerja saat membuat proyek Anda dan file kunci yang akan Anda ikut sertakan.
 
-## Contoh SubQuery
+## Alur Kerja Dasar
+
 Sebagian contoh berikut akan mengasumsikan Anda telah berhasil menginisialisasi paket pemula di bagian [Mulai cepat](../quickstart/quickstart.md). Dari paket pemula itu, kita akan berjalan melewati proses standar untuk menyesuaikan dan mengimplementasikan proyek SubQuery Anda.
 
 1. Inisialisasi proyek Anda menggunakan `subql init PROJECT_NAME`
@@ -50,8 +51,13 @@ Untuk menjalankan Proyek SubQuery Anda di host Node SubQuery secara lokal, perta
 
 Jalankan perintah bentuk dari direktori proyek.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
 
 ## Logging
 
@@ -67,7 +73,7 @@ Untuk menggunakan `logger.info` atau `logger.warn`, tempatkan barisannya ke file
 
 ![logging.info](/assets/img/logging_info.png)
 
-Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Tambahkan `--log-level=debug` ke baris perintah Anda.
+Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Untuk menggunakan `logger. debug`, langkah tambahan diperlukan.
 
 Jika Anda sedang menjalankan docker container, tambahkan barisan ini ke file `docker-compose.yaml` Anda.
 

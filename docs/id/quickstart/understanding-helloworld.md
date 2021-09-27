@@ -18,7 +18,7 @@ File-file ini adalah inti dari semua yang kita lakukan. Karena itu, kami akan me
 
 ## pemasangan yarn
 
-Hal berikutnya yang kami lakukan adalah `yarn instal`. `npm install` dapat digunakan juga.
+Hal berikutnya yang kami lakukan adalah `yarn install`. `npm install` dapat digunakan juga.
 
 > Pelajaran sejarah singkat. Node Package Manager atau npm awalnya dirilis pada tahun 2010 dan merupakan manajer paket yang sangat populer di kalangan pengembang JavaScript. Ini adalah paket default yang dipasang secara otomatis setiap kali Anda memasang Node.js di sistem Anda. Yarn awalnya dirilis oleh Facebook pada tahun 2016 dengan maksud untuk mengatasi beberapa kekurangan kinerja dan keamanan bekerja dengan npm (pada waktu itu).
 
@@ -40,7 +40,7 @@ Kemudian kita menjalankan `codegen yarn` atau `npm run-script codegen`. Apa yang
 
 ## docker-compose
 
-Langkah terakhir adalah perintah docker gabungan `docker-compose pull && docker-compose up` (dapat dijalankan secara terpisah juga). Perintah `pull` mengambil semua gambar yang diperlukan dari Docker Hub dan perintah `naik` memulai container.
+Langkah terakhir adalah perintah docker gabungan `docker-compose pull && docker-compose up` (dapat dijalankan secara terpisah juga). Perintah `pull` mengambil semua gambar yang diperlukan dari Docker Hub dan perintah `up` memulai container.
 
 ```shell
 > docker-compose pull

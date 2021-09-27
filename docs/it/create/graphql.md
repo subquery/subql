@@ -1,15 +1,16 @@
-# Learn more about GraphQL
+# GraphQL Schema
 
-## Definizione Di Entità
+## Defining Entities
 
-Il file `schema.graphql` definisce i vari schemi GraphQL. A causa del modo in cui funziona il linguaggio di query di GraphQL, il file schema determina essenzialmente la forma dei tuoi dati da SubQuery. There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
+The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-**Importante: Quando si apportano modifiche al file schema, assicurati di rigenerare la directory dei tuoi tipi con il seguente comando `yarn codegen`**
+**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
-### Entità
-Ogni entità deve definire i propri campi `id` obbligatori con il tipo di `ID!`. Viene utilizzato come chiave primaria e unico tra tutte le entità dello stesso tipo.
+### Entities
 
-I campi non nullabili nell'entità sono indicati da `!`. Please see the example below:
+Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+
+Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
 ```graphql
 type Example @entity {
@@ -22,6 +23,7 @@ type Example @entity {
 ### Supported scalars and types
 
 We currently supporting flowing scalars types:
+
 - `ID`
 - `Int`
 - `String`
@@ -43,15 +45,16 @@ Here is an example.
 type User @entity {
   id: ID!
   name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  title: Title! # Indexes are automatically added to foreign key field
 }
 
 type Title @entity {
-  id: ID!  
-  name: String! @index(unique:true)
+  id: ID!
+  name: String! @index(unique: true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+
+Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to ensure uniqueness.
 
 **If a field is not unique, the maximum result set size is 100**
 
@@ -64,8 +67,8 @@ INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 
 ```typescript
 // Handler in mapping function
-import {User} from "../types/models/User"
-import {Title} from "../types/models/Title"
+import {User} from '../types/models/User';
+import {Title} from '../types/models/Title';
 
 const jack = await User.getByName('Jack Sparrow');
 
@@ -120,7 +123,7 @@ Example: A person can have multiple accounts.
 ```graphql
 type Person @entity {
   id: ID!
-  accounts: [Account] 
+  accounts: [Account]
 }
 
 type Account @entity {
@@ -130,6 +133,7 @@ type Account @entity {
 ```
 
 ### Many-to-Many relationships
+
 A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
 Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
@@ -203,16 +207,18 @@ type Transfer @entity {
 We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
 
 We recommend users use the JSON type in the following scenarios:
+
 - When storing structured data in a single field is more manageable than creating multiple separate entities.
 - Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
 - The schema is volatile and changes frequently
 
 ### Define JSON directive
+
 Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
 
 Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
 
-````graphql
+```graphql
 type AddressDetail @jsonField {
   street: String!
   district: String!
@@ -224,10 +230,10 @@ type ContactCard @jsonField {
 }
 
 type User @entity {
-  id: ID! 
+  id: ID!
   contact: [ContactCard] # Store a list of JSON objects
 }
-````
+```
 
 ### Querying JSON fields
 
@@ -238,15 +244,9 @@ However, the impact is still acceptable in our query service. Here is an example
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
 
-query{
-  user(
-    first: 5,
-    filter: {
-      contactCard: {
-        contains: [{ phone: "0064" }]
-    }
-}){
-    nodes{
+query {
+  user(first: 5, filter: {contactCard: {contains: [{phone: "0064"}]}}) {
+    nodes {
       id
       contactCard
     }

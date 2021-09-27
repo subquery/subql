@@ -4,16 +4,24 @@
 import path from 'path';
 import {loadProjectManifest} from './load';
 
+const projectsDir = path.join(__dirname, '../../test');
+
 describe('project.yaml', () => {
   it('can parse project.yaml to ProjectManifestImpl', () => {
-    const project = loadProjectManifest(path.join(__dirname, '../../test/project.yaml'));
+    const project = loadProjectManifest(path.join(projectsDir, 'project.yaml'));
     expect(project).toBeTruthy();
   });
 
   it('can validate project.yaml', () => {
-    expect(() => loadProjectManifest(path.join(__dirname, '../../test/project_falsy.yaml'))).toThrow();
-    expect(() => loadProjectManifest(path.join(__dirname, '../../test/project_falsy_array.yaml'))).toThrow(
-      /failed to parse project.yaml/
-    );
+    expect(() => loadProjectManifest(path.join(projectsDir, 'project_falsy.yaml'))).toThrow();
+    expect(() => loadProjectManifest(path.join(projectsDir, 'project_falsy_array.yaml'))).toThrow();
+  });
+
+  it('can validate a v0.0.2 project.yaml', () => {
+    expect(() => loadProjectManifest(path.join(projectsDir, 'project_0.0.2.yaml'))).toBeTruthy();
+  });
+
+  it('can fail validation if version not supported', () => {
+    expect(() => loadProjectManifest(path.join(projectsDir, 'project_invalid_version.yaml'))).toThrow();
   });
 });

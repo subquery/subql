@@ -26,6 +26,7 @@ export interface IConfig {
   readonly queryLimit: number;
   readonly indexCountLimit: number;
   readonly timestampField: boolean;
+  readonly proofOfIndex: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
@@ -40,6 +41,7 @@ const DEFAULT_CONFIG = {
   queryLimit: 100,
   indexCountLimit: 10,
   timestampField: true,
+  proofOfIndex: false,
 };
 
 export class NodeConfig implements IConfig {
@@ -128,6 +130,10 @@ export class NodeConfig implements IConfig {
 
   get timestampField(): boolean {
     return this._config.timestampField;
+  }
+
+  get proofOfIndex(): boolean {
+    return this._config.proofOfIndex;
   }
 
   merge(config: Partial<IConfig>): this {

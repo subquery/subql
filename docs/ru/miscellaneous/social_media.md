@@ -18,7 +18,3 @@ SubQuery - это активный проект, который поддержи
 ## Неофициальные комьюнити SubQuery
 
 Эти сообщества не модерируются командой SubQuery, но наши представители могут быть там для оказания поддержки. Пожалуйста, будьте осторожны с мошенниками, поскольку SubQuery ** не ** несет ответственности за ваше взаимодействии с ними.
-
-### Telegram
-
-[SubQuery Russia](https://t.me/SubQuery_russia) [SubQuery Russia](https://t.me/SubQueryRu) [SubQuery Vietnam](https://t.me/subqueryvietnam) [SubQuery Vietnam Announcement](https://t.me/subqueryannvn)

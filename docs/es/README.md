@@ -3,17 +3,17 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Bienvenido a los <span>documentos</span> de SubQuery</h2>
-        <p>¡Explora y transforma los datos de tu cadena para crear dApps intuitivos más rápido!</p>
+        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
+        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
       </div>
     </div>
   </section>
   <section class="startSection main">
     <div>
-      <h2 class="title">Inicio rápido <span>Guía</span></h2>
-      <p>Vamos a comprender SubQuery poniendo manos a la obra un ejemplo tradicional de Hola Mundo. Utilizando un proyecto de plantilla dentro de un entorno Docker puede obtener rápidamente un nodo funcionando y comenzar a consultar un blockchain en tan solo unos minutos con algunos comandos simples.
+      <h2 class="title">Quick Start <span>Guide</span></h2>
+      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
       </p>
-      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Comenzar</span></a>
+      <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html" class="button"><span>Get started</span></a>
     </div>
   </section>
 </div>
@@ -24,8 +24,8 @@
         <a href="https://doc.subquery.network/tutorials_examples/introduction.html">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
-            <span>Tutoriales y Ejemplos</span>
-            <p>Aprender haciendo. Tutoriales y ejemplos de cómo construir varios proyectos de SubQuery.</p>
+            <span>Tutorials and Examples</span>
+            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
           </div>
         </a>
       </li>
@@ -33,8 +33,8 @@
         <a href="https://doc.subquery.network/create/introduction.html">
           <div>
             <img src="/assets/img/docsIcon.svg" />
-            <span>Documentos de referencia técnica</span>
-            <p>Escrito por desarrolladores para desarrolladores. Encuentra lo que necesitas para construir dApps rápidamente.</p>
+            <span>Technical Reference Docs</span>
+            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
           </div>
         </a>
       </li>
@@ -42,8 +42,8 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>La red de SubQuery</span>
-            <p>El futuro descentralizado de SubQuery. Lea más sobre cómo se recompensa a los indexadores y consumidores.</p>
+            <span>The SubQuery Network</span>
+            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
           </div>
         </a>
       </li>
@@ -52,60 +52,60 @@
 </div>
 <section class="faqSection main">
   <div>
-    <h2 class="title">Preguntas Frecuentes (FAQ)</h2>
+    <h2 class="title">FAQ</h2>
     <ul class="faqList">
       <li>
-        <div class="title">¿Qué es SubQuery?</div>
+        <div class="title">What is SubQuery?</div>
         <div class="content">
-          <p>SubQuery es un proyecto de código abierto que permite a los desarrolladores indexar, transformar y consultar datos en cadena de Substrate para potenciar sus aplicaciones.</p>
-          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-subquery">LEER MÁS</a>
+          <p>SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.</p>
+          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-subquery">READ MORE</a>
         </div>
       </li>
       <li>
-        <div class="title">¿Cuál es la mejor manera de comenzar con SubQuery?</div>
+        <div class="title">What is the best way to get started with SubQuery?</div>
         <div class="content">
-          <p>La mejor manera de empezar con SubQuery es probar nuestro <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html">tutorial de Hola Mundo</a>. Este es un simple paseo de 5 minutos para descargar la plantilla de inicio, construir el proyecto, y luego usar Docker para ejecutar un nodo en su localhost y ejecutar una simple consulta. </p>
+          <p>The best way to get started with SubQuery is to try out our <a href="https://doc.subquery.network/quickstart/helloworld-localhost.html">Hello World tutorial</a>. This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query. </p>
         </div>
       </li>
       <li>
-        <div class="title">¿Cómo puedo contribuir o dar comentarios a SubQuery?</div>
+        <div class="title">How can I contribute or give feedback to SubQuery?</div>
         <div class="content">
-          <p>Nos encantan las contribuciones y comentarios de la comunidad. Para contribuir con el código, bifurca el repositorio de interés y realice sus cambios. Luego envíe un PR o Pull Request. ¡Oh, no te olvides del test probar también! Consulte también nuestras directrices de contribuciones (próximamente). </p>
-          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">MÁS</a>
+          <p>We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guidelines (coming soon). </p>
+          <a class="more" href="https://doc.subquery.network/faqs/faqs.html#what-is-the-best-way-to-get-started-with-subquery">READ MORE</a>
         </div>
       </li>
       <li>
-        <div class="title">¿Cuánto cuesta alojar mi proyecto en SubQuery Projects?</div>
+        <div class="title">How much does it cost to host my project in SubQuery Projects?</div>
         <div class="content">
-          <p>Hospedar tu proyecto en SubQuery Projects es absolutamente gratuito - es nuestra manera de devolver a la comunidad. Para aprender cómo alojar tu proyecto con nosotros, por favor revisa el tutorial <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hola Mundo (hospedado en SubQuery)</a>.</p>
-          <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTEANDO TU PROYECTO</a>
+          <p>Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the <a href="https://doc.subquery.network/quickstart/helloworld-hosted.html">Hello World (SubQuery Hosted)</a> tutorial.</p>
+          <a class="more" href="https://doc.subquery.network/publish/publish.html">HOSTING YOUR PROJECT</a>
         </div>
       </li>
     </ul><br>
-    Para más preguntas más frecuentes, por favor vea nuestra página de <a href="https://doc.subquery.network/faqs/faqs.html">Preguntas frecuentes</a>.    
+    For further frequently asked questions, please see our <a href="https://doc.subquery.network/faqs/faqs.html">FAQ's</a> page.    
   </div>
 </section>
 <section class="main">
   <div>
     <div class="lastIntroduce lastIntroduce_1">
-        <h5>¿Integrar con tu cadena personalizada?</h5>
-        <p>Ya sea que esté construyendo una nueva cadena de bloques o una cadena de bloques completamente nueva en Substrate - SubQuery puede ayudarle a indexar y solucionar problemas los datos de su cadena. SubQuery está diseñado para integrar fácilmente con una cadena basada en Substrate personalizada.</p>
-        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">APRENDE COMO INTEGRAR CON TU CADENA</a>
+        <h5>Integrating with your Custom Chain?</h5>
+        <p>Whether you're building a new parachain or an entirely new blockchain on Substrate - SubQuery can help you index and troubleshoot your chain's data. SubQuery is designed to easily integrate with a custom Substrate based chain.</p>
+        <a class="more" href="https://doc.subquery.network/create/mapping.html#custom-substrate-chains">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</a>
     </div>
     <div class="lastIntroduce lastIntroduce_2">
-        <h5>Soporte y contribución</h5>
-        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. ¡Queremos saber tu opinión! Por favor contáctenos a través de correo electrónico o redes sociales desde los siguientes enlaces. ¿Necesita conocimientos técnicos? Únete a nuestra comunidad de Discord y recibe apoyo de nuestros apasionados miembros de la comunidad. </p>
-        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">ÚNETE A LA CONVERSACIÓN EN DISCORD</a>
+        <h5>Support and Contribute</h5>
+        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. Please contact us via email or social media from the links below. Need technical expertise? Join our Discord community and receive support from our passionate community members. </p>
+        <a class="more" href="=https://discord.com/invite/78zg8aBSMG">JOIN THE CONVERSATION ON DISCORD</a>
     </div>
     </div>
 </section>
 <section class="main connectSection">
   <div class="email">
-    <span>Contáctanos</span>
+    <span>Contact us</span>
     <a href="mailto:hello@subquery.network">hello@subquery.network</a>
   </div>
   <div>
-    <div>Síguenos en las redes sociales</div>
+    <div>Follow us on social</div>
     <div class="connectWay">
       <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
       <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>

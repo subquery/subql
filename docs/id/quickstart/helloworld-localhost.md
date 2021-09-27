@@ -57,7 +57,7 @@ Jika Anda mendapatkan hal di atas, maka Anda siap untuk lanjut. Jika tidak, ikut
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Inisialisasi proyek
+## Langkah 1: Inisialisasi proyek
 
 Langkah pertama saat memulai dengan SubQuery adalah menjalankan perintah `subql init`. Mari kita inisialisasi proyek awal dengan nama `subqlHelloWorld`. Perhatikan bahwa hanya author yang wajib diisi. Segala sesuatu yang lain dibiarkan kosong di bawah.
 
@@ -79,12 +79,17 @@ Jangan lupa untuk pindah ke direktori baru ini.
 cd subqlHelloWorld
 ```
 
-## 2. Instal dependencies
+## Langkah 2: Instal dependencies
 
 Sekarang lakukan instal yarn atau node untuk menginstal berbagai dependencies.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn install
+
+# NPM
+npm install
+```
 
 Contoh `yarn install`
 
@@ -100,12 +105,17 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## 3. Hasilkan kode
+## Langkah 3: Hasilkan kode
 
 Sekarang jalankan `yarn codegen` untuk menghasilkan TypeScript dari skema GraphQL.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn codegen
+
+# NPM
+npm run-script codegen
+```
 
 Contoh `yarn codegen`
 
@@ -124,12 +134,17 @@ $ ./node_modules/.bin/subql codegen
 
 **Peringatan** Ketika perubahan dibuat pada file skema, harap ingat untuk menjalankan kembali `yarn codegen` untuk membuat ulang direktori jenis Anda.
 
-## 4. Membuat kode
+## Langkah 4: Membuat kode
 
 Langkah selanjutnya adalah membuat kode dengan `yarn build`.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
 
 Contoh `yarn build`
 
@@ -140,7 +155,7 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Jalankan Docker
+## Langkah 5: Jalankan Docker
 
 Dengan menggunakan Docker memungkinkan Anda menjalankan contoh ini dengan sangat cepat karena semua infrastruktur yang diperlukan dapat tersediakan di dalam image Docker. Jalankan `docker-compose pull && docker-compose up`.
 
@@ -162,7 +177,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Jelajahi playground
+## Langkah 6: Jelajahi playground
 
 Arahkan ke http://localhost:3000/ dan paste kueri di bawah ini ke sisi kiri layar lalu tekan tombol putar atau play.
 

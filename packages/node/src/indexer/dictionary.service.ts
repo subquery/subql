@@ -76,15 +76,19 @@ export class DictionaryService implements OnApplicationShutdown {
       });
       const blockHeightSet = new Set<number>();
       const specVersionBlockHeightSet = new Set<number>();
+      let eventEndBlock: number;
+      let extrinsicEndBlock: number;
 
       if (resp.data.events && resp.data.events.nodes.length >= 0) {
         for (const node of resp.data.events.nodes) {
           blockHeightSet.add(Number(node.blockHeight));
+          eventEndBlock = Number(node.blockHeight); //last added event blockHeight
         }
       }
       if (resp.data.extrinsics && resp.data.extrinsics.nodes.length >= 0) {
         for (const node of resp.data.extrinsics.nodes) {
           blockHeightSet.add(Number(node.blockHeight));
+          extrinsicEndBlock = Number(node.blockHeight); //last added extrinsic blockHeight
         }
       }
       if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
@@ -93,7 +97,13 @@ export class DictionaryService implements OnApplicationShutdown {
         }
       }
       const _metadata = resp.data._metadata;
-      const batchBlocks = Array.from(blockHeightSet);
+      const endBlock = Math.min(
+        isNaN(eventEndBlock) ? Infinity : eventEndBlock,
+        isNaN(extrinsicEndBlock) ? Infinity : extrinsicEndBlock,
+      );
+      const batchBlocks = Array.from(blockHeightSet)
+        .filter((block) => block <= endBlock)
+        .sort((n1, n2) => n1 - n2);
       //TODO
       // const specVersions = Array.from(specVersionBlockHeightSet);
       return {

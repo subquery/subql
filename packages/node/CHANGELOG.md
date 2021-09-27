@@ -6,13 +6,53 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.18.2] - 2021-07-29
+## [0.21.1] - 2021-09-18
+Upgrade priority: High. Node in the previous release failed to start due to apollo/client dependency issue, and this patch release includes the fix.
+### Fixed
+- Fixed apollo/client dependency issue (#482)
+
+## [0.21.0] - 2021-09-16
+Upgrade priority: Low. 
+### Changed
+- Update Polkadot/api to 5.9.1 (#476)
+### Added
+- Api service support http(s) endpoint (#474)
+- Add Proof-of-index service allow generate and record the hash of indexed work. User can enable this feature through the `--proof-of-work` command. Please note that this feature is currently in an experimental stage. (#443)
+
+## [0.20.3] - 2021-09-01
+Upgrade priority: Low. This upgrade improve decode the block with large amount of parameters in the extrinsic.
+### Changed
+- Update Polkadot/api to 5.7.1 (#460)
+
+## [0.20.2] - 2021-08-28
+Upgrade priority: High. Any project that uses the dictionary service and defined both event filter and extrinsic filter in its manifest should be re-indexed.
+### Fixed
+- Solve the missing block height of the event/extrinsic in the batch returned by the dictionary service  (#452)
+
+## [0.20.1] - 2021-08-27
+### Fixed
+- Deprecated warnings (#448)
+
+## [0.20.0] - 2021-08-20
+### Changed
+- Update Polkadot/api to 5.5.2 (#439)
+### Added
+- support interpret Bytea type (#432)
+
+## [0.19.2] - 2021-08-16
+### Fixed
+- Improve data sources filtering handling and error messages (#417)
+### Changed
+- Adjust health check time to be the same as indexer timeout, or a minimum of 900 seconds. Also, log error when it is not healthy (#420)
+- Update Polkadot/api to 5.5.1 (#433)
+
+## [0.19.1] - 2021-07-29
 Upgrade priority: High. Fix failed to store schema object array in correct format in database.
 ### Fixed
 - When the schema object type is an array convert to Jsonb type (#406)
 
 
-## [0.18.1] - 2021-07-27
+## [0.19.0] - 2021-07-27
 Upgrade priority: Low. Upgrade only to support a new `polkadot/api` version and for types.
 ### Changed
 - Bump `polkadot/api` to 5.2.1 (#402)

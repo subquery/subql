@@ -1,19 +1,19 @@
-# Material de Marca
+# Branding Materials
 
-**Todas las características de la marca de SubQuery son propietarias y nos tomamos nuestra marca extremadamente en serio.**
+**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
 
-Si opta por utilizar cualquier marca registrada, logotipos, diseños u otras características de marca, por favor siga cuidadosamente las directrices aquí o comuníquese con nosotros a través de los medios de comunicación sociales para aclaración.
+If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
 
-En caso de duda, por favor, pregunte!
+If in doubt, please ask!
 
-## Archivo de Figma exportable
+## Exportable Figma File
 
-Nuestro archivo Figma tiene una colección completa de todos los activos de la marca (logotipos, fuentes, colores, imágenes etc) para su exportación.
+Our Figma file has a full collection of all brand assets (logos, fonts, colours, imagery etc) for export.
 
-[Figma - Recursos de la marca SubQuery](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
+[Figma - SubQuery Brand Resources](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 
-## Paquete de Recursos de Marca
+## Brand Assets Package
 
-Un paquete ZIP más pequeño de activos de marca
+A smaller ZIP package of brand assets
 
 [public_branding.zip](https://static.subquery.network/public_branding.zip)

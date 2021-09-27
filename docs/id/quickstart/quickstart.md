@@ -52,8 +52,15 @@ Setelah proses inisialisasi selesai, Anda akan melihat folder anda dengan nama p
 
 Terakhir, di bawah direktori proyek, jalankan perintah berikut untuk memasang dependensi proyek baru.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
+```shell
+cd PROJECT_NAME
+
+# Yarn
+yarn install
+
+# NPM
+npm install
+```
 
 ## Konfigurasi dan Bangun Proyek Pemula
 
@@ -69,10 +76,15 @@ Untuk informasi lebih lanjut tentang cara menulis SubQuery Anda sendiri, lihat d
 
 Untuk [mengindeks](../run/run.md) proyek SubQuery Anda, Anda harus terlebih dahulu membuat model GraphQL yang diperlukan yang mana telah Anda tetapkan di file GraphQL Schema (`schema.graphql`). Jalankan perintah ini di root direktori proyek.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn codegen
 
-Anda akan menemukan model yang dihasilkan di direktori `/src/types/models` directory
+# NPM
+npm run-script codegen
+```
+
+Anda akan menemukan model yang dihasilkan di direktori `/src/types/models`
 
 ## Bangun Proyek
 
@@ -80,18 +92,23 @@ Untuk menjalankan Proyek SubQuery Anda pada Node SubQuery yang dihosting secara 
 
 Jalankan perintah build dari direktori root proyek.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
 
 ## Menjalankan dan Membuat database Proyek Pemula Anda
 
-Meskipun Anda dapat dengan cepat memublikasikan proyek baru Anda ke [SubQuery Projects](https://project.subquery.network) dan menanyakannya menggunakan [Penjelajah](https://explorer.subquery.network) kami, cara termudah untuk menjalankan node SubQuery secara lokal adalah dalam wadah Docker, jika Anda belum memiliki Docker, Anda dapat memasangnya dari [docker.com](https://docs.docker.com/get-docker/).
+Meskipun Anda dapat dengan cepat memublikasikan proyek baru Anda ke [Proyek SubQuery](https://project.subquery.network) dan menanyakannya menggunakan [Penjelajah](https://explorer.subquery.network) kami, cara termudah untuk menjalankan node SubQuery secara lokal adalah dalam wadah Docker, jika Anda belum memiliki Docker, Anda dapat memasangnya dari [docker.com](https://docs.docker.com/get-docker/).
 
-[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+[_Lewati ini dan publikasikan proyek baru Anda ke Proyek SubQuery_](../publish/publish.md)
 
-### Run your SubQuery Project
+### Jalankan Proyek SubQuery Anda
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. Untuk proyek baru yang baru saja diinisialisasi, Anda tidak perlu mengubah apa pun, tetapi Anda dapat membaca selengkapnya tentang file dan setelannya di [bagian Jalankan Proyek](../run/run.md)
+Semua konfigurasi yang mengontrol bagaimana node SubQuery dijalankan, didefinisikan dalam file `docker-compose.yml` ini. Untuk proyek baru yang baru saja diinisialisasi, Anda tidak perlu mengubah apa pun, tetapi Anda dapat membaca selengkapnya tentang file dan setelannya di [bagian Jalankan Proyek](../run/run.md)
 
 Di bawah direktori proyek jalankan perintah berikut:
 

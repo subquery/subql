@@ -52,7 +52,19 @@ After the initialisation process is complete, you should see a folder with your 
 
 Last, under the project directory, run following command to install the new project's dependencies.
 
-<CodeGroup> cd PROJECT_NAME # Yarn yarn install # NPM npm install You will mainly be working on the following files:
+```shell
+cd PROJECT_NAME
+
+# Yarn
+yarn install
+
+# NPM
+npm install
+```
+
+## Configure and Build the Starter Project
+
+In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
 
 - The Manifest in `project.yaml`
 - The GraphQL Schema in `schema.graphql`
@@ -64,7 +76,15 @@ For more information on how to write your own SubQuery, check out our documentat
 
 In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
 
-<CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
+```shell
+# Yarn
+yarn codegen
+
+# NPM
+npm run-script codegen
+```
+
+You'll find the generated models in the `/src/types/models` directory
 
 ## Build the Project
 
@@ -72,7 +92,23 @@ In order run your SubQuery Project on a locally hosted SubQuery Node, you need t
 
 Run the build command from the project's root directory.
 
-<CodeGroup> All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
+
+## Running and Querying your Starter Project
+
+Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+
+[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+
+### Run your SubQuery Project
+
+All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
 
 Under the project directory run following command:
 

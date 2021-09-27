@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.3] - 2021-09-25
+Upgrade priority: High. Any project rely on query `_metadata` should upgrade.
+### Fixed
+- Change `_metadata` back, and use `smartTagPlugin` to omit node `metadata` class. By doing this, previous project that rely on query `_metadata` won't be affected, such as Dictionaries.
+
+## [0.7.2] - 2021-09-22
+Upgrade priority: High. This fix the entities name conflict issue, for users who used node 0.21.0 or higher should update to query 0.7.2.
+### Changed
+- Changed query indexer `_metadata` to `_meta`, current `_metadata` is created from indexer service included `blockOffset` data (#489)
+
+## [0.7.1] - 2021-08-27
+### Fixed
+- Deprecated warnings (#448)
+
 ## [0.7.0] - 2021-06-25
 ### Changed
 - Update dependencies (#358)

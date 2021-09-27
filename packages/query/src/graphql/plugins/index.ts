@@ -48,6 +48,7 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
+import {smartTagsPlugin} from './smartTagsPlugin';
 
 /* eslint-enable */
 
@@ -100,6 +101,7 @@ export const plugins = [
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
+  smartTagsPlugin,
 ];
 
 if (argv(`indexer`)) {

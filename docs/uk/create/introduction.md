@@ -1,8 +1,9 @@
-# Tutorials & Examples
+# Creating a SubQuery Project
 
 In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
-## SubQuery Examples
+## The Basic Workflow
+
 Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
 1. Initialise your project using `subql init PROJECT_NAME`
@@ -50,8 +51,13 @@ In order to run your SubQuery Project on a locally hosted SubQuery Node, you nee
 
 Run the build command from the project's root directory.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
 
 ## Logging
 

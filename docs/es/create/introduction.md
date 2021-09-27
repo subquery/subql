@@ -1,22 +1,23 @@
-# Tutorials & Examples
+# Crear un proyecto de Subquery
 
-En la guía [de inicio rápido](/quickstart/quickstart.md) encontraremos un ejemplo para darle una muestra de lo que es SubQuery y cómo funciona. Aquí veremos más de cerca el flujo de trabajo al crear tu proyecto y los archivos clave con los que trabajarás.
+En la guía [de inicio rápido](/quickstart/quickstart.md) encontraremos un ejemplo para darle una muestra de lo que es SubQuery y cómo funciona. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
-## SubQuery Examples
-Algunos de los siguientes ejemplos asumirán que ha iniciado con éxito el paquete de inicio en la sección [Inicio rápido](../quickstart/quickstart.md). Desde ese paquete de inicio, pasaremos por el proceso estándar para personalizar e implementar su proyecto SubQuery.
+## The Basic Workflow
 
-1. Inicia tu proyecto usando `subql init PROJECT_NAME`
-2. Actualizar el archivo de manifiesto ( ` project.yaml `) para incluir información sobre tu blockchain, y las entidades que vas a mapear - ver [Archivo de manifiesto](./manifest.md)
-3. Crear entidades GraphQL en tu esquema (`schema.graphql`) que definen la forma de los datos que extraerás y persistirá para la consulta - vea [Esquema GraphQL](./graphql.md)
-4. Agrega todas las funciones de mapeo (por ejemplo, `mappingHandlers.ts`) que desea invocar para transformar los datos de cadena a las entidades GraphQL que ha definido - vea [Mapeo](./mapping.md)
-5. Generar, compilar, y publique su código en los Proyectos SubQuery (o ejecute en su propio nodo local) - vea [Ejecutando y consultando su Proyecto de inicio](./quickstart.md#running-and-querying-your-starter-project) en nuestra guía de inicio rápido.
+Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
-## Estructura del Directorio
+1. Initialise your project using `subql init PROJECT_NAME`
+2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
+3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
+4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
+5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
 
-El siguiente mapa proporciona una visión general de la estructura de directorio de un proyecto de SubQuery cuando se ejecuta el comando `init`.
+## Directory Structure
+
+The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
 
 ```
-- nombre-proyecto
+- project-name
   L package.json
   L project.yaml
   L README.md
@@ -30,44 +31,54 @@ El siguiente mapa proporciona una visión general de la estructura de directorio
   L .gitignore
 ```
 
-Example
+For example:
 
-![Estructura de directorios de SubQuery](/assets/img/subQuery_directory_stucture.png)
+![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
 
-## Generación de Código
+## Code Generation
 
-Cada vez que cambie sus entidades en GraphQL, debe regenerar su directorio de tipos con el siguiente comando.
+Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
 
 ```
 yarn codegen
 ```
 
-Esto creará un nuevo directorio (o actualizará el existente) `src/types` que contienen clases de entidad generadas para cada tipo que haya definido previamente en `schema.graphql`. Estas clases proporcionan la carga de entidad segura de tipos, acceso de lectura y escritura a los campos de la entidad - vea más sobre este proceso en [el esquema GraphQL](./graphql.md).
+This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
 
-## Compilar
+## Build
 
-Para ejecutar tu proyecto SubQuery en un nodo SubQuery alojado localmente, primero necesitas compilar tu trabajo.
+In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
 
-Ejecuta el comando de compilación desde el directorio raíz del proyecto.
+Run the build command from the project's root directory.
 
-<CodeGroup> The `console.log` method is **no longer supported**. En su lugar, se ha inyectado un módulo `logger` en los tipos, lo que significa que podemos soportar un registrador que puede aceptar varios niveles de registro.
+```shell
+# Yarn
+yarn build
 
-```typescript
-logger.info('Mensaje de nivel de información');
-logger.debug('Mensaje de nivel de depuración');
-logger.warn('Mensaje de nivel de advertencia');
+# NPM
+npm run-script build
 ```
 
-Para usar `logger.info` o `logger.warn`, simplemente coloque la línea en su archivo de mapeo.
+## Logging
+
+The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+
+```typescript
+logger.info('Info level message');
+logger.debug('Debugger level message');
+logger.warn('Warning level message');
+```
+
+To use `logger.info` or `logger.warn`, just place the line into your mapping file.
 
 ![logging.info](/assets/img/logging_info.png)
 
-Para usar `logger.debug`, se requiere un paso adicional. Agrega `--log-level=debug` a tu línea de comando.
+To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
 
-Si está ejecutando un contenedor docker, agregue esta línea a su archivo `docker-compose.yaml`.
+If you are running a docker container, add this line to your `docker-compose.yaml` file.
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-Ahora debería ver el nuevo registro en la pantalla del terminal.
+You should now see the new logging in the terminal screen.
 
 ![logging.debug](/assets/img/subquery_logging.png)

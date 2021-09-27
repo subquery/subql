@@ -29,7 +29,7 @@ Bạn sẽ cần:
 
 - một tài khoản GitHub
 
-## 1. Tạo dự án của bạn
+## Bước 1: Tạo dự án của bạn
 
 Hãy tạo một dự án có tên là subql_hellowworld và chạy cài đặt bắt buộc, codegen và xây dựng với trình quản lý gói yêu thích của bạn.
 
@@ -42,17 +42,17 @@ yarn build
 
 KHÔNG chạy các lệnh docker.
 
-## 2. Tạo repo GitHub
+## Bước 2: Tạo repo GitHub
 
 Trong GitHub, hãy tạo một repository công khai mới. Cung cấp tên và đặt khả năng hiển thị của bạn ở chế độ công khai. Ở đây, mọi thứ được giữ làm mặc định.
 
-![tạo repo github](/assets/img/github_create_new_repo.png)
+![create github repo](/assets/img/github_create_new_repo.png)
 
 Hãy lưu ý URL GitHub của bạn, URL này phải được công khai để SubQuery có thể truy cập.
 
-![tạo repo github](/assets/img/github_repo_url.png)
+![create github repo](/assets/img/github_repo_url.png)
 
-## 3. Push tới GitHub
+## Bước 3: Push tới GitHub
 
 Quay lại thư mục dự án của bạn, khởi tạo nó dưới dạng thư mục git. Nếu không, bạn có thể gặp lỗi "nghiêm trọng: không phải là kho lưu trữ git (hoặc bất kỳ thư mục mẹ nào): .git"
 
@@ -99,11 +99,11 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 Lệnh push có nghĩa là "vui lòng đẩy mã của tôi ĐẾN kho lưu trữ gốc TỪ kho lưu trữ cục bộ chính của tôi". Làm mới GitHub sẽ hiển thị tất cả mã trong GitHub.
 
-![Cam kết đầu tiên](/assets/img/first_commit.png)
+![First commit](/assets/img/first_commit.png)
 
 Bây giờ bạn đã có code của mình vào GitHub, hãy xem cách chúng tôi có thể lưu trữ code đó trong Dự án SubQuery.
 
-## 4. Tạo dự án của bạn
+## Bước 4: Tạo dự án của bạn
 
 Điều hướng đến [https://project.subquery.network](https://project.subquery.network) và đăng nhập bằng tài khoản GitHub của bạn.
 
@@ -130,7 +130,7 @@ Khi bạn nhấp vào tạo, bạn sẽ được đưa đến trang tổng quan 
 
 Trang tổng quan chứa nhiều thông tin hữu ích như mạng mà nó đang sử dụng, URL kho lưu trữ GitHub của mã nguồn đang chạy, thời điểm nó được tạo và cập nhật lần cuối và đặc biệt là chi tiết triển khai.
 
-## 5. Triển khai dự án của bạn
+## Bước 5: Triển khai dự án của bạn
 
 Bây giờ bạn đã tạo dự án của mình trong SubQuery Projects, thiết lập hành vi hiển thị, bước tiếp theo là triển khai dự án của bạn để làm cho nó hoạt động. Việc triển khai một phiên bản sẽ kích hoạt hoạt động lập chỉ mục SubQuery mới bắt đầu và thiết lập dịch vụ truy vấn bắt buộc để bắt đầu chấp nhận các yêu cầu GraphQL. Bạn cũng có thể triển khai các phiên bản mới cho các dự án hiện có tại đây.
 
@@ -152,7 +152,7 @@ Việc triển khai hiện đang chạy.
 
 ![Triển khai đang chạy](/assets/img/deployment_running.png)
 
-## 6. Kiểm tra dự án của bạn
+## Bước 6: Kiểm tra dự án của bạn
 
 Để kiểm tra dự án của bạn, hãy nhấp vào 3 dấu chấm lửng và chọn "View on SubQuery Explorer".
 
@@ -160,9 +160,9 @@ Việc triển khai hiện đang chạy.
 
 Thao tác này sẽ đưa bạn đến "Playground" quen thuộc, nơi bạn có thể nhấp vào nút play và xem kết quả của truy vấn.
 
-![Sân chơi Subquery](/assets/img/subquery_playground.png)
+![Subquery playground](/assets/img/subquery_playground.png)
 
-## 7. Bước thêm
+## Bước 7: Bước thêm
 
 Đối với những người sắc sảo trong số chúng ta, bạn sẽ nhớ lại rằng trong mục tiêu học tập, điểm cuối cùng là chạy một truy vấn GET đơn giản. Để làm điều này, chúng tôi sẽ cần lấy "Query Endpoint" được hiển thị trong chi tiết triển khai.
 

@@ -8,7 +8,7 @@ Nếu có thắc mắc, xin hãy đặt câu hỏi!
 
 ## Tệp Figma có thể xuất
 
-Tệp Figma của chúng tôi có một bộ sưu tập đầy đủ tất cả các tài sản thương hiệu (biểu trưng, ​​phông chữ, màu sắc, hình ảnh, v. v.) để xuất.
+Tệp Figma của chúng tôi có một bộ sưu tập đầy đủ tất cả các tài sản thương hiệu (biểu trưng, phông chữ, màu sắc, hình ảnh, v. v.) để xuất.
 
 [Figma - Tài nguyên thương hiệu SubQuery](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 

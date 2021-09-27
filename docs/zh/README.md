@@ -23,9 +23,9 @@
       <li>
         <a href="https://doc.subquery.network/tutorials_examples/introduction.html">
           <div>
-             <img src="/assets/img/tutorialsIcon.svg" />
-             <span>教程和示例</span>
-             <p>边做边学。 如何构建各种子查询项目的教程和示例。 </p>
+            <img src="/assets/img/tutorialsIcon.svg" />
+            <span>教程和示例</span>
+            <p>在实践中学习。 如何构建各种子查询项目的教程和示例。</p>
           </div>
         </a>
       </li>
@@ -34,7 +34,7 @@
           <div>
             <img src="/assets/img/docsIcon.svg" />
             <span>技术参考文档</span>
-            <p>由开发者为开发者编写。 快速查找建立超棒的 dapp 所需的。 </p>
+            <p>由开发者为开发者编写。 快速查找建立超棒的 dapp 所需的。</p>
           </div>
         </a>
       </li>
@@ -42,8 +42,8 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>SubQuery 网络</span>
-            <p>SubQuery 的分散未来。 阅读更多关于如何奖励索引器和消费者的信息。 </p>
+            <span>SubQuery Network</span>
+            <p>SubQuery 的分散未来。 阅读更多关于如何奖励索引器和消费者的信息。</p>
           </div>
         </a>
       </li>

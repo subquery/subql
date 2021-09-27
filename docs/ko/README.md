@@ -26,7 +26,6 @@
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>튜토리얼 및 예제</span>
             <p>직접 해보면서 배우기 다양한 서브쿼리 프로젝트를 빌드하는 방법에 대한 가이드 및 예시</p>
-           </div> 다양한 SubQuery 프로젝트를 구축하는 방법에 대한 자습서 및 예 </p>
            </div>
         </a>
       </li>
@@ -36,18 +35,21 @@
              <img src="/assets/img/docsIcon.svg" />
              <span>기술 참고 문서</span>
              <p>개발자가 개발자를 위해 작성한 것 멋진 디앱을 보다 쉽고 빠르게 구축하는 데 필요한 것을 찾아보세요.</p>
-           </div> 멋진 dApp을 빠르게 구축하는 데 필요한 것을 찾으십시오. </p>
            </div>
-        </a> </li>
-- <a href="https://static.subquery.network/whitepaper.pdf" target="_blank"> 
-  
-  <div>
-    <img src="/assets/img/networkIcon.svg" /> <span>서브쿼리 네트워크</span> 
-    
-    <p>
-      서브쿼리의 탈중앙화된 미래. 인덱서와 소비자가 보상을 받는 방식에 대해서 자세히 알아보세요.
-    </p>
-  </div></a> </ul> </div> </div>
+        </a>
+      </li>
+      <li>
+        <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
+          <div>
+             <img src="/assets/img/networkIcon.svg" />
+             <span>서브쿼리 네트워크</span>
+             <p>서브쿼리의 탈중앙화된 미래. 인덱서와 소비자가 보상을 받는 방식에 대해서 자세히 알아보세요.</p>
+           </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
 <section class="faqSection main">
   <div>
     <h2 class="title">FAQ</h2>

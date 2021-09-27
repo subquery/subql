@@ -12,7 +12,7 @@ Cách tốt nhất để bắt đầu sử dụng SubQuery là thực hiện [H�
 
 ## Làm cách nào để tôi có thể đóng góp hoặc gửi phản hồi cho SubQuery?
 
-Chúng tôi rất trân trọng những đóng góp và phản hồi từ cộng đồng. Để đóng góp mã, hãy chia nhỏ kho lưu trữ quan tâm và thực hiện các thay đổi của bạn. Sau đó gửi PR hoặc Pull Request. Ồ, đừng quên kiểm tra lại nhé! Bạn nên tham khảo hướng dẫn đóng góp của chúng tôi (TBA).
+Chúng tôi rất trân trọng những đóng góp và phản hồi từ cộng đồng. Để đóng góp mã, hãy chia nhỏ kho lưu trữ quan tâm và thực hiện các thay đổi của bạn. Sau đó gửi PR hoặc Pull Request. Ồ, đừng quên kiểm tra lại nhé! Bạn nên tham khảo hướng dẫn đóng góp của chúng tôi (TBA/thông báo sau).
 
 Để gửi phản hồi, hãy liên hệ với chúng tôi qua email hello@subquery.network hoặc truy cập [kênh discord](https://discord.com/invite/78zg8aBSMG) của chúng tôi
 
@@ -40,14 +40,6 @@ Thông tin ngoại lai cố hữu là những phần thông tin không được 
 
 Giao dịch ngoại lai có chữ ký là các giao dịch có chứa chữ ký của tài khoản thực hiện giao dịch. Họ phải trả một khoản phí để giao dịch được đưa vào chuỗi.
 
-Các giao dịch ngoại lai không có chữ ký là các giao dịch không có chữ ký của tài khoản đã thực hiện giao dịch. Ao dịch ngoại lai chưa được ký kết nên sử dụng cẩn thận vì không ai trả phí, vì nó đã được ký. Vì thế, danh sách chờ giao dịch không có logic kinh tế để tránh bị spam.
+Các giao dịch ngoại lai không có chữ ký là các giao dịch không có chữ ký của tài khoản đã thực hiện giao dịch. Các giao dịch ngoại lai chưa được ký kết nên sử dụng cẩn thận vì không ai trả phí, vì nó đã được ký. Vì thế, danh sách chờ giao dịch không có logic kinh tế để tránh bị spam.
 
 Để biết thêm thông tin chi tiết, hãy nhấp vào [đây](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
-
-## Điểm cuối của mạng Kusama là gì?
-
-Network.endpoint cho mạng Kusama là ` wss: //kusama.api.onfinality.io/public-ws `.
-
-## Điểm cuối cho mạng mainnet Polkadot là gì?
-
-Network.endpoint cho mạng Polkadot là ` wss: //polkadot.api.onfinality.io/public-ws `.

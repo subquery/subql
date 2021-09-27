@@ -59,8 +59,6 @@ Anda dapat menambahkan titik akhir kamus di file `project.yaml` Anda (lihat [Fil
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-[Baca selengkapnya tentang cara kerja Kamus SubQuery](../tutorials_examples/dictionary.md).
-
 #### Hubungkan ke database
 
 ```
@@ -69,15 +67,15 @@ export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-subql-node -f your-project-path 
-````
+subql-node -f your-project-path
+```
 
 Bergantung pada konfigurasi database Postgres Anda (misalnya kata sandi database yang berbeda), harap pastikan juga bahwa pengindeks (`subql/node`) dan layanan kueri (`subql/query`) dapat membuat koneksi ke sana.
 
 #### Tentukan file konfigurasi
 
 ```
-subql-node -c proyek-anda-config.yml
+subql-node -c your-project-config.yml
 ```
 
 Ini akan mengarahkan node kueri ke file konfigurasi yang bisa dalam format YAML atau JSON. Lihat contoh di bawah ini.
@@ -109,76 +107,8 @@ subql-node -f your-project-path --local
 
 Untuk tujuan debugging, pengguna dapat menjalankan node dalam mode lokal. Beralih ke model lokal akan membuat tabel Postgres dalam skema `publik` default.
 
-Harap perhatikan bahwa kami **TIDAK** mendukung penggunaan `yarn global` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan error di masa mendatang.
+Jika mode lokal tidak digunakan, skema Postgres baru dengan `subquery_` awal dan tabel proyek yang sesuai akan dibuat.
 
-
-#### Periksa kesehatan simpul Anda
-
-Ada 2 titik akhir yang dapat Anda gunakan untuk memeriksa dan memantau kondisi node SubQuery yang sedang berjalan.
-
-- Titik akhir pemeriksaan kesehatan yang mengembalikan 200 respons sederhana
-- Titik akhir metadata yang menyertakan analitik tambahan dari node SubQuery Anda yang sedang berjalan
-
-Tambahkan ini ke URL dasar node SubQuery Anda. Misalnya `http://localhost:3000/meta` akan mengembalikan:
-
-```bash
-{
-    "currentProcessingHeight": 1000699,
-    "currentProcessingTimestamp": 1631517883547,
-    "targetHeight": 6807295,
-    "bestHeight": 6807298,
-    "indexerNodeVersion": "0.19.1",
-    "lastProcessedHeight": 1000699,
-    "lastProcessedTimestamp": 1631517883555,
-    "uptime": 41.151789063,
-    "polkadotSdkVersion": "5.4.1",
-    "apiConnected": true,
-    "injectedApiConnected": true,
-    "usingDictionary": false,
-    "chain": "Polkadot",
-    "specName": "polkadot",
-    "genesisHash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
-    "blockTime": 6000
-}
-```
-
-`http://localhost:3000/health` akan mengembalikan HTTP 200 jika berhasil.
-
-Kesalahan 500 akan dikembalikan jika pengindeks tidak sehat. Ini sering terlihat ketika node sedang boot.
-
-```shell
-{
-    "status": 500,
-    "error": "Indexer is not healthy"
-}
-```
-
-Jika URL yang digunakan salah, kesalahan 404 tidak ditemukan akan ditampilkan.
-
-```shell
-{
-"statusCode": 404,
-"message": "Cannot GET /healthy",
-"error": "Not Found"
-}
-```
-
-#### Debug proyek Anda
-
-Gunakan [inspektur simpul](https://nodejs.org/en/docs/guides/debugging-getting-started/) untuk menjalankan perintah berikut.
-
-```shell
-node --inspect-brk <path to subql-node> -f <path to subQuery project>
-```
-
-Sebagai contoh:
-```shell
-node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
-Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
-For help, see: https://nodejs.org/en/docs/inspector
-Debugger attached.
-```
-Kemudian buka alat pengembang Chrome, buka Sumber > Filesystem dan tambahkan proyek Anda ke ruang kerja dan mulai debugging. Untuk informasi lebih lanjut, periksa [Cara men-debug proyek SubQuery](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## Menjalankan Layanan Kueri (subql/query)
 
 ### Instalasi
@@ -191,6 +121,7 @@ npm install -g @subql/query
 Harap perhatikan bahwa kami **TIDAK** mendukung penggunaan `yarn global` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan error di masa mendatang.
 
 ### Menjalankan layanan Kueri
+
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
 Pastikan nama proyek sama dengan nama proyek saat Anda [menginisialisasi proyek](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Periksa juga variabel lingkungan sudah benar.

@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.10.0",
+  "version": "0.12.1-0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -19,7 +19,10 @@
     "ejs": "^3.1.6",
     "rimraf": "^3.0.2",
     "simple-git": "^2.31.0",
-    "tslib": "^2.1.0"
+    "ts-loader": "^9.2.5",
+    "tslib": "^2.1.0",
+    "webpack": "^5.52.1",
+    "webpack-merge": "^5.8.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",

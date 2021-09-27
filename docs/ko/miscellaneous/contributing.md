@@ -1,54 +1,54 @@
-# SubQuery에 기여하기
+# Contributing To SubQuery
 
-SubQuery 프로젝트에 도움을 주려는 여러분을 환영하고 깊은 감사의 말씀을 드립니다. 우리는 함께 보다 탈중화된 미래를 위한 길을 마련할 수 있습니다.
+Welcome and a big thank you for considering contributing to this SubQuery project! Together we can pave the way to a more decentralised future.
 
-> 이 문서는 SubQuery 팀이 적극적으로 관리합니다. 여러분의 기여를 환영합니다. 여러분은 GitHub 프로젝트를 분리하고 `docs` 디렉토리 하위의 모든 문서 마크다운 파일을 변경하면 됩니다.
+> This documentation is actively maintained by the SubQuery team. We welcome your contributions, you can do so by forking our GitHub project and making changes to all the documentation markdown files under the `docs` directory.
 
-다음은 SubQuery에 기여하는데에 있어서의 일련의 지침(규칙이 아님)입니다. 이 지침을 따르면 관련된 모든 사람이 기여하는 프로세스를 쉽고 효과적으로 만드는 데 도움이 됩니다. 또한 이 프로젝트를 관리하고 개발하는 개발자의 시간을 존중하는 데 동의한다는 것을 의미합니다. 그 대가로, 우리는 귀하의 문제를 해결하고, 변경 사항을 고려하고, 개선을 위해 협력하고, pull request들을 완료하는 데 도움을 줄 것입니다.
+What follows is a set of guidelines (not rules) for contributing to SubQuery. Following these guidelines will help us make the contribution process easy and effective for everyone involved. It also communicates that you agree to respect the time of the developers managing and developing this project. In return, we will reciprocate that respect by addressing your issue, considering changes, collaborating on improvements, and helping you finalise your pull requests.
 
-## 행동 강령
+## Code of Conduct
 
-우리는 오픈 소스 커뮤니티 프로젝트와 책임을 진지하게 받아들이고 우리 자신과 다른 기여자들에게 높은 수준의 커뮤니케이션을 요구합니다. 이 프로젝트에 참여하고 기여함으로써, 귀하는 당사의 [행동 강령](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md)을 준수하는 데 동의합니다.
+We take our open source community projects and responsibility seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md).
 
-## 시작하기
+## Getting started
 
-우리 저장소에 대한 기여는 Issues 및 Pull Requests (PRs)를 통해 이루어집니다. 두 가지에 대한 몇개의 일반 지침:
+Contributions to our repositories are made through Issues and Pull Requests (PRs). A few general guidelines that cover both:
 
-* 본인의 것을 만들기 전에 기존의 Issues 및 PRs를 검색하십시오.
-* 우리는 문제가 신속하게 처리될 수 있도록 열심히 노력하고 있지만, 영향 정도에 따라 근본 원인을 조사하는 데 시간이 걸릴 수 있습니다. 귀하의 문제가 막힌 경우 제출자 또는 기여자에 대한 댓글에서 친밀한 @ 의 언급은 관심을 끄는 데 도움이 될 수 있습니다.
+- Search for existing Issues and PRs before creating your own.
+- We work hard to makes sure issues are handled in promptly but, depending on the impact, it could take a while to investigate the root cause. A friendly @ mention in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
 
-## 기여하는 방법
+## How to Contribute
 
-### 버그 신고
+### Reporting Bugs
 
-버그는 GitHub 문제로 추적됩니다. 문제를 기록할 때, 문제를 설명하고 유지 관리자가 문제를 재현해서 확인할 수 있도록 추가 세부정보를 포함해야 합니다.
+Bugs are tracked as GitHub issues. When logging an issue, explain the problem and include additional details to help maintainers reproduce the problem:
 
-* 문제를 식별하기 위해 문제에 대해 명확하고 자세한 제목을 사용합니다.
-* 문제를 재현 확인하기 위한 정확한 단계를 설명합니다.
-* 단계들을 수행한 후에 당신이 관찰했던 동작을 설명하십시오.
-* 귀하가 기대 예상했던 동작과 그 이유를 설명하세요.
-* 가능하다면 스크린샷을 첨부하세요.
+- Use a clear and descriptive title for the issue to identify the problem.
+- Describe the exact steps to reproduce the problem.
+- Describe the behavior you observed after following the steps.
+- Explain which behavior you expected to see instead and why.
+- Include screenshots if possible.
 
-### Pull Requests 제출
+### Submitting Pull Requests
 
-일반적으로 "fork-and-pull" Git 작업 방식을 따릅니다.
+In general, we follow the "fork-and-pull" Git workflow
 
-* 저장소를 자신의 Github 계정에 포크하세요.
-* 자신의 기기에 프로젝트를 복사하세요.
-* 간결하지만 자세한 이름을 사용하여 로컬에서 브랜치를 만드세요.
-* 브랜치에 변화를 적용하세요
-* 이 저장소와 관련된 형식 및 테스트 지침 준수합니다.
-* 변경사항을 귀하의 포크에 적용합니다.
-* 우리 저장소에 있는 PR을 열어봅니다.
+- Fork the repository to your own Github account
+- Clone the project to your machine
+- Create a branch locally with a succinct but descriptive name
+- Commit changes to the branch
+- Following any formatting and testing guidelines specific to this repo
+- Push changes to your fork
+- Open a PR in our repository
 
-## 코딩 규칙
+## Coding Conventions
 
-### Git 커밋 메시지
+### Git Commit Messages
 
-* 현재 시제 사용 ("추가된 기능"이 아닌 "기능 추가")
-* 명령형 문장 사용 ("커서를 다음으로 이동"이 아니라 "다음으로 커서 이동")
-* 첫 번째 줄은 72자 이하로 제한하십시오.
+- Use the present tense ("Add feature" not "Added feature")
+- Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
+- Limit the first line to 72 characters or less
 
-### 자바스크립트 스타일 지침
+### JavaScript Styleguide
 
-* 모든 JavaScript 코드는 Prettier 및 ESLint로 연결됩니다.
+- All JavaScript code is linted with Prettier and ESLint

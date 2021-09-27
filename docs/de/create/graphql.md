@@ -1,15 +1,16 @@
-# Learn more about GraphQL
+# GraphQL-Schema
 
 ## Definieren von Entitäten
 
-Die `schema.graphql` Datei definiert die verschiedenen GraphQL Schemas. Aufgrund der Funktionsweise der GraphQL-Abfragesprache bestimmt die Schemadatei im Wesentlichen die Form Ihrer Daten aus SubQuery. There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
+Die `schema.graphql` Datei definiert die verschiedenen GraphQL Schemas. Aufgrund der Funktionsweise der GraphQL-Abfragesprache bestimmt die Schemadatei im Wesentlichen die Form Ihrer Daten aus SubQuery. Um mehr über das Schreiben in der GraphQL-Schemasprache zu erfahren, empfehlen wir Ihnen, sich [Schemas und Typen](https://graphql.org/learn/schema/#type-language) anzusehen.
 
-**Wichtig: Wenn Sie Änderungen an der Schemadatei vornehmen, stellen Sie bitte sicher, dass Sie Ihr Typenverzeichnis mit dem folgenden Befehl `yarn codegen`.**
+**Wichtig: Wenn Sie Änderungen an der Schemadatei vornehmen, stellen Sie bitte sicher, dass Sie Ihr Typenverzeichnis mit dem folgenden Befehl `yarn codegen`. neu generieren**
 
 ### Entitäten
+
 Jede Entität muss ihre Pflichtfelder `id` mit dem Typ `ID!` definieren. Er wird als Primärschlüssel verwendet und ist unter allen Entitäten desselben Typs eindeutig.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Felder, die keine Null-Werte enthalten können, sind in der Entität durch gekennzeichnet Bitte sehen Sie das Beispiel unten:
 
 ```graphql
 Typ Beispiel @entity {
@@ -22,6 +23,7 @@ Typ Beispiel @entity {
 ### Unterstützte Skalare und Typen
 
 Wir unterstützen derzeit fließende Skalartypen:
+
 - `ID`
 - `Int`
 - `String`
@@ -43,19 +45,21 @@ Hier ist ein Beispiel.
 type User @entity {
   id: ID!
   name: String! @index(unique: true) #  kann auf wahr oder falsch
-  Titel gesetzt werden! # Indizes werden automatisch zum Fremdschlüsselfeld hinzugefügt
+  Titel gesetzt werden!
+  title: Title! # Indizes werden automatisch zum Fremdschlüsselfeld hinzugefügt
 }
 
 type Title @entity {
-  id: ID!  
+  id: ID!
   name: String! @index(unique:true)
 }
 ```
+
 Angenommen, wir kennen den Namen dieses Benutzers, kennen aber nicht den genauen ID-Wert, anstatt alle Benutzer zu extrahieren und dann nach Namen zu filtern, können wir `@index` hinter dem Namensfeld hinzufügen. Dies macht die Abfrage viel schneller und wir können zusätzlich das `unique: true` übergeben, um die Eindeutigkeit zu gewährleisten.
 
 **Wenn ein Feld nicht eindeutig ist, ist die maximale Ergebnismenge 100**
 
-Wenn die Codegenerierung ausgeführt wird, wird automatisch ein `getByName` nach dem `Benutzer`-Modell erstellt, und das Fremdschlüsselfeld `Titel` erstellt ein `getByTitleId`-Methode, die beide direkt in der Mapping-Funktion aufgerufen werden können.
+Wenn die Codegenerierung ausgeführt wird, wird automatisch ein `getByName` nach dem `Benutzer`-Modell erstellt, und das Fremdschlüsselfeld `Titel` erstellt ein ` getByTitleId`-Methode, die beide direkt in der Mapping-Funktion aufgerufen werden können.
 
 ```sql
 /* Vorbereitung eines Datensatzes für die Titelentität */
@@ -64,8 +68,8 @@ INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 
 ```typescript
 // Handler in der Mapping-Funktion
-import {User} from "../types/models/User"
-import {Title} from "../types/models/Title"
+import {User} from '../types/models/User';
+import {Title} from '../types/models/Title';
 
 const jack = await User.getByName('Jack Sparrow');
 
@@ -120,7 +124,7 @@ Beispiel: Eine Person kann mehrere Konten haben.
 ```graphql
 type Person @entity {
   id: ID!
-  accounts: [Account] 
+  accounts: [Account]
 }
 
 type Account @entity {
@@ -130,6 +134,7 @@ type Account @entity {
 ```
 
 ### Viele-zu-Viele-Beziehungen
+
 Eine Viele-zu-Viele-Beziehung kann erreicht werden, indem eine Abbildungsentität implementiert wird, um die anderen beiden Entitäten zu verbinden.
 
 Beispiel: Jede Person ist Teil mehrerer Gruppen (PersonGroup) und Gruppen haben mehrere verschiedene Personen (PersonGroup).
@@ -203,16 +208,18 @@ type Transfer @entity {
 Wir unterstützen das Speichern von Daten als JSON-Typ, was eine schnelle Möglichkeit zum Speichern strukturierter Daten darstellt. Wir generieren automatisch entsprechende JSON-Schnittstellen zum Abfragen dieser Daten und sparen Ihnen Zeit beim Definieren und Verwalten von Entitäten.
 
 Wir empfehlen Benutzern, den JSON-Typ in den folgenden Szenarien zu verwenden:
+
 - Das Speichern strukturierter Daten in einem einzelnen Feld ist einfacher zu verwalten als das Erstellen mehrerer separater Entitäten.
 - Speichern beliebiger Schlüssel/Wert-Benutzereinstellungen (wobei der Wert boolesch, textuell oder numerisch sein kann und Sie keine separaten Spalten für verschiedene Datentypen haben möchten)
 - Das Schema ist flüchtig und ändert sich häufig
 
 ### JSON-Direktive definieren
+
 Definieren Sie die Eigenschaft als JSON-Typ, indem Sie die Annotation `jsonField` in der Entität hinzufügen. Dadurch werden automatisch Schnittstellen für alle JSON-Objekte in Ihrem Projekt unter `types/interfaces.ts` generiert, auf die Sie in Ihrer Mapping-Funktion zugreifen können.
 
 Im Gegensatz zur Entität erfordert das jsonField-Direktivenobjekt kein `id`-Feld. Ein JSON-Objekt kann auch mit anderen JSON-Objekten verschachtelt werden.
 
-````graphql
+```graphql
 schreibe AddressDetail @jsonField {
    street: String!
   district: String!
@@ -224,10 +231,10 @@ type ContactCard @jsonField {
 }
 
 type User @entity {
-  id: ID! 
+  id: ID!
   contact: [ContactCard] # Speichern Sie eine Liste von JSON-Objekten
 }
-````
+```
 
 ### Abfragen von JSON-Feldern
 
@@ -238,15 +245,9 @@ Die Auswirkungen sind in unserem Abfrageservice jedoch noch akzeptabel. Hier ist
 ```graphql
 #Um die ersten 5 Benutzer zu finden, enthält die eigene Telefonnummer '0064'.
 
-query{
-  user(
-    first: 5,
-    filter: {
-      contactCard: {
-        contains: [{ phone: "0064" }]
-    }
-}){
-    nodes{
+query {
+  user(first: 5, filter: {contactCard: {contains: [{phone: "0064"}]}}) {
+    nodes {
       id
       contactCard
     }

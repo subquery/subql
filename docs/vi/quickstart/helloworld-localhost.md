@@ -1,6 +1,6 @@
 # Hello World (localhost + Docker)
 
-Chào mừng bạn đến với SubQuery Hello World quick start. Khởi động nhanh nhằm mục đích chỉ cho bạn cách bạn có được dự án khởi động mặc định đang chạy trong Docker trong một vài bước đơn giản.
+Chào mừng bạn đến với SubQuery Hello World quick start. Việc bắt đầu nhanh nhằm mục đích chỉ cho bạn cách bạn có được dự án khởi động mặc định chạy trong Docker trong một vài bước đơn giản.
 
 ## Mục tiêu học tập
 
@@ -57,7 +57,7 @@ Nếu bạn đạt được những điều trên, thì bạn đã tốt để �
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Khởi tạo dự án
+## Bước 1: Khởi tạo dự án
 
 Bước đầu tiên khi bắt đầu với SubQuery là chạy lệnh `subql init`. Hãy khởi tạo một dự án bắt đầu với tên `subqlHelloWorld`. Lưu ý rằng chỉ tác giả là bắt buộc. Mọi thứ khác được để trống bên dưới.
 
@@ -79,14 +79,19 @@ Init the starter package... subqlHelloWorld is ready
 cd subqlHelloWorld
 ```
 
-## 2. Cài đặt phần phụ thuộc
+## Bước 2: Cài đặt phần phụ thuộc
 
 Bây giờ yarn hoặc node install để cài các phụ thuộc khác nhau.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn install
 
-Ví dụ`yarn install`
+# NPM
+npm install
+```
+
+Ví dụ `yarn install`
 
 ```shell
 > yarn install
@@ -100,14 +105,19 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## 3. Tạo mã
+## Bước 3: Tạo mã
 
 Bây giờ, hãy chạy `yarn codegen` để generate Typescript từ giản đồ GraphQL.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn codegen
 
-Ví dụ`yarn codegen`
+# NPM
+npm run-script codegen
+```
+
+Ví dụ `yarn codegen`
 
 ```shell
 > yarn codegen
@@ -124,12 +134,17 @@ $ ./node_modules/.bin/subql codegen
 
 **Cảnh báo** Khi các thay đổi được thực hiện đối với tệp giản đồ, hãy nhớ chạy lại `yarn codegen` để tạo lại thư mục loại của bạn.
 
-## 4. Build code
+## Bước 4: Build code
 
 Bước tiếp theo là xây dựng mã với `yarn build`.
 
-<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
-<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
 
 Ví dụ `yarn build`
 
@@ -140,7 +155,7 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Chạy Docker
+## Bước 5: Chạy Docker
 
 Sử dụng Docker cho phép bạn chạy ví dụ này rất nhanh vì tất cả cơ sở hạ tầng cần thiết có thể được cung cấp trong hình ảnh Docker. Run `docker-compose pull && docker-compose up`.
 
@@ -162,7 +177,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Duyệt qua playground
+## Bước 6: Duyệt qua playground
 
 Vào trang web http://localhost:3000/ và dán truy vấn bên dưới vào bên trái màn hình rồi nhấn nút play.
 
@@ -181,7 +196,7 @@ Vào trang web http://localhost:3000/ và dán truy vấn bên dưới vào bên
 
 Sân chơi SubQuery trên localhost.
 
-![localhost sân chơi](/assets/img/subql_playground.png)
+![playground localhost](/assets/img/subql_playground.png)
 
 Số khối trong playground cũng phải khớp với số khối (về mặt kỹ thuật là chiều cao khối) trong thiết bị đầu cuối.
 

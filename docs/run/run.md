@@ -49,7 +49,7 @@ To find out more, you can always run `--help`.
 subql-node -f your-project-path
 ```
 
-#### Using a Dictionary
+#### Use a Dictionary
 
 Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
 
@@ -61,6 +61,8 @@ You can add the dictionary endpoint in your `project.yaml` file (see [Manifest F
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
+[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+
 #### Connect to database
 
 ```
@@ -68,7 +70,7 @@ export DB_USER=postgres
 export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
-export DB_POST=5432
+export DB_PORT=5432
 subql-node -f your-project-path 
 ````
 
@@ -101,7 +103,7 @@ Result:
 
 When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
 
-#### Local mode
+#### Run in local mode
 
 ```
 subql-node -f your-project-path --local
@@ -111,6 +113,75 @@ For debugging purposes, users can run the node in local mode. Switching to local
 
 If local mode is not used, a new Postgres schema with the initial `subquery_ ` and corresponding project tables will be created.
 
+
+#### Check your node health
+
+There are 2 endpoints that you can use to check and monitor the health of a running SubQuery node.
+
+- Health check endpoint that returns a simple 200 response
+- Metadata endpoint that includes additional analytics of your running SubQuery node
+
+Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
+
+```bash
+{
+    "currentProcessingHeight": 1000699,
+    "currentProcessingTimestamp": 1631517883547,
+    "targetHeight": 6807295,
+    "bestHeight": 6807298,
+    "indexerNodeVersion": "0.19.1",
+    "lastProcessedHeight": 1000699,
+    "lastProcessedTimestamp": 1631517883555,
+    "uptime": 41.151789063,
+    "polkadotSdkVersion": "5.4.1",
+    "apiConnected": true,
+    "injectedApiConnected": true,
+    "usingDictionary": false,
+    "chain": "Polkadot",
+    "specName": "polkadot",
+    "genesisHash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "blockTime": 6000
+}
+```
+
+`http://localhost:3000/health` will return HTTP 200 if successful. 
+
+A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
+
+```shell
+{
+    "status": 500,
+    "error": "Indexer is not healthy"
+}
+```
+
+If an incorrect URL is used, a 404 not found error will be returned.
+
+```shell
+{
+"statusCode": 404,
+"message": "Cannot GET /healthy",
+"error": "Not Found"
+}
+```
+
+#### Debug your project
+
+Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+
+```shell
+node --inspect-brk <path to subql-node> -f <path to subQuery project>
+```
+
+For example:
+```shell
+node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
+Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+```
+Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out 
+[How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## Running a Query Service (subql/query)
 
 ### Installation

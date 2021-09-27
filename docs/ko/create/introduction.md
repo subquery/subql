@@ -1,19 +1,20 @@
-# Tutorials & Examples
+# Creating a SubQuery Project
 
-[quick start](/quickstart/quickstart.md) 가이드에서는 SubQuery의 기능과 작동 방식을 보여 주는 예제를 빠르게 살펴보았습니다. 여기서는 프로젝트를 만들 때의 워크플로우와 작업할 키 파일을 자세히 살펴보겠습니다.
+In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
-## SubQuery Examples
-다음 예제 중 일부는 [Quick start](../quickstart/quickstart.md) 섹션에서 스타터 패키지를 성공적으로 초기화했다고 가정합니다. 이 시작 패키지에서 SubQuery 프로젝트를 사용자 정의 및 구현하기 위한 표준 프로세스를 살펴보겠습니다.
+## The Basic Workflow
 
-1. `subql init PROJECT_NAME`을 사용하여 프로젝트를 초기화합니다.
-2. Manifest 파일 (`project.yaml`)을 업데이트하여 블록 체인과 매핑할 엔티티에 대한 정보를 포함하세요. [Manifest File](./manifest.md) 참조
-3. Schema(`schema.graphql`)에서 추출하고 Query하기 위해 유지할 데이터의 모양을 정의하는 GraphQL 엔터티 만들기 - [GraphQL Schema](./graphql.md) 참조하세요
-4. 체인 데이터를 정의한 GraphQL 엔터티에 변환하기 위해 호출할 모든 매핑 기능(예. `mappingHandlers.ts`) 추가 - [Mapping](./mapping.md) 참조
-5. SubQuery 프로젝트에 대한 코드 생성, 생성 및 게시(또는 자체 로컬 노드에서 실행) - 빠른 시작 가이드의 [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project)을 참조하세요.
+Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
-## 디렉터리 구조
+1. Initialise your project using `subql init PROJECT_NAME`
+2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
+3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
+4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
+5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
 
-다음 맵은 `init` 명령이 실행될 때 SubQuery 프로젝트의 디렉터리 구조에 대한 개요를 제공합니다.
+## Directory Structure
+
+The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
 
 ```
 - project-name
@@ -30,27 +31,37 @@
   L .gitignore
 ```
 
-Example
+For example:
 
-![SubQuery 디렉터리 구조](/assets/img/subQuery_directory_stucture.png)
+![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
 
-## 코드 생성
+## Code Generation
 
-GraphQL 엔터티를 변경할 때마다 다음 명령을 사용하여 디렉토리 타입을 재생성해야 합니다.
+Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
 
 ```
 yarn codegen
 ```
 
-이렇게 하면 `schema.graphql`에서 이전에 정의한 각 유형에 대해 생성된 엔터티 클래스가 포함된 새 디렉터리`src/types`가 생성되거나 (기존 디렉터리가) 업데이트됩니다. 이러한 클래스는 엔티티 필드에 대한 유형 안전 엔티티 로드, 읽기 및 쓰기 액세스를 제공합니다. 자세한 내용은 [the GraphQL Schema](./graphql.md)에서 확인하세요.
+This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
 
-## 빌드
+## Build
 
-로컬 호스팅된 SubQuery 노드에서 SubQuery 프로젝트를 실행하려면 먼저 작업을 빌드해야 합니다.
+In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
 
-프로젝트의 루트 디렉터리에서 빌드 명령을 실행합니다.
+Run the build command from the project's root directory.
 
-<CodeGroup> The `console.log` method is **no longer supported**. 대신 `logger` 모듈이 유형에 주입되었으며, 이는 다양한 로깅 수준을 수용할 수 있는 로거를 지원할 수 있음을 의미합니다.
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
+
+## Logging
+
+The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
 
 ```typescript
 logger.info('Info level message');
@@ -58,16 +69,16 @@ logger.debug('Debugger level message');
 logger.warn('Warning level message');
 ```
 
-`logger.info` 또는 `logger.warn`을 사용하기 위해서는, 매핑 파일에 줄을 놓기만 하면 됩니다.
+To use `logger.info` or `logger.warn`, just place the line into your mapping file.
 
 ![logging.info](/assets/img/logging_info.png)
 
-`logger.debug`을 사용하기 위해서는, 추가 단계가 필요합니다. `--log-level=debug`을 명령행에 추가하세요.
+To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
 
-도커 컨테이너를 운영하는 경우, `docker-compose.yaml` 파일을 라인에 추가하세요.
+If you are running a docker container, add this line to your `docker-compose.yaml` file.
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-이제 터미널 화면에 새 로깅이 표시됩니다.
+You should now see the new logging in the terminal screen.
 
 ![logging.debug](/assets/img/subquery_logging.png)

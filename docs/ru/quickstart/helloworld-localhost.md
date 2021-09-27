@@ -57,7 +57,7 @@ If you get the above, then you are good to go. If not, follow these links to ins
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Step 1: Initialise project
+## Step 1: Initialise project
 
 The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
 
@@ -79,11 +79,19 @@ Don't forget to change into this new directory.
 cd subqlHelloWorld
 ```
 
-## 2. Step 2: Install dependencies
+## Step 2: Install dependencies
 
 Now do a yarn or node install to install the various dependencies.
 
-<CodeGroup> # Yarn yarn install # NPM npm install
+```shell
+# Yarn
+yarn install
+
+# NPM
+npm install
+```
+
+An example of `yarn install`
 
 ```shell
 > yarn install
@@ -97,11 +105,19 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## 3. Step 3: Generate code
+## Step 3: Generate code
 
 Now run `yarn codegen` to generate Typescript from the GraphQL schema.
 
-<CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
+```shell
+# Yarn
+yarn codegen
+
+# NPM
+npm run-script codegen
+```
+
+An example of `yarn codegen`
 
 ```shell
 > yarn codegen
@@ -118,11 +134,19 @@ $ ./node_modules/.bin/subql codegen
 
 **Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
 
-## 4. Step 4: Build code
+## Step 4: Build code
 
 The next step is to build the code with `yarn build`.
 
-<CodeGroup> # Yarn yarn build # NPM npm run-script build
+```shell
+# Yarn
+yarn build
+
+# NPM
+npm run-script build
+```
+
+An example of `yarn build`
 
 ```shell
 > yarn build
@@ -131,7 +155,7 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Run Docker
+## Step 5: Run Docker
 
 Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
 
@@ -153,7 +177,7 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## Step 6: Browse playground
 
 Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
 

@@ -43,11 +43,3 @@ Ekstrinsik transaksi yang ditandatangani adalah transaksi yang berisi tanda tang
 Transaksi ekstrinsik yang tidak ditandatangani adalah transaksi yang tidak berisi tanda tangan dari rekening yang mengeluarkan transaksi. Ekstrinsik transaksi yang tidak ditandatangani harus digunakan dengan hati-hati karena tidak ada yang membayar biaya, karena itu ditandatangani. Karena ini, antrian transaksi kekurangan logika ekonomi untuk mencegah spam.
 
 Untuk informasi lebih lanjut, klik [di sini](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
-
-## Apa titik akhir untuk jaringan Kusama?
-
-Network.endpoint untuk jaringan Kusama adalah `wss://kusama.api.onfinality.io/public-ws`.
-
-## Apa titik akhir untuk jaringan mainnet Polkadot?
-
-Network.endpoint untuk jaringan Polkadot adalah `wss://polkadot.api.onfinality.io/public-ws`.

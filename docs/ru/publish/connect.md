@@ -2,15 +2,16 @@
 
 После того, как ваше развертывание будет успешно завершено и наши узлы проиндексируют ваши данные из цепочки, вы сможете подключиться к своему проекту через отображаемую конечную точку запроса.
 
-![Проект развернут и синхронизирован](/assets/img/projects-deploy-sync.png)
+![Проект развернут и синхронизирован](https://static.subquery.network/media/projects/projects-deploy-sync.png)
 
 Кроме того, вы можете щелкнуть по трем точкам рядом с названием вашего проекта и просмотреть его в SubQuery Explorer. Там вы можете использовать в браузере игровую площадку для начала.
 
-![Проекты в SubQuery Explorer](/assets/img/projects-explorer.png)
+![Проекты в SubQuery Explorer](https://static.subquery.network/media/projects/projects-explorer.png)
 
 # Подробнее о GraphQL
 
 Вы можете следовать [ официальному руководству по GraphQL здесь ](https://graphql.org/learn/), чтобы узнать больше о GraphQL, как он работает и как его использовать:
+
 - Есть библиотеки, которые помогут вам реализовать GraphQL на [разных языках](https://graphql.org/code/)
 - Информацию об углубленном обучении с практическими уроками см. в [How to GraphQL](https://www.howtographql.com/).
 - Ознакомьтесь с бесплатным онлайн-курсом, [Исследование GraphQL: язык запроса API](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).

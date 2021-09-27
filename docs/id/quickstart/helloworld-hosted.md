@@ -29,7 +29,7 @@ Anda akan memerlukan:
 
 - akun GitHub
 
-## 1. Buatlah proyek Anda
+## Langkah 1: Buatlah proyek Anda
 
 Mari membuat proyek bernama subql_hallowworld dan menjalankan instalasi wajib, codegen, dan bangun dengan package manager favorit Anda.
 
@@ -42,7 +42,7 @@ yarn build
 
 JANGAN jalankan perintah docker.
 
-## 2. Buatlah repo GitHub
+## Langkah 2: Buatlah repo GitHub
 
 Pada GitHub, buatlah repositori publik baru. Berikan nama dan atur visibilitas Anda ke publik. Di sini, semuanya akan disimpan sebagai default untuk saat ini.
 
@@ -52,7 +52,7 @@ Catat URL GitHub Anda, ini harus bersifat publik agar SubQuery dapat mengaksesny
 
 ![buat repo github](/assets/img/github_repo_url.png)
 
-## 3. Push ke GitHub
+## Langkah 3: Push ke GitHub
 
 Kembali ke direktori proyek Anda, inisialisasi ini sebagai direktori git. Jika tidak, Anda mungkin akan mendapatkan kesalahan "fatal: not a git repository (or any of the parent directories): .git"
 
@@ -103,7 +103,7 @@ Perintah push berarti "tolong push kode saya KE repo origin DARI repo lokal mast
 
 Sekarang setelah Anda memasukkan kode ke GitHub, mari kita lihat bagaimana kita dapat meng-host-nya pada SubQuery Projects.
 
-## 4. Buatlah proyek Anda
+## Langkah 4: Buatlah proyek Anda
 
 Navigasikan ke [https://project.subquery.network](https://project.subquery.network) dan masuk dengan akun GitHub Anda.
 
@@ -130,7 +130,7 @@ Saat Anda mengklik buat atau create, Anda akan dibawa ke dasbor Anda.
 
 Dasbor ini berisikan banyak informasi berguna seperti jaringan yang digunakan, URL repositori GitHub dari source code yang dijalankan, kapan dibuat dan terakhir diperbarui, dan khususnya detail penerapan.
 
-## 5. Terapkan proyek Anda
+## Langkah 5: Terapkan proyek Anda
 
 Sekarang setelah Anda membuat proyek di dalam SubQuery Projects, mempersiapkan perilaku tampilan, langkah selanjutnya adalah menerapkan proyek Anda menjadi operasional. Menerapkan sebuah versi akan memicu operasi pengindeksan SubQuery yang baru untuk memulai, dan menyiapkan layanan kueri yang diperlukan untuk mulai menerima permintaan GraphQL. Anda juga dapat menerapkan versi-versi baru ke proyek yang ada di sini.
 
@@ -152,7 +152,7 @@ Penyebaran sekarang sedang berjalan.
 
 ![Penerapan berjalan](/assets/img/deployment_running.png)
 
-## 6. Menguji proyek Anda
+## Langkah 6: Menguji proyek Anda
 
 Untuk menguji proyek Anda, klik pada 3 elipsis dan pilihlah "lihat pada SubQuery Explorer".
 
@@ -162,7 +162,7 @@ Ini akan membawa Anda ke "Playground" yang sudah tidak asing lagi di mana Anda d
 
 ![Playground Subquery](/assets/img/subquery_playground.png)
 
-## 7. Langkah bonus
+## Langkah 7: Langkah bonus
 
 Bagi yang cerdik di antara kita, Anda akan ingat bahwa di dalam tujuan pembelajaran, poin terakhirnya adalah menjalankan kueri GET yang sederhana. Untuk melakukan ini, kita perlu mengambil "Query Endpoint" yang ditampilkan pada detail penerapan.
 

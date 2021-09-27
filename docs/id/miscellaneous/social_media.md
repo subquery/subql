@@ -18,7 +18,3 @@ Merupakan tujuan kami untuk selalu mendengarkan dan terlibat dengan komunitas se
 ## Komunitas SubQuery Tidak Resmi
 
 Komunitas ini tidak dimoderasi oleh tim SubQuery, tetapi duta kami mungkin ada di sana untuk memberikan dukungan. Harap berhati-hati terhadap penipuan karena SubQuery **tidak** bertanggung jawab atas apa yang terjadi di dalamnya.
-
-### Telegram
-
-[SubQuery Russia](https://t.me/SubQuery_russia) [SubQuery Russia](https://t.me/SubQueryRu) [SubQuery Vietnam](https://t.me/subqueryvietnam) [SubQuery Vietnam Announcement](https://t.me/subqueryannvn)
