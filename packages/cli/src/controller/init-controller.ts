@@ -5,7 +5,7 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestV0_0_2 as ProjectManifest} from '@subql/common';
+import {ProjectManifestV0_2_0 as ProjectManifest} from '@subql/common';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';

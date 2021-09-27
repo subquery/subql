@@ -13,7 +13,7 @@ export default class RequireValidChainTypes implements Rule {
   async validate(ctx: Context): Promise<boolean> {
     if (ctx.data.schema.isV0_0_1) return true;
 
-    const schema = ctx.data.schema.asV0_0_2;
+    const schema = ctx.data.schema.asV0_2_0;
 
     // No chain types to validate
     if (!schema.network.chaintypes?.file) return true;

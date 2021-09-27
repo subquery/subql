@@ -5,13 +5,13 @@ import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {IProjectManifest, SubqlDataSource} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
-import {ProjectManifestV0_0_2Impl} from './v0_0_2';
+import {ProjectManifestV0_2_0Impl} from './v0_2_0';
 
 export type VersionedProjectManifest = {specVersion: string};
 
 const SUPPORTED_VERSIONS = {
   '0.0.1': ProjectManifestV0_0_1Impl,
-  '0.0.2': ProjectManifestV0_0_2Impl,
+  '0.2.0': ProjectManifestV0_2_0Impl,
 };
 
 type Versions = keyof typeof SUPPORTED_VERSIONS;
@@ -22,8 +22,8 @@ export function manifestIsV0_0_1(manifest: IProjectManifest): manifest is Projec
   return manifest.specVersion === '0.0.1';
 }
 
-export function manifestIsV0_0_2(manifest: IProjectManifest): manifest is ProjectManifestV0_0_2Impl {
-  return manifest.specVersion === '0.0.2';
+export function manifestIsV0_2_0(manifest: IProjectManifest): manifest is ProjectManifestV0_2_0Impl {
+  return manifest.specVersion === '0.2.0';
 }
 
 export class ProjectManifestVersioned implements IProjectManifest {
@@ -49,12 +49,12 @@ export class ProjectManifestVersioned implements IProjectManifest {
     return this._impl as ProjectManifestV0_0_1Impl;
   }
 
-  get isV0_0_2(): boolean {
-    return this.specVersion === '0.0.2';
+  get isV0_2_0(): boolean {
+    return this.specVersion === '0.2.0';
   }
 
-  get asV0_0_2(): ProjectManifestV0_0_2Impl {
-    return this._impl as ProjectManifestV0_0_2Impl;
+  get asV0_2_0(): ProjectManifestV0_2_0Impl {
+    return this._impl as ProjectManifestV0_2_0Impl;
   }
 
   validate(): void {

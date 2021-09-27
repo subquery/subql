@@ -6,22 +6,18 @@ import path from 'path';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
-import parseJson from 'parse-json';
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 export function loadFromJsonOrYaml(file: string): unknown {
-  const fileInfo = path.parse(file);
+  const {ext} = path.parse(file);
+
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+    throw new Error(`Extension ${ext} not supported`);
+  }
 
   const rawContent = fs.readFileSync(file, 'utf-8');
-
-  if (fileInfo.ext === '.json') {
-    return parseJson(rawContent, file);
-  } else if (fileInfo.ext === '.yaml' || fileInfo.ext === '.yml') {
-    return yaml.load(rawContent);
-  } else {
-    throw new Error(`Extension ${fileInfo.ext} not supported`);
-  }
+  return yaml.load(rawContent);
 }
 
 function loadFromFile(file: string): unknown {

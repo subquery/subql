@@ -17,8 +17,8 @@ describe('project.yaml', () => {
     expect(() => loadProjectManifest(path.join(projectsDir, 'project_falsy_array.yaml'))).toThrow();
   });
 
-  it('can validate a v0.0.2 project.yaml', () => {
-    expect(() => loadProjectManifest(path.join(projectsDir, 'project_0.0.2.yaml'))).toBeTruthy();
+  it('can validate a v0.2.0 project.yaml', () => {
+    expect(() => loadProjectManifest(path.join(projectsDir, 'project_0.2.0.yaml'))).toBeTruthy();
   });
 
   it('can fail validation if version not supported', () => {

@@ -16,7 +16,6 @@ import { RpcInterface } from '@polkadot/rpc-core/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
-import { assign } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -30,6 +29,7 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
+  private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -49,11 +49,11 @@ export class ApiService implements OnApplicationShutdown {
     } else if (network.endpoint.startsWith('http')) {
       provider = new HttpProvider(network.endpoint);
     }
-    const apiOption: ApiOptions = {
+    this.apiOption = {
       provider,
+      ...chainTypes,
     };
-    assign(apiOption, chainTypes);
-    this.api = await ApiPromise.create(apiOption);
+    this.api = await ApiPromise.create(this.apiOption);
     this.networkMeta = {
       chain: this.api.runtimeChain.toString(),
       specName: this.api.runtimeVersion.specName.toString(),
@@ -92,7 +92,14 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-    const patchedApi = this.getApi().clone();
+
+    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged and released
+    const {
+      network: { endpoint },
+    } = this.project;
+    const patchedApi = endpoint.startsWith('ws')
+      ? this.getApi().clone()
+      : new ApiPromise(this.apiOption);
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',

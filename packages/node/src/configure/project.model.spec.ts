@@ -50,11 +50,11 @@ describe('SubqueryProject', () => {
     });
   });
 
-  describe('Manifest v0.0.2', () => {
+  describe('Manifest v0.2.0', () => {
     beforeEach(async () => {
       const projectDir = path.resolve(
         __dirname,
-        '../../test/projectFixture/v0.0.2',
+        '../../test/projectFixture/v0.2.0',
       );
       project = await SubqueryProject.create(projectDir, {});
     });

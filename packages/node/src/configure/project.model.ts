@@ -10,7 +10,7 @@ import {
   ProjectNetworkConfig,
   ProjectManifestVersioned,
   manifestIsV0_0_1,
-  manifestIsV0_0_2,
+  manifestIsV0_2_0,
   loadFromJsonOrYaml,
 } from '@subql/common';
 import { pick } from 'lodash';
@@ -71,7 +71,7 @@ export class SubqueryProject {
       return impl.network;
     }
 
-    if (manifestIsV0_0_2(impl)) {
+    if (manifestIsV0_2_0(impl)) {
       const genesisHash = impl.network.genesisHash;
 
       const network = this._networkRegistry[genesisHash];
@@ -118,7 +118,7 @@ export class SubqueryProject {
       ]);
     }
 
-    if (manifestIsV0_0_2(impl)) {
+    if (manifestIsV0_2_0(impl)) {
       if (!impl.network.chaintypes) {
         return;
       }

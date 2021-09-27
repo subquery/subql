@@ -9,7 +9,7 @@ import { ApiPromise } from '@polkadot/api';
 import {
   buildSchema,
   getAllEntitiesRelations,
-  isRuntimeDataSourceV0_0_2,
+  isRuntimeDataSourceV0_2_0,
   RuntimeDataSrouceV0_0_1,
   SubqlKind,
   SubqlRuntimeDatasource,
@@ -329,14 +329,14 @@ export class IndexerManager {
     const specName = this.api.runtimeVersion.specName.toString();
     return this.project.dataSources.filter(
       (ds) =>
-        isRuntimeDataSourceV0_0_2(ds) ||
+        isRuntimeDataSourceV0_2_0(ds) ||
         !!(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
         (ds as RuntimeDataSrouceV0_0_1).filter.specName === specName,
     );
   }
 
   private getDataSourceEntry(dataSource: SubqlRuntimeDatasource): string {
-    if (isRuntimeDataSourceV0_0_2(dataSource)) {
+    if (isRuntimeDataSourceV0_2_0(dataSource)) {
       return dataSource.mapping.file;
     } else {
       return getProjectEntry(this.project.path);

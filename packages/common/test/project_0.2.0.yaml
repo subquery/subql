@@ -1,8 +1,5 @@
 # project.yaml
-specVersion: "0.0.2"
-
-name: ""
-version: "0.0.0"
+specVersion: "0.2.0"
 description: ""
 repository: "https://github.com/subquery/subql-starter"
 
@@ -12,7 +9,7 @@ schema:
 network:
   genesisHash: '0x'
   chaintypes:
-    file: ./types.yaml
+    file: ./types.json
 
 dataSources:
   - name: main

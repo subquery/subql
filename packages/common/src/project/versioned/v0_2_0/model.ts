@@ -5,14 +5,14 @@ import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {Mapping, RuntimeDataSourceBase} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
-import {ProjectManifestV0_0_2, RuntimeDataSourceV0_0_2, SubqlMappingV0_0_2} from './types';
+import {ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 
 export class FileType {
   @IsString()
   file: string;
 }
 
-export class ProjectNetworkV0_0_2 {
+export class ProjectNetworkV0_2_0 {
   @IsString()
   genesisHash: string;
   @IsObject()
@@ -22,22 +22,22 @@ export class ProjectNetworkV0_0_2 {
   chaintypes: FileType;
 }
 
-export class ProjectMappingV0_0_2 extends Mapping {
+export class ProjectMappingV0_2_0 extends Mapping {
   @IsString()
   file: string;
 }
 
-export class RuntimeDataSourceV0_0_2Impl
-  extends RuntimeDataSourceBase<SubqlMappingV0_0_2>
-  implements RuntimeDataSourceV0_0_2
+export class RuntimeDataSourceV0_2_0Impl
+  extends RuntimeDataSourceBase<SubqlMappingV0_2_0>
+  implements RuntimeDataSourceV0_2_0
 {
-  @Type(() => ProjectMappingV0_0_2)
+  @Type(() => ProjectMappingV0_2_0)
   @ValidateNested()
-  mapping: SubqlMappingV0_0_2;
+  mapping: SubqlMappingV0_2_0;
 }
 
-export class ProjectManifestV0_0_2Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_2 {
-  @Equals('0.0.2')
+export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_2_0 {
+  @Equals('0.2.0')
   specVersion: string;
   @IsString()
   name: string;
@@ -45,13 +45,13 @@ export class ProjectManifestV0_0_2Impl extends ProjectManifestBaseImpl implement
   version: string;
   @IsObject()
   @ValidateNested()
-  @Type(() => ProjectNetworkV0_0_2)
-  network: ProjectNetworkV0_0_2;
+  @Type(() => ProjectNetworkV0_2_0)
+  network: ProjectNetworkV0_2_0;
   @ValidateNested()
   @Type(() => FileType)
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => RuntimeDataSourceV0_0_2Impl)
-  dataSources: RuntimeDataSourceV0_0_2[];
+  @Type(() => RuntimeDataSourceV0_2_0Impl)
+  dataSources: RuntimeDataSourceV0_2_0[];
 }
