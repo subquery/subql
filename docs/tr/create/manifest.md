@@ -41,7 +41,7 @@ ağ:
 
 ## Ağ Filtreleri
 
-Genellikle kullanıcı bir Alt Sorgu oluşturur ve bunu hem testnet hem de mainnet ortamları (örneğin Polkadot ve Kusama) için yeniden kullanmayı bekler. Ağlar arasında, çeşitli seçeneklerin farklı olması muhtemeldir (örneğin, dizin başlangıç bloğu). Bu nedenle, kullanıcıların her veri kaynağı için farklı ayrıntılar tanımlamasına izin veririz, bu da bir SubQuery projesinin birden çok ağda hala kullanılabileceği anlamına gelir.
+Genellikle kullanıcı bir SubQuery oluşturur ve bunu hem testnet hem de mainnet ortamları (örneğin Polkadot ve Kusama) için yeniden kullanmayı bekler. Ağlar arasında, çeşitli seçeneklerin farklı olması muhtemeldir (örneğin, dizin başlangıç bloğu). Bu nedenle, kullanıcıların her veri kaynağı için farklı ayrıntılar tanımlamasına izin veririz, bu da bir SubQuery projesinin birden çok ağda hala kullanılabileceği anlamına gelir.
 
 Kullanıcılar, her ağda hangi veri kaynağının çalıştıracağına karar vermek için `dataSources` `filter` ekleyebilir.
 
@@ -76,7 +76,7 @@ tanımlar:
 
 Eşleme filtreleri, hangi bloğun, olayın veya dış öğenin bir eşleme işleyicisini tetikleyeceğine karar vermek için son derece kullanışlı bir özelliktir.
 
-Yalnızca filtre koşullarını karşılayan gelen veriler eşleme işlevleri tarafından işlenir. Eşleme filtreleri isteğe bağlıdır, ancak Alt Sorgu projeniz tarafından işlenen veri miktarını önemli ölçüde azalttıkları ve dizin oluşturma performansını artıracakları için önerilir.
+Yalnızca filtre koşullarını karşılayan gelen veriler eşleme işlevleri tarafından işlenir. Eşleme filtreleri isteğe bağlıdır, ancak SubQuery projeniz tarafından işlenen veri miktarını önemli ölçüde azalttıkları ve dizin oluşturma performansını artıracakları için önerilir.
 
 ```yaml
 Çağrı Işleyicisi'nden #Example filtresi
@@ -114,7 +114,7 @@ filtre:
 
 ``` yml
 specVersion: "0.0.1"
-açıklama: "Bu alt sorgu Kitty'nin doğum bilgilerini dizine alır"
+açıklama: "Bu subquery Kitty'nin doğum bilgilerini dizine alır"
 depo: "https://github.com/onfinality-io/subql-examples"
 şema: "./schema.graphql"
 ağ:
