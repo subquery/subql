@@ -1,46 +1,46 @@
-# Hello World Explained
+# Hello World объяснение
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+В [ Кратком руководстве по началу работы с Hello World ](helloworld-localhost.md) мы выполнили несколько простых команд и очень быстро создали и запустили пример. Это позволило вам убедиться, что у вас есть все предварительные условия, и вы можете использовать локальный playground для выполнения простого запроса и дальнейшего получения ваших первых данных из SubQuery. Здесь мы подробнее рассмотрим, что означают все эти команды.
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+Первая команда, которую мы выполнили, была ` subql init --starter subqlHelloWorld `.
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+Она делает тяжелую работу и создает для вас целую кучу файлов. Как указано в [ официальной документации ](quickstart.md#configure-and-build-the-starter-project), вы в основном будете работать со следующими файлами:
 
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- The Manifest в `project.yaml`
+- The GraphQL Schema в `schema.graphql`
+- The Mapping functions в `src/mappings/` directory
 
 ![key subql files](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+Эти файлы составляют основу всего, что мы делаем. Таким образом, мы посвятим этим файлам больше времени в другой статье. А пока просто знайте, что схема содержит описание данных, которые пользователи могут запрашивать из SubQuery API, файл yaml проекта, который содержит параметры типа «конфигурация» и, конечно же, mappingHandlers, содержащий машинописный текст, который содержит функции, преобразующие данные.
 
 ## yarn install
 
-The next thing we did was `yarn install`. `npm install` can be used as well.
+Следующее, что мы сделали, это `yarn install`. Также можно использовать ` npm install `.
 
-> A short history lesson. Node Package Manager or npm was initially released in 2010 and is a tremendously popular package manager among JavaScript developers. It is the default package that is automatically installed whenever you install Node.js on your system. Yarn was initially released by Facebook in 2016 with the intention to address some of the performance and security shortcomings of working with npm (at that time).
+> Краткий урок истории. Node Package Manager или npm был первоначально выпущен в 2010 году и является чрезвычайно популярным менеджером пакетов среди разработчиков JavaScript. Это пакет по умолчанию, который автоматически устанавливается при установке Node.js в вашей системе. Первоначально Yarn был выпущен Facebook в 2016 году с целью устранения некоторых недостатков производительности и безопасности при работе с npm (в то время).
 
-What yarn does is look at the `package.json` file and download various other dependencies. Looking at the `package.json` file, it doesn't look like there are many dependencies, but when you run the command, you'll notice that 18,983 files are added. This is because each dependency will also have its own dependencies.
+Что делает yarn, так это просматривает файл ` package.json ` и загружает различные другие зависимости. Глядя на файл ` package.json `, не похоже, что существует много зависимостей, но когда вы запустите команду, вы заметите, что добавлено 18 983 файла. Это потому, что каждая зависимость также будет иметь свои собственные зависимости.
 
 ![key subql files](/assets/img/dependencies.png)
 
 ## yarn codegen
 
-Then we ran `yarn codegen` or `npm run-script codegen`. What this does is fetch the GraphQL schema (in the `schema.graphql`) and generates the associated typescript model files (Hence the output files will have a .ts extension). You should never change any of these generated files, only change the source `schema.graphql` file.
+Затем мы запустили ` yarn codegen ` или ` npm run-script codegen `. При этом извлекается схема GraphQL (в ` schema.graphql `) и создаются связанные файлы модели машинописного текста (следовательно, выходные файлы будут иметь расширение .ts). Вы никогда не должны изменять какие-либо из этих сгенерированных файлов, только измените исходный файл ` schema.graphql `.
 
 ![key subql files](/assets/img/typescript.png)
 
 ## yarn build
 
-`yarn build` or `npm run-script build` was then executed. This should be familiar for seasoned programmers. It creates a distribution folder performing things such as code optimisation preparing for a deployment.
+Затем была выполнена ` yarn build ` или ` npm run-script build `. Это должно быть знакомо опытным программистам. Это создает папку распространения, выполняющую такие вещи, как оптимизация кода, подготовка к развертыванию.
 
 ![key subql files](/assets/img/distribution_folder.png)
 
 ## docker-compose
 
-The final step was the combined docker command `docker-compose pull && docker-compose up` (can be run separately as well). The `pull` command grabs all the required images from Docker Hub and the `up` command starts the container.
+Последним шагом была объединенная команда docker ` docker-compose pull & amp; & amp; docker-compose up ` (также можно запускать отдельно). Команда ` pull ` захватывает все необходимые образы из Docker Hub, а команда ` up ` запускает контейнер.
 
 ```shell
 > docker-compose pull
@@ -49,16 +49,16 @@ Pulling subquery-node   ... done
 Pulling graphql-engine  ... done
 ```
 
-When the container is started, you'll see the terminal spit out lots of text showing the status of the node and the GraphQL engine. It's when you see:
+Когда контейнер будет запущен, вы увидите, что терминал выдаст много текста, показывающего статус ноды и движка GraphQL. Так что, когда вы увидите:
 
 ```
 subquery-node_1   | 2021-06-06T02:04:25.490Z <fetch> INFO fetch block [1, 100]
 ```
 
-that you know that the SubQuery node has started to synchronise.
+то вы знаете, что узел SubQuery начал синхронизацию.
 
-## Summary
+## Кратко
 
-Now that you've had an insight into what is happening under the covers, the question is where to from here? If you are feeling confident, you can jump into learning about how to [create a project](../create/introduction.md) and learn more about the three key files. The manifest file, the GraphQL schema, and the mappings file.
+Теперь, когда вы получили представление о том, что происходит под капотом, вопрос в том, что делать дальше? Если вы чувствуете себя уверенно, вы можете перейти к изучению того, как [ создать проект ](../create/introduction.md), и узнать больше о трех ключевых файлах. The manifest файл, схема GraphQL и the mappings файл.
 
-Otherwise, continue to our tutorials section where we look at how we can run this Hello World example on SubQuery's hosted infrastructure, we'll look at modifying the start block, and we'll take a deeper dive at running SubQuery projects by running readily available and open source projects.
+В противном случае перейдите к разделу наших руководств, где мы рассмотрим, как мы можем запустить пример Hello World в размещенной инфраструктуре SubQuery, мы рассмотрим изменение начального блока и более глубоко погрузимся в выполнение проектов SubQuery, запустив легкодоступные проекты с открытым исходным кодом.
