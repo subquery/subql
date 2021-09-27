@@ -31,10 +31,10 @@ describe('substrate utils', () => {
     }
   });
 
-  it('when failed to fetch throw error with block height', async () => {
+  it('when failed to fetch, log block height and re-throw error', async () => {
     //some large number of block height
     await expect(fetchBlocks(api, 100000000, 100000019)).rejects.toThrow(
-      /failed to fetch block at height/,
+      /Unable to retrieve header and parent from supplied hash/,
     );
   });
 
