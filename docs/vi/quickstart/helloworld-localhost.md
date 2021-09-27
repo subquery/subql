@@ -181,7 +181,7 @@ Vào trang web http://localhost:3000/ và dán truy vấn bên dưới vào bên
 
 Sân chơi SubQuery trên localhost.
 
-![playground localhost](/assets/img/subql_playground.png)
+![localhost sân chơi](/assets/img/subql_playground.png)
 
 Số khối trong playground cũng phải khớp với số khối (về mặt kỹ thuật là chiều cao khối) trong thiết bị đầu cuối.
 
