@@ -44,7 +44,7 @@
 
 ## กิจกรรมของแอมบาสเดอร์
 
-SubQuery Ambassadors are able to contribute through four main areas, including event management, content creation, translation, and community moderation. You can participate in as many areas as you want, you’re not bound to any single one.
+แอมบาสเดอร์ SubQuery สามารถมีส่วนร่วมได้ผ่านสี่หมวดหลัก ได้แก่ การจัดกิจกรรม, การสร้างคอนเทนต์, การแปล, และการดูแลชุมชน You can participate in as many areas as you want, you’re not bound to any single one.
 
 **Event Management:** Build local communities by hosting, organising, and managing different events. Building a local community will be a key part of growing the SubQuery community. SubQuery will support you by providing funding for events, sending swag/merchandise to be given away, as well as attending Q&As or online events as speakers or in AMA sessions.
 
