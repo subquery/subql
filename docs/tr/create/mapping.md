@@ -1,314 +1,312 @@
-# Mapping
+# Eşleme
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+Eşleme işlevleri, zincir verilerinin daha önce `schema.graphql` dosyasında tanımladığımız optimize edilmiş GraphQL varlıklarına nasıl dönüştürüleceğini tanımlar.
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+Eşlemeler, WASM'ye (WebAssembly) derlenebilen AssemblyScript adlı TypeScript'in bir alt kümesine yazılır.
+- Eşlemeler `src/mappings` dizininde tanımlanır ve işlev olarak verilir
+- Bu eşlemeler ayrıca `src/index.ts</0 olarak da verilir></li>
+<li>Eşleme dosyaları, eşleme işleyicileri altında <code>project.yaml` başvurudur.
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+Eşleme işlevlerinin üç sınıfı vardır; [>](#block-handler), [Evli İşlercileri](#event-handler) ve [Call Işleyicileri](#call-handler).
 
-## Block Handler
+## Blok işleyicisi
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+Alt tabaka zincirine her yeni blok eklendiğinde bilgi yakalamak için blok işleyicilerini kullanabilirsiniz. Bunu başarmak için, tanımlanan bir BlockHandler her blok için bir kez çağrılır.
 
 ```ts
-import {SubstrateBlock} from "@subql/types";
+{SubstrateBlock} öğesini "@subql/türler"den alın;
 
-export async function handleBlock(block: SubstrateBlock): Promise<void> {
-    // Create a new StarterEntity with the block hash as it's ID
-    const record = new starterEntity(block.block.header.hash.toString());
+zaman uyumsuz işlev tanıtıcısını dışa aktarmaBlock(blok: SubstrateBlock): Promise<void> {
+    Kimliği olduğu için blok karmasıyla yeni bir StarterEntity oluşturma
+    const record = yeni starterEntity(block.block.header.hash.toString());
     record.field1 = block.block.header.number.toNumber();
-    await record.save();
+    record.save();
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[Substrate Block](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16), [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/) genişletilmiş bir arabirim türüdür, ancak `spec Version` ve `timestamp` içerir.
 
-## Event Handler
+## Olay İşleyicisi
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+Belirli olaylar yeni bir bloğa eklendiğinde bilgi yakalamak için olay işleyicilerini kullanabilirsiniz. Varsayılan Substrat çalışma zamanının ve bir bloğun parçası olan olaylar birden çok olay içerebilir.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+İşlem sırasında, olay işleyicisi, olayın yazılan girişleri ve çıktılarıyla bağımsız değişken olarak bir alt tabaka olayı alır. Her türlü olay eşlemeyi tetikleyerek veri kaynağıyla etkinliğin yakalanmasına izin verir. Verileri dizine alma süresini azaltmak ve eşleme performansını artırmak için olayları filtrelemek için bildiriminizde [Mapping Filters](./manifest.md#mapping-filters) kullanmalısınız.
 
 ```ts
-import {SubstrateEvent} from "@subql/types";
+{Substrate Event} öğesini "@subql/türler"den alın;
 
-export async function handleEvent(event: SubstrateEvent): Promise<void> {
-    const {event: {data: [account, balance]}} = event;
-    // Retrieve the record by its ID
-    const record = new starterEntity(event.extrinsic.block.block.header.hash.toString());
+zaman uyumsuz işlevini dışa aktarma handleEvent(olay: SubstratEvent): Promise<void> {
+    const {olay: {data: [account, balance]}} = olay;
+    // Kaydı kimliğine göre alma
+    const record = yeni starterEntity(event.extrinsic.block.block.header.hash.toString());
     record.field2 = account.toString();
-    record.field3 = (balance as Balance).toBigInt();
-    await record.save();
+    record.field3 = (Bakiye olarak denge).toBigInt();
+    record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+[Substrate Olayı](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) [Event Record](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) genişletilmiş arabirim türüdür. Olay verilerinin yanı sıra, bir `id` (bu olayın ait olduğu blok) ve bu bloğun dışsal iç kısmını da içerir.
 
-## Call Handler
+## Çağrı Işleyicisi
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+Çağrı işleyicileri, belirli substrat dış değerleri hakkında bilgi yakalamak istediğinizde kullanılır.
 
 ```ts
-export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = yeni starterEntity(extrinsic.block.block.header.hash.toString());
     record.field4 = extrinsic.block.timestamp;
-    await record.save();
+    record.save();
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Bir `id` (bu dış öğenin ait olduğu blok) atanır ve olayları bu blok arasında genişleten dışsal bir özellik sağlar. Ayrıca, bu dışsal başarı durumunu kaydeder.
 
-## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+## Sorgu Durumları
+Amacımız, işleyicileri eşlemek için kullanıcılar için tüm veri kaynaklarını kapsamaktır (yukarıdaki üç arabirim olay türünden daha fazlası). Bu nedenle, yetenekleri artırmak için @polkadot /api arabirimlerinden bazılarını kullanıma açtık.
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+Şu anda desteklediğimiz arayüzler şunlardır:
+- [api.query. <module>. <method>()](https://polkadot.js.org/docs/api/start/api.query) <strong>current</strong> bloğunu sorgular.
+- [api.query. <module>. <method>.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) geçerli blokta <strong>same</strong> türünde birden çok sorgu yapar.
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) geçerli blokta <strong>different</strong> türlerinin birden çok sorgusunu yapar.
 
-These are the interfaces we do **NOT** support currently:
-- ~~api.tx.*~~
+Şu anda desteklediğimiz **NOT** arabirimler şunlardır:
+- ~~api.tx.*~
 - ~~api.derive.*~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.hash~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.keysAt~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.keysPaged~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
+- ~~api. sorgu. <module>. <method>.at~~
+- ~~api.query. <module>. <method>.tries Şunda~~
+- ~~api.query. <module>. <method>.tries Sayfalı~~
+- ~~api.query. <module>. <method>. karma~~
+- ~~api.query. <module>. <method>.keys At ~~
+- ~~api.query. <module>. <method> tuşları Sayfalı~~
+- ~~api.query. <module>. <method> menzil~~
+- ~~api.query. <module>. <method>.size ~ ~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
+Bu API'> [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) örnek kullanım örneğimizde kullanma örneğine bakın.
 
-## RPC calls
+## RPC çağrıları
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+Ayrıca, eşleme işlevinin gerçek düğüm, sorgu ve gönderim ile etkileşime girmesine izin veren uzaktan çağrılar olan bazı API RPC yöntemlerini de destekliyoruz. SubQuery'nin temel öncülü, deterministik olmasıdır ve bu nedenle sonuçları tutarlı tutmak için yalnızca geçmiş RPC çağrılarına izin veririz.
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) belgeler< giriş parametresi olarak `BlockHash` alan bazı yöntemler sağlar (örneğin, `at?: BlockHash`). Bu yöntemleri, varsayılan olarak geçerli dizin oluşturma bloğu karmasını alacak şekilde de değiştirdik.
 
 ```typescript
-// Let's say we are currently indexing a block with this hash number
-const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
+// Diyelim ki şu anda bu karma numaraya sahip bir bloğu dizine ekleniyoruz
+const blockhash = '0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a';
 
-// Original method has an optional input is block hash
-const b1 = await api.rpc.chain.getBlock(blockhash);
+// Özgün yöntemin isteğe bağlı girişi vardır: blok karma
+const b1 = api.rpc.chain.getBlock(blockhash) bekliyoruz;
 
-// It will use the current block has by default like so
-const b2 = await api.rpc.chain.getBlock();
+// Geçerli bloğun varsayılan olarak böyle olduğunu kullanır
+const b2 = api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- [Özel Substrat Zincirleri](#custom-substrate-chains) RPC çağrıları için [kullanım](#usage) konusuna bakın.
 
-## Modules and Libraries
+## Modüller ve Kitaplıklar
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+SubQuery'nin veri işleme yeteneklerini geliştirmek için, NodeJS'in [sandbox](#the-sandbox) eşleme işlevlerini çalıştırmak için yerleşik modüllerinden bazılarına izin verdik ve kullanıcıların üçüncü taraf kitaplıkları aramasına izin verdik.
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+Bunun ** deneysel bir özellik olduğunu unutmayın** ve eşleme işlevlerinizi olumsuz yönde etkileyebilecek hatalar veya sorunlarla karşılaşabilirsiniz. Lütfen [GitHub](https://github.com/subquery/subql) bir sorun oluşturarak bulduğunuz hataları bildirin.
 
-### Built-in modules
+### Yerleşik modüller
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+Şu anda, aşağıdaki NodeJS modüllerine izin <: `assert`, `buffer`, `crypto`, `util` ve `path`.
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+Modülün tamamını almak yerine, yalnızca ihtiyacınız olan gerekli yöntemleri almanızı öneririz. Bu modüllerdeki bazı yöntemlerin desteklenmeyen bağımlılıkları olabilir ve alma işlemi başarısız olur.
 
 ```ts
-import {hashMessage} from "ethers/lib/utils"; //Good way
-import {utils} from "ethers" //Bad way
+{hash Message} öğesini "ethers/lib/utils" öğesinden alın; İyi yol
+{utils} öğesini "ethers" //Bad way öğesinden alma
 
-export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field1 = hashMessage('Hello');
-    await record.save();
+zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = yeni starterEntity(extrinsic.block.block.header.hash.toString());
+    record.field1 = karmaMessage('Merhaba');
+    record.save();
 }
 ```
 
-### Third-party libraries
+### Üçüncü taraf kitaplıkları
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+Sanal makinenin sanal alanımızdaki sınırlamaları nedeniyle, şu anda yalnızca **CommonJS** tarafından yazılmış üçüncü taraf kitaplıkları destekliyoruz.
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+Ayrıca, varsayılan olarak ESM kullanan `@polkadot/*` gibi **hybrid** bir kitaplığı da destekliyoruz. Ancak, başka kitaplıklar **ESM** biçimindeki modüllere bağımlıysa, sanal makine ** </0 değİl> derlenir ve bir hata döndürür. </p>
 
-## Custom Substrate Chains
+## Özel Substrat Zincirleri
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+SubQuery, sadece Polkadot veya Kusama'da değil, substrat tabanlı herhangi bir zincirde kullanılabilir.
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+Özel bir Substrat tabanlı zincir kullanabilirsiniz ve [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/) kullanarak türleri, arabirimleri ve ek yöntemleri otomatik olarak içe aktarmak için araçlar sağlıyoruz.
 
-In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
+Aşağıdaki bölümlerde, entegrasyon sürecini açıklamak için [kitty example](https://github.com/subquery/tutorials-kitty-chain) kullanıyoruz.
 
-### Preparation
+### Hazırlık
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+Gerekli ve oluşturulan tüm dosyaları depolamak için proje `>src` klasörü altında yeni bir dizin `api arabirimleri` oluşturun. Ayrıca, api'ye `kitties` modülünden dekorasyon eklemek istediğimiz için `api-interfaces/kitties` dizini oluşturuyoruz.
 
-#### Metadata
+#### Meta veriler
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
-
-```shell
-curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
-```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+Gerçek API uç noktalarını oluşturmak için meta verilere ihtiyacımız var. Kitty örneğinde, yerel bir testnetinden bir uç nokta kullanırız ve ek türler sağlar. Düğümün meta verilerini **HTTP** uç noktasından almak için [PolkadotJS meta veri kurulumu](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup)'daki adımları izleyin.
 
 ```shell
-//Install the websocat
-brew install websocat
+curl -H "İçerik Türü: uygulama/json" -d '{"id":"1", "jsonrpc":"2.0", "yöntem": "state_getMetadata", "params":[]}' http://localhost:9933
+```
+veya **websocket** uç noktasından [`websocat`](https://github.com/vi/websocat) yardımıyla:
 
-//Get metadata
-echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
+```shell
+Websocat'i yükleme
+demleme yükleme websocat
+
+Meta verileri alma
+yankı state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
+Ardından, çıktıyı kopyalayıp bir JSON dosyasına yapıştırın. [kitty örneğimizde](https://github.com/subquery/tutorials-kitty-chain), `api-interface/kitty.json` oluşturduk.
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### Tür tanımları
+Kullanıcının zincirden belirli türleri ve RPC desteğini bildiğini ve [Manifest](./manifest.md) tanımlandığını varsayıyoruz.
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+[types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) aşağıdakileri oluştururuz:
+- `src/api-interfaces/definitions.ts` - bu, tüm alt klasör tanımlarını dışa aktarıyor
 
 ```ts
-export { default as kitties } from './kitties/definitions';
+{default olarak './kitties/definitions' öğesinden {default olarak dışa aktar;
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kitties/definitions.ts` - kitties modülü için tür tanımları
 ```ts
-export default {
-    // custom types
-    types: {
-        Address: "AccountId",
-        LookupSource: "AccountId",
+varsayılanı ver {
+    özel türler
+    türleri: {
+        Adres: "AccountId",
+        Arama Kaynağı: "AccountId",
         KittyIndex: "u32",
         Kitty: "[u8; 16]"
     },
-    // custom rpc : api.rpc.kitties.getKittyPrice
+    özel rpc : api.rpc.kitties.getKittyPrice
     rpc: {
         getKittyPrice:{
-            description: 'Get Kitty price',
+            açıklama: 'Kitty fiyat almak',
             params: [
                 {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
+                    adı: 'at',
+                    türü: 'BlockHash',
+                    isHistoric: doğru,
                     isOptional: false
                 },
                 {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
+                    adı: 'kittyIndex',
+                    türü: 'KittyIndex',
                     isOptional: false
                 }
             ],
-            type: 'Balance'
+            türü: 'Bakiye'
         }
     }
 }
 ```
 
-#### Packages
+#### Paket
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- `package.json` dosyasında, geliştirme bağımlılığı olarak `@polkadot/typegen` ve düzenli bağımlılık olarak `@polkadot/api` eklediğinizden emin olun (ideal olarak aynı sürüm). Ayrıca, komut dosyalarını çalıştırmamıza yardımcı olmak için geliştirme bağımlılığı olarak `ts düğümü` ihtiyacımız vardır.
+- Her iki türü de çalıştırmak için komut dosyaları ekliyoruz; `generate:defs` ve meta veri `generate:meta` üreteçleri (bu sırada, meta veriler türleri kullanabilir).
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+İşte `package.json` basitleştirilmiş bir sürümü. **scripts** bölümünde paket adının doğru olduğundan ve dizinlerin geçerli olduğundan emin olun.
 
 ```json
 {
-  "name": "kitty-birthinfo",
-  "scripts": {
+  "isim": "kitty-birthinfo",
+  "komut dosyaları": {
     "generate:defs": "ts-node --skip-project node_modules/.bin/polkadot-types-from-defs --package kitty-birthinfo/api-interfaces --input ./src/api-interfaces",
     "generate:meta": "ts-node --skip-project node_modules/.bin/polkadot-types-from-chain --package kitty-birthinfo/api-interfaces --endpoint ./src/api-interfaces/kitty.json --output ./src/api-interfaces --strict"
   },
-  "dependencies": {
+  "bağımlılıklar": {
     "@polkadot/api": "^4.9.2"
   },
   "devDependencies": {
-    "typescript": "^4.1.3",
+    "yazıscript": "^4.1.3",
     "@polkadot/typegen": "^4.9.2",
-    "ts-node": "^8.6.2"
+    "ts düğümü": "^8.6.2"
   }
-}
 ```
 
-### Type generation
+### Tür oluşturma
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+Hazırlık tamamlandıktan sonra, türler ve meta veriler oluşturmaya hazırız. Aşağıdaki komutları çalıştırın:
 
 ```shell
-# Yarn to install new dependencies
-yarn
+# Yeni bağımlılıklar yüklemek için iplik
+Iplik
 
-# Generate types
-yarn generate:defs
+# Türler oluştur
+iplik oluşturma:defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+Her modül klasöründe (örneğin `/kitties`), artık bu modüllerin tanımlarındaki tüm arabirimleri tanımlayan `types.ts`, ayrıca hepsini dışa veren bir dosya `index.ts` olmalıdır.
 
 ```shell
-# Generate metadata
-yarn generate:meta
+# Meta veriler oluştur
+iplik oluşturma:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+Bu komut meta verileri ve API'ler için yeni bir api-augment oluşturur. Yerleşik API'yi kullanmak istemediğimiz için, `tsconfig.json` açık bir geçersiz kılma ekleyerek bunları değiştirmemiz gerekecektir. Güncelleştirmelerden sonra, yapılandırmadaki yollar şöyle görünecektir (açıklamalar olmadan):
 
 ```json
 {
   "compilerOptions": {
-      // this is the package name we use (in the interface imports, --package for generators) */
+      Bu, kullandığımız paket adıdır (arayüz içe aktarmalarında, --jeneratörler için paket) */
       "kitty-birthinfo/*": ["src/*"],
-      // here we replace the @polkadot/api augmentation with our own, generated from chain
+      Burada @polkadot/api büyütmeyi zincirden oluşturulan kendi büyütmemizle değiştiriyoruz
       "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      // replace the augmented types with our own, as generated from definitions
-      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+      tanımlardan oluşturulan artırılmış türleri kendi türlerimizle değiştirin
+      "@polkadot/türleri/büyütme": ["src/interfaces/augment-types.ts"]
     }
 }
 ```
 
-### Usage
+### Kullanım
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+Şimdi eşleme işlevinde, meta verilerin ve türlerin API'yi gerçekte nasıl dekore ederek süslediğini gösterebiliriz. RPC uç noktası yukarıda beyan ettiğimiz modülleri ve yöntemleri destekleyecektir. Ve özel rpc çağrısı kullanmak için, lütfen bölüme bakın [Özel zincir rpc çağrıları](#custom-chain-rpc-calls)
 ```typescript
-export async function kittyApiHandler(): Promise<void> {
-    //return the KittyIndex type
-    const nextKittyId = await api.query.kitties.nextKittyId();
-    // return the Kitty type, input parameters types are AccountId and KittyIndex
-    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info(`Next kitty id ${nextKittyId}`)
-    //Custom rpc, set undefined to blockhash
-    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
+zaman uyumsuz işlevini dışa aktarma kittyApiHandler(): Promise<void> {
+    KittyIndex türünü döndürme
+    const nextKittyId = api.query.kitties.nextKittyId();
+    Kitty türünü döndürür, giriş parametreleri türleri AccountId ve KittyIndex'tir
+    const allKitties = api.query.kitties.kitties('xxxxxxxxx',123)
+    logger.info('Sonraki pisi kimliği ${nextKittyId}')
+    Özel rpc, tanımsız olarak blockhash olarak ayarla
+    const kittyPrice = api.rpc.kitties.getKittyPrice(tanımsız,nextKittyId) bekliyoruz;
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**Bu projeyi gezginimize yayınlamak istiyorsanız, lütfen oluşturulan dosyaları `src/api-interfaces` ekleyin.**
 
-### Custom chain rpc calls
+### Özel zincir rpc çağrıları
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+Özelleştirilmiş zincir RPC çağrılarını desteklemek için, `typesBundle` için RPC tanımlarını el ile eklemeli ve her belirti için yapılandırmaya izin vermeliyiz. `project.yml<` `typesBundle` tanımlayabilirsiniz. Ve lütfen yalnızca `isHistoric` tür çağrıların desteklendiğini unutmayın.
 ```yaml
 ...
-  types: {
+  türleri: {
     "KittyIndex": "u32",
-    "Kitty": "[u8; 16]",
+    "Kedicik": "[u8; 16]",
   }
-  typesBundle: {
+  types Bundle: {
     spec: {
-      chainname: {
+      zincir adı: {
         rpc: {
-          kitties: {
+          kedicikler: {
             getKittyPrice:{
-                description: string,
+                açıklama: dize,
                 params: [
                   {
-                    name: 'at',
-                    type: 'BlockHash',
-                    isHistoric: true,
+                    adı: 'at',
+                    türü: 'BlockHash',
+                    isHistoric: doğru,
                     isOptional: false
                   },
                   {
-                    name: 'kittyIndex',
-                    type: 'KittyIndex',
-                    isOptional: false
-                  }
+                    adı: 'kittyIndex',
+                    türü: 'KittyIndex',
+                    isOptional: false  }
                 ],
-                type: "Balance",
+                türü: "Bakiye",
             }
           }
         }
