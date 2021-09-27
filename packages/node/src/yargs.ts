@@ -74,6 +74,7 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Specify error stack size to be printed',
       type: 'number',
+      default: 10,
     },
     migrate: {
       demandOption: false,

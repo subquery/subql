@@ -23,7 +23,7 @@ export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel = 'info', nestedKey, outputFormat, stackSize = 5}: LoggerOption) {
+  constructor({level: logLevel = 'info', nestedKey, outputFormat, stackSize}: LoggerOption) {
     this.pino = Pino({
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -43,7 +43,7 @@ export class Logger {
                     type: 'error',
                     name: value.name,
                     message: value.message,
-                    stack: limitStack(value.stack, stackSize),
+                    stack: stackSize ? limitStack(value.stack, stackSize) : value.stack,
                   };
                 } else {
                   return stringify(value);
