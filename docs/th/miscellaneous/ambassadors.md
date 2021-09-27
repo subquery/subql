@@ -44,14 +44,14 @@
 
 ## กิจกรรมของแอมบาสเดอร์
 
-แอมบาสเดอร์ SubQuery สามารถมีส่วนร่วมได้ผ่านสี่หมวดหลัก ได้แก่ การจัดกิจกรรม, การสร้างคอนเทนต์, การแปล, และการดูแลชุมชน You can participate in as many areas as you want, you’re not bound to any single one.
+แอมบาสเดอร์ SubQuery สามารถมีส่วนร่วมได้ผ่านสี่หมวดหลัก ได้แก่ การจัดกิจกรรม, การสร้างคอนเทนต์, การแปล, และการดูแลชุมชน ซึ่งคุณสามารถเข้าร่วมกิจกรรมต่างๆ ได้มากเท่าที่ต้องการ โดยไม่ผูกมัดกับกิจกรรมใดกิจกรรมหนึ่งเท่านั้น
 
-**Event Management:** Build local communities by hosting, organising, and managing different events. Building a local community will be a key part of growing the SubQuery community. SubQuery will support you by providing funding for events, sending swag/merchandise to be given away, as well as attending Q&As or online events as speakers or in AMA sessions.
+**การจัดกิจกรรม:** สร้างชุมชนท้องถิ่นโดยการจัดงาน, ดูแลและจัดการกิจกรรมต่างๆ การสร้างชุมชนท้องถิ่นนั้นจะเป็นส่วนสำคัญในการเติบโตของชุมชน SubQuery SubQuery จะสนับสนุนคุณโดยการจัดหาเงินทุนสำหรับกิจกรรม, การจัดส่งของที่ระลึก/สินค้าเพื่อแจกจ่าย, รวมถึงการเข้าร่วม Q&As หรือกิจกรรมออนไลน์ในฐานะวิทยากรหรือใน AMA
 
-**Content Creation:** We have a long list of content and support material that we need help creating. Remember, our success relies on the ability of our customers to build amazing things on our service, so we need your help to make that easier. Content includes videos, infographics, tutorials, animations, or any other related material, to inform, educate, or inspire community members within the SubQuery Ecosystem. SubQuery will support Content Creators by providing branding assets and expertise. We’ll also use SubQuery’s marketing channels to increase awareness of your content (and yourself).
+**การสร้างคอนเทนต์:** เรามีรายการคอนเทนต์และเอกสารสนับสนุนจำนวนมากที่เราต้องการความช่วยเหลือในการสร้าง เพราะความสำเร็จของเราขึ้นอยู่กับความสามารถของลูกค้าในการสร้างสรรค์สิ่งที่น่าทึ่งบนบริการของเรา ดังนั้นเราจึงต้องการความช่วยเหลือจากคุณเพื่อทำให้สิ่งนั้นง่ายยิ่งขึ้น โดยคอนเทนต์ต่างๆ นั้นรวมถึงวิดีโอ, อินโฟกราฟิก, คลิปหรือบทความ tutorials, แอนิเมชั่น, หรือเนื้อหาที่เกี่ยวข้องอื่นๆ เพื่อให้ความรู้หรือสร้างแรงบันดาลใจให้สมาชิกชุมชนภายในระบบนิเวศ SubQuery เราจะสนับสนุนผู้สร้างคอนเทนต์โดยการจัดหาวัตถุดิบแบรนด์ดิ้งและข้อมูลต่างๆ ของโปรเจกต์ และเรายังจะใช้ช่องทางการตลาดของ SubQuery เพื่อให้คอนเทนต์ของคุณเข้าถึงผู้คนได้มากขึ้นอีกด้วย (รวมทั้งตัวคุณเอง)
 
-**Translation:** Our customers don’t just speak English! We need your help making SubQuery more accessible by translating our content into your own language, as well as helping sharing the word to our international community.
+**การแปล:** ลูกค้าของเราไม่ได้พูดแค่ภาษาอังกฤษเท่านั้น! เราต้องการความช่วยเหลือจากคุณในการทำให้ SubQuery สามารถเข้าถึงได้มากขึ้นโดยการแปลเนื้อหาของเราเป็นภาษาของคุณเอง รวมถึงการช่วยประชาสัมพันธ์ข่าวสารต่างๆ กับชุมชนนานาชาติของเรา
 
-**Community Moderation:** Moderators will help grow the SubQuery community by ensuring that official community channels are active and engaging. SubQuery will support Moderators by promoting the channels that they monitor, as well as provide guidelines for our expectations.
+**การดูแลชุมชน:** โมเดอเรเตอร์จะช่วยให้ชุมชน SubQuery เติบโตได้โดยการดูแลให้ช่องทางหลักของชุมชนมีชีวิตชีวาและให้ทุกคนได้มีส่วนร่วม SubQuery จะสนับสนุนโมเดอเรเตอร์โดยส่งเสริมช่องที่พวกเขาดูแลตลอดจนให้แนวทางเกี่ยวกับความคาดหวังของเรา
 
 [สมัครเลย!](https://forms.gle/GXBbJ6LDpNfM2v1X6)
