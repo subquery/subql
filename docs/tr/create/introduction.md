@@ -6,73 +6,73 @@
 Aşağıdaki örneklerden bazıları, başlangıç paketini [Quick start](../quickstart/quickstart.md) bölümünde başarıyla başlatmış olduğunuzu varsayar. Bu başlangıç paketinden, SubQuery projenizi özelleştirmek ve uygulamak için standart süreçten geçeceğiz.
 
 1. PROJECT_NAME</0 `subql init kullanarak projenizi başlatın></li>
-<li>Update the Manifest file (<code>project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
-3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
-5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+<li>Bildirim dosyasını (<code>project.yaml`) blok zinciriniz ve eşleyeceğiniz varlıklar hakkında bilgi içerecek şekilde güncelleştirin - bkz[Manifest Dosyası](./manifest.md)
+3. Şemanızda (`schema.graphql`) ayıklayacağınız ve sorgulamak için sürdüreceğiniz verilerin şeklini tanımlayan GraphQL varlıkları oluşturun - bkz. [GraphQL Şeması](./graphql.md)
+4. Zincir verilerini tanımladığınız GraphQL varlıklarına dönüştürmek için çağırmak istediğiniz tüm eşleme işlevlerini (örneğin`mappingHandlers.ts`) ekleyin - bkz[Mapping](./mapping.md)
+5. Kodunuzu Alt Sorgu Projeleri'nde oluşturun, oluşturun ve yayımlayın (veya kendi yerel düğümünüzde çalıştırın) - hızlı başlangıç kılavuzumuzda [ Starter Projenizi Çalıştırma ve Sorgulama](./quickstart.md#running-and-querying-your-starter-project) bakın.
 
-## Directory Structure
+## Dizin Yapısı
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+Aşağıdaki eşleme, `init` komutu çalıştırıldığında, Bir Alt Sorgu projesinin dizin yapısına genel bir bakış sağlar.
 
 ```
-- project-name
-  L package.json
-  L project.yaml
+- proje adı
+  L paketi.json
+  L projesi.yaml
   L README.md
-  L schema.graphql
+  L şeması.graphql
   L tsconfig.json
   L docker-compose.yml
   L src
-    L index.ts
-    L mappings
+    L dizini.ts
+    L eşlemeleri
       L mappingHandlers.ts
   L .gitignore
 ```
 
-For example:
+Mesela:
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![Alt Sorgu dizin yapısı](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## Kod Oluşturma
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+GraphQL varlıklarınızı her değiştirdiğinizde, türler dizininizi aşağıdaki komutla yeniden değiştirmeniz gerekir.
 
 ```
-yarn codegen
+iplik kodgeni
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Bu, daha önce `schema.graphql<` tanımladığınız her tür için oluşturulan varlık sınıflarını içeren yeni bir dizin (veya varolan) `src/types` oluşturur. Bu sınıflar varlık alanlarına tür açısından güvenli varlık yükleme, okuma ve yazma erişimi sağlar - [ GraphQL Şeması](./graphql.md) bu işlem hakkında daha fazla bilgi edinin.
 
-## Build
+## Yapmak
 
-In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+Alt Sorgu Projenizi yerel olarak barındırılan bir Alt Sorgu Düğümünde çalıştırmak için önce çalışmanızı oluşturmanız gerekir.
 
-Run the build command from the project's root directory.
+Yapı komutunu projenin kök dizininden çalıştırın.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-## Logging
+## ünlüğe kaydetme
 
-The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+The `console.log` yöntemi **artık desteklenmiyor**. Bunun yerine, türlere `logger` modülü eklenmiştir, bu da çeşitli günlük düzeylerini kabul edebilecek bir günlükçü destekleyebileceğimiz anlamına gelir.
 
 ```typescript
-logger.info('Info level message');
-logger.debug('Debugger level message');
-logger.warn('Warning level message');
+logger.info('Bilgi düzeyi mesajı');
+logger.debug('Hata ayıklayıcı düzeyi iletisi');
+logger.warn('Uyarı düzeyi iletisi');
 ```
 
-To use `logger.info` or `logger.warn`, just place the line into your mapping file.
+`logger.info` veya `logger.warn` kullanmak için, satırı eşleme dosyanıza yerleştirmeniz yeterlidir.
 
 ![logging.info](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+`logger.debug` kullanmak için ek bir adım gerekir. Komut satırınıza `--log-level=debug` ekleyin.
 
-If you are running a docker container, add this line to your `docker-compose.yaml` file.
+Docker kapsayıcısı çalıştırıyorsanız, bu satırı `docker-compose.yaml` dosyanıza ekleyin.
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-You should now see the new logging in the terminal screen.
+Şimdi terminal ekranında yeni günlüğe kaydetmeyi görmeniz gerekir.
 
 ![logging.debug](/assets/img/subquery_logging.png)
