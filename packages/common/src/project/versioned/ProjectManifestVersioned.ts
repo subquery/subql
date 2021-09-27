@@ -14,7 +14,9 @@ const SUPPORTED_VERSIONS = {
   '0.0.2': ProjectManifestV0_0_2Impl,
 };
 
-type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[keyof typeof SUPPORTED_VERSIONS]>;
+type Versions = keyof typeof SUPPORTED_VERSIONS;
+
+type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
 export function manifestIsV0_0_1(manifest: IProjectManifest): manifest is ProjectManifestV0_0_1Impl {
   return manifest.specVersion === '0.0.1';
@@ -28,11 +30,11 @@ export class ProjectManifestVersioned implements IProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
-    const klass = SUPPORTED_VERSIONS[projectManifest.specVersion];
+    const klass = SUPPORTED_VERSIONS[projectManifest.specVersion as Versions];
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
-    this._impl = plainToClass(klass, projectManifest);
+    this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
   }
 
   get asImpl(): IProjectManifest {

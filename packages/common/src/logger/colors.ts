@@ -5,7 +5,7 @@ import chalk from 'chalk';
 import {LEVELS} from './constants';
 
 export const ctx = new chalk.Instance({level: 3});
-const colored = {
+const colored: Record<keyof typeof LEVELS | 'message', chalk.Chalk> = {
   default: ctx.white,
   60: ctx.bgRed,
   50: ctx.red,
@@ -16,11 +16,13 @@ const colored = {
   message: ctx.cyan,
 };
 
-export function colorizeLevel(level: number) {
-  if (Number.isInteger(+level)) {
-    return Object.prototype.hasOwnProperty.call(LEVELS, level)
-      ? colored[level](LEVELS[level])
-      : colored.default(LEVELS.default);
+function isColouredValue(level: number | string): level is keyof typeof LEVELS {
+  return Number.isInteger(+level) && level in colored;
+}
+
+export function colorizeLevel(level: number): string {
+  if (isColouredValue(level) && Object.prototype.hasOwnProperty.call(LEVELS, level)) {
+    return colored[level](LEVELS[level]);
   }
   return colored.default(LEVELS.default);
 }

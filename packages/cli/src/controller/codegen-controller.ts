@@ -39,7 +39,7 @@ export interface ProcessedField {
   isJsonInterface: boolean;
 }
 
-export async function generateJsonInterfaces(projectPath, schema: string) {
+export async function generateJsonInterfaces(projectPath: string, schema: string) {
   const typesDir = path.join(projectPath, TYPE_ROOT_DIR);
   const jsonObjects = getAllJsonObjects(schema);
   const jsonInterfaces = jsonObjects.map((r) => {

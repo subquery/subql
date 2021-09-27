@@ -7,8 +7,8 @@ import path from 'path';
 import {createProject} from './init-controller';
 
 // async
-const fileExists = async (file) => {
-  return new Promise((resolve, reject) => {
+const fileExists = async (file: string): Promise<boolean> => {
+  return new Promise<boolean>((resolve, reject) => {
     fs.access(file, fs.constants.F_OK, (err) => {
       err ? reject(err) : resolve(true);
     });
