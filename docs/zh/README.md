@@ -112,7 +112,7 @@
       <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
       <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
       <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
-      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">matrix</a>
+      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix"></a>
       <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>
     </div>
   </div>

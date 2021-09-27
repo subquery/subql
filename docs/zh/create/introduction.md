@@ -1,19 +1,19 @@
-# Creating a SubQuery Project
+# 创建子查询项目
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+在 [快速开始](/quickstart/quickstart.md) 指南， 我们很快地演示了一个榜样，让您知道什么是SubQuery以及它是如何运作的。 我们会在创建您的项目和您将要处理的关键文件时更仔细地查看工作流。
 
-## The Basic Workflow
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+## 基本工作流
+以下一些示例将假定您在 [快速启动](../quickstart/quickstart.md) 部分中成功初始化了启动器包。 从这个启动程序包，我们会走过标准进程来定制和执行您的 SubQuery 项目。
 
-1. Initialise your project using `subql init PROJECT_NAME`
-2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
-3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
-5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+1. 使用 `subql init PROJECT_NAME` 初始化您的项目
+2. 更新清单文件(`个项目。 aml`) 以包含关于您的 blockchain 以及您将要映射的实体的信息 - 查看 [清单文件](./manifest.md)
+3. 在您的架构中创建 GraphQL 实体(`架构)。 定义您要提取和持续查询的数据形状的 rapphql`- 参见 [GraphQL Schema](./graphql.md)
+4. 添加所有映射函数 (eg `映射处理器。 s`) 您想要调用来将链式数据转换为您已定义的 GraphQL 实体 - 查看 [映射](./mapping.md)
+5. 生成，构建， 并发布代码到 SubQuery 项目 (或在您自己的本地节点中运行) - 在我们的快速启动指南中查看 [运行并查询您的启动项目](./quickstart.md#running-and-querying-your-starter-project)。
 
-## Directory Structure
+## 目录结构
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+下面的地图提供了运行 `init` 命令时子查询项目的目录结构概览。
 
 ```
 - project-name
@@ -30,37 +30,37 @@ The following map provides an overview of the directory structure of a SubQuery 
   L .gitignore
 ```
 
-For example:
+例如：
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![子查询目录结构](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## 代码生成
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+每当您更改您的 GraphQL 实体时，您必须通过以下命令重新生成您的类型目录。
 
 ```
-yarn codegen
+yarn 编码器
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+这将创建一个新的目录(或更新现有的目录) `src/type` 其中包含您之前在 `scheme 中定义的每个类型生成的实体类别。 rapphql` 这些类别提供了安全类型实体加载， 读取并写入实体字段 - 在 [GraphQL Schema](./graphql.md) 中查看更多关于此进程的信息。
 
-## Build
+## 构建...
 
-In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+为了在本地托管的 SubQuery 节点上运行您的SubQuery 项目，您需要首先构建您的工作。
 
-Run the build command from the project's root directory.
+从项目的根目录运行构建命令。
 
 ```shell
 # Yarn
 yarn build
 
 # NPM
-npm run-script build
+npm run-script building
 ```
 
-## Logging
+## 日志记录
 
-The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+`console.log` 方法**不再受支持**。 相反， `Logger` 模块已被注入到类型中，这意味着我们可以支持一个可以接受不同日志级别的日志器。
 
 ```typescript
 logger.info('Info level message');
@@ -68,16 +68,16 @@ logger.debug('Debugger level message');
 logger.warn('Warning level message');
 ```
 
-To use `logger.info` or `logger.warn`, just place the line into your mapping file.
+要使用 `logger.info` 或 `logger.warn`，只需将行放入您的映射文件。
 
-![logging.info](/assets/img/logging_info.png)
+![正在记录.信息](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+要使用 `logger.debug`, 需要一个额外的步骤。 将 `--log-level=debug` 添加到您的命令行。
 
-If you are running a docker container, add this line to your `docker-compose.yaml` file.
+如果您正在运行一个停靠容器，请将此行添加到您的 `docker-compose.yaml` 文件中。
 
-![logging.debug](/assets/img/logging_debug.png)
+![正在记录调试...](/assets/img/logging_debug.png)
 
-You should now see the new logging in the terminal screen.
+您现在应该在终端屏幕上看到新的登录。
 
-![logging.debug](/assets/img/subquery_logging.png)
+![正在记录调试...](/assets/img/subquery_logging.png)

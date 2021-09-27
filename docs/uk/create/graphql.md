@@ -55,7 +55,7 @@ Assuming we knew this user's name, but we don't know the exact id value, rather 
 
 **If a field is not unique, the maximum result set size is 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Коли запускається генерація коду, це автоматично створуює метод `отриманий по імені` за моделлю `юзера`, а `заголовок` поля зовнішнього ключа створює метод `отриманий за назвою`, до якого обидва безпосередньо можуть отримати доступ до функції відображення.
 
 ```sql
 /* Prepare a record for title entity */

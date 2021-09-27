@@ -1,35 +1,35 @@
 # Hello World (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+Chào mừng bạn đến với SubQuery Hello World quick start. Việc bắt đầu nhanh nhằm mục đích chỉ cho bạn cách bạn có được dự án khởi động mặc định chạy trong Docker trong một vài bước đơn giản.
 
-## Learning objectives
+## Mục tiêu học tập
 
-At the end of this quick start, you should:
+Khi kết thúc phần quick start này, bạn sẽ:
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- hiểu các yêu cầu bắt buộc
+- hiểu các lệnh phổ biến cơ bản
+- có thể xem localhost: 3000 và xem playground
+- chạy một truy vấn đơn giản để lấy chiều cao khối của mạng chính Polkadot
 
-## Intended audience
+## Đối tượng mục tiêu
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Hướng dẫn này hướng tới các nhà phát triển mới đã có một số kinh nghiệm phát triển và muốn tìm hiểu thêm về SubQuery.
 
-## Video guide
+## Video hướng dẫn
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Điều kiện tiên quyết
 
-You will need:
+Bạn sẽ cần:
 
 - yarn or npm package manager
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+Bạn có thể chạy các lệnh sau trong một thiết bị đầu cuối để xem liệu bạn đã có bất kỳ điều kiện tiên quyết nào trong số này chưa.
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+Đối với người dùng nâng cao hơn, hãy sao chép và dán nội dung sau:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+Điều này sẽ trả về: (đối với người dùng npm, thay thế yarn bằng npm)
 
 ```shell
 My yarn version is: 1.22.10
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+Nếu bạn đạt được những điều trên, thì bạn đã tốt để đi. Nếu không, hãy nhấp vào các liên kết sau để cài đặt chúng:
 
 - [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## Step 1: Initialise project
+## Bước 1: Khởi tạo dự án
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+Bước đầu tiên khi bắt đầu với SubQuery là chạy lệnh `subql init`. Hãy khởi tạo một dự án bắt đầu với tên `subqlHelloWorld`. Lưu ý rằng chỉ tác giả là bắt buộc. Mọi thứ khác được để trống bên dưới.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -73,15 +73,15 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+Đừng quên thay đổi thành thư mục mới này.
 
 ```shell
 cd subqlHelloWorld
 ```
 
-## Step 2: Install dependencies
+## Bước 2: Cài đặt phần phụ thuộc
 
-Now do a yarn or node install to install the various dependencies.
+Bây giờ yarn hoặc node install để cài các phụ thuộc khác nhau.
 
 ```shell
 # Yarn
@@ -91,7 +91,7 @@ yarn install
 npm install
 ```
 
-An example of `yarn install`
+Ví dụ `yarn install`
 
 ```shell
 > yarn install
@@ -105,9 +105,9 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## Step 3: Generate code
+## Bước 3: Tạo mã
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+Bây giờ, hãy chạy `yarn codegen` để generate Typescript từ giản đồ GraphQL.
 
 ```shell
 # Yarn
@@ -117,7 +117,7 @@ yarn codegen
 npm run-script codegen
 ```
 
-An example of `yarn codegen`
+Ví dụ `yarn codegen`
 
 ```shell
 > yarn codegen
@@ -132,11 +132,11 @@ $ ./node_modules/.bin/subql codegen
 ✨  Done in 1.02s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**Cảnh báo** Khi các thay đổi được thực hiện đối với tệp giản đồ, hãy nhớ chạy lại `yarn codegen` để tạo lại thư mục loại của bạn.
 
-## Step 4: Build code
+## Bước 4: Build code
 
-The next step is to build the code with `yarn build`.
+Bước tiếp theo là xây dựng mã với `yarn build`.
 
 ```shell
 # Yarn
@@ -146,7 +146,7 @@ yarn build
 npm run-script build
 ```
 
-An example of `yarn build`
+Ví dụ `yarn build`
 
 ```shell
 > yarn build
@@ -155,11 +155,11 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## Step 5: Run Docker
+## Bước 5: Chạy Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+Sử dụng Docker cho phép bạn chạy ví dụ này rất nhanh vì tất cả cơ sở hạ tầng cần thiết có thể được cung cấp trong hình ảnh Docker. Run `docker-compose pull && docker-compose up`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+Điều này sẽ thúc đẩy mọi thứ vào cuộc sống, nơi cuối cùng bạn sẽ nhận được các khối đang được nạp.
 
 ```shell
 > #SNIPPET
@@ -177,9 +177,9 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## Step 6: Browse playground
+## Bước 6: Duyệt qua playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+Vào trang web http://localhost:3000/ và dán truy vấn bên dưới vào bên trái màn hình rồi nhấn nút play.
 
 ```
 {
@@ -194,12 +194,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+Sân chơi SubQuery trên localhost.
 
 ![playground localhost](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+Số khối trong playground cũng phải khớp với số khối (về mặt kỹ thuật là chiều cao khối) trong thiết bị đầu cuối.
 
-## Summary
+## Tóm lược
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+Trong phần quick start này, chúng tôi đã trình bày các bước cơ bản để thiết lập và chạy một dự án mới bắt đầu trong môi trường Docker, sau đó điều hướng đến localhost: 3000 và chạy một truy vấn để trả về số khối của mạng Polkadot mainnet.

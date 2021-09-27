@@ -2,11 +2,88 @@ const { config } = require("vuepress-theme-hope");
 
 module.exports = config({
   locales: {
-    '/': {
-      lang: 'English',
-      title: 'SubQuery Docs',
-      description: 'Explore and transform your chain data to build intuitive dApps faster!.',
-    }
+    "/": {
+      lang: "en-UK",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!",
+    },
+    "/de/": {
+      lang: "de",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    /*
+    "/es/": {
+      lang: "es",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    */
+    "/id/": {
+      lang: "id",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    /*
+    "/it/": {
+      lang: "it",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/ja/": {
+      lang: "ja",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/ko/": {
+      lang: "ko",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    */
+    "/ru/": {
+      lang: "ru",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/th/": {
+      lang: "th",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/tr/": {
+      lang: "tr",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/uk/": {
+      lang: "uk",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/vi/": {
+      lang: "vi",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/zh/": {
+      lang: "zh-CN",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
   },
   themeConfig: {
     logo: '/assets/img/logo.png',

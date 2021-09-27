@@ -3,8 +3,8 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s German <span>Docs</span></h2>
-        <p>Entdecken und transformieren Sie Ihre Kettendaten, um intuitive dApps schneller zu erstellen!</p>
+        <h2 class="welcomeTitle">Herzlich Willkommen bei den <span>Dokumenten</span> von SubQuery</h2>
+        <p>Erkunden und transformieren Sie Ihre Kettendaten, um intuitive dApps schneller zu erstellen!</p>
       </div>
     </div>
   </section>
@@ -110,7 +110,7 @@
       <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">Discord</a>
       <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
       <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
-      <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegramm</a>
+      <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
       <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
       <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">Matrix</a>
       <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>

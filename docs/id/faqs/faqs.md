@@ -1,45 +1,45 @@
-# Frequently Asked Questions
+# Pertanyaan yang sering diajukan
 
-## What is SubQuery?
+## Apa itu SubQuery?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQuery adalah sebuah proyek sumber terbuka yang memungkinkan pengembang untuk menyusun, mengubah, dan membuat kueri data rantai Substrat untuk menggerakkan aplikasi mereka.
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+SubQuery juga menyediakan penyelenggaraan proyek kelas produksi gratis untuk pengembang yang menghilangkan tanggung jawab mengelola infrastruktur, dan membiarkan pengembang melakukan yang terbaik - membangun.
 
-## What is the best way to get started with SubQuery?
+## Apa cara terbaik untuk memulai SubQuery?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+Cara terbaik untuk memulai SubQuery adalah dengan mencoba [tutorial Hello World](../quickstart/helloworld-localhost.md) kami. Ini adalah 5 menit sederhana untuk mengunduh template pemula, membangun proyek, dan kemudian menggunakan Docker untuk menjalankan node di localhost Anda dan menjalankan kueri sederhana.
 
-## How can I contribute or give feedback to SubQuery?
+## Bagaimana saya bisa berkontribusi atau memberi umpan balik ke SubQuery?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+Kami menyukai kontribusi dan umpan balik dari komunitas. Untuk menyumbang kode, pisahkan penyimpanan yang menarik dan buat perubahan Anda. Kemudian kirimkan PR atau Pull Request. Oh, jangan lupa juga untuk menguji! Lihat juga garis panduan kontribusi kami (akan diberitahu).
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+Untuk memberi umpan balik, hubungi kami di hello@subquery.network atau buka [discord channel](https://discord.com/invite/78zg8aBSMG) kami
 
-## How much does it cost to host my project in SubQuery Projects?
+## Berapa biaya untuk menyelenggarakan proyek saya di Proyek SubQuery?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+Menyelenggarakan proyek Anda di Proyek SubQuery sepenuhnya gratis - ini adalah cara kami mengembalikan kepada komunitas. Untuk mempelajari bagaimana menyelenggarakan proyek Anda bersama kami, silakan lihat tutorial [Hello World (SubQuery diselenggarakan)](../quickstart/helloworld-hosted.md).
 
-## What are deployment slots?
+## Apa itu slot penyebaran?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+Slot penyebaran adalah fitur di [Proyek SubQuery](https://project.subquery.network) yang setara dengan lingkungan pengembangan. Contohnya, dalam organisasi perangkat lunak apa pun biasanya ada lingkungan pengembangan dan lingkungan produksi minimal (mengabaikan localhost). Biasanya lingkungan tambahan seperti tahapan dan pra-produksi atau bahkan QA sudah termasuk tergantung pada kebutuhan organisasi dan pengaturan pengembangannya.
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery saat ini memiliki dua slot yang tersedia. Sebuah slot tahapan dan slot produksi. Ini memungkinkan pengembang untuk menyebarkan SubQuery mereka ke lingkungan tahapan dan semuanya berjalan dengan baik, "maju ke produksi" dengan mengklik tombol.
 
-## What is the advantage of a staging slot?
+## Apa keuntungan dari slot tahapan?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+Keuntungan utama menggunakan slot tahapan adalah memungkinkan Anda menyiapkan rilis proyek SubQuery baru Anda tanpa memaparkannya secara publik. Anda dapat menunggu slot tahapan untuk menyusun ulang semua data tanpa mempengaruhi aplikasi produksi Anda.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+Slot tahapan tidak ditampilkan kepada publik di [Explorer](https://explorer.subquery.network/) dan memiliki URL unik yang hanya dapat dilihat oleh Anda. Dan tentu saja, lingkungan terpisah memungkinkan Anda menguji kode baru tanpa mempengaruhi produksi.
 
-## What are extrinsics?
+## Apa itu ekstrinsik?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+Jika Anda sudah akrab dengan konsep blockchain, Anda dapat menganggap ekstrinsik sebanding dengan transaksi. Lebih formal, ekstrinsik adalah sepotong informasi yang berasal dari luar rantai dan termasuk dalam blok. Ada tiga kategori ekstrinsik. Yaitu inheren, transaksi yang ditandatangani, dan transaksi yang tidak ditandatangani.
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+Ekstrinsik inheren adalah potongan informasi yang tidak ditandatangani dan hanya dimasukkan ke dalam blok oleh pencipta blok.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+Ekstrinsik transaksi yang ditandatangani adalah transaksi yang berisi tanda tangan dari rekening yang mengeluarkan transaksi. Mereka ada untuk membayar biaya agar transaksi termasuk dalam rantai.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+Transaksi ekstrinsik yang tidak ditandatangani adalah transaksi yang tidak berisi tanda tangan dari rekening yang mengeluarkan transaksi. Ekstrinsik transaksi yang tidak ditandatangani harus digunakan dengan hati-hati karena tidak ada yang membayar biaya, karena itu ditandatangani. Karena ini, antrian transaksi kekurangan logika ekonomi untuk mencegah spam.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+Untuk informasi lebih lanjut, klik [di sini](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).

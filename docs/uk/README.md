@@ -107,13 +107,13 @@
   <div>
     <div>Слідкуйте за нами в соціальних мережах</div>
     <div class="connectWay">
-      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">discord</a>
-      <a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">twitter</a>
-      <a href="https://medium.com/@subquery" target="_blank" class="connectMedium">medium</a>
-      <a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">telegram</a>
-      <a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">github</a>
-      <a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">matrix</a>
-      <a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">linkedin</a>
+      <a href="https://discord.com/invite/78zg8aBSMG" target="_blank" class="connectDiscord">діскорд</a>
+<a href="https://twitter.com/subquerynetwork" target="_blank" class="connectTwitter">Твіттер</a>
+<a href="https://medium.com/@subquery" target="_blank" class="connectMedium">Медіум</a>
+<a href="https://t.me/subquerynetwork" target="_blank" class="connectTelegram">Телеграм</a>
+<a href="https://github.com/OnFinality-io/subql" target="_blank" class="connectGithub">Гітхаб</a>
+<a href="https://matrix.to/#/#subquery:matrix.org" target="_blank" class="connectMatrix">Матрікс</a>
+<a href="https://www.linkedin.com/company/subquery" target="_blank" class="connectLinkedin">Лінкедін</a>
     </div>
   </div>
 </section>

@@ -1,54 +1,54 @@
 # Создание SubQuery проекта
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+В инструкции [быстрого старта](/quickstart/quickstart.md), мы очень быстро разобрали пример, чтобы показать Вам, что такое SubQuery и как он работает. В данной статье, мы более подробно рассмотрим рабочий процесс создания вашего проекта и ключевых файлов, с которыми вы будете работать.
 
-## The Basic Workflow
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+## Базовый рабочий процесс
+Некоторые из следующих примеров предполагают, что вы успешно запустили стартовый пакет, описанный в разделе [Быстрый старт](../quickstart/quickstart.md). С этого стартового пакета мы рассмотрим стандартный процесс по настройке и внедрению вашего SubQuery проекта.
 
 1. Инициализируйте ваш проект с помощью `subql init PROJECT_NAME`
-2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
-3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
-5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+2. Обновите файл манифеста (`проект. aml`), чтобы включить информацию о вашем блокчейне, и сущности, которые вы собираетесь сопоставить - см. [Файл манифеста](./manifest.md)
+3. Создайте GraphQL сущности в вашей схеме (`schema.raphql`), которые определяют форму ваших данных, которые вы будете извлекать и использовать для запроса - см. [GraphQL Schema](./graphql.md)
+4. Добавьте все функции сопоставления (например, `mappingHandlers.ts`), которые вы хотите использовать для преобразования данных цепи в GraphQL сущности, которые вы определили ранее - см. [Mapping](./mapping.md)
+5. Сгенерируйте, постройте, и опубликуйте ваш код в SubQuery Projects (или запустите на вашем локальном узле) - см. [Запуск и запрос вашего стартового проекта](./quickstart.md#running-and-querying-your-starter-project) в нашей инструкции быстрого старта.
 
-## Directory Structure
+## Структура каталогов
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+Следующая карта предоставляет обзор структуры директория SubQuery проекта при запуске команды `init`.
 
 ```
 - project-name
   L package.json
-  L project.yaml
+  L проект. aml
   L README.md
   L schema.graphql
-  L tsconfig.json
+  L tsconfig. son
   L docker-compose.yml
   L src
-    L index.ts
-    L mappings
+    L index. s
+    L сопоставления
       L mappingHandlers.ts
   L .gitignore
 ```
 
-For example:
+Например:
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![Структура каталогов SubQuery](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## Генерирование кода
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+Каждый раз, когда вы меняете сущности GraphQL, вы должны регенерировать типы каталогов следующей командой.
 
 ```
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+Это команда создаст новый каталог (или обновит существующий) `src/types`, который содержит сгенерированные классы сущностей для каждого типа, который вы ранее задали в `schema.graphql`. Эти классы обеспечивают безопасную загрузку сущностей, доступ к чтению и записи на поле сущности - подробнее об этом процессе можно прочитать на [GraphQL-схеме](./graphql.md).
 
 ## Сборка
 
-In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+Для того, чтобы запустить свой проект SubQuery на локальном узле SubQuery Node, вам нужно сначала завершить свою работу.
 
-Run the build command from the project's root directory.
+Запустите команду сборки из корневого каталога проекта.
 
 ```shell
 # Yarn
@@ -58,9 +58,9 @@ yarn build
 npm run-script build
 ```
 
-## Ведение журнала
+## Файл регистрации
 
-Метод `console.log` **больше не поддерживается**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+Метод `console.log` **больше не поддерживается**. Вместо этого был введен `logger` модуль, что означает, что мы можем поддерживать логгер, который может принимать различные уровни логгеров.
 
 ```typescript
 logger.info('Info level message');
@@ -74,10 +74,10 @@ logger.warn('Warning level message');
 
 Для использования `logger.debug`требуется дополнительный шаг. Добавьте `--log-level=debug` в вашу командную строку.
 
-If you are running a docker container, add this line to your `docker-compose.yaml` file.
+Если вы используете docker container, добавьте эту строку в ваш `docker-compose.yaml` файл.
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-You should now see the new logging in the terminal screen.
+Теперь вы должны увидеть новые записи на экране терминала.
 
 ![logging.debug](/assets/img/subquery_logging.png)

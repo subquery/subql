@@ -1,21 +1,21 @@
-# Social Media Links
+# Tautan Media Sosial
 
-SubQuery is an active project that maintains and communicates with our followers through many social media channels.
+SubQuery adalah proyek aktif yang menjaga dan berkomunikasi dengan pengikut kami melalui banyak saluran media sosial.
 
-It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
+Merupakan tujuan kami untuk selalu mendengarkan dan terlibat dengan komunitas setia kami, jadi silakan bergabung dalam percakapan dan kirimkan ide atau pertanyaan Anda kepada kami!
 
-## Official SubQuery Communities
+## Komunitas SubQuery Resmi
 
-- [Discord](https://discord.com/invite/78zg8aBSMG) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [Discord](https://discord.com/invite/78zg8aBSMG) (Komunitas Utama dengan jalur dukungan teknis khusus)
+- [Medium](https://subquery.medium.com) (Jalur pengumuman utama)
 - [Twitter](https://twitter.com/subquerynetwork)
 - [WeChat]()
-- [Telegram](https://t.me/subquerynetwork) (Announcements channel only)
+- [Telegram](https://t.me/subquerynetwork) (Hanya jalur pengumuman)
 - [GitHub](https://github.com/SubQuery/subql)
 - [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
 - [LinkedIn](https://www.linkedin.com/company/subquery)
 
-## Unofficial SubQuery Communities
+## Komunitas SubQuery Tidak Resmi
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+Komunitas ini tidak dimoderasi oleh tim SubQuery, tetapi duta kami mungkin ada di sana untuk memberikan dukungan. Harap berhati-hati terhadap penipuan karena SubQuery **tidak** bertanggung jawab atas apa yang terjadi di dalamnya.
 

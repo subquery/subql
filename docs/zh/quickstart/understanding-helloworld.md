@@ -1,46 +1,46 @@
 # Hello World Explained
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+在 [Hello World quick start guide](helloworld-localhost.md)中，我们运行了一些简单的命令，并很快就启动并运行了一个示例。  这使您可以确保具备所有先决条件，并且可以使用本地 Playground 进行简单查询以从 SubQuery 获取您的第一个数据。 让我们来仔细看看所有这些命令的含义。
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+我们运行的第一个命令是 `subql init --starter subqlHelloWorld`。
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+这个指令完成了繁重的工作，并为您创建了一大堆文件。 正如 [official documentation](quickstart.md#configure-and-build-the-starter-project)中所指出的那样，您将主要处理以下文件：
 
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- `project.yaml `中的清单
+- `schema.graphql `中的 GraphQL 架构
+- `src/mappings/` 目录中的映射函数
 
 ![key subql files](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+这些文件是我们所做一切的核心。 因此，我们将在另一篇文章中花更多时间来介绍这些文件。 不过现在，只需要知道这样的模式包含了用户可以从 SubQuery API 请求的数据的描述，project yaml 文件包含了“配置”类型参数，当然还有包含了含有 typescript 的 mappingHandlers — 其 typescript 有转换数据的功能。
 
 ## yarn install
 
-The next thing we did was `yarn install`. `npm install` can be used as well.
+我们所做的下一个事情是 `yarn install`。 您也可以使用 `npm install` 。
 
-> A short history lesson. Node Package Manager or npm was initially released in 2010 and is a tremendously popular package manager among JavaScript developers. It is the default package that is automatically installed whenever you install Node.js on your system. Yarn was initially released by Facebook in 2016 with the intention to address some of the performance and security shortcomings of working with npm (at that time).
+> 一段简短的历史。  Node Package Manager 或 npm 最初于 2010 年发布，是 JavaScript 开发人员中非常流行的包管理器。 它是您在系统上安装 Node.js 时自动安装的默认包。  Yarn 最初由 Facebook 于 2016 年发布，旨在解决使用 npm（当时）的一些性能和安全缺陷。
 
-What yarn does is look at the `package.json` file and download various other dependencies. Looking at the `package.json` file, it doesn't look like there are many dependencies, but when you run the command, you'll notice that 18,983 files are added. This is because each dependency will also have its own dependencies.
+真的 yarn 是查看 `package.json` 文件并下载其他依赖项。 yarn 所做的是查看 `package.json` 文件并下载各种其他依赖项。package.json 文件看起来没有很多依赖项，但是当您运行该命令时，您会注意到添加了 18,983 个文件。  这是因为每个依赖项也将有自己的依赖项。
 
 ![key subql files](/assets/img/dependencies.png)
 
 ## yarn codegen
 
-Then we ran `yarn codegen` or `npm run-script codegen`. What this does is fetch the GraphQL schema (in the `schema.graphql`) and generates the associated typescript model files (Hence the output files will have a .ts extension). You should never change any of these generated files, only change the source `schema.graphql` file.
+然后我们运行 `yarn codegen` 或 `npm run-script codegen`。 这样做是为了获取 GraphQL 架构（在`schema.graphql`中）并生成相关的 typescript 模型文件（因此输出文件将具有 .ts 扩展名）。 您不应该更改这些生成的文件中的任何一个，只能更改源 `schema.graphql` 文件。
 
 ![key subql files](/assets/img/typescript.png)
 
 ## yarn build
 
-`yarn build` or `npm run-script build` was then executed. This should be familiar for seasoned programmers. It creates a distribution folder performing things such as code optimisation preparing for a deployment.
+然后执行`yarn build` or `npm run-script build` 。 这对于经验丰富的程序员来说应该很熟悉。 它创建一个分发文件夹，执行如准备部署的代码优化之类的事情。
 
 ![key subql files](/assets/img/distribution_folder.png)
 
 ## docker-compose
 
-The final step was the combined docker command `docker-compose pull && docker-compose up` (can be run separately as well). The `pull` command grabs all the required images from Docker Hub and the `up` command starts the container.
+最后一步是组合 docker 命令 `docker-compose pra && docker-compose up` (也可以单独运行)。 `pull`命令从 Docker Hub 获取所有需要的图像， `up`命令启动容器。
 
 ```shell
 > docker-compose pull
@@ -49,16 +49,16 @@ Pulling subquery-node   ... done
 Pulling graphql-engine  ... done
 ```
 
-When the container is started, you'll see the terminal spit out lots of text showing the status of the node and the GraphQL engine. It's when you see:
+当容器启动时，您会看到终端吐出大量文本，显示节点和 GraphQL 引擎的状态。 当你看到：
 
 ```
 subquery-node_1   | 2021-06-06T02:04:25.490Z <fetch> INFO fetch block [1, 100]
 ```
 
-that you know that the SubQuery node has started to synchronise.
+您就知道SubQuery节点已经开始同步。
 
-## Summary
+## 概括
 
-Now that you've had an insight into what is happening under the covers, the question is where to from here? If you are feeling confident, you can jump into learning about how to [create a project](../create/introduction.md) and learn more about the three key files. The manifest file, the GraphQL schema, and the mappings file.
+现在您已经了解了幕后发生的事情，问题是接下来该做什么？ 如果您有信心，可以开始学习 [create a project](../create/introduction.md)并详细了解三个关键文件。 清单文件、GraphQL架构和映射文件。
 
-Otherwise, continue to our tutorials section where we look at how we can run this Hello World example on SubQuery's hosted infrastructure, we'll look at modifying the start block, and we'll take a deeper dive at running SubQuery projects by running readily available and open source projects.
+或者您可以继续我们的教程部分，我们将学习如何在 SubQuery 的托管基础架构上运行这个 Hello World 示例，我们将学习如何修改 start 块，我们将运行随时可用的开源项目来更深入地了解如何运行 SubQuery 项目。

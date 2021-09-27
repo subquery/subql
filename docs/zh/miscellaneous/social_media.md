@@ -17,5 +17,5 @@ It is our aim to always listen and engage with our loyal community so please joi
 
 ## Unofficial SubQuery Communities
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. 请小心诈骗，因为 SubQuery**不对**其中发生的事情负责。
 

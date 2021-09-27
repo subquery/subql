@@ -1,65 +1,65 @@
-# Running SubQuery Locally
+# Menjalankan SubQuery Secara Lokal
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Panduan ini bekerja melalui cara menjalankan node SubQuery lokal pada infrastruktur Anda, yang mencakup pengindeks dan layanan kueri. Tidak ingin khawatir saat menjalankan infrastruktur SubQuery Anda sendiri? SubQuery menyediakan [layanan hosting yang terkelola](https://explorer.subquery.network) kepada komunitas secara gratis. [Ikuti panduan penerbitan kami](../publish/publish.md) untuk melihat bagaimana Anda dapat mengunggah proyek Anda ke [Proyek SubQuery](https://project.subquery.network).
 
-## Using Docker
+## Gunakan Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+Solusi alternatif adalah menjalankan <strong>Docker Container</strong>, yang ditentukan oleh file `docker-compose.yml`. Untuk proyek baru yang baru saja diinisialisasi, Anda tidak perlu mengubah apa pun di sini.
 
-Under the project directory run the following command:
+Di bawah direktori proyek jalankan perintah berikut:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+Mungkin perlu beberapa saat untuk mengunduh paket yang diperlukan ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), dan Postgres) untuk pertama kalinya, tetapi segera Anda akan melihat Node subkueri.
 
-## Running an Indexer (subql/node)
+## Menjalankan Pengindeks (subql/node)
 
-Requirements:
+Persyaratan:
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) database (versi 12 atau lebih tinggi). Ketika [Node SubQuery](#start-a-local-subquery-node) mengindeks blockchain, data yang diekstrak akan disimpan dalam instance database eksternal.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+Node SubQuery adalah implementasi yang mengekstrak data blockchain berbasis substrat per proyek SubQuery dan menyimpannya ke dalam database Postgres.
 
-### Installation
+### Instalasi
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Harap diperhatikan bahwa kami **TIDAK** mendukung penggunaan `yarn global` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan error di masa mendatang.
 
-Once installed, you can start a node with the following command:
+Setelah terinstal, Anda dapat memulai node dengan perintah berikut:
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### Perintah Utama
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
+Perintah berikut akan membantu Anda menyelesaikan konfigurasi node SubQuery dan memulai proses pengindeksan. Untuk mengetahui lebih lanjut, Anda dapat menjalankan perintah `--help`.
 
-#### Point to local project path
+#### Arahkan ke jalur proyek lokal
 
 ```
 subql-node -f your-project-path
 ```
 
-#### Using a Dictionary
+#### Gunakan Kamus
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
+Menggunakan kamus full chain dapat mempercepat pemrosesan proyek SubQuery selama pengujian atau selama indeks pertama Anda secara drastis. Dalam beberapa kasus, kami telah melihat peningkatan kinerja pengindeksan hingga 10x dibanding sebelumnya.
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+Kamus full chain dapat melakukan pra-indeks lokasi semua peristiwa dan ekstrinsik dalam chain tertentu dan memungkinkan layanan node Anda untuk melompat ke lokasi yang relevan saat melakukan proses indeks daripada memeriksa setiap blok.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+Anda dapat menambahkan titik akhir kamus di file `project.yaml` Anda (lihat [File Manifes](../create/manifest.md)), atau tentukan saat dijalankan menggunakan perintah berikut:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-#### Connect to database
+#### Hubungkan ke database
 
 ```
 export DB_USER=postgres
@@ -70,15 +70,15 @@ export DB_PORT=5432
 subql-node -f your-project-path 
 ````
 
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
+Bergantung pada konfigurasi database Postgres Anda (misalnya kata sandi database yang berbeda), harap pastikan juga bahwa pengindeks (`subql/node`) dan layanan kueri (`subql/query`) dapat membuat koneksi ke sana.
 
-#### Specify a configuration file
+#### Tentukan file konfigurasi
 
 ```
 subql-node -c your-project-config.yml
 ```
 
-This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
+Ini akan mengarahkan node kueri ke file konfigurasi yang bisa dalam format YAML atau JSON. Lihat contoh di bawah ini.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -87,7 +87,7 @@ batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### Ubah ukuran batch pengambilan blok
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -97,32 +97,32 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+Saat pengindeks pertama kali mengindeks chain, mengambil blok tunggal akan menurunkan kinerja secara signifikan. Meningkatkan ukuran batch untuk menyesuaikan jumlah blok yang diambil akan mengurangi waktu pemrosesan secara keseluruhan. Ukuran batch default saat ini adalah 100.
 
-#### Local mode
+#### Mode lokal
 
 ```
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+Untuk tujuan debugging, pengguna dapat menjalankan node dalam mode lokal. Beralih ke model lokal akan membuat tabel Postgres dalam skema `publik` default.
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+Jika mode lokal tidak digunakan, skema Postgres baru dengan `subquery_` awal dan tabel proyek yang sesuai akan dibuat.
 
-## Running a Query Service (subql/query)
+## Menjalankan Layanan Kueri (subql/query)
 
-### Installation
+### Instalasi
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Harap perhatikan bahwa kami **TIDAK** mendukung penggunaan `yarn global` karena manajemen ketergantungannya yang buruk yang dapat menyebabkan error di masa mendatang.
 
-### Running the Query service
+### Menjalankan layanan Kueri
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+Pastikan nama proyek sama dengan nama proyek saat Anda [menginisialisasi proyek](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Periksa juga variabel lingkungan sudah benar.
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+Setelah menjalankan layanan subql-query dengan sukses, buka browser Anda dan buka `http://localhost:3000`. Anda akan melihat playground GraphQL muncul di Explorer dan skema yang siap untuk kueri.
