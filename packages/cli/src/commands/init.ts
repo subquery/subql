@@ -41,8 +41,8 @@ export default class Init extends Command {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
     project.repository = await cli.prompt('Git repository', {required: false});
-    project.network = await cli.prompt('Netork genesis hash', {
-      default: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+    project.endpoint = await cli.prompt('RPC endpoint', {
+      default: 'wss://polkadot.api.onfinality.io/public-ws',
       required: true,
     });
     project.author = await cli.prompt('Authors', {required: true});

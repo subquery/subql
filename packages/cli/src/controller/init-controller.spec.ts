@@ -25,7 +25,7 @@ async function makeTempDir() {
 const projectSpec = {
   name: 'mocked_starter',
   repository: '',
-  network: '0x',
+  endpoint: 'wss://rpc.polkadot.io/public-ws',
   author: 'jay',
   description: 'this is test for init controller',
   version: '',
