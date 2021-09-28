@@ -1,37 +1,37 @@
-# Hello World (SubQuery hosted)
+# Hello World (SubQuery Barındırılan)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+Bu hızlı başlangıcın amacı, Subquery projelerinde (yönetilen hizmetimiz) çalışan varsayılan başlangıç projesini birkaç kolay adımda nasıl alabileceğinizi göstermektir.
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+Basit başlangıç projesini (ve şimdiye kadar öğrendiğimiz her şeyi) alacağız, ancak Docker içinde yerel olarak çalıştırmak yerine, SubQuery'nin yönetilen barındırma altyapısından yararlanacağız. Başka bir deyişle, subquery'nin tüm ağır kaldırma, çalıştırma ve üretim altyapısını yönetmesine izin veriyoruz.
 
-## Learning objectives
+## Öğrenme hedefleri
 
-At the end of this quick start, you should:
+Bu hızlı başlangıcın sonunda şunları yapmalıyız:
 
-- understand the required pre-requisites
-- be able host a project in [SubQuery Projects](https://project.subquery.network/)
-- run a simple query to get the block height of the Polkadot mainnet using the playground
-- run a simple GET query to get the block height of the Polkadot mainnet using cURL
+- gerekli önkoşulları anlamak
+- [SubQuery Projects](https://project.subquery.network/) bir proje barındırabilir
+- oyun alanını kullanarak Polkadot mainnet'in blok yüksekliğini elde etmek için basit bir sorgu çalıştırın
+- сURL kullanarak Polkadot mainnet'in blok yüksekliğini elde etmek için basit bir GET sorgusu çalıştırın
 
-## Intended audience
+## Hedeflenen hedef kitle
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Bu kılavuz, bazı geliştirme deneyimine sahip ve SubQuery hakkında daha fazla bilgi edinmek isteyen yeni geliştiricilere yöneliktir.
 
-## Video guide
+## Video kılavuzu
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/b-ba8-zPOoo" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Önkoşullar
 
-You will need:
+İhtiyacınız olacak:
 
-- a GitHub account
+- GitHub Hesabı
 
-## 1. Create your project
+## 1. Projenizi oluşturma
 
-Let's create a project called subql_hellowworld and run the obligatory install, codegen and build with your favourite package manager.
+Subql_hellowworld adlı bir proje oluşturalım ve zorunlu yükleme, codegen ve derlemeyi en sevdiğiniz paket yöneticisiyle çalıştıralım.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -40,38 +40,38 @@ yarn codegen
 yarn build
 ```
 
-Do NOT run the docker commands though.
+Yine de docker komutlarını ÇALıŞTıRMAYIN.
 
-## 2. Create a GitHub repo
+## 2. GitHub repo'yu oluşturma
 
-In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
+GitHub'da yeni bir genel depo oluşturun. Bir ad girin ve görünürlüğünüzü herkese açık olarak ayarlayın. Burada, her şey şimdilik varsayılan olarak tutulur.
 
 ![create github repo](/assets/img/github_create_new_repo.png)
 
-Take note of your GitHub URL, this must be public for SubQuery to access it.
+GitHub URL'nizi not alın, SubQuery'nin erişebilmesi için bunun herkese açık olması gerekir.
 
 ![create github repo](/assets/img/github_repo_url.png)
 
-## 3. Push to GitHub
+## 3. GitHub'a itin
 
-Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Proje dizininizde, git dizini olarak başlatın. Aksi takdirde, "önemli: git deposu (veya üst dizinlerden herhangi biri değil): .git" hatasını alabilirsiniz
 
 ```shell
 git init
 ```
 
-Then add a remote repository with the command:
+Ardından şu komutu içeren bir uzak depo ekleyin:
 
 ```shell
-git remote add origin https://github.com/seandotau/subqlHelloWorld.git
+git uzaktan ekleme kaynak https://github.com/seandotau/subqlHelloWorld.git
 ```
 
-This basically sets your remote repository to “https://github.com/seandotau/subqlHelloWorld.git” and gives it the name “origin” which is the standard nomenclature for a remote repository in GitHub.
+Bu temel olarak uzak deponuzu "https://github.com/seandotau/subqlHelloWorld.git" olarak ayarlar ve GitHub'daki bir uzak deponun standart isimlendirmesi olan "origin" adını verir.
 
-Next we add the code to our repo with the following commands:
+Daha sonra kodu aşağıdaki komutlarla repomuza ekliyoruz:
 
 ```shell
-> git add .
+> git ekleyin.
 > git commit -m "First commit"
 [master (root-commit) a999d88] First commit
 10 files changed, 3512 insertions(+)
@@ -87,54 +87,54 @@ create mode 100644 tsconfig.json
 create mode 100644 yarn.lock
 > git push origin master
 Enumerating objects: 14, done.
-Counting objects: 100% (14/14), done.
-Delta compression using up to 12 threads
-Compressing objects: 100% (13/13), done.
-Writing objects: 100% (14/14), 59.35 KiB | 8.48 MiB/s, done.
-Total 14 (delta 0), reused 0 (delta 0)
-To https://github.com/seandotau/subqlHelloWorld.git
- * [new branch]      master -> master
+Nesneleri sayma: %100 (14/14), bitti.
+12 iş parçacığına kadar kullanarak delta sıkıştırma
+Nesneleri sıkıştırma: %100 (13/13), bitti.
+Yazma nesneleri: %100 (14/14), 59.35 KiB | 8.48 MiB/s, bitti.
+Toplam 14 (delta 0), yeniden kullanılan 0 (delta 0)
+https://github.com/seandotau/subqlHelloWorld.git için
+ * [yeni dal] usta -> ustası
 
 ```
 
-The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
+Push komutu "lütfen kodumu ana yerel repo'mdan kaynak repo'ya itin" anlamına gelir. GitHub'ı yenilemek GitHub'daki tüm kodu göstermelidir.
 
 ![First commit](/assets/img/first_commit.png)
 
-Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
+Kodunuzu GitHub'a aldığınıza göre, SubQuery Projects'te nasıl barındırabileceğimize bakalım.
 
-## 4. Create your project
+## 4. Projenizi oluşturma
 
-Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
+[https://project.subquery.network](https://project.subquery.network) gidin ve GitHub hesabınızla giriş yapın.
 
 ![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
 
-Then create a new project,
+Sonra yeni bir proje oluşturun,
 
 ![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
 
-And fill in the various fields with the appropriate details.
+Ve çeşitli alanları uygun ayrıntılarla doldurun.
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
-- **Project Name:** Give your project a name here.
-- **Subtitle:** Provide a subtitle for your project.
-- **Description:** Explain what your SubQuery project does.
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
+- **GitHub account:** Birden fazla GitHub hesabınız varsa, bu projenin hangi hesap altında oluşturulacağını seçin. GitHub kuruluş hesabında oluşturulan projeler bu kuruluştaki üyeler arasında paylaşılır.
+- **Project Name:** Projenize buradan bir ad verin.
+- **Subtitle:** Projeniz için bir altyazı sağlayın.
+- **Description:** SubQuery projenizin ne yaptığını açıklayın.
+- **GitHub Repository URL:** Bu, SubQuery projenizi içeren genel bir depo için geçerli bir GitHub URL'si olmalıdır. Schema.graphql dosyası dizininizin kökünde olmalıdır.
+- **Hide project:** Seçilirse, bu, projeyi genel SubQuery gezgininden gizler. SubQuerynuzu toplulukla paylaşmak istiyorsanız bunu seçimsiz tutun!
 
 ![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
 
-When you click create, you'll be taken to your dashboard.
+Oluştur'u tıklatıp tıkladığınızda panonuza götürülürsünüz.
 
 ![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
 
-The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
+Pano, kullandığı ağ, çalıştırdığı kaynak kodun GitHub deposu URL'si, ne zaman oluşturulduğu ve son güncelleştirilmesi ve özellikle dağıtım ayrıntıları gibi birçok yararlı bilgi içerir.
 
-## 5. Deploy your project
+## 5. Projenizi dağıtma
 
-Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+Projenizi SubQuery Projeleri içinde oluşturduğunuza ve görüntüleme davranışını ayarladığınıza göre, bir sonraki adım projenizi çalışır hale getirmektir. Bir sürümü dağıtmak, yeni bir SubQuery dizin oluşturma işlemini başlatır ve GraphQL isteklerini kabul etmeye başlamak için gerekli sorgu hizmetini ayarlar. Yeni sürümleri varolan projelere de buradan dağıtabilirsiniz.
 
-You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
+Üretim yuvası veya hazırlama yuvası gibi çeşitli ortamlara dağıtmayı seçebilirsiniz. Burada bir üretim yuvasına konuşlandıracağız. Clicking on the "Deploy" button brings up a screen with the following fields:
 
 ![Deploy to production slot](/assets/img/deploy_production_slot.png)
 
