@@ -37,15 +37,24 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('indexer');
 const { argv } = getYargsOption();
 
+// We cache this to avoid repeated reads from fs
+const projectEntryCache: Record<string, string> = {};
+
 function getProjectEntry(root: string): string {
   const pkgPath = path.join(root, 'package.json');
   try {
-    const content = fs.readFileSync(pkgPath).toString();
-    const pkg = JSON.parse(content);
-    if (!pkg.main) {
-      return './dist';
+    if (!projectEntryCache[pkgPath]) {
+      const content = fs.readFileSync(pkgPath).toString();
+      const pkg = JSON.parse(content);
+      if (!pkg.main) {
+        return './dist';
+      }
+      projectEntryCache[pkgPath] = pkg.main.startsWith('./')
+        ? pkg.main
+        : `./${pkg.main}`;
     }
-    return pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
+
+    return projectEntryCache[pkgPath];
   } catch (err) {
     throw new Error(
       `can not find package.json within directory ${this.option.root}`,
@@ -55,7 +64,7 @@ function getProjectEntry(root: string): string {
 
 @Injectable()
 export class IndexerManager {
-  private vms: IndexerSandbox[];
+  private vms: Record<string, IndexerSandbox> = {};
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
@@ -88,8 +97,8 @@ export class IndexerManager {
     try {
       const inject = block.specVersion !== this.prevSpecVersion;
       await this.apiService.setBlockhash(block.block.hash, inject);
-      for (const [index, ds] of this.filteredDataSources.entries()) {
-        const vm = this.vms[index];
+      for (const ds of this.filteredDataSources) {
+        const vm = this.vms[this.getDataSourceEntry(ds)];
         if (ds.kind === SubqlKind.Runtime) {
           for (const handler of ds.mapping.handlers) {
             switch (handler.kind) {
@@ -178,13 +187,13 @@ export class IndexerManager {
     this.filteredDataSources = this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
 
-    // Start VM for each data source
-    this.vms = await Promise.all(
-      this.filteredDataSources.map((dataSource) => {
-        const entry = this.getDataSourceEntry(dataSource);
-        return this.initVM(entry);
-      }),
-    );
+    for (const ds of this.filteredDataSources) {
+      const entry = this.getDataSourceEntry(ds);
+
+      if (!this.vms[entry]) {
+        this.vms[entry] = await this.initVM(entry);
+      }
+    }
   }
 
   private async initVM(entry: string): Promise<IndexerSandbox> {
@@ -326,12 +335,12 @@ export class IndexerManager {
   }
 
   private getDataSourcesForSpecName(): SubqlRuntimeDatasource[] {
-    const specName = this.api.runtimeVersion.specName.toString();
     return this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
-        !!(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSrouceV0_0_1).filter.specName === specName,
+        !(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
+        (ds as RuntimeDataSrouceV0_0_1).filter.specName ===
+          this.api.runtimeVersion.specName.toString(),
     );
   }
 

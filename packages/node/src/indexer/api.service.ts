@@ -63,6 +63,7 @@ export class ApiService implements OnApplicationShutdown {
         this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
         6000,
     };
+
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
