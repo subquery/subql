@@ -47,13 +47,13 @@ export DB_PORT=5432
 
 ## Индексирование проекта
 
-To start indexing a project, navigate into your project folder and run the following command:
+Чтобы начать индексирование проекта, перейдите в папку своего проекта и выполните следующую команду:
 
 ```shell
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+Если у вас нет под рукой проекта, ` git clone https://github.com/subquery/subql-helloworld `. You should see the indexer node kick into life and start indexing blocks.
 
 ## Inspecting Postgres
 
