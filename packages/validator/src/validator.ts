@@ -46,7 +46,7 @@ export class Validator {
       reports.push({
         name: 'package-json-file',
         description: 'A valid `package.json` file must exist in the root directory of the project',
-        valid: !!schema,
+        valid: !!pkg,
         skipped: false,
       });
     }

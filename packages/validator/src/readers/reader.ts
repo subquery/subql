@@ -31,6 +31,7 @@ export class ReaderFactory {
     }
 
     const locationWithoutSchema = location.replace('ipfs://', '');
+
     if (CIDv0.test(locationWithoutSchema) || CIDv1.test(locationWithoutSchema)) {
       return new IPFSReader(locationWithoutSchema, options.ipfs);
     }

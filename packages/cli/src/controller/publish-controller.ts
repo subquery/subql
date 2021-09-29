@@ -3,7 +3,14 @@
 
 import fs from 'fs';
 import path from 'path';
-import {loadProjectManifest} from '@subql/common';
+import {
+  loadProjectManifest,
+  manifestIsV0_0_1,
+  manifestIsV0_2_0,
+  ProjectManifestV0_0_1,
+  ProjectManifestV0_0_1Impl,
+  ProjectManifestV0_2_0Impl,
+} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 
@@ -22,9 +29,9 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
   const ipfs = IPFS.create({url: ipfsEndpoint});
 
   const projectManifestPath = path.resolve(projectDir, 'project.yaml');
-  const manifest = loadProjectManifest(projectManifestPath);
+  const manifest = loadProjectManifest(projectManifestPath).asImpl;
 
-  if (manifest.specVersion === '0.0.1') {
+  /*if (manifestIsV0_0_1(manifest)) {
     const packageJsonPath = path.resolve(projectDir, 'package.json');
 
     const codePath = JSON.parse(fs.readFileSync(packageJsonPath).toString()).main;
@@ -39,12 +46,31 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
     // Update references in schema
     manifest.schema = schemaCid;
     // (manifest as any).main = codeCid;
+  } else */ if (manifestIsV0_2_0(manifest)) {
+    const entryPaths = manifest.dataSources.map((ds) => ds.mapping.file);
+    const schemaPath = manifest.schema.file;
+
+    // Upload referenced files to IPFS
+    const [schema, ...entryPoints] = await Promise.all(
+      [schemaPath, ...entryPaths].map((filePath) =>
+        uploadFile(ipfs, fs.createReadStream(path.resolve(projectDir, filePath))).then((cid) => `ipfs://${cid}`)
+      )
+    );
+
+    // Update referenced file paths to IPFS cids
+    manifest.schema.file = schema;
+
+    entryPoints.forEach((entryPoint, index) => {
+      manifest.dataSources[index].mapping.file = entryPoint;
+    });
+
+    console.log('MANIFEST', manifest);
   } else {
-    throw new Error('Unsupported project manifest spec');
+    throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');
   }
 
   // Upload schema
-  return uploadFile(ipfs, minifyYaml(JSON.stringify(manifest)));
+  return uploadFile(ipfs, toMinifiedYaml(manifest));
 }
 
 async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileContent): Promise<string> {
@@ -52,10 +78,8 @@ async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileC
   return result.cid.toString();
 }
 
-function minifyYaml(raw: string): string {
-  const doc = yaml.load(raw);
-
-  return yaml.dump(doc, {
+function toMinifiedYaml(manifest: ProjectManifestV0_0_1Impl | ProjectManifestV0_2_0Impl): string {
+  return yaml.dump(manifest, {
     sortKeys: true,
     condenseFlow: true,
   });

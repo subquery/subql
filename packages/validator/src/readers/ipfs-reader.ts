@@ -21,11 +21,19 @@ export class IPFSReader implements Reader {
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
-    const req = this.ipfs.cat(this.cid);
+    return this.getFile(this.cid);
+  }
 
-    // Should be first item
-    for await (const res of req) {
-      return yaml.load(Buffer.from(res).toString('utf8'));
+  async getFile(fileName: string): Promise<unknown | undefined> {
+    try {
+      const req = this.ipfs.cat(fileName.replace('ipfs://', ''));
+
+      // Should be first item
+      for await (const res of req) {
+        return yaml.load(Buffer.from(res).toString('utf8'));
+      }
+    } catch (e) {
+      return undefined;
     }
   }
 }
