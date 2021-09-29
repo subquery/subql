@@ -14,7 +14,7 @@ export interface LoggerOption {
 
 function limitStack(stack: string, configSize: number): string {
   const stackArray = stack.split(/\r\n|\r|\n/);
-  const reduceSize = Math.min(stackArray.length, configSize) + 1; //one additional line for error message
+  const reduceSize = Math.min(stackArray.length, configSize);
   stackArray.splice(reduceSize);
   return stackArray.join('\n');
 }
