@@ -79,7 +79,7 @@ Postgres 데이터베이스의 구성(예: 다른 데이터베이스 비밀번�
 subql-node -c your-project-config.yml
 ```
 
-그러면 쿼리 노드가 YAML 또는 JSON 형식일 수 있는 구성 파일을 가리킵니다. Check out the example below.
+그러면 쿼리 노드가 YAML 또는 JSON 형식일 수 있는 구성 파일을 가리킵니다. 아래의 예를 확인하세요.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
