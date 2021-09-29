@@ -7,7 +7,6 @@ import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
 import {createProject, installDependencies} from '../controller/init-controller';
 import {ProjectSpec} from '../types';
-import Codegen from './codegen';
 
 export default class Init extends Command {
   static description = 'Init a scaffold subquery project';
@@ -19,7 +18,6 @@ export default class Init extends Command {
     }),
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
     'skip-install': flags.boolean({description: 'Skip installing dependencies'}),
-    'skip-codegen': flags.boolean({description: 'Skip graphql codegen'}),
     npm: flags.boolean({description: 'Force using NPM instead of yarn'}),
   };
 
@@ -61,12 +59,6 @@ export default class Init extends Command {
         if (!flags['skip-install']) {
           cli.action.start('Installing dependencies');
           installDependencies(projectPath, flags.npm);
-          cli.action.stop();
-        }
-
-        if (!flags['skip-codegen']) {
-          cli.action.start('Generating graphql code');
-          await Codegen.run(['-l', projectPath]);
           cli.action.stop();
         }
 
