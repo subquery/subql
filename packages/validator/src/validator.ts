@@ -29,14 +29,18 @@ export class Validator {
     const reports: Report[] = [];
     const [pkg, rawSchema] = await Promise.all([this.reader.getPkg(), this.reader.getProjectSchema()]);
 
-    const schema = new ProjectManifestVersioned(rawSchema as VersionedProjectManifest);
+    if (!rawSchema) {
+      throw new Error('Not a valid SubQuery project, project.yaml is missing');
+    }
 
     reports.push({
       name: 'project-yaml-file',
       description: 'A valid `project.yaml` file must exist in the root directory of the project',
-      valid: !!pkg,
+      valid: !!rawSchema,
       skipped: false,
     });
+
+    const schema = new ProjectManifestVersioned(rawSchema as VersionedProjectManifest);
 
     if (schema.isV0_0_1) {
       reports.push({
