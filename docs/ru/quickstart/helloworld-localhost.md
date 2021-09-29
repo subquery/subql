@@ -13,9 +13,9 @@
 
 ## Целевая аудитория
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Это руководство предназначено для новых разработчиков, имеющих некоторый опыт разработки и заинтересованных в получении дополнительных сведений о SubQuery.
 
-## Video guide
+## Видео инструкция
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
