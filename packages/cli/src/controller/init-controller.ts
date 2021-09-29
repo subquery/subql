@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import childProcess from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
@@ -12,7 +13,7 @@ import {ProjectSpec} from '../types';
 
 const STARTER_PATH = 'https://github.com/subquery/subql-starter';
 
-export async function createProject(localPath: string, project: ProjectSpec): Promise<void> {
+export async function createProject(localPath: string, project: ProjectSpec): Promise<string> {
   const projectPath = path.join(localPath, project.name);
   try {
     await simpleGit().clone(STARTER_PATH, projectPath);
@@ -34,6 +35,8 @@ export async function createProject(localPath: string, project: ProjectSpec): Pr
   } catch (e) {
     throw new Error('Failed to remove .git from starter project');
   }
+
+  return projectPath;
 }
 
 async function preparePackage(projectPath: string, project: ProjectSpec): Promise<void> {
@@ -59,4 +62,23 @@ async function prepareManifest(projectPath: string, project: ProjectSpec): Promi
   data.repository = project.repository ?? '';
   const newYaml = yaml.dump(data);
   await fs.promises.writeFile(yamlPath, newYaml, 'utf8');
+}
+
+export function installDependencies(projectPath: string, useNpm?: boolean): void {
+  let command = 'yarn install';
+
+  if (useNpm || !checkYarnExists()) {
+    command = 'npm install';
+  }
+
+  childProcess.execSync(command, {cwd: projectPath});
+}
+
+function checkYarnExists(): boolean {
+  try {
+    childProcess.execSync('yarn --version');
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

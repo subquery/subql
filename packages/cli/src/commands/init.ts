@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
-import {createProject} from '../controller/init-controller';
+import {createProject, installDependencies} from '../controller/init-controller';
 import {ProjectSpec} from '../types';
 
 export default class Init extends Command {
@@ -16,6 +16,9 @@ export default class Init extends Command {
     starter: flags.boolean({
       default: true,
     }),
+    location: flags.string({char: 'l', description: 'local folder to create the project in'}),
+    'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
+    npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
   };
 
   static args = [
@@ -29,10 +32,12 @@ export default class Init extends Command {
     const {args, flags} = this.parse(Init);
     const project = {} as ProjectSpec;
 
+    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+
     project.name = args.projectName
       ? args.projectName
       : await cli.prompt('Project name', {default: 'subql-starter', required: true});
-    if (fs.existsSync(path.join(process.cwd(), `${project.name}`))) {
+    if (fs.existsSync(path.join(location, `${project.name}`))) {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
     project.repository = await cli.prompt('Git repository', {required: false});
@@ -48,12 +53,19 @@ export default class Init extends Command {
     if (flags.starter && project.name) {
       cli.action.start('Init the starter package');
       try {
-        await createProject(process.cwd(), project);
-        cli.action.stop(`${project.name} is ready`);
+        const projectPath = await createProject(location, project);
+        cli.action.stop();
+
+        if (flags['install-dependencies']) {
+          cli.action.start('Installing dependencies');
+          installDependencies(projectPath, flags.npm);
+          cli.action.stop();
+        }
+
+        this.log(`${project.name} is ready`);
       } catch (e) {
         /* handle all errors here */
-        console.error(e.message);
-        process.exit(1);
+        this.error(e.message);
       }
     }
   }
