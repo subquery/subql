@@ -125,10 +125,7 @@ export class ApiService implements OnApplicationShutdown {
     return this.patchedApi;
   }
 
-  private async patchApi(
-    registry?: Registry,
-    blockHash?: BlockHash,
-  ): Promise<void> {
+  private patchApi(registry?: Registry): void {
     if (registry) {
       Object.defineProperty(this.patchedApi, 'registry', {
         value: registry,
@@ -136,10 +133,8 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
-    if (blockHash) {
-      await this.patchApiQuery(this.patchedApi, blockHash);
-    }
-    this.patchApiAt(this.patchedApi);
+    // this.patchApiAt(this.patchedApi);
+    this.patchApiQuery(this.patchedApi);
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
@@ -147,13 +142,16 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash): Promise<void> {
+  async setBlockhash(blockHash: BlockHash, inject = false): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
-    const { registry } = await this.api.getBlockRegistry(blockHash);
     this.currentBlockHash = blockHash;
-    await this.patchApi(registry, blockHash);
+    if (inject) {
+      const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
+      this.patchedApi.injectMetadata(metadata, true, registry);
+      this.patchApi(registry);
+    }
   }
 
   private replaceToAtVersion(
@@ -268,12 +266,8 @@ export class ApiService implements OnApplicationShutdown {
       combineLatest(keys.map((key) => newEntryFunc(key)))) as any;
   }
 
-  private async patchApiQuery(
-    api: ApiPromise,
-    blockHash: BlockHash,
-  ): Promise<void> {
-    const apiAt = await this.api.at(blockHash);
-    (api as any)._query = Object.entries(apiAt.query).reduce(
+  private patchApiQuery(api: ApiPromise): void {
+    (api as any)._query = Object.entries(api.query).reduce(
       (acc, [module, moduleStorageItems]) => {
         acc[module] = Object.entries(moduleStorageItems).reduce(
           (accInner, [storageName, storageEntry]) => {
@@ -426,7 +420,7 @@ export class ApiService implements OnApplicationShutdown {
     );
   }
 
-  private patchApiAt(api: ApiPromise): void {
-    (api as any).at = NOT_SUPPORT('api.at()');
-  }
+  // private patchApiAt(api: ApiPromise): void {
+  //   (api as any).at = NOT_SUPPORT('api.at()');
+  // }
 }
