@@ -94,12 +94,6 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
-    'network-registry': {
-      demandOption: false,
-      describe:
-        'JSON object mapping genesisHash of each network to an endpoint and optional dictionary',
-      type: 'string',
-    },
   });
 }
 

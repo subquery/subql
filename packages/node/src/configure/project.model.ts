@@ -16,41 +16,29 @@ import {
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
-import { NetworkRegistry } from './NodeConfig';
 
 const logger = getLogger('configure');
 
 export class SubqueryProject {
   private _path: string;
   private _projectManifest: ProjectManifestVersioned;
-  private _networkRegistry: NetworkRegistry;
 
   static async create(
     path: string,
-    networkRegistry: NetworkRegistry,
+    networkOverrides?: Partial<ProjectNetworkConfig>,
   ): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
     const projectManifest = loadProjectManifest(projectPath);
-    return new SubqueryProject(projectManifest, projectPath, networkRegistry);
-    // Object.assign(project, source);
-    // project._path = projectPath;
-    // project.dataSources.map(function (dataSource) {
-    //   if (!dataSource.startBlock || dataSource.startBlock < 1) {
-    //     if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
-    //     dataSource.startBlock = 1;
-    //   }
-    // });
-    // return project;
+    return new SubqueryProject(projectManifest, projectPath, networkOverrides);
   }
 
   constructor(
     manifest: ProjectManifestVersioned,
     path: string,
-    networkRegistry: NetworkRegistry,
+    private networkOverrides?: Partial<ProjectNetworkConfig>,
   ) {
     this._projectManifest = manifest;
     this._path = path;
-    this._networkRegistry = networkRegistry;
 
     manifest.dataSources?.forEach(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
@@ -64,26 +52,27 @@ export class SubqueryProject {
     return this._projectManifest;
   }
 
-  get network(): ProjectNetworkConfig {
+  get network(): Partial<ProjectNetworkConfig> {
     const impl = this._projectManifest.asImpl;
 
     if (manifestIsV0_0_1(impl)) {
-      return impl.network;
+      return {
+        ...impl.network,
+        ...this.networkOverrides,
+      };
     }
 
     if (manifestIsV0_2_0(impl)) {
       const genesisHash = impl.network.genesisHash;
 
-      const network = this._networkRegistry[genesisHash];
-
-      if (!network) {
+      if (!this.networkOverrides.endpoint) {
         throw new Error(
-          `Unable to get network endpoint. genesisHash="${genesisHash}"`,
+          `Network endpoint must be provided for network. genesisHash="${genesisHash}"`,
         );
       }
 
       return {
-        ...network,
+        ...this.networkOverrides,
         genesisHash,
       };
     }
@@ -99,12 +88,9 @@ export class SubqueryProject {
   get dataSources(): SubqlDataSource[] {
     return this._projectManifest.dataSources;
   }
-  // description: string;
-  // repository: string;
   get schema(): string {
     return this._projectManifest.schema;
   }
-  // specVersion: string;
 
   get chainTypes(): RegisteredTypes | undefined {
     const impl = this._projectManifest.asImpl;

@@ -27,7 +27,6 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
       dataSources: [],
     } as any),
     '',
-    {},
   );
   return project;
 }

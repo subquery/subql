@@ -170,6 +170,8 @@ export class FetchService implements OnApplicationShutdown {
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary =
       !!this.projectIndexFilters && !!this.project.network.dictionary;
+
+    console.log('XXXXXX', this.useDictionary, this.project.network.dictionary);
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });

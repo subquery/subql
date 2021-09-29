@@ -46,11 +46,7 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkRegistry: {
-    '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3': {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    },
-  },
+  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
 });
 
 function testSubqueryProjectV0_0_1(): SubqueryProject {
@@ -85,7 +81,6 @@ function testSubqueryProjectV0_0_1(): SubqueryProject {
       ],
     } as any),
     path.resolve(__dirname, '../../test/sandbox'),
-    {},
   );
   return project;
 }
@@ -125,7 +120,10 @@ function testSubqueryProject(): SubqueryProject {
       ],
     } as any),
     path.resolve(__dirname, '../../test/sandbox'),
-    nodeConfig.networkRegistry,
+    {
+      endpoint: nodeConfig.networkEndpoint,
+      dictionary: nodeConfig.networkDictionary,
+    },
   );
   return project;
 }

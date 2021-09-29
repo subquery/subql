@@ -42,7 +42,7 @@ describe('SubqueryProject', () => {
 
   describe('Manifest v0.0.1', () => {
     beforeEach(() => {
-      project = new SubqueryProject(manifestV0_0_1, '', {});
+      project = new SubqueryProject(manifestV0_0_1, '');
     });
 
     it('can get the chain types', () => {
@@ -56,14 +56,14 @@ describe('SubqueryProject', () => {
         __dirname,
         '../../test/projectFixture/v0.2.0',
       );
-      project = await SubqueryProject.create(projectDir, {});
+      project = await SubqueryProject.create(projectDir);
     });
 
     it('can get the chain types', () => {
       expect(project.chainTypes).toMatchObject(chainTypes);
     });
 
-    it('should throw if networkRegisty doesnt provide an endpoint', () => {
+    it('should throw if networkEndpoint is not overwritten', () => {
       expect(() => project.network).toThrow();
     });
   });

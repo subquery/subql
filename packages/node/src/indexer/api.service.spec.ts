@@ -52,7 +52,6 @@ function testSubqueryProject(): SubqueryProject {
       dataSources: [],
     } as any),
     '',
-    {},
   );
 }
 
@@ -71,7 +70,8 @@ describe('ApiService', () => {
   it('throws if expected genesis hash doesnt match', async () => {
     const project = testSubqueryProject();
 
-    project.network.genesisHash = '0x';
+    (project.projectManifest.asV0_0_1.network as any).genesisHash = '0x';
+
     const apiService = new ApiService(project, new EventEmitter2());
 
     await expect(apiService.init()).rejects.toThrow();

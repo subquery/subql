@@ -4,7 +4,8 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { camelCase, last } from 'lodash';
+import { ProjectNetworkConfig } from '@subql/common';
+import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
@@ -76,21 +77,17 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryProject.create(
         projectPath,
-        config.networkRegistry,
+        omitBy<ProjectNetworkConfig>(
+          {
+            endpoint: config.networkEndpoint,
+            dictionary: config.networkDictionary,
+          },
+          isNil,
+        ),
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
-
-      // Overwrite project manifest v0.0.1 endpoint and dictionary
-      if (p.projectManifest.isV0_0_1) {
-        if (config.networkEndpoint) {
-          p.network.endpoint = config.networkEndpoint;
-        }
-        if (config.networkDictionary) {
-          p.network.dictionary = config.networkDictionary;
-        }
-      }
 
       return p;
     };

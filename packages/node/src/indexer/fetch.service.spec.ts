@@ -169,7 +169,6 @@ function testSubqueryProject(): SubqueryProject {
       dataSources: [],
     } as any),
     '',
-    {},
   );
   return project;
 }
@@ -257,7 +256,7 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const batchSize = 20;
     const project = testSubqueryProject();
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -319,7 +318,7 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const batchSize = 20;
     const project = testSubqueryProject();
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -380,7 +379,7 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const batchSize = 20;
     const project = testSubqueryProject();
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -435,7 +434,7 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const batchSize = 20;
     const project = testSubqueryProject();
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
