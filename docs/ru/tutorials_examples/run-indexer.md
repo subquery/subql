@@ -53,10 +53,10 @@ export DB_PORT=5432
 subql-node -f .
 ```
 
-Если у вас нет под рукой проекта, ` git clone https://github.com/subquery/subql-helloworld `. You should see the indexer node kick into life and start indexing blocks.
+Если у вас нет под рукой проекта, ` git clone https://github.com/subquery/subql-helloworld `. Вы должны увидеть, как узел индексатора заработает и начнет индексировать блоки.
 
-## Inspecting Postgres
+## Проверка Postgres
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+Если вы перейдете в Postgres, вы должны увидеть две созданные таблицы. `public.subqueries` and `subquery_1.starter_entities`.
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries` содержит только 1 строку, которую индексатор проверяет при запуске, чтобы «понять текущее состояние», чтобы понимать, продолжение. Таблица ` starter_entities ` содержит индексы. Чтобы просмотреть данные, запустите ` select (*) из subquery_1.starter_entities `.
