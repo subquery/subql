@@ -18,6 +18,7 @@ export interface ProjectManifestV0_2_0 extends IProjectManifest {
 
   network: {
     genesisHash: string;
+    endpoint?: string;
     chaintypes?: {
       file: string;
     };

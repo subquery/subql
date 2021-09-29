@@ -63,18 +63,18 @@ export class SubqueryProject {
     }
 
     if (manifestIsV0_2_0(impl)) {
-      const genesisHash = impl.network.genesisHash;
+      const network = {
+        ...impl.network,
+        ...this.networkOverrides,
+      };
 
-      if (!this.networkOverrides.endpoint) {
+      if (!network.endpoint) {
         throw new Error(
-          `Network endpoint must be provided for network. genesisHash="${genesisHash}"`,
+          `Network endpoint must be provided for network. genesisHash="${network.genesisHash}"`,
         );
       }
 
-      return {
-        ...this.networkOverrides,
-        genesisHash,
-      };
+      return network;
     }
 
     throw new Error(

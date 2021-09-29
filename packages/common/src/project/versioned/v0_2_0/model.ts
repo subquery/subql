@@ -15,6 +15,9 @@ export class FileType {
 export class ProjectNetworkV0_2_0 {
   @IsString()
   genesisHash: string;
+  @IsString()
+  @IsOptional()
+  endpoint: string;
   @IsObject()
   @ValidateNested()
   @Type(() => FileType)

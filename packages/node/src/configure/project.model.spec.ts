@@ -63,7 +63,8 @@ describe('SubqueryProject', () => {
       expect(project.chainTypes).toMatchObject(chainTypes);
     });
 
-    it('should throw if networkEndpoint is not overwritten', () => {
+    it('should throw if manifest endpoint or networkEndpoint is not provided', () => {
+      project.projectManifest.asV0_2_0.network.endpoint = undefined;
       expect(() => project.network).toThrow();
     });
   });
