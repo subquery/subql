@@ -21,7 +21,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.12.1-0 linux-x64 node-v14.17.6
+@subql/cli/0.12.1-0 darwin-x64 node-v14.15.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -63,6 +63,7 @@ USAGE
 
 OPTIONS
   -f, --force
+  -l, --location=location  local folder to run codegen in
   --file=file
 ```
 
@@ -98,6 +99,9 @@ ARGUMENTS
 
 OPTIONS
   -f, --force
+  -l, --location=location  local folder to create the project in
+  --install-dependencies   Install dependencies as well
+  --npm                    Force using NPM instead of yarn, only works with `install-dependencies` flag
   --starter
 ```
 
