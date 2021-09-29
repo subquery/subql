@@ -25,7 +25,7 @@ import { last, merge, range } from 'lodash';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
-const logger = getLogger('substrate');
+const logger = getLogger('fetch');
 export function wrapBlock(
   signedBlock: SignedBlock,
   events: EventRecord[],
