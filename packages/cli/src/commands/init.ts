@@ -17,8 +17,8 @@ export default class Init extends Command {
       default: true,
     }),
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
-    'skip-install': flags.boolean({description: 'Skip installing dependencies'}),
-    npm: flags.boolean({description: 'Force using NPM instead of yarn'}),
+    'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
+    npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
   };
 
   static args = [
@@ -56,7 +56,7 @@ export default class Init extends Command {
         const projectPath = await createProject(location, project);
         cli.action.stop();
 
-        if (!flags['skip-install']) {
+        if (flags['install-dependencies']) {
           cli.action.start('Installing dependencies');
           installDependencies(projectPath, flags.npm);
           cli.action.stop();
