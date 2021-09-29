@@ -8,39 +8,36 @@ cli for polkagraph
 [![License](https://img.shields.io/npm/l/@subql/cli.svg)](https://github.com/packages/cli/blob/master/package.json)
 
 <!-- toc -->
-
-- [@subql/cli](#subqlcli)
-- [Usage](#usage)
-- [Commands](#commands)
+* [@subql/cli](#subqlcli)
+* [Usage](#usage)
+* [Commands](#commands)
 <!-- tocstop -->
 
 # Usage
 
 <!-- usage -->
-
 ```sh-session
 $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.13.1-0 linux-x64 node-v14.18.1
+@subql/cli/0.13.1-0 darwin-x64 node-v14.15.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
 ...
 ```
-
 <!-- usagestop -->
 
 # Commands
 
 <!-- commands -->
-
-- [`subql build`](#subql-build)
-- [`subql codegen`](#subql-codegen)
-- [`subql help [COMMAND]`](#subql-help-command)
-- [`subql init [PROJECTNAME]`](#subql-init-projectname)
-- [`subql validate`](#subql-validate)
+* [`subql build`](#subql-build)
+* [`subql codegen`](#subql-codegen)
+* [`subql help [COMMAND]`](#subql-help-command)
+* [`subql init [PROJECTNAME]`](#subql-init-projectname)
+* [`subql publish`](#subql-publish)
+* [`subql validate`](#subql-validate)
 
 ## `subql build`
 
@@ -112,6 +109,19 @@ OPTIONS
 
 _See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.13.1-0/lib/commands/init.js)_
 
+## `subql publish`
+
+Upload this SubQuery project to IPFS
+
+```
+USAGE
+  $ subql publish
+
+OPTIONS
+  -l, --location=location  local folder
+  --ipfs=ipfs              [default: http://localhost:5001/api/v0] IPFS gateway endpoint
+```
+
 ## `subql validate`
 
 check a folder or github repo is a validate subquery project
@@ -121,10 +131,13 @@ USAGE
   $ subql validate
 
 OPTIONS
-  -l, --location=location  local folder or github repo url
+  -l, --location=location  local folder, github repo url or IPFS cid
+
+  --ipfs=ipfs              [default: http://localhost:5001/api/v0] IPFS gateway endpoint, used for validating projects
+                           on IPFS
+
   --silent
 ```
 
 _See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.13.1-0/lib/commands/validate.js)_
-
 <!-- commandsstop -->
