@@ -1,16 +1,16 @@
-# How to change the blockchain fetching batch size?
+# Blockchain getirme toplu iş boyutu nasıl değiştirilir?
 
-## Video guide
+## Video kılavuzu
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giriş
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+Varsayılan toplu iş boyutu 100'dür, ancak bu, `--batch-size=xx` komutu kullanılarak değiştirilebilir.
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+Bunu komut satırına ek bir bayrak olarak yapmanız veya Docker kullanıyorsanız, docker-compose.yml dosyasını aşağıdakilerle değiştirin:
 
 ```shell
 subquery-node:
@@ -33,8 +33,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+Bu örnek, toplu iş boyutunu 50 olarak ayarlar.
 
-## Why change the batch size?
+## Toplu iş boyutu neden değiştirilir?
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. 
+Daha küçük bir toplu iş boyutu kullanmak bellek kullanımını azaltabilir ve kullanıcıları büyük sorgular için asılı bırakmaz. Diğer sözcüklerde, uygulamanız daha duyarlı olabilir. 
