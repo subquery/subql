@@ -1,17 +1,17 @@
-# Query your Project in SubQuery Explorer
+# สืบค้นโปรเจ็กต์ของคุณใน SubQuery Explorer
 
-[SubQuery Explorer](https://explorer.subquery.network) is an online hosted service (at [explorer.subquery.network](https://explorer.subquery.network)) that provides access to published SubQuery projects made by contributors in our community and managed by the SubQuery team. You can publish your own SubQuery projects to our explorer by following our guide to [Publish your SubQuery Project](../publish/publish.md).
+[SubQuery Explorer](https://explorer.subquery.network) เป็นบริการออนไลน์ ([explorer.subquery.network](https://explorer.subquery.network)) ให้บริการการเข้าถึงโครงการ SubQuery ซึ่งเผยแพร่โดยผู้ร่วมให้ข้อมูลในชุมชนของเราและถูกจัดการโดยทีม SubQuery คุณสามารถเผยแพร่โครงการ SubQuery ของคุณเองให้กับ explorer ของเราโดยทำตามคำแนะนำของเราในการ [เผยแพร่โครงการ SubQuery ของคุณ](../publish/publish.md)
 
 ![SubQuery Explorer](https://static.subquery.network/media/explorer/explorer-header.png)
 
-The SubQuery explorer makes getting started easy. We’re hosting these SubQuery projects online and allow anyone to query each for free. These managed nodes will be monitored and run by the SubQuery team at a performance level that will allow production apps to use and rely on them.
+SubQuery explorer ทำให้การเริ่มต้นใช้งานเป็นเรื่องง่าย เรากำลังโฮสต์โปรเจ็กต์ SubQuery เหล่านี้แบบออนไลน์ และอนุญาตให้ทุกคน query แต่ละโปรเจ็กต์ได้ฟรี โหนดที่มีการจัดการเหล่านี้จะได้รับการตรวจสอบและรันโดยทีม SubQuery ในระดับประสิทธิภาพที่จะอนุญาตให้แอปที่ใช้งานจริงใช้และสามารถพึ่งพาได้
 
 ![SubQuery Project](https://static.subquery.network/media/explorer/explorer-project.png)
 
-You’ll also note that the SubQuery Explorer provides a playground for discovering available data with example queries - you can test queries directly in your browser without implementing code. Additionally, we’ve made some small improvements to our documentation to better support developers on their journey to better query and analyse the world’s Polkadot data.
+นอกจากนี้ คุณควรทราบด้วยว่า SubQuery Explorer มี playground สำหรับการค้นหาข้อมูลที่มีอยู่ พร้อมด้วยตัวอย่างการสืบค้น - คุณสามารถทดสอบการสืบค้นโดยตรงในเบราว์เซอร์ของคุณโดยไม่ต้องเขียนโค้ด นอกจากนี้ เราได้ทำการปรับปรุงเล็กน้อยในเอกสารของเรา เพื่อสนับสนุนนักพัฒนาในเส้นทางการค้นหาที่ดีขึ้นและวิเคราะห์ข้อมูล Polkadot ของโลกได้ดียิ่งขึ้น
 
-On the top right of the playground, you'll find a *Docs* button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query. In the example below we're using the [Sum Rewards SubQuery](https://explorer.subquery.network/subquery/OnFinality-io/sum-reward) to get the top 5 most rewarded accounts (in terms of staking revenue) on Polkadot that have never been slashed.
+ที่ด้านบนขวาของ Playground คุณจะพบปุ่ม *เอกสาร* ที่จะเปิดการสร้างเอกสาร เอกสารนี้สร้างขึ้นโดยอัตโนมัติและช่วยให้คุณค้นหา entities และ methods ที่คุณสามารถค้นหาได้ ในตัวอย่างด้านล่าง เราใช้ [Sum Rewards SubQuery](https://explorer.subquery.network/subquery/OnFinality-io/sum-reward) เพื่อให้ได้บัญชีที่มีรางวัลมากที่สุด 5 อันดับแรก (ในแง่ของรายได้จากการ stake) บน Polkadot ที่ไม่เคยถูก slash มาก่อน
 
 ![SubQuery Documentation](https://static.subquery.network/media/explorer/explorer-documentation.png)
 
-[Learn more about the GraphQL Query language.](./graphql.md)
+[เรียนรู้เพิ่มเติมเกี่ยวกับภาษา GraphQL Query](./graphql.md)
