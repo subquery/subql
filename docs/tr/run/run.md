@@ -1,18 +1,18 @@
-# Running SubQuery Locally
+# SubQuery'ları Yerel Olarak Çalıştırma
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Bu kılavuz, hem dizinleyiciyi hem de sorgu hizmetini içeren altyapınızda yerel bir SubQuery düğümünün nasıl çalıştırılacağı üzerinde çalışır. Kendi SubQuery altyapınızı çalıştırma konusunda endişelenmek istemiyor musunuz? SubQuery, topluluğa ücretsiz olarak [](https://explorer.subquery.network) barındırılan bir hizmet sunar. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
-## Using Docker
+## Docker'ı kullanma
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+Alternatif bir çözüm, `>docker-compose.yml` dosyası tarafından tanımlanan <strong>Docker Container</strong> çalıştırmaktır. Yeni başlanmış yeni bir proje için burada hiçbir şeyi değiştirmenize gerek kalmayacak.
 
-Under the project directory run the following command:
+Proje dizininin altında aşağıdaki komutu çalıştırın:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+Gerekli paketleri ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) ve Postgres) ilk kez indirmek biraz zaman alabilir, ancak yakında çalışan bir SubQuery düğümü görürsünüz.
 
 ## Running an Indexer (subql/node)
 
