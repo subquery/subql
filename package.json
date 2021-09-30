@@ -48,7 +48,12 @@
     "vuepress-theme-hope": "^1.20.2"
   },
   "lint-staged": {
-    "*": "pretty-quick --staged --pattern 'packages/*/src/**/*'",
-    "*.ts": "eslint --cache --fix"
+    "*.ts": [
+      "eslint --cache --fix",
+      "prettier --write"
+    ],
+    "packages/**/*.!(*ts)": [
+      "prettier --write"
+    ]
   }
 }

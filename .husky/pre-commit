@@ -1,5 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-# concurrent disabled to eslint and prettier work together
-npx lint-staged --concurrent false
+npx lint-staged
