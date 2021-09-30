@@ -4,33 +4,33 @@
 
 SubQuery เป็นโครงการโอเพ่นซอร์สที่ช่วยให้นักพัฒนาสามารถทำการ index เปลี่ยนแปลง และสืบค้นข้อมูลเชนของ Substrate เพื่อขับเคลื่อนแอปพลิเคชันของตนได้
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+SubQuery ยังให้บริการโฮสติ้งโปรเจ็กต์ระดับโปรดักชันฟรีสำหรับนักพัฒนา เพื่อลดความรับผิดชอบในการจัดการโครงสร้างพื้นฐาน และปล่อยให้นักพัฒนาได้ทำในสิ่งที่พวกเขาทำได้ดีที่สุด - นั่นคือ การสร้าง
 
-## What is the best way to get started with SubQuery?
+## วิธีที่ดีที่สุดในการเริ่มต้นใช้งาน SubQuery คืออะไร?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+วิธีที่ดีที่สุดในการเริ่มต้นใช้งาน SubQuery คือลองใช้ [บทแนะนำ Hello World](../quickstart/helloworld-localhost.md) ของเรา นี่คือขั้นตอนง่ายๆ ในการดาวน์โหลดเทมเพลตเริ่มต้น สร้างโครงการ จากนั้นใช้ Docker เพื่อเรียกใช้โหนดบน localhost ของคุณและรัน query อย่างง่าย
 
-## How can I contribute or give feedback to SubQuery?
+## ฉันจะมีส่วนร่วมหรือให้คำติชมกับ SubQuery ได้อย่างไร?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+เรารักการมีส่วนร่วมและข้อเสนอแนะจากชุมชน ในการสนับสนุนโค้ด ให้ fork repository ที่สนใจ และทำการเปลี่ยนแปลง จากนั้นส่ง PR หรือ Pull Request อ้อ อย่าลืมทดสอบด้วยล่ะ! รวมถึงตรวจสอบหลักเกณฑ์การสนับสนุน (TBA) ของเราด้วย
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+หากต้องการแสดงความคิดเห็น โปรดติดต่อเราที่ hello@subquery.network หรือไปที่ [ช่อง discord](https://discord.com/invite/78zg8aBSMG)
 
-## How much does it cost to host my project in SubQuery Projects?
+## การโฮสต์โครงการของฉันในโครงการ SubQuery มีค่าใช้จ่ายเท่าใด?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+การโฮสต์โครงการของคุณในโครงการ SubQuery นั้นฟรี - นั่นเป็นวิธีการตอบแทนชุมชนของเรา หากต้องการเรียนรู้วิธีโฮสต์โครงการของคุณกับเรา โปรดดูบทแนะนำ [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md)
 
-## What are deployment slots?
+## Deployment slots คืออะไร?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+Deployment slots เป็นฟีเจอร์ใน [โครงการ SubQuery](https://project.subquery.network) ซึ่งเทียบเท่ากับสภาพแวดล้อมสำหรับการพัฒนา ตัวอย่างเช่น ในองค์กรซอฟต์แวร์ใดๆ โดยปกติจะมีสภาพแวดล้อมสำหรับการพัฒนาและสภาพแวดล้อมสำหรับการผลิตเป็นขั้นต่ำ (ไม่นับรวม localhost) โดยทั่วไปแล้วอาจจะมีสภาพแวดล้อมอื่นๆเพิ่มเติม เช่น การจัดเตรียมและก่อนการผลิต หรือแม้กระทั่ง QA จะรวมอยู่ด้วย ขึ้นอยู่กับความต้องการขององค์กรและการตั้งค่ากระบวนการการพัฒนา
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery ปัจจุบันมีสอง slot ที่พร้อมใช้งาน คือ slot สำหรับ staging และ production ซึ่งช่วยให้นักพัฒนา deploy SubQuery ของตนกับ staging environment และเมื่อทุกอย่างเป็นไปด้วยดี ก็สามารถ"โปรโมตเป็น production" ได้เพียงคลิกปุ่ม
 
-## What is the advantage of a staging slot?
+## ข้อดีของ staging slot คืออะไร?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+ประโยชน์หลักของการใช้ staging slot คือช่วยให้คุณสามารถเตรียม new release ของโปรเจ็กต์ SubQuery โดยยังไม่ต้องเปิดเผยต่อสาธารณะ คุณสามารถรอให้ staging slot ทำการ index ข้อมูลทั้งหมดใหม่โดยไม่กระทบต่อแอปพลิเคชันที่ใช้งานจริงของคุณ
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+Staging slot จะไม่แสดงต่อสาธารณะใน [Explorer](https://explorer.subquery.network/) และมี URL เฉพาะที่มองเห็นได้เฉพาะคุณเท่านั้น And of course, the separate environment allows you to test your new code without affecting production.
 
 ## What are extrinsics?
 
