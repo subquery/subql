@@ -75,7 +75,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(1);
     const validators = await api.query.session.validators.at(blockhash);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     const [patchedValidators, currentValidators] = await Promise.all([
       patchedApi.query.session.validators(),
       api.query.session.validators(),
@@ -88,7 +88,7 @@ describe('ApiService', () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     const patchedApi = await apiService.getPatchedApi();
     const apiResults = await api.query.staking.erasStakers.at(
       blockhash,
@@ -116,7 +116,7 @@ describe('ApiService', () => {
     } else {
       blockhash = await api.rpc.chain.getBlockHash(4401243);
     }
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
@@ -137,7 +137,7 @@ describe('ApiService', () => {
     const blockhash2 = await api.rpc.chain.getBlockHash(8332044);
 
     const patchedApi = await apiService.getPatchedApi();
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     expect(() => patchedApi.at(blockhash2)).toThrow(/is not supported/);
   });
@@ -153,7 +153,7 @@ describe('ApiService', () => {
       await api.query.system.account.at(blockhash, account1),
       await api.query.system.account.at(blockhash, account2),
     ]);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     const [patchedMultiResults, currentMulti] = await Promise.all([
       patchedApi.query.system.account.multi([account1, account2]),
@@ -172,7 +172,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     const multiResults = await Promise.all([
       await api.query.staking.erasStakers.at(
         blockhash,
@@ -198,7 +198,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     const multiResults = await Promise.all([
       api.query.timestamp.now.at(blockhash),
@@ -233,7 +233,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     const multiResults = await Promise.all([
       api.query.timestamp.now.at(blockhash),
@@ -272,7 +272,7 @@ describe('ApiService', () => {
     const callIndexOfBatch = api.tx.utility.batch.callIndex;
     // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
     const blockhash = await api.rpc.chain.getBlockHash(1);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     const registry2 = patchedApi.registry;
     const call = patchedApi.findCall(callIndexOfBatch);
     expect(call?.method).not.toBe('batch');
@@ -286,7 +286,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
 
     const blockhash = await api.rpc.chain.getBlockHash(4401242);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     const b1 = await patchedApi.rpc.chain.getBlock();
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
@@ -322,7 +322,7 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
 
     const blockhash = await api.rpc.chain.getBlockHash(4401242);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
 
     const b1 = await patchedApi.rpc.chain.getBlock();
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
@@ -358,11 +358,11 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi();
 
     const blockhash1 = await api.rpc.chain.getBlockHash(1378036);
-    await apiService.setBlockhash(blockhash1, true);
+    await apiService.setBlockhash(blockhash1);
     const validators1 = await patchedApi.query.session.validators();
 
     const blockhash2 = await api.rpc.chain.getBlockHash(1385137);
-    await apiService.setBlockhash(blockhash2, true);
+    await apiService.setBlockhash(blockhash2);
     const validators2 = await patchedApi.query.session.validators();
     // prettier-ignore
     const expectedValidators1=  ['FiHWU9AjN7z2no8zyiVEXtiTE46izxDgEcF1KM4r2r1GK59', 'EQBwtmKWCyRrQ8yGWg7LkB8p7hpEKXZz4qUg9WR8hZmieCM', 'EviBmmkq5o5ak2jUo71SPuDEdwGTr8Yz8U5tXBgF6fy8kKV', 'EfK27sX89DpagD3TCF4hF4rGZ1CnCGtYZvo94HZLU3GQuMj', 'Feu9bCUFaYSbkeqSY485kJjUoizp9CG4z3iSnGMwTqWSLeH', 'GTzRQPzkcuynHgkEHhsPBFpKdh4sAacVRsnd8vYfPpTMeEY', 'DaCSCEQBRmMaBLRQQ5y7swdtfRzjcsewVgCCmngeigwLiax', 'GRzsaGxLApkBfsUSCHKLnxhe4QECX4E2kQ5LuV4qqcijN2B', 'GCiTn1UJQT9TE5iamqoKweVoWGRZr9DF8uKXL4cG98fXczf', 'D948vxMSA6u7G5gqPGQdAUDMJbiR7wgqZ1La8XeBiXr9FTF', 'FLpAi7Zi4AB1JqJHWMrub4Umj4X73mZ5dAWE7Q6uS5e82pE', 'FUfXiFsaoWbUeaWiWBDizP7VbTSLxMirbJEpLAk1g6YueJp', 'Few2tfYD3wfyQXPCVkiqK8UGfuj5FK6ecadwfAmJQHBtASX', 'EGZEgucx8vTCSak5uBwwkPkZ7FiYCWYmhpMjWFupdMAq2BN', 'FD3A8DXs16wGvcoi9stjpwz2pmxXFymTkVyVM4Tq5z6LWCK', 'EdEQVcrr4pvzDLdb5xFkncKYhCE6uyuE1eKRTqg4PDvBgMa', 'DKUQiUWNPGvGYrgaxWqduJVRqWUYXUeKprX9EJENhxYvVyS', 'Dg5QS2TKCMQbbZau7acRXHPN4xQxqqase8awmzLXXgmXb7w', 'FtqCc5yLcLc1FkLyftyNuCtYFCudo3unwwPQLzCbnWppjoc', 'FXezGfeLvze1DWUwwEc8MczpLSMnZrSDrcA7Ghyc84NaXGt', 'FAtJupteW5urNYVQvUcLaw2X9xtdwjumK2gvJpuBnAwFHvq', 'FDDy3cQa7JXiChYU2xq1B2WUUJBpZpZ51qn2tiN1DqDMEpS', 'DrQHiQu5VkaRuv1H3iELXVqsvD3SV3E8xNjJqXUgECSg23R', 'Fsspzse4QY1KqagdyrVqDt7cmVBr3HSVsfJ38WKgxsLVaXo', 'Ed6JFR7JmeGtmrubAbXtJRjq9FPWhGRWMdmYnLRcsqaabT8', 'Gc6YgfbTJ6pYXcwib6mk3KoiwncLm4dfdcN3nwFjvfi4Agd', 'Fgqjkry96qFLpRqPZstNzgaqKXiVyrpzTqD55neMdW8PK6g', 'Gth5jQA6v9EFbpqSPgXcsvpGSrbTdWwmBADnqa36ptjs5m5', 'EuJcihtEgC121KMSa2TscWHmTF3ecJzzgHeNnQwLp4tBReG', 'JJ2VvJMZxxW2pst7z6zxrD4VVPhH6YtemYsLeKWeQ9MKX3n', 'GqGHrVZ3h2LznE2snJZ6emccobBKpgx5pmumTApDNcPFuPr', 'ESNZ8Eg46ByUYoAhr8MPbGpGF82pgmmjE3uVVepPCnJC61r', 'EaWWcRin5KwuXYFZA7ANuMCydQHjM5MofStJGusASGeXrrs', 'EMa2d6yYb3CPxyArDCzsMfngnDKUbRL6QdogfYAPKZmmN1E', 'J4hAvZoHCviZSoPHoSwLida8cEkZR1NXJcGrcfx9saHTk7D', 'Dojkd9b69TqwZ9W7BJuUomD6N59WBZ39G4sts69QDYJxKjW', 'Dksma151w4n2LRADiR2aYbdhKff47QQ6cTmBo9PpfJUb7cd', 'HWFQjF7phgRTPPjFFD2bHG9aUsEbM1p4Zwj5MjpL6iu66wH', 'Gt6HqWBhdu4Sy1u8ASTbS1qf2Ac5gwdegwr8tWN8saMxPt5', 'FAp5gVpwhwdmnJ1Ycet9z6Uva5tnfyCfA3AaY7WGi7u3DU4', 'Etij9aH36W1NjjWbR7wB5j41CmfpqAx8D4V4HCJhUydSH9Y', 'Cwr82cUKvfgnQSnLeN84CmtNaUGjYBD2qaBjsTxG43ZNh2M', 'FJaSzBUAJ1Nwa1u5TbKAFZG5MBtcUouTixdP7hAkmce2SDS', 'F8PTaGuZQo5fgRBFuhNnhd5euFiR3KLQNMVhYD5BduPKpHr', 'H9R6HgnZKtrcfBJP2M6WCvLJvp72Q96eURbCxmj6KCFVWjh', 'JKjFSGnsXeqhhPgvBmKb6vUnrTZHu17eydEDnpcorCnZXLG', 'EY35xeDhXibMDS5GmdHM2UzpvT4VoV9fGXDy3Muq6cyLPja', 'G7Ur4BnMSfP2qE7ruSob5gwGQ5nzkGWu7Yqh14FcMqnDtgB', 'EJGDDXSMXhwnJMrDs2KjMaznMtms9iFrYNhRL3shkMi9xLt', 'DXrJrPLLBHuapmYJ6tfuUStKubhykWmpgLckJpgFgjp2JvV', 'GCNHHRBtpDcgADCaRPMNNk52JiitGrcv3DMQxwE6owXAfbt', 'DiCVHECatzBxCKZeCmQhvqbAo9KK6CHubAWtQF85N3YbKFW', 'JECeyN45Ycx5t1M1hj2pBbsEZpdeGzDsYA1Wrt2Tdte2wV7', 'D8xUmqpe2aJd2QEPpG4pN3xZvboeQ21wwPhbNRCixrLq8Sj', 'HqZG9NMeeHLuHq4v3JmwVkHvGoEGAnrnNfYSvd2VYADNi7Z', 'FSpw3yUXP6NUHpkCcYhoeihK7ni5XugwDLSRpPaypyLGTGr', 'Cdaq3iUobZLYD2d8oqRQf1VKuRo6H64KsMBgJyxap4ZnARX', 'EtgM5E6pecndYpKCLkfYeRfKSmVxT1mVvaxceJFnhuKqTpG', 'Ff9DYio1TgYTyDU9z8Howt9pXCnuUPmsCY1ijfLBxSsJahj', 'H6bJZpE7PTFZgkLWGbeP3D1PqPGsFGqYAArFYa3ksCskmbt', 'DzmvnHyHyPN2kBHYQpXmrrUvV8KNzDgTPE2Ri2cjDuXhhLt', 'J6RoE9MSpnZhX7hniJAJjBCcTqpr49SNhLvaVeJgFd69TJZ', 'J6xn7Mr8pfed6gvvRPZ8HEEb89RCwheTBtxymg9Xw36hUUS', 'EdUs96fjEhyaTVxZsFo3fxEABLSpdopBFuhE7FFexCUyDv6', 'HvdGhdYcsJcSVBYnUEtHGpzV5A4XunjYWi8HAK8bGLvXdAb', 'FSfBJoCU9sRhCYWwQ55iBNGU5L8eu56iGnYGK9zizHxu8dY', 'GPdebankLfiSGaEPQWJBVULEmX2VpNdnyqsa1uiFJGDhTdT', 'Fk3yTFztZdZa4a7yBpisz9ceMyjgYLtZ9CKSCfFNVhoW2ZC', 'DokiayXWoMvotzchNdLSH4P4Fe7EvMESZvZL4Fn3NekoFtf', 'GfYXsuFn8MVensbKc6gKjPpxXMNh1LzcrBn4BfhNMgK1zKH', 'DuRV4MSm54UoX3MpFe3P7rxjBFLfnKRThxG66s4n3yF8qbJ', 'HhTownCNpkSbjLmtG6KdMhh7FJ2SLXxZcGXhHHeqpbchqcK', 'HyTJYoYwA8GGgDH2XVnUhsPgMq7nnnE4Qq2BdwmpdHNzSdo', 'GFwtzkxkTCFmXhVARYifwBK5D1JgCUmKynWhnv1CZgm9JNS', 'H9bhxgaMbND1u7TXxmMpcQCTiLfQtGmdmwAyKkRnKsndSXa', 'Fk6p456PTU6Sju2b83Cy8rU3NGFsXmWk9BrcqaMqhWW1jWf', 'DKinge6g7FNNj3hJZJUze6GByxkLR7ipCqrnuSQKGRMg37G', 'EUwcW86EFGDoDfUP2UJYuBwhCWC7cW9SdFH9cPh6UPBvBHj', 'FcjmeNzPk3vgdENm1rHeiMCxFK96beUoi2kb59FmCoZtkGF', 'F2GF2vuTCCmx8PnUNpWHTd5hTzjdbufa2uxdq2uT7PC5s9k', 'J1aHBD7YQ3xnSwgFJNokjsEo7NjLTf36ZEHD2LTpeo7KAq8', 'HJ1dGPxVr13KHGiCTGQfZjZMKGc8J52CsHEjcEXNMDyeGxf', 'FagAVsTYT8QghxypUtLcfnmnnhPhPpf854UNuptpQKuNndK', 'CmfwTdJ1F7Qd2HLAQ6A8FdNtz9hKvTMr2FkWtBQR1vECYjo', 'GbpLB9AZwVBBfecbMoTv3HCVb6irwN6y5YeA7uDNoUuRFrL', 'D3JqthKZjAEge84RQ3dheuQmaX2nVhk9A3sHY1rGNbStiFg', 'DEFQigjrErCANqTMiTRuy7BB5L46q9C36Bxqe41GV1yR6vA', 'F7BeW4g5ViG8xGJQAzguGPxiX9QNdoPNc3YqF1bV8d9XkVV', 'DGC4rANssfdpry7FQFznHo2b3QbDHyQZM58esJU6RskB41y', 'HvjQwyG8NDFSD3ZP7VTbfBXHw4mZZd7LRMTcaj9TdfLynzu', 'Faa8iXWy2wxo7ryLEhGCNeb55d8rnVy9SN25NiCmmqP6QMV', 'FwPTgWjafLgtxoRHK7pkUc2NJ9YzD7wHeCny2fMk41T9jKW', 'ErVvRnhXrJS7W9rTtnDECpZTFyLACtDcXEPtzEyYw4b8zcg', 'GSWsxFWwvfpppd4q5iBa3fiBp3twEGvtYZFWNRVF17And24', 'HHARzd4icVZULpMVEGZRiLhjfb3iDDohg1bdHRBusrMUvfd', 'G9vLBYmeiQcD8t53djad6sH2MALaeJy9zaEUyknEVma9sa6', 'HZvvFHgPdhDr6DHN43xT1sP5fDyzLDFv5t5xwmXBrm6dusm', 'ESaTdKYYtRYhJbYjMzgKauNyZHbaNzx2vknC9eioqKusWSt', 'FSETB7JeTuTsJBYzUcKBtHXBYtBft3pZ87FUxP2GaY4acFh', 'GqomGHs3CpaoG7kemv9hb6LCaBSazXMPaaCyDrP6CxRrgcF', 'DDkGq46ftxusKM4n4jfEr7MBW1DPGuVQDeExMFQbRtnsenD', 'F8DXBsUQrvVvL9AvkEqxykmy1AWcBcn2CqjG3nyzYRFVJeS', 'G7eJUS1A7CdcRb2Y3zEDvfAJrM1QtacgG6mPD1RsPTJXxPQ', 'Db2P54HPMkR8kqbP5RfWuXRFKhZ8NLQ77aT7VBZYfpKqTGP', 'EdWNepHg6UUyqK433qDpBjJ4ZUmyvnoQPLDFs69dExG1Dii', 'FzBBpxixSuZkeXxXeiUbvFYxcd3JAP5BEAcgDuhRudJTwmZ', 'Eg2z2dcScFf4foDN4Gxn6JoJ7JeDN1U7m49jNssUZMLtNrD', 'HeCK315sYXruJvZKB5uXtEBnpWwYHFaKfNNZ54G76Qr7Nkn', 'HshTdrZiSJntTRh5oNytD2QuT38VDJHoGQmfcrtrZbViSGL', 'Foc4anJqDfTMY3CvpCZzK9kUSudwc2oUTJ19K1E3JYFKy9j', 'FyRaMYvPqpNGq6PFGCcUWcJJWKgEz29ZFbdsnoNAczC2wJZ', 'CoqysGbay3t3Q7hXgEmGJJquhYYpo8PqLwvW1WsUwR7KvXm', 'GcgPeEtLketwNDVVdV2jEnaTU5RMdGQdpYqVshssBWy1txZ', 'H72hS8xLmSiSBqbBXHND2KbN8PAoevi52B685cbGki6T9nt', 'H4V7fZJPLiGtBvQfsadb7oGfV1StiXJTuca76Daa449rz27', 'J2HVhQBYpx5PkyxHYLsp555pvWzc2zvGfNUnTwgzvRqVGqm', 'GiBnzCGFofhmAvsUv9FUShUb8YJYYwWex3ThQNkbDDNprS6', 'HnnFkvtzrSrNpSUdG47E9ioBmDoDBnRUL6Lmy7GeqGcFc5c', 'GeYJhboY5bEc5WZFbrdxhEF9m6Y4NnbKzfCu1rBHxGWgviK', 'DGiLC1uvohfgHiirDtsr5HJRYXUFy9NdXj6YC6azcaRpvJZ', 'HP8qJ8P4u4W2QgsJ8jzVuSsjfFTT6orQomFD6eTRSGEbiTK', 'EoeAhrhJv2p6Sg5T67mxkLwrPnjKbH7iZSh8q1JTyvELvrR', 'FXCgfz7AzQA1fNaUqubSgXxGh77sjWVVkypgueWLmAcwv79', 'EXkCSUQ6Z1hKvGWMNkUDKrTMVHRduQHWc8G6vgo4NccUmhU', 'HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq', 'GCsSfxv6h9mQ27s93ggBwzfguT6V61kmh8iadKSXAgQgKs5', 'E2ZKmzMzajqW838jXVSM5DyoUJUdEQddXNknEjoTwj2zBLj', 'GhyKZDoTghgvYqh1ensnGU1Vc1EY3Nwvhw5XdjTR8yfnEpV', 'GxujeV9rVRqsQHMbTiAiHATuZyrcHC68ZUJHtqS4LufuWLk', 'E7aXaaVBzDbhF8HevpcwDnWEu9mBRE6ai69JToi4fyz8c5P', 'DatW7XKJaJbfHLoVzVCHwAcwMySW9CRb6gFs9TpNNcCz9Mv', 'D8BfryaM5xN62UuKUpLK5zbZEUSBtA76yP9YddQTKXi9pkB', 'EtJ4HxHYEDvYWRJAdmV4hYpTbGMJCmEgnLC8zAf6u5ZyT7C', 'FtcERzFaCxB2ZR17PVeNxjAntfQ8a9KwS5i1bTYGWq15Yab', 'Gk6v5CXUy2cPMtVxXtN7ZUn7K5y7UFEm78xp98Uatjt2yuV', 'HqHeKZnc38rX2BJrmJiXfkqHUEUn56B9Nck6WgdiGeKUYBE', 'FwUst6h6JfHAK2tyhM9zCrKb1zSCgSe5kaoXZeqnVpbGGgt', 'CihSipv2H9mYBkRznedBZFxCNUrqvdmSH1Ptx5kSNRr3DEx', 'JKsMAG8Kpm9szen7Crx2FUrhzdwK9hAocA4X1mmQYYvRsrE', 'CpYNXnYC1mPPRSXMHvm9EUuhEqHjvj6kCN4kshqMdEpPYSF', 'CaSNtNAiKEsQiTcEU9DamgFeji9Hh63QFo91XrmftCTNBva', 'EKBtVYjZ6MMzRf334L1Zztf29kim8LrV5myftD3ABrmTHZd', 'DB2mp5nNhbFN86J9hxoAog8JALMhDXgwvWMxrRMLNUFMEY4', 'Dab4bfYTZRUDMWjYAUQuFbDreQ9mt7nULWu3Dw7jodbzVe9', 'EqWK9adqE7ZFBXAhTw5KXh6ZkMRKdxA555yHgj5tWQyPJYH', 'D5Xo7N2jginhYchuMNud2dYtby899koFcaRo2YWNmUquo5H', 'CsHw8cfzbnKdkCuUq24yuaPyJ1E5a55sNPqejJZ4h7CRtEs', 'JKcDN2BUrteeUZa5fxuTsPjpUZpNGE9NHVY1NUboHEQbmhN', 'CuCgiLpBEcfLEjwS8CBsEN4EWSvTF7vHeN6damkrv934kfZ', 'HEmqZS2Lw5nhGuddLjTm2KCcmsUddQXJM5bGVeA5GBWam6w', 'GS9UR4YmAib1NKWiQmxVpNytcriChSBPDZQyGJhYnunXPQ9', 'HPWceq92prqJVYnYfoZGzEwRGC5jCwGjArZcZzYAC7hXR9e', 'GKingZDLzrPimpMMCxWYT7ck8jXra2vvNkCUztUwyDT2Qet', 'Gh2cm56nMokKQ4frPx7r7UsXtimH6ckaXyKKogGn5dQ3yrD', 'Go5ov2WmFx2H9LfvaS3ec24TropY6Fgjcv56wBchyUv18a7', 'Fd9kKxogYUZLCoMz3uvjFTCkSGXRvgrKh7GEdbSK2yHd4oq', 'Cdhjt72TSezVDkUzdgyoSwXByfwQJjuXSYcDs5L8snyB8Yx', 'EzR9J3Afvash2tYCk8ZZwPYyq3zy92adVUXKcYjbYN46JWL', 'ELhnYFneiAP819s1t7Zmn4rs1tBbcrWVnkeGw4JYKdVp6jL', 'EicrAEbyauqktQpp4CdvsF2CQy3Ju7tGGMohj3h5sAPnKHL'];
@@ -380,7 +380,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(1);
-    await apiService.setBlockhash(blockhash, true);
+    await apiService.setBlockhash(blockhash);
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
   });
 });
