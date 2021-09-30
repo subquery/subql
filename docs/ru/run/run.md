@@ -163,28 +163,28 @@ subql-node -f your-project-path --local
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+Например:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
-Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
-## Running a Query Service (subql/query)
+Затем откройте инструменты разработчика Chrome, перейдите в Source & # 062; Filesystem, добавьте свой проект в рабочую область и начните отладку. Для получения дополнительной информации ознакомьтесь с [ Как отлаживать проект SubQuery ](https://doc.subquery.network/tutorials_examples/debug-projects/)
+## Запуск службы запросов (subql / query)
 
-### Installation
+### Установка
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Обратите внимание, что мы ** НЕ ** поощряем использование ` yarn global ` из-за его плохого управления зависимостями, что может привести к ошибкам в дальнейшем.
 
-### Running the Query service
+### Запуск службы запросов
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+Убедитесь, что имя проекта совпадает с именем проекта при [ инициализации проекта ](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Также проверьте правильность переменных среды.
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+После успешного запуска службы subql-query откройте браузер и перейдите по адресу ` http: // localhost: 3000 `. Вы должны увидеть игровую площадку GraphQL, отображаемую в проводнике, и схему, готовую к запросу.
