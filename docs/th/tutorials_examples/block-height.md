@@ -1,18 +1,18 @@
-# How to start at a different block height?
+# จะเริ่มต้นที่ block height ที่ต่างกันได้อย่างไร?
 
-## Video guide
+## คู่มือวิดีโอ
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/ZiNSXDMHmBk" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## บทนำ
 
-By default, all starter projects start synchronising the blockchain from the genesis block. In otherwords, from block 1. For large blockchains, this can typically take days or even weeks to fully synchronise.
+โดยค่าเริ่มต้น โปรเจ็กต์เริ่มต้นทั้งหมดจะเริ่มซิงโครไนซ์บล็อกเชนจาก genesis block กล่าวอีกนัยหนึ่งจากบล็อก 1 สำหรับบล็อคเชนขนาดใหญ่ โดยปกติจะใช้เวลาหลายวันหรือหลายสัปดาห์ในการซิงโครไนซ์อย่างสมบูรณ์
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+ในการเริ่มโหนด SubQuery ที่ซิงโครไนซ์จาก block height ที่ไม่ใช่ศูนย์ สิ่งที่คุณต้องทำคือแก้ไขไฟล์ project.yaml ของคุณและเปลี่ยน key startBlock
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+ด้านล่างเป็นไฟล์ project.yaml ที่ตั้งค่าบล็อกเริ่มต้นเป็น 1,000,000
 
 ```shell
 specVersion: 0.0.1
@@ -30,20 +30,23 @@ dataSources:
       handlers:
         - handler: handleBlock
           kind: substrate/BlockHandler
+ 
+Text
+XPath: /pre/code
 ```
 
-## Why not start from zero?
+## ทำไมไม่เริ่มจากศูนย์?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+สาเหตุหลักคือสามารถลดเวลาในการซิงโครไนซ์บล็อกเชนได้ ซึ่งหมายความว่าหากคุณสนใจเฉพาะธุรกรรมในช่วง 3 เดือนที่ผ่านมา คุณสามารถซิงโครไนซ์เฉพาะช่วง 3 เดือนที่ผ่านมาเท่านั้น ทำให้เวลารอน้อยลง และคุณสามารถเริ่มการพัฒนาได้เร็วขึ้น
 
-## What are the drawbacks of not starting from zero?
+## ข้อเสียของการไม่เริ่มจากศูนย์คืออะไร?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+ข้อเสียเปรียบที่ชัดเจนที่สุดคือคุณจะไม่สามารถสืบค้นข้อมูลบนบล็อคเชนสำหรับบล็อกที่คุณไม่มีได้
 
-## How to figure out the current blockchain height?
+## จะทราบความ blockchain height ปัจจุบันได้อย่างไร?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+หากคุณกำลังใช้เครือข่าย Polkadot คุณสามารถไปที่ [https://polkascan.io/](https://polkascan.io/) เลือกเครือข่ายแล้วดูค่า "Finalized Block"
 
-## Do I have to do a rebuild or a codegen?
+## ฉันต้องทำการ rebuild หรือ codegen หรือไม่?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+ไม่ เนื่องจากคุณกำลังแก้ไขไฟล์ project.yaml ซึ่งโดยพื้นฐานแล้วเป็น configuration file คุณจะไม่ต้องทำการ rebuild หรือ regenerate โค้ด typescript ใหม่
