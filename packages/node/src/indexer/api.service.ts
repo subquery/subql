@@ -125,7 +125,10 @@ export class ApiService implements OnApplicationShutdown {
     return this.patchedApi;
   }
 
-  private patchApi(registry?: Registry): void {
+  private async patchApi(
+    registry?: Registry,
+    blockHash?: BlockHash,
+  ): Promise<void> {
     if (registry) {
       Object.defineProperty(this.patchedApi, 'registry', {
         value: registry,
@@ -133,8 +136,10 @@ export class ApiService implements OnApplicationShutdown {
         configurable: true,
       });
     }
-    // this.patchApiAt(this.patchedApi);
-    this.patchApiQuery(this.patchedApi);
+    this.patchApiAt(this.patchedApi);
+    if (blockHash) {
+      await this.patchApiQuery(this.patchedApi, blockHash);
+    }
     this.patchApiTx(this.patchedApi);
     this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
@@ -142,16 +147,13 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash, inject = false): Promise<void> {
+  async setBlockhash(blockHash: BlockHash): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
+    const { registry } = await this.api.getBlockRegistry(blockHash);
     this.currentBlockHash = blockHash;
-    if (inject) {
-      const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
-      this.patchedApi.injectMetadata(metadata, true, registry);
-      this.patchApi(registry);
-    }
+    await this.patchApi(registry, blockHash);
   }
 
   private replaceToAtVersion(
@@ -167,10 +169,7 @@ export class ApiService implements OnApplicationShutdown {
     original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
     apiType: 'promise' | 'rxjs',
   ): QueryableStorageEntry<'promise' | 'rxjs', AnyTuple> {
-    const newEntryFunc = this.replaceToAtVersion(
-      original,
-      'at',
-    ) as QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>;
+    const newEntryFunc = original;
     newEntryFunc.at = NOT_SUPPORT('at');
     newEntryFunc.creator = original.creator;
     newEntryFunc.entries = this.replaceToAtVersion(original, 'entriesAt');
@@ -192,28 +191,21 @@ export class ApiService implements OnApplicationShutdown {
         newEntryFunc as QueryableStorageEntry<'rxjs', AnyTuple>,
       );
     }
-    newEntryFunc.multi = ((args: any[]) => {
-      if (original.creator.meta.type.isMap) {
-        const keys = args.map((arg) => {
-          const key = new StorageKey(
-            this.api.registry,
-            original.key(
-              ...(original.creator.meta.type.asMap.hashers.length === 1
-                ? arg
-                : [arg]),
-            ),
-          );
-          key.setMeta(original.creator.meta);
-          return key;
-        });
-        if (apiType === 'promise') {
-          return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
-        } else {
-          return this.api.rx.rpc.state.queryStorageAt(
-            keys,
-            this.currentBlockHash,
-          );
-        }
+    newEntryFunc.multi = ((args: unknown[]) => {
+      let keys: any[]; //[StorageEntry, unknown[]][]
+      const creator = original.creator;
+      if (creator.meta.type.asMap.hashers.length === 1) {
+        keys = args.map((a) => [creator, [a]]);
+      } else {
+        keys = args.map((a) => [creator, a as unknown[]]);
+      }
+      if (apiType === 'promise') {
+        return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
+      } else {
+        return this.api.rx.rpc.state.queryStorageAt(
+          keys,
+          this.currentBlockHash,
+        );
       }
     }) as any;
     newEntryFunc.range = NOT_SUPPORT('range');
@@ -266,8 +258,12 @@ export class ApiService implements OnApplicationShutdown {
       combineLatest(keys.map((key) => newEntryFunc(key)))) as any;
   }
 
-  private patchApiQuery(api: ApiPromise): void {
-    (api as any)._query = Object.entries(api.query).reduce(
+  private async patchApiQuery(
+    api: ApiPromise,
+    blockHash: BlockHash,
+  ): Promise<void> {
+    const apiAt = await this.api.at(blockHash);
+    (api as any)._query = Object.entries(apiAt.query).reduce(
       (acc, [module, moduleStorageItems]) => {
         acc[module] = Object.entries(moduleStorageItems).reduce(
           (accInner, [storageName, storageEntry]) => {
@@ -380,13 +376,25 @@ export class ApiService implements OnApplicationShutdown {
     (api as any)._queryMulti = (
       calls: QueryableStorageMultiArg<'promise'>[],
     ) => {
-      const keys = this.getKeysFromCalls(api, calls);
+      const keys = calls.map((args: QueryableStorageMultiArg<'promise'>) =>
+        Array.isArray(args)
+          ? args[0].creator.meta.type.asMap.hashers.length === 1
+            ? [args[0].creator, args.slice(1)]
+            : [args[0].creator, ...args.slice(1)]
+          : [args.creator],
+      );
       return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
     };
     (api as any)._rx.queryMulti = (
       calls: QueryableStorageMultiArg<'rxjs'>[],
     ) => {
-      const keys = this.getKeysFromCalls(api, calls);
+      const keys = calls.map((args: QueryableStorageMultiArg<'rxjs'>) =>
+        Array.isArray(args)
+          ? args[0].creator.meta.type.asMap.hashers.length === 1
+            ? [args[0].creator, args.slice(1)]
+            : [args[0].creator, ...args.slice(1)]
+          : [args.creator],
+      );
       return this.api.rx.rpc.state.queryStorageAt(keys, this.currentBlockHash);
     };
   }
@@ -420,7 +428,7 @@ export class ApiService implements OnApplicationShutdown {
     );
   }
 
-  // private patchApiAt(api: ApiPromise): void {
-  //   (api as any).at = NOT_SUPPORT('api.at()');
-  // }
+  private patchApiAt(api: ApiPromise): void {
+    (api as any).at = NOT_SUPPORT('api.at()');
+  }
 }

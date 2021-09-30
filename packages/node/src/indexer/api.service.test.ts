@@ -31,7 +31,7 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(100000);
+jest.setTimeout(3000000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -82,7 +82,7 @@ describe('ApiService', () => {
     ]);
     expect(validators).toMatchObject(patchedValidators);
     expect(patchedValidators).not.toMatchObject(currentValidators);
-  }, 30000);
+  });
 
   it('api query input is double map', async () => {
     const apiService = await prepareApiService();
@@ -121,16 +121,16 @@ describe('ApiService', () => {
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
     ).not.toEqual(currentMaxNRPV);
-  }, 100000);
+  });
 
   it('.tx.*.*, .derive.*.* are removed', async () => {
     const apiService = await prepareApiService();
     const patchedApi = await apiService.getPatchedApi();
     // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
-  }, 30000);
+  });
 
-  it('api.at,xxx,xxx are removed, ', async () => {
+  it.skip('api.at,xxx,xxx are removed, ', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
@@ -140,7 +140,7 @@ describe('ApiService', () => {
     await apiService.setBlockhash(blockhash, true);
 
     expect(() => patchedApi.at(blockhash2)).toThrow(/is not supported/);
-  }, 300000);
+  });
 
   it('xxx.xxx.multi with input parameter is an array', async () => {
     const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
@@ -382,5 +382,5 @@ describe('ApiService', () => {
     const blockhash = await api.rpc.chain.getBlockHash(1);
     await apiService.setBlockhash(blockhash, true);
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
-  }, 30000);
+  });
 });
