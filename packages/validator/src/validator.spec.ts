@@ -7,9 +7,9 @@ import {Validator} from './validator';
 describe('Validator', () => {
   let v: Validator;
 
-  beforeAll(() => {
+  beforeAll(async () => {
     const url = 'https://github.com/subquery/tutorials-block-timestamp';
-    v = new Validator(url);
+    v = await Validator.create(url);
     v.addRule(...commonRules);
   });
 

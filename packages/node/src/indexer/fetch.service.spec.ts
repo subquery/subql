@@ -3,10 +3,14 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectManifestVersioned } from '@subql/common';
-import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
+import {
+  SubqlDatasourceKind,
+  SubqlHandlerKind,
+  SubqlMapping,
+} from '@subql/types';
+import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
@@ -160,53 +164,51 @@ function mockDictionaryService3(): DictionaryService {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
   } as any;
 }
-
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.0.1',
-      network: {
-        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-        types: {
-          TestType: 'u32',
-        },
+  return {
+    network: {
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    },
+    chainTypes: {
+      types: {
+        TestType: 'u32',
       },
-      dataSources: [],
-    } as any),
-    '',
-  );
-  return project;
+    },
+    dataSources: [],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+  };
 }
 
 function testSubqueryProjectV0_2_0(): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.2.0',
-      network: {
-        genesisHash: '0x',
-        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-      },
-      dataSources: [
-        {
-          kind: 'substrate/Jsonfy',
-          processor: {
-            file: 'contract-processors/dist/jsonfy.js',
-          },
-          startBlock: 1,
-          mapping: {
-            handlers: [
-              {
-                handler: 'handleEvent',
-                kind: 'substrate/JsonfyEvent',
-              },
-            ],
-          },
+  return {
+    network: {
+      genesisHash: '0x',
+      dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
+    },
+    dataSources: [
+      {
+        kind: 'substrate/Jsonfy',
+        processor: {
+          file: 'contract-processors/dist/jsonfy.js',
         },
-      ],
-    } as any),
-    path.resolve(__dirname, '../../../'),
-  );
-  return project;
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: 'substrate/JsonfyEvent',
+            },
+          ],
+        },
+      },
+    ] as any,
+    id: 'test',
+    schema: new GraphQLSchema({}),
+    root: path.resolve(__dirname, '../../../'),
+  };
 }
 
 function createFetchService(
@@ -278,6 +280,11 @@ describe('FetchService', () => {
 
   it('loop until shutdown', async () => {
     const batchSize = 20;
+    (fetchBlocksBatches as jest.Mock).mockImplementation((api, blockArray) =>
+      blockArray.map((height) => ({
+        block: { block: { header: { number: { toNumber: () => height } } } },
+      })),
+    );
     const dictionaryService = new DictionaryService(project);
 
     const fetchService = createFetchService(
@@ -300,14 +307,15 @@ describe('FetchService', () => {
 
   it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight ", async () => {
     const batchSize = 20;
-    project.projectManifest.asV0_0_1.network.dictionary =
+    project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.projectManifest.asV0_0_1.dataSources = [
+    project.dataSources = [
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
+          entryScript: '',
           handlers: [
             {
               handler: 'handleCall',
@@ -361,77 +369,17 @@ describe('FetchService', () => {
     expect((fetchService as any).useDictionary).toBeTruthy();
   }, 500000);
 
-  it('skip use dictionary once if getDictionary(api failure) return undefined ', async () => {
-    const batchSize = 20;
-    project.projectManifest.asV0_0_1.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.projectManifest.asV0_0_1.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          handlers: [
-            {
-              handler: 'handleBond',
-              kind: SubqlHandlerKind.Event,
-              filter: {
-                module: 'staking',
-                method: 'Bonded',
-              },
-            },
-          ],
-        },
-      },
-    ];
-    const dictionaryService = mockDictionaryService2();
-    const dsPluginService = new DsProcessorService(project);
-    const eventEmitter = new EventEmitter2();
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      eventEmitter,
-    );
-    const nextEndBlockHeightSpy = jest.spyOn(
-      fetchService as any,
-      `nextEndBlockHeight`,
-    );
-    const dictionaryValidationSpy = jest.spyOn(
-      fetchService as any,
-      `dictionaryValidation`,
-    );
-    await fetchService.init();
-    (fetchService as any).latestFinalizedHeight = 1005;
-    (fetchService as any).latestBufferedHeight = undefined;
-    (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
-      // [1000,1001,1002,1003,1004]
-      if (nextBufferSize.value >= 5) {
-        fetchService.onApplicationShutdown();
-      }
-    });
-    await loopPromise;
-    //validation will not be called as dictionary is undefined
-    expect(dictionaryValidationSpy).toHaveBeenCalledTimes(0);
-    expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
-    //we expect after use the original method, next loop will still use dictionary by default
-    expect((fetchService as any).useDictionary).toBeTruthy();
-  }, 500000);
-
   it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
     const batchSize = 20;
-    project.projectManifest.asV0_0_1.network.dictionary =
+    project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.projectManifest.asV0_0_1.dataSources = [
+    project.dataSources = [
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
+          entryScript: '',
           handlers: [
             {
               handler: 'handleBond',
@@ -479,14 +427,15 @@ describe('FetchService', () => {
 
   it('fill the dictionary returned batches to nextBlockBuffer', async () => {
     const batchSize = 20;
-    project.projectManifest.asV0_0_1.network.dictionary =
+    project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.projectManifest.asV0_0_1.dataSources = [
+    project.dataSources = [
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
+          entryScript: '',
           handlers: [
             {
               handler: 'handleBond',

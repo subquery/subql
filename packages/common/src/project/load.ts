@@ -19,12 +19,26 @@ export function loadFromJsonOrYaml(file: string): unknown {
   return yaml.load(rawContent);
 }
 
+export function parseProjectManifest(raw: unknown): ProjectManifestVersioned {
+  const projectManifest = new ProjectManifestVersioned(raw as VersionedProjectManifest);
+  projectManifest.validate();
+  return projectManifest;
+}
+
 export function loadChainTypes(file: string, projectRoot: string) {
   const {ext} = path.parse(file);
-  if (ext === '.js' || ext === '.cjs') {
-    return loadChainTypesFromJs(file, projectRoot);
+  const filePath = path.resolve(projectRoot, file);
+  if (fs.existsSync(filePath)) {
+    if (ext === '.js' || ext === '.cjs') {
+      //load can be self contained js file, or js depend on node_module which will require project root
+      return loadChainTypesFromJs(filePath, projectRoot);
+    } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
+      return loadFromJsonOrYaml(filePath);
+    } else {
+      throw new Error(`Extension ${ext} not supported`);
+    }
   } else {
-    return loadFromJsonOrYaml(file);
+    throw new Error(`Load from file ${file} not exist`);
   }
 }
 
@@ -50,52 +64,56 @@ export function loadProjectManifest(file: string): ProjectManifestVersioned {
 
 export function parseChainTypes(raw: unknown): ChainTypes {
   const chainTypes = plainToClass(ChainTypes, raw);
-  const errors = validateSync(chainTypes, {whitelist: true, forbidNonWhitelisted: true});
-  if (errors?.length) {
-    // TODO: print error details
-    const errorMsgs = errors.map((e) => e.toString()).join('\n');
-    throw new Error(`failed to parse chain types.\n${errorMsgs}`);
+  if (
+    !!chainTypes.types ||
+    !!chainTypes.typesChain ||
+    !!chainTypes.typesBundle ||
+    !!chainTypes.typesAlias ||
+    !!chainTypes.typesSpec
+  ) {
+    const errors = validateSync(chainTypes, {whitelist: true, forbidNonWhitelisted: true});
+    if (errors?.length) {
+      // TODO: print error details
+      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      throw new Error(`failed to parse chain types.\n${errorMsgs}`);
+    }
+    return chainTypes;
+  } else {
+    throw new Error(`chainTypes is not valid`);
   }
-
-  return chainTypes;
 }
 
-function loadChainTypesFromJs(filePath: string, requireRoot?: string) {
+export function loadChainTypesFromJs(filePath: string, requireRoot?: string) {
   const {base, ext} = path.parse(filePath);
   const root = requireRoot ?? path.dirname(filePath);
-  if (ext === '.js' || ext === '.cjs') {
-    const vm = new NodeVM({
-      console: 'redirect',
-      wasm: false,
-      sandbox: {},
-      require: {
-        context: 'sandbox',
-        external: true,
-        builtin: ['path'],
-        root: root,
-        resolve: (moduleName: string) => {
-          return require.resolve(moduleName, {paths: [root]});
-        },
+  const vm = new NodeVM({
+    console: 'redirect',
+    wasm: false,
+    sandbox: {},
+    require: {
+      context: 'sandbox',
+      external: true,
+      builtin: ['path'],
+      root: root,
+      resolve: (moduleName: string) => {
+        return require.resolve(moduleName, {paths: [root]});
       },
-      wrapper: 'commonjs',
-      sourceExtensions: ['js', 'cjs'],
-    });
-
-    let rawContent: unknown;
-    try {
-      const script = new VMScript(
-        `module.exports = require('${filePath}').default;`,
-        path.join(root, 'sandbox')
-      ).compile();
-      rawContent = vm.run(script) as unknown;
-    } catch (err) {
-      throw new Error(`\n NodeVM error: ${err}`);
-    }
-    if (rawContent === undefined) {
-      throw new Error(`There was no default export found from required ${base} file`);
-    }
-    return rawContent;
-  } else {
-    throw new Error(`Extension ${ext} not supported`);
+    },
+    wrapper: 'commonjs',
+    sourceExtensions: ['js', 'cjs'],
+  });
+  let rawContent: unknown;
+  try {
+    const script = new VMScript(
+      `module.exports = require('${filePath}').default;`,
+      path.join(root, 'sandbox')
+    ).compile();
+    rawContent = vm.run(script) as unknown;
+  } catch (err) {
+    throw new Error(`\n NodeVM error: ${err}`);
   }
+  if (rawContent === undefined) {
+    throw new Error(`There was no default export found from required ${base} file`);
+  }
+  return rawContent;
 }

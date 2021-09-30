@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {u8aConcat} from '@polkadot/util';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
@@ -16,22 +17,31 @@ export class IPFSReader implements Reader {
     this.ipfs = IPFS.create({url: gateway});
   }
 
+  get root(): undefined {
+    return undefined;
+  }
+
   async getPkg(): Promise<IPackageJson | undefined> {
     return Promise.resolve(undefined);
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
-    return this.getFile(this.cid);
+    const projectYaml = await this.getFile(this.cid);
+    if (projectYaml === undefined) {
+      throw new Error(`Fetch project from ipfs ${this.cid} got undefined`);
+    }
+    return yaml.load(projectYaml);
   }
 
-  async getFile(fileName: string): Promise<unknown | undefined> {
+  async getFile(fileName: string): Promise<string | undefined> {
     try {
-      const req = this.ipfs.cat(fileName.replace('ipfs://', ''));
-
-      // Should be first item
+      const resolvedFileName = fileName.replace('ipfs://', '');
+      const req = this.ipfs.cat(resolvedFileName);
+      const scriptBufferArray: Uint8Array[] = [];
       for await (const res of req) {
-        return yaml.load(Buffer.from(res).toString('utf8'));
+        scriptBufferArray.push(res);
       }
+      return Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
     } catch (e) {
       return undefined;
     }

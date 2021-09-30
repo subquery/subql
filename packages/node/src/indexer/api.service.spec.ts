@@ -3,9 +3,10 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ProjectManifestVersioned, ProjectNetworkV0_0_1 } from '@subql/common';
+import { ProjectNetworkV0_0_1 } from '@subql/common';
+import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 
 jest.mock('@polkadot/api', () => {
@@ -14,7 +15,8 @@ jest.mock('@polkadot/api', () => {
     on: jest.fn(),
     runtimeChain: jest.fn(),
     runtimeVersion: { specName: jest.fn() },
-    genesisHash: jest.fn(),
+    genesisHash:
+      '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     consts: jest.fn(),
   }));
   return { ApiPromise, WsProvider: jest.fn() };
@@ -45,14 +47,24 @@ const testNetwork: ProjectNetworkV0_0_1 = {
 };
 
 function testSubqueryProject(): SubqueryProject {
-  return new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.0.1',
-      network: testNetwork,
-      dataSources: [],
-    } as any),
-    '',
-  );
+  return {
+    network: {
+      endpoint: testNetwork.endpoint,
+      genesisHash:
+        '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
+    },
+    chainTypes: {
+      types: testNetwork.types,
+      typesAlias: testNetwork.typesAlias,
+      typesBundle: testNetwork.typesBundle,
+      typesChain: testNetwork.typesChain,
+      typesSpec: testNetwork.typesSpec,
+    },
+    dataSources: [],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+  };
 }
 
 describe('ApiService', () => {
@@ -71,7 +83,7 @@ describe('ApiService', () => {
   it('throws if expected genesis hash doesnt match', async () => {
     const project = testSubqueryProject();
 
-    (project.projectManifest.asV0_0_1.network as any).genesisHash = '0x';
+    (project.network as any).genesisHash = '0x';
 
     const apiService = new ApiService(project, new EventEmitter2());
 

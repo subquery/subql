@@ -6,3 +6,4 @@
 *.d.ts
 **/.DS_Store
 *.ejs
+*.tgz

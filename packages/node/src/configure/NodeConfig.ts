@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import fs from 'fs';
 import path from 'path';
 import { loadFromJsonOrYaml } from '@subql/common';
 import { last } from 'lodash';
@@ -30,6 +31,7 @@ export interface IConfig {
   readonly timestampField: boolean;
   readonly proofOfIndex: boolean;
   readonly mmrPath?: string;
+  readonly ipfs?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> &
@@ -56,6 +58,9 @@ export class NodeConfig implements IConfig {
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
 
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Load config from file ${filePath} is not exist`);
+    }
     let configFromFile: unknown;
     try {
       configFromFile = loadFromJsonOrYaml(filePath);
@@ -141,6 +146,9 @@ export class NodeConfig implements IConfig {
 
   get mmrPath(): string {
     return this._config.mmrPath ?? `.mmr/${this.subqueryName}.mmr`;
+  }
+  get ipfs(): string {
+    return this._config.ipfs;
   }
 
   get dbSchema(): string {

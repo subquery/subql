@@ -2,29 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Test } from '@nestjs/testing';
-import { ProjectManifestVersioned } from '@subql/common';
+import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { SubqueryRepo } from '../entities';
 import { IndexerManager } from './indexer.manager';
 
-function testSubqueryProject(endpoint: string): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.0.1',
-      network: {
-        endpoint,
-        types: {
-          TestType: 'u32',
-        },
-      },
-      dataSources: [],
-    } as any),
-    '',
-  );
-  return project;
+function testSubqueryProject(): SubqueryProject {
+  return {
+    network: {
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
+    },
+    dataSources: [],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+  };
 }
 
 const prepare = async (): Promise<IndexerManager> => {
@@ -32,7 +28,7 @@ const prepare = async (): Promise<IndexerManager> => {
     providers: [
       {
         provide: SubqueryProject,
-        useFactory: () => testSubqueryProject(''),
+        useFactory: () => testSubqueryProject(),
       },
       {
         provide: IndexerManager,

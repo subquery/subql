@@ -2,5 +2,4 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './validator';
-export * from './readers';
 export * from './rules';

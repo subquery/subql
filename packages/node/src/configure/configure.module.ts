@@ -9,7 +9,7 @@ import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
-import { SubqueryProject } from './project.model';
+import { SubqueryProject } from './SubqueryProject';
 
 const logger = getLogger('configure');
 
@@ -112,10 +112,12 @@ export class ConfigureModule {
       setLevel('debug');
     }
 
-    const projectPath = path.resolve(
-      config.configDir && !argv.subquery ? config.configDir : '.',
-      config.subquery,
-    );
+    const projectPath = config.ipfs
+      ? argv.subquery
+      : path.resolve(
+          config.configDir && !argv.subquery ? config.configDir : '.',
+          config.subquery,
+        );
 
     const project = async () => {
       const p = await SubqueryProject.create(
@@ -127,6 +129,9 @@ export class ConfigureModule {
           },
           isNil,
         ),
+        {
+          ipfs: config.ipfs,
+        },
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);

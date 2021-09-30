@@ -1,9 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common';
+import {ProjectManifestVersioned, VersionedProjectManifest, Reader, ReaderFactory, ReaderOptions} from '@subql/common';
 import {Context} from './context';
-import {Reader, ReaderFactory, ReaderOptions} from './readers';
 import {Rule, RuleType} from './rules';
 
 export interface Report {
@@ -14,12 +13,12 @@ export interface Report {
 }
 
 export class Validator {
-  private readonly reader: Reader;
   private readonly rules: Rule[] = [];
 
-  constructor(private readonly location: string, opts?: ReaderOptions) {
-    this.reader = ReaderFactory.create(location, opts);
+  static async create(location: string, opts?: ReaderOptions): Promise<Validator> {
+    return new Validator(await ReaderFactory.create(location, opts), location);
   }
+  constructor(private readonly reader: Reader, private readonly location: string) {}
 
   addRule(...rules: Rule[]): void {
     this.rules.push(...rules);

@@ -1,13 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectManifestVersioned } from '@subql/common';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
+import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -53,83 +52,60 @@ const nodeConfig = new NodeConfig({
   networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
 });
 
-function testSubqueryProjectV0_0_1(): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.0.1',
-      network: {
-        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+function testSubqueryProject_1(): SubqueryProject {
+  return {
+    network: {
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    },
+    dataSources: [
+      {
+        name: 'runtime0',
+        kind: SubqlDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
+        },
       },
-      schema: './schema.graphql',
-      dataSources: [
-        {
-          name: 'runtime0',
-          kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
-          mapping: {
-            handlers: [
-              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
-            ],
-          },
+      {
+        name: 'runtime1',
+        kind: SubqlDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
         },
-        {
-          name: 'runtime1',
-          kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
-          mapping: {
-            handlers: [
-              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
-            ],
-          },
-        },
-      ],
-    } as any),
-    path.resolve(__dirname, '../../test/sandbox'),
-  );
-  return project;
+      },
+    ],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+  };
 }
 
-function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.2.0',
-      network: {
-        genesisHash:
-          '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      },
-      schema: { file: './schema.graphql' },
-      dataSources: [
-        {
-          name: 'runtime0',
-          kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
-          mapping: {
-            file: './main.js',
-            handlers: [
-              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
-            ],
-          },
-        },
-        {
-          name: 'runtime1',
-          kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
-          mapping: {
-            file: './main.js',
-            handlers: [
-              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
-            ],
-          },
-        },
-      ],
-    } as any),
-    path.resolve(__dirname, '../../test/sandbox'),
-    {
-      endpoint: nodeConfig.networkEndpoint,
-      dictionary: nodeConfig.networkDictionary,
+function testSubqueryProject_2(): SubqueryProject {
+  return {
+    network: {
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
+      genesisHash:
+        '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
     },
-  );
-  return project;
+    dataSources: [
+      {
+        name: 'runtime0',
+        kind: SubqlDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: `console.log('test handler runtime0')`,
+          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
+        },
+      },
+    ],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+  };
 }
 
 function createIndexerManager(project: SubqueryProject): IndexerManager {
@@ -186,14 +162,14 @@ describe('IndexerManager', () => {
   });
 
   xit('should be able to start the manager (v0.0.1)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProjectV0_0_1());
+    indexerManager = createIndexerManager(testSubqueryProject_1());
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   xit('should be able to start the manager (v0.2.0)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject());
+    indexerManager = createIndexerManager(testSubqueryProject_2());
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
