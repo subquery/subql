@@ -1,6 +1,6 @@
-# Branding Materials
+# วัตถุดิบแบรนด์ดิ้ง
 
-**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
+**โลโก้ของ SubQuery ทั้งหมดเป็นกรรมสิทธิ์และเราให้ความสำคัญกับแบรนด์ของเราเป็นอย่างมาก**
 
 If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
 
