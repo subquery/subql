@@ -34,20 +34,20 @@ Staging slot จะไม่แสดงต่อสาธารณะใน [Ex
 
 ## Extrinsics คืออะไร?
 
-หากคุณคุ้นเคยกับบล็อคเชนอยู่แล้ว คุณสามารถเปรียบ extrinsics ได้กับธุรกรรม More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+หากคุณคุ้นเคยกับบล็อคเชนอยู่แล้ว คุณสามารถเปรียบ extrinsics ได้กับธุรกรรม หรืออธิบายให้เป็นทางการมากขึ้น extrinsic เป็นส่วนของข้อมูลที่มาจากนอก chain และถูกรวมอยู่ในบล็อก extrinsics มีสามประเภท เป็น inherent extrinsics, signed transactions และ unsigned transactions
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+Inherent extrinsics คือชิ้นส่วนของข้อมูลที่ไม่ได้ลงนามและแทรกเข้าไปในบล็อกโดยผู้เขียนบล็อกเท่านั้น
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+Signed transaction extrinsics คือธุรกรรมที่มีลายเซ็นของบัญชีที่ออกธุรกรรม พวกเขาพร้อมที่จะจ่ายค่าธรรมเนียมเพื่อให้ธุรกรรมรวมอยู่ใน chain
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+Unsigned transactions extrinsics  คือธุรกรรมที่ไม่มีลายเซ็นของบัญชีที่ออกธุรกรรม Unsigned transactions extrinsics ควรใช้ด้วยความระมัดระวังเพราะไม่มีใครจ่ายค่าธรรมเนียมเนื่องจากมีการลงนาม ด้วยเหตุนี้ คิวธุรกรรมจึงขาดตรรกะทางเศรษฐกิจในการป้องกันการสแปม
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+สำหรับข้อมูลเพิ่มเติม คลิก [ที่นี่](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics)
 
-## What is the endpoint for the Kusama network?
+## Endpoint  สำหรับเครือข่าย Kusama คืออะไร?
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+network.endpoint สำหรับเครือข่าย Kusama คือ `wss://kusama.api.onfinality.io/public-ws`
 
-## What is the endpoint for the Polkadot mainnet network?
+## Endpoint  สำหรับเครือข่าย Polkadot mainnet คืออะไร?
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+network.endpoint สำหรับเครือข่าย Polkadot คือ `wss://polkadot.api.onfinality.io/public-ws`
