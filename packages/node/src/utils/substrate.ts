@@ -23,7 +23,9 @@ import {
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
 import { BlockContent } from '../indexer/types';
+import { getLogger } from './logger';
 
+const logger = getLogger('fetch');
 export function wrapBlock(
   signedBlock: SignedBlock,
   events: EventRecord[],
@@ -247,8 +249,13 @@ export async function fetchBlocksRange(
 ): Promise<SignedBlock[]> {
   return Promise.all(
     range(startHeight, endHeight + 1).map(async (height) => {
-      const blockHash = await api.rpc.chain.getBlockHash(height);
-      return api.rpc.chain.getBlock(blockHash);
+      try {
+        const blockHash = await api.rpc.chain.getBlockHash(height);
+        return await api.rpc.chain.getBlock(blockHash);
+      } catch (err) {
+        logger.error(`failed to fetch block at height ${height}`);
+        throw err;
+      }
     }),
   );
 }
