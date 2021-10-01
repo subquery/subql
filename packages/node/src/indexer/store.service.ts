@@ -299,13 +299,17 @@ group by
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.upsert(data, { transaction: this.tx });
-        this.operationStack.put(OperationType.Set, entity, data);
+        if (this.config.proofOfIndex) {
+          this.operationStack.put(OperationType.Set, entity, data);
+        }
       },
       remove: async (entity: string, id: string): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.destroy({ where: { id }, transaction: this.tx });
-        this.operationStack.put(OperationType.Remove, entity, id);
+        if (this.config.proofOfIndex) {
+          this.operationStack.put(OperationType.Remove, entity, id);
+        }
       },
     };
   }
