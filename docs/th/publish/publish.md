@@ -10,39 +10,39 @@
 
 #### เข้าสู่ระบบโปรเจ็กต์ SubQuery
 
-Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
+ก่อนเริ่มต้น โปรดตรวจสอบให้แน่ใจว่าโปรเจ็กต์ SubQuery ของคุณออนไลน์อยู่ใน GitHub repository แบบสาธารณะ ไฟล์ `schema.graphql` ต้องอยู่ในรูทไดเร็กทอรีของคุณ
 
-To create your first project, head to [project.subquery.network](https://project.subquery.network). You'll need to authenticate with your GitHub account to login.
+ในการสร้างโปรเจ็กต์แรกของคุณ ให้ไปที่ [project.subquery.network](https://project.subquery.network) คุณจะต้องตรวจสอบสิทธิ์ด้วยบัญชี GitHub ของคุณเพื่อเข้าสู่ระบบ
 
-On first login, you will be asked to authorize SubQuery. We only need your email address to identify your account, and we don't use any other data from your GitHub account for any other reasons. In this step, you can also request or grant access to your GitHub Organization account so you can post SubQuery projects under your GitHub Organization instead of your personal account.
+ในการเข้าสู่ระบบครั้งแรก คุณจะถูกขอให้ทำการ authorize แก่ SubQuery เราต้องการเพียงที่อยู่อีเมลของคุณเพื่อระบุบัญชีของคุณ และเราไม่ใช้ข้อมูลอื่นใดจากบัญชี GitHub ของคุณด้วยเหตุผลอื่นๆ ในขั้นตอนนี้ คุณยังสามารถขอหรือให้สิทธิ์การเข้าถึงบัญชี GitHub Organization ของคุณเพื่อโพสต์โปรเจ็กต์ SubQuery ภายใต้ GitHub Organization แทนบัญชีส่วนตัวของคุณ
 
 ![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application.
+SubQuery Projects คือที่ที่คุณจัดการโปรเจ็กต์ที่โฮสต์อยู่ทั้งหมดของคุณ ที่อัปโหลดไปยังแพลตฟอร์ม SubQuery คุณสามารถสร้าง ลบ หรือแม้กระทั่งอัปเกรดโปรเจ็กต์ทั้งหมดจากแอปพลิเคชันนี้
 
 ![Projects Login](/assets/img/projects-dashboard.png)
 
-If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
+หากคุณมีบัญชี GitHub Organization ที่เชื่อมต่ออยู่ คุณสามารถใช้ switcher ที่ header เพื่อเปลี่ยนระหว่างบัญชีส่วนตัวและบัญชี GitHub Organization ได้ โปรเจ็กต์ที่สร้างในบัญชี GitHub Organization จะแชร์ระหว่างสมาชิกใน GitHub Organization นั้นๆ ในการเชื่อมต่อบัญชี GitHub Organization ของคุณ คุณสามารถ[ทำตามขั้นตอนที่นี่](#add-github-organization-account-to-subquery-projects)
 
 ![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
 
-#### Create your First Project
+#### สร้างโปรเจ็กต์แรกของคุณ
 
-Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
-- **GitHub account:** If you have more than one GitHub account, select which account this project will be created under. Projects created in a GitHub organisation account are shared between members in that organisation.
-- **Name**
-- **Subtitle**
-- **Description**
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](../create/introduction.md#directory-structure)).
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community! ![Create your first Project](/assets/img/projects-create.png)
+เริ่มต้นด้วยการคลิกที่ "Create Project" คุณจะถูกนำไปที่แบบฟอร์ม New Project โปรดป้อนข้อมูลต่อไปนี้ (คุณสามารถเปลี่ยนแปลงได้ในอนาคต):
+- **บัญชี GitHub:** หากคุณมีบัญชี GitHub มากกว่าหนึ่งบัญชี ให้เลือกบัญชีที่จะใช้สร้างโปรเจ็กต์นี้ โปรเจ็กต์ที่สร้างขึ้นในบัญชี GitHub organisation จะถูกแชร์ระหว่างสมาชิกใน organisation นั้นๆ
+- **ชื่อ**
+- **ชื่อรอง (Subtitle)**
+- **คำอธิบาย**
+- **GitHub Repository URL:** ต้องเป็น GitHub URL ที่ใช้งานได้ซึ่งชี้ไปยัง repositoryสาธารณะที่มีโปรเจ็กต์ SubQuery ของคุณ ไฟล์ `schema.graphql` ต้องอยู่ในรูทของไดเร็กทอรีของคุณ ([เรียนรู้เพิ่มเติมเกี่ยวกับโครงสร้างไดเร็กทอรี](../create/introduction.md#directory-structure))
+- **Hide project:** หากเลือก จะเป็นการซ่อนโปรเจ็กต์จาก SubQuery explorer สาธารณะ อย่าเลือกตัวเลือกนี้หากคุณต้องการแชร์ SubQuery ของคุณกับชุมชน! ![Create your first Project](/assets/img/projects-create.png)
 
-Create your project and you'll see it on your SubQuery Project's list. *We're almost there! We just need to deploy a new version of it.*
+สร้างโปรเจ็กต์ของคุณ แล้วคุณจะเห็นในลิสต์รายการโปรเจ็กต์ SubQuery ของคุณ *ใกล้แล้ว! เราแค่ต้องทำการ deploy เป็นเวอร์ชันใหม่*
 
 ![Created Project with no deployment](/assets/img/projects-no-deployment.png)
 
-#### Deploy your first Version
+#### Deploy เวอร์ชันแรกของคุณ
 
-While creating a project will setup the display behaviour of the project, you must deploy a version of it before it becomes operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+ขณะสร้างโปรเจ็กต์จะมีการตั้งค่าลักษณะการแสดงผลของโปรเจ็กต์ คุณต้อง deploy เวอร์ชันของโปรเจ็กต์ก่อนที่จะดำเนินการได้ การ deploy เวอร์ชันจะเปิดการดำเนินการสร้าง SubQuery index ใหม่เพื่อเริ่มต้น และตั้งค่าบริการการสืบค้นที่จำเป็นเพื่อเริ่มยอมรับ GraphQL requests คุณยังสามารถ deploy เวอร์ชันใหม่กับโปรเจ็กต์ที่มีอยู่ได้ที่นี่
 
 With your new project, you'll see a Deploy New Version button. Click this, and fill in the required information about the deployment:
 - **Commit Hash of new Version:** From GitHub, copy the full commit hash of the version of your SubQuery project codebase that you want deployed
