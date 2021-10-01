@@ -1,19 +1,19 @@
-# Branding Materials
+# วัตถุดิบแบรนด์ดิ้ง
 
-**All of SubQuery’s brand features are proprietary and we take our brand extremely seriously.**
+**โลโก้หรือเครื่องหมายต่างๆ ของ SubQuery ทั้งหมดเป็นกรรมสิทธิ์ของเรา และเราให้ความสำคัญกับแบรนด์ของเราเป็นอย่างมาก**
 
-If you opt to use any trademarks, logos, designs, or other brand features, please carefully follow the guidelines here or reach out to us via social media for clarification.
+หากคุณเลือกใช้เครื่องหมายการค้า, โลโก้, งานดีไซน์, หรือคุณลักษณะอื่นๆ ของแบรนด์ โปรดปฏิบัติตามหลักเกณฑ์นี้อย่างละเอียด หรือติดต่อเราผ่านโซเชียลมีเดียเพื่อสอบถามเพิ่มเติม
 
-If in doubt, please ask!
+หากมีข้อสงสัย โปรดอย่าลังเลที่จะติดต่อเราเพื่อสอบถาม!
 
-## Exportable Figma File
+## ไฟล์ Figma ที่สามารถ export ได้
 
-Our Figma file has a full collection of all brand assets (logos,  fonts, colours, imagery etc) for export.
+ไฟล์ Figma ของเรามีคอลเลกชั่นเต็มรูปแบบของทรัพยากรของแบรนด์ทั้งหมด (โลโก้, ฟอนต์, สี, ภาพ, ฯลฯ) สำหรับการ export
 
 [Figma - SubQuery Brand Resources](https://www.figma.com/file/AaCXaOcElrlbxq8fz39sJU/SubQuery-Brand-Resources?node-id=3%3A2)
 
-## Brand Assets Package
+## แพ็คเกจทรัพยากรแบรนด์
 
-A smaller ZIP package of brand assets
+แพ็คเกจไฟล์ ZIP ขนาดเล็กของทรัพยากรแบรนด์
 
 [public_branding.zip](https://static.subquery.network/public_branding.zip)

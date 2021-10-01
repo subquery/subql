@@ -1,35 +1,35 @@
-# Hello World (localhost + Docker)
+# Merhaba Dünya (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+Bu SubQuery Hello World hızlı başlangıcına hoş geldiniz. Hızlı başlangıç, docker'da çalışan varsayılan başlangıç projesini birkaç basit adımda nasıl elde edersiniz göstermeyi amaçlamaktadır.
 
-## Learning objectives
+## Öğrenme hedefleri
 
-At the end of this quick start, you should:
+Bu hızlı başlangıcın sonunda şunları yapmalıyız:
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- gerekli önkoşulları anlamak
+- temel ortak komutları anlamak
+- localhost:3000'e gidebilmek ve oyun alanını görüntüleyebilmek
+- Polkadot mainnet'in blok yüksekliğini almak için basit bir sorgu çalıştırın
 
-## Intended audience
+## Hedeflenen hedef kitle
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Bu kılavuz, bazı geliştirme deneyimine sahip ve SubQuery hakkında daha fazla bilgi edinmek isteyen yeni geliştiricilere yöneliktir.
 
-## Video guide
+## Video kılavuzu
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Önkoşullar
 
-You will need:
+İhtiyacınız olacak:
 
-- yarn or npm package manager
+- yarn veya npm paket yöneticisi
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+Bu önkoşullardan herhangi birine sahip olup olmadığınızı görmek için terminalde aşağıdaki komutları çalıştırabilirsiniz.
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+Daha ileri düzey kullanıcılar için aşağıdakileri kopyalayıp yapıştırın:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+Bu döndürülmelidir: (npm kullanıcıları için ipliği npm ile değiştirin) vv
 
 ```shell
 My yarn version is: 1.22.10
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+Yukarıdakileri alırsanız, gitmeye hazırsınız demektir. Değilse, yüklemek için şu bağlantıları izleyin:
 
-- [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
+- [yarn](https://classic.yarnpkg.com/en/docs/install/) veya [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Initialise project
+## 1. Projeyi başlat
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+SubQuery ile başlarken ilk adım `subql init` komutunu çalıştırmaktır. `subqlHelloWorld` adıyla bir başlangıç projesi başlatalım. Yalnızca yazarın zorunlu olduğunu unutmayın. Aşağıda diğer her şey boş bırakılmıştır.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -73,41 +73,41 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+Bu yeni dizine girmeyi unutmayın.
 
 ```shell
 cd subqlHelloWorld
 ```
 
-## 2. Install dependencies
+## 2. Bağımlılıkları yükleme
 
-Now do a yarn or node install to install the various dependencies.
+Şimdi çeşitli bağımlılıkları yüklemek için bir iplik veya düğüm yüklemesi yapın.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn install`
+Bir örnek `yarn install`
 
 ```shell
 > yarn install
 yarn install v1.22.10
-info No lockfile found.
-[1/4] 🔍  Resolving packages...
-[2/4] 🚚  Fetching packages...
-[3/4] 🔗  Linking dependencies...
-[4/4] 🔨  Building fresh packages...
-success Saved lockfile.
-✨  Done in 31.84s.
+bilgi Kilit dosyası bulunamadı.
+[1/4] 🔍 Paketleri çözme...
+[2/4] 🚚 Paket getiriyor...
+[3/4] 🔗 Bağımlılıkları bağlama...
+[4/4] 🔨 Yeni paketler oluşturma...
+başarı Kilit dosyası kaydedildi.
+✨ 31.84'lerde bitti.
 ```
 
-## 3. Generate code
+## 3. Kod oluşturma
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+Şimdi GraphQL şemasından Typescript oluşturmak için `yarn codegen` çalıştırın.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn codegen`
+Bir örnek`yarn codegen`
 
 ```shell
 > yarn codegen
@@ -117,34 +117,34 @@ $ ./node_modules/.bin/subql codegen
 ---------Subql Codegen---------
 ===============================
 * Schema StarterEntity generated !
-* Models index generated !
-* Types index generated !
-✨  Done in 1.02s.
+* Modeller endeksi oluşturuldu!
+* Oluşturulan türler dizini !
+✨ 1.02'lerde bitti.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**Warning** Şema dosyasında değişiklikler yapıldığında, türler dizininizi yeniden oluşturmanız için lütfen `yarn codegen` yeniden çalıştırmayı unutmayın.
 
-## 4. Build code
+## 4. Kod oluşturma
 
-The next step is to build the code with `yarn build`.
+Bir sonraki adım, kodu `yarn build` ile oluşturmaktır.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn build`
+Bir örnek `yarn build`
 
 ```shell
-> yarn build
-yarn run v1.22.10
+> iplik yapısı
+ip çalıştırma v1.22.10
 $ tsc -b
-✨  Done in 5.68s.
+✨ 5.68'lerde bitti.
 ```
 
-## 5. Run Docker
+## 5. Docker'ı çalıştırın
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+Docker'ı kullanmak, gerekli tüm altyapı Docker görüntüsünde sağlanabildiğinden bu örneği çok hızlı bir şekilde çalıştırmanıza olanak tanır. `docker-compose pull && liman işçisi-oluşturma`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+Bu, sonunda blokların getirildiği hayata her şeyi tekmeleyecek.
 
 ```shell
 > #SNIPPET
@@ -162,9 +162,9 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## 6. Oyun alanına göz atın
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+Http://localhost:3000/ gidin ve aşağıdaki sorguyu ekranın sol tarafına yapıştırın ve ardından oynat düğmesine basın.
 
 ```
 {
@@ -179,12 +179,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+Yerel ev üzerinde SubQuery oyun alanı.
 
-![playground localhost](/assets/img/subql_playground.png)
+![oyun alanı localhost](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+Oyun parkındaki blok sayısı, terminaldeki blok sayısıyla (teknik olarak blok yüksekliği) de eşleşmelidir.
 
-## Summary
+## Özet
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+Bu hızlı başlangıçta, bir Docker ortamında bir başlangıç projesini çalışır durumda almak için temel adımları gösterdik ve ardından localhost:3000'e gittik ve ana ağ Polkadot ağının blok numarasını döndürmek için bir sorgu çalıştırdık.

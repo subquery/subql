@@ -1,6 +1,6 @@
-# Learn more about GraphQL
+# เรียนรู้เพิ่มเติมเกี่ยวกับ GraphQL
 
-You can follow the [official GraphQL guide here](https://graphql.org/learn/) to learn more about GraphQL, how it works, and how to use it:
-- There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
-- For an in-depth learning experience with practical tutorials, see [How to GraphQL](https://www.howtographql.com/).
-- Check out the free online course, [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
+คุณสามารถทำตาม [คู่มือ GraphQL อย่างเป็นทางการที่นี่](https://graphql.org/learn/) เพื่อเรียนรู้เพิ่มเติมเกี่ยวกับ GraphQL วิธีการทำงาน และวิธีใช้งาน:
+- มีไลบรารี่ที่จะช่วยคุณใช้งาน GraphQL ใน [ภาษาต่างๆ มากมาย](https://graphql.org/code/)
+- สำหรับประสบการณ์การเรียนรู้เชิงลึกพร้อมบทช่วยสอนเชิงปฏิบัติ โปรดดูที่ [วิธีสร้าง GraphQL](https://www.howtographql.com/)
+- ดูหลักสูตรออนไลน์ฟรี [การสำรวจ GraphQL: ภาษาการสืบค้นสำหรับ API](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis)

@@ -1,20 +1,20 @@
 # The Sandbox
 
-In our envisioned usage scenario, the SubQuery node is usually run by a trusted host, and the code of the SubQuery project submitted by the user to the node is not entirely trustworthy.
+В нашем предполагаемом сценарии использования узел SubQuery обычно запускается доверенным хостом, и код проекта SubQuery, отправленный пользователем узлу, не является полностью надежным.
 
-Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This:
+Некоторый вредоносный код может атаковать хост или даже скомпрометировать его, а также нанести ущерб данным других проектов на том же хосте. Поэтому мы используем защищенный механизм Sandbox [VM2](https://www.npmjs.com/package/vm2) для снижения рисков. Это позволяет:
 
-- Runs untrusted code securely in an isolated context and malicious code will not access the network and file system of the host unless through the exposed interface we injected into the sandbox.
+- Безопасно запускать ненадежный код в изолированной среде, и вредоносный код не получит доступа к сети и файловой системе хоста, кроме как через открытый интерфейс, который мы внедрили в изолированную среду.
 
-- Securely calls methods and exchanges data and callbacks between sandboxes.
+- Безопасно вызывать методы и обмениваться данными и обратными вызовами между изолированными средами.
 
-- Is immune to many known methods of attack.
+- Обладать иммунитетом ко многим известным методам атаки.
 
 
-## Restriction
+## Ограничения
 
-- To limit access to certain built-in modules, only `assert`, `buffer`, `crypto`,`util` and `path` are whitelisted.
+- Ограниченный доступ к определенным встроенным модулям, только `assert`, `буфер`, `крипто`,`util` и `путь` занесены в белый список.
 
-- We support [3rd party modules](../create/mapping.md#third-party-libraries) written in **CommonJS** and **hybrid** libraries like `@polkadot/*` that use ESM as default.
+- Поддерживаются [сторонние модули](../create/mapping.md#third-party-libraries), написанные в **CommonJS** и **гибридных** библиотеках, таких как `@polkadot/*`, которые используют ESM по умолчанию.
 
-- Any modules using `HTTP` and `WebSocket` are forbidden.
+- Любые модули, использующие `HTTP` и `WebSocket`, запрещены.

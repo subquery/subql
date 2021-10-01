@@ -1,18 +1,18 @@
-# How to start at a different block height?
+# Farklı bir blok yüksekliğinde nasıl başlarılır?
 
-## Video guide
+## Video kılavuzu
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/ZiNSXDMHmBk" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giriş
 
-By default, all starter projects start synchronising the blockchain from the genesis block. In otherwords, from block 1. For large blockchains, this can typically take days or even weeks to fully synchronise.
+Varsayılan olarak, tüm başlangıç projeleri blockchain'i genesis bloğundan senkronize etmeye başlar. Diğer sözcüklerde, blok 1'den. Büyük blok zincirleri için, bunun tam olarak senkronize olması genellikle günler hatta haftalar alabilir.
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+Sıfır olmayan bir yükseklikten eşitleyici bir SubQuery düğümü başlatmak için tek yapmanız gereken project.yaml dosyanızı değiştirmek ve startBlock anahtarını değiştirmektir.
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+Aşağıda, başlangıç bloğunun 1.000.000 olarak ayarlandığı bir project.yaml dosyası verilmiştir
 
 ```shell
 specVersion: 0.0.1
@@ -32,18 +32,18 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-## Why not start from zero?
+## Neden sıfırdan başlamıyorum?
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+Ana neden, blockchain'i senkronize etme süresini azaltabilmesidir. Bu, yalnızca son 3 aydaki işlemlerle ilgileniyorsanız, yalnızca son 3 ayı daha az bekleme süresi anlamına gelen senkronize edebilir ve gelişiminize daha hızlı başlayabilirsiniz.
 
-## What are the drawbacks of not starting from zero?
+## Sıfırdan başlamamanın dezavantajları nelerdir?
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+En belirgin dezavantajı, sahip olmadığınız bloklar için blok zincirindeki verileri sorgulayamayacaksınız.
 
-## How to figure out the current blockchain height?
+## Mevcut blockchain yüksekliği nasıl bulunur?
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+Polkadot ağını kullanıyorsanız, [https://polkascan.io/](https://polkascan.io/) ziyaret edebilir, ağı seçebilir ve ardından "Kesinleştirilmiş Blok" rakamını görüntüleyebilirsiniz.
 
-## Do I have to do a rebuild or a codegen?
+## Yeniden oluşturma mı yoksa kodekgen mi yapmam gerekiyor?
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+Hayır. Temelde bir yapılandırma dosyası olan project.yaml dosyasını değiştirdiğiniz için, typescript kodunu yeniden oluşturmanız veya yeniden oluşturmanız gerekmeyecektir.

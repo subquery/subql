@@ -1,84 +1,78 @@
-# Running SubQuery Locally
+# Запуск SubQuery локально
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+В этом руководстве рассказывается как локально запустить ноду SubQuery на вашем устройстве, который включает как индексатор, так и службу запросов. Не хотите беспокоиться о запуске SubQuery на собственном устройстве? SubQuery обеспечивает [выделенный сервер](https://explorer.subquery.network) для комьюнити бесплатно. [Следуйте нашему опубликованному гайду](../publish/publish.md) что бы увидеть как вы можете загрузить ваш проект в [SubQuery Projects](https://project.subquery.network).
 
-## Using Docker
+## Использование Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+Как альтернативное решение это запустить <strong>Docker Container</strong>, определенный `docker-compose.yml` файлом. Для нового проекта которой уже был установлен вам не понадобится ничего менять здесь.
 
-Under the project directory run the following command:
+В командной строке проекта выполните следующую команду:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+В начале может потребоваться некоторое время для загрузки требующихся пакетов ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), Postgres) далее вы увидите запущенную SubQuery ноду.
 
-## Running an Indexer (subql/node)
+## Запуск индексатора (subql/node)
 
-Requirements:
+Требования:
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) база данных ( версия 12 или выше). Пока [SubQuery node](#start-a-local-subquery-node) индексируется в блокчейн, извлеченные данные хранятся во внешнем экземпляре базы данных.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+Нода SubQuery - это реализация, которая извлекает данные блокчейна на основе субстрата для проекта SubQuery и сохраняет их в базе данных Postgres.
 
-### Installation
+### Установка
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Обратите внимание, что мы ** НЕ ** поддерживаем использование ` yarn global ` из-за его плохого управления зависимостями, что может привести к ошибкам в дальнейшем.
 
-Once installed, you can start a node with the following command:
+После установки вы можете запустить ноду с помощью следующей команды:
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### Ключевые команды
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
+Следующие команды помогут вам завершить настройку ноды SubQuery и начать индексацию. Чтобы узнать больше, вы всегда можете запустить ` --help `.
 
-#### Point to local project path
+#### Укажите путь к локальному проекту
 
 ```
 subql-node -f your-project-path
 ```
 
-#### Using a Dictionary
+#### Используй словарь
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
+Использование словаря полной цепочки может значительно ускорить обработку проекта SubQuery во время тестирования или во время вашего первого индекса. В некоторых случаях мы наблюдали увеличение производительности индексации до 10 раз.
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+Полный словарь цепочки предварительно индексирует расположение всех событий и внешних элементов в определенной цепочке и позволяет службе вашей ноды переходить к соответствующим местоположениям при индексировании, а не при проверке каждого блока.
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+Вы можете добавить конечную точку словаря в свой `project.yaml` файл (see [Manifest File](../create/manifest.md)), или указать ее во время выполнения, используя следующую команду:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-#### Connect to database
+[ Подробнее о том, как работает словарь подзапросов ](../tutorials_examples/dictionary.md).
+
+#### Подключиться к базе данных
 
 ```
-export DB_USER=postgres
-export DB_PASS=postgres
-export DB_DATABASE=postgres
-export DB_HOST=localhost
-export DB_PORT=5432
-subql-node -f your-project-path
-```
+в зависимости от конфигурации вашей базы данных Postgres (например, другой пароль базы данных) убедитесь, что и индексатор (`subql / node`), и служба запросов (` subql / query`) могут установить к ней соединение.
 
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
-
-#### Specify a configuration file
+#### Укажите файл конфигурации
 
 ```
 subql-node -c your-project-config.yml
 ```
 
-This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
+Это укажет узлу запроса на файл конфигурации, который может быть в формате YAML или JSON. Посмотрите на пример ниже.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -87,7 +81,7 @@ batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### Изменить размер пакета выборки блока
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -97,33 +91,100 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+Когда индексатор впервые индексирует цепочку, выборка отдельных блоков значительно снизит производительность. Увеличение размера пакета для корректировки количества извлекаемых блоков уменьшит общее время обработки. Текущий размер пакета по умолчанию - 100.
 
-#### Local mode
+#### Запуск в локальном режиме
 
 ```
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+В целях отладки пользователи могут запускать узел в локальном режиме. При переключении на локальную модель таблицы Postgres будут созданы в схеме по умолчанию ` public `.
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+Если локальный режим не используется, будет создана новая схема Postgres с начальным ` subquery_ ` и соответствующими таблицами проекта.
 
-## Running a Query Service (subql/query)
 
-### Installation
+#### Проверьте состояние вашего узла
+
+Есть 2 конечные точки, которые можно использовать для проверки и мониторинга работоспособности работающей ноды SubQuery.
+
+- Конечная точка проверки работоспособности, которая возвращает простой ответ 200
+- Конечная точка метаданных, которая включает дополнительную аналитику вашей работающей ноды SubQuery
+
+Добавьте это к базовому URL-адресу вашей ноды SubQuery. Например, ` http: // localhost: 3000 / meta ` вернет:
+
+```bash
+{
+    "currentProcessingHeight": 1000699,
+    "currentProcessingTimestamp": 1631517883547,
+    "targetHeight": 6807295,
+    "bestHeight": 6807298,
+    "indexerNodeVersion": "0.19.1",
+    "lastProcessedHeight": 1000699,
+    "lastProcessedTimestamp": 1631517883555,
+    "uptime": 41.151789063,
+    "polkadotSdkVersion": "5.4.1",
+    "apiConnected": true,
+    "injectedApiConnected": true,
+    "usingDictionary": false,
+    "chain": "Polkadot",
+    "specName": "polkadot",
+    "genesisHash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "blockTime": 6000
+}
+```
+
+` http: // localhost: 3000 / health ` вернет HTTP 200 в случае успеха.
+
+Если индексатор неисправен, будет возвращена ошибка 500. Это часто можно увидеть, когда узел загружается.
+
+```shell
+{
+    "status": 500,
+    "error": "Indexer is not healthy"
+}
+```
+
+Если используется неправильный URL-адрес, будет возвращена ошибка 404: не найден.
+
+```shell
+{
+"statusCode": 404,
+"message": "Cannot GET /healthy",
+"error": "Not Found"
+}
+```
+
+#### Отладить свой проект
+
+Используйте [ инспектор нод ](https://nodejs.org/en/docs/guides/debugging-getting-started/) для выполнения следующей команды.
+
+```shell
+node --inspect-brk <path to subql-node> -f <path to subQuery project>
+```
+
+Например:
+```shell
+node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
+Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+```
+Затем откройте инструменты разработчика Chrome, перейдите в Source & # 062; Filesystem, добавьте свой проект в рабочую область и начните отладку. Для получения дополнительной информации ознакомьтесь с [ Как отлаживать проект SubQuery ](https://doc.subquery.network/tutorials_examples/debug-projects/)
+## Запуск службы запросов (subql / query)
+
+### Установка
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+Обратите внимание, что мы ** НЕ ** поощряем использование ` yarn global ` из-за его плохого управления зависимостями, что может привести к ошибкам в дальнейшем.
 
-### Running the Query service
-
+### Запуск службы запросов
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+Убедитесь, что имя проекта совпадает с именем проекта при [ инициализации проекта ](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Также проверьте правильность переменных среды.
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+После успешного запуска службы subql-query откройте браузер и перейдите по адресу ` http: // localhost: 3000 `. Вы должны увидеть игровую площадку GraphQL, отображаемую в проводнике, и схему, готовую к запросу.
