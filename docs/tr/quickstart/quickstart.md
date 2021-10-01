@@ -55,63 +55,62 @@ Son olarak, proje dizini altında, yeni projenin bağımlılıklarını yükleme
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
 
-## Configure and Build the Starter Project
+## Başlangıç Projesini Yapılandırma ve Oluşturma
 
-In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
+Yeni başlatmış olduğunuz başlangıç paketinde, yeni projeniz için standart bir yapılandırma sağladık. Esas olarak aşağıdaki dosyalar üzerinde çalışacaksınız::
 
 - The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- `schema.graphql`'daki GraphQL Şeması
+- `src/mappings/` dizinindeki Eşleme işlevleri
 
-For more information on how to write your own SubQuery, check out our documentation under [Create a Project](../create/introduction.md)
+Kendi SubQuerynuzu yazma hakkında daha fazla bilgi için [ Create a Projec](../create/introduction.md) altındaki belgelerimize göz atın
 
 ### GraphQL Model Generation
 
-In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+SubQuery projenizi [index](../run/run.md) için, önce GraphQL Şema dosyanızda tanımladığınız gerekli GraphQL modellerini oluşturmalısınız (`schema.graphql`). Bu komutu proje dizininin kökünde çalıştırın.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-You'll find the generated models in the `/src/types/models` directory
+Oluşturulan modelleri `/src/types/models` dizininde bulabilirsiniz
 
-## Build the Project
+## Projeyi Oluşturun
 
-In order run your SubQuery Project on a locally hosted SubQuery Node, you need to build your work.
+SubQuery Projenizi yerel olarak barındırılan bir SubQuery Düğümünde çalıştırmak için çalışmanızı oluşturmanız gerekir.
 
-Run the build command from the project's root directory.
+Yapı komutunu projenin kök dizininden çalıştırın.
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-## Running and Querying your Starter Project
+## Başlangıç Projenizi Çalıştırma ve Sorgulama
 
-Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+Yeni projenizi hızlı bir şekilde [SubQuery Projects](https://project.subquery.network) 'a yayımlayabilmenize ve [Explorer](https://explorer.subquery.network),  kullanarak sorgulayabilmenize rağmen, SubQuery düğümlerini yerel olarak çalıştırmanın en kolay yolu bir Docker kapsayıcısındadır, zaten Docker'ınuz yoks [docker.com](https://docs.docker.com/get-docker/).
 
-[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+[_Bunu atla ve yeni projeni SubQuery Projeleri'ne yayımla_](../publish/publish.md)</em></a></em></a>
 
-### Run your SubQuery Project
+### SubQuery Projenizi Çalıştırma
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
+SubQuery düğümünün nasıl çalıştırılacağını denetleyen tüm yapılandırma bu `docker-compose.yml` file. Yeni initalised yeni bir proje için burada hiçbir şeyi değiştirmenize gerek kalmayacak, ancak dosya ve ayarlar hakkında daha fazla bilgiyi [Run a Project section](../run/run.md)
 
-Under the project directory run following command:
+Proje dizini altında aşağıdaki komutu çalıştırın:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+Gerekli paketleri ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) ve Postgres) ilk kez indirmek biraz zaman alabilir, ancak yakında çalışan bir SubQuery node görürsünüz.
 
-### Query your Project
+### Projenizi Sorgulama
 
-Open your browser and head to [http://localhost:3000](http://localhost:3000).
+Tarayıcınızı açın ve [http://localhost:3000](http://localhost:3000) gidin.
 
-You should see a GraphQL playground is showing in the explorer and the schemas that are ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
+Explorer'da ve sorguya hazır şemalarda bir GraphQL oyun alanının görüntü olduğunu görmeniz gerekir. Oyun alanının sağ üst kısmında, belge çizimini açacak bir _Docs_ düğmesi bulacaksınız. Bu belge otomatik olarak oluşturulur ve hangi varlıkları ve yöntemleri sorgulayabilirsiniz bulmanıza yardımcı olur.
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
+Yeni bir SubQuery başlangıç projesi için, nasıl çalıştığını öğrenmek için aşağıdaki sorguyu deneyebilir veya [GraphQL Query dili hakkında daha fazla bilgi ](../query/graphql.md).
 
 ```graphql
-{
-  query {
+query {
     starterEntities(first: 10) {
       nodes {
         field1
@@ -123,8 +122,8 @@ For a new SubQuery starter project, you can try the following query to get a tas
 }
 ```
 
-## Next Steps
+## Sonraki Adımlar
 
-Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
+Tebrikler, artık örnek veriler için GraphQL API isteklerini kabul eden yerel olarak çalışan bir SubQuery projeniz var. Bir sonraki kılavuzda, yeni projenizi [SubQuery Projects](https://project.subquery.network) nasıl yayımlayacağınızı ve [Explorer](https://explorer.subquery.network)'imizi kullanarak nasıl sorgulayacağınızı göstereceğiz
 
-[Publish your new project to SubQuery Projects](../publish/publish.md)
+[Yeni projenizi SubQuery Projelerinde yayımlama](../publish/publish.md)
