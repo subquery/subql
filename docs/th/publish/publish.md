@@ -1,14 +1,14 @@
-# Publish your SubQuery project
+# เผยแพร่โครงการ SubQuery ของคุณ
 
-## Benefits of hosting your project with SubQuery
-- We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
-- This service is being provided to the community for free!
-- You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
-- We're integrated with GitHub, so anyone in your GitHub organisations will be able to view shared organisation projects
+## ประโยชน์ในการโฮสต์โปรเจ็กต์ของคุณกับ SubQuery
+- เราจะรันโปรเจ็กต์ SubQuery ให้กับคุณด้วยบริการที่มีประสิทธิภาพสูง สามารถปรับขนาดได้ และมีการจัดการแบบบริการสาธารณะ
+- บริการนี้มอบให้กับชุมชนฟรี!
+- คุณสามารถกำหนดให้โปรเจ็กต์ของคุณเป็นแบบสาธารณะเพื่อให้ลิสต์อยู่ใน [SubQuery Explorer](https://explorer.subquery.network) และทุกคนทั่วโลกสามารถดูได้
+- เราผสานรวมกับ GitHub ดังนั้นทุกคนใน GitHub organisations ของคุณจะสามารถดูโปรเจ็กต์ขององค์กรที่ใช้ร่วมกันได้
 
-## Create your First Project
+## สร้างโปรเจ็กต์แรกของคุณ
 
-#### Login to SubQuery Projects
+#### เข้าสู่ระบบโปรเจ็กต์ SubQuery
 
 Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
 
