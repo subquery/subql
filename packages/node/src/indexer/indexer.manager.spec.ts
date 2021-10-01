@@ -159,15 +159,21 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
 }
 
 describe('IndexerManager', () => {
+  let indexerManager: IndexerManager;
+
+  afterEach(() => {
+    (indexerManager as any).fetchService.onApplicationShutdown();
+  });
+
   it('should be able to start the manager (v0.0.1)', async () => {
-    const indexerManager = createIndexerManager(testSubqueryProjectV0_0_1());
+    indexerManager = createIndexerManager(testSubqueryProjectV0_0_1());
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   it('should be able to start the manager (v0.2.0)', async () => {
-    const indexerManager = createIndexerManager(testSubqueryProject());
+    indexerManager = createIndexerManager(testSubqueryProject());
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
