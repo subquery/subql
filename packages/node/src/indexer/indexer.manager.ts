@@ -172,8 +172,10 @@ export class IndexerManager {
     await this.initDbSchema();
     await this.ensureMetadata(this.subqueryState.dbSchema);
     if (this.nodeConfig.proofOfIndex) {
-      await this.poiService.init(this.subqueryState.dbSchema);
-      await this.mmrService.init(this.subqueryState.dbSchema);
+      await Promise.all([
+        this.poiService.init(this.subqueryState.dbSchema),
+        this.mmrService.init(this.subqueryState.dbSchema),
+      ]);
     }
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)

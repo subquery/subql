@@ -130,7 +130,7 @@ export class NodeConfig implements IConfig {
   get mmrPath(): string {
     return this._config.mmrPath
       ? this._config.mmrPath
-      : path.join(__dirname, `../../../../mmrs/${this.subqueryName}.mmr`);
+      : path.join(process.cwd(), `../../mmrs/${this.subqueryName}.mmr`);
   }
 
   merge(config: Partial<IConfig>): this {

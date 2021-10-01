@@ -16,8 +16,9 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
-const DEFAULT_LEAF = Buffer.from('0x000000000000000000000000000000');
+const DEFAULT_LEAF = Buffer.alloc(32);
 const DEFAULT_FETCH_RANGE = 100;
+const MMR_AWAIT_TIME = 2;
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
@@ -26,7 +27,7 @@ export class MmrService implements OnApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
-  private mmrStartHeight: number;
+  private nextMmrHeight: number;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -43,10 +44,10 @@ export class MmrService implements OnApplicationShutdown {
     this.poiRepo = PoiFactory(this.sequelize, schema);
     this.blockOffset = await this.fetchBlockOffsetFromDb();
     this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
-    this.mmrStartHeight =
+    this.nextMmrHeight =
       (await this.fileBasedMmr.getLeafLength()) + this.blockOffset;
     logger.info(
-      `file based database MMR start with height ${this.mmrStartHeight}`,
+      `file based database MMR start with height ${this.nextMmrHeight}`,
     );
   }
 
@@ -79,7 +80,7 @@ export class MmrService implements OnApplicationShutdown {
       mmrRoot = await this.fileBasedMmr.getRoot(blockLeafHeight);
     }
     await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
-    this.mmrStartHeight = poiBlock.id + 1;
+    this.nextMmrHeight = poiBlock.id + 1;
   }
 
   async updatePoiMmrRoot(id: number, mmrValue: Uint8Array) {
@@ -98,23 +99,19 @@ export class MmrService implements OnApplicationShutdown {
 
   async syncFileBaseFromPoi(): Promise<void> {
     while (!this.isShutdown) {
-      if (!this.poiRepo || !this.fileBasedMmr) {
-        await delay(10);
-      }
-      const poiBlocks = await this.getPoiBlocksByRange(this.mmrStartHeight);
+      const poiBlocks = await this.getPoiBlocksByRange(this.nextMmrHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
-          if (this.mmrStartHeight + 1 < block.id) {
-            const nextAppendHeight = this.mmrStartHeight + 1;
-            for (let i = nextAppendHeight; i < block.id; i++) {
+          if (this.nextMmrHeight + 1 < block.id) {
+            for (let i = this.nextMmrHeight + 1; i < block.id; i++) {
               await this.fileBasedMmr.append(DEFAULT_LEAF);
-              this.mmrStartHeight = i + 1;
+              this.nextMmrHeight = i + 1;
             }
           }
           await this.appendMmrNode(block);
         }
       } else {
-        await delay(5);
+        await delay(MMR_AWAIT_TIME);
       }
     }
   }
@@ -134,6 +131,7 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   ensureFileBasedMmr(projectMmrPath: string) {
+    console.log(projectMmrPath);
     let fileBasedDb: FileBasedDb;
     if (fs.existsSync(projectMmrPath)) {
       fileBasedDb = FileBasedDb.open(projectMmrPath);

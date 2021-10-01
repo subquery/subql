@@ -1,4 +1,3 @@
-// Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 // overwrite the official: https://github.com/zmitton/merkle-mountain-range/blob/master/src/digests.js
