@@ -149,6 +149,9 @@ body .theme-default-content:not(.custom) {
     position: relative;
     background: linear-gradient(-90deg,#ff4581,#4388dd);
   }
+.theme-default-content:not(.custom) .button  a:hover {
+    text-decoration: none;
+  }
   .button:hover:after {
     opacity: 0.95;
   }
