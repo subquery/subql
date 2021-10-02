@@ -3,19 +3,19 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
+        <h2 class="welcomeTitle">ยินดีต้อนรับสู่ <span>Docs</span> ของ SubQuery</h2>
+        <p>สำรวจและแปลงข้อมูลเชนของคุณเพื่อสร้าง dApps ที่ใช้งานง่ายเร็วขึ้น!</p>
       </div>
     </div>
   </section>
   <section class="startSection main">
     <div>
-      <h2 class="title">Quick Start <span>Guide</span></h2>
-      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
+      <h2 class="title"><span>คู่มือ</span>สำหรับการเริ่มต้นอย่างรวดเร็ว</h2>
+      <p>ทำความเข้าใจ SubQuery โดยลองใช้ตัวอย่าง Hello World แบบทั่วไป การใช้โปรเจ็กต์เทมเพลตภายในสภาพแวดล้อมของ Docker ทำให้คุณสร้างโหนดและทำงานได้อย่างรวดเร็ว และเริ่มการสืบค้นบล็อกเชนในเวลาเพียงไม่กี่นาทีด้วยคำสั่งง่ายๆ
       </p>
       <span class="button">
         <router-link :to="{path: '/quickstart/helloworld-localhost/'}">
-          <span>Get started</span>
+          <span>เริ่มต้น</span>
         </router-link>
       </span>
     </div>
@@ -28,8 +28,8 @@
         <router-link :to="{path: '/tutorials_examples/introduction/'}">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
-            <span>Tutorials and Examples</span>
-            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
+            <span>บทแนะนำและตัวอย่าง</span>
+            <p>เรียนรู้จากการลงมือทำ บทช่วยสอนและตัวอย่างเกี่ยวกับวิธีสร้างโปรเจ็กต์ SubQuery</p>
           </div>
         </router-link>
       </li>
@@ -37,8 +37,8 @@
         <router-link :to="{path: '/create/introduction/'}">
           <div>
             <img src="/assets/img/docsIcon.svg" />
-            <span>Technical Reference Docs</span>
-            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
+            <span>เอกสารอ้างอิงทางเทคนิค</span>
+            <p>เขียนขึ้นโดยนักพัฒนาสำหรับนักพัฒนา ค้นหาสิ่งที่คุณต้องการเพื่อสร้าง dApps ที่ยอดเยี่ยมได้อย่างรวดเร็ว</p>
           </div>
         </router-link>
       </li>
@@ -46,8 +46,8 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>The SubQuery Network</span>
-            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
+            <span>SubQuery Network</span>
+            <p>อนาคตเกี่ยวกับการกระจายอำนาจของ SubQuery อ่านเพิ่มเติมเกี่ยวกับวิธีการให้รางวัลแก่ indexers และผู้ใช้งาน</p>
           </div>
         </a>
       </li>
