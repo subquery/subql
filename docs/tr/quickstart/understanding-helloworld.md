@@ -1,12 +1,12 @@
-# Hello World Explained
+# Hello World Açıklandı
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+[Hello World hızlı başlangıç kılavuzunda](helloworld-localhost.md), bazı basit komutları çalıştırdık ve çok hızlı bir şekilde bir örnek aldık. Bu, tüm önkoşulların yerinde olduğundan ve SubQuery'den ilk verilerinizi almak için basit bir sorgu yapmak için yerel bir oyun alanı kullanabileceğinizden emin olmanızı sağlar. Burada, tüm bu komutların ne anlama geldiğine daha yakından bakıyoruz.
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+Çalıştırdığımız ilk komut `subql init --starter subqlHelloWorld` idi.
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+Bu ağır kaldırma yapar ve sizin için bir sürü dosya oluşturur. [official documentation](quickstart.md#configure-and-build-the-starter-project) belirtildiği gibi, esas olarak aşağıdaki dosyalar üzerinde çalışacaksınız:
 
 - The Manifest in `project.yaml`
 - The GraphQL Schema in `schema.graphql`
@@ -14,7 +14,7 @@ This does the heavy lifting and creates a whole bunch of files for you. As noted
 
 ![key subql files](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+Bu dosyalar yaptığımız her şeyin özü. Bu nedenle, başka bir makalede bu dosyalara daha fazla zaman ayıracağız. Şimdilik, şemanın kullanıcıların SubQuery API'sinden isteyebileceği verilerin bir açıklamasını, "yapılandırma" türü parametrelerini içeren proje yaml dosyasını ve elbette verileri dönüştüren işlevleri içeren typescript içeren mappingHandlers'ı içerdiğini bilin.
 
 ## yarn install
 
