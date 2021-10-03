@@ -44,31 +44,31 @@ yarn build
 
 ## 2. สร้าง GitHub repo
 
-In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
+ที่ GitHub ให้สร้าง repository ใหม่ ระบุชื่อและตั้งค่าการเปิดเผยของบัญชีคุณเป็นสาธารณะ ทุกอย่างในนี้จะถูกเก็บไว้เป็นค่าเริ่มต้นสำหรับตอนนี้
 
 ![create github repo](/assets/img/github_create_new_repo.png)
 
-Take note of your GitHub URL, this must be public for SubQuery to access it.
+จด GitHub URL ของคุณ ซึ่งต้องเป็นสาธารณะเพื่อให้ SubQuery เข้าถึงได้
 
 ![create github repo](/assets/img/github_repo_url.png)
 
-## 3. Push to GitHub
+## 3. Push ไปยัง GitHub
 
-Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+กลับไปที่ project directory ของคุณ ให้ตั้งค่าเป็น git directory มิฉะนั้น คุณอาจได้รับ error "fatal: not a git repository (or any of the parent directories): .git"
 
 ```shell
 git init
 ```
 
-Then add a remote repository with the command:
+จากนั้นเพิ่ม remote repository ด้วยคำสั่ง:
 
 ```shell
 git remote add origin https://github.com/seandotau/subqlHelloWorld.git
 ```
 
-This basically sets your remote repository to “https://github.com/seandotau/subqlHelloWorld.git” and gives it the name “origin” which is the standard nomenclature for a remote repository in GitHub.
+โดยทั่วไปจะตั้งค่าที่ remote repository ของคุณเป็น "https://github.com/seandotau/subqlHelloWorld.git" และตั้งชื่อว่า "origin" ซึ่งเป็นมาตรฐานการตั้งชื่อ remote repository ใน GitHub
 
-Next we add the code to our repo with the following commands:
+จากนั้น เราจะเพิ่มโค้ดใน repo ของเราด้วยคำสั่งต่อไปนี้:
 
 ```shell
 > git add .
@@ -97,42 +97,42 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 ```
 
-The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
+คำสั่ง push หมายถึง "โปรด push โค้ดของฉันไปที่ origin repo จาก master local repo ของฉัน" การรีเฟรช GitHub ควรแสดงโค้ดทั้งหมดใน GitHub
 
 ![First commit](/assets/img/first_commit.png)
 
-Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
+ในตอนน้ีคุณได้นำโค้ดของคุณเข้าไปอยู่ใน GitHub แล้ว มาดูวิธีที่เราจะสามารถโฮสต์โค้ดนั้นใน SubQuery Projects
 
-## 4. Create your project
+## 4. สร้างโปรเจ็กต์ของคุณ
 
-Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
+ไปที่ [https://project.subquery.network](https://project.subquery.network) และเข้าสู่ระบบด้วยบัญชี GitHub ของคุณ
 
 ![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
 
-Then create a new project,
+แล้วสร้างโปรเจ็กต์ใหม่
 
 ![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
 
-And fill in the various fields with the appropriate details.
+และกรอกข้อมูลในช่องต่างๆให้ครบถ้วน ด้วยรายละเอียดที่เหมาะสม
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
-- **Project Name:** Give your project a name here.
-- **Subtitle:** Provide a subtitle for your project.
-- **Description:** Explain what your SubQuery project does.
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
+- **GitHub account:** หากคุณมีบัญชี GitHub มากกว่าหนึ่งบัญชี ให้เลือกบัญชีที่จะใช้สร้างโปรเจ็กต์นี้ โปรเจ็กต์ที่สร้างขึ้นในบัญชี GitHub organisation จะถูกแชร์ระหว่างสมาชิกใน organisation นั้นๆ
+- **Project Name:** ใส่ ชื่อโปรเจ็กต์ของคุณที่นี่
+- **Subtitle:** กรอกชื่อรองสำหรับชื่อโปรเจ็กต์ของคุณ
+- **Description:** อธิบายว่าโครงการ SubQuery ของคุณทำอะไร
+- **GitHub Repository URL:** ต้องเป็น GitHub URL ที่ใช้งานได้ซึ่งชี้ไปยัง repositoryสาธารณะที่มีโปรเจ็กต์ SubQuery ของคุณ ไฟล์ schema.graphql ต้องอยู่ในรูทไดเร็กทอรีของคุณ
+- **Hide project:** หากเลือก จะเป็นการซ่อนโปรเจ็กต์จาก SubQuery explorer สาธารณะ อย่าเลือกตัวเลือกนี้หากคุณต้องการแชร์ SubQuery ของคุณกับชุมชน!
 
 ![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
 
-When you click create, you'll be taken to your dashboard.
+เมื่อคุณคลิก create คุณจะถูกพาไปที่แดชบอร์ดของคุณ
 
 ![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
 
-The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
+แดชบอร์ดประกอบด้วยข้อมูลที่เป็นประโยชน์มากมาย เช่น เครือข่ายที่ใช้, GitHub repository URL ของซอร์สโค้ดที่กำลังทำงาน, ข้อมูลเวลาที่ถูกสร้างขึ้นและอัปเดตล่าสุด และโดยเฉพาะอย่างยิ่งรายละเอียดการ deploy
 
-## 5. Deploy your project
+## 5. Deploy โปรเจ็กต์ของคุณ
 
-Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+ในตอนนี้ คุณได้สร้างโปรเจ็กต์ของคุณภายใน SubQuery Projects และตั้งค่าลักษณะการแสดงผล ขั้นตอนต่อไปคือการ deploy โปรเจ็กต์ของคุณเพื่อให้สามารถทำงานได้ Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
 
 You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
 
