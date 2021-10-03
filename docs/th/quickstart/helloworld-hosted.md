@@ -46,11 +46,11 @@ yarn build
 
 ที่ GitHub ให้สร้าง repository ใหม่ ระบุชื่อและตั้งค่าการเปิดเผยของบัญชีคุณเป็นสาธารณะ ทุกอย่างในนี้จะถูกเก็บไว้เป็นค่าเริ่มต้นสำหรับตอนนี้
 
-![create github repo](/assets/img/github_create_new_repo.png)
+![สร้าง GitHub repo](/assets/img/github_create_new_repo.png)
 
 จด GitHub URL ของคุณ ซึ่งต้องเป็นสาธารณะเพื่อให้ SubQuery เข้าถึงได้
 
-![create github repo](/assets/img/github_repo_url.png)
+![สร้าง GitHub repo](/assets/img/github_repo_url.png)
 
 ## 3. Push ไปยัง GitHub
 
@@ -99,7 +99,7 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 คำสั่ง push หมายถึง "โปรด push โค้ดของฉันไปที่ origin repo จาก master local repo ของฉัน" การรีเฟรช GitHub ควรแสดงโค้ดทั้งหมดใน GitHub
 
-![First commit](/assets/img/first_commit.png)
+![การ commit ครั้งแรก](/assets/img/first_commit.png)
 
 ในตอนน้ีคุณได้นำโค้ดของคุณเข้าไปอยู่ใน GitHub แล้ว มาดูวิธีที่เราจะสามารถโฮสต์โค้ดนั้นใน SubQuery Projects
 
@@ -107,11 +107,11 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 ไปที่ [https://project.subquery.network](https://project.subquery.network) และเข้าสู่ระบบด้วยบัญชี GitHub ของคุณ
 
-![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
+![ยินดีต้อนรับสู่ SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
 
 แล้วสร้างโปรเจ็กต์ใหม่
 
-![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
+![ยินดีต้อนรับสู่ SubQuery Projects](/assets/img/subquery_create_project.png)
 
 และกรอกข้อมูลในช่องต่างๆให้ครบถ้วน ด้วยรายละเอียดที่เหมาะสม
 
@@ -122,11 +122,11 @@ To https://github.com/seandotau/subqlHelloWorld.git
 - **GitHub Repository URL:** ต้องเป็น GitHub URL ที่ใช้งานได้ซึ่งชี้ไปยัง repositoryสาธารณะที่มีโปรเจ็กต์ SubQuery ของคุณ ไฟล์ schema.graphql ต้องอยู่ในรูทไดเร็กทอรีของคุณ
 - **Hide project:** หากเลือก จะเป็นการซ่อนโปรเจ็กต์จาก SubQuery explorer สาธารณะ อย่าเลือกตัวเลือกนี้หากคุณต้องการแชร์ SubQuery ของคุณกับชุมชน!
 
-![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
+![สร้าง SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
 
 เมื่อคุณคลิก create คุณจะถูกพาไปที่แดชบอร์ดของคุณ
 
-![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
+![แดชบอร์ด SubQuery Project](/assets/img/subquery_project_dashboard.png)
 
 แดชบอร์ดประกอบด้วยข้อมูลที่เป็นประโยชน์มากมาย เช่น เครือข่ายที่ใช้, GitHub repository URL ของซอร์สโค้ดที่กำลังทำงาน, ข้อมูลเวลาที่ถูกสร้างขึ้นและอัปเดตล่าสุด และโดยเฉพาะอย่างยิ่งรายละเอียดการ deploy
 
@@ -136,7 +136,7 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 คุณสามารถเลือก deploy กับสภาพแวดล้อมต่างๆ เช่น production slot หรือ staging slot เราจะ deploy กับ production slot การคลิกที่ปุ่ม "Deploy" จะแสดงหน้าจอที่มีหัวข้อต่อไปนี้:
 
-![Deploy to production slot](/assets/img/deploy_production_slot.png)
+![Deploy ไปยัง production slot](/assets/img/deploy_production_slot.png)
 
 - **Commit Hash of new Version:** ให้คัดลอก commit hash แบบเต็มจากโค้ดโปรเจ็กต์ SubQuery ที่คุณต้องการ deploy จาก GitHub
 - **Indexer Version:** คือเวอร์ชันของ node service ของ SubQuery ที่คุณต้องการรัน SubQuery อ่าน [](https://www.npmjs.com/package/@subql/node)@subql/node
@@ -146,17 +146,17 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 จากนั้นคุณจะเห็นสถานะการ deploy ของคุณเป็น "Processing" โค้ดของคุณกำลังถูก deploy ไปยังโครงสร้างพื้นฐานที่ได้รับการจัดการโดย SubQuery โดยพื้นฐานแล้วเซิร์ฟเวอร์จะขยายตัวตามความต้องการและที่ได้จัดเตรียมไว้ให้คุณ จะใช้เวลาสักครู่ นี่เป็นเวลาที่จะไปดื่มกาแฟสักแก้ว!
 
-![Deployment processing](/assets/img/deployment_processing.png)
+![การประมวลผลการ deploy](/assets/img/deployment_processing.png)
 
 ขณะนี้ กำลังดำเนินการการ deploy
 
-![Deployment running](/assets/img/deployment_running.png)
+![การดำเนินการ deploy](/assets/img/deployment_running.png)
 
 ## 6. ทดสอบโปรเจ็กต์ของคุณ
 
 หากต้องการทดสอบโปรเจ็กต์ของคุณ ให้คลิกที่จุดไข่ปลา 3 จุด และเลือก "View on SubQuery Explorer"
 
-![View Subquery project](/assets/img/view_on_subquery.png)
+![ดูโปรเจ็กต์ Subquery project](/assets/img/view_on_subquery.png)
 
 ซึ่งจะนำคุณไปยัง "Playground" ที่คุ้นเคย ซึ่งคุณสามารถคลิกปุ่ม play และดูผลลัพธ์ของการ query ได้
 
@@ -166,25 +166,25 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 สำหรับผู้ที่ฉลาดหลักแหลมในหมู่พวกเรา คุณจะจำได้ว่าในขั้นตอนสุดท้ายของวัตถุประสงค์การเรียนรู้ คือการรันคำสั่ง GET อย่างง่าย ในการดำเนินการนี้ เราจะต้องสนใจ "Query Endpoint" ที่แสดงในรายละเอียดการ deploy
 
-![Query endpoing](/assets/img/query_endpoint.png)
+![Query endpoint](/assets/img/query_endpoint.png)
 
-You can then send a GET request to this endpoint either using your favourite client such as [Postman](https://www.postman.com/) or [Mockoon](https://mockoon.com/) or via cURL in your terminal. For simplicity, cURL will be shown below.
+จากนั้น ให้คุณสามารถส่ง GET request ไปยัง endpoint นี้โดยใช้ client ที่คุณชื่นชอบ เช่น [ Postman ](https://www.postman.com/) หรือ [Mockoon](https://mockoon.com/) หรือผ่าน cURL ในเทอร์มินัลของคุณ สำหรับ cURL จะแสดงด้านล่าง
 
-The curl command to run is:
+คำสั่ง curl ที่จะเรียกใช้คือ:
 
 ```shell
 curl https://api.subquery.network/sq/seandotau/subqueryhelloworld -d "query=query { starterEntities (first: 5, orderBy: CREATED_AT_DESC) { totalCount nodes { id field1 field2 field3 } } }"
 ```
 
-giving the results of:
+ซึ่งจะได้ผลลัพธ์คือ:
 
 ```shell
 {"data":{"starterEntities":{"totalCount":23098,"nodes":[{"id":"0x29dfe9c8e5a1d51178565c2c23f65d249b548fe75a9b6d74cebab777b961b1a6","field1":23098,"field2":null,"field3":null},{"id":"0xab7d3e0316a01cdaf9eda420cf4021dd53bb604c29c5136fef17088c8d9233fb","field1":23097,"field2":null,"field3":null},{"id":"0x534e89bbae0857f2f07b0dea8dc42a933f9eb2d95f7464bf361d766a644d17e3","field1":23096,"field2":null,"field3":null},{"id":"0xd0af03ab2000a58b40abfb96a61d312a494069de3670b509454bd06157357db6","field1":23095,"field2":null,"field3":null},{"id":"0xc9f5a92f4684eb039e11dffa4b8b22c428272b2aa09aff291169f71c1ba0b0f7","field1":23094,"field2":null,"field3":null}]}}}
 
 ```
 
-Readability is not a concern here as you will probably have some front end code to consume and parse this JSON response.
+การอ่านไม่ได้เป็นปัญหาในขั้นตอนนี้ เนื่องจากคุณอาจมี front end code เพื่อใช้และแยกวิเคราะห์การแสดงผล JSON นี้
 
-## Summary
+## สรุป
 
-In this SubQuery hosted quick start we showed how quick and easy it was to take a Subql project and deploy it to [SubQuery Projects](https://project.subquery.network) where all the infrastructure is provided for your convenience. There is an inbuilt playground for running various queries as well as an API endpoint for your code to integrate with.
+ใน SubQuery ที่โฮสต์ quick start นี้ เราแสดงให้เห็นว่าการนำโปรเจ็กต์ Subql มา deploy กับ [SubQuery Projects](https://project.subquery.network) นั้นง่ายและรวดเร็วเพียงใด ซึ่งมีโครงสร้างพื้นฐานทั้งหมดเพื่อความสะดวกของคุณ มี Playground ในตัวสำหรับการรัน query ต่างๆ รวมถึง API endpoint สำหรับการอินทิเกรตโค้ดของคุณ
