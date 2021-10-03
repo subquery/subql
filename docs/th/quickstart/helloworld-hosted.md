@@ -1,4 +1,4 @@
-# Hello World (SubQuery hosted)
+# Hello World (โฮสต์บน SubQuery)
 
 The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
 
