@@ -1,37 +1,37 @@
-# Hello World (SubQuery hosted)
+# Hello World (โฮสต์บน SubQuery)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+จุดมุ่งหมายของ quick start นี้คือการแสดงวิธีการเริ่มใช้งานโปรเจ็กต์เริ่มต้นสำหรับทำงานใน SubQuery Projects (บริการของเรา) ด้วยไม่กี่ขั้นตอนง่ายๆ
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+เราจะใช้ starter project ที่เรียบง่ายนี้ (รวมถึงทุกอย่างที่เราได้เรียนรู้มาจนถึงตอนนี้) แต่แทนที่จะเรียกใช้ Docker เราจะใช้ประโยชน์จากโครงสร้างพื้นฐานของโฮสติ้งที่มีการจัดการโดย SubQuery กล่าวอีกนัยหนึ่ง เราให้ SubQuery จัดการโครงสร้างพื้นฐานของงาน production การรัน และจัดการงานหนักๆทั้งหมด
 
-## Learning objectives
+## วัตถุประสงค์การเรียนรู้
 
-At the end of this quick start, you should:
+เมื่อจบจาก quick start นี้ คุณจะ:
 
-- understand the required pre-requisites
-- be able host a project in [SubQuery Projects](https://project.subquery.network/)
-- run a simple query to get the block height of the Polkadot mainnet using the playground
-- run a simple GET query to get the block height of the Polkadot mainnet using cURL
+- ทำความเข้าใจข้อกำหนดเบื้องต้นที่จำเป็น
+- สามารถโฮสต์โปรเจ็กต์ใน [SubQuery Projects](https://project.subquery.network/) ได้
+- รัน query อย่างง่ายเพื่อ get ค่า block height ของเครือข่าย Polkadot mainnet โดยใช้ Playground
+- รัน GET query อย่างง่ายเพื่อขอค่า block height ของเครือข่าย Polkadot mainnet โดยใช้ cURL
 
-## Intended audience
+## กลุ่มเป้าหมาย
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+คู่มือนี้จัดทำขึ้นสำหรับนักพัฒนาหน้าใหม่ที่มีประสบการณ์ด้านการพัฒนามาบ้างแล้วและสนใจที่จะเรียนรู้เพิ่มเติมเกี่ยวกับ SubQuery
 
-## Video guide
+## คู่มือวิดีโอ
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/b-ba8-zPOoo" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## ข้อกำหนดเบื้องต้น
 
-You will need:
+คุณจะต้องมี:
 
-- a GitHub account
+- บัญชี GitHub
 
-## 1. Create your project
+## 1. สร้างโปรเจ็กต์ของคุณ
 
-Let's create a project called subql_hellowworld and run the obligatory install, codegen and build with your favourite package manager.
+เริ่มสร้างโปรเจ็กต์ชื่อ subql_hellowworld และรันการติดตั้ง codegen และทำการ build ด้วยตัวจัดการแพ็คเกจที่คุณชื่นชอบ
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -40,9 +40,9 @@ yarn codegen
 yarn build
 ```
 
-Do NOT run the docker commands though.
+อย่ารันโดยใช้คำสั่ง docker
 
-## 2. Create a GitHub repo
+## 2. สร้าง GitHub repo
 
 In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
 

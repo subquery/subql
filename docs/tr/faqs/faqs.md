@@ -1,53 +1,53 @@
-# Frequently Asked Questions
+# Sıkça Sorulan Sorular
 
-## What is SubQuery?
+## SubQuery nedir?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQuery, geliştiricilerin uygulamalarını güç sağlamak için Substrat zinciri verilerini dizine almalarına, dönüştürmelerine ve sorgulamalarına olanak tanıyan açık kaynaklı bir projedir.
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+SubQuery ayrıca geliştiriciler için altyapıyı yönetme sorumluluğunu ortadan kaldıran ve geliştiricilerin en iyi yaptıkları şeyi, yani inşa etmelerini sağlayan ücretsiz, üretim düzeyinde proje barındırma hizmeti sağlar.
 
-## What is the best way to get started with SubQuery?
+## SubQuery'ye başlamanın en iyi yolu nedir?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+SubQuery'yi kullanmaya başlamanın en iyi yolu, [Hello World tutorial](../quickstart/helloworld-localhost.md) denemektir. Bu, başlangıç şablonunu indirme, projeyi oluşturma ve ardından localhost'unuzda bir düğüm çalıştırmak ve basit bir sorgu çalıştırmak için Docker'ı kullanma konusunda basit bir 5 dakikalık gözden geçirmedir.
 
-## How can I contribute or give feedback to SubQuery?
+## SubQuery'ye nasıl katkıda bulunabilir veya geri bildirimde bulunabilirim?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+Topluluktan gelen katkıları ve geri bildirimleri seviyoruz. Koda katkıda bulunmak için, ilgi alanı deponuzu çatallayın ve değişikliklerinizi yapın. Ardından bir PR veya Çekme İsteği gönderin. Test etmeyi de unutma! Ayrıca katkı yönergelerimize de göz atın (yakında).
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+Geri bildirimde bulunmak için hello@subquery.network adresinden bizimle iletişime geçin veya [discord kanalımıza](https://discord.com/invite/78zg8aBSMG) gelin
 
-## How much does it cost to host my project in SubQuery Projects?
+## Projemi SubQuery Projelerinde barındırmanın maliyeti nedir?
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+Projenizi SubQuery Projects'te barındırmak tamamen ücretsizdir - bu bizim topluma geri verme yöntemimizdir. Projenizi bizimle nasıl barındıracaklarınızı öğrenmek için lütfen [Hello World (SubQuery Hosted)](../quickstart/helloworld-hosted.md) öğreticisine göz atın.
 
-## What are deployment slots?
+## Dağıtım yuvaları nelerdir?
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+Dağıtım yuvaları, bir geliştirme ortamına eşdeğer olan [SubQuery Projelerindeki](https://project.subquery.network) bir özelliktir. Örneğin, herhangi bir yazılım organizasyonunda normalde bir geliştirme ortamı ve minimum olarak bir üretim ortamı vardır (yani localhost yok sayılarak). Tipik olarak, organizasyonun ihtiyaçlarına ve geliştirme kurulumlarına bağlı olarak, aşamalandırma ve üretim öncesi ve hatta QA gibi ek ortamlar dahil edilir.
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery şu anda kullanılabilir iki yuvaya sahiptir. Bir hazırlama yuvası ve bir üretim yuvası. Bu, geliştiricilerin SubQuery hazırlama ortamına dağıtmalarına ve her şey yolunda gidiyor, bir düğmeyi tıklatarak "üretime terfi etmelerine" olanak tanır.
 
-## What is the advantage of a staging slot?
+## Bir hazırlama yuvasının avantajı nedir?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+Hazırlama yuvası kullanmanın ana yararı, SubQuery projenizin yeni bir sürümünü herkese açık hale getirmeden hazırlamanıza olanak sağlamasıdır. Üretim uygulamalarınızı etkilemeden hazırlama yuvasının tüm verileri yeniden indekslemesini bekleyebilirsiniz.
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+Hazırlama yuvası, Explorer'da herkese gösterilmez ve yalnızca sizin görebileceğiniz benzersiz bir URL'ye sahiptir. Ve elbette, ayrı ortam, üretimi etkilemeden yeni kodunuzu test etmenize olanak tanır.
 
-## What are extrinsics?
+## Dışsallar nelerdir?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+Blockchain kavramlarına zaten aşina iseniz, dışsalları işlemlerle karşılaştırılabilir olarak düşünebilirsiniz. Daha resmi olarak, dışsal, zincirin dışından gelen ve bir bloğa dahil edilen bir bilgi parçasıdır. Üç dışsal kategori vardır. Bunlar doğal, imzalı işlemler ve imzasız işlemlerdir.
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+İçsel dışsal bilgiler, imzalanmayan ve yalnızca blok yazarı tarafından bir bloğa eklenen bilgi parçalarıdır.
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+İmzalı işlem dışsal öğeleri, işlemi yapan hesabın imzasını içeren işlemlerdir. İşlemin zincire dahil edilmesi için bir ücret ödemeye hazırlar.
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+İmzalı işlem dışsal öğeleri, işlemi yapan hesabın imzasını içeren işlemlerdir. İmzasız işlemler, imzalı olduğu için ücret ödemeyen kimse olmadığı için dikkatli kullanılmalıdır. Bu nedenle, işlem kuyruğu spam'i önlemek için ekonomik mantıktan yoksundur.
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+Daha fazla bilgi için [buraya](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics) tıklayın.
 
-## What is the endpoint for the Kusama network?
+## Kusama ağı için son nokta nedir?
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+Kusama ağının network.endpoint'i `wss://kusama.api.onfinality.io/public-ws`'dir.
 
-## What is the endpoint for the Polkadot mainnet network?
+## Polkadot ana ağ ağının bitiş noktası nedir?
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+Polkadot ağının network.endpoint'i `wss://polkadot.api.onfinality.io/public-ws`'dir.

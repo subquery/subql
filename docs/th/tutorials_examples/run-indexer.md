@@ -1,39 +1,39 @@
-# How to run an indexer node?
+# วิธีการรัน indexer node
 
-## Video guide
+## คู่มือวิดีโอ
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## บทนำ
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+การรัน indexer node เป็นอีกตัวเลือกหนึ่งนอกเหนือจากการใช้ Docker หรือการโฮสต์โปรเจ็กต์ของคุณที่ [SubQuery Projects ](https://project.subquery.network/) ซึ่งต้องใช้เวลาและความพยายามมากขึ้น แต่จะช่วยเพิ่มความเข้าใจเกี่ยวกับวิธีการทำงานของ SubQuery เบื้องหลังให้กับคุณมากยิ่งขึ้น
 
 ## Postgres
 
-Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
+การรัน indexer node บนโครงสร้างพื้นฐานของคุณจะต้องมีการตั้งค่าฐานข้อมูล Postgres คุณสามารถติดตั้ง Postgres ได้[ที่นี่](https://www.postgresql.org/download/) และตรวจดูให้แน่ใจว่าเป็นเวอร์ชัน 12 ขึ้นไป
 
-## Install subql/node
+## ติดตั้ง subql/node
 
-Then to run a SubQuery node, run the following command:
+จากนั้นให้ใช้คำสั่งต่อไปนี้เพื่อรันโหนด SubQuery:
 
 ```shell
 npm install -g @subql/node
 ```
 
-The -g flag means to install it globally which means on OSX, the location will be /usr/local/lib/node_modules.
+flag -g หมายถึงการติดตั้งแบบ global ซึ่งหมายถึงตำแหน่งจะเป็น /usr/local/lib/node_modules บน OSX
 
-Once installed, you can check the version by running:
+เมื่อติดตั้งแล้ว คุณสามารถตรวจสอบเวอร์ชันได้โดยการรัน:
 
 ```shell
 > subql-node --version
 0.19.1
 ```
 
-## Setting DB configs
+## การตั้งค่า DB
 
-Next, you need to set the following environmental variables:
+จากนั้น คุณต้องตั้งค่า environmental variables ต่อไปนี้:
 
 ```shell
 export DB_USER=postgres
@@ -43,20 +43,20 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-Of course, if you have different values for the above keys, please adjust accordingly. Note that the `env` command will display the current environment variables and that this process only sets these values temporarily. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+แน่นอนว่าหากคุณมีค่าที่ต่างออกไปสำหรับตัวแปรด้านบน โปรดปรับตามนั้น โปรดทราบว่าคำสั่ง `env` จะแสดง environment variables ปัจจุบัน และกระบวนการนี้จะทำตั้งค่าเหล่านี้เพียงชั่วคราวเท่านั้น นั่นคือใช้ได้เฉพาะในช่วงเวลาที่ใช้งานเทอร์มินัล หากต้องการตั้งค่าอย่างถาวร ให้เก็บค่าไว้ใน ~/bash_profile ของคุณแทน
 
-## Indexing a project
+## การ Index โปรเจ็กต์
 
-To start indexing a project, navigate into your project folder and run the following command:
+ในการเริ่มทำการ index โปรเจ็กต์ ให้ไปที่โฟลเดอร์โปรเจ็กต์ของคุณและรันคำสั่งต่อไปนี้:
 
 ```shell
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+หากคุณไม่มีโปรเจ็กต์ในการทำ `git clone https://github.com/subquery/subql-helloworld` คุณจะเห็น indexer node เริ่มทำงานและเริ่มการ index บล็อก
 
-## Inspecting Postgres
+## การตรวจสอบ Postgres
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+หากคุณไปที่ Postgres คุณจะเห็นตารางที่สร้างขึ้นสองตาราง `public.subqueries` และ `subquery_1.starter_entities`
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries` มี 1 แถวเท่านั้นที่ indexer จะตรวจสอบเมื่อเริ่มต้นใช้งานในการ "เข้าใจสถานะปัจจุบัน" เพื่อให้รู้ว่าจะดำเนินการต่อจากที่ใด ตาราง `starter_entities` เก็บการ index ต่างๆไว้ หากต้องการดูข้อมูล ให้เรียกใช้ `select (*) from subquery_1.starter_entities`
