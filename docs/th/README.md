@@ -61,7 +61,7 @@
       <li>
         <div class="title">SubQuery คืออะไร?</div>
         <div class="content">
-          <p>SubQuery เป็นโครงการโอเพ่นซอร์สที่ช่วยให้นักพัฒนาสามารถทำการ index เปลี่ยนแปลง และสืบค้นข้อมูลเชนของ Substrate เพื่อขับเคลื่อนแอปพลิเคชันของตนได้</p>
+          <p>SubQuery เป็นโครงการโอเพ่นซอร์สที่ช่วยให้นักพัฒนาสามารถทำการ index เปลี่ยนแปลง และ query ข้อมูลของ Substrate chain เพื่อขับเคลื่อนแอปพลิเคชันของตนได้</p>
           <span class="more">
             <router-link :to="{path: '/faqs/faqs/#what-is-subquery'}">อ่านเพิ่มเติม</router-link>
           </span>
