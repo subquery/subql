@@ -132,39 +132,39 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 ## 5. Deploy โปรเจ็กต์ของคุณ
 
-ในตอนนี้ คุณได้สร้างโปรเจ็กต์ของคุณภายใน SubQuery Projects และตั้งค่าลักษณะการแสดงผล ขั้นตอนต่อไปคือการ deploy โปรเจ็กต์ของคุณเพื่อให้สามารถทำงานได้ Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+ในตอนนี้ คุณได้สร้างโปรเจ็กต์ของคุณภายใน SubQuery Projects และตั้งค่าลักษณะการแสดงผล ขั้นตอนต่อไปคือการ deploy โปรเจ็กต์ของคุณเพื่อให้สามารถทำงานได้ การ deploy เวอร์ชัน จะทริกเกอร์การทำ SubQuery indexing ใหม่ในการเริ่มต้น และทำการตั้งค่า query service ที่จำเป็นเพื่อเริ่มยอมรับ GraphQL requests คุณยังสามารถ deploy เวอร์ชันใหม่ไปยังโปรเจ็กต์ที่มีอยู่ได้ที่นี่
 
-You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
+คุณสามารถเลือก deploy กับสภาพแวดล้อมต่างๆ เช่น production slot หรือ staging slot เราจะ deploy กับ production slot การคลิกที่ปุ่ม "Deploy" จะแสดงหน้าจอที่มีหัวข้อต่อไปนี้:
 
 ![Deploy to production slot](/assets/img/deploy_production_slot.png)
 
-- **Commit Hash of new Version:** From GitHub select the correct commit of the SubQuery project codebase that you want deployed
-- **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [@subql/node](https://www.npmjs.com/package/@subql/node)
-- **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [@subql/query](https://www.npmjs.com/package/@subql/query)
+- **Commit Hash of new Version:** ให้คัดลอก commit hash แบบเต็มจากโค้ดโปรเจ็กต์ SubQuery ที่คุณต้องการ deploy จาก GitHub
+- **Indexer Version:** คือเวอร์ชันของ node service ของ SubQuery ที่คุณต้องการรัน SubQuery อ่าน [](https://www.npmjs.com/package/@subql/node)@subql/node
+- **Query Version:** คือเวอร์ชันของ query service ของ SubQuery ที่คุณต้องการรัน SubQuery อ่าน [](https://www.npmjs.com/package/@subql/query)@subql/node
 
-Because we only have one commit, there is only a single option in the drop down. We'll also work with the latest version of the indexer and query version so we will accept the defaults and then click "Deploy Update".
+เนื่องจากเรามีเพียงหนึ่ง commit จึงมีเพียงตัวเลือกเดียวในรายการ drop down นอกจากนี้ เราจะใช้ indexer และ query version ตัวล่าสุด ดังนั้นเราจะยอมรับค่าเริ่ม้ต้น จากนั้นให้คลิก "Deploy Update"
 
-You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery's managed infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
+จากนั้นคุณจะเห็นสถานะการ deploy ของคุณเป็น "Processing" โค้ดของคุณกำลังถูก deploy ไปยังโครงสร้างพื้นฐานที่ได้รับการจัดการโดย SubQuery โดยพื้นฐานแล้วเซิร์ฟเวอร์จะขยายตัวตามความต้องการและที่ได้จัดเตรียมไว้ให้คุณ จะใช้เวลาสักครู่ นี่เป็นเวลาที่จะไปดื่มกาแฟสักแก้ว!
 
 ![Deployment processing](/assets/img/deployment_processing.png)
 
-The deployment is now running.
+ขณะนี้ กำลังดำเนินการการ deploy
 
 ![Deployment running](/assets/img/deployment_running.png)
 
-## 6. Testing your project
+## 6. ทดสอบโปรเจ็กต์ของคุณ
 
-To test your project, click on the 3 ellipsis and select "View on SubQuery Explorer".
+หากต้องการทดสอบโปรเจ็กต์ของคุณ ให้คลิกที่จุดไข่ปลา 3 จุด และเลือก "View on SubQuery Explorer"
 
 ![View Subquery project](/assets/img/view_on_subquery.png)
 
-This will take you to the ever familiar "Playground" where you can click the play button and see the results of the query.
+ซึ่งจะนำคุณไปยัง "Playground" ที่คุ้นเคย ซึ่งคุณสามารถคลิกปุ่ม play และดูผลลัพธ์ของการ query ได้
 
 ![Subquery playground](/assets/img/subquery_playground.png)
 
-## 7. Bonus step
+## 7. ขั้นตอนโบนัส
 
-For the astute amongst us, you will recall that in the learning objectives, the last point was to run a simple GET query. To do this, we will need to grab the "Query Endpoint" displayed in the deployment details.
+สำหรับผู้ที่ฉลาดหลักแหลมในหมู่พวกเรา คุณจะจำได้ว่าในขั้นตอนสุดท้ายของวัตถุประสงค์การเรียนรู้ คือการรันคำสั่ง GET อย่างง่าย ในการดำเนินการนี้ เราจะต้องสนใจ "Query Endpoint" ที่แสดงในรายละเอียดการ deploy
 
 ![Query endpoing](/assets/img/query_endpoint.png)
 
