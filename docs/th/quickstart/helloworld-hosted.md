@@ -1,10 +1,10 @@
 # Hello World (โฮสต์บน SubQuery)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+จุดมุ่งหมายของ quick start นี้คือการแสดงวิธีการเริ่มใช้งานโปรเจ็กต์เริ่มต้นสำหรับทำงานใน SubQuery Projects (บริการของเรา) ด้วยไม่กี่ขั้นตอนง่ายๆ
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+เราจะใช้ starter project ที่เรียบง่ายนี้ (รวมถึงทุกอย่างที่เราได้เรียนรู้มาจนถึงตอนนี้) แต่แทนที่จะเรียกใช้ Docker เราจะใช้ประโยชน์จากโครงสร้างพื้นฐานของโฮสติ้งที่มีการจัดการโดย SubQuery กล่าวอีกนัยหนึ่ง เราให้ SubQuery จัดการโครงสร้างพื้นฐานของงาน production การรัน และจัดการงานหนักๆทั้งหมด
 
-## Learning objectives
+## วัตถุประสงค์การเรียนรู้
 
 At the end of this quick start, you should:
 
