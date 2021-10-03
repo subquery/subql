@@ -1,8 +1,8 @@
-# How does a SubQuery dictionary work?
+# SubQuery dictionary(พจนานุกรม) ทำงานอย่างไร
 
-The whole idea of a generic dictionary project is to index all the data from a blockchain and record the events, extrinsics, and its types (module and method) in a database in order of block height. Another project can then query this `network.dictionary` endpoint instead of the default `network.endpoint` defined in the manifest file.
+แนวคิดทั้งหมดของโครงการ dictionary ทั่วไปคือการจัดทำดัชนีข้อมูลทั้งหมดจากบล็อกเชนและบันทึกเหตุการณ์, สิ่งภายนอก และประเภท (โมดูลและเมธอด) ในฐานข้อมูลโดยเรียงตามความสูงของบล็อก โครงการอื่นสามารถ query `network.dictionary` endpoint นี้แทนค่าเริ่มต้น `network.endpoint` ที่กำหนดไว้ในไฟล์รายการ
 
-The `network.dictionary` endpoint is an optional parameter that if present, the SDK will automatically detect and use. `network.endpoint` is mandatory and will not compile if not present.
+ปลายทาง `network.dictionary` เป็นพารามิเตอร์แบบ optional หากมี SDK จะตรวจหาและใช้งานโดยอัตโนมัติ `network.endpoint` เป็นข้อบังคับซึ่งจะไม่คอมไพล์หากไม่มีมัน
 
 Taking the [SubQuery dictionary](https://github.com/subquery/subql-dictionary) project as an example, the [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) file defines 3 entities; extrinsic, events, specVersion. These 3 entities contain 6, 4, and 2 fields respectively. When this project is run, these fields are reflected in the database tables.
 
