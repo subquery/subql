@@ -123,8 +123,6 @@ export class RuntimeDataSourceBase<M extends SubqlMapping> implements SubqlRunti
   @Type(() => Mapping)
   @ValidateNested()
   mapping: M;
-  @IsString()
-  name: string;
   @IsOptional()
   @IsInt()
   startBlock?: number;

@@ -7,6 +7,7 @@ import {IProjectManifest, ProjectNetworkConfig, SubqlRuntimeDatasource, SubqlNet
 export type ProjectNetworkConfigV0_0_1 = ProjectNetworkConfig & RegisteredTypes;
 
 export interface RuntimeDataSrouceV0_0_1 extends SubqlRuntimeDatasource {
+  name: string;
   filter?: SubqlNetworkFilter;
 }
 

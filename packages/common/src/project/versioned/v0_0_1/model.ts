@@ -25,6 +25,8 @@ export class RuntimeDataSourceV0_0_1Impl
   extends RuntimeDataSourceBase<SubqlMapping>
   implements RuntimeDataSrouceV0_0_1
 {
+  @IsString()
+  name: string;
   @IsOptional()
   @ValidateNested()
   @Type(() => NetworkFilter)

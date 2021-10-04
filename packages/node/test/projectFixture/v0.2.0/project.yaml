@@ -16,8 +16,7 @@ network:
     file: ./types.yaml
 
 dataSources:
-  - name: main
-    kind: substrate/Runtime
+  - kind: substrate/Runtime
     startBlock: 1
     mapping:
       file: dist/index.js

@@ -61,7 +61,6 @@ export interface SubqlMapping {
 }
 
 export interface SubqlDatasource<M extends SubqlMapping> {
-  name: string;
   kind: SubqlKind;
   startBlock?: number;
   mapping: M;
