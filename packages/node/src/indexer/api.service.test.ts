@@ -193,20 +193,25 @@ describe('ApiService', () => {
   });
 
   it('api.queryMulti', async () => {
-    const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
+    const account = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
-    const blockhash = await api.rpc.chain.getBlockHash(6721189);
+    const blockhash = await api.rpc.chain.getBlockHash(6851189);
     await apiService.setBlockhash(blockhash);
 
     const multiResults = await Promise.all([
       api.query.timestamp.now.at(blockhash),
       await api.query.session.validators.at(blockhash),
-      await api.query.system.account.at(blockhash, account1),
+      await api.query.system.account.at(blockhash, account),
       await api.query.staking.erasStakers.at(
         blockhash,
         2038,
+        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
+      ),
+      await api.query.staking.erasStakers.at(
+        blockhash,
+        2039,
         `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
       ),
     ]);
@@ -214,12 +219,16 @@ describe('ApiService', () => {
     const patchedApiResults = await patchedApi.queryMulti([
       api.query.timestamp.now, // not in array
       [api.query.session.validators], // zero arg
-      [api.query.system.account, account1], //one arg
+      [api.query.system.account, account], //one arg
       [
         api.query.staking.erasStakers,
         2038,
         `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
-      ], //double map
+      ], // arg not in array
+      [
+        api.query.staking.erasStakers,
+        [2039, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
+      ], // arg in array
     ]);
 
     expect(multiResults.map((r) => r.toJSON())).toEqual(
@@ -252,8 +261,7 @@ describe('ApiService', () => {
         [api.query.system.account, account1], //one arg
         [
           api.query.staking.erasStakers,
-          2038,
-          `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
+          [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
         ], //double map
       ])
       .pipe(take(1))
@@ -314,7 +322,7 @@ describe('ApiService', () => {
     expect(() => patchedApi.rpc.author.rotateKeys()).toThrow(
       /is not supported/,
     );
-  }, 30000);
+  });
 
   it('support historic api rpc', async () => {
     const apiService = await prepareApiService();
@@ -350,7 +358,7 @@ describe('ApiService', () => {
     expect(() => patchedApi.rpc.author.rotateKeys()).toThrow(
       /is not supported/,
     );
-  }, 30000);
+  });
 
   it('successful set block hash when continuous call api.xxx.xxx.at ', async () => {
     const apiService = await prepareApiService();
@@ -373,7 +381,7 @@ describe('ApiService', () => {
 
     expect(expectedValidators1).toEqual(vs1);
     expect(expectedValidators2).toEqual(vs2);
-  }, 300000);
+  });
 
   it('support http provider', async () => {
     const apiService = await prepareApiService(HTTP_ENDPOINT);

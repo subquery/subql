@@ -360,12 +360,30 @@ export class ApiService implements OnApplicationShutdown {
   ): StorageKey[] {
     return calls.map((callMultiArg) => {
       if (callMultiArg instanceof Array) {
-        const [storageFunc, ...args] = callMultiArg;
-        const key = new StorageKey(api.registry, storageFunc.key(...args));
+        let key: StorageKey;
+        const storageFunc = callMultiArg[0];
+        const args = callMultiArg.slice(1);
+        if (storageFunc.creator.meta.type.isPlain) {
+          key = new StorageKey(api.registry, storageFunc.creator);
+        } else {
+          if (storageFunc.creator.meta.type.asMap.hashers.length === 1) {
+            // single arg
+            key = new StorageKey(api.registry, storageFunc.key(args[0]));
+          } else {
+            // can be array or expanded
+            // eg. args = [call,[2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`]]
+            if (args.length === 1 && args[0] instanceof Array) {
+              key = new StorageKey(api.registry, storageFunc.key(...args[0]));
+            } else {
+              //eg. arg = [call, 2038,`HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`]
+              key = new StorageKey(api.registry, storageFunc.key(...args));
+            }
+          }
+        }
         key.setMeta(storageFunc.creator.meta);
         return key;
       } else {
-        const key = new StorageKey(api.registry, callMultiArg.key());
+        const key = new StorageKey(api.registry, callMultiArg.creator);
         key.setMeta(callMultiArg.creator.meta);
         return key;
       }
@@ -376,25 +394,13 @@ export class ApiService implements OnApplicationShutdown {
     (api as any)._queryMulti = (
       calls: QueryableStorageMultiArg<'promise'>[],
     ) => {
-      const keys = calls.map((args: QueryableStorageMultiArg<'promise'>) =>
-        Array.isArray(args)
-          ? args[0].creator.meta.type.asMap.hashers.length === 1
-            ? [args[0].creator, args.slice(1)]
-            : [args[0].creator, ...args.slice(1)]
-          : [args.creator],
-      );
+      const keys = this.getKeysFromCalls(this.api, calls);
       return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
     };
     (api as any)._rx.queryMulti = (
       calls: QueryableStorageMultiArg<'rxjs'>[],
     ) => {
-      const keys = calls.map((args: QueryableStorageMultiArg<'rxjs'>) =>
-        Array.isArray(args)
-          ? args[0].creator.meta.type.asMap.hashers.length === 1
-            ? [args[0].creator, args.slice(1)]
-            : [args[0].creator, ...args.slice(1)]
-          : [args.creator],
-      );
+      const keys = this.getKeysFromCalls(this.api, calls);
       return this.api.rx.rpc.state.queryStorageAt(keys, this.currentBlockHash);
     };
   }
