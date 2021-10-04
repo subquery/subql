@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 // eslint-disable-next-line header/header
-import { u8aConcat, numberToU8a, hexToU8a, isHex } from '@polkadot/util';
+import { u8aConcat, numberToU8a, hexToU8a, isHex, isU8a } from '@polkadot/util';
 import { blake2AsU8a } from '@polkadot/util-crypto';
 import { ProofOfIndex } from './entities/Poi.entity';
 
@@ -68,7 +68,7 @@ export class PoiBlock implements ProofOfIndex {
     let _chainBlockHash: Uint8Array;
     if (isHex(chainBlockHash)) {
       _chainBlockHash = hexToU8a(chainBlockHash);
-    } else {
+    } else if (isU8a(chainBlockHash)) {
       _chainBlockHash = chainBlockHash;
     }
     const poiBlock = new PoiBlock(
