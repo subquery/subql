@@ -21,15 +21,15 @@
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Предпосылки
 
-You will need:
+Вам понадобится:
 
-- yarn or npm package manager
+- yarn или npm менеджер пакетов
 - SubQuery CLI (`@subql/cli`)
-- Docker
+- Докер
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+Вы можете запустить следующие команды в терминале, чтобы узнать, есть ли у вас какие-либо из этих предварительных условий.
 
 ```shell
 yarn -v (or npm -v)
@@ -37,21 +37,21 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+Для более опытных пользователей скопируйте и вставьте следующее:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+Это должно вернуть: (для пользователей npm замените yarn на npm)
 
 ```shell
-My yarn version is: 1.22.10
-My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
-My docker version is: Docker version 20.10.5, build 55c4c88
+Моя версия yarn: 1.22.10
+Моя версия subql: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
+Моя версия docker: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+Если вы получите вышеуказанное, то все в порядке. В противном случае перейдите по этим ссылкам, чтобы установить их:
 
 - [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
@@ -59,7 +59,7 @@ If you get the above, then you are good to go. If not, follow these links to ins
 
 ## 1. Step 1: Initialise project
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+Первым шагом при запуске с SubQuery является выполнение команды ` subql init `. Давайте инициализируем стартовый проект с именем ` subqlHelloWorld `. Обратите внимание, что только автор является обязательным. Все остальное внизу остается пустым.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -73,7 +73,7 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+Не забудьте перейти в новый каталог.
 
 ```shell
 cd subqlHelloWorld
@@ -81,7 +81,7 @@ cd subqlHelloWorld
 
 ## 2. Step 2: Install dependencies
 
-Now do a yarn or node install to install the various dependencies.
+Теперь выполните установку yarn или node, чтобы установить различные зависимости.
 
 <CodeGroup> # Yarn yarn install # NPM npm install
 
@@ -99,7 +99,7 @@ success Saved lockfile.
 
 ## 3. Step 3: Generate code
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+Теперь запустите ` yarn codegen `, чтобы сгенерировать Typescript из схемы GraphQL.
 
 <CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
 
@@ -112,15 +112,15 @@ $ ./node_modules/.bin/subql codegen
 ===============================
 * Schema StarterEntity generated !
 * Models index generated !
-* Types index generated !
+* Types index generated!
 ✨  Done in 1.02s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+** Предупреждение ** При внесении изменений в файл схемы, пожалуйста, не забудьте повторно запустить ` yarn codegen `, чтобы заново сгенерировать каталог типов.
 
 ## 4. Step 4: Build code
 
-The next step is to build the code with `yarn build`.
+Следующим шагом является создание кода с помощью ` yarn build `.
 
 <CodeGroup> # Yarn yarn build # NPM npm run-script build
 
@@ -131,11 +131,11 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Run Docker
+## 5. Запустите Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+Использование Docker позволяет очень быстро запустить этот пример, поскольку вся необходимая инфраструктура может быть предоставлена в образе Docker. Run `docker-compose pull && docker-compose up`.
 
-This will kick everything into life where eventually you will get blocks being fetched.
+Это запустит все заново и в конечном итоге вы получите извлекаемые блоки.
 
 ```shell
 > #SNIPPET
@@ -153,9 +153,9 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## 6. Поиск playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+Перейдите по адресу http: // localhost: 3000 / и вставьте запрос ниже в левую часть экрана, а затем нажмите кнопку воспроизведения.
 
 ```
 {
@@ -170,12 +170,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+Площадка подзапросов на localhost.
 
 ![playground localhost](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+Количество playground блоков должно совпадать с количеством блоков (технически высотой блока) в терминале.
 
-## Summary
+## Заключение
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+В этом кратком руководстве мы продемонстрировали основные шаги по запуску проекта и запуску с помощью Docker, а затем перешли на localhost: 3000 и выполнили запрос, чтобы вернуть номер блока сети Polkadot в основной сети.
