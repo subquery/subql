@@ -31,7 +31,7 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(3000000);
+jest.setTimeout(30000);
 describe('ApiService', () => {
   let app: INestApplication;
 
@@ -130,7 +130,7 @@ describe('ApiService', () => {
     expect(() => patchedApi.tx.staking.rebond(1)).toThrow(/is not supported/);
   });
 
-  it.skip('api.at,xxx,xxx are removed, ', async () => {
+  it('api.at,xxx,xxx are removed, ', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
