@@ -1,4 +1,4 @@
-# GraphQ Şema
+# GraphQL Şema
 
 ## Varlıkları Tanımlama
 
@@ -12,21 +12,21 @@ Her varlık gerekli alanlarını < `ID!` türünde `id` olarak tanımlamalıdır
 Varlıktaki null olmayan alanlar `!` ile gösterilir. Lütfen aşağıdaki örneğe bakın:
 
 ```graphql
-örnek @entity { yazın
-  id: Kimlik! # kimlik alanı her zaman gereklidir ve böyle görünmelidir
-  adı: Dize! # Bu gerekli bir alan
-  adres: Dize # Bu isteğe bağlı bir alandır
+type Example @entity {
+  id: ID! # kimlik alanı her zaman gereklidir ve böyle görünmelidir
+  name: String! # Bu gerekli bir alan
+  address: String  # Bu isteğe bağlı bir alandır
 }
 ```
 
 ### Desteklenen skalerler ve türler
 
 Şu anda akan skalers türlerini destekliyoruz:
-- `KİMLİĞİ`
+- `ID`
 - `Int`
-- `Dizgi`
+- `String`
 - `BigInt`
-- `Tarih`
+- `Date`
 - `Boolean`
 - `<EntityName>` iç içe geçmiş ilişki varlıkları için, tanımlanan varlığın adını alanlardan biri olarak kullanabilirsiniz. Lütfen [Entity Relations](#entity-relationships) bakın.
 - `JSON` yapılandırılmış verileri alternatif olarak depolayabilir, lütfen bkz[JSON türü](#json-type)
