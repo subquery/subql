@@ -31,7 +31,7 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
   return project;
 }
 
-jest.setTimeout(30000);
+jest.setTimeout(90000);
 describe('ApiService', () => {
   let app: INestApplication;
 

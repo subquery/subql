@@ -15,6 +15,7 @@ import {
 import { RpcInterface } from '@polkadot/rpc-core/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
+import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
@@ -192,7 +193,7 @@ export class ApiService implements OnApplicationShutdown {
       );
     }
     newEntryFunc.multi = ((args: unknown[]) => {
-      let keys: any[]; //[StorageEntry, unknown[]][]
+      let keys: [StorageEntry, unknown[]][];
       const creator = original.creator;
       if (creator.meta.type.asMap.hashers.length === 1) {
         keys = args.map((a) => [creator, [a]]);
