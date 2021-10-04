@@ -6,9 +6,9 @@
 - Если ваше обновление является критическим изменением, либо создайте новый проект (например, ` My SubQuery Project V2 `), либо предупредите свое сообщество об изменении через каналы социальных сетей.
 - Развертывание новой версии проекта SubQuery займет некоторое время, поскольку новая версия индексирует всю цепочку из блока генезиса.
 
-## Deploy Changes
+## Запустить изменения
 
-Login to SubQuery Projects, and find the project that you want to deploy a new version of. You can choose to either deploy to the production or staging slot. These two slots are isolated environments and each has their own databases and synchronise independently.
+Login to SubQuery Projects, and find the project that you want to deploy a new version of. Вы можете выбрать развертывание в производственном или промежуточном слоте. Эти два слота представляют собой изолированные среды, каждый из которых имеет свои собственные базы данных и синхронизируется независимо.
 
 We recommend deploying to your staging slot only for final staging testing or when you need to resync your project data. You can then promote it to production with zero downtime. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
 
