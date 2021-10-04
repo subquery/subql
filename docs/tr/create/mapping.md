@@ -167,7 +167,7 @@ Kullanıcının zincirden belirli türleri ve RPC desteğini bildiğini ve [Mani
 - `src/api-interfaces/definitions.ts` - bu, tüm alt klasör tanımlarını dışa aktarıyor
 
 ```ts
-'./kitties/definitions' dizininden { varsayılan olarak kitties } dışa aktarın;{ default as kitties };
+export { default as kitties } from './kitties/definitions';
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - kitties modülü için tür tanımları
@@ -205,7 +205,7 @@ export default {
 
 #### Paket
 
-- `package.json` dosyasına, geliştirme bağımlılığı olarak `@polkadot/typegen` ve normal bir bağımlılık olarak `@polkadot/api` eklediğinizden emin olun ( ideal olarak aynı sürüm). Ayrıca, komut dosyalarını çalıştırmamıza yardımcı olmak için geliştirme bağımlılığı olarak `ts düğümü` ihtiyacımız vardır.
+- `package.json` dosyasına, geliştirme bağımlılığı olarak `@polkadot/typegen` ve normal bir bağımlılık olarak `@polkadot/api` eklediğinizden emin olun ( ideal olarak aynı sürüm). Ayrıca, komut dosyalarını çalıştırmamıza yardımcı olmak için geliştirme bağımlılığı olarak `ts-node` ihtiyacımız vardır.
 - Her iki türü de çalıştırmak için komut dosyaları ekliyoruz; `generate:defs` ve meta veri `generate:meta` üreteçleri (bu sırada, meta veriler türleri kullanabilir).
 
 İşte `package.json` basitleştirilmiş bir sürümü. **scripts** bölümünde paket adının doğru olduğundan ve dizinlerin geçerli olduğundan emin olun.
@@ -234,17 +234,17 @@ Hazırlık tamamlandıktan sonra, türler ve meta veriler oluşturmaya hazırız
 
 ```shell
 # Yeni bağımlılıklar yüklemek için iplik
-Iplik
+yarn
 
 # Türler oluştur
-iplik oluşturma:defs
+yarn generate:defs
 ```
 
-Her modül klasöründe (örneğin `/kitties`), bu modüllerin tanımlarından tüm arayüzleri tanımlayan bir `types.ts` oluşturulmalıdır, ayrıca bir `index dosyası hepsini dışa aktaran.ts`.
+In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
 
 ```shell
 # Meta veriler oluştur
-iplik oluşturma:meta
+yarn generate:meta
 ```
 
 Bu komut meta verileri ve API'ler için yeni bir api-augment oluşturur. Yerleşik API'yi kullanmak istemediğimiz için, `tsconfig.json` açık bir geçersiz kılma ekleyerek bunları değiştirmemiz gerekecektir. Güncelleştirmelerden sonra, yapılandırmadaki yollar şöyle görünecektir (açıklamalar olmadan):
@@ -252,11 +252,11 @@ Bu komut meta verileri ve API'ler için yeni bir api-augment oluşturur. Yerleş
 ```json
 {
   "compilerOptions": {
-      Bu, kullandığımız paket adıdır (arayüz içe aktarmalarında, --jeneratörler için paket) */
+      // Bu, kullandığımız paket adıdır (arayüz içe aktarmalarında, --jeneratörler için paket) */
       "kitty-birthinfo/*": ["src/*"],
-      Burada @polkadot/api büyütmeyi zincirden oluşturulan kendi büyütmemizle değiştiriyoruz
+     // Burada @polkadot/api büyütmeyi zincirden oluşturulan kendi büyütmemizle değiştiriyoruz
       "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-      tanımlardan oluşturulan artırılmış türleri kendi türlerimizle değiştirin
+     // tanımlardan oluşturulan artırılmış türleri kendi türlerimizle değiştirin
       "@polkadot/türleri/büyütme": ["src/interfaces/augment-types.ts"]
     }
 }
@@ -266,14 +266,14 @@ Bu komut meta verileri ve API'ler için yeni bir api-augment oluşturur. Yerleş
 
 Şimdi eşleme işlevinde, meta verilerin ve türlerin API'yi gerçekte nasıl dekore ederek süslediğini gösterebiliriz. RPC uç noktası yukarıda beyan ettiğimiz modülleri ve yöntemleri destekleyecektir. Ve özel rpc çağrısı kullanmak için, lütfen bölüme bakın [Özel zincir rpc çağrıları](#custom-chain-rpc-calls)
 ```typescript
-zaman uyumsuz işlevini dışa aktarma kittyApiHandler(): Promise<void> {
-    KittyIndex türünü döndürme
-    const nextKittyId = api.query.kitties.nextKittyId();
-    Kitty türünü döndürür, giriş parametreleri türleri AccountId ve KittyIndex'tir
-    const allKitties = api.query.kitties.kitties('xxxxxxxxx',123)
-    logger.info('Sonraki pisi kimliği ${nextKittyId}')
-    Özel rpc, tanımsız olarak blockhash olarak ayarla
-    const kittyPrice = api.rpc.kitties.getKittyPrice(tanımsız,nextKittyId) bekliyoruz;
+export async function kittyApiHandler(): Promise<void> {
+    //KittyIndex türünü döndürme
+    const nextKittyId = await api.query.kitties.nextKittyId();
+   //Kitty türünü döndürür, giriş parametreleri türleri AccountId ve KittyIndex'tir
+    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
+    logger.info(`Next kitty id ${nextKittyId}`)
+    //Özel rpc, tanımsız olarak blockhash olarak ayarla
+    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
 }
 ```
 
@@ -284,30 +284,31 @@ zaman uyumsuz işlevini dışa aktarma kittyApiHandler(): Promise<void> {
 Özelleştirilmiş zincir RPC çağrılarını desteklemek için, `typesBundle` için RPC tanımlarını el ile eklemeli ve her belirti için yapılandırmaya izin vermeliyiz. `project.yml<` `typesBundle` tanımlayabilirsiniz. Ve lütfen yalnızca `isHistoric` tür çağrıların desteklendiğini unutmayın.
 ```yaml
 ...
-  türleri: {
+  types: {
     "KittyIndex": "u32",
-    "Kedicik": "[u8; 16]",
+    "Kitty": "[u8; 16]",
   }
-  types Bundle: {
+  typesBundle: {
     spec: {
-      zincir adı: {
+      chainname: {
         rpc: {
-          kedicikler: {
+          kitties: {
             getKittyPrice:{
-                açıklama: dize,
+                description: string,
                 params: [
                   {
-                    adı: 'at',
-                    türü: 'BlockHash',
-                    isHistoric: doğru,
+                    name: 'at',
+                    type: 'BlockHash',
+                    isHistoric: true,
                     isOptional: false
                   },
                   {
-                    adı: 'kittyIndex',
-                    türü: 'KittyIndex',
-                    isOptional: false  }
+                    name: 'kittyIndex',
+                    type: 'KittyIndex',
+                    isOptional: false
+                  }
                 ],
-                türü: "Bakiye",
+                type: "Balance",
             }
           }
         }
