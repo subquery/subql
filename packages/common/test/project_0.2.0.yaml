@@ -1,7 +1,7 @@
 # project.yaml
-specVersion: "0.0.2"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+specVersion: '0.2.0'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
 
 schema:
   file: ./schema.graphql
@@ -12,8 +12,7 @@ network:
     file: ./types.json
 
 dataSources:
-  - name: main
-    kind: substrate/Runtime
+  - kind: substrate/Runtime
     startBlock: 1
     mapping:
       file: dist/index.js
@@ -27,5 +26,3 @@ dataSources:
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
-
-

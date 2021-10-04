@@ -16,7 +16,6 @@ import { RpcInterface } from '@polkadot/rpc-core/types';
 import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
-import { assign, pick } from 'lodash';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -43,28 +42,18 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   async init(): Promise<ApiService> {
-    const { network } = this.project;
-    let provider;
+    const { chainTypes, network } = this.project;
+    let provider: WsProvider | HttpProvider;
     if (network.endpoint.startsWith('ws')) {
       provider = new WsProvider(network.endpoint);
     } else if (network.endpoint.startsWith('http')) {
       provider = new HttpProvider(network.endpoint);
     }
-    const apiOption: ApiOptions = {
+    this.apiOption = {
       provider,
+      ...chainTypes,
     };
-    assign(
-      apiOption,
-      pick(network, [
-        'types',
-        'typesAlias',
-        'typesBundle',
-        'typesChain',
-        'typesSpec',
-      ]),
-    );
-    this.apiOption = apiOption;
-    this.api = await ApiPromise.create(apiOption);
+    this.api = await ApiPromise.create(this.apiOption);
     this.networkMeta = {
       chain: this.api.runtimeChain.toString(),
       specName: this.api.runtimeVersion.specName.toString(),
@@ -74,6 +63,7 @@ export class ApiService implements OnApplicationShutdown {
         this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
         6000,
     };
+
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
@@ -82,6 +72,16 @@ export class ApiService implements OnApplicationShutdown {
     this.api.on('disconnected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
+
+    if (
+      network.genesisHash &&
+      network.genesisHash !== this.networkMeta.genesisHash
+    ) {
+      throw new Error(
+        `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
+      );
+    }
+
     return this;
   }
 
@@ -93,7 +93,8 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged
+
+    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged and released
     const {
       network: { endpoint },
     } = this.project;

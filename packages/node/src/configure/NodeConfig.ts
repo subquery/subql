@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+import { loadFromJsonOrYaml } from '@subql/common';
 import { last } from 'lodash';
-import parseJson from 'parse-json';
 import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';
 
@@ -52,19 +50,11 @@ export class NodeConfig implements IConfig {
     configFromArgs?: Partial<IConfig>,
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
-    const rawContent = fs.readFileSync(filePath);
-    let content: IConfig;
-    if (fileInfo.ext === '.json') {
-      content = parseJson(rawContent.toString(), filePath);
-    } else if (fileInfo.ext === '.yaml' || fileInfo.ext === '.yml') {
-      content = yaml.load(rawContent.toString()) as IConfig;
-    } else {
-      throw new Error(
-        `extension ${fileInfo.ext} of provided config file not supported`,
-      );
-    }
-    content = assign(content, configFromArgs, { configDir: fileInfo.dir });
-    return new NodeConfig(content);
+
+    const config = assign(loadFromJsonOrYaml(filePath), configFromArgs, {
+      configDir: fileInfo.dir,
+    }) as IConfig;
+    return new NodeConfig(config);
   }
 
   constructor(config: MinConfig) {
@@ -93,6 +83,10 @@ export class NodeConfig implements IConfig {
     return this._config.batchSize;
   }
 
+  get networkEndpoint(): string | undefined {
+    return this._config.networkEndpoint;
+  }
+
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
   }
@@ -110,10 +104,6 @@ export class NodeConfig implements IConfig {
 
   get outputFmt(): 'json' | undefined {
     return this._config.outputFmt;
-  }
-
-  get networkEndpoint(): string | undefined {
-    return this._config.networkEndpoint;
   }
 
   get logLevel(): LevelWithSilent {

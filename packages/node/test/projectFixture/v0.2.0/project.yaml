@@ -1,0 +1,32 @@
+# project.yaml
+specVersion: '0.2.0'
+
+name: ''
+version: '0.0.0'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0x'
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+  chaintypes:
+    file: ./types.yaml
+
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 1
+    mapping:
+      file: dist/index.js
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter: #Filter is optional
+            module: balances
+            method: Deposit
+        - handler: handleCall
+          kind: substrate/CallHandler

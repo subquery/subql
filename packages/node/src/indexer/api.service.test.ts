@@ -328,7 +328,7 @@ describe('ApiService', () => {
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
     const b2 = await patchedApi.rpc.chain.getBlock('0x12312314');
 
-    const patchedApiRxBlock = await (patchedApi.rx as any).rpc.chain
+    const patchedApiRxBlock = await patchedApi.rx.rpc.chain
       .getBlock()
       .pipe(take(1))
       .toPromise();

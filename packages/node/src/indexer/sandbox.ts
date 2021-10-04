@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import path from 'path';
 import { ApiPromise } from '@polkadot/api';
 import { levelFilter } from '@subql/common';
@@ -16,6 +15,7 @@ export interface SandboxOption {
   store: Store;
   api: ApiPromise;
   root: string;
+  entry: string;
 }
 
 const DEFAULT_OPTION: NodeVMOptions = {
@@ -31,37 +31,19 @@ const DEFAULT_OPTION: NodeVMOptions = {
   sourceExtensions: ['js', 'cjs'],
 };
 
-function getProjectEntry(root: string): string {
-  const pkgPath = path.join(root, 'package.json');
-  try {
-    const content = fs.readFileSync(pkgPath).toString();
-    const pkg = JSON.parse(content);
-    if (!pkg.main) {
-      return './dist';
-    }
-    return pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
-  } catch (err) {
-    throw new Error(
-      `can not find package.json within directory ${this.option.root}`,
-    );
-  }
-}
-
 const logger = getLogger('sandbox');
 
 export class IndexerSandbox extends NodeVM {
   private option: SandboxOption;
   private script: VMScript;
   private config: NodeConfig;
-  entry: string;
 
   constructor(option: SandboxOption, config: NodeConfig) {
     const { root } = option;
-    const entry = getProjectEntry(root);
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
       require: {
         root,
-        resolve: (moduleName) => {
+        resolve: (moduleName: string) => {
           return require.resolve(moduleName, { paths: [root] });
         },
       },
@@ -70,10 +52,9 @@ export class IndexerSandbox extends NodeVM {
     this.config = config;
     this.injectGlobals(option);
     this.option = option;
-    this.entry = entry;
     this.script = new VMScript(
       `
-      const mappingFunctions = require('${entry}');
+      const mappingFunctions = require('${option.entry}');
       module.exports = mappingFunctions[funcName](...args);
     `,
       path.join(root, 'sandbox'),

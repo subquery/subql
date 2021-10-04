@@ -1,14 +1,24 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
-import {ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {
+  ArrayMaxSize,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsObject,
+  ValidateNested,
+} from 'class-validator';
 import {SubqlKind} from './constants';
 import {
   SubqlBlockFilter,
   SubqlCallFilter,
   SubqlEventFilter,
-  SubqlNetworkFilter,
   SubqlHandler,
   SubqlMapping,
   SubqlRuntimeDatasource,
@@ -30,9 +40,22 @@ export class EventFilter extends BlockFilter implements SubqlEventFilter {
   method?: string;
 }
 
-export class NetworkFilter implements SubqlNetworkFilter {
-  @IsString()
-  specName: string;
+export class ChainTypes implements RegisteredTypes {
+  @IsObject()
+  @IsOptional()
+  types?: RegistryTypes;
+  @IsObject()
+  @IsOptional()
+  typesAlias?: Record<string, OverrideModuleType>;
+  @IsObject()
+  @IsOptional()
+  typesBundle?: OverrideBundleType;
+  @IsObject()
+  @IsOptional()
+  typesChain?: Record<string, RegistryTypes>;
+  @IsObject()
+  @IsOptional()
+  typesSpec?: Record<string, RegistryTypes>;
 }
 
 export class CallFilter extends EventFilter implements SubqlCallFilter {
@@ -94,19 +117,13 @@ export class Mapping implements SubqlMapping {
   handlers: SubqlHandler[];
 }
 
-export class RuntimeDataSource implements SubqlRuntimeDatasource {
+export class RuntimeDataSourceBase<M extends SubqlMapping> implements SubqlRuntimeDatasource<M> {
   @IsEnum(SubqlKind, {groups: [SubqlKind.Runtime]})
   kind: SubqlKind.Runtime;
   @Type(() => Mapping)
   @ValidateNested()
-  mapping: SubqlMapping;
-  @IsString()
-  name: string;
+  mapping: M;
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => NetworkFilter)
-  filter?: SubqlNetworkFilter;
 }

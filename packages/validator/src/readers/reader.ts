@@ -9,6 +9,7 @@ import {LocalReader} from './local-reader';
 export interface Reader {
   getProjectSchema(): Promise<unknown | undefined>;
   getPkg(): Promise<IPackageJson | undefined>;
+  getFile(file: string): Promise<unknown | undefined>;
 }
 
 export class ReaderFactory {

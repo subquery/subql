@@ -158,7 +158,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     //set dictionary to a different network
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
@@ -196,7 +196,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     //set dictionary to a different network
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -249,7 +249,7 @@ describe('FetchService', () => {
     const batchSize = 20;
     const project = testSubqueryProject();
     //set dictionary to a different network
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -311,8 +311,9 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
-    project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.endpoint =
+      'wss://kusama.api.onfinality.io/public-ws';
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
       {

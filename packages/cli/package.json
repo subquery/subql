@@ -11,6 +11,7 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
+    "@polkadot/api": "^5.9.1",
     "@subql/common": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.0.6",

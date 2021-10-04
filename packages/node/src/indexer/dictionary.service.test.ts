@@ -53,7 +53,7 @@ describe('DictionaryService', () => {
 
   it('return undefined when dictionary api failed', async () => {
     const project = testSubqueryProject();
-    project.network.dictionary =
+    project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-not-exist';
     const dictionaryService = new DictionaryService(project);
     const batchSize = 30;

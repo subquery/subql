@@ -35,18 +35,20 @@ Options:
       --timestamp-field     Enable/disable created_at and updated_at in schema
                                                        [boolean] [default: true]
   -d, --network-dictionary  Specify the dictionary api for this network [string]
-  ```
+      --proof-of-index      Enable/disable proof of index
+                                                      [boolean] [default: false]
+```
 
 ### --version
 
 This displays the current version.
 
-``` shell
+```shell
 > subql-node --version
 0.19.1
 ```
 
-### -f, --subquery 
+### -f, --subquery
 
 Use this flag to start the SubQuery project.
 
@@ -64,7 +66,8 @@ subql-node -f . --subquery-name=test2
 ```
 
 ### -c, --config
-All these various configurations can be placed into a .yml or .json file and then referenced with the config flag. 
+
+All these various configurations can be placed into a .yml or .json file and then referenced with the config flag.
 
 Sample subquery_config.yml file:
 
@@ -79,6 +82,7 @@ Place this file in the same directory as the project. Then in the current projec
 ```shell
 > subql-node -c ./subquery_config.yml
 ```
+
 ### --local
 
 This flag is primarily used for debugging purposes where it creates the default starter_entity table in the default "postgres" schema.
@@ -91,14 +95,14 @@ Note that once you use this flag, removing it won't mean that it will point to a
 
 ### --batch-size
 
-This flag allows you to set the batch size in the command line. If batch size is also set in the config file, this takes precedent. 
+This flag allows you to set the batch size in the command line. If batch size is also set in the config file, this takes precedent.
 
 ```shell
 > subql-node -f . --batch-size=20
-2021-08-09T23:24:43.775Z <fetch> INFO fetch block [6601,6620], total 20 blocks 
-2021-08-09T23:24:45.606Z <fetch> INFO fetch block [6621,6640], total 20 blocks 
-2021-08-09T23:24:47.415Z <fetch> INFO fetch block [6641,6660], total 20 blocks 
-2021-08-09T23:24:49.235Z <fetch> INFO fetch block [6661,6680], total 20 blocks 
+2021-08-09T23:24:43.775Z <fetch> INFO fetch block [6601,6620], total 20 blocks
+2021-08-09T23:24:45.606Z <fetch> INFO fetch block [6621,6640], total 20 blocks
+2021-08-09T23:24:47.415Z <fetch> INFO fetch block [6641,6660], total 20 blocks
+2021-08-09T23:24:49.235Z <fetch> INFO fetch block [6661,6680], total 20 blocks
 ```
 
 <!-- ### --timeout -->
@@ -109,9 +113,9 @@ This outputs debug information to the console output and forcefully sets the log
 
 ```shell
 > subql-node -f . --debug
-2021-08-10T11:45:39.471Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): INSERT INTO "subquery_1"."starter_entities" ("id","block_height","created_at","updated_at") VALUES ($1,$2,$3,$4) ON CONFLICT ("id") DO UPDATE SET "id"=EXCLUDED."id","block_height"=EXCLUDED."block_height","updated_at"=EXCLUDED."updated_at" RETURNING "id","block_height","created_at","updated_at"; 
-2021-08-10T11:45:39.472Z <db> DEBUG Executing (default): UPDATE "subqueries" SET "next_block_height"=$1,"updated_at"=$2 WHERE "id" = $3 
-2021-08-10T11:45:39.472Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): COMMIT; 
+2021-08-10T11:45:39.471Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): INSERT INTO "subquery_1"."starter_entities" ("id","block_height","created_at","updated_at") VALUES ($1,$2,$3,$4) ON CONFLICT ("id") DO UPDATE SET "id"=EXCLUDED."id","block_height"=EXCLUDED."block_height","updated_at"=EXCLUDED."updated_at" RETURNING "id","block_height","created_at","updated_at";
+2021-08-10T11:45:39.472Z <db> DEBUG Executing (default): UPDATE "subqueries" SET "next_block_height"=$1,"updated_at"=$2 WHERE "id" = $3
+2021-08-10T11:45:39.472Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): COMMIT;
 ```
 
 ### --profiler
@@ -120,15 +124,15 @@ This shows profiler information.
 
 ```shell
 subql-node -f . --local --profiler
-2021-08-10T10:57:07.234Z <profiler> INFO FetchService, fetchMeta, 3876 ms 
-2021-08-10T10:57:08.095Z <profiler> INFO FetchService, fetchMeta, 774 ms 
-2021-08-10T10:57:10.361Z <profiler> INFO SubstrateUtil, fetchBlocksBatches, 2265 ms 
-2021-08-10T10:57:10.361Z <fetch> INFO fetch block [3801,3900], total 100 blocks 
+2021-08-10T10:57:07.234Z <profiler> INFO FetchService, fetchMeta, 3876 ms
+2021-08-10T10:57:08.095Z <profiler> INFO FetchService, fetchMeta, 774 ms
+2021-08-10T10:57:10.361Z <profiler> INFO SubstrateUtil, fetchBlocksBatches, 2265 ms
+2021-08-10T10:57:10.361Z <fetch> INFO fetch block [3801,3900], total 100 blocks
 ```
 
 ### --network-endpoint
 
-This flag allows users to override the network endpoint configuration from the manifest file. 
+This flag allows users to override the network endpoint configuration from the manifest file.
 
 ```shell
 subql-node -f . --network-endpoint="wss://polkadot.api.onfinality.io/public-ws"
@@ -139,9 +143,9 @@ Note that this must also be set in the manifest file, otherwise you'll get:
 ```shell
 ERROR Create Subquery project from given path failed! Error: failed to parse project.yaml.
 An instance of ProjectManifestImpl has failed the validation:
- - property network has failed the following constraints: isObject 
- - property network.network has failed the following constraints: nestedValidation 
- ```
+ - property network has failed the following constraints: isObject
+ - property network.network has failed the following constraints: nestedValidation
+```
 
 ### --output-fmt
 
@@ -154,14 +158,15 @@ There are two different terminal output formats. JSON or colored. Colored is the
 
 ```shell
 > subql-node -f . --output-fmt=colored
-2021-08-10T11:57:41.480Z <subql-node> INFO node started 
+2021-08-10T11:57:41.480Z <subql-node> INFO node started
 (node:24707) [PINODEP007] Warning: bindings.level is deprecated, use options.level option instead
-2021-08-10T11:57:48.981Z <fetch> INFO fetch block [10201,10300], total 100 blocks 
-2021-08-10T11:57:51.862Z <fetch> INFO fetch block [10301,10400], total 100 blocks 
+2021-08-10T11:57:48.981Z <fetch> INFO fetch block [10201,10300], total 100 blocks
+2021-08-10T11:57:51.862Z <fetch> INFO fetch block [10301,10400], total 100 blocks
 ```
+
 ### --log-level
 
-There are 7 options to choose from. “fatal”, “error”, “warn”, “info”, “debug”, “trace”, “silent”. The example below shows silent. Nothing will be printed in the terminal so the only way to tell if the node is working or not is to query the database for row count (select count(*) from subquery_1.starter_entities) or query the block height. 
+There are 7 options to choose from. “fatal”, “error”, “warn”, “info”, “debug”, “trace”, “silent”. The example below shows silent. Nothing will be printed in the terminal so the only way to tell if the node is working or not is to query the database for row count (select count(\*) from subquery_1.starter_entities) or query the block height.
 
 ```shell
 > subql-node -f . --log-level=silent
@@ -180,7 +185,6 @@ There are 7 options to choose from. “fatal”, “error”, “warn”, “inf
 ```
 
 <!-- ### --migrate TBA -->
-
 
 ### --timestamp-field
 
@@ -204,10 +208,10 @@ subql-node -f . -d "https://api.subquery.network/sq/subquery/dictionary-polkadot
 
 [Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
 
-
 ## subql-query
 
 ### --help
+
 This shows the help options.
 
 ```shell
@@ -228,27 +232,28 @@ ns:
 
 This displays the current version.
 
-``` shell
+```shell
 > subql-query --version
 0.7.0
 ```
+
 ### -n, --name
 
-This flag is used to start the query service. If the --subquery-name flag is not provided when running an indexer, the name here will refer to the default project name. If --subquery-name is set, then the name here should match what was set. 
+This flag is used to start the query service. If the --subquery-name flag is not provided when running an indexer, the name here will refer to the default project name. If --subquery-name is set, then the name here should match what was set.
 
-``` shell
+```shell
 > subql-node -f . // --subquery-name not set
 
 > subql-query -n subql-helloworld  --playground // the name defaults to the project directory name
 ```
 
-``` shell
+```shell
 > subql-node -f . --subquery-name=hiworld // --subquery-name set
 
 > subql-query -n hiworld --playground  // the name points to the subql-helloworld project but with the name of hiworld
 ```
 
-### --playground 
+### --playground
 
 This flag enables the graphql playground so should always be included by default to be of any use.
 

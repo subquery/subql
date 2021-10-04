@@ -1,34 +1,36 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {RegistryTypes, RegisteredTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {Type} from 'class-transformer';
-import {Equals, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import {ProjectNetworkConfig} from '../../types';
+import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {RuntimeDataSourceBase, ChainTypes} from '../../models';
+import {ProjectNetworkConfig, SubqlMapping, SubqlNetworkFilter} from '../../types';
 import {ProjectManifestBaseImpl} from '../base';
-import {ProjectManifestV0_0_1} from './types';
+import {ProjectManifestV0_0_1, RuntimeDataSrouceV0_0_1} from './types';
 
-export class ProjectNetworkV0_0_1 implements RegisteredTypes, ProjectNetworkConfig {
+export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkConfig {
   @IsString()
   endpoint: string;
   @IsString()
   @IsOptional()
   dictionary?: string;
-  @IsObject()
+}
+
+export class NetworkFilter implements SubqlNetworkFilter {
+  @IsString()
+  specName: string;
+}
+
+export class RuntimeDataSourceV0_0_1Impl
+  extends RuntimeDataSourceBase<SubqlMapping>
+  implements RuntimeDataSrouceV0_0_1
+{
+  @IsString()
+  name: string;
   @IsOptional()
-  types?: RegistryTypes;
-  @IsObject()
-  @IsOptional()
-  typesAlias?: Record<string, OverrideModuleType>;
-  @IsObject()
-  @IsOptional()
-  typesBundle?: OverrideBundleType;
-  @IsObject()
-  @IsOptional()
-  typesChain?: Record<string, RegistryTypes>;
-  @IsObject()
-  @IsOptional()
-  typesSpec?: Record<string, RegistryTypes>;
+  @ValidateNested()
+  @Type(() => NetworkFilter)
+  filter?: SubqlNetworkFilter;
 }
 
 export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_1 {
@@ -40,4 +42,8 @@ export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implement
   network: ProjectNetworkV0_0_1;
   @IsString()
   schema: string;
+  @IsArray()
+  @ValidateNested()
+  @Type(() => RuntimeDataSourceV0_0_1Impl)
+  dataSources: RuntimeDataSrouceV0_0_1[];
 }

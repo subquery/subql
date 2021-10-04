@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import path from 'path';
 import axios, {AxiosInstance} from 'axios';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
@@ -17,20 +18,25 @@ export class GithubReader implements Reader {
   }
 
   async getPkg(): Promise<IPackageJson | undefined> {
-    try {
-      const branch = await this.getDefaultBranch();
-      const {data} = await this.api.get(`${branch}/package.json`);
-      return data;
-    } catch (err) {
-      return undefined;
-    }
+    return this.getFile('package.json');
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
+    return this.getFile('project.yaml');
+  }
+
+  async getFile(fileName: string): Promise<unknown | undefined> {
     try {
       const branch = await this.getDefaultBranch();
-      const {data} = await this.api.get(`${branch}/project.yaml`);
-      return yaml.load(data);
+      const {data} = await this.api.get(path.join(branch, fileName));
+
+      const {ext} = path.parse(fileName);
+
+      if (ext === '.yaml' || ext === '.yml') {
+        return yaml.load(data);
+      }
+
+      return data;
     } catch (err) {
       return undefined;
     }

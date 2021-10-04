@@ -45,7 +45,7 @@ const testNetwork: ProjectNetworkV0_0_1 = {
 };
 
 function testSubqueryProject(): SubqueryProject {
-  const project = new SubqueryProject(
+  return new SubqueryProject(
     new ProjectManifestVersioned({
       specVersion: '0.0.1',
       network: testNetwork,
@@ -53,7 +53,6 @@ function testSubqueryProject(): SubqueryProject {
     } as any),
     '',
   );
-  return project;
 }
 
 describe('ApiService', () => {
@@ -66,5 +65,15 @@ describe('ApiService', () => {
       provider: expect.anything(),
       ...omit(testNetwork, ['endpoint']),
     });
+  });
+
+  it('throws if expected genesis hash doesnt match', async () => {
+    const project = testSubqueryProject();
+
+    (project.projectManifest.asV0_0_1.network as any).genesisHash = '0x';
+
+    const apiService = new ApiService(project, new EventEmitter2());
+
+    await expect(apiService.init()).rejects.toThrow();
   });
 });

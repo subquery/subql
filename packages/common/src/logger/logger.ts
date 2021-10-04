@@ -44,7 +44,7 @@ export class Logger {
             }
           : {},
       prettyPrint: outputFormat !== 'json',
-      prettifier: function (options) {
+      prettifier: function (options: unknown) {
         // `this` is bound to the pino instance
         // Deal with whatever options are supplied.
         return function prettifier(inputData: string | object) {
@@ -68,7 +68,7 @@ export class Logger {
           return `${time} <${ctx.magentaBright(category)}> ${colorizeLevel(level)} ${message} ${error}\n`;
         };
 
-        function isObject(input) {
+        function isObject(input: unknown): boolean {
           return Object.prototype.toString.apply(input) === '[object Object]';
         }
       },

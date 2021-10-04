@@ -5,8 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
-import {createProject, installDependencies} from '../controller/init-controller';
-import {ProjectSpec} from '../types';
+import {createProject, installDependencies, getGenesisHash} from '../controller/init-controller';
+import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
 
 export default class Init extends Command {
   static description = 'Init a scaffold subquery project';
@@ -19,6 +19,11 @@ export default class Init extends Command {
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
+    specVersion: flags.string({
+      required: false,
+      default: '0.0.1',
+      description: 'The spec version to be used by the project',
+    }),
   };
 
   static args = [
@@ -30,7 +35,7 @@ export default class Init extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = this.parse(Init);
-    const project = {} as ProjectSpec;
+    const project = {} as ProjectSpecBase;
 
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
 
@@ -41,10 +46,16 @@ export default class Init extends Command {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
     project.repository = await cli.prompt('Git repository', {required: false});
+
     project.endpoint = await cli.prompt('RPC endpoint', {
       default: 'wss://polkadot.api.onfinality.io/public-ws',
       required: true,
     });
+
+    if (flags.specVersion === '0.2.0') {
+      (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
+    }
+
     project.author = await cli.prompt('Authors', {required: true});
     project.description = await cli.prompt('Description', {required: false});
     project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});

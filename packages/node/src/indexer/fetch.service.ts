@@ -5,7 +5,13 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { SubqlCallFilter, SubqlEventFilter, SubqlKind } from '@subql/common';
+import {
+  isRuntimeDataSourceV0_2_0,
+  RuntimeDataSrouceV0_0_1,
+  SubqlCallFilter,
+  SubqlEventFilter,
+  SubqlKind,
+} from '@subql/common';
 import { isUndefined, range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
@@ -74,8 +80,10 @@ export class FetchService implements OnApplicationShutdown {
     const extrinsicFilters: SubqlCallFilter[] = [];
     const dataSources = this.project.dataSources.filter(
       (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
+        isRuntimeDataSourceV0_2_0(ds) ||
+        !(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
+        (ds as RuntimeDataSrouceV0_0_1).filter.specName ===
+          this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
       if (ds.kind === SubqlKind.Runtime) {
@@ -162,6 +170,7 @@ export class FetchService implements OnApplicationShutdown {
     this.projectIndexFilters = this.getIndexFilters();
     this.useDictionary =
       !!this.projectIndexFilters && !!this.project.network.dictionary;
+
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });

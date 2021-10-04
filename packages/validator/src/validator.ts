@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common';
 import {Context} from './context';
 import {Reader, ReaderFactory} from './readers';
 import {Rule, RuleType} from './rules';
@@ -26,22 +27,29 @@ export class Validator {
 
   async getValidateReports(): Promise<Report[]> {
     const reports: Report[] = [];
-    const [pkg, schema] = await Promise.all([this.reader.getPkg(), this.reader.getProjectSchema()]);
+    const [pkg, rawSchema] = await Promise.all([this.reader.getPkg(), this.reader.getProjectSchema()]);
 
-    reports.push(
-      {
+    if (!rawSchema) {
+      throw new Error('Not a valid SubQuery project, project.yaml is missing');
+    }
+
+    reports.push({
+      name: 'project-yaml-file',
+      description: 'A valid `project.yaml` file must exist in the root directory of the project',
+      valid: !!rawSchema,
+      skipped: false,
+    });
+
+    const schema = new ProjectManifestVersioned(rawSchema as VersionedProjectManifest);
+
+    if (schema.isV0_0_1) {
+      reports.push({
         name: 'package-json-file',
         description: 'A valid `package.json` file must exist in the root directory of the project',
         valid: !!pkg,
         skipped: false,
-      },
-      {
-        name: 'project-yaml-file',
-        description: 'A valid `project.yaml` file must exist in the root directory of the project',
-        valid: !!pkg,
-        skipped: false,
-      }
-    );
+      });
+    }
 
     const ctx: Context = {
       data: {
@@ -50,6 +58,7 @@ export class Validator {
         schema,
       },
       logger: console,
+      reader: this.reader,
     };
 
     for (const r of this.rules) {
@@ -62,7 +71,7 @@ export class Validator {
       if ((!pkg && r.type === RuleType.PackageJSON) || (!schema && r.type === RuleType.Schema)) {
         report.skipped = true;
       } else {
-        report.valid = r.validate(ctx);
+        report.valid = await r.validate(ctx);
       }
       reports.push(report);
     }

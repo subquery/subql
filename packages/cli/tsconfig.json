@@ -7,13 +7,9 @@
     "importHelpers": true,
     "rootDir": "src",
     "tsBuildInfoFile": "lib/.tsbuildinfo",
-    "outDir": "lib"
+    "outDir": "lib",
+    "noImplicitAny": true
   },
-  "references": [
-    {"path": "../common"},
-    {"path": "../validator"}
-  ],
-  "include": [
-    "src/**/*"
-  ]
+  "references": [{"path": "../common"}, {"path": "../validator"}],
+  "include": ["src/**/*"]
 }

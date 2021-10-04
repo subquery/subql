@@ -4,7 +4,8 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { camelCase, last } from 'lodash';
+import { ProjectNetworkConfig } from '@subql/common';
+import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
@@ -19,6 +20,14 @@ type Args = ReturnType<typeof getYargsOption>['argv'];
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
+
+    if (key === 'network-registry') {
+      try {
+        value = JSON.parse(value as string);
+      } catch (e) {
+        throw new Error('Argument `network-registry` is not valid JSON');
+      }
+    }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
   }, {});
@@ -66,17 +75,20 @@ export class ConfigureModule {
     );
 
     const project = async () => {
-      const p = await SubqueryProject.create(projectPath).catch((err) => {
+      const p = await SubqueryProject.create(
+        projectPath,
+        omitBy<ProjectNetworkConfig>(
+          {
+            endpoint: config.networkEndpoint,
+            dictionary: config.networkDictionary,
+          },
+          isNil,
+        ),
+      ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
 
-      if (config.networkEndpoint) {
-        p.network.endpoint = config.networkEndpoint;
-      }
-      if (config.networkDictionary) {
-        p.network.dictionary = config.networkDictionary;
-      }
       return p;
     };
 
