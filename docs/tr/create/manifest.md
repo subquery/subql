@@ -1,4 +1,4 @@
-# Bildirim Dosyası
+# Manifest File
 
 Manifest `project.yaml` dosyası projenizin giriş noktası olarak görülebilir ve SubQuery'nin zincir verilerini nasıl dizine alacağı ve dönüştüreceğine ilişkin ayrıntıların çoğunu tanımlar.
 
@@ -6,29 +6,31 @@ Bildirim YAML veya JSON biçiminde olabilir. Bu belgede, tüm örneklerde YAML k
 
 ``` yml
 specVersion: "0.0.1"
-açıklama: ""
-depo: "https://github.com/subquery/subql-starter"
+description: ""
+repository: "https://github.com/subquery/subql-starter"
 
-şema: "./schema.graphql"
+schema: "./schema.graphql"
 
-ağ:
-  uç nokta: "wss://polkadot.api.onfinality.io/public-ws"
+network:
+  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
   # İsteğe bağlı olarak, işlemeyi hızlandırmak için tam zincir sözlüğün HTTP uç noktasını sağlayın
-  sözlük: "https://api.subquery.network/sq/subquery/dictionary-polkadot"  veri Kaynakları:
-  - adı: ana
-    tür: substrat/Çalışma Zamanı
+ dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+
+dataSources:
+  - name: main
+    kind: substrate/Runtime
     startBlock: 1
-    eşleme:
-      Işleyici:
-        - işleyici: handleBlock
-          tür: substrat/BlockHandler
-        - işleyici: handleEvent
-          tür: substrat/EventHandler
-          filtre: #Filter isteğe bağlıdır, ancak olay işlemeyi hızlandırması önerilir
-            modül: dengeler
-            yöntem: Depozito
-        - işleyici: handleCall
-          tür: substrat/CallHandler
+    mapping:
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter: #Filter isteğe bağlıdır, ancak olay işlemeyi hızlandırması önerilir
+            module: balances
+            method: Deposit
+        - handler: handleCall
+          kind: substrate/CallHandler
 ```
 
 - `network.endpoint`, dizine eklenecek blok zincirinin wss veya ws uç noktasını tanımlar - **Bu tam bir arşiv düğümü olmalıdır**.
