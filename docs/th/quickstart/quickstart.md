@@ -1,31 +1,31 @@
-# Quick Start Guide
+# คู่มือเริ่มใช้งานฉบับย่อ
 
-In this Quick Start guide, we're going to create a simple starter project that you can be used as a framework for developing your own SubQuery Project.
+ในคู่มือการเริ่มต้นฉบับย่อนี้ เราจะสร้างโปรเจ็กต์เริ่มต้นอย่างง่ายที่คุณสามารถใช้เป็นเฟรมเวิร์คสำหรับการพัฒนา SubQuery Project ของคุณเองได้
 
-At the end of this guide, you'll have a working SubQuery project running on a SubQuery node with a GraphQL endpoint that you can query data from.
+หลังจบคู่มือนี้ คุณจะมีโปรเจ็กต์ SubQuery ที่ทำงานบนโหนด SubQuery และมี GraphQL endpoint ที่คุณสามารถสืบค้นข้อมูลได้
 
-If you haven't already, we suggest that you familiarise yourself with the [terminology](../#terminology) used in SubQuery.
+หากคุณยังไม่คุ้นเคย เราขอแนะนำให้คุณทำความคุ้นเคยกับ [คำศัพท์](../#terminology) ที่ใช้ใน SubQuery
 
-## Preparation
+## การเตรียมความพร้อม
 
-### Local Development Environment
+### สภาพแวดล้อมสำหรับการพัฒนาภายในตัวเครื่อง
 
-- [Typescript](https://www.typescriptlang.org/) is required to compile project and define types.
-- Both SubQuery CLI and generated Project have dependencies and require a modern version [Node](https://nodejs.org/en/).
-- SubQuery Nodes require Docker
+- [Typescript](https://www.typescriptlang.org/) จำเป็นสำหรับการคอมไพล์โปรเจ็กต์และกำหนด types
+- ทั้ง SubQuery CLI และ Project ที่สร้างขึ้นจะมี dependencies และต้องใช้ [Node](https://nodejs.org/en/) เวอร์ชันใหม่
+- SubQuery Nodes ต้องใช้ Docker
 
-### Install the SubQuery CLI
+### การติดตั้ง SubQuery CLI
 
-Install SubQuery CLI globally on your terminal by using NPM:
+ติดตั้ง SubQuery CLI แบบ global บนเทอร์มินัลของคุณโดยใช้ NPM:
 
 ```shell
 # NPM
 npm install -g @subql/cli
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+โปรดทราบว่าเรา **ไม่** สนับสนุนให้ใช้ `yarn global` เนื่องจากการจัดการ dependency ที่ไม่ดี ซึ่งอาจนำไปสู่ข้อผิดพลาดได้
 
-You can then run help to see available commands and usage provide by CLI
+จากนั้นคุณสามารถรันคำสั่ง help เพื่อดูคำสั่งและการใช้งานที่ CLI จัดเตรียมให้
 
 ```shell
 subql help
