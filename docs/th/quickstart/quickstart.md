@@ -31,81 +31,81 @@ npm install -g @subql/cli
 subql help
 ```
 
-## Initialise the Starter SubQuery Project
+## เริ่มต้น SubQuery Project
 
-Inside the directory in which you want to create a SubQuery project, simply replace `PROJECT_NAME` with your own and run the command:
+ภายในไดเรกทอรีที่คุณต้องการสร้างโปรเจ็กต์ SubQuery เพียงแทนที่ `PROJECT_NAME` ด้วยชื่อของคุณเองและรันคำสั่ง:
 
 ```shell
 subql init --starter PROJECT_NAME
 ```
 
-You'll be asked certain questions as the SubQuery project is initalised:
+คุณจะถูกถามคำถามเมื่อโปรเจ็กต์ SubQuery เริ่มต้นขึ้น:
 
-- Git repository (Optional): Provide a Git URL to a repo that this SubQuery project will be hosted in (when hosted in SubQuery Explorer)
-- RPC endpoint (Required): Provide a wss URL to a running RPC endpoint that will be used by default for this project. You can quickly access public endpoints for different Polkadot networks or even create your own private dedicated node using [OnFinality](https://app.onfinality.io) or just use the default Polkadot endpoint.
-- Authors (Required): Enter the owner of this SubQuery project here
-- Description (Optional): You can provide a short paragraph about your project that describe what data it contains and what users can do with it
-- Version (Required): Enter a custom version number or use the default (`1.0.0`)
-- License (Required): Provide the software license for this project or accept the default (`Apache-2.0`)
+- Git repository (ไม่บังคับ): ระบุ Git URL ไปยัง repo ที่จะโฮสต์โปรเจ็กต์ SubQuery นี้ (เมื่อโฮสต์ใน SubQuery Explorer)
+- RPC endpoint (จำเป็น): ระบุ wss URL ไปยัง RPC endpoint ที่ทำงานอยู่ซึ่งจะถูกใช้เป็นค่าเริ่มต้นสำหรับโปรเจ็กต์นี้ คุณสามารถเข้าถึง endpoint สาธารณะได้อย่างรวดเร็วสำหรับเครือข่าย Polkadot ต่างๆ หรือแม้แต่สร้างโหนดส่วนตัวเฉพาะของคุณเองโดยใช้ [OnFinality](https://app.onfinality.io) หรือเพียงแค่ใช้ Polkadot endpoint ที่เป็นค่าเริ่มต้น
+- Authors (จำเป็น): กรอกชื่อเจ้าของโปรเจ็กต์ SubQuery นี้ที่นี่
+- Description (ไม่บังคับ): คุณสามารถระบุข้อความสั้นๆ เกี่ยวกับโปรเจ็กต์ของคุณซึ่งอธิบายว่ามีข้อมูลใดบ้างและผู้ใช้สามารถทำอะไรกับมันได้บ้าง
+- Version (จำเป็น): ระบุหมายเลขเวอร์ชันที่กำหนดเองหรือใช้ค่าเริ่มต้น (`1.0.0`)
+- License (จำเป็น): ระบุใบอนุญาตซอฟต์แวร์สำหรับโปรเจ็กต์นี้หรือใช้ค่าเริ่มต้น (`Apache-2.0`)
 
-After the initialisation process is complete, you should see a folder with your project name has been created inside the directory. The contents of this directoy should be identical to what's listed in the [Directory Structure](../create/introduction.md#directory-structure).
+หลังจากกระบวนการในการเริ่มต้นเสร็จสมบูรณ์ คุณควรเห็นโฟลเดอร์ที่มีชื่อโปรเจ็กต์ของคุณถูกสร้างขึ้นภายในไดเร็กทอรี เนื้อหาของไดเร็กทอรีนี้ควรเหมือนกับที่ระบุไว้ใน [Directory Structure](../create/introduction.md#directory-structure)
 
-Last, under the project directory, run following command to install the new project's dependencies.
+สุดท้ายนี้ ภายใต้ไดเร็กทอรีของโปรเจ็กต์ ให้รันคำสั่งต่อไปนี้เพื่อติดตั้ง dependencies ของโปรเจ็กต์ใหม่นี้
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell cd PROJECT_NAME yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash cd PROJECT_NAME npm install ``` </CodeGroupItem> </CodeGroup>
 
-## Configure and Build the Starter Project
+## การกำหนดค่าและการ build Starter Project
 
-In the starter package that you just initialised, we have provided a standard configuration for your new project. You will mainly be working on the following files:
+ใน starter package ที่คุณเพิ่งติดตั้ง เราได้จัดเตรียมการกำหนดค่ามาตรฐานสำหรับโปรเจ็กต์ใหม่ของคุณ XPath: /p[11]/CodeGroup/text คุณจะต้องทำงานในไฟล์ต่อไปนี้เป็นหลัก:
 
 - The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- GraphQL Schema ใน `schema.graphql`
+- Mapping functions ในไดเรกทอรี `src/mappings/`
 
-For more information on how to write your own SubQuery, check out our documentation under [Create a Project](../create/introduction.md)
+สำหรับข้อมูลเพิ่มเติมเกี่ยวกับวิธีการเขียน SubQuery ของคุณเอง โปรดดูเอกสารของเราใน [การสร้างโปรเจ็กต์](../create/introduction.md)
 
-### GraphQL Model Generation
+### การสร้าง GraphQL Model
 
-In order to [index](../run/run.md) your SubQuery project, you must first generate the required GraphQL models that you have defined in your GraphQL Schema file (`schema.graphql`). Run this command in the root of the project directory.
+ในการทำ [index](../run/run.md) สำหรับโปรเจ็กต์ SubQuery ของคุณ ก่อนอื่นคุณต้องสร้างโมเดล GraphQL ที่จำเป็น ซึ่งคุณได้กำหนดไว้ในไฟล์ GraphQL Schema (`schema.graphql`) รันคำสั่งนี้ในรูทไดเร็กทอรีของโปรเจ็กต์
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-You'll find the generated models in the `/src/types/models` directory
+คุณจะพบโมเดลที่สร้างขึ้นในไดเร็กทอรี `/src/types/models`
 
-## Build the Project
+## การ build โปรเจ็กต์
 
-In order run your SubQuery Project on a locally hosted SubQuery Node, you need to build your work.
+ในการรันโปรเจ็กต์ SubQuery ของคุณบนโหนด SubQuery ที่โฮสต์ในเครื่อง คุณต้อง build งานของคุณ
 
-Run the build command from the project's root directory.
+รันคำสั่ง build จากรูทไดเร็กทอรีของโปรเจ็กต์
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-## Running and Querying your Starter Project
+## การรันและการ query Starter Project ของคุณ
 
-Although you can quickly publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network), the easiest way to run SubQuery nodes locally is in a Docker container, if you don't already have Docker you can install it from [docker.com](https://docs.docker.com/get-docker/).
+แม้ว่าคุณจะเผยแพร่โปรเจ็กต์ใหม่ของคุณไปยัง [SubQuery Projects](https://project.subquery.network) ได้อย่างรวดเร็วและสามารถสืบค้นโดยใช้ [Explorer](https://explorer.subquery.network) ของเรา แต่วิธีที่ง่ายที่สุดในการรันโหนด SubQuery ภายในเครื่องคือการรันภายในคอนเทนเนอร์ Docker ถ้า คุณยังไม่มี Docker คุณสามารถติดตั้งได้จาก [docker.com](https://docs.docker.com/get-docker/).
 
-[_Skip this and publish your new project to SubQuery Projects_](../publish/publish.md)
+[_ข้ามสิ่งนี้และเผยแพร่โครงการใหม่ของคุณไปยัง SubQuery Projects_](../publish/publish.md)
 
-### Run your SubQuery Project
+### รัน SubQuery Project ของคุณ
 
-All configuration that controls how a SubQuery node is run is defined in this `docker-compose.yml` file. For a new project that has been just initalised you won't need to change anything here, but you can read more about the file and the settings in our [Run a Project section](../run/run.md)
+การกำหนดค่าทั้งหมดที่ควบคุมวิธีการเรียกใช้โหนด SubQuery จะถูกกำหนดในไฟล์ `docker-compose.yml` นี้ สำหรับโปรเจ็กต์ใหม่ที่เพิ่งเริ่มต้น คุณไม่จำเป็นต้องเปลี่ยนแปลงอะไรในนี้ แต่คุณสามารถอ่านเพิ่มเติมเกี่ยวกับไฟล์และการตั้งค่าได้ใน [ส่วนการรันโปรเจ็กต์](../run/run.md)
 
-Under the project directory run following command:
+ให้รันคำสั่งต่อไปนี้ ภายใต้ไดเร็กทอรีของโปรเจ็กต์:
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+อาจใช้เวลาสักครู่ในการดาวน์โหลดแพ็คเกจที่จำเป็น ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) และ Postgres) ในครั้งแรก แต่ในไม่ช้าคุณจะเห็นการทำงานของโหนด SubQuery
 
-### Query your Project
+### การ query โปรเจ็กต์ของคุณ
 
-Open your browser and head to [http://localhost:3000](http://localhost:3000).
+เปิดเบราว์เซอร์ของคุณและไปที่ [http://localhost:3000](http://localhost:3000)
 
-You should see a GraphQL playground is showing in the explorer and the schemas that are ready to query. On the top right of the playground, you'll find a _Docs_ button that will open a documentation draw. This documentation is automatically generated and helps you find what entities and methods you can query.
+คุณควรเห็น GraphQL playground แสดงใน explorer และ schemas ที่พร้อมสำหรับการ query ที่ด้านบนขวาของ Playground คุณจะพบปุ่ม _Docs_ ที่จะเปิดการร่างเอกสาร This documentation is automatically generated and helps you find what entities and methods you can query.
 
 For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
 
