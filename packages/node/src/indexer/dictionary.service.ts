@@ -8,7 +8,8 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { SubqlEventFilter, SubqlCallFilter, MetaData } from '@subql/common';
+import { MetaData } from '@subql/common';
+import { SubqlCallFilter, SubqlEventFilter } from '@subql/types';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
@@ -144,7 +145,7 @@ export class DictionaryService implements OnApplicationShutdown {
         nodes{
           id
           blockHeight
-        }        
+        }
       }`;
     baseQuery = baseQuery.concat(metaQuery, specVersionQuery);
     if (indexEvents.length > 0) {

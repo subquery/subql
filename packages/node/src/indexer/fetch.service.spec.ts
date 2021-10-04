@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectManifestVersioned, SubqlKind } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common';
+import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
-import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
+import { DsPluginService } from './ds-plugin.service';
 import { FetchService } from './fetch.service';
 
 jest.mock('../utils/substrate', () =>
@@ -178,11 +179,13 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
+    const dsPluginService = new DsPluginService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
       project,
       dictionaryService,
+      dsPluginService,
       new EventEmitter2(),
     );
     await fetchService.init();
@@ -196,11 +199,13 @@ describe('FetchService', () => {
     const apiService = mockRejectedApiService();
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
+    const dsPluginService = new DsPluginService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
       project,
       dictionaryService,
+      dsPluginService,
       new EventEmitter2(),
     );
     await fetchService.init();
@@ -211,11 +216,13 @@ describe('FetchService', () => {
     const batchSize = 50;
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
+    const dsPluginService = new DsPluginService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       new EventEmitter2(),
     );
     (fetchService as any).latestFinalizedHeight = 1000;
@@ -233,11 +240,13 @@ describe('FetchService', () => {
     );
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
+    const dsPluginService = new DsPluginService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       new EventEmitter2(),
     );
     fetchService.fetchMeta = jest.fn();
@@ -261,13 +270,13 @@ describe('FetchService', () => {
     project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlKind.Runtime,
+        kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           handlers: [
             {
               handler: 'handleCall',
-              kind: 'substrate/CallHandler',
+              kind: SubqlHandlerKind.Call,
               filter: {
                 module: 'utility',
                 method: 'batchAll',
@@ -280,12 +289,14 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
+    const dsPluginService = new DsPluginService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       eventEmitter,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -323,13 +334,13 @@ describe('FetchService', () => {
     project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlKind.Runtime,
+        kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           handlers: [
             {
               handler: 'handleBond',
-              kind: 'substrate/EventHandler',
+              kind: SubqlHandlerKind.Event,
               filter: {
                 module: 'staking',
                 method: 'Bonded',
@@ -340,12 +351,14 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService2();
+    const dsPluginService = new DsPluginService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       eventEmitter,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -384,13 +397,13 @@ describe('FetchService', () => {
     project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlKind.Runtime,
+        kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           handlers: [
             {
               handler: 'handleBond',
-              kind: 'substrate/EventHandler',
+              kind: SubqlHandlerKind.Event,
               filter: {
                 module: 'staking',
                 method: 'Bonded',
@@ -401,12 +414,14 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService3();
+    const dsPluginService = new DsPluginService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       eventEmitter,
     );
     await fetchService.init();
@@ -439,13 +454,13 @@ describe('FetchService', () => {
     project.projectManifest.asV0_0_1.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlKind.Runtime,
+        kind: SubqlDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           handlers: [
             {
               handler: 'handleBond',
-              kind: 'substrate/EventHandler',
+              kind: SubqlHandlerKind.Event,
               filter: {
                 module: 'staking',
                 method: 'Bonded',
@@ -456,12 +471,14 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService1();
+    const dsPluginService = new DsPluginService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
+      dsPluginService,
       eventEmitter,
     );
     const nextEndBlockHeightSpy = jest.spyOn(

@@ -6,13 +6,13 @@ import { RegisteredTypes } from '@polkadot/types/types';
 import {
   loadProjectManifest,
   parseChainTypes,
-  SubqlDataSource,
   ProjectNetworkConfig,
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
   loadFromJsonOrYaml,
 } from '@subql/common';
+import { SubqlDatasource } from '@subql/types';
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
@@ -85,7 +85,7 @@ export class SubqueryProject {
   get path(): string {
     return this._path;
   }
-  get dataSources(): SubqlDataSource[] {
+  get dataSources(): SubqlDatasource[] {
     return this._projectManifest.dataSources;
   }
   get schema(): string {

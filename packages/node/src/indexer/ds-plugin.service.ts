@@ -4,7 +4,11 @@
 import assert from 'assert';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { SubqlDatasourcePlugin, SubqlNetworkFilter } from '@subql/types';
+import {
+  SubqlCustomDatasource,
+  SubqlDatasourcePlugin,
+  SubqlNetworkFilter,
+} from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
@@ -66,27 +70,30 @@ export class DsPluginSandbox extends NodeVM {
 
 @Injectable()
 export class DsPluginService {
-  private pluginCache: SubqlDatasourcePlugin<string, SubqlNetworkFilter>[];
+  private pluginCache: {
+    [entry: string]: SubqlDatasourcePlugin<string, SubqlNetworkFilter>;
+  };
   constructor(private project: SubqueryProject) {}
 
   getDsPlugin<D extends string, T extends SubqlNetworkFilter>(
-    dsIdx: number,
+    ds: SubqlCustomDatasource<string, T>,
   ): SubqlDatasourcePlugin<D, T> {
-    if (!this.pluginCache[dsIdx]) {
-      const ds = this.project.dataSources[dsIdx];
+    if (!this.pluginCache[ds.processor.file]) {
       if (isCustomDs(ds)) {
         const sandbox = new DsPluginSandbox({
           root: this.project.path,
           entry: ds.processor.file,
         });
         try {
-          this.pluginCache[dsIdx] = sandbox.getDsPlugin<D, T>();
+          this.pluginCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
         } catch (e) {
-          logger.error(`not supported ds @${dsIdx}`);
+          logger.error(`not supported ds @${ds.kind}`);
           throw e;
         }
       }
     }
-    return this.pluginCache[dsIdx] as unknown as SubqlDatasourcePlugin<D, T>;
+    return this.pluginCache[
+      ds.processor.file
+    ] as unknown as SubqlDatasourcePlugin<D, T>;
   }
 }

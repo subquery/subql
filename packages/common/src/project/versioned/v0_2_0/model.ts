@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {Mapping, RuntimeDataSourceBase} from '../../models';
@@ -31,12 +32,12 @@ export class ProjectMappingV0_2_0 extends Mapping {
 }
 
 export class RuntimeDataSourceV0_2_0Impl
-  extends RuntimeDataSourceBase<SubqlMappingV0_2_0>
+  extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
   implements RuntimeDataSourceV0_2_0
 {
   @Type(() => ProjectMappingV0_2_0)
   @ValidateNested()
-  mapping: SubqlMappingV0_2_0;
+  mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
 }
 
 export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_2_0 {

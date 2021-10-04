@@ -6,22 +6,23 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import {
-  isBlockHandlerProcessor,
-  isCallHandlerProcessor,
-  isEventHandlerProcessor,
-} from '@subql/common/project/utils';
-import {
   buildSchema,
   getAllEntitiesRelations,
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSrouceV0_0_1,
 } from '@subql/common';
 import {
+  isBlockHandlerProcessor,
+  isCallHandlerProcessor,
+  isEventHandlerProcessor,
+} from '@subql/common/project/utils';
+import {
   SubqlCustomDatasource,
-  SubqlDataSource,
+  SubqlCustomHandler,
+  SubqlDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
-  SubqlRuntimeDatasource,
+  SubqlRuntimeHandler,
 } from '@subql/types';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -29,11 +30,11 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { isCustomDs, isRuntimeDs } from '../utils/project';
+import { getProjectEntry, isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { getDsPlugin } from './datasourcePlugins/helper';
+import { DsPluginService } from './ds-plugin.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
@@ -49,57 +50,31 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('indexer');
 const { argv } = getYargsOption();
 
-// We cache this to avoid repeated reads from fs
-const projectEntryCache: Record<string, string> = {};
-
-function getProjectEntry(root: string): string {
-  const pkgPath = path.join(root, 'package.json');
-  try {
-    if (!projectEntryCache[pkgPath]) {
-      const content = fs.readFileSync(pkgPath).toString();
-      const pkg = JSON.parse(content);
-      if (!pkg.main) {
-        return './dist';
-      }
-      projectEntryCache[pkgPath] = pkg.main.startsWith('./')
-        ? pkg.main
-        : `./${pkg.main}`;
-    }
-
-    return projectEntryCache[pkgPath];
-  } catch (err) {
-    throw new Error(
-      `can not find package.json within directory ${this.option.root}`,
-    );
-  }
-}
-
 @Injectable()
 export class IndexerManager {
   private vms: Record<string, IndexerSandbox> = {};
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
-  private filteredDataSources: (
-    | SubqlRuntimeDatasource
-    | SubqlCustomDatasource<string, SubqlNetworkFilter>
-  )[];
+  private filteredDataSources: SubqlDatasource[];
 
   constructor(
-    protected apiService: ApiService,
-    protected storeService: StoreService,
-    protected fetchService: FetchService,
-    protected poiService: PoiService,
+    private apiService: ApiService,
+    private storeService: StoreService,
+    private fetchService: FetchService,
+    private poiService: PoiService,
     protected mmrService: MmrService,
-    protected sequelize: Sequelize,
-    protected project: SubqueryProject,
-    protected nodeConfig: NodeConfig,
+    private sequelize: Sequelize,
+    private project: SubqueryProject,
+    private nodeConfig: NodeConfig,
+    private dsPluginService: DsPluginService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
 
   @profiler(argv.profiler)
-  async indexBlock({ block, events, extrinsics }: BlockContent): Promise<void> {
+  async indexBlock(blockContent: BlockContent): Promise<void> {
+    const { block, events, extrinsics } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -114,87 +89,18 @@ export class IndexerManager {
       for (const ds of this.filteredDataSources) {
         const vm = this.vms[this.getDataSourceEntry(ds)];
         if (isRuntimeDs(ds)) {
-          for (const handler of ds.mapping.handlers) {
-            switch (handler.kind) {
-              case SubqlHandlerKind.Block:
-                if (SubstrateUtil.filterBlock(block, handler.filter)) {
-                  await vm.securedExec(handler.handler, [block]);
-                }
-                break;
-              case SubqlHandlerKind.Call: {
-                const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
-                  extrinsics,
-                  handler.filter,
-                );
-                for (const e of filteredExtrinsics) {
-                  await vm.securedExec(handler.handler, [e]);
-                }
-                break;
-              }
-              case SubqlHandlerKind.Event: {
-                const filteredEvents = SubstrateUtil.filterEvents(
-                  events,
-                  handler.filter,
-                );
-                for (const e of filteredEvents) {
-                  await vm.securedExec(handler.handler, [e]);
-                }
-                break;
-              }
-              default:
-            }
-          }
+          await this.indexBlockForRuntimeDs(
+            vm,
+            ds.mapping.handlers,
+            blockContent,
+          );
         } else if (isCustomDs(ds)) {
-          const plugin = getDsPlugin(ds.kind);
-          for (const handler of ds.mapping.handlers) {
-            const processor = plugin.handlerProcessors[handler.kind];
-            if (isBlockHandlerProcessor(processor)) {
-              const transformedOutput = processor.transformer(block, ds);
-              if (
-                processor.filterProcessor(handler.filter, transformedOutput, ds)
-              ) {
-                await this.vm.securedExec(handler.handler, [transformedOutput]);
-              }
-            } else if (isCallHandlerProcessor(processor)) {
-              const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
-                extrinsics,
-                processor.baseFilter,
-              );
-              for (const extrinsic of filteredExtrinsics) {
-                const transformedOutput = processor.transformer(extrinsic, ds);
-                if (
-                  processor.filterProcessor(
-                    handler.filter,
-                    transformedOutput,
-                    ds,
-                  )
-                ) {
-                  await this.vm.securedExec(handler.handler, [
-                    transformedOutput,
-                  ]);
-                }
-              }
-            } else if (isEventHandlerProcessor(processor)) {
-              const filteredEvents = SubstrateUtil.filterEvents(
-                events,
-                processor.baseFilter,
-              );
-              for (const event of filteredEvents) {
-                const transformedOutput = processor.transformer(event, ds);
-                if (
-                  processor.filterProcessor(
-                    handler.filter,
-                    transformedOutput,
-                    ds,
-                  )
-                ) {
-                  await this.vm.securedExec(handler.handler, [
-                    transformedOutput,
-                  ]);
-                }
-              }
-            }
-          }
+          await this.indexBlockForCustomDs(
+            ds,
+            vm,
+            ds.mapping.handlers,
+            blockContent,
+          );
         }
         // TODO: support Ink! and EVM
       }
@@ -387,7 +293,7 @@ export class IndexerManager {
     return Number(nextval);
   }
 
-  private filterDataSources(): SubqlDataSource[] {
+  private filterDataSources(): SubqlDatasource[] {
     const dataSourcesFilteredSpecName = this.getDataSourcesForSpecName();
     if (dataSourcesFilteredSpecName.length === 0) {
       logger.error(
@@ -407,7 +313,7 @@ export class IndexerManager {
     return dataSourcesFilteredStartBlock;
   }
 
-  private getDataSourcesForSpecName(): SubqlDataSource[] {
+  private getDataSourcesForSpecName(): SubqlDatasource[] {
     return this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
@@ -417,11 +323,106 @@ export class IndexerManager {
     );
   }
 
-  private getDataSourceEntry(dataSource: SubqlDataSource): string {
+  private getDataSourceEntry(dataSource: SubqlDatasource): string {
     if (isRuntimeDataSourceV0_2_0(dataSource)) {
       return dataSource.mapping.file;
     } else {
       return getProjectEntry(this.project.path);
+    }
+  }
+
+  private async indexBlockForRuntimeDs(
+    vm: IndexerSandbox,
+    handlers: SubqlRuntimeHandler[],
+    { block, events, extrinsics }: BlockContent,
+  ): Promise<void> {
+    for (const handler of handlers) {
+      switch (handler.kind) {
+        case SubqlHandlerKind.Block:
+          if (SubstrateUtil.filterBlock(block, handler.filter)) {
+            await vm.securedExec(handler.handler, [block]);
+          }
+          break;
+        case SubqlHandlerKind.Call: {
+          const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
+            extrinsics,
+            handler.filter,
+          );
+          for (const e of filteredExtrinsics) {
+            await vm.securedExec(handler.handler, [e]);
+          }
+          break;
+        }
+        case SubqlHandlerKind.Event: {
+          const filteredEvents = SubstrateUtil.filterEvents(
+            events,
+            handler.filter,
+          );
+          for (const e of filteredEvents) {
+            await vm.securedExec(handler.handler, [e]);
+          }
+          break;
+        }
+        default:
+      }
+    }
+  }
+
+  private async indexBlockForCustomDs(
+    ds: SubqlCustomDatasource<string, SubqlNetworkFilter>,
+    vm: IndexerSandbox,
+    handlers: SubqlCustomHandler<string, unknown>[],
+    { block, events, extrinsics }: BlockContent,
+  ): Promise<void> {
+    const plugin = this.dsPluginService.getDsPlugin(ds);
+    for (const handler of ds.mapping.handlers) {
+      const processor = plugin.handlerProcessors[handler.kind];
+      if (isBlockHandlerProcessor(processor)) {
+        const transformedOutput = processor.transformer(block, ds);
+        if (
+          processor.filterProcessor(
+            handler.filter as any,
+            transformedOutput,
+            ds,
+          )
+        ) {
+          await vm.securedExec(handler.handler, [transformedOutput]);
+        }
+      } else if (isCallHandlerProcessor(processor)) {
+        const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
+          extrinsics,
+          processor.baseFilter,
+        );
+        for (const extrinsic of filteredExtrinsics) {
+          const transformedOutput = processor.transformer(extrinsic, ds);
+          if (
+            processor.filterProcessor(
+              handler.filter as any,
+              transformedOutput,
+              ds,
+            )
+          ) {
+            await vm.securedExec(handler.handler, [transformedOutput]);
+          }
+        }
+      } else if (isEventHandlerProcessor(processor)) {
+        const filteredEvents = SubstrateUtil.filterEvents(
+          events,
+          processor.baseFilter,
+        );
+        for (const event of filteredEvents) {
+          const transformedOutput = processor.transformer(event, ds);
+          if (
+            processor.filterProcessor(
+              handler.filter as any,
+              transformedOutput,
+              ds,
+            )
+          ) {
+            await vm.securedExec(handler.handler, [transformedOutput]);
+          }
+        }
+      }
     }
   }
 }
