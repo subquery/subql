@@ -5,9 +5,9 @@
 ## Temel İş Akışı
 Aşağıdaki örneklerden bazıları, başlangıç paketini [Quick start](../quickstart/quickstart.md) bölümünde başarıyla başlatmış olduğunuzu varsayar. Bu başlangıç paketinden, SubQuery projenizi özelleştirmek ve uygulamak için standart süreçten geçeceğiz.
 
-1. PROJECT_NAME</0 `subql init kullanarak projenizi başlatın></li>
-<li>Bildirim dosyasını (<code>project.yaml`) blok zinciriniz ve eşleyeceğiniz varlıklar hakkında bilgi içerecek şekilde güncelleştirin - bkz[Manifest Dosyası](./manifest.md)
-3. Şemanızda (`schema.graphql`) ayıklayacağınız ve sorgulamak için sürdüreceğiniz verilerin şeklini tanımlayan GraphQL varlıkları oluşturun - bkz. [GraphQL Şeması](./graphql.md)
+1. `subql init PROJECT_NAME` kullanarak projenizi başlatın
+2. Manifest dosyasını (`project.yaml`) blok zinciriniz ve eşleyeceğiniz varlıklar hakkında bilgi içerecek şekilde güncelleştirin - bkz [Manifest File](./manifest.md)
+3. Şemanızda (`schema.graphql`) ayıklayacağınız ve sorgulamak için sürdüreceğiniz verilerin şeklini tanımlayan GraphQL varlıkları oluşturun - bkz [GraphQL Şeması](./graphql.md)
 4. Zincir verilerini tanımladığınız GraphQL varlıklarına dönüştürmek için çağırmak istediğiniz tüm eşleme işlevlerini (örneğin`mappingHandlers.ts`) ekleyin - bkz[Mapping](./mapping.md)
 5. Kodunuzu SubQuery Projects oluşturun, oluşturun ve yayımlayın (veya kendi yerel düğümünüzde çalıştırın) - hızlı başlangıç kılavuzumuzda [ Starter Projenizi Çalıştırma ve Sorgulama](./quickstart.md#running-and-querying-your-starter-project) bakın.
 
@@ -16,16 +16,16 @@ Aşağıdaki örneklerden bazıları, başlangıç paketini [Quick start](../qui
 Aşağıdaki eşleme, `init` komutu çalıştırıldığında, Bir SubQuery projesinin dizin yapısına genel bir bakış sağlar.
 
 ```
-- proje adı
-  L paketi.json
-  L projesi.yaml
+- project-name
+  L package.json
+  L project.yaml
   L README.md
-  L şeması.graphql
+  L schema.graphql
   L tsconfig.json
   L docker-compose.yml
   L src
-    L dizini.ts
-    L eşlemeleri
+    L index.ts
+    L mappings
       L mappingHandlers.ts
   L .gitignore
 ```
@@ -39,10 +39,10 @@ Mesela:
 GraphQL varlıklarınızı her değiştirdiğinizde, türler dizininizi aşağıdaki komutla yeniden değiştirmeniz gerekir.
 
 ```
-iplik kodgeni
+yarn codegen
 ```
 
-Bu, daha önce `schema.graphql<` tanımladığınız her tür için oluşturulan varlık sınıflarını içeren yeni bir dizin (veya varolan) `src/types` oluşturur. Bu sınıflar varlık alanlarına tür açısından güvenli varlık yükleme, okuma ve yazma erişimi sağlar - [ GraphQL Şeması](./graphql.md) bu işlem hakkında daha fazla bilgi edinin.
+Bu, daha önce `schema.graphql` tanımladığınız her tür için oluşturulan varlık sınıflarını içeren yeni bir dizin (veya varolan) `src/types` oluşturur. Bu sınıflar varlık alanlarına tür açısından güvenli varlık yükleme, okuma ve yazma erişimi sağlar - [ GraphQL Şeması](./graphql.md) bu işlem hakkında daha fazla bilgi edinin.
 
 ## Yapmak
 
@@ -58,9 +58,9 @@ Yapı komutunu projenin kök dizininden çalıştırın.
 The `console.log` yöntemi **artık desteklenmiyor**. Bunun yerine, türlere `logger` modülü eklenmiştir, bu da çeşitli günlük düzeylerini kabul edebilecek bir günlükçü destekleyebileceğimiz anlamına gelir.
 
 ```typescript
-logger.info('Bilgi düzeyi mesajı');
-logger.debug('Hata ayıklayıcı düzeyi iletisi');
-logger.warn('Uyarı düzeyi iletisi');
+logger.info('Info level message');
+logger.debug('Debugger level message');
+logger.warn('Warning level message');
 ```
 
 `logger.info` veya `logger.warn` kullanmak için, satırı eşleme dosyanıza yerleştirmeniz yeterlidir.
