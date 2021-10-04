@@ -105,9 +105,9 @@ docker-compose pull && docker-compose up
 
 เปิดเบราว์เซอร์ของคุณและไปที่ [http://localhost:3000](http://localhost:3000)
 
-คุณควรเห็น GraphQL playground แสดงใน explorer และ schemas ที่พร้อมสำหรับการ query ที่ด้านบนขวาของ Playground คุณจะพบปุ่ม _Docs_ ที่จะเปิดการร่างเอกสาร This documentation is automatically generated and helps you find what entities and methods you can query.
+คุณควรเห็น GraphQL playground แสดงใน explorer และ schemas ที่พร้อมสำหรับการ query ที่ด้านบนขวาของ Playground คุณจะพบปุ่ม _Docs_ ที่จะเปิดการร่างเอกสาร เอกสารนี้ถูกสร้างขึ้นโดยอัตโนมัติและช่วยให้คุณค้นหา entities และ methods ที่คุณสามารถค้นหาได้
 
-For a new SubQuery starter project, you can try the following query to get a taste of how it works or [learn more about the GraphQL Query language](../query/graphql.md).
+สำหรับ SubQuery starter project ใหม่ คุณสามารถลองใช้ query ต่อไปนี้เพื่อดูว่ามันทำงานอย่างไร หรือ [เรียนรู้เพิ่มเติมเกี่ยวกับภาษาของ GraphQL Query](../query/graphql.md)
 
 ```graphql
 {
@@ -123,8 +123,8 @@ For a new SubQuery starter project, you can try the following query to get a tas
 }
 ```
 
-## Next Steps
+## ขั้นตอนถัดไป
 
-Congratulations, you now have a locally running SubQuery project that accepts GraphQL API requests for sample data. In the next guide, we'll show you how to publish your new project to [SubQuery Projects](https://project.subquery.network) and query it using our [Explorer](https://explorer.subquery.network)
+ยินดีด้วย ตอนนี้คุณมีโปรเจ็กต์ SubQuery ที่ทำงานอยู่ในเครื่อง ซึ่งยอมรับ GraphQL API requests สำหรับข้อมูลตัวอย่างแล้ว ในคู่มือถัดไป เราจะแสดงวิธีเผยแพร่โปรเจ็กต์ใหม่ของคุณไปยัง [SubQuery Projects](https://project.subquery.network) และการสืบค้นโดยใช้ [ Explorer ](https://explorer.subquery.network) ของเรา
 
-[Publish your new project to SubQuery Projects](../publish/publish.md)
+[เผยแพร่โปรเจ็กต์ใหม่ของคุณไปยัง SubQuery Projects](../publish/publish.md)
