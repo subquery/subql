@@ -4,23 +4,23 @@ Eşleme işlevleri, zincir verilerinin daha önce `schema.graphql` dosyasında t
 
 Eşlemeler, WASM'ye (WebAssembly) derlenebilen AssemblyScript adlı TypeScript'in bir alt kümesine yazılır.
 - Eşlemeler `src/mappings` dizininde tanımlanır ve işlev olarak verilir
-- Bu eşlemeler ayrıca `src/index.ts</0 olarak da verilir></li>
-<li>Eşleme dosyaları, eşleme işleyicileri altında <code>project.yaml` başvurudur.
+- Bu eşlemeler ayrıca `src/index.ts` olarak da verilir
+- Eşleme dosyaları, eşleme işleyicileri altında `project.yaml` başvurudur.
 
-Eşleme işlevlerinin üç sınıfı vardır; [>](#block-handler), [Evli İşlercileri](#event-handler) ve [Call Işleyicileri](#call-handler).
+Eşleme işlevlerinin üç sınıfı vardır; [Block handlers](#block-handler), [Event Handlers](#event-handler) ve [Call Handlers](#call-handler).
 
 ## Blok işleyicisi
 
 Alt tabaka zincirine her yeni blok eklendiğinde bilgi yakalamak için blok işleyicilerini kullanabilirsiniz. Bunu başarmak için, tanımlanan bir BlockHandler her blok için bir kez çağrılır.
 
 ```ts
-{SubstrateBlock} öğesini "@subql/türler"den alın;
+import {SubstrateBlock} from "@subql/types";
 
-zaman uyumsuz işlev tanıtıcısını dışa aktarmaBlock(blok: SubstrateBlock): Promise<void> {
-    Kimliği olduğu için blok karmasıyla yeni bir StarterEntity oluşturma
-    const record = yeni starterEntity(block.block.header.hash.toString());
+export async function handleBlock(block: SubstrateBlock): Promise<void> {
+    // Create a new StarterEntity with the block hash as it's ID
+    const record = new starterEntity(block.block.header.hash.toString());
     record.field1 = block.block.header.number.toNumber();
-    record.save();
+    await record.save();
 }
 ```
 
@@ -33,15 +33,15 @@ Belirli olaylar yeni bir bloğa eklendiğinde bilgi yakalamak için olay işleyi
 İşlem sırasında, olay işleyicisi, olayın yazılan girişleri ve çıktılarıyla bağımsız değişken olarak bir alt tabaka olayı alır. Her türlü olay eşlemeyi tetikleyerek veri kaynağıyla etkinliğin yakalanmasına izin verir. Verileri dizine alma süresini azaltmak ve eşleme performansını artırmak için olayları filtrelemek için bildiriminizde [Mapping Filters](./manifest.md#mapping-filters) kullanmalısınız.
 
 ```ts
-{Substrate Event} öğesini "@subql/türler"den alın;
+mport {SubstrateEvent} from "@subql/types";
 
-zaman uyumsuz işlevini dışa aktarma handleEvent(olay: SubstratEvent): Promise<void> {
-    const {olay: {data: [account, balance]}} = olay;
-    // Kaydı kimliğine göre alma
-    const record = yeni starterEntity(event.extrinsic.block.block.header.hash.toString());
+export async function handleEvent(event: SubstrateEvent): Promise<void> {
+    const {event: {data: [account, balance]}} = event;
+    // Retrieve the record by its ID
+    const record = new starterEntity(event.extrinsic.block.block.header.hash.toString());
     record.field2 = account.toString();
-    record.field3 = (Bakiye olarak denge).toBigInt();
-    record.save();
+    record.field3 = (balance as Balance).toBigInt();
+    await record.save();
 ```
 
 [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) [Event Record](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) genişletilmiş arabirim türüdür. Olay verilerinin yanı sıra, bir `id` (bu olayın ait olduğu blok) ve bu bloğun dışsal iç kısmını da içerir.
@@ -51,10 +51,10 @@ zaman uyumsuz işlevini dışa aktarma handleEvent(olay: SubstratEvent): Promise
 Çağrı işleyicileri, belirli substrat dış değerleri hakkında bilgi yakalamak istediğinizde kullanılır.
 
 ```ts
-zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = yeni starterEntity(extrinsic.block.block.header.hash.toString());
+export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
     record.field4 = extrinsic.block.timestamp;
-    record.save();
+    await record.save();
 }
 ```
 
@@ -64,39 +64,39 @@ zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateEx
 Amacımız, işleyicileri eşlemek için kullanıcılar için tüm veri kaynaklarını kapsamaktır (yukarıdaki üç arabirim olay türünden daha fazlası). Bu nedenle, yetenekleri artırmak için @polkadot /api arabirimlerinden bazılarını kullanıma açtık.
 
 Şu anda desteklediğimiz arayüzler şunlardır:
-- [api.query. <module>. <method>()](https://polkadot.js.org/docs/api/start/api.query) <strong>current</strong> bloğunu sorgular.
-- [api.query. <module>. <method>.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) geçerli blokta <strong>same</strong> türünde birden çok sorgu yapar.
+- [api.query. &lt;module&gt;. &lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) <strong>current</strong> bloğunu sorgular.
+- [api.query. &lt;module&gt;. &lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) geçerli blokta <strong>same</strong> türünde birden çok sorgu yapar.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) geçerli blokta <strong>different</strong> türlerinin birden çok sorgusunu yapar.
 
 Şu anda desteklediğimiz **NOT** arabirimler şunlardır:
-- ~~api.tx.*~
+- ~~api.tx.*~~
 - ~~api.derive.*~~
-- ~~api. sorgu. <module>. <method>.at~~
-- ~~api.query. <module>. <method>.tries Şunda~~
-- ~~api.query. <module>. <method>.tries Sayfalı~~
-- ~~api.query. <module>. <method>. karma~~
-- ~~api.query. <module>. <method>.keys At ~~
-- ~~api.query. <module>. <method> tuşları Sayfalı~~
-- ~~api.query. <module>. <method> menzil~~
-- ~~api.query. <module>. <method>.size ~ ~
+- ~~api. sorgu. &lt;module&gt;. &lt;method&gt;.at~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.hash~~
+- ~~api.query. &lt;module&gt;. &lt;method&gt;.keys At ~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.keysPaged~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-Bu API'> [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) örnek kullanım örneğimizde kullanma örneğine bakın.
+Bu API' [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) örnek kullanım örneğimizde kullanma örneğine bakın.
 
 ## RPC çağrıları
 
 Ayrıca, eşleme işlevinin gerçek düğüm, sorgu ve gönderim ile etkileşime girmesine izin veren uzaktan çağrılar olan bazı API RPC yöntemlerini de destekliyoruz. SubQuery'nin temel öncülü, deterministik olmasıdır ve bu nedenle sonuçları tutarlı tutmak için yalnızca geçmiş RPC çağrılarına izin veririz.
 
-[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) belgeler< giriş parametresi olarak `BlockHash` alan bazı yöntemler sağlar (örneğin, `at?: BlockHash`). Bu yöntemleri, varsayılan olarak geçerli dizin oluşturma bloğu karmasını alacak şekilde de değiştirdik.
+[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) belgeler giriş parametresi olarak `BlockHash` alan bazı yöntemler sağlar (örneğin, `at?: BlockHash`). Bu yöntemleri, varsayılan olarak geçerli dizin oluşturma bloğu karmasını alacak şekilde de değiştirdik.
 
 ```typescript
 // Diyelim ki şu anda bu karma numaraya sahip bir bloğu dizine ekleniyoruz
-const blockhash = '0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a';
+const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
 
 // Özgün yöntemin isteğe bağlı girişi vardır: blok karma
-const b1 = api.rpc.chain.getBlock(blockhash) bekliyoruz;
+const b1 = await api.rpc.chain.getBlock(blockhash);
 
 // Geçerli bloğun varsayılan olarak böyle olduğunu kullanır
-const b2 = api.rpc.chain.getBlock();
+const b2 = await api.rpc.chain.getBlock();
 ```
 - [Özel Substrat Zincirleri](#custom-substrate-chains) RPC çağrıları için [kullanım](#usage) konusuna bakın.
 
@@ -113,13 +113,13 @@ Bunun ** deneysel bir özellik olduğunu unutmayın** ve eşleme işlevlerinizi 
 Modülün tamamını almak yerine, yalnızca ihtiyacınız olan gerekli yöntemleri almanızı öneririz. Bu modüllerdeki bazı yöntemlerin desteklenmeyen bağımlılıkları olabilir ve alma işlemi başarısız olur.
 
 ```ts
-{hash Message} öğesini "ethers/lib/utils" öğesinden alın; İyi yol
-{utils} öğesini "ethers" //Bad way öğesinden alma
+import {hashMessage} from "ethers/lib/utils"; //Good way
+import {utils} from "ethers" //Bad way
 
-zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-    const record = yeni starterEntity(extrinsic.block.block.header.hash.toString());
-    record.field1 = karmaMessage('Merhaba');
-    record.save();
+export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
+    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+    record.field1 = hashMessage('Hello');
+    await record.save();
 }
 ```
 
@@ -127,7 +127,7 @@ zaman uyumsuz işlev tanıtıcısını dışa aktarmaCall(extrinsic: SubstrateEx
 
 Sanal makinenin sanal alanımızdaki sınırlamaları nedeniyle, şu anda yalnızca **CommonJS** tarafından yazılmış üçüncü taraf kitaplıkları destekliyoruz.
 
-Ayrıca, varsayılan olarak ESM kullanan `@polkadot/*` gibi **hybrid** bir kitaplığı da destekliyoruz. Ancak, başka kitaplıklar **ESM** biçimindeki modüllere bağımlıysa, sanal makine ** </0 değİl> derlenir ve bir hata döndürür. </p>
+Ayrıca, varsayılan olarak ESM kullanan `@polkadot/*` gibi **hybrid** bir kitaplığı da destekliyoruz. Ancak, başka kitaplıklar **ESM** biçimindeki modüllere bağımlıysa, sanal makine **değİl** derlenir ve bir hata döndürür.
 
 ## Özel Substrat Zincirleri
 
@@ -139,23 +139,23 @@ Aşağıdaki bölümlerde, entegrasyon sürecini açıklamak için [kitty exampl
 
 ### Hazırlık
 
-Gerekli ve oluşturulan tüm dosyaları depolamak için proje `>src` klasörü altında yeni bir dizin `api arabirimleri` oluşturun. Ayrıca, api'ye `kitties` modülünden dekorasyon eklemek istediğimiz için `api-interfaces/kitties` dizini oluşturuyoruz.
+Gerekli ve oluşturulan tüm dosyaları depolamak için proje `src/0> klasörü altında yeni bir dizin <code>api-interfaces` oluşturun. Ayrıca, api'ye `kitties` modülünden dekorasyon eklemek istediğimiz için `api-interfaces/kitties` dizini oluşturuyoruz.
 
 #### Meta veriler
 
 Gerçek API uç noktalarını oluşturmak için meta verilere ihtiyacımız var. Kitty örneğinde, yerel bir testnetinden bir uç nokta kullanırız ve ek türler sağlar. Düğümün meta verilerini **HTTP** uç noktasından almak için [PolkadotJS meta veri kurulumu](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup)'daki adımları izleyin.
 
 ```shell
-curl -H "İçerik Türü: uygulama/json" -d '{"id":"1", "jsonrpc":"2.0", "yöntem": "state_getMetadata", "params":[]}' http://localhost:9933
+curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
 veya **websocket** uç noktasından [`websocat`](https://github.com/vi/websocat) yardımıyla:
 
 ```shell
-Websocat'i yükleme
-demleme yükleme websocat
+//Websocat'i yükleme
+brew install websocat
 
-Meta verileri alma
-yankı state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
+//Meta verileri alma
+echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
 Ardından, çıktıyı kopyalayıp bir JSON dosyasına yapıştırın. [kitty örneğimizde](https://github.com/subquery/tutorials-kitty-chain), `api-interface/kitty.json` oluşturduk.
