@@ -94,14 +94,7 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-
-    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged and released
-    const {
-      network: { endpoint },
-    } = this.project;
-    const patchedApi = endpoint.startsWith('ws')
-      ? this.getApi().clone()
-      : new ApiPromise(this.apiOption);
+    const patchedApi = this.getApi().clone();
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',
