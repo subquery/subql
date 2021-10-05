@@ -1,10 +1,10 @@
-# Command Line Flags
+# Flags ต่างๆใน Command Line
 
 ## subql-node
 
 ### --help
 
-This shows the help options.
+คำสั่งนี้จะแสดงตัวเลือกความช่วยเหลือ
 
 ```shell
 > subql-node --help
@@ -41,7 +41,7 @@ Options:
 
 ### --version
 
-This displays the current version.
+คำสั่งนี้จำแสดงเวอร์ชันปัจจุบัน
 
 ```shell
 > subql-node --version
@@ -50,16 +50,16 @@ This displays the current version.
 
 ### -f, --subquery
 
-Use this flag to start the SubQuery project.
+ใช้ flag นี้เพื่อเริ่มการทำงานโปรเจ็กต์ SubQuery
 
 ```shell
-subql-node -f . // OR
+subql-node -f . // หรือ
 subql-node --subquery .
 ```
 
 ### --subquery-name
 
-This flag allows you to provide a name for your project which acts as if it creates an instance of your project. Upon providing a new name, a new database schema is created and block synchronisation starts from zero.
+flag นี้อนุญาตให้คุณระบุชื่อสำหรับโปรเจ็กต์ของคุณ ซึ่งทำหน้าที่เสมือนว่าได้ทำการสร้างอินสแตนซ์ของโปรเจ็กต์ของคุณ เมื่อมีการระบุชื่อใหม่ schema ของฐานข้อมูลใหม่จะถูกสร้างขึ้น และบล็อกการซิงโครไนซ์จะเริ่มต้นจากศูนย์
 
 ```shell
 subql-node -f . --subquery-name=test2
@@ -67,17 +67,17 @@ subql-node -f . --subquery-name=test2
 
 ### -c, --config
 
-All these various configurations can be placed into a .yml or .json file and then referenced with the config flag.
+การกำหนดค่าต่างๆทั้งหมดเหล่านี้สามารถทำได้ในไฟล์ .yml หรือ .json แล้วอ้างอิงด้วย config flag
 
-Sample subquery_config.yml file:
+ตัวอย่างไฟล์ subquery_config.yml
 
 ```shell
-subquery: . // Mandatory. This is the local path of the project. The period here means the current local directory.
-subqueryName: hello // Optional name
-batchSize: 55 // Optional config
+subquery: . // จำเป็นต้องมี นี่คือ local path ของโปรเจ็กต์ ซึ่งหมายถึงไดเร็กทอรีภายในเครื่องปัจจุบัน
+subqueryName: hello // ชื่อเสริม (Optional)
+batchSize: 55 // การกำหนดค่าเสริม (Optional)
 ```
 
-Place this file in the same directory as the project. Then in the current project directory, run:
+วางไฟล์นี้ในไดเร็กทอรีเดียวกันกับโปรเจ็กต์ จากนั้น ในไดเร็กทอรีโปรเจ็กต์ปัจจุบัน ให้รัน:
 
 ```shell
 > subql-node -c ./subquery_config.yml
@@ -85,17 +85,17 @@ Place this file in the same directory as the project. Then in the current projec
 
 ### --local
 
-This flag is primarily used for debugging purposes where it creates the default starter_entity table in the default "postgres" schema.
+flag นี้ใช้เพื่อจุดประสงค์ในการ debug เป็นหลัก โดยจะสร้างตาราง starter_entity เริ่มต้นใน schema "postgres" ที่เป็นค่าเริ่มต้น
 
 ```shell
 subql-node -f . --local
 ```
 
-Note that once you use this flag, removing it won't mean that it will point to another database. To repoint to another database you will have to create a NEW database and change the env settings to this new database. In other words, "export DB_DATABASE=<new_db_here>"
+โปรดทราบว่าเมื่อคุณใช้ flag นี้ การลบ flag นี้ไม่ได้หมายความว่า flag นี้จะชี้ไปที่ฐานข้อมูลอื่น หากต้องการชี้ไปยังฐานข้อมูลอื่น คุณจะต้องสร้างฐานข้อมูลใหม่และเปลี่ยนการตั้งค่า env เป็นฐานข้อมูลใหม่ กล่าวอีกนัยหนึ่ง "export DB_DATABASE=<new_db_here>"
 
 ### --batch-size
 
-This flag allows you to set the batch size in the command line. If batch size is also set in the config file, this takes precedent.
+flag นี้อนุญาตให้คุณตั้งค่าขนาด batch size ผ่าน command line หากมีการตั้งค่า batch size ในไฟล์ config ด้วยเช่นกัน การดำเนินการนี้จะมีความสำคัญเหนือกว่า
 
 ```shell
 > subql-node -f . --batch-size=20
@@ -109,10 +109,10 @@ This flag allows you to set the batch size in the command line. If batch size is
 
 ### --debug
 
-This outputs debug information to the console output and forcefully sets the log level to debug.
+ข้อมูลนี้จะส่งออกข้อมูลการ debug ไปยังเอาต์พุตคอนโซลและบังคับตั้งค่าระดับ log เป็น debug
 
 ```shell
-> subql-node -f . --debug
+> subql-node -f --debug
 2021-08-10T11:45:39.471Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): INSERT INTO "subquery_1"."starter_entities" ("id","block_height","created_at","updated_at") VALUES ($1,$2,$3,$4) ON CONFLICT ("id") DO UPDATE SET "id"=EXCLUDED."id","block_height"=EXCLUDED."block_height","updated_at"=EXCLUDED."updated_at" RETURNING "id","block_height","created_at","updated_at";
 2021-08-10T11:45:39.472Z <db> DEBUG Executing (default): UPDATE "subqueries" SET "next_block_height"=$1,"updated_at"=$2 WHERE "id" = $3
 2021-08-10T11:45:39.472Z <db> DEBUG Executing (1b0d0c23-d7c7-4adb-a703-e4e5c414e035): COMMIT;
@@ -120,7 +120,7 @@ This outputs debug information to the console output and forcefully sets the log
 
 ### --profiler
 
-This shows profiler information.
+ข้อมูลนี้แสดงข้อมูลตัวสร้างโปรไฟล์
 
 ```shell
 subql-node -f . --local --profiler
@@ -132,13 +132,13 @@ subql-node -f . --local --profiler
 
 ### --network-endpoint
 
-This flag allows users to override the network endpoint configuration from the manifest file.
+flag นี้อนุญาตให้ผู้ใช้แทนที่การกำหนดค่า endpoint ของเครือข่ายจากไฟล์ manifest
 
 ```shell
 subql-node -f . --network-endpoint="wss://polkadot.api.onfinality.io/public-ws"
 ```
 
-Note that this must also be set in the manifest file, otherwise you'll get:
+โปรดทราบว่าจะต้องตั้งค่านี้ในไฟล์ manifest ด้วย ไม่เช่นนั้น คุณจะได้รับ:
 
 ```shell
 ERROR Create Subquery project from given path failed! Error: failed to parse project.yaml.
@@ -149,7 +149,7 @@ An instance of ProjectManifestImpl has failed the validation:
 
 ### --output-fmt
 
-There are two different terminal output formats. JSON or colored. Colored is the default and contains colored text.
+มีรูปแบบเอาต์พุตของเทอร์มินัลสองแบบที่แตกต่างกัน JSON หรือ colored โดย colored จะเป็นค่าเริ่มต้นและมีข้อความแบบสี
 
 ```shell
 > subql-node -f . --output-fmt=json
@@ -166,7 +166,7 @@ There are two different terminal output formats. JSON or colored. Colored is the
 
 ### --log-level
 
-There are 7 options to choose from. “fatal”, “error”, “warn”, “info”, “debug”, “trace”, “silent”. The example below shows silent. Nothing will be printed in the terminal so the only way to tell if the node is working or not is to query the database for row count (select count(\*) from subquery_1.starter_entities) or query the block height.
+จะมี 7 ตัวเลือกให้เลือก “fatal”, “error”, “warn”, “info”, “debug”, “trace”, “silent” ตัวอย่างด้านล่างแสดงผลของตัวเลือก silent จะไม่มีการพิมพ์สิ่งใดในเทอร์มินัล ดังนั้นวิธีเดียวที่จะบอกได้ว่าโหนดทำงานหรือไม่คือการสืบค้นฐานข้อมูลสำหรับนับจำนวนแถว (select count(\*) from subquery_1.starter_entities) หรือสืบค้น block height
 
 ```shell
 > subql-node -f . --log-level=silent
@@ -188,31 +188,31 @@ There are 7 options to choose from. “fatal”, “error”, “warn”, “inf
 
 ### --timestamp-field
 
-By default this is true. when set to false with:
+ค่าเริ่มต้นสิ่งนี้ คือ true โดยสามารถตั้งค่าเป็น false ด้วย:
 
 ```shell
 > subql-node -f . –timestamp-field=false
 ```
 
-This removes the created_at and updated_at columns in the starter_entities table.
+สิ่งนี้จะลบคอลัมน์ created_at และ updated_at ในตาราง starter_entities
 
 ### -d, --network-dictionary
 
-This allows you to specify a dictionary endpoint which is a free service that is provided and hosted at: [https://explorer.subquery.network/](https://explorer.subquery.network/) (search for dictionary) and presents an API endpoint of: https://api.subquery.network/sq/subquery/dictionary-polkadot
+สิ่งนี้ทำให้คุณสามารถระบุ dictionary endpoint ซึ่งเป็นบริการฟรีที่มีให้และโฮสต์ที่: [https://explorer.subquery.network/](https://explorer.subquery.network/) (ค้นหา dictionary) และ API endpoint ของ: https://api.subquery.network/sq/subquery/dictionary-polkadot
 
-Typically this would be set in your manifest file but below shows an example of using it as an argument in the command line.
+โดยปกติจะมีการตั้งค่านี้ในไฟล์ manifest ของคุณ แต่ด้านล่างจะแสดงตัวอย่างการใช้แบบเป็น argument ใน command line
 
 ```shell
 subql-node -f . -d "https://api.subquery.network/sq/subquery/dictionary-polkadot"
 ```
 
-[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+[อ่านเพิ่มเติมเกี่ยวกับวิธีการทำงานของ SubQuery Dictionary](../tutorials_examples/dictionary.md)
 
 ## subql-query
 
 ### --help
 
-This shows the help options.
+ซึ่งจะแสดงตัวเลือกความช่วยเหลือ
 
 ```shell
 ns:
@@ -230,7 +230,7 @@ ns:
 
 ### --version
 
-This displays the current version.
+นี่จะแสดงเวอร์ชันปัจจุบัน
 
 ```shell
 > subql-query --version
@@ -239,7 +239,7 @@ This displays the current version.
 
 ### -n, --name
 
-This flag is used to start the query service. If the --subquery-name flag is not provided when running an indexer, the name here will refer to the default project name. If --subquery-name is set, then the name here should match what was set.
+flag นี้ใช้เพื่อเริ่มบริการ query service หากไม่มีการตั้งค่าสถานะ --subquery-name เมื่อทำการรัน indexer ชื่อที่นี่จะอ้างอิงถึงชื่อโปรเจ็กต์เริ่มต้น หากมีการตั้งค่า --subquery-name ชื่อที่นี่ควรตรงกับที่ตั้งไว้
 
 ```shell
 > subql-node -f . // --subquery-name not set
@@ -255,14 +255,14 @@ This flag is used to start the query service. If the --subquery-name flag is not
 
 ### --playground
 
-This flag enables the graphql playground so should always be included by default to be of any use.
+flag นี้เปิดใช้งาน graphql playground ดังนั้นควรใส่ไว้ตามค่าเริ่มต้นเสมอเพื่อการใช้งานใดๆ
 
 ### --output-fmt
 
-See [--output-fmt](https://doc.subquery.network/references/references.html#output-fmt)
+อ่าน [--output-fmt](https://doc.subquery.network/references/references.html#output-fmt)
 
 ### --log-level
 
-See [--log-level](https://doc.subquery.network/references/references.html#log-level)
+อ่าน [--log-level](https://doc.subquery.network/references/references.html#log-level)
 
 <!-- ### --indexer TBA -->
