@@ -43,12 +43,12 @@
 
 ## ข้อตกลงในการเขียนโค้ด
 
-### Git Commit Messages
+### ข้อความในการทำ Git Commit
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
+* ใช้ present tense ("Add feature" ไม่ใช่ "Added feature")
+* ใช้ประโยคแบบ imperative ("Move cursor to..." Moves cursor to...")
+* จำกัดบรรทัดแรกไม่เกิน 72 ตัวอักษร
 
-### JavaScript Styleguide
+### แนวทางรูปแบบสำหรับ JavaScript
 
-* All JavaScript code is linted with Prettier and ESLint
+* โค้ด JavaScript ทั้งหมดถูกครอบด้วย Prettier และ ESLint
