@@ -1,7 +1,6 @@
-// SPDX-License-Identifier: Apache-2.0
-
 // overwrite the official: https://github.com/zmitton/merkle-mountain-range/blob/master/src/digests.js
 // fix the undefined digest issue in original package
+// eslint-disable-next-line header/header
 import Bn from 'bignumber.js';
 import { keccak256 } from 'js-sha3';
 import shajs from 'sha.js';
