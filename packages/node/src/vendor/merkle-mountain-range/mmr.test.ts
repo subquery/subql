@@ -8,7 +8,7 @@ import {
   MMR,
   keccak256FlyHash,
   FileBasedDb,
-} from '@subqlmono/merkle-mountain-range';
+} from '@subql/x-merkle-mountain-range';
 import rimraf from 'rimraf';
 
 describe('Mmr test ', () => {
