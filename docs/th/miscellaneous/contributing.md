@@ -1,16 +1,16 @@
-# Contributing To SubQuery
+# การมีส่วนร่วมใน SubQuery
 
-Welcome and a big thank you for considering contributing to this SubQuery project! Together we can pave the way to a more decentralised future.
+ยินดีต้อนรับและขอขอบคุณเป็นอย่างยิ่งที่สนใจที่จะเข้าร่วมในโปรเจ็กต์ SubQuery นี้! ด้วยความร่วมมือกัน เราจะสามารถปูทางไปสู่อนาคตที่มีการกระจายอำนาจมากขึ้น
 
-> This documentation is actively maintained by the SubQuery team. We welcome your contributions, you can do so by forking our GitHub project and making changes to all the documentation markdown files under the `docs` directory.
+> เอกสารนี้ได้รับการดูแลอย่างกระตือรือร้นโดยทีม SubQuery เรายินดีรับความช่วยเหลือของคุณ คุณสามารถทำได้โดย fork โปรเจ็กต์ GitHub ของเรา และทำการเปลี่ยนแปลงไฟล์ markdown ของเอกสารทั้งหมดภายใต้ไดเร็กทอรี ` docs `
 
-What follows is a set of guidelines (not rules) for contributing to SubQuery. Following these guidelines will help us make the contribution process easy and effective for everyone involved. It also communicates that you agree to respect the time of the developers managing and developing this project. In return, we will reciprocate that respect by addressing your issue, considering changes, collaborating on improvements, and helping you finalise your pull requests.
+ต่อไปนี้เป็นชุดแนวทาง (ไม่ใช่กฎ) สำหรับการมีส่วนร่วมใน SubQuery การปฏิบัติตามหลักเกณฑ์เหล่านี้จะช่วยให้กระบวนการการมีส่วนร่วมเป็นเรื่องง่ายและมีประสิทธิภาพสำหรับทุกคนที่เกี่ยวข้อง นอกจากนี้ยังเป็นการแสดงว่าคุณตกลงที่จะเคารพเวลาของนักพัฒนาที่กำลังจัดการและพัฒนาโปรเจ็กต์นี้ ในทางกลับกัน เราจะตอบแทนความเคารพนั้นด้วยการจัดการกับปัญหาของคุณ พิจารณาการเปลี่ยนแปลง ทำงานร่วมกันในการปรับปรุง และช่วยให้คุณดำเนินการตาม pull requests ของคุณให้เสร็จสิ้น
 
 ## Code of Conduct
 
-We take our open source community projects and responsibility seriously and hold ourselves and other contributors to high standards of communication. By participating and contributing to this project, you agree to uphold our [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md).
+เราให้ความสำคัญกับโปรเจ็กต์โอเพนซอร์สและความรับผิดชอบของชุมชนอย่างจริงจัง และยึดถือตนเองและผู้มีส่วนร่วมอื่นๆให้มีมาตรฐานระดับสูงในการสื่อสาร การเข้าร่วมและมีส่วนร่วมในโปรเจ็กต์นี้แสดงว่าคุณตกลงที่จะรักษา [Code of Conduct](https://github.com/subquery/subql/blob/contributors-guide/CODE_OF_CONDUCT.md) ของเรา
 
-## Getting started
+## เริ่มต้น
 
 Contributions to our repositories are made through Issues and Pull Requests (PRs). A few general guidelines that cover both:
 
