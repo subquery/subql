@@ -10,7 +10,7 @@
 
 Login to SubQuery Projects, and find the project that you want to deploy a new version of. Вы можете выбрать развертывание в производственном или промежуточном слоте. Эти два слота представляют собой изолированные среды, каждый из которых имеет свои собственные базы данных и синхронизируется независимо.
 
-We recommend deploying to your staging slot only for final staging testing or when you need to resync your project data. You can then promote it to production with zero downtime. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
+Мы рекомендуем выполнять развертывание в промежуточный слот только для окончательного промежуточного тестирования или когда вам нужно повторно синхронизировать данные проекта. Затем вы можете продвигать его в производство с нулевым временем простоя. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
 
 The staging slot is perfect for:
 * Final validation of changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
