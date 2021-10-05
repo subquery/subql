@@ -4587,7 +4587,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-vm2": latest
-    "@subqlmono/merkle-mountain-range": 2.0.0-0.1.4
+    "@subqlmono/merkle-mountain-range": 2.0.0-0.1.5
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.12
     "@types/jest": ^26.0.23
@@ -4693,9 +4693,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subqlmono/merkle-mountain-range@npm:2.0.0-0.1.4":
-  version: 2.0.0-0.1.4
-  resolution: "@subqlmono/merkle-mountain-range@npm:2.0.0-0.1.4"
+"@subqlmono/merkle-mountain-range@npm:2.0.0-0.1.5":
+  version: 2.0.0-0.1.5
+  resolution: "@subqlmono/merkle-mountain-range@npm:2.0.0-0.1.5"
   dependencies:
     bignumber.js: ^8.1.1
     buffer: ^5.4.3
@@ -4704,7 +4704,7 @@ __metadata:
     rlp: ^2.2.3
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
-  checksum: 3d3775236474c019e93b6d6d1a5820759c2ba30173c49c84645cfd2ab2f89bdf2bde95caa56c16e8a4b59e0d8e7f2559996ae49cc6135749a16885d41ea915b3
+  checksum: 1ab58bb8d769777e130ba8cc0119bb809d1c78f43d572fd18b2d6de77b2f7d8761873d9bf485201df59e75bae67e080c069c4f51fd66b3daa700150082866da8
   languageName: node
   linkType: hard
 
