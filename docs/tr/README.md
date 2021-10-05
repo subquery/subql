@@ -3,7 +3,7 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
+        <h2 class="welcomeTitle">SubQuery'nin <span>Docs</span>'ına hoş geldiniz</h2>
         <p>Sezgisel dApp'leri daha hızlı oluşturmak için zincir verilerinizi keşfedin ve dönüştürün!</p>
       </div>
     </div>
@@ -47,7 +47,7 @@
           <div>
             <img src="/assets/img/networkIcon.svg" />
             <span>The SubQuery Network</span>
-            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
+            <p>SubQuery’s decentralised future. Dizinleyicilerin ve tüketicilerin nasıl ödüllendirildiklerine ilişkin daha fazla bilgi edinin.</p>
           </div>
         </a>
       </li>
