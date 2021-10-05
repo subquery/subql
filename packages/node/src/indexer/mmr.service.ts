@@ -134,7 +134,6 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   ensureFileBasedMmr(projectMmrPath: string) {
-    console.log(projectMmrPath);
     let fileBasedDb: FileBasedDb;
     if (fs.existsSync(projectMmrPath)) {
       fileBasedDb = FileBasedDb.open(projectMmrPath);

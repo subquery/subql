@@ -4586,7 +4586,7 @@ __metadata:
     "@polkadot/api": 6.3.1
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
-    "@subql/x-merkle-mountain-range": 2.0.0-0.1.0
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": latest
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.12
@@ -4684,9 +4684,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.0":
-  version: 2.0.0-0.1.0
-  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.0"
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1":
+  version: 2.0.0-0.1.1
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1"
   dependencies:
     bignumber.js: ^8.1.1
     buffer: ^5.4.3
@@ -4695,7 +4695,7 @@ __metadata:
     rlp: ^2.2.3
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
-  checksum: 3891912e202a58ec75a383389509805cf25b6b76bb467d5b8bf7c522c3610f64bde294fd64f042f6d60c6587532367dc4f220c8481f33714a999dd12fb154584
+  checksum: a8fd113b7003360aab7ec7c2f4c5cd99e9109250ad716f3729efeb2aab2eda140d7ccc8d3182517ac392732c53d3ad6a7dbb99aada37f9d169e85071203e85e4
   languageName: node
   linkType: hard
 
