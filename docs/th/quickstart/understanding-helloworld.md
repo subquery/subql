@@ -1,20 +1,20 @@
-# Hello World Explained
+# อธิบาย Hello World
 
-In the [Hello World quick start guide](helloworld-localhost.md), we ran through some simple commands and very quickly got an example up and running. This allowed you to ensure that you had all the pre-requisites in place and could use a local playground to make a simple query to get your first data from SubQuery. Here, we take a closer look at what all those commands mean.
+ใน [คู่มือเริ่มต้นฉบับย่อของ Hello World](helloworld-localhost.md) เราได้ใช้คำสั่งง่ายๆ และได้รับตัวอย่างแบบเร็วๆ วิธีนี้ช่วยให้คุณมั่นใจได้ว่าคุณมีข้อกำหนดเบื้องต้นทั้งหมดแล้ว และสามารถใช้ Playground ภายในเครื่องสำหรับ query อย่างง่าย เพื่อรับข้อมูลแรกของคุณจาก SubQuery ในที่นี้ เราจะพิจารณาให้ละเอียดยิ่งขึ้นว่าคำสั่งเหล่านั้นหมายถึงอะไร
 
 ## subql init
 
-The first command we ran was `subql init --starter subqlHelloWorld`.
+คำสั่งแรกที่เราเรียกใช้คือ `subql init --starter subqlHelloWorld`
 
-This does the heavy lifting and creates a whole bunch of files for you. As noted in the [official documentation](quickstart.md#configure-and-build-the-starter-project), you will mainly be working on the following files:
+สิ่งนี้ช่วยจัดการส่วนงานที่หนัก และสร้างไฟล์ทั้งหมดให้คุณ ตามที่ระบุไว้ใน [เอกสารอย่างเป็นทางการ](quickstart.md#configure-and-build-the-starter-project) คุณจะต้องทำงานกับไฟล์ต่อไปนี้เป็นหลัก:
 
-- The Manifest in `project.yaml`
-- The GraphQL Schema in `schema.graphql`
-- The Mapping functions in `src/mappings/` directory
+- Manifest ใน `project.yaml`
+- GraphQL Schema ใน `schema.graphql`
+- Mapping functions ในไดเรกทอรี `src/mappings/`
 
 ![key subql files](/assets/img/main_subql_files.png)
 
-These files are the core of everything we do. As such, we'll dedicate more time to these files in another article. For now though, just know that the schema contains a description of the data users can request from the SubQuery API, the project yaml file which contains "configuration" type parameters and of course the mappingHandlers containing typescript which contains functions that transform the data.
+ไฟล์เหล่านี้เป็นส่วนหลักของทุกสิ่งที่เราทำ ดังนั้น เราจะจัดสรรเวลาให้กับไฟล์เหล่านี้มากขึ้นในบทความอื่นๆ ในตอนนี้ ให้รู้ว่า schema ประกอบด้วยคำอธิบายของข้อมูลที่ผู้ใช้สามารถ request ได้จาก SubQuery API, ไฟล์ yaml ของโครงการซึ่งมีพารามิเตอร์ประเภท "configuration" และแน่นอนว่ามี mappingHandlers ที่มี typescript ซึ่งมีฟังก์ชันสำหรับแปลงข้อมูล
 
 ## yarn install
 
