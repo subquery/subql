@@ -3,13 +3,18 @@
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 import {
+  CustomDataSourceAsset,
+  FileReference,
   SubqlBlockFilter,
   SubqlCallFilter,
+  SubqlCustomDatasource,
+  SubqlCustomHandler,
   SubqlDatasourceKind,
   SubqlEventFilter,
   SubqlHandler,
   SubqlHandlerKind,
   SubqlMapping,
+  SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
 } from '@subql/types';
@@ -119,6 +124,12 @@ export class Mapping implements SubqlMapping {
   handlers: SubqlHandler[];
 }
 
+export class SubqlNetworkFilterImpl implements SubqlNetworkFilter {
+  @IsString()
+  @IsOptional()
+  specName?: string;
+}
+
 export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
   @IsEnum(SubqlDatasourceKind, {groups: [SubqlDatasourceKind.Runtime]})
   kind: SubqlDatasourceKind.Runtime;
@@ -128,4 +139,38 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
   @IsOptional()
   @IsInt()
   startBlock?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SubqlNetworkFilterImpl)
+  filter?: SubqlNetworkFilter;
+}
+
+export class FileReferenceImpl implements FileReference {
+  @IsString()
+  file: string;
+}
+
+export class CustomDataSourceBase<
+  K extends string,
+  T extends SubqlNetworkFilter,
+  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
+> implements SubqlCustomDatasource<K, T, M>
+{
+  @IsString()
+  kind: K;
+  @Type(() => Mapping)
+  @ValidateNested()
+  mapping: M;
+  @IsOptional()
+  @IsInt()
+  startBlock?: number;
+  @Type(() => FileReferenceImpl)
+  @ValidateNested({each: true})
+  assets: {[p: string]: CustomDataSourceAsset};
+  @Type(() => FileReferenceImpl)
+  @ValidateNested()
+  processor: FileReference;
+  @IsOptional()
+  @IsObject()
+  filter?: T;
 }

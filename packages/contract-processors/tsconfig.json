@@ -7,8 +7,6 @@
     "rootDir": "src",
     "outDir": "./dist"
   },
-  "references": [
-    {"path": "../types"}
-  ],
+  "references": [{"path": "../types"}],
   "include": ["src/**/*"]
 }

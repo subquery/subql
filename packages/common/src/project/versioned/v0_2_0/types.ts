@@ -1,7 +1,15 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlDatasource, SubqlHandler, SubqlMapping, SubqlRuntimeDatasource, SubqlRuntimeHandler} from '@subql/types';
+import {
+  SubqlCustomDatasource,
+  SubqlDatasource,
+  SubqlDatasourceKind,
+  SubqlHandler,
+  SubqlMapping,
+  SubqlRuntimeDatasource,
+  SubqlRuntimeHandler,
+} from '@subql/types';
 import {IProjectManifest} from '../../types';
 
 export interface SubqlMappingV0_2_0<T extends SubqlHandler> extends SubqlMapping<T> {
@@ -25,9 +33,9 @@ export interface ProjectManifestV0_2_0 extends IProjectManifest {
     };
   };
 
-  dataSources: RuntimeDataSourceV0_2_0[];
+  dataSources: (RuntimeDataSourceV0_2_0 | SubqlCustomDatasource)[];
 }
 
 export function isRuntimeDataSourceV0_2_0(dataSource: SubqlDatasource): dataSource is RuntimeDataSourceV0_2_0 {
-  return !!(dataSource as RuntimeDataSourceV0_2_0).mapping.file;
+  return dataSource.kind === SubqlDatasourceKind.Runtime && !!(dataSource as RuntimeDataSourceV0_2_0).mapping.file;
 }

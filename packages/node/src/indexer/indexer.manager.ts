@@ -34,7 +34,7 @@ import { getProjectEntry, isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { DsPluginService } from './ds-plugin.service';
+import { DsProcessorService } from './ds-processor.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
@@ -67,7 +67,7 @@ export class IndexerManager {
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
-    private dsPluginService: DsPluginService,
+    private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
@@ -95,12 +95,7 @@ export class IndexerManager {
             blockContent,
           );
         } else if (isCustomDs(ds)) {
-          await this.indexBlockForCustomDs(
-            ds,
-            vm,
-            ds.mapping.handlers,
-            blockContent,
-          );
+          await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
         // TODO: support Ink! and EVM
       }
@@ -136,6 +131,7 @@ export class IndexerManager {
   }
 
   async start(): Promise<void> {
+    this.dsProcessorService.validateCustomDs();
     await this.apiService.init();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
@@ -294,32 +290,40 @@ export class IndexerManager {
   }
 
   private filterDataSources(): SubqlDatasource[] {
-    const dataSourcesFilteredSpecName = this.getDataSourcesForSpecName();
-    if (dataSourcesFilteredSpecName.length === 0) {
+    let filteredDs = this.getDataSourcesForSpecName();
+    if (filteredDs.length === 0) {
       logger.error(
         `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
       );
       process.exit(1);
     }
-    const dataSourcesFilteredStartBlock = dataSourcesFilteredSpecName.filter(
+    filteredDs = filteredDs.filter(
       (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
     );
-    if (dataSourcesFilteredStartBlock.length === 0) {
+    if (filteredDs.length === 0) {
       logger.error(
         `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
-    return dataSourcesFilteredStartBlock;
+    // perform filter for custom ds
+    filteredDs = filteredDs.filter((ds) => {
+      if (isCustomDs(ds)) {
+        return this.dsProcessorService
+          .getDsProcessor(ds)
+          .dsFilterProcessor(ds, this.api);
+      } else {
+        return true;
+      }
+    });
+    return filteredDs;
   }
 
   private getDataSourcesForSpecName(): SubqlDatasource[] {
     return this.project.dataSources.filter(
       (ds) =>
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSrouceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+        !ds.filter?.specName ||
+        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
     );
   }
 
@@ -371,10 +375,9 @@ export class IndexerManager {
   private async indexBlockForCustomDs(
     ds: SubqlCustomDatasource<string, SubqlNetworkFilter>,
     vm: IndexerSandbox,
-    handlers: SubqlCustomHandler<string, unknown>[],
     { block, events, extrinsics }: BlockContent,
   ): Promise<void> {
-    const plugin = this.dsPluginService.getDsPlugin(ds);
+    const plugin = this.dsProcessorService.getDsProcessor(ds);
     for (const handler of ds.mapping.handlers) {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {

@@ -9,7 +9,7 @@ import { SubqueryProject } from '../configure/project.model';
 import { fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
-import { DsPluginService } from './ds-plugin.service';
+import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 
 jest.mock('../utils/substrate', () =>
@@ -179,7 +179,7 @@ describe('FetchService', () => {
     const apiService = mockApiService();
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
@@ -199,7 +199,7 @@ describe('FetchService', () => {
     const apiService = mockRejectedApiService();
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '' }),
@@ -216,7 +216,7 @@ describe('FetchService', () => {
     const batchSize = 50;
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -240,7 +240,7 @@ describe('FetchService', () => {
     );
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -289,7 +289,7 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
@@ -351,7 +351,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService2();
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
@@ -414,7 +414,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService3();
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
@@ -471,7 +471,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService1();
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,

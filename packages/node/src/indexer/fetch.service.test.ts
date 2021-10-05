@@ -8,7 +8,7 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
-import { DsPluginService } from './ds-plugin.service';
+import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 
 function testSubqueryProject(): SubqueryProject {
@@ -44,7 +44,7 @@ describe('FetchService', () => {
     const batchSize = 30;
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const dictionaryService = new DictionaryService(project);
     await apiService.init();
     const fetchService = new FetchService(
@@ -78,7 +78,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const dictionaryService = new DictionaryService(project);
     const fetchService = new FetchService(
       apiService,
@@ -131,7 +131,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -171,7 +171,7 @@ describe('FetchService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -226,7 +226,7 @@ describe('FetchService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -289,7 +289,7 @@ describe('FetchService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
@@ -348,7 +348,7 @@ describe('FetchService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsPluginService(project);
+    const dsPluginService = new DsProcessorService(project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),

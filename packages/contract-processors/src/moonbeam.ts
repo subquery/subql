@@ -3,7 +3,7 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {
-  SubqlDatasourcePlugin,
+  SubqlDatasourceProcessor,
   SubqlCustomDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
@@ -14,18 +14,18 @@ export interface EVMContractFilter extends SubqlNetworkFilter {
   address: string;
 }
 
-export type EVMDatasource = SubqlCustomDatasource<'substrate/Moonbeam-EVM', EVMContractFilter>;
+export type EVMDatasource = SubqlCustomDatasource<'substrate/MoonbeamEVM', EVMContractFilter>;
 
-export const EVMDatasourcePlugin: SubqlDatasourcePlugin<'substrate/Moonbeam-EVM', EVMContractFilter> = {
-  kind: 'substrate/Moonbeam-EVM',
+export const EVMDatasourcePlugin: SubqlDatasourceProcessor<'substrate/MoonbeamEVM', EVMContractFilter> = {
+  kind: 'substrate/MoonbeamEVM',
   validate(ds: EVMDatasource): void {
     return;
   },
-  dsFilterProcessor(filter: SubqlNetworkFilter, api: ApiPromise, ds: EVMDatasource): boolean {
+  dsFilterProcessor(ds: EVMDatasource, api: ApiPromise): boolean {
     return true;
   },
   handlerProcessors: {
-    'substrate/AcalaEvmEvent': {
+    'substrate/MoonbeamEvmEvent': {
       // kind: 'substrate/AcalaEvmEvent',
       baseFilter: {module: 'evm', method: 'Log'},
       baseHandlerKind: SubqlHandlerKind.Event,

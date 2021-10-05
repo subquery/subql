@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlMapping, SubqlNetworkFilter, SubqlRuntimeHandler} from '@subql/types';
+import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
@@ -17,21 +17,12 @@ export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkCo
   dictionary?: string;
 }
 
-export class NetworkFilter implements SubqlNetworkFilter {
-  @IsString()
-  specName: string;
-}
-
 export class RuntimeDataSourceV0_0_1Impl
   extends RuntimeDataSourceBase<SubqlMapping<SubqlRuntimeHandler>>
   implements RuntimeDataSrouceV0_0_1
 {
   @IsString()
   name: string;
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => NetworkFilter)
-  filter?: SubqlNetworkFilter;
 }
 
 export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_1 {

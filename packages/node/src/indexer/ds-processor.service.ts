@@ -6,7 +6,7 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
   SubqlCustomDatasource,
-  SubqlDatasourcePlugin,
+  SubqlDatasourceProcessor,
   SubqlNetworkFilter,
 } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
@@ -63,37 +63,43 @@ export class DsPluginSandbox extends NodeVM {
   getDsPlugin<
     D extends string,
     T extends SubqlNetworkFilter,
-  >(): SubqlDatasourcePlugin<D, T> {
+  >(): SubqlDatasourceProcessor<D, T> {
     return this.run(this.script);
   }
 }
 
 @Injectable()
-export class DsPluginService {
-  private pluginCache: {
-    [entry: string]: SubqlDatasourcePlugin<string, SubqlNetworkFilter>;
+export class DsProcessorService {
+  private processorCache: {
+    [entry: string]: SubqlDatasourceProcessor<string, SubqlNetworkFilter>;
   };
   constructor(private project: SubqueryProject) {}
 
-  getDsPlugin<D extends string, T extends SubqlNetworkFilter>(
+  validateCustomDs(): void {
+    for (const ds of this.project.dataSources.filter(isCustomDs)) {
+      this.getDsProcessor(ds).validate(ds);
+    }
+  }
+
+  getDsProcessor<D extends string, T extends SubqlNetworkFilter>(
     ds: SubqlCustomDatasource<string, T>,
-  ): SubqlDatasourcePlugin<D, T> {
-    if (!this.pluginCache[ds.processor.file]) {
+  ): SubqlDatasourceProcessor<D, T> {
+    if (!this.processorCache[ds.processor.file]) {
       if (isCustomDs(ds)) {
         const sandbox = new DsPluginSandbox({
           root: this.project.path,
           entry: ds.processor.file,
         });
         try {
-          this.pluginCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
+          this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
         } catch (e) {
           logger.error(`not supported ds @${ds.kind}`);
           throw e;
         }
       }
     }
-    return this.pluginCache[
+    return this.processorCache[
       ds.processor.file
-    ] as unknown as SubqlDatasourcePlugin<D, T>;
+    ] as unknown as SubqlDatasourceProcessor<D, T>;
   }
 }

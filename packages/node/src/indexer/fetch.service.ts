@@ -34,7 +34,7 @@ import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
-import { DsPluginService } from './ds-plugin.service';
+import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent, ProjectIndexFilters } from './types';
 
@@ -69,7 +69,7 @@ export class FetchService implements OnApplicationShutdown {
     private nodeConfig: NodeConfig,
     private project: SubqueryProject,
     private dictionaryService: DictionaryService,
-    private dsPluginService: DsPluginService,
+    private dsProcessorService: DsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
@@ -403,12 +403,12 @@ export class FetchService implements OnApplicationShutdown {
     if (isRuntimeDs(ds) && isBaseHandler(handler)) {
       return handler.kind;
     } else if (isCustomDs(ds) && isCustomHandler(handler)) {
-      const plugin = this.dsPluginService.getDsPlugin(ds);
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
       const baseHandler =
         plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
       if (!baseHandler) {
         throw new Error(
-          `handler type ${handler.kind} not found in plugin ${ds.kind}`,
+          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
         );
       }
       return baseHandler;
@@ -420,7 +420,7 @@ export class FetchService implements OnApplicationShutdown {
     handlerKind: string,
   ): T[] {
     if (isCustomDs(ds)) {
-      const plugin = this.dsPluginService.getDsPlugin(ds);
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
       const processor = plugin.handlerProcessors[handlerKind];
       return processor.baseFilter instanceof Array
         ? (processor.baseFilter as T[])

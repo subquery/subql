@@ -11,7 +11,7 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
-import { DsPluginService } from './ds-plugin.service';
+import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
@@ -138,7 +138,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const apiService = new ApiService(project, eventEmitter);
   const dictionaryService = new DictionaryService(project);
 
-  const dsPluginService = new DsPluginService(project);
+  const dsPluginService = new DsProcessorService(project);
   const fetchService = new FetchService(
     apiService,
     nodeConfig,

@@ -86,7 +86,7 @@ export interface SubqlEventHandler {
   filter?: SubqlEventFilter;
 }
 
-export interface SubqlCustomHandler<K extends string, F> {
+export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
@@ -102,10 +102,10 @@ export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
   handlers: T[];
 }
 
-interface ISubqlDatasource<M extends SubqlMapping> {
+interface ISubqlDatasource<M extends SubqlMapping, F extends SubqlNetworkFilter = SubqlNetworkFilter> {
   name?: string;
   kind: string;
-  filter?: SubqlNetworkFilter;
+  filter?: F;
   startBlock?: number;
   mapping: M;
 }
@@ -116,10 +116,10 @@ export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandl
 }
 
 export interface SubqlNetworkFilter {
-  specName: string;
+  specName?: string;
 }
 
-export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource<string, SubqlNetworkFilter>; // | SubqlBuiltinDataSource;
+export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource; // | SubqlBuiltinDataSource;
 
 export interface FileReference {
   file: string;
@@ -128,26 +128,25 @@ export interface FileReference {
 export type CustomDataSourceAsset = FileReference;
 
 export interface SubqlCustomDatasource<
-  K extends string,
-  T extends SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler<string, unknown>>
-> extends ISubqlDatasource<M> {
+  K extends string = string,
+  T extends SubqlNetworkFilter = SubqlNetworkFilter,
+  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
+> extends ISubqlDatasource<M, T> {
   kind: K;
   assets: {[key: string]: CustomDataSourceAsset};
-  filter?: T;
   processor: FileReference;
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
 
 export interface HandlerInputTransformer<T extends SubqlHandlerKind, U> {
-  (original: RuntimeHandlerInputMap[T], ds: SubqlCustomDatasource<string, SubqlNetworkFilter>): U; //  | SubqlBuiltinDataSource
+  (original: RuntimeHandlerInputMap[T], ds: SubqlCustomDatasource): U; //  | SubqlBuiltinDataSource
 }
 
-export interface SubqlDatasourcePlugin<K extends string, F extends SubqlNetworkFilter> {
+export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetworkFilter> {
   kind: K;
   validate(ds: SubqlCustomDatasource<K, F>): void;
-  dsFilterProcessor(filter: F, api: ApiPromise, ds: SubqlCustomDatasource<K, F>): boolean;
+  dsFilterProcessor(ds: SubqlCustomDatasource<K, F>, api: ApiPromise): boolean;
   handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown>};
 }
 
