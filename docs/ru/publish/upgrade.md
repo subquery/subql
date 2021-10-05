@@ -10,26 +10,26 @@
 
 Login to SubQuery Projects, and find the project that you want to deploy a new version of. Вы можете выбрать развертывание в производственном или промежуточном слоте. Эти два слота представляют собой изолированные среды, каждый из которых имеет свои собственные базы данных и синхронизируется независимо.
 
-Мы рекомендуем выполнять развертывание в промежуточный слот только для окончательного промежуточного тестирования или когда вам нужно повторно синхронизировать данные проекта. Затем вы можете продвигать его в производство с нулевым временем простоя. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
+Мы рекомендуем выполнять развертывание в промежуточный слот только для окончательного промежуточного тестирования или когда вам нужно повторно синхронизировать данные проекта. Затем вы можете продвигать его в производство с нулевым временем простоя. Вы обнаружите, что тестирование выполняется быстрее при [локальном запуске проекта](../run/run.md) поскольку вы можете [легко исправлять ошибки](../tutorials_examples/debug-projects.md).
 
-The staging slot is perfect for:
-* Final validation of changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
-* Warming up and indexing data for an updated SubQuery project to eliminate downtime in your dApp
-* Preparing a new release for your SubQuery Project without exposing it publicly. The staging slot is not shown to the public in the Explorer and has a unique URL that is visible only to you.
+Промежуточный слот идеально подходит для:
+* Окончательная проверка изменений в вашем проекте SubQuery в отдельной среде. Промежуточный слот имеет другой URL-адрес для производства, который вы можете использовать в своих dApps.
+* Разогрев и индексирование данных для обновленного проекта SubQuery, чтобы исключить простои в вашем dApp
+* Подготовка нового релиза для вашего проекта SubQuery без его опубликования. Промежуточный слот не отображается публично в поисковике и имеет уникальный URL-адрес, который виден только вам.
 
 ![Staging slot](/assets/img/staging_slot.png)
 
-#### Upgrade to the Latest Indexer and Query Service
+#### Обновление до последней версии индексатора и службы запросов
 
-If you just want to upgrade to the latest indexer ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) or query service ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) to take advantage of our regular performance and stability improvements, just select a newer versions of our packages and save. This will cause only a few minutes of downtime.
+Если вы просто хотите перейти на последнюю версию индексатора ([` @ subql / node `](https://www.npmjs.com/package/@subql/node)) или службы запросов ([` @ subql / query `](https://www.npmjs.com/package/@subql/query)), чтобы воспользоваться нашими регулярными улучшениями производительности и стабильности, просто выберите более новые версии наших пакетов и сохраните. Это приведет к задержкам всего на несколько минут.
 
-#### Deploy New Version of your SubQuery Project
+#### Разверните новую версию вашего проекта SubQuery
 
-Fill in the Commit Hash from GitHub (copy the full commit hash) of the version of your SubQuery project codebase that you want deployed. This will cause a longer downtime depending on the time it takes to index the current chain. You can always report back here for progress.
+Заполните Commit Hash из GitHub (скопируйте полный Commit Hash) той версии базы кода вашего проекта SubQuery, которую вы хотите развернуть. Это приведет к увеличению времени простоя в зависимости от времени, необходимого для индексации текущей цепочки. Вы всегда можете сообщить об этом здесь.
 
-## Next Steps - Connect to your Project
+## Следующие шаги - подключитесь к вашему проекту
 После успешного завершения установки и успешного индексирования нашими узлами ваших данных из цепочки, вы сможете подключиться к вашему проекту через отображенную конечную точку запроса GraphQL Query.
 
 ![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+Кроме того, вы можете щелкнуть три точки рядом с названием вашего проекта и просмотреть его в SubQuery Explorer. Там вы можете использовать игровую площадку в браузере, чтобы начать работу - [ подробнее о том, как пользоваться нашим Проводником, можно здесь ](../query/query.md).
