@@ -12,20 +12,20 @@
 
 ## เริ่มต้น
 
-Contributions to our repositories are made through Issues and Pull Requests (PRs). A few general guidelines that cover both:
+การมีส่วนร่วมใน repositories ของเราถูกดำเนินการผ่าน Issues และ Pull Requests (PRs) หลักเกณฑ์ทั่วไปบางประการซึ่งครอบคลุมทั้ง:
 
-* Search for existing Issues and PRs before creating your own.
-* We work hard to makes sure issues are handled in promptly but, depending on the impact, it could take a while to investigate the root cause. A friendly @ mention in the comment thread to the submitter or a contributor can help draw attention if your issue is blocking.
+* ค้นหา Issues และ PR ที่มีอยู่ก่อนสร้าง Issues ของคุณเอง
+* เราทำงานอย่างหนักเพื่อให้แน่ใจว่า issues จะได้รับการจัดการโดยทันที แต่อาจใช้เวลาสักครู่ในการตรวจสอบหาสาเหตุ ทั้งนี้ขึ้นอยู่กับต้นเหต การใช้ @ mention ที่เป็นมิตรในชุดข้อความความคิดเห็นถึงผู้ส่งหรือผู้ร่วมให้ข้อมูลสามารถช่วยดึงดูดความสนใจได้หาก issue ของคุณยังไม่ได้รับการแก้ไข้
 
-## How to Contribute
+## วิธีการมีส่วนร่วม
 
-### Reporting Bugs
+### การรายงานข้อบกพร่อง
 
-Bugs are tracked as GitHub issues. When logging an issue, explain the problem and include additional details to help maintainers reproduce the problem:
+มีการติดตาม bugs ด้วย GitHub issues ในขณะที่บันทึก issue ให้อธิบายปัญหาและใส่รายละเอียดเพิ่มเติมต่างๆ เพื่อช่วยผู้ดูแลในการจำลองการเกิดปัญหาขึ้นมาใหม่:
 
-* Use a clear and descriptive title for the issue to identify the problem.
-* Describe the exact steps to reproduce the problem.
-* Describe the behavior you observed after following the steps.
+* ตั้งชื่อ issue ที่ชัดเจนและสื่อความหมายเพื่อระบุปัญหา
+* อธิบายขั้นตอนที่แน่นอนในการทำให้เกิดปัญหานี้ซ้ำ
+* อธิบายอาการที่คุณสังเกตเห็นหลังจากทำตามขั้นตอนต่างๆ
 * Explain which behavior you expected to see instead and why.
 * Include screenshots if possible.
 
