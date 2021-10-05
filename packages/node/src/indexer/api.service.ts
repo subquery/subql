@@ -115,7 +115,7 @@ export class ApiService implements OnApplicationShutdown {
       value: 1,
     });
     this.patchedApi = patchedApi;
-    this.patchApi();
+    await this.patchApi();
     return this.patchedApi;
   }
 
@@ -150,15 +150,6 @@ export class ApiService implements OnApplicationShutdown {
     await this.patchApi(registry, blockHash);
   }
 
-  private replaceToAtVersion(
-    original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
-    atMethod: string,
-  ) {
-    return (...args: any[]) => {
-      return original[atMethod](this.currentBlockHash, ...args);
-    };
-  }
-
   private redecorateStorageEntryFunction(
     original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
     apiType: 'promise' | 'rxjs',
@@ -166,14 +157,14 @@ export class ApiService implements OnApplicationShutdown {
     const newEntryFunc = original;
     newEntryFunc.at = NOT_SUPPORT('at');
     newEntryFunc.creator = original.creator;
-    newEntryFunc.entries = this.replaceToAtVersion(original, 'entriesAt');
+    newEntryFunc.entries = original.entries;
     newEntryFunc.entriesAt = NOT_SUPPORT('entriesAt');
     newEntryFunc.entriesPaged = NOT_SUPPORT('entriesPaged');
     newEntryFunc.hash = NOT_SUPPORT('hash');
     newEntryFunc.is = original.is.bind(original);
     newEntryFunc.key = original.key.bind(original);
     newEntryFunc.keyPrefix = original.keyPrefix.bind(original);
-    newEntryFunc.keys = this.replaceToAtVersion(original, 'keysAt');
+    newEntryFunc.keys = original.keys;
     newEntryFunc.keysAt = NOT_SUPPORT('keysAt');
     newEntryFunc.keysPaged = NOT_SUPPORT('keysPaged');
     if (apiType === 'promise') {
@@ -203,7 +194,7 @@ export class ApiService implements OnApplicationShutdown {
       }
     }) as any;
     newEntryFunc.range = NOT_SUPPORT('range');
-    newEntryFunc.size = this.replaceToAtVersion(original, 'sizeAt');
+    newEntryFunc.size = original.size;
     newEntryFunc.sizeAt = NOT_SUPPORT('sizeAt');
     return newEntryFunc;
   }

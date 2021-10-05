@@ -272,6 +272,16 @@ describe('ApiService', () => {
     );
   });
 
+  //TODO, test this result when https://github.com/polkadot-js/api/issues/4020 resolved.
+  it.skip('support .entries', async () => {
+    const apiService = await prepareApiService();
+    const api = apiService.getApi();
+    const patchedApi = await apiService.getPatchedApi();
+    const blockHash = await api.rpc.chain.getBlockHash(6721189);
+    await apiService.setBlockhash(blockHash);
+    await patchedApi.query.staking.erasStakers.entries(2038);
+  });
+
   it('api.#registry is swapped to the specified block', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
