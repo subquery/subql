@@ -1,6 +1,6 @@
-# Running SubQuery Locally
+# SubQuery Yerel Olarak Çalıştırma
 
-Bu kılavuz, hem dizinleyiciyi hem de sorgu hizmetini içeren altyapınızda yerel bir SubQuery düğümünün nasıl çalıştırılacağı üzerinde çalışır. Kendi SubQuery altyapınızı çalıştırma konusunda endişelenmek istemiyor musunuz? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+Bu kılavuz, hem dizinleyiciyi hem de sorgu hizmetini içeren altyapınızda yerel bir SubQuery düğümünün nasıl çalıştırılacağı üzerinde çalışır. Kendi SubQuery altyapınızı çalıştırma konusunda endişelenmek istemiyor musunuz? SubQuery, topluluğa ücretsiz olarak [yönetilen barındırılan bir hizmet](https://explorer.subquery.network) sunar. Projenizi [SubQuery Projects](https://project.subquery.network)'a nasıl yükleyebileceğinizi görmek için [yayın kılavuzumuzu izleyin](../publish/publish.md).
 
 ## Docker'ı kullanma
 
@@ -29,7 +29,7 @@ SubQuery düğümü, SubQuery projesi başına substrat tabanlı blok zinciri ve
 npm install -g @subql/node
 ```
 
-Lütfen **DO NOT**, zayıf bağımlılık yönetimi nedeniyle `yarn global` kullanımını teşvik ettiğimizi ve bunun da bir hataya yol açabileceğini unutmayın.
+Lütfen **YAPAMAZ**, zayıf bağımlılık yönetimi nedeniyle `yarn global` kullanımını teşvik ettiğimizi ve bunun da bir hataya yol açabileceğini unutmayın.
 
 Yüklendikten sonra, aşağıdaki komutla bir düğüm başlatabilirsiniz:
 
@@ -44,7 +44,7 @@ Aşağıdaki komutlar, bir SubQuery node yapılandırmasını tamamlamanıza ve 
 #### Yerel proje yolunun göster
 
 ```
-subql-node -f proje-yolunuz
+subql-node -f your-project-path
 ```
 
 #### Sözlük Kullanma
@@ -59,17 +59,17 @@ Sözlük uç noktasını `project.yaml` dosyanıza ekleyebilirsiniz (bkz. [Manif
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+[ SubQuery Sözlüğü'nün nasıl çalıştığı hakkında daha fazla şey ](../tutorials_examples/dictionary.md).
 
 #### Veritabanına bağlanma
 
 ```
-dB_USER=postgres dışa aktarma
-DB_PASS=postgres dışa aktarma
-dışa aktarma DB_DATABASE=postgres
-DB_HOST=localhost ver
-dışa aktarma DB_PORT=5432
-subql-node -f proje-yolunuz 
+export DB_USER=postgres
+export DB_PASS=postgres
+export DB_DATABASE=postgres
+export DB_HOST=localhost
+export DB_PORT=5432
+subql-node -f your-project-path 
 ````
 
 Postgres veritabanınızın yapılandırmasına (örneğin, farklı bir veritabanı parolası) bağlı olarak, lütfen hem dizin oluşturucunun ('subql/node') hem de sorgu hizmetinin ('subql/query') ona bir bağlantı kurabildiğinden emin olun.
@@ -116,10 +116,10 @@ Yerel mod kullanılmazsa, ilk `subquery_` ve karşılık gelen proje tabloların
 
 Çalışan bir SubQuery node düğümünün durumunu denetlemek ve izlemek için kullanabileceğiniz 2 uç nokta vardır.
 
-- Health check endpoint that returns a simple 200 response
-- Metadata endpoint that includes additional analytics of your running SubQuery node
+- Basit bir 200 yanıtı döndürür sistem durumu denetimi uç noktası
+- Çalışan SubQuery düğümünüzün ek analizlerini içeren meta veri uç noktası
 
-Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
+Bunu SubQuery düğümünüzün temel URL'sine ekleyin. Örneğin `http://localhost:3000/meta` geri dönecektir:
 
 ```bash
 {
@@ -142,7 +142,7 @@ Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/met
 }
 ```
 
-`http://localhost:3000/health` will return HTTP 200 if successful.
+`http://localhost:3000/health` başarılı olursa HTTP 200 döndürür.
 
 A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
 
@@ -171,7 +171,7 @@ Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-sta
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+Örneğin:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
