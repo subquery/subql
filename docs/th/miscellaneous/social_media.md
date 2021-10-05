@@ -1,23 +1,23 @@
-# Social Media Links
+# ลิงค์โซเชียลมีเดีย
 
-SubQuery is an active project that maintains and communicates with our followers through many social media channels.
+SubQuery เป็นโครงการที่มีการใช้งานอยู่ โดยดูแลและสื่อสารกับผู้ติดตามของเราผ่านช่องทางโซเชียลมีเดียมากมาย
 
-It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
+เป้าหมายของเราคือรับฟังและมีส่วนร่วมกับชุมชนที่เหนียวแน่นของเราเสมอ ดังนั้นโปรดเข้าร่วมการสนทนาและส่งความคิดหรือคำถามของคุณมาให้เรา!
 
-## Official SubQuery Communities
+## ชุมชน SubQuery อย่างเป็นทางการ
 
-- [Discord](https://discord.com/invite/78zg8aBSMG) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [Discord](https://discord.com/invite/78zg8aBSMG) (ชุมชนหลักพร้อมช่องทางการสนับสนุนด้านเทคนิคโดยเฉพาะ)
+- [Medium](https://subquery.medium.com) (ช่องทางสำหรับการประกาศหลัก)
 - [Twitter](https://twitter.com/subquerynetwork)
 - [WeChat]()
-- [Telegram](https://t.me/subquerynetwork) (Announcements channel only)
+- [Telegram](https://t.me/subquerynetwork) (ช่องสำหรับประกาศเท่านั้น)
 - [GitHub](https://github.com/SubQuery/subql)
 - [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
 - [LinkedIn](https://www.linkedin.com/company/subquery)
 
-## Unofficial SubQuery Communities
+## ชุมชน SubQuery ที่ไม่เป็นทางการ
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+ชุมชนเหล่านี้ไม่ได้ดูแลโดยทีม SubQuery แต่ ambassadors ของเราอาจอยู่ที่นั่นเพื่อให้การสนับสนุน โปรดระวังการหลอกลวงเนื่องจาก SubQuery **ไม่** รับผิดชอบต่อสิ่งที่เกิดขึ้นภายในนั้น
 
 ### Telegram
 
