@@ -26,22 +26,22 @@
 * ตั้งชื่อ issue ที่ชัดเจนและสื่อความหมายเพื่อระบุปัญหา
 * อธิบายขั้นตอนที่แน่นอนในการทำให้เกิดปัญหานี้ซ้ำ
 * อธิบายอาการที่คุณสังเกตเห็นหลังจากทำตามขั้นตอนต่างๆ
-* Explain which behavior you expected to see instead and why.
-* Include screenshots if possible.
+* อธิบายว่าคุณคาดว่าจะเห็นผลลัพธ์ใดแทนและเพราะเหตุใด
+* รวมภาพหน้าจอด้วย ถ้าเป็นไปได้
 
-### Submitting Pull Requests
+### การส่ง Pull Requests
 
-In general, we follow the "fork-and-pull" Git workflow
+โดยทั่วไปแล้ว เราปฏิบัติตามเวิร์กโฟลว์ Git "fork-and-pull"
 
-* Fork the repository to your own Github account
-* Clone the project to your machine
-* Create a branch locally with a succinct but descriptive name
-* Commit changes to the branch
-* Following any formatting and testing guidelines specific to this repo
-* Push changes to your fork
-* Open a PR in our repository
+* fork repository ไปยังบัญชี Github ของคุณเอง
+* clone โปรเจ็กต์มายังเครื่องของคุณ
+* สร้าง branch แบบ local ด้วยชื่อที่กระชับแต่สื่อความหมาย
+* commit changes ไปยัง branch
+* ปฏิบัติตาม format และแนวทางการทดสอบเฉพาะสำหรับ repo นี้
+* push changes ไปที่ที่คุณ fork มา
+* เปิด PR ใน repository ของเรา
 
-## Coding Conventions
+## ข้อตกลงในการเขียนโค้ด
 
 ### Git Commit Messages
 
