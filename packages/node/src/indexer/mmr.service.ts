@@ -4,13 +4,16 @@
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
-import { MMR } from 'merkle-mountain-range';
+import {
+  MMR,
+  FileBasedDb,
+  keccak256FlyHash,
+} from '@subqlmono/merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
-import { FileBasedDb, keccak256FlyHash } from '../vendor/merkle-mountain-range';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 

@@ -4,10 +4,12 @@
 import crypto from 'crypto';
 import path from 'path';
 import { promisify } from 'util';
-import { MMR } from 'merkle-mountain-range';
+import {
+  MMR,
+  keccak256FlyHash,
+  FileBasedDb,
+} from '@subqlmono/merkle-mountain-range';
 import rimraf from 'rimraf';
-import { keccak256FlyHash } from './digests';
-import { FileBasedDb } from './fileBasedDb';
 
 describe('Mmr test ', () => {
   const projectMmrPath = path.join(__dirname, `./mmrs/test.mmr`);
@@ -19,6 +21,7 @@ describe('Mmr test ', () => {
   it('oepn or create fd mmr, and append', async () => {
     const fileBasedDb = FileBasedDb.openOrCreate(projectMmrPath, `as+`, 64);
     const fileBasedMmr = new MMR(keccak256FlyHash, fileBasedDb);
+    console.log(keccak256FlyHash);
     let nodeLength = await fileBasedMmr.getNodeLength();
     let leafLength = await fileBasedMmr.getLeafLength();
     console.log(`node length: ${nodeLength}`);
