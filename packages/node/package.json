@@ -28,7 +28,7 @@
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-vm2": "latest",
-    "@subqlmono/merkle-mountain-range": "2.0.0-0.1.3",
+    "@subqlmono/merkle-mountain-range": "2.0.0-0.1.4",
     "@willsoto/nestjs-prometheus": "^3.0.0",
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.5",
