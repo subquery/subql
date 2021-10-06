@@ -53,17 +53,20 @@ export default class Init extends Command {
     });
 
     if (flags.specVersion === '0.2.0') {
+      cli.action.start('Getting network genesis hash');
       (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
+      cli.action.stop();
     }
 
+    this.log('Prompting remaining details');
     project.author = await cli.prompt('Authors', {required: true});
     project.description = await cli.prompt('Description', {required: false});
     project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});
     project.license = await cli.prompt('License:', {default: 'Apache-2.0', required: true});
 
     if (flags.starter && project.name) {
-      cli.action.start('Init the starter package');
       try {
+        cli.action.start('Init the starter package');
         const projectPath = await createProject(location, project);
         cli.action.stop();
 
@@ -74,6 +77,12 @@ export default class Init extends Command {
         }
 
         this.log(`${project.name} is ready`);
+
+        /*
+         * Explicitly exit because getGenesisHash creates a polkadot api instance that keeps running
+         * Disconnecting the api causes undesired logging that cannot be disabled
+         */
+        process.exit(0);
       } catch (e) {
         /* handle all errors here */
         this.error(e.message);
