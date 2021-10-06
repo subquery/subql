@@ -14,6 +14,48 @@ module.exports = config({
       description:
         "Explore and transform your chain data to build intuitive dApps faster!.",
     },
+    // "/id/": {
+    //   lang: "id",
+    //   title: "SubQuery Blog Posts",
+    //   description:
+    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    // },
+    // "/ru/": {
+    //   lang: "ru",
+    //   title: "SubQuery Blog Posts",
+    //   description:
+    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    // },
+    // "/th/": {
+    //   lang: "th",
+    //   title: "SubQuery Blog Posts",
+    //   description:
+    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    // },
+    // "/tr/": {
+    //   lang: "tr",
+    //   title: "SubQuery Blog Posts",
+    //   description:
+    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    // },
+    // "/uk/": {
+    //   lang: "uk",
+    //   title: "SubQuery Blog Posts",
+    //   description:
+    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    // },
+    "/vi/": {
+      lang: "vi",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
+    "/zh/": {
+      lang: "zh-CN",
+      title: "SubQuery Blog Posts",
+      description:
+        "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
     /*
     "/es/": {
       lang: "es",
@@ -22,12 +64,6 @@ module.exports = config({
         "Explore and transform your chain data to build intuitive dApps faster!.",
     },
     */
-    "/id/": {
-      lang: "id",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
     /*
     "/it/": {
       lang: "it",
@@ -48,42 +84,6 @@ module.exports = config({
         "Explore and transform your chain data to build intuitive dApps faster!.",
     },
     */
-    "/ru/": {
-      lang: "ru",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
-    "/th/": {
-      lang: "th",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
-    "/tr/": {
-      lang: "tr",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
-    "/uk/": {
-      lang: "uk",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
-    "/vi/": {
-      lang: "vi",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
-    "/zh/": {
-      lang: "zh-CN",
-      title: "SubQuery Blog Posts",
-      description:
-        "Explore and transform your chain data to build intuitive dApps faster!.",
-    },
   },
   themeConfig: {
     logo: '/assets/img/logo.png',
