@@ -6,10 +6,10 @@ SubQuery - это активный проект, который поддержи
 
 ## Официальные комьюнити SubQuery
 
-- [ Discord ](https://discord.com/invite/78zg8aBSMG) (основное сообщество с выделенными каналами технической поддержки)
-- [Medium](https://subquery.medium.com) (основной канал объявлений)
-- [Твиттер](https://twitter.com/subquerynetwork)
-- [WeChat]()
+- [Linktree](https://linktr.ee/subquerynetwork)
+- [Discord](https://discord.com/invite/subquery) (Primary Community with dedicated technical support channels)
+- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [Twitter](https://twitter.com/subquerynetwork)
 - [Telegram](https://t.me/subquerynetwork) (только канал объявлений)
 - [GitHub](https://github.com/SubQuery/subql)
 - [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
@@ -18,3 +18,11 @@ SubQuery - это активный проект, который поддержи
 ## Неофициальные комьюнити SubQuery
 
 Эти сообщества не модерируются командой SubQuery, но наши представители могут быть там для оказания поддержки. Пожалуйста, будьте осторожны с мошенниками, поскольку SubQuery ** не ** несет ответственности за ваше взаимодействии с ними.
+
+- [Telegram (Chinese)](https://t.me/subquerychina)
+- [Telegram (Russian)](https://t.me/SubQuery_russia)
+- [Telegram (Spanish)](https://t.me/SubQueryES)
+- [Telegram (Thai)](https://t.me/subquerynetworkthai)
+- [Telegram (Turkish)](https://t.me/subquery_TR)
+- [Telegram (Vietnamese)](https://t.me/subqueryvietnam)
+- [Telegram (Vietnamese Announcement)](https://t.me/subqueryannvn)
