@@ -1,10 +1,10 @@
-# Running SubQuery Locally
+# การรัน SubQuery ภายในเครื่อง
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+คู่มือนี้จะศึกษาวิธีการรันโหนด SubQuery บนโครงสร้างพื้นฐานของคุณ ซึ่งรวมถึง indexer และ query service คุณไม่อยากที่จะต้องคอยกังวลเกี่ยวกับการรันโครงสร้างพื้นฐาน SubQuery ของคุณเองใช่หรือไม่? SubQuery ให้บริการ [โฮสต์ที่มีการจัดการ](https://explorer.subquery.network) แก่ชุมชนฟรี [ทำตามคู่มือการเผยแพร่ของเรา](../publish/publish.md) เพื่อดูว่าคุณสามารถอัปโหลดโครงการของคุณไปยัง [SubQuery Projects](https://project.subquery.network)ได้อย่างไร
 
-## Using Docker
+## การใช้กับ Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+ทางเลือกหนึ่ง คือการรัน <strong>Docker Container</strong> ซึ่งกำหนดจากไฟล์ `docker-compose.yml` For a new project that has been just initialised you won't need to change anything here.
 
 Under the project directory run the following command:
 
