@@ -19,7 +19,7 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
-const DEFAULT_LEAF = Buffer.alloc(32);
+const DEFAULT_LEAF = Buffer.alloc(DEFAULT_WORD_SIZE);
 const DEFAULT_FETCH_RANGE = 100;
 const MMR_AWAIT_TIME = 2;
 
@@ -138,11 +138,7 @@ export class MmrService implements OnApplicationShutdown {
     if (fs.existsSync(projectMmrPath)) {
       fileBasedDb = FileBasedDb.open(projectMmrPath);
     } else {
-      fileBasedDb = FileBasedDb.openOrCreate(
-        projectMmrPath,
-        'as+',
-        DEFAULT_WORD_SIZE,
-      );
+      fileBasedDb = FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
     }
     this.fileBasedMmr = new MMR(keccak256FlyHash, fileBasedDb);
   }

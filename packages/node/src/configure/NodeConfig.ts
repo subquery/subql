@@ -128,9 +128,7 @@ export class NodeConfig implements IConfig {
   }
 
   get mmrPath(): string {
-    return this._config.mmrPath
-      ? this._config.mmrPath
-      : `.mmr/${this.subqueryName}.mmr`;
+    return this._config.mmrPath ?? `.mmr/${this.subqueryName}.mmr`;
   }
 
   merge(config: Partial<IConfig>): this {
