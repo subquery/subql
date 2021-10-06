@@ -44,13 +44,16 @@ export class ApiService implements OnApplicationShutdown {
   async init(): Promise<ApiService> {
     const { chainTypes, network } = this.project;
     let provider: WsProvider | HttpProvider;
+    let throwOnConnect = false;
     if (network.endpoint.startsWith('ws')) {
       provider = new WsProvider(network.endpoint);
     } else if (network.endpoint.startsWith('http')) {
       provider = new HttpProvider(network.endpoint);
+      throwOnConnect = true;
     }
     this.apiOption = {
       provider,
+      throwOnConnect,
       ...chainTypes,
     };
     this.api = await ApiPromise.create(this.apiOption);
