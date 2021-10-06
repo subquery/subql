@@ -6,6 +6,7 @@
   ],
   "devDependencies": {
     "@babel/preset-env": "^7.13.10",
+    "@octokit/request": "^5.6.2",
     "@types/node": "^12.19.15",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.28.0",

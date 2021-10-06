@@ -1,0 +1,83 @@
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/**'
+  workflow_dispatch:
+
+jobs:
+  release:
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.x'
+
+      - name: Create .env file
+        uses: SpicyPizza/create-envfile@v1
+        with:
+          envkey_REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+      #Identify changes
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common
+        with:
+          paths: packages/common
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-cli
+        with:
+          paths: packages/cli
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-validator
+        with:
+          paths: packages/validator
+
+      #Create Github Releases
+      - run: npm install
+
+      - name: Release Cli
+        if: steps.changed-cli.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/cli
+
+      - name: Release Common
+        if: steps.changed-common.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/common
+      
+      - name: Release Node
+        if: steps.changed-node.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/node
+      
+      - name: Release Query
+        if: steps.changed-query.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/query
+      
+      - name: Release Types
+        if: steps.changed-cli.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/types
+      
+      - name: Release Validator
+        if: steps.changed-validator.outputs.changed == 'true'
+        run: node gh-release-script.js ./packages/validator
