@@ -14,40 +14,40 @@ docker-compose pull && docker-compose up
 
 อาจต้องใช้เวลาสักครู่ในการดาวน์โหลดแพ็คเกจที่จำเป็น ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query) และ Postgres) สำหรับครั้งแรก แต่ในไม่ช้าคุณจะเห็นการทำงานของโหนด SubQuery
 
-## Running an Indexer (subql/node)
+## การรัน Indexer (subql/node)
 
-Requirements:
+สิ่งที่ต้องมี:
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- ฐานข้อมูล [Postgres](https://www.postgresql.org/) (เวอร์ชัน 12 ขึ้นไป) ในขณะที่ [โหนด SubQuery](#start-a-local-subquery-node) กำลังทำการ index บล็อกเชน ข้อมูลที่ออกมาจะถูกเก็บไว้ในอินสแตนซ์ของฐานข้อมูลภายนอก
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+โหนด SubQuery เป็นการทำงานที่ดึงข้อมูลบล็อกเชนที่ใช้ substrate ตามโปรเจ็กต์ SubQuery และบันทึกลงในฐานข้อมูล Postgres
 
-### Installation
+### การติดตั้ง
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+โปรดทราบว่าเรา **ไม่** สนับสนุนให้ใช้ `yarn global` เนื่องจากการจัดการ dependency ที่ไม่ดี ซึ่งอาจนำไปสู่ข้อผิดพลาดได้
 
-Once installed, you can start a node with the following command:
+เมื่อติดตั้งแล้ว คุณสามารถเริ่มโหนดด้วยคำสั่งต่อไปนี้:
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### คำสั่งที่สำคัญ
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
+คำสั่งต่อไปนี้จะช่วยคุณในการตั้งค่าโหนด SubQuery ให้เสร็จสมบูรณ์และเริ่มการ index หากต้องการข้อมูลเพิ่มเติม คุณสามารถรันคำสั่ง `--help` ได้ตลอดเวลา
 
-#### Point to local project path
+#### ชี้ไปที่ local path ของโปรเจ็กต์
 
 ```
 subql-node -f your-project-path
 ```
 
-#### Use a Dictionary
+#### การใช้ Dictionary
 
 Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
 
