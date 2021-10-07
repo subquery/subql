@@ -49,7 +49,7 @@ subql-node -f your-project-path
 
 #### การใช้ Dictionary
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
+การใช้ full chain dictionary สามารถเร่งการประมวลผลโปรเจ็กต์ SubQuery ได้อย่างมาก ทั้งในระหว่างการทดสอบหรือระหว่างการ index ครั้งแรกของคุณ In some cases, we've seen indexing performance increases of up to 10x.
 
 A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
 
