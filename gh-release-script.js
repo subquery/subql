@@ -52,8 +52,6 @@ function gatherReleaseInfo(logPath) {
 async function publishRelease(releaseInfo) {
     const repoTagName = repoName.split('/');
 
-    console.log(`token ${process.env.REPO_TOKEN}`)
-
     await request('POST /repos/{owner}/{repo}/releases', {
         headers: {
             authorization: `token ${process.env.REPO_TOKEN}`,
