@@ -63,6 +63,7 @@ describe('ApiService', () => {
     expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint);
     expect(ApiPromise.create).toHaveBeenCalledWith({
       provider: expect.anything(),
+      throwOnConnect: expect.anything(),
       ...omit(testNetwork, ['endpoint']),
     });
   });
