@@ -58,7 +58,7 @@ async function publishRelease(releaseInfo) {
         headers: {
             authorization: `token ${process.env.REPO_TOKEN}`,
         },
-        owner: 'lachlan1m',
+        owner: 'subql',
         name: `[${version}] ${repoName}`,
         repo: 'subql',
         tag_name: `${repoTagName[1]}/${version}`,
