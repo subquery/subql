@@ -57,36 +57,36 @@ jobs:
 
       - name: Release Cli
         if: steps.changed-cli.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/cli
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/cli
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
       - name: Release Common
         if: steps.changed-common.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/common
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/common
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Node
         if: steps.changed-node.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/node
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/node
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Query
         if: steps.changed-query.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/query
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/query
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Types
         if: steps.changed-cli.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/types
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/types
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Validator
         if: steps.changed-validator.outputs.changed == 'true'
-        run: node gh-release-script.js ./packages/validator
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/validator
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
