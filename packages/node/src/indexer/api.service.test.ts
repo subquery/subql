@@ -209,11 +209,6 @@ describe('ApiService', () => {
         2038,
         `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
       ),
-      await api.query.staking.erasStakers.at(
-        blockhash,
-        2039,
-        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
-      ),
     ]);
 
     const patchedApiResults = await patchedApi.queryMulti([
@@ -222,12 +217,7 @@ describe('ApiService', () => {
       [api.query.system.account, account], //one arg
       [
         api.query.staking.erasStakers,
-        2038,
-        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
-      ], // arg not in array
-      [
-        api.query.staking.erasStakers,
-        [2039, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
+        [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
       ], // arg in array
     ]);
 
@@ -236,67 +226,33 @@ describe('ApiService', () => {
     );
   });
 
-  it('api.rx.queryMulti', async () => {
-    const account1 = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
+  it('api.rx.queryMulti is not supported', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
     await apiService.setBlockhash(blockhash);
-
-    const multiResults = await Promise.all([
-      api.query.timestamp.now.at(blockhash),
-      await api.query.session.validators.at(blockhash),
-      await api.query.system.account.at(blockhash, account1),
-      await api.query.staking.erasStakers.at(
-        blockhash,
-        2038,
-        `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`,
+    expect(() =>
+      (patchedApi.rx as any).queryMulti(
+        [api.query.timestamp.now],
+        [api.query.session.validators],
       ),
-    ]);
-    const patchedApiRxResults = await (patchedApi.rx as any)
-      .queryMulti([
-        api.query.timestamp.now, // not in array
-        [api.query.session.validators], // zero arg
-        [api.query.system.account, account1], //one arg
-        [
-          api.query.staking.erasStakers,
-          [2038, `HAGcVQikZmEEgBBaChwjTVdwdA53Qopg2AYUtqw738C5kUq`],
-        ], //double map
-      ])
-      .pipe(take(1))
-      .toPromise();
-
-    expect(multiResults.map((r) => r.toJSON())).toEqual(
-      patchedApiRxResults.map((r) => r.toJSON()),
-    );
+    ).toThrow(/is not supported/);
   });
 
-  //TODO, test this result when https://github.com/polkadot-js/api/issues/4020 resolved.
-  it.skip('support .entries', async () => {
+  it('support .entries', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
     const patchedApi = await apiService.getPatchedApi();
     const blockHash = await api.rpc.chain.getBlockHash(6721189);
     await apiService.setBlockhash(blockHash);
-    await patchedApi.query.staking.erasStakers.entries(2038);
+    const patchedResult = await patchedApi.query.staking.erasStakers.entries(
+      2038,
+    );
+    const apiAt = await api.at(blockHash);
+    const result = await apiAt.query.staking.erasStakers.entries(2038);
+    expect(patchedResult).toEqual(result);
   });
-
-  it('api.#registry is swapped to the specified block', async () => {
-    const apiService = await prepareApiService();
-    const api = apiService.getApi();
-    const patchedApi = await apiService.getPatchedApi();
-    const registry = patchedApi.registry;
-    const callIndexOfBatch = api.tx.utility.batch.callIndex;
-    // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
-    const blockhash = await api.rpc.chain.getBlockHash(1);
-    await apiService.setBlockhash(blockhash);
-    const registry2 = patchedApi.registry;
-    const call = patchedApi.findCall(callIndexOfBatch);
-    expect(call?.method).not.toBe('batch');
-    expect(call?.section).not.toBe('utility');
-    expect(registry).not.toBe(registry2);
-  }, 30000);
 
   it('support historic api rpc', async () => {
     const apiService = await prepareApiService();
