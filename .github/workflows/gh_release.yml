@@ -11,8 +11,10 @@ jobs:
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
+      - name: Checkout
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
