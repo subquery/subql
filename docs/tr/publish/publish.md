@@ -1,60 +1,60 @@
-# Publish your SubQuery project
+# SubQuery Projenizi Yayımlama
 
-## Benefits of hosting your project with SubQuery
-- We'll run your SubQuery projects for you in a high performance, scalable, and managed public service
-- This service is being provided to the community for free!
-- You can make your projects public so that they'll be listed in the [SubQuery Explorer](https://explorer.subquery.network) and anyone around the world can view them
-- We're integrated with GitHub, so anyone in your GitHub organisations will be able to view shared organisation projects
+## Projenizi SubQuery ile barındırmanın faydaları
+- SubQuery projelerinizi sizin için yüksek performanslı, ölçeklenebilir ve yönetilen bir kamu hizmetinde çalıştıracağız
+- Bu hizmet topluma ücretsiz olarak sağlanmaktadır!
+- Projelerinizi herkese açık hale getirebilirsiniz, böylece [SubQuery Explorer](https://explorer.subquery.network) listelenir ve dünyanın herhangi bir yerinde herkes bunları görüntüleyebilir
+- GitHub ile entegre olduk, böylece GitHub kuruluşlarınızdaki herkes paylaşılan organizasyon projelerini görüntüleyebilir
 
-## Create your First Project
+## İlk Projenizi Oluşturma
 
-#### Login to SubQuery Projects
+#### SubQuery Projelerine Giriş Yap
 
-Before starting, please make sure that your SubQuery project is online in a public GitHub repository. The `schema.graphql` file must be in the root of your directory.
+Başlamadan önce, lütfen SubQuery projenizin herkese açık bir GitHub deposunda çevrimiçi olduğundan emin olun. `schema.graphql` dosyası dizininizin kökünde olmalıdır.
 
-To create your first project, head to [project.subquery.network](https://project.subquery.network). You'll need to authenticate with your GitHub account to login.
+İlk projenizi oluşturmak için [project.subquery.network](https://project.subquery.network) gidin. Giriş yapmak için GitHub hesabınızla kimlik doğrulamanız gerekir.
 
-On first login, you will be asked to authorize SubQuery. We only need your email address to identify your account, and we don't use any other data from your GitHub account for any other reasons. In this step, you can also request or grant access to your GitHub Organization account so you can post SubQuery projects under your GitHub Organization instead of your personal account.
+İlk girişte, SubQuery'yi yetkilendirmeniz istenecektir. Hesabınızı tanımlamak için yalnızca e-posta adresinize ihtiyacımız vardır ve GitHub hesabınızdaki başka hiçbir veriyi başka bir nedenle kullanmayız. Bu adımda, Kişisel hesabınız yerine GitHub Kuruluşunuz altında SubQuery projeleri yayınlayabilmeniz için GitHub Kuruluş hesabınıza erişim talep edebilir veya izin verebilirsiniz.
 
 ![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
 
-SubQuery Projects is where you manage all your hosted projects uploaded to the SubQuery platform. You can create, delete, and even upgrade projects all from this application.
+SubQuery Projeleri, SubQuery platformuna yüklenen barındırılan tüm projelerinizi yönettiğiniz yerdir. Bu uygulamadan projeler oluşturabilir, silebilir ve hatta yükseltebilirsiniz.
 
 ![Projects Login](/assets/img/projects-dashboard.png)
 
-If you have a GitHub Organization accounts connected, you can use the switcher on the header to change between your personal account and your GitHub Organization account. Projects created in a GitHub Organization account are shared between members in that GitHub Organization. To connect your GitHub Organization account, you can [follow the steps here](#add-github-organization-account-to-subquery-projects).
+Bağlı bir GitHub Kuruluş hesabınız varsa, kişisel hesabınız ile GitHub Organization hesabınız arasında geçiş yapmak için üstbilgideki değiştiriciyi kullanabilirsiniz. GitHub Kuruluş hesabında oluşturulan projeler, bu GitHub Organizasyonu'ndaki üyeler arasında paylaşılır. GitHub Organization hesabınızı bağlamak için [buradaki adımları takip](#add-github-organization-account-to-subquery-projects) edebilirsiniz.
 
 ![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
 
-#### Create your First Project
+#### İlk Projenizi Oluşturma
 
-Let's start by clicking on "Create Project". You'll be taken to the New Project form. Please enter the following (you can change this in the future):
-- **GitHub account:** If you have more than one GitHub account, select which account this project will be created under. Projects created in a GitHub organisation account are shared between members in that organisation.
-- **Name**
-- **Subtitle**
-- **Description**
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that has your SubQuery project. The `schema.graphql` file must be in the root of your directory ([learn more about the directory structure](../create/introduction.md#directory-structure)).
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community! ![Create your first Project](/assets/img/projects-create.png)
+"Proje Oluştur"a tıklayarak başlayalım. Yeni Proje formuna alınacaksınız. Lütfen aşağıdakileri girin (bunu gelecekte değiştirebilirsiniz):
+- **GitHub account:** Birden fazla GitHub hesabınız varsa, bu projenin hangi hesap altında oluşturulacağını seçin. GitHub kuruluş hesabında oluşturulan projeler bu kuruluştaki üyeler arasında paylaşılır.
+- **Ad**
+- **Altyazı**
+- **Tarif**
+- **GitHub Repository URL:** Bu, SubQuery projenize sahip bir ortak depo için geçerli bir GitHub URL'si olmalıdır. `schema.graphql` dosyası dizininizin kökünde olmalıdır ([de dizin yapısı hakkında daha fazla bilgi unun](../create/introduction.md#directory-structure)).
+- **Hide projec:** Seçilirse, bu, projeyi genel SubQuery gezgininden gizler. SubQuerynuzu toplulukla paylaşmak istiyorsanız bunu seçimsiz tutun! ![Create your first Project](/assets/img/projects-create.png)
 
-Create your project and you'll see it on your SubQuery Project's list. *We're almost there! We just need to deploy a new version of it.*
+Projenizi oluşturursanız, SubQuery Projenizin listesinde görürsünüz. *Neredeyse geldik! Sadece yeni bir versiyonunu dağıtmamız gerekiyor.*
 
 ![Created Project with no deployment](/assets/img/projects-no-deployment.png)
 
-#### Deploy your first Version
+#### İlk Sürümünüzü Dağıtma
 
-While creating a project will setup the display behaviour of the project, you must deploy a version of it before it becomes operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+Bir proje oluşturmak projenin görüntüleme davranışını ayarlarken, çalışmadan önce bir sürümünü dağıtmanız gerekir. Bir sürümü dağıtmak, yeni bir SubQuery dizin oluşturma işlemini başlatır ve GraphQL isteklerini kabul etmeye başlamak için gerekli sorgu hizmetini ayarlar. Yeni sürümleri varolan projelere de buradan dağıtabilirsiniz.
 
-With your new project, you'll see a Deploy New Version button. Click this, and fill in the required information about the deployment:
-- **Commit Hash of new Version:** From GitHub, copy the full commit hash of the version of your SubQuery project codebase that you want deployed
-- **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [`@subql/node`](https://www.npmjs.com/package/@subql/node)
-- **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [`@subql/query`](https://www.npmjs.com/package/@subql/query)
+Yeni projenizde Deploy New Version düğmesi görürsünüz. Bunu tıklatın ve dağıtım hakkında gerekli bilgileri doldurun:
+- **Yeni Sürüm'ün Karma'ını:** GitHub'dan, subquery proje kod tabanınızın dağıtılmasını istediğiniz sürümünün tam tamamlama karmasını kopyalayın
+- **Dexer Sürümü:** Bu, SubQuery'yi çalıştırmak istediğiniz SubQuery düğüm hizmetinin sürümüdür. Bkz[`@subql/node`](https://www.npmjs.com/package/@subql/node)
+- **Query Sürümü:** Bu, Bu SubQuery'yu çalıştırmak istediğiniz SubQuery'nin sorgu hizmetinin sürümüdür. Bkz[`@subql/query`](https://www.npmjs.com/package/@subql/query)
 
 ![Deploy your first Project](https://static.subquery.network/media/projects/projects-first-deployment.png)
 
-If deployed successfully, you'll see the indexer start working and report back progress on indexing the current chain. This process may take time until it reaches 100%.
+Başarıyla dağıtılırsa, dizinleyicinin çalışmaya başladığını görürsünüz ve geçerli zinciri dizine alma konusundaki ilerlemeyi raporlarsınız. Bu işlem %100'e ulaşana kadar zaman alabilir.
 
-## Next Steps - Connect to your Project
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
+## Sonraki Adımlar - Projenize Bağlanın
+Dağıtımınız başarıyla tamamlandıktan ve düğümlerimiz verilerinizi zincirden dizine ekledikten sonra, görüntülenen GraphQL Query uç noktası aracılığıyla projenize bağlanabilirsiniz.
 
 ![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
 
