@@ -16,15 +16,15 @@ Başlamadan önce, lütfen SubQuery projenizin herkese açık bir GitHub deposun
 
 İlk girişte, SubQuery'yi yetkilendirmeniz istenecektir. Hesabınızı tanımlamak için yalnızca e-posta adresinize ihtiyacımız vardır ve GitHub hesabınızdaki başka hiçbir veriyi başka bir nedenle kullanmayız. Bu adımda, Kişisel hesabınız yerine GitHub Kuruluşunuz altında SubQuery projeleri yayınlayabilmeniz için GitHub Kuruluş hesabınıza erişim talep edebilir veya izin verebilirsiniz.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![GitHub hesabından onayı iptal et](/assets/img/project_auth_request.png)
 
 SubQuery Projeleri, SubQuery platformuna yüklenen barındırılan tüm projelerinizi yönettiğiniz yerdir. Bu uygulamadan projeler oluşturabilir, silebilir ve hatta yükseltebilirsiniz.
 
-![Projects Login](/assets/img/projects-dashboard.png)
+![Projelere Giriş](/assets/img/projects-dashboard.png)
 
 Bağlı bir GitHub Kuruluş hesabınız varsa, kişisel hesabınız ile GitHub Organization hesabınız arasında geçiş yapmak için üstbilgideki değiştiriciyi kullanabilirsiniz. GitHub Kuruluş hesabında oluşturulan projeler, bu GitHub Organizasyonu'ndaki üyeler arasında paylaşılır. GitHub Organization hesabınızı bağlamak için [buradaki adımları takip](#add-github-organization-account-to-subquery-projects) edebilirsiniz.
 
-![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
+![GitHub hesapları arasında geçiş yapma](/assets/img/projects-account-switcher.png)
 
 #### İlk Projenizi Oluşturma
 
@@ -34,11 +34,11 @@ Bağlı bir GitHub Kuruluş hesabınız varsa, kişisel hesabınız ile GitHub O
 - **Altyazı**
 - **Tarif**
 - **GitHub Repository URL:** Bu, SubQuery projenize sahip bir ortak depo için geçerli bir GitHub URL'si olmalıdır. `schema.graphql` dosyası dizininizin kökünde olmalıdır ([de dizin yapısı hakkında daha fazla bilgi unun](../create/introduction.md#directory-structure)).
-- **Hide projec:** Seçilirse, bu, projeyi genel SubQuery gezgininden gizler. SubQuerynuzu toplulukla paylaşmak istiyorsanız bunu seçimsiz tutun! ![Create your first Project](/assets/img/projects-create.png)
+- **Hide projec:** Seçilirse, bu, projeyi genel SubQuery gezgininden gizler. SubQuerynuzu toplulukla paylaşmak istiyorsanız bunu seçimsiz tutun! ![İlk Projenizi oluşturma](/assets/img/projects-create.png)
 
 Projenizi oluşturursanız, SubQuery Projenizin listesinde görürsünüz. *Neredeyse geldik! Sadece yeni bir versiyonunu dağıtmamız gerekiyor.*
 
-![Created Project with no deployment](/assets/img/projects-no-deployment.png)
+![Dağıtım olmadan Oluşturulan Proje](/assets/img/projects-no-deployment.png)
 
 #### İlk Sürümünüzü Dağıtma
 
@@ -49,31 +49,31 @@ Yeni projenizde Deploy New Version düğmesi görürsünüz. Bunu tıklatın ve 
 - **Dexer Sürümü:** Bu, SubQuery'yi çalıştırmak istediğiniz SubQuery düğüm hizmetinin sürümüdür. Bkz[`@subql/node`](https://www.npmjs.com/package/@subql/node)
 - **Query Sürümü:** Bu, Bu SubQuery'yu çalıştırmak istediğiniz SubQuery'nin sorgu hizmetinin sürümüdür. Bkz[`@subql/query`](https://www.npmjs.com/package/@subql/query)
 
-![Deploy your first Project](https://static.subquery.network/media/projects/projects-first-deployment.png)
+![İlk Projenizi dağıtma](https://static.subquery.network/media/projects/projects-first-deployment.png)
 
 Başarıyla dağıtılırsa, dizinleyicinin çalışmaya başladığını görürsünüz ve geçerli zinciri dizine alma konusundaki ilerlemeyi raporlarsınız. Bu işlem %100'e ulaşana kadar zaman alabilir.
 
 ## Sonraki Adımlar - Projenize Bağlanın
 Dağıtımınız başarıyla tamamlandıktan ve düğümlerimiz verilerinizi zincirden dizine ekledikten sonra, görüntülenen GraphQL Query uç noktası aracılığıyla projenize bağlanabilirsiniz.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![Dağıtılan ve eşitlenen proje](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in-browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+Alternatif olarak, projenizin başlığının yanındaki üç noktaya tıklayabilir ve SubQuery Gezgini'nden görüntüleyebilirsiniz. Burada başlamak için tarayıcı içi oyun alanını kullanabilirsiniz - [ Explorer'ımızı nasıl kullanacağınız hakkında daha fazla](../query/query.md).
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![SubQuery Explorer Projeler](/assets/img/projects-explorer.png)
 
-## Add GitHub Organization Account to SubQuery Projects
+## GitHub Kuruluş Hesabını SubQuery Projelerine Ekleme
 
-It is common to publish your SubQuery project under the name of your GitHub Organization account rather than your personal GitHub account. At any point your can change your currently selected account on [SubQuery Projects](https://project.subquery.network) using the account switcher.
+SubQuery projenizi kişisel GitHub hesabınız yerine GitHub Kuruluş hesabınızın adı altında yayımlamak yaygındır. İstediğiniz noktada, hesap değiştiriciyi kullanarak [SubQuery Projects](https://project.subquery.network)'da seçili hesabınızı değiştirebilirsiniz.
 
-![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
+![GitHub hesapları arasında geçiş yapma](/assets/img/projects-account-switcher.png)
 
-If you can't see your GitHub Organization account listed in the switcher, the you may need to grant access to SubQuery for your GitHub Organization (or request it from an administrator). To do this, you first need to revoke permissions from your GitHub account to the SubQuery Application. To do this, login to your account settings in GitHub, go to Applications, and under the Authorized OAuth Apps tab, revoke SubQuery - [you can follow the exact steps here](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth). **Don't worry, this will not delete your SubQuery project and you will not lose any data.**
+GitHub Kuruluş hesabınızı switcher'de listelenmiş olarak göremiyorsanız GitHub Kuruluşunuz için SubQuery'ye erişim izni vermeniz (veya bir yöneticiden istemeniz) gerekebilir. Bunu yapmak için öncelikle GitHub hesabınızdan SubQuery Uygulamasına olan izinleri iptal etmeniz gerekir. Bunu yapmak için GitHub'daki hesap ayarlarınıza giriş yapın, Uygulamalar'a gidin ve Yetkili OAuth Uygulamaları sekmesinin altında SubQueryyu iptal edin - [ buradan tam adımları izleyebilirsiniz](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth). ** Endişelenmeyin, bu SubQuery projenizi silmez ve herhangi bir veri kaybetmezsiniz.**
 
-![Revoke access to GitHub account](/assets/img/project_auth_revoke.png)
+![GitHub hesabına erişimi iptal etme](/assets/img/project_auth_revoke.png)
 
-Once you have revoked access, log out of [SubQuery Projects](https://project.subquery.network) and log back in again. You should be redirected to a page titled *Authorize SubQuery* where you can request or grant SubQuery access to your GitHub Organization account. If you don't have admin permissions, you must make a request for an adminstrator to enable this for you.
+Erişimi iptal ettikten sonra, [SubQuery Projects](https://project.subquery.network) oturumunu kapatın ve yeniden oturum açın. GitHub Organization hesabınıza SubQuery erişimi isteyebileceğiniz veya verebileceğiniz *SubQuery Yetkilendir* başlıklı bir sayfaya yönlendirilmeniz gerekir. Yönetici izinleriniz yoksa, bunu sizin için etkinleştirmek için bir yönetici isteğinde bulunmalısınız.
 
-![Revoke approval from a GitHub account](/assets/img/project_auth_request.png)
+![GitHub hesabından onayı iptal et](/assets/img/project_auth_request.png)
 
-Once this request has been approved by your administrator (or if are able to grant it youself), you will see the correct GitHub Organization account in the account switcher.
+Bu istek yöneticiniz tarafından onaylandıktan sonra (veya size kendisi verebilirse), hesap değiştiricide doğru GitHub Organization hesabını görürsünüz.
