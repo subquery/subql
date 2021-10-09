@@ -19,36 +19,36 @@ Depolarımıza katkılar Sorunlar ve Çekme İstekleri (PRs) aracılığıyla ya
 
 ## Nasıl Katkıda Bulunulur
 
-### Reporting Bugs
+### Raporlama Hataları
 
-Bugs are tracked as GitHub issues. When logging an issue, explain the problem and include additional details to help maintainers reproduce the problem:
+Hatalar GitHub sorunları olarak izlenir. Bir sorunu günlüğe kaydedirken, sorunu açıklayın ve bakımcıların sorunu yeniden oluşturmalarına yardımcı olmak için ek ayrıntılar ekleyin:
 
-* Use a clear and descriptive title for the issue to identify the problem.
-* Describe the exact steps to reproduce the problem.
-* Describe the behavior you observed after following the steps.
-* Explain which behavior you expected to see instead and why.
-* Include screenshots if possible.
+* Sorunu tanımlamak için sorun için açık ve açıklayıcı bir başlık kullanın.
+* Sorunu yeniden oluşturmak için tam adımları açıklayın.
+* Adımları takip ettikten sonra gözlemlediğiniz davranışı açıklayın.
+* Bunun yerine hangi davranışı görmeyi beklediğinizi ve nedenini açıklayın.
+* Mümkünse ekran görüntülerini ekleyin.
 
-### Submitting Pull Requests
+### Çekme İstekleri Gönderme
 
-In general, we follow the "fork-and-pull" Git workflow
+Genel olarak, "çatal ve çekme" Git iş akışını takip ediyoruz
 
-* Fork the repository to your own Github account
-* Clone the project to your machine
-* Create a branch locally with a succinct but descriptive name
-* Commit changes to the branch
-* Following any formatting and testing guidelines specific to this repo
-* Push changes to your fork
-* Open a PR in our repository
+* Depoyu kendi Github hesabınıza çatalla
+* Projeyi makinenize klonlama
+* Özlü ama açıklayıcı bir adla yerel olarak dal oluşturma
+* Daldaki değişiklikleri kaydetme
+* Bu depoya özgü biçimlendirme ve test yönergelerini izleme
+* Değişiklikleri çatalınıza itin
+* Depomuzda bir PR açın
 
-## Coding Conventions
+## Kodlama Kuralları
 
-### Git Commit Messages
+### Git İletileri Kaydet
 
-* Use the present tense ("Add feature" not "Added feature")
-* Use the imperative mood ("Move cursor to..." not "Moves cursor to...")
-* Limit the first line to 72 characters or less
+* Şimdiki zamanı kullanın ("Eklenen özellik" değil"Özellik ekle")
+* Zorunlu ruh halini kullanın ("İmleci taşı..." "İmleci taşır...") değil
+* İlk satırı 72 karakter veya daha az karakterle sınırlandırma
 
-### JavaScript Styleguide
+### JavaScript Stil Kılavuzu
 
-* All JavaScript code is linted with Prettier and ESLint
+* Tüm JavaScript kodları Prettier ve ESLint ile astarlanmıştır
