@@ -85,14 +85,14 @@
       <li>
         <div class="title">Сколько стоит разместить мой проект в SubQuery?</div>
         <div class="content">
-          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ вернуть сообщество в будущем. To learn how to host your project with us, please check out the <a href="/quickstart/helloworld-hosted/">Hello World (SubQuery Hosted)</a> tutorial.</p>
+          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ отблагодарить сообщество. Чтобы научиться размещать ваш проект вместе с нами, ознакомьтесь с обучением <a href="/quickstart/helloworld-hosted/">Hello World (SubQuery Hosted)</a>.</p>
           <span class="more">
-            <router-link :to="{path: '/publish/publish/'}">HOSTING YOUR PROJECT</router-link>
+            <router-link :to="{path: '/publish/publish/'}"> РАЗМЕЩЕНИЕ ПРОЕКТА </router-link>
           </span>
         </div>
       </li>
     </ul><br>
-    For further frequently asked questions, please see our <router-link :to="{path: '/faqs/faqs/'}">FAQ's</router-link> page.    
+    Дальнейшие вопросы можно найти в нашей <router-link :to="{path: '/faqs/faqs/'}">Часто задаваемые вопросы (FAQ)</router-link> странице.    
   </div>
 </section>
 <section class="main">
@@ -101,7 +101,7 @@
         <h5>Интеграция с вашей собственной цепочкой?</h5>
         <p>Создаете ли вы новый парачейн или совершенно новый блокчейн в Substrate - SubQuery может помочь вам индексировать и диагностировать данные цепочки. SubQuery разработан для того, чтобы легко интегрироваться с пользовательской цепочкой Substrate.</p>
         <span class="more">
-          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</router-link>
+          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}"> УЗНАЙТЕ, КАК ИНТЕГРИРОВАТЬ В ВАШУ ЦЕПЬ </router-link>
         </span>
     </div>
     <div class="lastIntroduce lastIntroduce_2">
