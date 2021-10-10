@@ -7,8 +7,8 @@ Mục đích của chúng tôi là lắng nghe và tương tác với cộng đ�
 ## Cộng đồng SubQuery chính thức
 
 - [Linktree](https://linktr.ee/subquerynetwork)
-- [Discord](https://discord.com/invite/subquery) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [ Discord ](https://discord.com/invite/subquery) (Cộng đồng chính với các kênh hỗ trợ kỹ thuật chuyên dụng)
+- [Medium](https://subquery.medium.com) (Kênh thông báo chính)
 - [Twitter](https://twitter.com/subquerynetwork)
 - [ Telegram ](https://t.me/subquerynetwork) (Chỉ kênh thông báo)
 - [GitHub](https://github.com/SubQuery/subql)
