@@ -43,13 +43,13 @@ In general, we follow the "fork-and-pull" Git workflow
 
 In order to publish to github release, there are prerequisites:
 
-* Firstly in the merged commit the "[release]" must be present 
-* Next, you must add a description of the release in the respective package's CHANGELOG.md
+* Firstly in the merged commit the phrase `[release]` must be present 
+* Next, you must add a description of the release in the respective package's `CHANGELOG.md`
 * There must be some difference in the package compared with main
 * Lastly, the version must be in a format of x.y.z without '-'
 
 When a pull request to main has been accepted the workflow will 
-try to create releases where possible.
+try to create releases for each package where possible.
 
 ## Coding Conventions
 
