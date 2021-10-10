@@ -1,23 +1,23 @@
-# 如何更改区块链获取批量大小?
+# 如何更改区块链批处理大小?
 
 ## 视频教程
 
 <figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
+  <iframe src="https://www.youtube.com/embed/l9jvKWKmRfs" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
 ## 简介
 
 默认的批处理大小是 100，但可以通过命令 `--batch-size=xx` 来改变。
 
-You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
+你需要在命令行中特殊标记，或者如果你正在使用 Docker，修改docker-compose.yml
 
 ```shell
 subquery-node:
     image: onfinality/subql-node:latest
     depends_on:
       - "postgres"
-    restart: always
+    resting: always
     environment:
       DB_USER: postgres
       DB_PASS: postgres
@@ -25,7 +25,7 @@ subquery-node:
       DB_HOST: postgres
       DB_PORT: 5432
     volumes:
-      - ./:/app
+      - . :app
     command:
       - -f=/app
       - --local
@@ -33,8 +33,8 @@ subquery-node:
 
 ```
 
-This example sets the batch size to 50.
+此配置将批处理大小设置为50。
 
-## Why change the batch size?
+## 为什么要改变批处理大小？
 
-Using a smaller batch size can reduce memory usage and not leave users hanging for large queries. In otherwords, your application can be more responsive. 
+使用较小的批量大小可以减少内存使用，而不会让用户挂起大量查询。 换言之，您的应用程序响应速度更快。 
