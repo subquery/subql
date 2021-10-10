@@ -1,14 +1,14 @@
-# How to change the blockchain fetching batch size?
+# 如何更改区块链获取批量大小?
 
-## Video guide
+## 视频教程
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/LO_Gea_IN_s" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## 简介
 
-The default batch size is 100, but this can be changed by using the extra command `--batch-size=xx`.
+默认的批处理大小是 100，但可以通过命令 `--batch-size=xx` 来改变。
 
 You need to this to the command line as an extra flag or if you are using Docker, modify the docker-compose.yml with:
 
