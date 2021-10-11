@@ -10,9 +10,9 @@
 
 默认情况下，所有启动器项目都开始从创世区块同步区块链。 换句话说，从第一个区块开始。 对于大型区块链，这通常需要几天甚至几周才能完全同步。
 
-To start a SubQuery node synchronising from a non-zero height, all you have to do is to modify your project.yaml file and change the startBlock key.
+要启动一个从非零高度区块同步的 SubQuery 节点，您必须做的只是修改project.yaml 文件并更改启动区块的密钥。
 
-Below is a project.yaml file where the start block has been set to 1,000,000
+下面是一个 project.yaml 文件，启动区块已设置为 100,000 000。
 
 ```shell
 specVersion: 0.0.1
@@ -32,18 +32,18 @@ dataSources:
           kind: substrate/BlockHandler
 ```
 
-## Why not start from zero?
+## 为什么不从第零区块开始？
 
-The main reason is that it can reduce the time to synchronise the blockchain. This means that if you are only interested in transactions in the last 3 months, you can only synchronise the last 3 months worth meaning less waiting time and you can start your development faster.
+其主要原因是它可以减少同步区块链的时间。 这意味着如果您只对过去3个月的交易有兴趣。 您可以只同步过去3个月的记录，节省时间，您可以更快地开始您的发展。
 
-## What are the drawbacks of not starting from zero?
+## 不从零区块开始有什么缺点？
 
-The most obvious drawback will be that you won’t be able to query for data on the blockchain for blocks that you don’t have.
+最明显的缺点是你将无法查询获取你没有同步的区块上的数据
 
-## How to figure out the current blockchain height?
+## 如何识别当前区块的高度？
 
-If you are using the Polkadot network, you can visit [https://polkascan.io/](https://polkascan.io/), select the network, and then view the  "Finalised Block" figure.
+如果您正在使用 Polkadot 网络，您可以访问 [https://polkascan.io/](https://polkascan.io/)，选择网络，然后查看"最终区块"。
 
-## Do I have to do a rebuild or a codegen?
+## 我是否需要重建，或者是编程？
 
-No. Because you are modifying the project.yaml file, which is essentially a configuration file, you will not have to rebuild or regenerate the typescript code.
+不用 因为您正在修改 project.yaml 文件，它基本上是一个配置文件，您将不需要重建或重新生成类型代码。
