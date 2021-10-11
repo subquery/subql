@@ -1,18 +1,18 @@
-# How does a SubQuery dictionary work?
+# SubQuery 字典如何工作？
 
-The whole idea of a generic dictionary project is to index all the data from a blockchain and record the events, extrinsics, and its types (module and method) in a database in order of block height. Another project can then query this `network.dictionary` endpoint instead of the default `network.endpoint` defined in the manifest file.
+一个通用字典项目的整个想法是从区块链中对所有数据进行索引并记录事件，插件及其类型(模块和方法)，并按区块高度排序。 另一个项目然后可以查询此 `network.dictionary ` endpoint，而不是默认 `network.endpoint` 定义在清单文件中。
 
-The `network.dictionary` endpoint is an optional parameter that if present, the SDK will automatically detect and use. `network.endpoint` is mandatory and will not compile if not present.
+`network. dictionary ` endpoint 是一个可选的参数，如果存在，SDK 将自动检测和使用。 `network.endpoint` 是强制性的，如果不存在，将不会编译。
 
-Taking the [SubQuery dictionary](https://github.com/subquery/subql-dictionary) project as an example, the [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) file defines 3 entities; extrinsic, events, specVersion. These 3 entities contain 6, 4, and 2 fields respectively. When this project is run, these fields are reflected in the database tables.
+将 [SubQuery dictionary](https://github.com/subquery/subql-dictionary) 项目作为示例。 [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) 文件定义了3个实体；外观、事件、旁观版本。 这3个实体分别含有6、4和2个字段。 当这个项目运行时，这些字段将反映在数据库表中。
 
 ![extrinsics table](/assets/img/extrinsics_table.png) ![events table](/assets/img/events_table.png) ![specversion table](/assets/img/specversion_table.png)
 
-Data from the blockchain is then stored in these tables and indexed for performance. The project is then hosted in SubQuery Projects and the API endpoint is available to be added to the manifest file.
+然后，区块链中的数据被存储在这些表中，可进行索引。 然后该项目托管在 SubQuery 项目中，API端点可以添加到清单文件。
 
-## How to incorporate a dictionary into your project?
+## 如何将字典纳入您的项目中？
 
-Add `dictionary: https://api.subquery.network/sq/subquery/dictionary-polkadot` to the network section of the manifest. Eg:
+添加 ` dictionary: https://api.subquery.network/sq/subquery/dictiony-polkadot` 到清单的网络部分。 比如
 
 ```shell
 network:
