@@ -73,13 +73,13 @@ subql-node -f your-project-path
 ````
 ซึ่งจะขึ้นอยู่กับการกำหนดค่าฐานข้อมูล Postgres ของคุณด้วย (เช่น รหัสผ่านของฐานข้อมูลอื่น), โปรดตรวจสอบด้วยว่าทั้ง indexer (`subql/node`) และบริการสืบค้น (`subql/query`) สามารถสร้างการเชื่อมต่อกับฐานข้อมูลได้
 
-#### Specify a configuration file
+#### ระบุไฟล์สำหรับกำหนดค่า
 
 ```
 subql-node -c your-project-config.yml
 ```
 
-This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
+สิ่งนี้จะชี้โหนดการสืบค้นไปยังไฟล์การกำหนดค่าซึ่งจะอยู่ในรูปแบบไฟล์ YAML หรือ JSON Check out the example below.
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
