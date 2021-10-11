@@ -49,19 +49,19 @@ subql-node -f your-project-path
 
 #### การใช้ Dictionary
 
-การใช้ full chain dictionary สามารถเร่งการประมวลผลโปรเจ็กต์ SubQuery ได้อย่างมาก ทั้งในระหว่างการทดสอบหรือระหว่างการ index ครั้งแรกของคุณ In some cases, we've seen indexing performance increases of up to 10x.
+การใช้ full chain dictionary สามารถเร่งการประมวลผลโปรเจ็กต์ SubQuery ได้อย่างมาก ทั้งในระหว่างการทดสอบหรือระหว่างการ index ครั้งแรกของคุณ ในบางกรณี เราพบว่าประสิทธิภาพการ index เพิ่มขึ้นถึง 10 เท่า
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+chain dictionary แบบเต็มรูปแบบจะทำการ index ข้อมูลตำแหน่งเหตุการณ์และปัจจัยภายนอกทั้งหมดที่เกิดขึ้นภายในแต่ละเฉพาะ chain ไว้ล่วงหน้า ช่วยให้โหนดของคุณสามารถข้ามไปยังตำแหน่งที่เกี่ยวข้องเมื่อมีการ index แทนที่จะตรวจสอบทีละบล็อก
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+คุณสามารถเพิ่ม dictionary endpoint ในไฟล์ `project.yaml` ของคุณ (ดู [ไฟล์ Manifest](../create/manifest.md)) หรือสามารถระบุในขณะรันไทม์โดยใช้คำสั่งต่อไปนี้:
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+[อ่านเพิ่มเติมเกี่ยวกับวิธีการทำงานของ SubQuery Dictionary](../tutorials_examples/dictionary.md)
 
-#### Connect to database
+#### การเชื่อมต่อกับฐานข้อมูล
 
 ```
 export DB_USER=postgres
@@ -71,8 +71,7 @@ export DB_HOST=localhost
 export DB_PORT=5432
 subql-node -f your-project-path 
 ````
-
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
+ซึ่งจะขึ้นอยู่กับการกำหนดค่าฐานข้อมูล Postgres ของคุณด้วย (เช่น รหัสผ่านของฐานข้อมูลอื่น), โปรดตรวจสอบด้วยว่าทั้ง indexer (`subql/node`) และบริการสืบค้น (`subql/query`) สามารถสร้างการเชื่อมต่อกับฐานข้อมูลได้
 
 #### Specify a configuration file
 
