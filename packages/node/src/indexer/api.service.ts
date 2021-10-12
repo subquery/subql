@@ -5,17 +5,17 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
 import {
+  ApiDecoration,
   ApiInterfaceRx,
   ApiOptions,
   DecoratedRpc,
   QueryableStorageEntry,
-  QueryableStorageMultiArg,
   RpcMethodResult,
 } from '@polkadot/api/types';
 import { RpcInterface } from '@polkadot/rpc-core/types';
-import { StorageKey } from '@polkadot/types';
 import { BlockHash } from '@polkadot/types/interfaces';
-import { AnyFunction, AnyTuple, Registry } from '@polkadot/types/types';
+import { StorageEntry } from '@polkadot/types/primitive/types';
+import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -96,14 +96,7 @@ export class ApiService implements OnApplicationShutdown {
     if (this.patchedApi) {
       return this.patchedApi;
     }
-
-    // TODO: remove once https://github.com/polkadot-js/api/pull/3949 is merged and released
-    const {
-      network: { endpoint },
-    } = this.project;
-    const patchedApi = endpoint.startsWith('ws')
-      ? this.getApi().clone()
-      : new ApiPromise(this.apiOption);
+    const patchedApi = this.getApi().clone();
     Object.defineProperty(
       (patchedApi as any)._rpcCore.provider,
       'hasSubscriptions',
@@ -128,84 +121,46 @@ export class ApiService implements OnApplicationShutdown {
     return this.patchedApi;
   }
 
-  private patchApi(registry?: Registry): void {
-    if (registry) {
-      Object.defineProperty(this.patchedApi, 'registry', {
-        value: registry,
-        writable: false,
-        configurable: true,
-      });
-    }
+  private patchApi(): void {
     this.patchApiAt(this.patchedApi);
-    this.patchApiQuery(this.patchedApi);
     this.patchApiTx(this.patchedApi);
-    this.patchApiQueryMulti(this.patchedApi);
     this.patchDerive(this.patchedApi);
     this.patchApiRpc(this.patchedApi);
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash, inject = false): Promise<void> {
+  async setBlockhash(blockHash: BlockHash): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
     this.currentBlockHash = blockHash;
-    if (inject) {
-      const { metadata, registry } = await this.api.getBlockRegistry(blockHash);
-      this.patchedApi.injectMetadata(metadata, true, registry);
-      this.patchApi(registry);
-    }
-  }
-
-  private replaceToAtVersion(
-    original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
-    atMethod: string,
-  ) {
-    return (...args: any[]) => {
-      return original[atMethod](this.currentBlockHash, ...args);
-    };
+    const apiAt = await this.api.at(blockHash);
+    this.patchApiQuery(this.patchedApi, apiAt);
+    this.patchApiFind(this.patchedApi, apiAt);
+    this.patchApiQueryMulti(this.patchedApi, apiAt);
   }
 
   private redecorateStorageEntryFunction(
     original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
     apiType: 'promise' | 'rxjs',
   ): QueryableStorageEntry<'promise' | 'rxjs', AnyTuple> {
-    const newEntryFunc = this.replaceToAtVersion(
-      original,
-      'at',
-    ) as QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>;
+    const newEntryFunc = original;
     newEntryFunc.at = NOT_SUPPORT('at');
-    newEntryFunc.creator = original.creator;
-    newEntryFunc.entries = this.replaceToAtVersion(original, 'entriesAt');
     newEntryFunc.entriesAt = NOT_SUPPORT('entriesAt');
     newEntryFunc.entriesPaged = NOT_SUPPORT('entriesPaged');
     newEntryFunc.hash = NOT_SUPPORT('hash');
-    newEntryFunc.is = original.is.bind(original);
-    newEntryFunc.key = original.key.bind(original);
-    newEntryFunc.keyPrefix = original.keyPrefix.bind(original);
-    newEntryFunc.keys = this.replaceToAtVersion(original, 'keysAt');
     newEntryFunc.keysAt = NOT_SUPPORT('keysAt');
     newEntryFunc.keysPaged = NOT_SUPPORT('keysPaged');
-    if (apiType === 'promise') {
-      this.patchPromiseStorageEntryMulti(
-        newEntryFunc as QueryableStorageEntry<'promise', AnyTuple>,
-      );
-    } else {
-      this.patchRxStorageEntryMulti(
-        newEntryFunc as QueryableStorageEntry<'rxjs', AnyTuple>,
-      );
-    }
-    newEntryFunc.multi = ((args: any[]) => {
-      const keys = args.map((arg) => {
-        const key = new StorageKey(
-          this.api.registry,
-          original.key(
-            ...(original.creator.meta.type.isDoubleMap ? arg : [arg]),
-          ),
-        );
-        key.setMeta(original.creator.meta);
-        return key;
-      });
+    newEntryFunc.range = NOT_SUPPORT('range');
+    newEntryFunc.sizeAt = NOT_SUPPORT('sizeAt');
+    newEntryFunc.multi = ((args: unknown[]) => {
+      let keys: [StorageEntry, unknown[]][];
+      const creator = original.creator;
+      if (creator.meta.type.asMap.hashers.length === 1) {
+        keys = args.map((a) => [creator, [a]]);
+      } else {
+        keys = args.map((a) => [creator, a as unknown[]]);
+      }
       if (apiType === 'promise') {
         return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
       } else {
@@ -215,9 +170,7 @@ export class ApiService implements OnApplicationShutdown {
         );
       }
     }) as any;
-    newEntryFunc.range = NOT_SUPPORT('range');
-    newEntryFunc.size = this.replaceToAtVersion(original, 'sizeAt');
-    newEntryFunc.sizeAt = NOT_SUPPORT('sizeAt');
+
     return newEntryFunc;
   }
 
@@ -251,22 +204,19 @@ export class ApiService implements OnApplicationShutdown {
     return ret;
   }
 
-  private patchPromiseStorageEntryMulti(
-    newEntryFunc: QueryableStorageEntry<'promise', AnyTuple>,
+  private patchApiFind(
+    api: ApiPromise,
+    apiAt: ApiDecoration<'promise' | 'rxjs'>,
   ): void {
-    newEntryFunc.multi = (async (keys: any[]) =>
-      Promise.all(keys.map(async (key) => newEntryFunc(key)))) as any;
+    api.findCall = apiAt.findCall;
+    api.findError = apiAt.findError;
   }
 
-  private patchRxStorageEntryMulti(
-    newEntryFunc: QueryableStorageEntry<'rxjs', AnyTuple>,
+  private patchApiQuery(
+    api: ApiPromise,
+    apiAt: ApiDecoration<'promise' | 'rxjs'>,
   ): void {
-    newEntryFunc.multi = ((keys: any[]) =>
-      combineLatest(keys.map((key) => newEntryFunc(key)))) as any;
-  }
-
-  private patchApiQuery(api: ApiPromise): void {
-    (api as any)._query = Object.entries(api.query).reduce(
+    (api as any)._query = Object.entries(apiAt.query).reduce(
       (acc, [module, moduleStorageItems]) => {
         acc[module] = Object.entries(moduleStorageItems).reduce(
           (accInner, [storageName, storageEntry]) => {
@@ -356,38 +306,12 @@ export class ApiService implements OnApplicationShutdown {
       return acc;
     }, {});
   }
-
-  private getKeysFromCalls(
+  private patchApiQueryMulti(
     api: ApiPromise,
-    calls: QueryableStorageMultiArg<'promise' | 'rxjs'>[],
-  ): StorageKey[] {
-    return calls.map((callMultiArg) => {
-      if (callMultiArg instanceof Array) {
-        const [storageFunc, ...args] = callMultiArg;
-        const key = new StorageKey(api.registry, storageFunc.key(...args));
-        key.setMeta(storageFunc.creator.meta);
-        return key;
-      } else {
-        const key = new StorageKey(api.registry, callMultiArg.key());
-        key.setMeta(callMultiArg.creator.meta);
-        return key;
-      }
-    });
-  }
-
-  private patchApiQueryMulti(api: ApiPromise): void {
-    (api as any)._queryMulti = (
-      calls: QueryableStorageMultiArg<'promise'>[],
-    ) => {
-      const keys = this.getKeysFromCalls(api, calls);
-      return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
-    };
-    (api as any)._rx.queryMulti = (
-      calls: QueryableStorageMultiArg<'rxjs'>[],
-    ) => {
-      const keys = this.getKeysFromCalls(api, calls);
-      return this.api.rx.rpc.state.queryStorageAt(keys, this.currentBlockHash);
-    };
+    apiAt: ApiDecoration<'promise' | 'rxjs'>,
+  ): void {
+    (api as any)._queryMulti = apiAt.queryMulti;
+    (api as any).rx.queryMulti = NOT_SUPPORT('api.rx.queryMulti');
   }
 
   private patchDerive(api: ApiPromise): void {

@@ -95,8 +95,7 @@ export class IndexerManager {
     let poiBlockHash: Uint8Array;
 
     try {
-      const inject = block.specVersion !== this.prevSpecVersion;
-      await this.apiService.setBlockhash(block.block.hash, inject);
+      await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.filteredDataSources) {
         const vm = this.vms[this.getDataSourceEntry(ds)];
         if (ds.kind === SubqlKind.Runtime) {

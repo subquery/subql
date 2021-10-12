@@ -19,7 +19,7 @@
     "@polkadot/api": "^5"
   },
   "devDependencies": {
-    "@polkadot/api": "^5.9.1",
+    "@polkadot/api": "^6",
     "@types/app-module-path": "^2.2.0"
   }
 }
