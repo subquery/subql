@@ -6,7 +6,7 @@
 
 将 [SubQuery dictionary](https://github.com/subquery/subql-dictionary) 项目作为示例。 [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) 文件定义了3个实体；外观、事件、旁观版本。 这3个实体分别含有6、4和2个字段。 当这个项目运行时，这些字段将反映在数据库表中。
 
-![extrinsics table](/assets/img/extrinsics_table.png) ![events table](/assets/img/events_table.png) ![specversion table](/assets/img/specversion_table.png)
+![扩展表](/assets/img/extrinsics_table.png) ![事件表](/assets/img/events_table.png) ![可视表](/assets/img/specversion_table.png)
 
 然后，区块链中的数据被存储在这些表中，可进行索引。 然后该项目托管在 SubQuery 项目中，API端点可以添加到清单文件。
 
@@ -26,18 +26,18 @@ network:
 
 ## 使用字典时会发生什么情况？
 
-When a dictionary IS used, the indexer will first take the call and event filters as parameters and merge this into a GraphQL query. It then uses the dictionary's API to obtain a list of relevant block heights only that contains the specific events and extrinsics. Often this is substantially less than 100 if the default is used.
+当使用字典时，索引器将首先将调用和事件过滤器作为参数，并将其合并为一个 GraphQL 查询。 然后它使用字典的 API 来获取一个相关的区块高度列表，只包含特定事件和相关信息。 如果使用默认值，这通常大大低于100。
 
-For example, imagine a situation where you're indexing transfer events. Not all blocks have this event (in the image below there are no transfer events in blocks 3 and 4).
+例如，想象一下，您需要检索转账的相关事件。 并非所有区块都有这个事件(在下面的图像中，区块3和4中没有转账的事件)。
 
-![dictionary block](/assets/img/dictionary_blocks.png)
+![字典区块](/assets/img/dictionary_blocks.png)
 
-The dictionary allows your project to skip this so rather than looking in each block for a transfer event, it skips to just blocks 1, 2, and 5. This is because the dictionary is a pre-computed reference to all calls and events in each block.
+字典允许您的项目跳过这些区块，而不是在每个区块中寻找一个转账事件。 它跳到了区块1、2和5。 这是因为字典是事先计算的每个区块中所有调用和事件的参考值。
 
-This means that using a dictionary can reduce the amount of data that the indexer obtains from the chain and reduce the number of “unwanted” blocks stored in the local buffer. But compared to the traditional method, it adds an additional step to get data from the dictionary’s API.
+这意味着使用字典可以减少索引器从该区块链中获得的数据数量，并减少当地缓冲区中储存的“不想要的”区块的数量。 但与传统方法相比，它增加了一个额外步骤，需要从字典的 API 获取数据。
 
-## When is a dictionary NOT useful?
+## 字典什么时候没有用？
 
-When [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) are used to grab data from a chain, every block needs to be processed. Therefore, using a dictionary in this case does not provide any advantage and the indexer will automatically switch to the default non-dictionary approach.
+当 [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) 用于从链中获取数据，每个区块都需要处理。 因此，在这种情况下使用字典并不提供任何好处，索引器将自动切换到默认的非字典方法。
 
-Also, when dealing with events or extrinsic that occur or exist in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage.
+另外，当处理发生或存在于每个区块的事件或外部事件时，例如 `timestamp.set`, 使用字典不会提供任何额外的帮助。
