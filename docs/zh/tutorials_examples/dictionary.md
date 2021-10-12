@@ -20,11 +20,11 @@ network:
   dictionary: https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-## What happens when a dictionary IS NOT used?
+## 当字典不使用时会发生什么？
 
-When a dictionary is NOT used, an indexer will fetch every block data via the polkadot api according to the `batch-size` flag which is 100 by default, and place this in a buffer for processing. Later, the indexer takes all these blocks from the buffer and while processing the block data, checks whether the event and extrinsic in these blocks match the user-defined filter.
+未使用字典时， 一个索引器将根据默认为 100 的 `batch-size` 标记通过 polkadot api 获取每个区块数据， 并将此放置在缓冲区以供处理。 然后，当处理区块数据时，索引器将所有这些区块从缓冲区取出， 检查这些区块中的事件和外在内容是否匹配用户定义的过滤器。
 
-## What happens when a dictionary IS used?
+## 使用字典时会发生什么情况？
 
 When a dictionary IS used, the indexer will first take the call and event filters as parameters and merge this into a GraphQL query. It then uses the dictionary's API to obtain a list of relevant block heights only that contains the specific events and extrinsics. Often this is substantially less than 100 if the default is used.
 
