@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Upgrade priority: High. To align with runtime upgrade of Kusama and Polakdot, upgraded api will support Metadata V14 and .
 ### Changed
 - Update Polkadot/api to 6.3.1 to support metadata v14 (#505)
-- Fetch service throw error with block height when failed fetch block (#492)
+- Fetch service improve logs to include block height，it threw error at the time (#492)
 ### Fixed
 - Throw errors when connection dropped by http, and exit (#519)
 - Addition fix for Poi service with if condition (#508)
