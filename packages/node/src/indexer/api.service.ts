@@ -150,15 +150,6 @@ export class ApiService implements OnApplicationShutdown {
     newEntryFunc.keysPaged = NOT_SUPPORT('keysPaged');
     newEntryFunc.range = NOT_SUPPORT('range');
     newEntryFunc.sizeAt = NOT_SUPPORT('sizeAt');
-    if (apiType === 'promise') {
-      this.patchPromiseStorageEntryMulti(
-        newEntryFunc as QueryableStorageEntry<'promise', AnyTuple>,
-      );
-    } else {
-      this.patchRxStorageEntryMulti(
-        newEntryFunc as QueryableStorageEntry<'rxjs', AnyTuple>,
-      );
-    }
     newEntryFunc.multi = ((args: unknown[]) => {
       let keys: [StorageEntry, unknown[]][];
       const creator = original.creator;
@@ -208,20 +199,6 @@ export class ApiService implements OnApplicationShutdown {
     ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
     ret.meta = original.meta;
     return ret;
-  }
-
-  private patchPromiseStorageEntryMulti(
-    newEntryFunc: QueryableStorageEntry<'promise', AnyTuple>,
-  ): void {
-    newEntryFunc.multi = (async (keys: any[]) =>
-      Promise.all(keys.map(async (key) => newEntryFunc(key)))) as any;
-  }
-
-  private patchRxStorageEntryMulti(
-    newEntryFunc: QueryableStorageEntry<'rxjs', AnyTuple>,
-  ): void {
-    newEntryFunc.multi = ((keys: any[]) =>
-      combineLatest(keys.map((key) => newEntryFunc(key)))) as any;
   }
 
   private patchApiFind(
