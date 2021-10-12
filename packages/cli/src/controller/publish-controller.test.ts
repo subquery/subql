@@ -32,6 +32,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   description: 'this is test for init controller',
   version: '',
   license: '',
+  endpoint: '',
 };
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
