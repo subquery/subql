@@ -5,6 +5,24 @@ __metadata:
   version: 4
   cacheKey: 7
 
+"@actions/core@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "@actions/core@npm:1.6.0"
+  dependencies:
+    "@actions/http-client": ^1.0.11
+  checksum: 71533cc514e4a158cea7c855610a44376814cc1b897f600aaf97636fc1bf49956bd4f7ef8f1cd04beefe8baa5d001aea40aadafbcbc6b36a62840bc25082e4c4
+  languageName: node
+  linkType: hard
+
+"@actions/http-client@npm:^1.0.11":
+  version: 1.0.11
+  resolution: "@actions/http-client@npm:1.0.11"
+  dependencies:
+    tunnel: 0.0.6
+  checksum: ccd0ae6ce99662e31daf1f5cb6b5130cc10ac9a3d4f2de74c54031cf13cd191dbbf0719e60e74f724f073f27af4cb9f393218d92f7f70c0b6e23bb1962c386e3
+  languageName: node
+  linkType: hard
+
 "@algolia/autocomplete-core@npm:1.2.2":
   version: 1.2.2
   resolution: "@algolia/autocomplete-core@npm:1.2.2"
@@ -4025,6 +4043,58 @@ __metadata:
   version: 1.0.4
   resolution: "@oclif/screen@npm:1.0.4"
   checksum: 8c5c8d1f6d09af29c75f64be130dfdfcb2211456da56e0626a7e1a0e34f267bd2fb4d043879fc2a2f5f1c6c2197f9bb4b2bb654c1d122f8db3ec97613e949380
+  languageName: node
+  linkType: hard
+
+"@octokit/endpoint@npm:^6.0.1":
+  version: 6.0.12
+  resolution: "@octokit/endpoint@npm:6.0.12"
+  dependencies:
+    "@octokit/types": ^6.0.3
+    is-plain-object: ^5.0.0
+    universal-user-agent: ^6.0.0
+  checksum: ff92bc2608a87b04f2d004acefa742dc2f1d471c166238cd675964a1f15d7e82053b0955d2b765f29e14918ce1019cb2e8f6b0fea3f010ba6eb004a352a06b50
+  languageName: node
+  linkType: hard
+
+"@octokit/openapi-types@npm:^11.2.0":
+  version: 11.2.0
+  resolution: "@octokit/openapi-types@npm:11.2.0"
+  checksum: 8fc9390afc59cb171e1eb5e7c816e14189d4e916f9ae580a0d2e288e7c2c8d2c3ce277f1e0782b2ae49f4f14f94854d8caa6f3283256cc25a84d991eadb3d763
+  languageName: node
+  linkType: hard
+
+"@octokit/request-error@npm:^2.1.0":
+  version: 2.1.0
+  resolution: "@octokit/request-error@npm:2.1.0"
+  dependencies:
+    "@octokit/types": ^6.0.3
+    deprecation: ^2.0.0
+    once: ^1.4.0
+  checksum: 0fdf0075bce449f07a376eae9e623f10859943ffcb8db4a97e5052ea09a16a9fc5c009153f750efc6ba3b0ca5f068b975b0d9eca180405533a6af78d318001fd
+  languageName: node
+  linkType: hard
+
+"@octokit/request@npm:^5.6.2":
+  version: 5.6.2
+  resolution: "@octokit/request@npm:5.6.2"
+  dependencies:
+    "@octokit/endpoint": ^6.0.1
+    "@octokit/request-error": ^2.1.0
+    "@octokit/types": ^6.16.1
+    is-plain-object: ^5.0.0
+    node-fetch: ^2.6.1
+    universal-user-agent: ^6.0.0
+  checksum: f3d45f49220d6c2d5125ecfe1936a93ce3a7c78b2727b230ec8c1a0a8d8a66acc2162b696c377c92506021041d69c383cb29892deb57a47f4e5811a5802174c1
+  languageName: node
+  linkType: hard
+
+"@octokit/types@npm:^6.0.3, @octokit/types@npm:^6.16.1":
+  version: 6.34.0
+  resolution: "@octokit/types@npm:6.34.0"
+  dependencies:
+    "@octokit/openapi-types": ^11.2.0
+  checksum: d797eb0d3c685e69281274ef92ce260dabd0af6f16ccf658eb93d6079658cffcaf46405f86b43d7b6ba48d742ee664502406dc52620e51a3b71ec1da4e444165
   languageName: node
   linkType: hard
 
@@ -10664,6 +10734,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"deprecation@npm:^2.0.0":
+  version: 2.3.1
+  resolution: "deprecation@npm:2.3.1"
+  checksum: 59343a0b927c5b6f67abb899fda68bf42b132c05ef1a985952c1e220c41fe5035b2d54a28c7c2a8b5239075d1dc25c83340242ada75f1c06c1bb047176f05f9b
+  languageName: node
+  linkType: hard
+
 "des.js@npm:^1.0.0":
   version: 1.0.1
   resolution: "des.js@npm:1.0.1"
@@ -14593,6 +14670,13 @@ fsevents@~2.3.1:
   dependencies:
     isobject: ^3.0.1
   checksum: 2f3232267366f3cdf13d53deda1b282ba7959f28ccb2ee8e0ca168f859f0d7126c27c846ebb7c2b9821a09bbda2e1835fd4020337ba666cf3c03dc256aab7ba1
+  languageName: node
+  linkType: hard
+
+"is-plain-object@npm:^5.0.0":
+  version: 5.0.0
+  resolution: "is-plain-object@npm:5.0.0"
+  checksum: 92bd87f095036fb6ef21fcba4e66734bba1457fc4abece5873bd1fba130c44fa8a4df64a2ef7841da638680af18e1ad2e5fac1095bed3578d0da0afc1f04bcf3
   languageName: node
   linkType: hard
 
@@ -21632,7 +21716,9 @@ fsevents@~2.3.1:
   version: 0.0.0-use.local
   resolution: "subql-mono@workspace:."
   dependencies:
+    "@actions/core": ^1.6.0
     "@babel/preset-env": ^7.13.10
+    "@octokit/request": ^5.6.2
     "@types/node": ^12.19.15
     "@typescript-eslint/eslint-plugin": ^4.28.0
     "@typescript-eslint/parser": ^4.28.0
@@ -22541,6 +22627,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"tunnel@npm:0.0.6":
+  version: 0.0.6
+  resolution: "tunnel@npm:0.0.6"
+  checksum: 78fbb1a55a44fc8de6a497923bf7bf6e7b14b396e0ddaf11fe624ab7f646a0d2ada03f6dcb4a80940faed9649e30d229114f218e8906badd12ded2323a6f666b
+  languageName: node
+  linkType: hard
+
 "tweetnacl@npm:1.x.x, tweetnacl@npm:^1.0.3":
   version: 1.0.3
   resolution: "tweetnacl@npm:1.0.3"
@@ -22830,6 +22923,13 @@ typescript@^4.1.3:
   dependencies:
     crypto-random-string: ^2.0.0
   checksum: a2748b41eaada391800773c16674fe4e9a3f078162e49b2c6b4e67d36061a0f97be4b7851136d786ed5e4ddc90770400fd54bf32aed1e08ec9a9219d9b66bad3
+  languageName: node
+  linkType: hard
+
+"universal-user-agent@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "universal-user-agent@npm:6.0.0"
+  checksum: 725797ab636f1786a824f805eca2b227019ae8e82fdbe03e3e26a7f2917669bfcf7ef723c7d4b2c60a5e1603108d32bec3987b4f52821360523cb609fb7ae782
   languageName: node
   linkType: hard
 

@@ -1,5 +1,6 @@
 const fs = require('fs');
 const { exit } = require('process');
+const core = require('@actions/core');
 const { request } = require('@octokit/request');
 
 const myArgs = process.argv.slice(2);
@@ -8,10 +9,9 @@ const pJson = require(`${myArgs[0]}/package.json`);
 const version = pJson.version;
 const repoName = pJson.name; 
 
-//excluding beta versions from github releases
 function checkForBetaVersion(version) {
     if (version.includes('-')){
-        exit();
+        exit(0); //skip this package but continue trying to release others
     }
 }
 
@@ -43,18 +43,17 @@ function gatherReleaseInfo(logPath) {
         } else {
             j = lines.length;
         }
-    }  
+    }
+    
+    if(releaseInfo === ''){
+        core.setFailed("No release info found, either missing in changelog or changelog is formatted incorrectly")
+    }
 
     console.log("Gathered release info...")  
     return releaseInfo;
 }
 
 async function publishRelease(releaseInfo) {
-    if(releaseInfo === ""){
-        console.error("No release info found, either missing in changelog or formatted incorrectly")
-        exit()
-    }
-
     const repoTagName = repoName.split('/');
 
     await request('POST /repos/{owner}/{repo}/releases', {
@@ -66,7 +65,9 @@ async function publishRelease(releaseInfo) {
         repo: 'subql',
         tag_name: `${repoTagName[1]}/${version}`,
         body: releaseInfo
-    }).catch( err => console.error(err))
+    }).catch( err => {
+        core.setFailed(err)
+    })
 
     console.log("Release Created...")  
 }

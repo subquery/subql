@@ -116,37 +116,43 @@ jobs:
 
       #Add to github releases
       - name: Release Cli
-        if: steps.changed-cli.outputs.changed == 'true'
+        id: release-cli
+        if: steps.changed-cli.outputs.changed == 'true' 
         run: node .github/workflows/scripts/gh-release-script.js ./packages/cli
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
       - name: Release Common
-        if: steps.changed-common.outputs.changed == 'true'
+        id: release-common
+        if: steps.changed-common.outputs.changed == 'true' && steps.release-cli.conclusion == 'success'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/common
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Node
-        if: steps.changed-node.outputs.changed == 'true'
+        id: release-node
+        if: steps.changed-node.outputs.changed == 'true' && steps.release-common.conclusion == 'success'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/node
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Query
-        if: steps.changed-query.outputs.changed == 'true'
+        id: release-query
+        if: steps.changed-query.outputs.changed == 'true' && steps.release-node.conclusion == 'success'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/query
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Types
-        if: steps.changed-cli.outputs.changed == 'true'
+        id: release-types
+        if: steps.changed-cli.outputs.changed == 'true' && steps.release-query.conclusion == 'success'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/types
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
       
       - name: Release Validator
-        if: steps.changed-validator.outputs.changed == 'true'
+        id: release-validator
+        if: steps.changed-validator.outputs.changed == 'true' && steps.release-types.conclusion == 'success'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/validator
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
