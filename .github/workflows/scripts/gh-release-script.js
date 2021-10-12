@@ -51,7 +51,7 @@ function gatherReleaseInfo(logPath) {
 
 async function publishRelease(releaseInfo) {
     if(releaseInfo === ""){
-        console.error("No release info found, either missing in changelog or formatted correctly")
+        console.error("No release info found, either missing in changelog or formatted incorrectly")
         exit()
     }
 
