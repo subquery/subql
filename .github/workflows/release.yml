@@ -70,14 +70,21 @@ jobs:
 
       - name: build
         run: yarn workspaces foreach run build
-      
+
         #Publish to npm
-        - name: Publish Common
+      - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
         run: echo "Changes exist in common" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Release Common
+        id: release-common
+        if: steps.changed-common.outputs.changed == 'true'
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/common
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
@@ -86,12 +93,26 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Release Cli
+        id: release-cli
+        if: steps.changed-cli.outputs.changed == 'true'
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/cli
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
         working-directory: packages/types
         run: echo "Changes exist in types" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Release Types
+        id: release-types
+        if: steps.changed-cli.outputs.changed == 'true'
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/types
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
       - name: Publish Node
         if: steps.changed-node.outputs.changed == 'true'
@@ -100,12 +121,26 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Release Node
+        id: release-node
+        if: steps.changed-node.outputs.changed == 'true'
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/node
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+
       - name: Publish Query
         if: steps.changed-query.outputs.changed == 'true'
         working-directory: packages/query
         run: echo "Changes exist in query" && yarn npm publish --access public
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Release Query
+        id: release-query
+        if: steps.changed-query.outputs.changed == 'true'
+        run: node .github/workflows/scripts/gh-release-script.js ./packages/query
+        env:
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
 
       - name: Publish Validator
         if: steps.changed-validator.outputs.changed == 'true'
@@ -114,45 +149,9 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      #Add to github releases
-      - name: Release Cli
-        id: release-cli
-        if: steps.changed-cli.outputs.changed == 'true' 
-        run: node .github/workflows/scripts/gh-release-script.js ./packages/cli
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-
-      - name: Release Common
-        id: release-common
-        if: steps.changed-common.outputs.changed == 'true' && steps.release-cli.conclusion == 'success'
-        run: node .github/workflows/scripts/gh-release-script.js ./packages/common
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-      
-      - name: Release Node
-        id: release-node
-        if: steps.changed-node.outputs.changed == 'true' && steps.release-common.conclusion == 'success'
-        run: node .github/workflows/scripts/gh-release-script.js ./packages/node
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-      
-      - name: Release Query
-        id: release-query
-        if: steps.changed-query.outputs.changed == 'true' && steps.release-node.conclusion == 'success'
-        run: node .github/workflows/scripts/gh-release-script.js ./packages/query
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-      
-      - name: Release Types
-        id: release-types
-        if: steps.changed-cli.outputs.changed == 'true' && steps.release-query.conclusion == 'success'
-        run: node .github/workflows/scripts/gh-release-script.js ./packages/types
-        env:
-          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
-      
       - name: Release Validator
         id: release-validator
-        if: steps.changed-validator.outputs.changed == 'true' && steps.release-types.conclusion == 'success'
+        if: steps.changed-validator.outputs.changed == 'true'
         run: node .github/workflows/scripts/gh-release-script.js ./packages/validator
         env:
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
