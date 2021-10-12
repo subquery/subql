@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.13.0] - 2021-10-12
+### Added
+- Cli now support for manifest spec version `0.2.0` (#495)
+- Expand on cli `init` capabilities, default to not installing dependencies (#485)
+
 ## [0.12.0] - 2021-09-16
 ### Added
 - Adds command `subql build` which webpacks the project code into a single file (#475)
