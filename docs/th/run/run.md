@@ -88,7 +88,7 @@ batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### การเปลี่ยน batch size ในการ fetch บล็อค
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -98,27 +98,27 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+เมื่อ indexer ทำการ index chain ในครั้งแรก การ fetch ทีละบล็อกจะลดประสิทธิภาพการทำงานลงอย่างมาก การเพิ่ม batch size เพื่อปรับจำนวนบล็อคที่ fetch จะลดเวลาดำเนินการโดยรวมได้ batch size เริ่มต้นในปัจจุบันคือ 100
 
-#### Run in local mode
+#### การรันในโหมด local
 
 ```
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+เพื่อจุดประสงค์ในการ debug ผู้ใช้สามารถเรียกใช้โหนดในโหมด local ได้ การเปลี่ยนไปใช้โหมด local จะสร้างตาราง Postgres ใน ` public ` ซึ่งเป็น default schema
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+หากไม่ได้ใช้โหมด local, Postgres schema ใหม่ที่มี `subquery_` เริ่มต้นและตารางโปรเจ็กต์ที่เกี่ยวข้องจะถูกสร้างขึ้น
 
 
-#### Check your node health
+#### ตรวจสอบสถานะความสมบูรณ์ของโหนดของคุณ
 
-There are 2 endpoints that you can use to check and monitor the health of a running SubQuery node.
+มีปลายทาง 2 endpoints ที่คุณสามารถใช้ตรวจสอบและมอนิเตอร์ความสมบูรณ์ของโหนด SubQuery ที่ทำงานอยู่
 
-- Health check endpoint that returns a simple 200 response
-- Metadata endpoint that includes additional analytics of your running SubQuery node
+- Health check endpoint ที่ส่งคืนค่า response 200 อย่างง่าย
+- Metadata endpoint ที่รวมการวิเคราะห์เพิ่มเติมเกี่ยวกับโหนด SubQuery ของคุณที่กำลังทำงานอยู่
 
-Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
+เพิ่มสิ่งนี้ไปกับ URL พื้นฐานของโหนด SubQuery ของคุณ ตัวอย่างเช่น` http://localhost:3000/meta` จะส่งคืนค่า:
 
 ```bash
 {
@@ -141,9 +141,9 @@ Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/met
 }
 ```
 
-`http://localhost:3000/health` will return HTTP 200 if successful.
+`http://localhost:3000/health` จะคืนค่า HTTP 200 ถ้าสำเร็จ
 
-A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
+ค่า 500 error จะถูกส่งเมื่อ indexer ไม่สมบูรณ์ ซึ่งมักจะเห็นได้เมื่อโหนดกำลังทำการบูทอัพ
 
 ```shell
 {
@@ -152,7 +152,7 @@ A 500 error will be returned if the indexer is not healthy. This can often be se
 }
 ```
 
-If an incorrect URL is used, a 404 not found error will be returned.
+หากใช้ URL ที่ไม่ถูกต้อง ข้อผิดพลาด 404 not found จะถูกส่งกลับมา
 
 ```shell
 {
@@ -162,36 +162,36 @@ If an incorrect URL is used, a 404 not found error will be returned.
 }
 ```
 
-#### Debug your project
+#### การ debug โปรเจ็กต์ของคุณ
 
-Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+ใช้ [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) เพื่อเรียกใช้คำสั่งต่อไปนี้
 
 ```shell
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
-For example:
+ยกตัวอย่างเช่น:
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
-Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
-## Running a Query Service (subql/query)
+จากนั้นเปิดเครื่องมือ Chrome dev ไปที่ Source > Filesystem และเพิ่มโปรเจ็กต์ของคุณลงในเวิร์กสเปซ แล้วเริ่มการ debug ดูรายละเอียดเพิ่มเติมได้ที่ [วิธี debug โปรเจ็กต์ SubQuery](https://doc.subquery.network/tutorials_examples/debug-projects/)
+## การรัน Query Service (subql/query)
 
-### Installation
+### การติดตั้ง
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+โปรดทราบว่าเรา **ไม่** สนับสนุนให้ใช้ `yarn global` เนื่องจากการจัดการ dependency ที่ไม่ดี ซึ่งอาจนำไปสู่ข้อผิดพลาดได้
 
-### Running the Query service
+### การรัน Query service
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+ตรวจสอบให้แน่ใจว่าชื่อโปรเจ็กต์นี้ตรงกับชื่อโปรเจ็กต์เมื่อคุณ [เริ่มต้นโปรเจ็กต์](../quickstart/quickstart.md#initialise-the-starter-subquery-project) ตรวจสอบ environment variables ด้วยว่าถูกต้องหรือไม่
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+หลังจากรัน service subql-query สำเร็จแล้ว ให้เปิดเบราว์เซอร์ของคุณ แล้วไปที่ `http://localhost:3000` คุณควรเห็น GraphQL playground แสดงใน Explorer และมี schema ที่พร้อมสำหรับการสืบค้น
