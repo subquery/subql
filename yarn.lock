@@ -4595,7 +4595,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
-    "@polkadot/api": 6.3.1
+    "@polkadot/api": ^6
     "@types/app-module-path": ^2.2.0
   peerDependencies:
     "@polkadot/api": ^5
