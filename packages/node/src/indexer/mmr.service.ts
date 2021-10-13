@@ -19,7 +19,10 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
-const DEFAULT_LEAF = Buffer.alloc(DEFAULT_WORD_SIZE);
+const DEFAULT_LEAF = Buffer.from(
+  '0000000000000000000000000000000000000000000000000000000000000001',
+  'hex',
+);
 const DEFAULT_FETCH_RANGE = 100;
 const MMR_AWAIT_TIME = 2;
 
