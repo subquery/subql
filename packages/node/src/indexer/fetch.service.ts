@@ -102,7 +102,7 @@ export class FetchService implements OnApplicationShutdown {
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
         const filterList = isRuntimeDs(ds)
-          ? [handler.filter as SubqlHandlerFilter]
+          ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
           : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:
