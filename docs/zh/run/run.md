@@ -1,47 +1,47 @@
 # 在本地运行 SubQuery
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+本指南将介绍如何在基础设施上运行本地SubQuery节点，其中包括索引器和查询服务的使用。 不用担心在运行自己的SubQuery基础架构中所出现的问题。 SubQuery 向社区免费提供 [管理的托管服务](https://explorer.subquery.network)。 [按照我们所发布的指南](../publish/publish.md) 查看您如何将项目部署到 [SubQuery 项目](https://project.subquery.network)。
 
-## Using Docker
+## 使用 Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here. For a new project that has been just initialised you won't need to change anything here.
+An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here. 对于刚刚初始化的新项目，您将不需要在此更改任何内容。
 
-Under the project directory run the following command:
+在项目目录下运行以下命令：
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+第一次下载所需软件包可能需要一些时间([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/quiry`](https://www.npmjs.com/package/@subql/query), and Postgress) ，但很快你就会看到一个运行中的 SubQuery 节点。
 
-## Running an Indexer (subql/node)
+## 运行Indexer (subql/node)
 
-Requirements:
+需求：
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) 数据库 (版本12或更高). [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+SubQuery 节点需要一个加载的过程，它能够从 SubQuery 项目中提取基于子区块链的数据，并将其保存到 Postgres 数据库。
 
-### Installation
+### 安装
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+请注意我们不鼓励使用 `yarn global` ，因为它的依赖性管理很差，这可能会导致错误。
 
-Once installed, you can start a node with the following command:
+安装完毕后，您可以使用以下命令来启动节点：
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### 输入命令
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`. To find out more, you can always run `--help`.
+The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`. 要了解更多信息，您可以运行 `--help`。
 
-#### Point to local project path
+#### 指向本地项目路径
 
 ```
 subql-node -f your-project-path
