@@ -7,8 +7,8 @@ Merupakan tujuan kami untuk selalu mendengarkan dan terlibat dengan komunitas se
 ## Komunitas SubQuery Resmi
 
 - [Linktree](https://linktr.ee/subquerynetwork)
-- [Discord](https://discord.com/invite/subquery) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [Discord](https://discord.com/invite/subquery) (Komunitas Utama dengan saluran dukungan teknis khusus)
+- [Medium](https://subquery.medium.com) (Saluran pengumuman utama)
 - [Twitter](https://twitter.com/subquerynetwork)
 - [Telegram](https://t.me/subquerynetwork) (Hanya jalur pengumuman)
 - [GitHub](https://github.com/SubQuery/subql)
