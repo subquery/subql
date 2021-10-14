@@ -4,7 +4,7 @@
 import {IPFSReader} from './ipfs-reader';
 import {Reader} from './reader';
 
-const IPFSGateway = 'http://localhost:5001/api/v0';
+const IPFSGateway = 'https://ipfs.thechainhub.com/api/v0';
 
 describe('IPFSReader', () => {
   let reader: Reader;

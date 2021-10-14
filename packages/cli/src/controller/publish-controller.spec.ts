@@ -35,7 +35,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   endpoint: '',
 };
 
-const ipfsEndpoint = 'http://localhost:5001/api/v0';
+const ipfsEndpoint = 'https://ipfs.thechainhub.com/api/v0';
 
 jest.setTimeout(90000);
 

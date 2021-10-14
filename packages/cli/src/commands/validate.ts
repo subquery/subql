@@ -12,7 +12,7 @@ export default class Validate extends Command {
     location: flags.string({char: 'l', description: 'local folder, github repo url or IPFS cid'}),
     ipfs: flags.string({
       description: 'IPFS gateway endpoint, used for validating projects on IPFS',
-      default: 'http://localhost:5001/api/v0',
+      default: 'https://ipfs.thechainhub.com/api/v0',
     }),
     silent: flags.boolean(),
   };
