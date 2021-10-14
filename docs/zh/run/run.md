@@ -29,7 +29,7 @@ SubQuery 节点需要一个加载的过程，它能够从 SubQuery 项目中提�
 npm install -g @subql/node
 ```
 
-请注意我们不鼓励使用 `yarn global` ，因为它的依赖性管理很差，这可能会导致错误。
+请注意我们不推荐使用 `yarn global` ，因为它的依赖管理性能不佳，可能导致在运行中出现错误。
 
 安装完毕后，您可以使用以下命令来启动节点：
 
@@ -61,7 +61,7 @@ subql-node --network-dictionary=https://api.subquery.network/sq/subquery/diction
 
 [阅读更多关于 SubQuery 词典的工作原理](../tutorials_examples/dictionary.md)
 
-#### Connect to database
+#### 连接数据库
 
 ```
 export DB_USER=postgres
@@ -97,7 +97,7 @@ batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### 如何更改区块链批处理大小
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -107,7 +107,7 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. 增加批量处理的规模以调整获取的方块数量，这将会减少整个处理时间。 默认的批处理大小为100。
 
 #### Local mode
 
@@ -115,19 +115,19 @@ When the indexer first indexes the chain, fetching single blocks will significan
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+当需要进行调试时，用户可以在本地模式下运行节点。 For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+如果未使用本地模式，则使用初始的Postgres 模式，并将创建初始的 `subquery_` 和与其相对应的项目表。
 
 
-#### Check your node health
+#### 检查节点运行状况。
 
-There are 2 endpoints that you can use to check and monitor the health of a running SubQuery node.
+有两个端口可用来检查和监视所运行的 SubQuery 节点的健康状况。
 
-- Health check endpoint that returns a simple 200 response
-- Metadata endpoint that includes additional analytics of your running SubQuery node
+- 返回普通 200 响应的健康检查端口
+- Metadata端口，其中包括您正在运行的 SubQuery 节点的额外分析
 
-Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/meta` will return:
+将其附加到您的 SubQuery 节点的基本URL。 例如：`http://localhost:3000/meta` 将会返回
 
 ```bash
 {
@@ -152,7 +152,7 @@ Append this to the base URL of your SubQuery node. Eg `http://localhost:3000/met
 
 After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
 
-A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
+如果索引器出现错误，将返回500错误。 这通常可以在节点启动时看到。
 
 ```shell
 {
@@ -161,7 +161,7 @@ A 500 error will be returned if the indexer is not healthy. This can often be se
 }
 ```
 
-If an incorrect URL is used, a 404 not found error will be returned.
+如果使用了错误的URL，将返回404 not found错误。
 
 ```shell
 {
@@ -171,36 +171,36 @@ If an incorrect URL is used, a 404 not found error will be returned.
 }
 ```
 
-#### Debug your project
+#### 调试您的项目
 
-Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+使用 [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) 来运行以下命令。
 
 ```shell
 This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a <a href="https://explorer.subquery.network">managed hosted service</a> to the community for free. <a href="../publish/publish.md">Follow our publishing guide</a> to see how you can upload your project to <a href="https://project.subquery.network">SubQuery Projects</a>.
 ```
 
-For example:
+例如：
 ```shell
 node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
 Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
-Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
-## Running a Query Service (subql/query)
+然后打开Chrome开发工具，进入Source>Filesystem，将项目添加到工作区并开始调试。 查看更多信息[如何调试SubQuery项目](https://doc.subquery.network/tutorials_examples/debug-projects/)
+## 运行Query服务(subql/query)
 
-### Installation
+### 安装
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+请注意我们不推荐使用 `yarn global` ，因为它的依赖管理性能不佳，可能导致在运行中出现错误。
 
-### Running the Query service
+### 运行Query服务
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct. Also, check the environment variables are correct.
+Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct. 此外，请检查环境变量是否配置正确。
 
 After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
