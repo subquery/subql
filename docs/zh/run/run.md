@@ -49,17 +49,17 @@ subql-node -f your-project-path
 
 #### Using a Dictionary
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. In some cases, we've seen indexing performance increases of up to 10x.
+Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在某些情况下，我们可以看到索引性能提高了10倍。
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+完整的链词库预先索引特定链中所有事件和外观的位置，并允许您的节点服务在索引时跳到相关位置，而不是检查每个区块。
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+您可以在`project.yaml`文件中添加字典端点（请参见[Manifest File](../create/manifest.md)），或在运行时使用以下命令指定它：
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-[Read more about how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).
+[阅读更多关于 SubQuery 词典的工作原理](../tutorials_examples/dictionary.md)
 
 #### Connect to database
 
