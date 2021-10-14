@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProjectManifestVersioned } from '@subql/common';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
@@ -174,19 +175,67 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
+function testSubqueryProjectV0_2_0(): SubqueryProject {
+  const project = new SubqueryProject(
+    new ProjectManifestVersioned({
+      specVersion: '0.2.0',
+      network: {
+        genesisHash: '0x',
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      },
+      dataSources: [
+        {
+          kind: 'substrate/Jsonfy',
+          processor: {
+            file: 'contract-processors/dist/jsonfy.js',
+          },
+          startBlock: 1,
+          mapping: {
+            handlers: [
+              {
+                handler: 'handleEvent',
+                kind: 'substrate/JsonfyEvent',
+              },
+            ],
+          },
+        },
+      ],
+    } as any),
+    path.resolve(__dirname, '../../../'),
+  );
+  return project;
+}
+
+function createFetchService(
+  apiService = mockApiService(),
+  dictionaryService: DictionaryService,
+  project: SubqueryProject,
+  batchSize?: number,
+) {
+  return new FetchService(
+    apiService,
+    new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+    project,
+    dictionaryService,
+    new DsProcessorService(project),
+    new EventEmitter2(),
+  );
+}
+
 describe('FetchService', () => {
+  let apiService: ApiService;
+  let project: SubqueryProject;
+
+  beforeEach(() => {
+    apiService = mockApiService();
+    project = testSubqueryProject();
+  });
+
   it('get finalized head when reconnect', async () => {
-    const apiService = mockApiService();
-    const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
+    const fetchService = createFetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '' }),
+      new DictionaryService(project),
       project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
     );
     await fetchService.init();
     expect(
@@ -196,34 +245,23 @@ describe('FetchService', () => {
   });
 
   it('log errors when failed to get finalized block', async () => {
-    const apiService = mockRejectedApiService();
-    const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '' }),
+    const fetchService = createFetchService(
+      mockRejectedApiService(),
+      new DictionaryService(project),
       project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
     );
     await fetchService.init();
   });
 
   it('load batchSize of blocks with original method', () => {
-    const apiService = mockApiService();
     const batchSize = 50;
-    const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
+
+    const fetchService = createFetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
       dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
+      project,
+      batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
     const end = (fetchService as any).nextEndBlockHeight(100);
@@ -232,22 +270,18 @@ describe('FetchService', () => {
 
   it('loop until shutdown', async () => {
     const batchSize = 20;
-    const apiService = mockApiService();
     (fetchBlocksBatches as jest.Mock).mockImplementation((api, blockArray) =>
       blockArray.map((height) => ({
         block: { block: { header: { number: { toNumber: () => height } } } },
       })),
     );
-    const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
+
+    const fetchService = createFetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
       dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
+      project,
+      batchSize,
     );
     fetchService.fetchMeta = jest.fn();
     await fetchService.init();
@@ -262,9 +296,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight ", async () => {
-    const apiService = mockApiService();
     const batchSize = 20;
-    const project = testSubqueryProject();
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
@@ -299,6 +331,7 @@ describe('FetchService', () => {
       dsPluginService,
       eventEmitter,
     );
+
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -326,9 +359,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('skip use dictionary once if getDictionary(api failure) return undefined ', async () => {
-    const apiService = mockApiService();
     const batchSize = 20;
-    const project = testSubqueryProject();
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
@@ -389,9 +420,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
-    const apiService = mockApiService();
     const batchSize = 20;
-    const project = testSubqueryProject();
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
@@ -446,9 +475,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('fill the dictionary returned batches to nextBlockBuffer', async () => {
-    const apiService = mockApiService();
     const batchSize = 20;
-    const project = testSubqueryProject();
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
     project.projectManifest.asV0_0_1.dataSources = [
@@ -500,5 +527,40 @@ describe('FetchService', () => {
     //alway use dictionary
     expect((fetchService as any).useDictionary).toBeTruthy();
     expect((fetchService as any).latestBufferedHeight).toBe(14900);
+  }, 500000);
+
+  it('can support custom data sources', async () => {
+    project = testSubqueryProjectV0_2_0();
+
+    const fetchService = createFetchService(
+      apiService,
+      new DictionaryService(project),
+      project,
+      20,
+    );
+
+    const baseHandlerFilters = jest.spyOn(
+      fetchService as any,
+      `getBaseHandlerFilters`,
+    );
+
+    const getDsProcessor = jest.spyOn(
+      (fetchService as any).dsProcessorService,
+      `getDsProcessor`,
+    );
+
+    await fetchService.init();
+
+    const loopPromise = fetchService.startLoop(1);
+    // eslint-disable-next-line @typescript-eslint/require-await
+    fetchService.register(async (content) => {
+      if (content.block.block.header.number.toNumber() === 10) {
+        fetchService.onApplicationShutdown();
+      }
+    });
+    await loopPromise;
+
+    expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
+    expect(getDsProcessor).toHaveBeenCalledTimes(2);
   }, 500000);
 });

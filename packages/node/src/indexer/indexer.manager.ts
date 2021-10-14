@@ -9,7 +9,6 @@ import {
   buildSchema,
   getAllEntitiesRelations,
   isRuntimeDataSourceV0_2_0,
-  RuntimeDataSrouceV0_0_1,
 } from '@subql/common';
 import {
   isBlockHandlerProcessor,
@@ -18,7 +17,6 @@ import {
 } from '@subql/common/project/utils';
 import {
   SubqlCustomDatasource,
-  SubqlCustomHandler,
   SubqlDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
