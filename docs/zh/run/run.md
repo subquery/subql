@@ -49,7 +49,7 @@ subql-node -f your-project-path
 
 #### Using a Dictionary
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在某些情况下，我们可以看到索引性能提高了10倍。
+Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在特定情况下，我们可以看到索引性能提高了10倍。
 
 完整的链词库预先索引特定链中所有事件和外观的位置，并允许您的节点服务在索引时跳到相关位置，而不是检查每个区块。
 
@@ -88,7 +88,7 @@ This will point the query node to a configuration file which can be in YAML or J
 subquery: ../../../../subql-example/extrinsics
 subqueryName: extrinsics
 batchSize:100
-localMode:true Check out the example below.
+localMode:true 看看下面的例子。
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -107,7 +107,7 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. 增加批量处理的规模以调整获取的方块数量，这将会减少整个处理时间。 默认的批处理大小为100。
+When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. 增加批量处理的规模以调整获取的区块数量，这将会减少整个处理时间。 默认的批处理大小为100。
 
 #### Local mode
 
@@ -203,4 +203,4 @@ npm install -g @subql/query
 
 Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct. 此外，请检查环境变量是否配置正确。
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+成功运行subql查询服务后，打开浏览器并转到`http://localhost:3000`. 您将会看到 GraphQL playground 会已准备查询的模式显示在资源管理器中。
