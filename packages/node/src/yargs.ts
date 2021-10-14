@@ -88,6 +88,12 @@ export function getYargsOption() {
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'mmr-path': {
+      alias: 'm',
+      demandOption: false,
+      describe: 'Local path of the merkle mountain range (.mmr) file',
+      type: 'string',
+    },
     'proof-of-index': {
       demandOption: false,
       describe: 'Enable/disable proof of index',

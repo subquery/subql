@@ -8,6 +8,7 @@ import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { StoreService } from './store.service';
 
@@ -21,6 +22,7 @@ import { StoreService } from './store.service';
     BenchmarkService,
     DictionaryService,
     PoiService,
+    MmrService,
   ],
   exports: [],
 })

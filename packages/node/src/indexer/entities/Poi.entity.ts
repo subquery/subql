@@ -9,7 +9,7 @@ export interface ProofOfIndex {
   hash: Uint8Array;
   parentHash?: Uint8Array;
   operationHashRoot: Uint8Array;
-  mmrRoot: Uint8Array;
+  mmrRoot?: Uint8Array;
   projectId: string;
 }
 
@@ -48,7 +48,7 @@ export function PoiFactory(sequelize: Sequelize, schema: string): PoiRepo {
       },
       mmrRoot: {
         type: DataTypes.BLOB,
-        allowNull: false,
+        allowNull: true,
         unique: true,
       },
       projectId: {

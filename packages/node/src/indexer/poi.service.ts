@@ -4,21 +4,22 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { hexToU8a } from '@polkadot/util';
 import { Sequelize } from 'sequelize';
+import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
-import { MetadataRepo, MetadataFactory } from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo } from './entities/Poi.entity';
+import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
+
 @Injectable()
 export class PoiService implements OnApplicationShutdown {
   private isShutdown = false;
   private latestPoiBlockHash: Uint8Array;
   private poiRepo: PoiRepo;
-  private metadataRepo: MetadataRepo;
-  private blockOffset: number;
   private schema: string;
+  private latestPoiBlock: ProofOfIndex;
 
   constructor(
+    protected nodeConfig: NodeConfig,
     protected project: SubqueryProject,
     protected sequelize: Sequelize,
   ) {}
@@ -30,12 +31,7 @@ export class PoiService implements OnApplicationShutdown {
   async init(schema: string): Promise<void> {
     this.schema = schema;
     this.poiRepo = PoiFactory(this.sequelize, this.schema);
-    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
-
-    await Promise.all([
-      (this.latestPoiBlockHash = await this.getLatestPoiBlockHash()),
-      (this.blockOffset = await this.fetchBlockOffsetFromDb()),
-    ]);
+    this.latestPoiBlockHash = await this.getLatestPoiBlockHash();
   }
 
   async fetchPoiBlockHashFromDb(): Promise<Uint8Array | null> {
@@ -49,23 +45,6 @@ export class PoiService implements OnApplicationShutdown {
     } else {
       throw new Error(`Poi found but can not get latest hash`);
     }
-  }
-
-  async fetchBlockOffsetFromDb(): Promise<number | null> {
-    const blockOffset = await this.metadataRepo.findOne({
-      where: { key: 'blockOffset' },
-    });
-    if (blockOffset === null) {
-      throw new Error(`Poi service failed to fetch block offset from metadata`);
-    }
-    return Number(blockOffset.value);
-  }
-
-  async getBlockOffset(): Promise<number> {
-    if (!this.blockOffset) {
-      this.blockOffset = await this.fetchBlockOffsetFromDb();
-    }
-    return this.blockOffset;
   }
 
   async getLatestPoiBlockHash(): Promise<Uint8Array | null> {

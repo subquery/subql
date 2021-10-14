@@ -4586,6 +4586,7 @@ __metadata:
     "@polkadot/api": 6.3.1
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": latest
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.12
@@ -4601,7 +4602,6 @@ __metadata:
     dayjs: ^1.10.5
     dotenv: ^10.0.0
     lodash: ^4.17.21
-    merkle-mountain-range: ^2.0.0
     merkle-tools: ^1.4.1
     nodemon: ^2.0.7
     parse-json: ^5.2.0
@@ -4683,6 +4683,21 @@ __metadata:
     package-json-type: ^1.0.3
   languageName: unknown
   linkType: soft
+
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1":
+  version: 2.0.0-0.1.1
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1"
+  dependencies:
+    bignumber.js: ^8.1.1
+    buffer: ^5.4.3
+    js-sha3: ^0.8.0
+    level: ^6.0.0
+    rlp: ^2.2.3
+    semaphore-async-await: ^1.5.1
+    sha.js: ^2.4.11
+  checksum: a8fd113b7003360aab7ec7c2f4c5cd99e9109250ad716f3729efeb2aab2eda140d7ccc8d3182517ac392732c53d3ad6a7dbb99aada37f9d169e85071203e85e4
+  languageName: node
+  linkType: hard
 
 "@subql/x-vm2@npm:latest":
   version: 3.9.3-0.1.0
@@ -16860,21 +16875,6 @@ fsevents@~2.3.1:
   version: 1.4.1
   resolution: "merge2@npm:1.4.1"
   checksum: 7ad40d8b140a5ed4e621b916858410e4f0dd4ced1e5a2b675563347e70f0661d95ba6c3c8007dd3c4e242d0b8eee44559fa75bb90a146cf168debffc0cbc18f3
-  languageName: node
-  linkType: hard
-
-"merkle-mountain-range@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "merkle-mountain-range@npm:2.0.0"
-  dependencies:
-    bignumber.js: ^8.1.1
-    buffer: ^5.4.3
-    js-sha3: ^0.8.0
-    level: ^6.0.0
-    rlp: ^2.2.3
-    semaphore-async-await: ^1.5.1
-    sha.js: ^2.4.11
-  checksum: e8ab12d7c71c260dd2213b098133318686fad3c9f052c8f5e0bb933d3de355cca8b9f3286f78f200506f3174f6d81735e26fd04c8b7179e9a539f117f1b59323
   languageName: node
   linkType: hard
 

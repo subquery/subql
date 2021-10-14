@@ -12,6 +12,7 @@ import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { StoreService } from './store.service';
 
@@ -141,15 +142,17 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     dictionaryService,
     eventEmitter,
   );
-  const poiService = new PoiService(project, sequilize);
+  const poiService = new PoiService(nodeConfig, project, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig, poiService);
   const subqueryRepo = SubqueryFactory(sequilize);
+  const mmrService = new MmrService(nodeConfig, project, sequilize);
 
   return new IndexerManager(
     apiService,
     storeService,
     fetchService,
     poiService,
+    mmrService,
     sequilize,
     project,
     nodeConfig,
