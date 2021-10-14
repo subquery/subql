@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
@@ -44,7 +43,7 @@ export class DsPluginSandbox extends NodeVM {
     const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
       require: {
         root: option.root,
-        resolve: (moduleName) => {
+        resolve: (moduleName: string) => {
           return require.resolve(moduleName, { paths: [option.root] });
         },
       },
@@ -54,7 +53,7 @@ export class DsPluginSandbox extends NodeVM {
     this.entry = option.entry;
     this.script = new VMScript(
       `
-      module.exports = require('${this.entry}');
+      module.exports = require('${this.entry}').default;
     `,
       path.join(option.root, 'ds_sandbox'),
     );
@@ -72,7 +71,7 @@ export class DsPluginSandbox extends NodeVM {
 export class DsProcessorService {
   private processorCache: {
     [entry: string]: SubqlDatasourceProcessor<string, SubqlNetworkFilter>;
-  };
+  } = {};
   constructor(private project: SubqueryProject) {}
 
   validateCustomDs(): void {

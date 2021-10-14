@@ -72,9 +72,10 @@ export class IndexerSandbox extends NodeVM {
         e.handlerArgs = JSON.stringify(args);
       }
       throw e;
+    } finally {
+      this.setGlobal('args', []);
+      this.setGlobal('funcName', '');
     }
-    this.setGlobal('args', []);
-    this.setGlobal('funcName', '');
   }
 
   private injectGlobals({ api, store }: SandboxOption) {

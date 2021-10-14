@@ -4970,7 +4970,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-ds-processors@workspace:packages/contract-processors":
+"@subql/contract-ds-processors@workspace:*, @subql/contract-ds-processors@workspace:packages/contract-processors":
   version: 0.0.0-use.local
   resolution: "@subql/contract-ds-processors@workspace:packages/contract-processors"
   dependencies:
@@ -4995,6 +4995,7 @@ __metadata:
     "@nestjs/testing": ^7.6.9
     "@polkadot/api": 6.3.1
     "@subql/common": "workspace:*"
+    "@subql/contract-ds-processors": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": latest
