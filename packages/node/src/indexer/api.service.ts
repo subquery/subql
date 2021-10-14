@@ -16,7 +16,6 @@ import { RpcInterface } from '@polkadot/rpc-core/types';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
-import { combineLatest } from 'rxjs';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 
