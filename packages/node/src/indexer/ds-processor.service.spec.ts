@@ -8,33 +8,40 @@ import { SubqueryProject } from '../configure/project.model';
 import { isCustomDs } from '../utils/project';
 import { DsProcessorService } from './ds-processor.service';
 
-const project = new SubqueryProject(
-  new ProjectManifestVersioned({
-    specVersion: '0.2.0',
-    version: '0.0.0',
-    network: {
-      genesisHash: '0x',
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-    },
-    schema: './schema.graphql',
-    dataSources: [
-      {
-        kind: 'substrate/Jsonfy',
-        processor: { file: 'contract-processors/dist/jsonfy.js' },
-        startBlock: 1,
-        mapping: {
-          handlers: [{ handler: 'testSandbox', kind: 'substrate/JsonfyEvent' }],
-        },
+function getTestProject(extraDataSources?: SubqlCustomDatasource[]) {
+  return new SubqueryProject(
+    new ProjectManifestVersioned({
+      specVersion: '0.2.0',
+      version: '0.0.0',
+      network: {
+        genesisHash: '0x',
+        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
       },
-    ],
-  } as any),
-  path.resolve(__dirname, '../../../'),
-);
+      schema: './schema.graphql',
+      dataSources: [
+        {
+          kind: 'substrate/Jsonfy',
+          processor: { file: 'contract-processors/dist/jsonfy.js' },
+          startBlock: 1,
+          mapping: {
+            handlers: [
+              { handler: 'testSandbox', kind: 'substrate/JsonfyEvent' },
+            ],
+          },
+        },
+        ...extraDataSources,
+      ],
+    } as any),
+    path.resolve(__dirname, '../../../'),
+  );
+}
 
-describe('ds-processor service', () => {
+describe('DsProcessorService', () => {
   let service: DsProcessorService;
+  let project: SubqueryProject;
 
   beforeEach(() => {
+    project = getTestProject([]);
     service = new DsProcessorService(project);
   });
 
@@ -43,7 +50,7 @@ describe('ds-processor service', () => {
   });
 
   it('can catch an invalid datasource kind', () => {
-    const ds: SubqlCustomDatasource<string, any> = {
+    const badDs: SubqlCustomDatasource<string, any> = {
       kind: 'substrate/invalid',
       processor: { file: 'contract-processors/dist/jsonfy.js' },
       assets: {},
@@ -51,7 +58,11 @@ describe('ds-processor service', () => {
         handlers: [],
       },
     };
-    expect(() => service.getDsProcessor(ds).validate(ds)).toThrow();
+
+    project = getTestProject([badDs]);
+    service = new DsProcessorService(project);
+
+    expect(() => service.validateCustomDs()).toThrow();
   });
 
   it('can run a custom ds processor', () => {

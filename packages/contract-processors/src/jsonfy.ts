@@ -16,16 +16,6 @@ export type JsonfyDatasource = SubqlCustomDatasource<'substrate/Jsonfy'>;
 export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', SubqlNetworkFilter> = {
   kind: 'substrate/Jsonfy',
   validate(ds: JsonfyDatasource): void {
-    if (ds.kind !== this.kind) {
-      throw new Error('ds kind doesnt match processor');
-    }
-
-    for (const handler of ds.mapping.handlers) {
-      if (!(handler.kind in this.handlerProcessors)) {
-        throw new Error(`ds kind ${handler.kind} not one of ${Object.keys(this.handlerProcessors).join(', ')}`);
-      }
-    }
-
     return;
   },
   dsFilterProcessor(ds: JsonfyDatasource, api: ApiPromise): boolean {

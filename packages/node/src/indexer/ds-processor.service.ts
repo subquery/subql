@@ -49,7 +49,24 @@ export class DsProcessorService {
 
   validateCustomDs(): void {
     for (const ds of this.project.dataSources.filter(isCustomDs)) {
-      this.getDsProcessor(ds).validate(ds);
+      const processor = this.getDsProcessor(ds);
+      /* Standard validation applicable to all custom ds and processors */
+      if (ds.kind !== processor.kind) {
+        throw new Error('ds kind doesnt match processor');
+      }
+
+      for (const handler of ds.mapping.handlers) {
+        if (!(handler.kind in processor.handlerProcessors)) {
+          throw new Error(
+            `ds kind ${handler.kind} not one of ${Object.keys(
+              processor.handlerProcessors,
+            ).join(', ')}`,
+          );
+        }
+      }
+
+      /* Additional processor specific validation */
+      processor.validate(ds);
     }
   }
 
