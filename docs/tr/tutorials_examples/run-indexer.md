@@ -1,22 +1,22 @@
-# How to run an indexer node?
+# İndeksleyici düğümü nasıl çalıştırılır?
 
-## Video guide
+## Video rehberi
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## Giriş
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+İndeksleyici düğümü çalıştırmak, Docker kullanmanın veya [SubQuery Projects](https://project.subquery.network/)'de sizin için barındırılan bir projenin yanı sıra diğer bir alternatif seçenektir. Daha fazla zaman ve çaba gerektirir, ancak SubQuery'nin perde arkasında nasıl çalıştığını daha iyi anlamanıza yardımcı olacaktır.
 
 ## Postgres
 
-Running an indexer node on your infrastructure will require the setup of a Postgres database. You can install Postgres from [here](https://www.postgresql.org/download/) and ensure the version is 12 or greater.
+Altyapınızda bir indeksleyici düğümü çalıştırmak için bir Postgres veritabanı gerekecektir. [here](https://www.postgresql.org/download/) tıklayarak Postgres'i yükleyebilir ve sürümün 12 veya üzeri olduğundan emin olun.
 
-## Install subql/node
+## subql/node indirin
 
-Then to run a SubQuery node, run the following command:
+Ardından, bir SubQuery düğümü çalıştırmak için aşağıdaki komutu çalıştırın:
 
 ```shell
 npm install -g @subql/node
@@ -24,16 +24,16 @@ npm install -g @subql/node
 
 The -g flag means to install it globally which means on OSX, the location will be /usr/local/lib/node_modules.
 
-Once installed, you can check the version by running:
+Yüklendikten sonra, aşağıdakileri çalıştırarak sürümü kontrol edebilirsiniz:
 
 ```shell
 > subql-node --version
 0.19.1
 ```
 
-## Setting DB configs
+## DB yapılandırmalarını ayarlama
 
-Next, you need to set the following environmental variables:
+Daha sonra, aşağıdaki çevresel değişkenleri ayarlamanız gerekir:
 
 ```shell
 export DB_USER=postgres
@@ -43,20 +43,20 @@ export DB_HOST=localhost
 export DB_PORT=5432
 ```
 
-Of course, if you have different values for the above keys, please adjust accordingly. Note that the `env` command will display the current environment variables and that this process only sets these values temporarily. That is, they are only valid for the duration of the terminal session. To set them permanently, store them in your ~/bash_profile instead.
+Tabi yukarıdaki anahtarlar için farklı değerleriniz varsa, lütfen ona göre ayarlayın. `env` komutunun geçerli ortam değişkenlerini görüntüleyeceğini ve bu işlemin bu değerleri yalnızca geçici olarak ayarladığını unutmayın. Yani, bunlar yalnızca uçbirim oturumu süresince geçerlidir. Bunları kalıcı olarak ayarlamak için, bunun yerine ~/bash_profile depolayın.
 
-## Indexing a project
+## Projeyi indeksleme
 
-To start indexing a project, navigate into your project folder and run the following command:
+Bir projeyi indekslemeye başlamak için proje klasörünüze gidin ve aşağıdaki komutu çalıştırın:
 
 ```shell
 subql-node -f .
 ```
 
-If you do not have a project handy, `git clone https://github.com/subquery/subql-helloworld`. You should see the indexer node kick into life and start indexing blocks.
+Hazır bir projeniz yoksa, `git clone https://github.com/subquery/subql-helloworld`. İndeksleyici düğümünün çalıştığını ve blokları indekslemeye başladığını görmelisiniz.
 
-## Inspecting Postgres
+## Postgres'i İnceleme
 
-If you navigate to Postgres, you should see two tables created. `public.subqueries` and `subquery_1.starter_entities`.
+Postgres'e giderseniz, iki adet tablonun oluşturulduğunu görüyor olmalısınız. `public.subqueries` and `subquery_1.starter_entities`.
 
-`public.subqueries` only contains 1 row which the indexer checks upon start up to “understand the current state” so it knows where to continue from. The `starter_entities` table contains the indexes. To view the data, run `select (*) from subquery_1.starter_entities`.
+`public.subqueries` indeksleyici, "mevcut durumu anlamak" için başladığında yalnızca bir satırı kontrol eder, böylece bir sonrakinde nereye gideceğini bilir. `starter_entities` tablosu indeksleri içerir. Verileri görüntülemek için `select (*) from subquery_1.starter_entities` çalıştırın.
