@@ -16,6 +16,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
+import { SandboxService } from './sandbox';
 import { StoreService } from './store.service';
 
 jest.mock('sequelize', () => {
@@ -151,6 +152,12 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const storeService = new StoreService(sequilize, nodeConfig, poiService);
   const subqueryRepo = SubqueryFactory(sequilize);
   const mmrService = new MmrService(nodeConfig, project, sequilize);
+  const sandboxService = new SandboxService(
+    apiService,
+    storeService,
+    nodeConfig,
+    project,
+  );
 
   return new IndexerManager(
     apiService,
@@ -161,6 +168,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     sequilize,
     project,
     nodeConfig,
+    sandboxService,
     dsPluginService,
     subqueryRepo,
     eventEmitter,

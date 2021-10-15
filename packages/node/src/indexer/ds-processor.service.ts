@@ -8,54 +8,27 @@ import {
   SubqlDatasourceProcessor,
   SubqlNetworkFilter,
 } from '@subql/types';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
-import { merge } from 'lodash';
+import { VMScript } from '@subql/x-vm2';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { isCustomDs } from '../utils/project';
+import { Sandbox } from './sandbox';
 
 export interface DsPluginSandboxOption {
   root: string;
   entry: string;
 }
 
-const DEFAULT_OPTION: NodeVMOptions = {
-  console: 'redirect',
-  wasm: false,
-  sandbox: {},
-  require: {
-    builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
-    external: true,
-    context: 'sandbox',
-  },
-  wrapper: 'commonjs',
-  sourceExtensions: ['js', 'cjs'],
-};
-
 const logger = getLogger('ds-sandbox');
 
-export class DsPluginSandbox extends NodeVM {
-  private option: DsPluginSandboxOption;
-  private script: VMScript;
-  private entry: string;
-
+export class DsPluginSandbox extends Sandbox {
   constructor(option: DsPluginSandboxOption) {
-    const vmOption: NodeVMOptions = merge({}, DEFAULT_OPTION, {
-      require: {
-        root: option.root,
-        resolve: (moduleName: string) => {
-          return require.resolve(moduleName, { paths: [option.root] });
-        },
-      },
-    });
-    super(vmOption);
-    this.option = option;
-    this.entry = option.entry;
-    this.script = new VMScript(
-      `
-      module.exports = require('${this.entry}').default;
-    `,
-      path.join(option.root, 'ds_sandbox'),
+    super(
+      option,
+      new VMScript(
+        `module.exports = require('${option.entry}').default;`,
+        path.join(option.root, 'ds_sandbox'),
+      ),
     );
   }
 
@@ -83,18 +56,19 @@ export class DsProcessorService {
   getDsProcessor<D extends string, T extends SubqlNetworkFilter>(
     ds: SubqlCustomDatasource<string, T>,
   ): SubqlDatasourceProcessor<D, T> {
+    if (!isCustomDs(ds)) {
+      throw new Error(`data source is not a custom data source`);
+    }
     if (!this.processorCache[ds.processor.file]) {
-      if (isCustomDs(ds)) {
-        const sandbox = new DsPluginSandbox({
-          root: this.project.path,
-          entry: ds.processor.file,
-        });
-        try {
-          this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
-        } catch (e) {
-          logger.error(`not supported ds @${ds.kind}`);
-          throw e;
-        }
+      const sandbox = new DsPluginSandbox({
+        root: this.project.path,
+        entry: ds.processor.file,
+      });
+      try {
+        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
+      } catch (e) {
+        logger.error(`not supported ds @${ds.kind}`);
+        throw e;
       }
     }
     return this.processorCache[

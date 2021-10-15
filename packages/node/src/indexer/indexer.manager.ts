@@ -5,11 +5,7 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import {
-  buildSchema,
-  getAllEntitiesRelations,
-  isRuntimeDataSourceV0_2_0,
-} from '@subql/common';
+import { buildSchema, getAllEntitiesRelations } from '@subql/common';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -28,7 +24,7 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { getProjectEntry, isCustomDs, isRuntimeDs } from '../utils/project';
+import { isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
@@ -39,7 +35,7 @@ import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
-import { IndexerSandbox } from './sandbox';
+import { IndexerSandbox, SandboxService } from './sandbox';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
@@ -50,7 +46,6 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
-  private vms: Record<string, IndexerSandbox> = {};
   private api: ApiPromise;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
@@ -65,6 +60,7 @@ export class IndexerManager {
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
+    private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
@@ -85,7 +81,7 @@ export class IndexerManager {
     try {
       await this.apiService.setBlockhash(block.block.hash);
       for (const ds of this.filteredDataSources) {
-        const vm = this.vms[this.getDataSourceEntry(ds)];
+        const vm = await this.sandboxService.getDsProcessor(ds);
         if (isRuntimeDs(ds)) {
           await this.indexBlockForRuntimeDs(
             vm,
@@ -95,7 +91,6 @@ export class IndexerManager {
         } else if (isCustomDs(ds)) {
           await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
-        // TODO: support Ink! and EVM
       }
       this.subqueryState.nextBlockHeight =
         block.block.header.number.toNumber() + 1;
@@ -158,27 +153,6 @@ export class IndexerManager {
         process.exit(1);
       });
     }
-
-    for (const ds of this.filteredDataSources) {
-      const entry = this.getDataSourceEntry(ds);
-
-      if (!this.vms[entry]) {
-        this.vms[entry] = await this.initVM(entry);
-      }
-    }
-  }
-
-  private async initVM(entry: string): Promise<IndexerSandbox> {
-    const api = await this.apiService.getPatchedApi();
-    return new IndexerSandbox(
-      {
-        store: this.storeService.getStore(),
-        api,
-        root: this.project.path,
-        entry,
-      },
-      this.nodeConfig,
-    );
   }
 
   private getStartBlockFromDataSources() {
@@ -323,14 +297,6 @@ export class IndexerManager {
         !ds.filter?.specName ||
         ds.filter.specName === this.api.runtimeVersion.specName.toString(),
     );
-  }
-
-  private getDataSourceEntry(dataSource: SubqlDatasource): string {
-    if (isRuntimeDataSourceV0_2_0(dataSource)) {
-      return dataSource.mapping.file;
-    } else {
-      return getProjectEntry(this.project.path);
-    }
   }
 
   private async indexBlockForRuntimeDs(

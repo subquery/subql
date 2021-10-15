@@ -47,9 +47,9 @@
     "yargs": "^16.2.0"
   },
   "devDependencies": {
-    "@subql/contract-ds-processors": "workspace:*",
     "@nestjs/schematics": "^7.2.7",
     "@nestjs/testing": "^7.6.9",
+    "@subql/contract-ds-processors": "workspace:*",
     "@types/app-module-path": "^2.2.0",
     "@types/express": "^4.17.12",
     "@types/jest": "^26.0.23",
