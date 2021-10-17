@@ -7,8 +7,8 @@ Nuestro objetivo es siempre escuchar y comprometerse con nuestra comunidad leal,
 ## Comunidades Oficiales de SubQuery
 
 - [Linktree](https://linktr.ee/subquerynetwork)
-- [Discord](https://discord.com/invite/subquery) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [Discord](https://discord.com/invite/subquery) (Comunidad primaria con canales de soporte técnico dedicados)
+- [Medium](https://subquery.medium.com) (Canal de anuncios principal)
 - [Twitter](https://twitter.com/subquerynetwork)
 - [Telegram](https://t.me/subquerynetwork) (Sólo canal de anuncios)
 - [GitHub](https://github.com/SubQuery/subql)
@@ -19,8 +19,8 @@ Nuestro objetivo es siempre escuchar y comprometerse con nuestra comunidad leal,
 
 Estas comunidades no son moderadas por el equipo de SubQuery, pero nuestros embajadores pueden estar allí para proporcionar apoyo. Por favor, ten cuidado con las estafas ya que SubQuery **no** es responsable de lo que sucede dentro de ellas.
 
-- [Telegram (Chinese)](https://t.me/subquerychina)
-- [Telegram (Russian)](https://t.me/SubQuery_russia)
+- [Telegram (Chino)](https://t.me/subquerychina)
+- [Telegram (Ruso)](https://t.me/SubQuery_russia)
 - [Telegram (Spanish)](https://t.me/SubQueryES)
 - [Telegram (Thai)](https://t.me/subquerynetworkthai)
 - [Telegram (Turkish)](https://t.me/subquery_TR)
