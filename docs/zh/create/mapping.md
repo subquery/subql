@@ -1,17 +1,17 @@
 # 映射
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+映射函数定义了如何将链数据转换为我们先前在`schema.GraphQL`文件中定义的优化GraphQL的具体解决办法。
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+映射是用名为 AssemblyScript 的TypeScript 子集写的，它可以编译到WASM (WebAssembly)。
+- 映射在`src/Mappings`目录中定义，并作为函数导出
+- 这些映射也可以在`src/index.ts中导出</li>
+<li>映射文件在映射处理程序下的<code>project.yaml`中引用。
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+有三类映射函数[Block handlers](#block-handler)，[Event Handlers](#event-handler)和[Call Handlers](#call-handler)。
 
-## Block Handler
+## 区块处理器
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block. To achieve this, a defined BlockHandler will be called once for every block.
+You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block. 为了实现这一点，将为每个区块调用一次已定义的BlockHandler。
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -24,13 +24,13 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16)是[signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/)的扩展接口类型，同样包括`specVersion`和`timestamp`。
 
-## Event Handler
+## 事件处理器
 
-You can use event handlers to capture information when certain events are included on a new block. You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+当某些事件包含在一个新的区块上时，您可以使用事件处理程序来捕获信息。 You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+在处理过程中，事件处理程序将接收一个底层事件作为参数，该事件具有类型化的输入和输出。 任何类型的事件都会触发映射，允许使用数据源捕获活动。 During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
