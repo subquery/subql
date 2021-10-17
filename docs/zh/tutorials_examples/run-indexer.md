@@ -1,14 +1,14 @@
-# How to run an indexer node?
+# 如何运行索引器节点?
 
-## Video guide
+## 视频教程
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/QfNsR12ItnA" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Introduction
+## 简介
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+运行索引器节点是在使用 Docker或在 [SubQuery 项目](https://project.subquery.network/) 上为您托管项目之外的另一个选项。 It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
 
 ## Postgres
 

@@ -1,4 +1,4 @@
-# GraphQ Şema
+# GraphQL Şema
 
 ## Varlıkları Tanımlama
 
@@ -12,21 +12,21 @@ Her varlık gerekli alanlarını < `ID!` türünde `id` olarak tanımlamalıdır
 Varlıktaki null olmayan alanlar `!` ile gösterilir. Lütfen aşağıdaki örneğe bakın:
 
 ```graphql
-örnek @entity { yazın
-  id: Kimlik! # kimlik alanı her zaman gereklidir ve böyle görünmelidir
-  adı: Dize! # Bu gerekli bir alan
-  adres: Dize # Bu isteğe bağlı bir alandır
+type Example @entity {
+  id: ID! # kimlik alanı her zaman gereklidir ve böyle görünmelidir
+  name: String! # Bu gerekli bir alan
+  address: String  # Bu isteğe bağlı bir alandır
 }
 ```
 
 ### Desteklenen skalerler ve türler
 
 Şu anda akan skalers türlerini destekliyoruz:
-- `KİMLİĞİ`
+- `ID`
 - `Int`
-- `Dizgi`
+- `String`
 - `BigInt`
-- `Tarih`
+- `Date`
 - `Boolean`
 - `<EntityName>` iç içe geçmiş ilişki varlıkları için, tanımlanan varlığın adını alanlardan biri olarak kullanabilirsiniz. Lütfen [Entity Relations](#entity-relationships) bakın.
 - `JSON` yapılandırılmış verileri alternatif olarak depolayabilir, lütfen bkz[JSON türü](#json-type)
@@ -35,55 +35,44 @@ Varlıktaki null olmayan alanlar `!` ile gösterilir. Lütfen aşağıdaki örne
 
 Sorgu performansını artırmak için, yalnızca birincil anahtar olmayan bir alana `@index` ek açıklama uygulayarak bir varlık alanını dizine dizine ekleme.
 
-Ancak, kullanıcıların herhangi bir <@index<JSON>@index<>/1> nesnesine >0>0<> ek açıklama eklemesine izin vermeyiz. Varsayılan olarak, dizinler otomatik olarak yabancı anahtarlara ve veritabanındaki JSON alanlarına eklenir, ancak yalnızca sorgu hizmeti performansını artırmak için.</p> 
+Ancak, kullanıcıların herhangi bir [JSON](#json-type) nesnesine `@index` ek açıklama eklemesine izin vermeyiz. Varsayılan olarak, dizinler otomatik olarak yabancı anahtarlara ve veritabanındaki JSON alanlarına eklenir, ancak yalnızca sorgu hizmeti performansını artırmak için.
 
 İşte bir örnek.
 
-
-
 ```graphql
 kullanıcı @entity { yazın
-  id: Kimlik!
-  adı: Dize! @index(benzersiz: doğru) # benzersiz doğru veya yanlış olarak ayarlanabilir  başlık: Başlık! # Dizinler otomatik olarak yabancı anahtar alanına eklenir
+  id: ID!
+  name: String! @index(unique: true) # benzersiz doğru veya yanlış olarak ayarlanabilir
+  title: Title! # Dizinler otomatik olarak yabancı anahtar alanına eklenir
  }
 
-Title @entity { yazın
-   yaptım!  
-  adı: Dize! @index(benzersiz:doğru)
+type Title @entity {
+  id: ID!  
+  name: String! @index(unique:true)
 }
 ```
-
-
-Bu kullanıcının adını bildiğimizi varsayarsak, ancak tüm kullanıcıları ayıklamak ve sonra ada göre filtrelemek yerine tam kimlik değerini bilmiyoruz, ad alanının arkasına `@index` ekleyebiliriz. Bu, sorgulamayı çok daha hızlı hale getirir ve ayrıca benzersizliği sağlamak için `unique: true` geçirebiliriz. 
+Bu kullanıcının adını bildiğimizi varsayarsak, ancak tüm kullanıcıları ayıklamak ve sonra ada göre filtrelemek yerine tam kimlik değerini bilmiyoruz, ad alanının arkasına `@index` ekleyebiliriz. Bu, sorgulamayı çok daha hızlı hale getirir ve ayrıca benzersizliği sağlamak için `unique: true` geçirebiliriz.
 
 **Bir alan benzersiz değilse, en büyük sonuç kümesi boyutu 100'dür**
 
-Kod oluşturma çalıştırıldığında, bu otomatik olarak `>Kullanıcı`> modeli altında `getByName<` oluşturur, ve yabancı anahtar alanı `title` `getByTitleId` yöntemi oluşturur, her ikisinde de eşleme işlevinde doğrudan erişilebilen.
-
-
+Kod oluşturma çalıştırıldığında, bu otomatik olarak `User` modeli altında `getByName` oluşturur, ve yabancı anahtar alanı `title` `getByTitleId` yöntemi oluşturur, her ikisinde de eşleme işlevinde doğrudan erişilebilen.
 
 ```sql
 /* Başlık varlığı için kayıt hazırlama */
-UNVANLARA EKLE (kimlik, ad) DEĞERLER ('id_1', 'Kaptan')
+INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 ```
-
-
-
 
 ```typescript
-Eşleme işlevinde işleyici
-{User} içinden ".. /types/models/User"
-{Title} içinden ".. /types/models/Title"
+// Handler in mapping function
+import {User} from "../types/models/User"
+import {Title} from "../types/models/Title"
 
-const jack = User.getByName('Jack Sparrow');
+const jack = await User.getByName('Jack Sparrow');
 
-const captainTitle = Title.getByName('Kaptan');
+const captainTitle = await Title.getByName('Captain');
 
-const pirateLords = User.getByTitleId(captainTitle.id) bekliyor; Tüm Kaptanların listesi
+const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
-
-
-
 
 ## Varlık İlişkileri
 
@@ -91,46 +80,36 @@ Bir varlığın genellikle diğer varlıklarla iç içe geçmiş ilişkileri var
 
 Farklı varlık ilişkileri (bire bir, bire çok ve çok-çok) aşağıdaki örnekler kullanılarak yapılandırılabilir.
 
-
-
 ### BireBir İlişkiler
 
 Yalnızca tek bir varlık başka bir varlıkla eşleştirildiğinde bire bir ilişkiler varsayılandır.
 
 Örnek: Pasaport yalnızca bir kişiye aittir ve bir kişinin yalnızca bir pasaportu vardır (bu örnekte):
 
-
-
 ```graphql
-kişi @entity { yazın
-  id: Kimlik!
+type Person @entity {
+  id: ID!
 }
 
 Passport @entity { yazın
   id: Kimlik!
-  sahibi: Kişi!
+  owner: Person!
 }
 ```
 
-
-veya 
-
-
+veya
 
 ```graphql
-kişi @entity { yazın
-  id: Kimlik!
+type Person @entity {
+  id: ID!
   pasaport: Pasaport!
 }
 
-Passport @entity { yazın
-  id: Kimlik!
+type Passport @entity {
+  id: ID!
   sahibi: Kişi!
 }
 ```
-
-
-
 
 ### Bire Çok ilişkileri
 
@@ -138,76 +117,62 @@ Alan türünün birden çok varlık içerdiğini belirtmek için köşeli ayraç
 
 Örnek: Bir kişinin birden fazla hesabı olabilir.
 
-
-
 ```graphql
-kişi @entity { yazın
-  id: Kimlik!
-  hesaplar: [Hesap] 
+type Person @entity {
+  id: ID!
+  accounts: [Account] 
 }
 
-Hesap @entity { yazın
-  id: Kimlik!
-  publicAddress: Dize!
+type Account @entity {
+  id: ID!
+  publicAddress: String!
 }
 ```
 
-
-
-
 ### Çok-Çok ilişkileri
-
 Diğer iki varlığı bağlamak için bir eşleme varlığı uygulanarak çok-çok ilişkisi elde edilebilir.
 
 Örnek: Her kişi birden çok grubun (PersonGroup) bir parçasıdır ve grupların birden çok farklı kişisi (PersonGroup) vardır.
 
-
-
 ```graphql
-kişi @entity { yazın
-  id: Kimlik!
-  adı: Dize!
-  gruplar: [PersonGroup]
+type Person @entity {
+  id: ID!
+  name: String!
+  groups: [PersonGroup]
 }
 
-Type PersonGroup @entity {
-  id: Kimlik!
+type PersonGroup @entity {
+  id: ID!
   kişi: Kişi!
-  Grup: Grup!
+  Group: Group!
 }
 
-Grup @entity { yazın
-  id: Kimlik!
+type Group @entity {
+  id: ID!
   adı: Dize!
-  kişiler: [PersonGroup]
+  persons: [PersonGroup]
 }
 ```
-
 
 Ayrıca, orta varlığın birden çok alanında aynı varlığın bağlantısını oluşturmak mümkündür.
 
 Örneğin, bir hesabın birden çok aktarımı olabilir ve her aktarımda bir kaynak ve hedef hesabı vardır.
 
-Bu, Transfer tablosu aracılığıyla iki Hesap (itibaren ve bu) arasında çift yönlü bir ilişki kuracaktır. 
-
-
+Bu, Transfer tablosu aracılığıyla iki Hesap (itibaren ve bu) arasında çift yönlü bir ilişki kuracaktır.
 
 ```graphql
-hesap @entity { yazın
-  id: Kimlik!
+type Account @entity {
+  id: ID!
   publicAddress: Dize!
 }
 
-Transfer @entity { yazın
-  id: Kimlik!
+type Transfer @entity {
+  id: ID!
   miktar: BigInt
   itibaren: Hesap!
-  için: Hesap!
+  to: Account!
 }
 ```
-
-
-
 
 ### Geriye Doğru Aramalar
 
@@ -217,74 +182,58 @@ Bu, varlık üzerinde sorgulanabilecek bir sanal alan oluşturur.
 
 Bir Hesabı "Kimden" Aktar'a, sentTransfer veya receivedTransfer değerini ilgili alanlardan veya alanlardan türetilmiş olarak ayarlayarak Hesap varlığından erişilebilir.
 
-
-
 ```graphql
-hesap @entity { yazın
-  id: Kimlik!
-  publicAddress: Dize!
-  sentTransfers: [Transfer] @derivedFrom(alan: "from")
-  receivedTransfers: [Transfer] @derivedFrom(alan: "to")
+type Account @entity {
+  id: ID!
+  publicAddress: String!
+  sentTransfers: [Transfer] @derivedFrom(field: "from")
+  receivedTransfers: [Transfer] @derivedFrom(field: "to")
 }
 
-Transfer @entity { yazın
-  id: Kimlik!
+type Transfer @entity {
+  id: ID!
   miktar: BigInt
   itibaren: Hesap!
-  için: Hesap!
+  to: Account!
 }
 ```
-
-
-
 
 ## JSON türü
 
 Yapılandırılmış verileri depolamanın hızlı bir yolu olan verileri JSON türü olarak kaydetmeyi destekliyoruz. Bu verileri sorgulamak için otomatik olarak karşılık gelen JSON arabirimleri oluşturacağız ve varlıkları tanımlamak ve yönetmek için size zaman kazandıracağız.
 
 Kullanıcıların aşağıdaki senaryolarda JSON türünü kullanmalarını öneririz:
-
 - Yapılandırılmış verileri tek bir alanda depolamak, birden çok ayrı varlık oluşturmaktan daha yönetilebilir olduğunda.
 - Rasgele anahtar/değer kullanıcı tercihlerini kaydetme (burada değer boole, metinsel veya sayısal olabilir ve farklı veri türleri için ayrı sütunlara sahip olmak istemezsiniz)
 - Şema geçicidir ve sık sık değişir
 
-
-
 ### JSON yönergesi tanımla
-
 Varlığa `jsonField` ek açıklaması ekleyerek özelliği JSON türü olarak tanımlayın. Bu, projenizdeki tüm JSON nesneleri için otomatik olarak `types/interfaces.ts` altında arabirimler oluşturur ve bunlara eşleme işlevinizden erişebilirsiniz.
 
 Varlığın aksine, jsonField yönerge nesnesi herhangi bir `id` alanı gerektirmez. Bir JSON nesnesi diğer JSON nesneleriyle de iç içe olabilir.
 
-
-
 ````graphql
-addressDetail @jsonField { yazın
-  sokak: String!
+type AddressDetail @jsonField {
+  street: String!
   bölge: String!
 }
 
-ContactCard @jsonField { yazın
-  telefon: String!
+type ContactCard @jsonField {
+  phone: String!
   adres: AddressDetail # İç içe JSON
 }
 
 Kullanıcı @entity { yazın
   id: Kimlik! 
-  kişi: [ContactCard] # JSON nesnelerinin listesini depolayın
+  contact: [ContactCard] # Store a list of JSON objects
 }
 ````
-
-
-
 
 ### JSON alanlarını sorgulama
 
 JSON türlerini kullanmanın dezavantajı, her metin araması yaptığında tüm varlık üzerinde olduğu gibi, filtreleme yaparken sorgu verimliliği üzerinde küçük bir etkidir.
 
 Ancak, etki sorgu hizmetimizde hala kabul edilebilir. '0064' içeren bir telefon numarasına sahip ilk 5 kullanıcıyı bulmak için JSON alanındaki GraphQL sorgusunda `contains` işlecinin nasıl kullanılacağına ilişkin bir örnek aşağıda verilmiştir.
-
-
 
 ```graphql
 #To ilk 5 kullanıcının kendi telefon numaralarının '0064' içerdiğini bulun.

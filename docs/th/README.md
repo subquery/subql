@@ -61,7 +61,7 @@
       <li>
         <div class="title">SubQuery คืออะไร?</div>
         <div class="content">
-          <p>SubQuery เป็นโครงการโอเพ่นซอร์สที่ช่วยให้นักพัฒนาสามารถทำการ index เปลี่ยนแปลง และสืบค้นข้อมูลเชนของ Substrate เพื่อขับเคลื่อนแอปพลิเคชันของตนได้</p>
+          <p>SubQuery เป็นโครงการโอเพ่นซอร์สที่ช่วยให้นักพัฒนาสามารถทำการ index เปลี่ยนแปลง และ query ข้อมูลของ Substrate chain เพื่อขับเคลื่อนแอปพลิเคชันของตนได้</p>
           <span class="more">
             <router-link :to="{path: '/faqs/faqs/#what-is-subquery'}">อ่านเพิ่มเติม</router-link>
           </span>
@@ -101,7 +101,7 @@
         <h5>การผสานรวมกับ Custom Chain ของคุณ?</h5>
         <p>ไม่ว่าคุณกำลังสร้าง Parachain ใหม่หรือ blockchain ใหม่ทั้งหมดบน Substrate - SubQuery สามารถช่วยคุณ index และแก้ไขปัญหาข้อมูลของ chain ของคุณ SubQuery ได้รับการออกแบบให้สามารถรวมกับ Substrate แบบกำหนดเองได้อย่างง่ายดาย</p>
         <span class="more">
-          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">เรียนรู้วิธีการรวมกับ chain ของคุณ</router-link>
+          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">เรียนรู้วิธีการผสานรวมกับ chain ของคุณ</router-link>
         </span>
     </div>
     <div class="lastIntroduce lastIntroduce_2">

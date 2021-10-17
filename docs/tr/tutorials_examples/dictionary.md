@@ -1,18 +1,18 @@
-# How does a SubQuery dictionary work?
+# SubQuery sözlüğü nasıl çalışır?
 
-The whole idea of a generic dictionary project is to index all the data from a blockchain and record the events, extrinsics, and its types (module and method) in a database in order of block height. Another project can then query this `network.dictionary` endpoint instead of the default `network.endpoint` defined in the manifest file.
+Bir genel sözlük projesinin amacı, bir blok zincirindeki tüm verileri indekslemek ve bir veri tabanındaki olayları, dışsal öğeleri ve türlerini (modül ve metot) blok yüksekliği sırasına göre takip etmektir. Daha sonra başka bir proje, manifest dosyasında tanımlanan varsayılan `network.endpoint` yerine bu `network.dictionary` uç noktasını sorgulayabilir.
 
-The `network.dictionary` endpoint is an optional parameter that if present, the SDK will automatically detect and use. `network.endpoint` is mandatory and will not compile if not present.
+`network.dictionary` uç noktası, varsa SDK'nın otomatik olarak algılayacağı ve kullanacağı isteğe bağlı bir parametredir. `network.endpoint` zorunludur ve eğer mevcut değilse derlenemez.
 
-Taking the [SubQuery dictionary](https://github.com/subquery/subql-dictionary) project as an example, the [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) file defines 3 entities; extrinsic, events, specVersion. These 3 entities contain 6, 4, and 2 fields respectively. When this project is run, these fields are reflected in the database tables.
+[SubQuery dictionary](https://github.com/subquery/subql-dictionary) projesini örnek alırsak, [schema](https://github.com/subquery/subql-dictionary/blob/main/schema.graphql) dosyası 3 adet varlık tanımlar; dış öğeler, olaylar ve specVersion. Bu 3 varlık sırasıyla 6, 4 ve 2 alan içerir. Bu proje çalıştırıldığında, bu alanlar veritabanı tablolarına yansıtılır.
 
 ![extrinsics table](/assets/img/extrinsics_table.png) ![events table](/assets/img/events_table.png) ![specversion table](/assets/img/specversion_table.png)
 
-Data from the blockchain is then stored in these tables and indexed for performance. The project is then hosted in SubQuery Projects and the API endpoint is available to be added to the manifest file.
+Blok zincirinden gelen veriler daha sonra bu tablolarda saklanır ve performans için indekslenir. Proje daha sonra SubQuery projelerinde barındırılır ve API uç noktası manifest dosyasına eklenebilir.
 
-## How to incorporate a dictionary into your project?
+## Bir sözlüğü projenize nasıl dahil edersiniz?
 
-Add `dictionary: https://api.subquery.network/sq/subquery/dictionary-polkadot` to the network section of the manifest. Eg:
+Manifest'in ağ bölümüne `dictionary: https://api.subquery.network/sq/subquery/dictionary-polkadot` ekleyin. Örneğin:
 
 ```shell
 network:
@@ -20,24 +20,24 @@ network:
   dictionary: https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-## What happens when a dictionary IS NOT used?
+## Sözlük KULLANILMAZSA ne olur?
 
-When a dictionary is NOT used, an indexer will fetch every block data via the polkadot api according to the `batch-size` flag which is 100 by default, and place this in a buffer for processing. Later, the indexer takes all these blocks from the buffer and while processing the block data, checks whether the event and extrinsic in these blocks match the user-defined filter.
+Sözlük kullanılmadığında, indeksleyici polkadot api aracılığıyla her blok verisini varsayılan olarak 100 olan `batch-size` bayrağına göre getirir ve bunu işlemek için bir arabelleğe yerleştirir. Daha sonra, indeksleyici tüm bu blokları arabellekten alır ve blok verilerini işlerken, bu bloklardaki olayın ve dışsal öğenin kullanıcı tanımlı filtreyle eşleşip eşleşmediğini denetler.
 
-## What happens when a dictionary IS used?
+## Sözlük KULLANILIRSA ne olur?
 
-When a dictionary IS used, the indexer will first take the call and event filters as parameters and merge this into a GraphQL query. It then uses the dictionary's API to obtain a list of relevant block heights only that contains the specific events and extrinsics. Often this is substantially less than 100 if the default is used.
+Sözlük kullanıldığında, indeksleyici önce çağrı ve olay filtrelerini parametre olarak alır ve bunu bir GraphQL sorgusunda birleştirir. Daha sonra sözlüğün API'sini yalnızca belirli olayları ve dışsal öğeleri içeren ilgili blok yüksekliklerinin bir listesini elde etmek için kullanır. Varsayılan uygulanırsa, bu genellikle 100'den çok daha azdır.
 
-For example, imagine a situation where you're indexing transfer events. Not all blocks have this event (in the image below there are no transfer events in blocks 3 and 4).
+Örneğin, aktarım olaylarını indekslediğinizi düşünün. Tüm bloklarda bu olay yoktur (aşağıdaki resimde blok 3 ve 4'te aktarım olayı yoktur).
 
 ![dictionary block](/assets/img/dictionary_blocks.png)
 
-The dictionary allows your project to skip this so rather than looking in each block for a transfer event, it skips to just blocks 1, 2, and 5. This is because the dictionary is a pre-computed reference to all calls and events in each block.
+Sözlük, projenizin bunu atlamasına olanak verir, böylece bir aktarım olayı için her bloğa bakmak yerine, yalnızca 1, 2 ve 5 bloklarına atlar. Bunun nedeni, her bloğun sözlüğünün tüm çağrılara ve olaylara önceden hesaplanmış bir referans olmasıdır.
 
-This means that using a dictionary can reduce the amount of data that the indexer obtains from the chain and reduce the number of “unwanted” blocks stored in the local buffer. But compared to the traditional method, it adds an additional step to get data from the dictionary’s API.
+Bu, bir sözlük kullanmanın, indeksleyici tarafından zincirden elde edilen veri miktarını ve yerel arabellekte depolanan "istenmeyen" blokların sayısını azaltabileceği anlamına gelir. Ancak geleneksel yöntemle karşılaştırıldığında, sözlüğün API'sinden veri almak için ek bir adım ekler.
 
-## When is a dictionary NOT useful?
+## Sözlük ne zaman yararlı DEĞİLDİR?
 
-When [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) are used to grab data from a chain, every block needs to be processed. Therefore, using a dictionary in this case does not provide any advantage and the indexer will automatically switch to the default non-dictionary approach.
+Bir zincirden veri almak için [block handlers](https://doc.subquery.network/create/mapping.html#block-handler) kullanıldığında, her bloğun işlenmesi gerekir. Sonuç olarak, bu durumda bir sözlük kullanmak hiçbir fayda sağlamaz ve indeksleyici varsayılan sözlük dışı stratejiye geri döner.
 
-Also, when dealing with events or extrinsic that occur or exist in every block such as `timestamp.set`, using a dictionary will not offer any additional advantage.
+Ayrıca, `timestamp.set` gibi her blokta meydana gelen veya var olan olaylar yada dışsal öğelerle uğraşırken sözlük kullanmak herhangi bir ek avantaj sağlamayacaktır.

@@ -15,7 +15,7 @@
       </p>
       <span class="button">
         <router-link :to="{path: '/quickstart/helloworld-localhost/'}">
-          <span>Get started</span>
+          <span>Начать</span>
         </router-link>
       </span>
     </div>
@@ -28,8 +28,8 @@
         <router-link :to="{path: '/tutorials_examples/introduction/'}">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
-            <span>Tutorials and Examples</span>
-            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
+            <span>Учебные материалы и примеры</span>
+            <p>Обучение на практике Учебники и примеры по созданию различных проектов SubQuery.</p>
           </div>
         </router-link>
       </li>
@@ -37,8 +37,8 @@
         <router-link :to="{path: '/create/introduction/'}">
           <div>
             <img src="/assets/img/docsIcon.svg" />
-            <span>Technical Reference Docs</span>
-            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
+            <span>Техническая документация</span>
+            <p>Написано разработчиками для разработчиков. Найдите то, что нужно для быстрого создания приложений.</p>
           </div>
         </router-link>
       </li>
@@ -56,21 +56,21 @@
 </div>
 <section class="faqSection main">
   <div>
-    <h2 class="title">FAQ</h2>
+    <h2 class="title">Ответы на вопросы</h2>
     <ul class="faqList">
       <li>
         <div class="title">Что такое SubQuery?</div>
         <div class="content">
           <p>SubQuery - это проект с открытым исходным кодом, который позволяет разработчикам индексировать, преобразовывать и запрашивать данные блокчейна Substrate для своих приложений.</p>
           <span class="more">
-            <router-link :to="{path: '/faqs/faqs/#what-is-subquery'}">READ MORE</router-link>
+            <router-link :to="{path: '/faqs/faqs/#what-is-subquery'}">ПРОЧИТАТЬ БОЛЬШЕ</router-link>
           </span>
         </div>
       </li>
       <li>
         <div class="title">Какой лучший способ начать работу с SubQuery?</div>
         <div class="content">
-          <p>The best way to get started with SubQuery is to try out our <a href="/quickstart/helloworld-localhost/">Hello World tutorial</a>. Это простая 5-минутка по скачиванию стартового шаблона, созданию проекта, а затем запуска узла на локальном хосте и выполнения простого запроса с помощью Docker. </p>
+          <p>Лучший способ начать работу с SubQuery - попробовать наш <a href="/quickstart/helloworld-localhost/">Hello World tutorial</a>. Это простая 5-минутка по скачиванию стартового шаблона, созданию проекта, а затем запуска узла на локальном хосте и выполнения простого запроса с помощью Docker. </p>
         </div>
       </li>
       <li>
@@ -78,21 +78,21 @@
         <div class="content">
           <p>Мы любим вносить свой вклад и получать обратную связь от сообщества. Чтобы дополнить код, форкните репозиторий интересов и внесите изменения. Затем отправьте PR или Pull Request. Кстати, не забудьте проверить! Также ознакомьтесь с нашими рекомендациями внесению дополнений (скоро). </p>
           <span class="more">
-            <router-link :to="{path: '/faqs/faqs/#what-is-the-best-way-to-get-started-with-subquery'}">READ MORE</router-link>
+            <router-link :to="{path: '/faqs/faqs/#what-is-the-best-way-to-get-started-with-subquery'}">ПРОЧИТАТЬ БОЛЬШЕ</router-link>
           </span>
         </div>
       </li>
       <li>
         <div class="title">Сколько стоит разместить мой проект в SubQuery?</div>
         <div class="content">
-          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ вернуть сообщество в будущем. To learn how to host your project with us, please check out the <a href="/quickstart/helloworld-hosted/">Hello World (SubQuery Hosted)</a> tutorial.</p>
+          <p>Размещение вашего проекта в SubQuery Projects абсолютно бесплатно - это наш способ отблагодарить сообщество. Чтобы научиться размещать ваш проект вместе с нами, ознакомьтесь с обучением <a href="/quickstart/helloworld-hosted/">Hello World (SubQuery Hosted)</a>.</p>
           <span class="more">
-            <router-link :to="{path: '/publish/publish/'}">HOSTING YOUR PROJECT</router-link>
+            <router-link :to="{path: '/publish/publish/'}"> РАЗМЕЩЕНИЕ ПРОЕКТА </router-link>
           </span>
         </div>
       </li>
     </ul><br>
-    For further frequently asked questions, please see our <router-link :to="{path: '/faqs/faqs/'}">FAQ's</router-link> page.    
+    Дальнейшие вопросы можно найти в нашей <router-link :to="{path: '/faqs/faqs/'}">Часто задаваемые вопросы (FAQ)</router-link> странице.    
   </div>
 </section>
 <section class="main">
@@ -101,7 +101,7 @@
         <h5>Интеграция с вашей собственной цепочкой?</h5>
         <p>Создаете ли вы новый парачейн или совершенно новый блокчейн в Substrate - SubQuery может помочь вам индексировать и диагностировать данные цепочки. SubQuery разработан для того, чтобы легко интегрироваться с пользовательской цепочкой Substrate.</p>
         <span class="more">
-          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</router-link>
+          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}"> УЗНАЙТЕ, КАК ИНТЕГРИРОВАТЬ В ВАШУ ЦЕПЬ </router-link>
         </span>
     </div>
     <div class="lastIntroduce lastIntroduce_2">

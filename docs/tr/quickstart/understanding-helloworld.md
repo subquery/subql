@@ -26,7 +26,7 @@ Bir sonraki yaptığımız şey `yarn install`. `npm yükleme` da kullanılabili
 
 ![anahtar subql dosyaları](/assets/img/dependencies.png)
 
-## iplik kodgeni
+## yarn codegen
 
 Daha sonra `yarn codegen` veya `npm run-script codegen` çalıştırdık. Bunun yaptığı şey GraphQL şemasını (`schema.graphql`) getirmek ve ilişkili typescript model dosyalarını oluşturmaktır (bu nedenle çıktı dosyalarının bir .ts uzantısı olacaktır). Oluşturulan bu dosyaların hiçbirini asla değiştirmemelisiniz, yalnızca kaynak `schema.graphql` dosyasını değiştirmelisiniz.
 

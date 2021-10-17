@@ -53,10 +53,10 @@ export DB_PORT=5432
 subql-node -f .
 ```
 
-หากคุณไม่มีโปรเจ็กต์ในการทำ `git clone https://github.com/subquery/subql-helloworld` คุณจะเห็น indexer node เริ่มทำงานและเริ่มการ index บล็อก
+หากคุณไม่มีโปรเจ็กต์ในการทำ, `git clone https://github.com/subquery/subql-helloworld` คุณจะเห็น indexer node เริ่มทำงานและเริ่มการ index บล็อก
 
 ## การตรวจสอบ Postgres
 
 หากคุณไปที่ Postgres คุณจะเห็นตารางที่สร้างขึ้นสองตาราง `public.subqueries` และ `subquery_1.starter_entities`
 
-`public.subqueries` มี 1 แถวเท่านั้นที่ indexer จะตรวจสอบเมื่อเริ่มต้นใช้งานในการ "เข้าใจสถานะปัจจุบัน" เพื่อให้รู้ว่าจะดำเนินการต่อจากที่ใด ตาราง `starter_entities` เก็บการ index ต่างๆไว้ หากต้องการดูข้อมูล ให้เรียกใช้ `select (*) from subquery_1.starter_entities`
+`public.subqueries` มี 1 แถวเท่านั้นที่ indexer จะตรวจสอบเมื่อเริ่มต้นใช้งานในการ "เข้าใจในสถานะปัจจุบัน" เพื่อให้รู้ว่าจะดำเนินการต่อจากที่ใด ตาราง `starter_entities` เก็บการ index ต่างๆไว้ หากต้องการดูข้อมูล ให้เรียกใช้ `select (*) from subquery_1.starter_entities`

@@ -57,7 +57,7 @@ Son olarak, proje dizini altında, yeni projenin bağımlılıklarını yükleme
 
 ## Başlangıç Projesini Yapılandırma ve Oluşturma
 
-Yeni başlatmış olduğunuz başlangıç paketinde, yeni projeniz için standart bir yapılandırma sağladık. Esas olarak aşağıdaki dosyalar üzerinde çalışacaksınız::
+Yeni başlatmış olduğunuz başlangıç paketinde, yeni projeniz için standart bir yapılandırma sağladık. Esas olarak aşağıdaki dosyalar üzerinde çalışacaksınız:
 
 - The Manifest in `project.yaml`
 - `schema.graphql`'daki GraphQL Şeması
@@ -65,7 +65,7 @@ Yeni başlatmış olduğunuz başlangıç paketinde, yeni projeniz için standar
 
 Kendi SubQuerynuzu yazma hakkında daha fazla bilgi için [ Create a Projec](../create/introduction.md) altındaki belgelerimize göz atın
 
-### GraphQL Model Generation
+### GraphQL Model Oluşturma
 
 SubQuery projenizi [index](../run/run.md) için, önce GraphQL Şema dosyanızda tanımladığınız gerekli GraphQL modellerini oluşturmalısınız (`schema.graphql`). Bu komutu proje dizininin kökünde çalıştırın.
 
@@ -76,7 +76,7 @@ Oluşturulan modelleri `/src/types/models` dizininde bulabilirsiniz
 
 ## Projeyi Oluşturun
 
-SubQuery Projenizi yerel olarak barındırılan bir SubQuery Düğümünde çalıştırmak için çalışmanızı oluşturmanız gerekir.
+SubQuery Projenizi yerel olarak barındırılan bir SubQuery Node çalıştırmak için çalışmanızı oluşturmanız gerekir.
 
 Yapı komutunu projenin kök dizininden çalıştırın.
 

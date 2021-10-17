@@ -1,35 +1,35 @@
 # Hello World (localhost + Docker)
 
-Welcome to this SubQuery Hello World quick start. The quick start aims to show you how you get the default starter project running in Docker in a few simple steps.
+ยินดีต้อนรับ quick start ของ SubQuery Hello World การ quick start มีจุดมุ่งหมายเพื่อแสดงให้คุณเห็นว่าจะใช้ starter project ที่ได้รับต้นเพื่อรันใน Docker ได้อย่างไรในไม่กี่ขั้นตอนง่ายๆ
 
-## Learning objectives
+## วัตถุประสงค์การเรียนรู้
 
-At the end of this quick start, you should:
+เมื่อจบจาก quick start นี้ คุณจะ:
 
-- understand the required pre-requisites
-- understand the basic common commands
-- be able to navigate to localhost:3000 and view the playground
-- run a simple query to get the block height of the Polkadot mainnet
+- ทำความเข้าใจข้อกำหนดเบื้องต้นที่จำเป็น
+- เข้าใจคำสั่งทั่วไปพื้นฐาน
+- สามารถไปยัง localhost:3000 และดู playground ได้
+- รัน query อย่างง่ายเพื่อ get ค่า block height ของเครือข่าย Polkadot mainnet โดยใช้ Playground
 
-## Intended audience
+## กลุ่มเป้าหมาย
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+คู่มือนี้จัดทำขึ้นสำหรับนักพัฒนาหน้าใหม่ที่มีประสบการณ์ด้านการพัฒนามาบ้างแล้วและสนใจที่จะเรียนรู้เพิ่มเติมเกี่ยวกับ SubQuery
 
-## Video guide
+## คู่มือวิดีโอ
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## ข้อกำหนดเบื้องต้น
 
-You will need:
+คุณจะต้องมี:
 
-- yarn or npm package manager
+- yarn หรือ npm package manager
 - SubQuery CLI (`@subql/cli`)
 - Docker
 
-You can run the following commands in a terminal to see if you already have any of these pre-requisites.
+คุณสามารถรันคำสั่งต่อไปนี้ในเทอร์มินัลเพื่อดูว่าคุณมีข้อกำหนดเบื้องต้นเหล่านี้อยู่แล้วหรือไม่
 
 ```shell
 yarn -v (or npm -v)
@@ -37,13 +37,13 @@ subql -v
 docker -v
 ```
 
-For more advanced users, copy and paste the following:
+สำหรับผู้ใช้งานขั้นสูง ให้คัดลอกและวางสิ่งต่อไปนี้:
 
 ```shell
 echo -e "My yarn version is:" `yarn -v` "\nMy subql version is:" `subql -v`  "\nMy docker version is:" `docker -v`
 ```
 
-This should return: (for npm users, replace yarn with npm)
+ซึ่งควรส่งคืนค่า: (สำหรับผู้ใช้ npm ให้แทนที่ yarn ด้วย npm)
 
 ```shell
 My yarn version is: 1.22.10
@@ -51,15 +51,15 @@ My subql version is: @subql/cli/0.9.3 darwin-x64 node-v16.3.0
 My docker version is: Docker version 20.10.5, build 55c4c88
 ```
 
-If you get the above, then you are good to go. If not, follow these links to install them:
+หากคุณได้รับดังข้างต้น แสดงว่าคุณพร้อมแล้ว หากไม่เป็นเช่นนั้น ให้ทำตามลิงก์เหล่านี้เพื่อติดตั้ง:
 
-- [yarn](https://classic.yarnpkg.com/en/docs/install/) or [npm](https://www.npmjs.com/get-npm)
+- [yarn](https://classic.yarnpkg.com/en/docs/install/) หรือ [npm](https://www.npmjs.com/get-npm)
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 1. Initialise project
+## 1. เริ่มต้นโปรเจ็กต์
 
-The first step when starting off with SubQuery is to run the `subql init` command. Let's initialise a start project with the name `subqlHelloWorld`. Note that only author is mandatory. Everything else is left empty below.
+ขั้นตอนแรกในการเริ่มต้นกับ SubQuery คือการเรียกใช้คำสั่ง `subql init` โดยเริ่มต้นโปรเจ็กต์ด้วยชื่อ `subqlHelloWorld` โปรดทราบว่า มีเพียง author เท่านั้นที่จำเป็น อย่างอื่นที่เหลือว่างไว้ ดังแสดงด้านล่าง
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -73,20 +73,20 @@ Init the starter package... subqlHelloWorld is ready
 
 ```
 
-Don't forget to change into this new directory.
+อย่าลืมไปที่ไดเร็กทอรีใหม่นี้
 
 ```shell
 cd subqlHelloWorld
 ```
 
-## 2. Install dependencies
+## 2. ติดตั้ง dependencies
 
-Now do a yarn or node install to install the various dependencies.
+ในตอนนี้ ให้ทำการติดตั้ง yarn หรือ node เพื่อติดตั้ง dependencies ต่างๆ
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn install ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn install`
+ตัวอย่างของ `yarn install`
 
 ```shell
 > yarn install
@@ -100,14 +100,14 @@ success Saved lockfile.
 ✨  Done in 31.84s.
 ```
 
-## 3. Generate code
+## 3. การ generate code
 
-Now run `yarn codegen` to generate Typescript from the GraphQL schema.
+ให้รัน `yarn codegen` เพื่อสร้าง typescript จาก GraphQL schema
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn codegen ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script codegen ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn codegen`
+ตัวอย่างของ `yarn codegen`
 
 ```shell
 > yarn codegen
@@ -122,16 +122,16 @@ $ ./node_modules/.bin/subql codegen
 ✨  Done in 1.02s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**คำเตือน** เมื่อมีการเปลี่ยนแปลงไฟล์ schema โปรดอย่าลืมรัน `yarn codegen` อีกครั้งเพื่อสร้าง types directory ของคุณใหม่
 
-## 4. Build code
+## 4. การ build code
 
-The next step is to build the code with `yarn build`.
+ขั้นตอนต่อไปคือการ build โค้ดด้วย `yarn build`
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
-An example of `yarn build`
+ตัวอย่างของ `yarn build`
 
 ```shell
 > yarn build
@@ -140,11 +140,11 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 5. Run Docker
+## 5. รัน Docker
 
-Using Docker allows you to run this example very quickly because all the required infrastructure can be provided within the Docker image. Run `docker-compose pull && docker-compose up`.
+การใช้ Docker ช่วยให้คุณเรียกใช้ตัวอย่างนี้ได้อย่างรวดเร็ว เนื่องจากโครงสร้างพื้นฐานที่จำเป็นทั้งหมดมีการจัดเตรียมไว้ในอิมเมจ Docker แล้ว รัน `docker-compose pull && docker-compose up`
 
-This will kick everything into life where eventually you will get blocks being fetched.
+สิ่งนี้จะนำพาทุกอย่างให้ทำงาน ซึ่งในที่สุดคุณจะได้รับบล็อก
 
 ```shell
 > #SNIPPET
@@ -162,9 +162,9 @@ graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 6. Browse playground
+## 6. การเรียกใช้ playground
 
-Navigate to http://localhost:3000/ and paste the query below into the left side of the screen and then hit the play button.
+ไปที่ http://localhost:3000/ และวาง query ที่ด้านซ้ายของหน้าจอ จากนั้นกดปุ่ม play
 
 ```
 {
@@ -179,12 +179,12 @@ Navigate to http://localhost:3000/ and paste the query below into the left side 
 
 ```
 
-SubQuery playground on localhost.
+SubQuery Playground บน localhost
 
 ![playground localhost](/assets/img/subql_playground.png)
 
-The block count in the playground should match the block count (technically the block height) in the terminal as well.
+ค่า block count ใน playground ควรตรงกับจำนวนบล็อก (ในทางเทคนิคแล้วคือ ค่า block height) ในเทอร์มินัลด้วย
 
-## Summary
+## สรุป
 
-In this quick start, we demonstrated the basic steps to get a starter project up and running within a Docker environment and then navigated to localhost:3000 and ran a query to return the block number of the mainnet Polkadot network.
+ในการ quick start นี้ เราได้สาธิตขั้นตอนพื้นฐานในการทำให้ starter project ใช้งานได้ในสภาพแวดล้อม Docker จากนั้นไปที่ localhost:3000 และเรียกใช้ query เพื่อส่งคืนหมายเลขบล็อกของเครือข่าย mainnet Polkadot

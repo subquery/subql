@@ -1,4 +1,4 @@
-# Bildirim Dosyası
+# Manifest File
 
 Manifest `project.yaml` dosyası projenizin giriş noktası olarak görülebilir ve SubQuery'nin zincir verilerini nasıl dizine alacağı ve dönüştüreceğine ilişkin ayrıntıların çoğunu tanımlar.
 
@@ -6,29 +6,31 @@ Bildirim YAML veya JSON biçiminde olabilir. Bu belgede, tüm örneklerde YAML k
 
 ``` yml
 specVersion: "0.0.1"
-açıklama: ""
-depo: "https://github.com/subquery/subql-starter"
+description: ""
+repository: "https://github.com/subquery/subql-starter"
 
-şema: "./schema.graphql"
+schema: "./schema.graphql"
 
-ağ:
-  uç nokta: "wss://polkadot.api.onfinality.io/public-ws"
+network:
+  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
   # İsteğe bağlı olarak, işlemeyi hızlandırmak için tam zincir sözlüğün HTTP uç noktasını sağlayın
-  sözlük: "https://api.subquery.network/sq/subquery/dictionary-polkadot"  veri Kaynakları:
-  - adı: ana
-    tür: substrat/Çalışma Zamanı
+ dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+
+dataSources:
+  - name: main
+    kind: substrate/Runtime
     startBlock: 1
-    eşleme:
-      Işleyici:
-        - işleyici: handleBlock
-          tür: substrat/BlockHandler
-        - işleyici: handleEvent
-          tür: substrat/EventHandler
-          filtre: #Filter isteğe bağlıdır, ancak olay işlemeyi hızlandırması önerilir
-            modül: dengeler
-            yöntem: Depozito
-        - işleyici: handleCall
-          tür: substrat/CallHandler
+    mapping:
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter: #Filter isteğe bağlıdır, ancak olay işlemeyi hızlandırması önerilir
+            module: balances
+            method: Deposit
+        - handler: handleCall
+          kind: substrate/CallHandler
 ```
 
 - `network.endpoint`, dizine eklenecek blok zincirinin wss veya ws uç noktasını tanımlar - **Bu tam bir arşiv düğümü olmalıdır**.
@@ -36,7 +38,7 @@ ağ:
 - `dataSources` filtre uygulanacak ve ayıklanacak verileri ve uygulanacak veri dönüşümü için eşleme işlevi işleyicisinin konumunu tanımlar.
   - `kind` şimdilik yalnızca `substrate/Runtime` destekler.
   - `startBlock` dizine eklenmeye başlanmasının blok yüksekliğini belirtir.
-  - `filter`, ağ uç noktası belirtimi adına göre yürütülecek veri kaynağına filtre uygular, bkz <>1>network filtreleri</a>
+  - `filter`, ağ uç noktası belirtimi adına göre yürütülecek veri kaynağına filtre uygular, bkz [network filtreleri](#network-filters)
   - `mapping.handlers` tüm [mapping işlevlerini](./mapping.md) ve bunlara karşılık gelen işleyici türlerini ek [mapping filtreleri](#mapping-filters) ile listeler.
 
 ## Ağ Filtreleri
@@ -49,27 +51,29 @@ Aşağıda, hem Polkadot hem de Kusama ağları için farklı veri kaynakların�
 
 ```yaml
 ...
-ağ:
-  uç nokta: "wss://polkadot.api.onfinality.io/public-ws"
+network:
+  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
 
-Artıklığı önlemek için şablon #Create
-tanımlar:
-  eşleme: &
-    Işleyici:
-      - işleyici: handleBlock
-        tür: substrat/BlockHandlerveri Kaynakları:
-  - adı: polkadotRuntime
-    tür: substrat/Çalışma Zamanı
-    filtre: #Optional
-        specName: polkadot
+#Artıklığı önlemek için şablon
+definitions:
+  mapping: &mymapping
+    handlers:
+      - handler: handleBlock
+        kind: substrate/BlockHandler
+
+dataSources:
+  - name: polkadotRuntime
+    kind: substrate/Runtime
+    filter: #Optional
+       specName: polkadot
     startBlock: 1000
-    haritalama: *mymapping #use şablonu burada
-  - adı: kusamaRuntime
-    tür: substrat/Çalışma Zamanı
-    filtre: 
+    mapping: *mymapping #use şablonu burada
+ - name: kusamaRuntime
+    kind: substrate/Runtime
+    filter: 
         specName: kusama
     startBlock: 12000 
-    eşleme: *mymapping # yeniden kullanabilir veya değiştirebilir
+    mapping: *mymapping # yeniden kullanabilir veya değiştirebilir
 ```
 
 ## Eşleme Filtreleri
@@ -79,20 +83,20 @@ Eşleme filtreleri, hangi bloğun, olayın veya dış öğenin bir eşleme işle
 Yalnızca filtre koşullarını karşılayan gelen veriler eşleme işlevleri tarafından işlenir. Eşleme filtreleri isteğe bağlıdır, ancak SubQuery projeniz tarafından işlenen veri miktarını önemli ölçüde azalttıkları ve dizin oluşturma performansını artıracakları için önerilir.
 
 ```yaml
-Çağrı Işleyicisi'nden #Example filtresi
-filtre: 
-   modül: dengeler
-   yöntem: Depozito
-   başarı: true
+#Example filtresi callHandler
+filter: 
+   module: balances
+   method: Deposit
+   success: true
 ```
 
 Aşağıdaki tabloda, farklı işleyiciler tarafından desteklenen filtreler açıklanmaktadır.
 
-| Işleyicisi                                    | Desteklenen filtre          |
-| --------------------------------------------- | --------------------------- |
-| [Blok işleyicisi](./mapping.md#block-handler) | `spec Sürümü`               |
-| [Olay İşleyicisi](./mapping.md#event-handler) | `module`,`method`           |
-| [Çağrı Işleyicisi](./mapping.md#call-handler) | `module`,`method` ,`sasası` |
+| Işleyicisi                                 | Desteklenen filtre           |
+| ------------------------------------------ | ---------------------------- |
+| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
+| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
+| [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
 
 -  Modül ve yöntem filtreleri herhangi bir substrat tabanlı zincirde desteklenir.
@@ -101,7 +105,7 @@ Aşağıdaki tabloda, farklı işleyiciler tarafından desteklenen filtreler aç
 
 ```yaml
 filtre:
-  specVersion: [23, 24] #Index blok ile specVersion 23 ile 24 (dahil) arasında.
+  specVersion: [23, 24] #Index bloğu ile specVersion 23 ile 24 (dahil) arasında.
   specVersion: [100] #Index bloğu specVersion büyük veya eşit 100.
   specVersion: [null, 23] #Index bloğu specVersion küçük veya eşit 23.
 ```
@@ -114,28 +118,29 @@ filtre:
 
 ``` yml
 specVersion: "0.0.1"
-açıklama: "Bu subquery Kitty'nin doğum bilgilerini dizine alır"
-depo: "https://github.com/onfinality-io/subql-examples"
-şema: "./schema.graphql"
-ağ:
-  uç nokta: "ws://host.kittychain.io/public-ws"
-  türleri: {
+description: "This subquery indexes kitty's birth info"
+repository: "https://github.com/onfinality-io/subql-examples"
+schema: "./schema.graphql"
+network:
+  endpoint: "ws://host.kittychain.io/public-ws"
+  types: {
     "KittyIndex": "u32",
-    "Kedicik": "[u8; 16]"
-  }# typesChain: { zincir: { Type5: 'example' } }
-# typesSpec: { spec:  { Type6: 'example' } }
-veri Kaynakları:
-  - adı: çalışma zamanı
-    tür: substrat/Çalışma Zamanı
+    "Kitty": "[u8; 16]"
+  }
+# typesChain: { chain: { Type5: 'example' } }
+# typesSpec: { spec: { Type6: 'example' } }
+dataSources:
+  - name: runtime
+    kind: substrate/Runtime
     startBlock: 1
-    filtre: #Optional
+    filter:  #Optional
       specName: kitty-chain 
-    eşleme:
-      Işleyici:
-        - işleyici: handleKittyBred
-          tür: substrat/CallHandler
-          filtre:
-            modül: kedicikler
-            yöntem: cins
-            başarı: true
+    mapping:
+      handlers:
+        - handler: handleKittyBred
+          kind: substrate/CallHandler
+          filter:
+            module: kitties
+            method: breed
+            success: true
 ```

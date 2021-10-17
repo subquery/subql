@@ -1,47 +1,47 @@
-# Running SubQuery Locally
+# 在本地运行 SubQuery
 
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. [Follow our publishing guide](../publish/publish.md) to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+本指南将介绍如何在基础设施上运行本地SubQuery节点，其中包括索引器和查询服务的使用。 不用担心在运行自己的SubQuery基础架构中所出现的问题。 SubQuery 向社区免费提供 [管理的托管服务](https://explorer.subquery.network)。 [按照我们所发布的指南](../publish/publish.md) 查看您如何将项目部署到 [SubQuery 项目](https://project.subquery.network)。
 
-## Using Docker
+## 使用 Docker
 
-An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here.
+An alternative solution is to run a <strong>Docker Container</strong>, defined by the `docker-compose.yml` file. For a new project that has been just initialised you won't need to change anything here. 对于刚刚初始化的新项目，您将不需要在此更改任何内容。
 
-Under the project directory run the following command:
+在项目目录下运行以下命令：
 
 ```shell
 docker-compose pull && docker-compose up
 ```
 
-It may take some time to download the required packages ([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/query`](https://www.npmjs.com/package/@subql/query), and Postgres) for the first time but soon you'll see a running SubQuery node.
+第一次下载所需软件包可能需要一些时间([`@subql/node`](https://www.npmjs.com/package/@subql/node), [`@subql/quiry`](https://www.npmjs.com/package/@subql/query), and Postgress) ，但很快你就会看到一个运行中的 SubQuery 节点。
 
-## Running an Indexer (subql/node)
+## 运行Indexer (subql/node)
 
-Requirements:
+需求：
 
-- [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) 数据库 (版本12或更高). [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+SubQuery 节点需要一个加载的过程，它能够从 SubQuery 项目中提取基于子区块链的数据，并将其保存到 Postgres 数据库。
 
-### Installation
+### 安装
 
 ```shell
 # NPM
 npm install -g @subql/node
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+请注意我们不推荐使用 `yarn global` ，因为它的依赖管理性能不佳，可能导致在运行中出现错误。
 
-Once installed, you can start a node with the following command:
+安装完毕后，您可以使用以下命令来启动节点：
 
 ```shell
 subql-node <command>
 ```
 
-### Key Commands
+### 输入命令
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`.
+The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`. 要了解更多信息，您可以运行 `--help`。
 
-#### Point to local project path
+#### 指向本地项目路径
 
 ```
 subql-node -f your-project-path
@@ -49,17 +49,19 @@ subql-node -f your-project-path
 
 #### Using a Dictionary
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x.
+Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在特定情况下，我们可以看到索引性能提高了10倍。
 
-A full chain dictionary pre-indexes the location of all events and extrinsics within the specific chain and allows your node service to skip to relevant locations when indexing rather than inspecting each block.
+完整的链词库预先索引特定链中所有事件和外观的位置，并允许您的节点服务在索引时跳到相关位置，而不是检查每个区块。
 
-You can add the dictionary endpoint in your `project.yaml` file (see [Manifest File](../create/manifest.md)), or specify it at run time using the following command:
+您可以在`project.yaml`文件中添加字典端点（请参见[Manifest File](../create/manifest.md)），或在运行时使用以下命令指定它：
 
 ```
 subql-node --network-dictionary=https://api.subquery.network/sq/subquery/dictionary-polkadot
 ```
 
-#### Connect to database
+[阅读更多关于 SubQuery 词典的工作原理](../tutorials_examples/dictionary.md)
+
+#### 连接数据库
 
 ```
 export DB_USER=postgres
@@ -67,10 +69,12 @@ export DB_PASS=postgres
 export DB_DATABASE=postgres
 export DB_HOST=localhost
 export DB_PORT=5432
-subql-node -f your-project-path
-```
+subql-node -f your-project-path 
+````
 
 Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
+
+#### Specify a configuration file
 
 #### Specify a configuration file
 
@@ -84,10 +88,16 @@ This will point the query node to a configuration file which can be in YAML or J
 subquery: ../../../../subql-example/extrinsics
 subqueryName: extrinsics
 batchSize:100
+localMode:true 看看下面的例子。
+
+```yaml
+subquery: ../../../../subql-example/extrinsics
+subqueryName: extrinsics
+batchSize:100
 localMode:true
 ```
 
-#### Change the block fetching batch size
+#### 如何更改区块链批处理大小
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -97,7 +107,7 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100.
+When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. 增加批量处理的规模以调整获取的区块数量，这将会减少整个处理时间。 默认的批处理大小为100。
 
 #### Local mode
 
@@ -105,25 +115,92 @@ When the indexer first indexes the chain, fetching single blocks will significan
 subql-node -f your-project-path --local
 ```
 
-For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+当需要进行调试时，用户可以在本地模式下运行节点。 For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
 
-If local mode is not used, a new Postgres schema with the initial `subquery_` and corresponding project tables will be created.
+如果未使用本地模式，则使用初始的Postgres 模式，并将创建初始的 `subquery_` 和与其相对应的项目表。
 
-## Running a Query Service (subql/query)
 
-### Installation
+#### 检查节点运行状况。
+
+有两个端口可用来检查和监视所运行的 SubQuery 节点的健康状况。
+
+- 返回普通 200 响应的健康检查端口
+- Metadata端口，其中包括您正在运行的 SubQuery 节点的额外分析
+
+将其附加到您的 SubQuery 节点的基本URL。 例如：`http://localhost:3000/meta` 将会返回
+
+```bash
+{
+    "currentProcessingHeight": 1000699,
+    "currentProcessingTimestamp": 1631517883547,
+    "targetHeight": 6807295,
+    "bestHeight": 6807298,
+    "indexerNodeVersion": "0.19.1",
+    "lastProcessedHeight": 1000699,
+    "lastProcessedTimestamp": 1631517883555,
+    "uptime": 41.151789063,
+    "polkadotSdkVersion": "5.4.1",
+    "apiConnected": true,
+    "injectedApiConnected": true,
+    "usingDictionary": false,
+    "chain": "Polkadot",
+    "specName": "polkadot",
+    "genesisHash": "0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3",
+    "blockTime": 6000
+}
+```
+
+After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+
+如果索引器出现错误，将返回500错误。 这通常可以在节点启动时看到。
+
+```shell
+{
+    "status": 500,
+    "error": "Indexer is not healthy"
+}
+```
+
+如果使用了错误的URL，将返回404 not found错误。
+
+```shell
+{
+"statusCode": 404,
+"message": "Cannot GET /healthy",
+"error": "Not Found"
+}
+```
+
+#### 调试您的项目
+
+使用 [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) 来运行以下命令。
+
+```shell
+This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a <a href="https://explorer.subquery.network">managed hosted service</a> to the community for free. <a href="../publish/publish.md">Follow our publishing guide</a> to see how you can upload your project to <a href="https://project.subquery.network">SubQuery Projects</a>.
+```
+
+例如：
+```shell
+node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
+Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+For help, see: https://nodejs.org/en/docs/inspector
+Debugger attached.
+```
+然后打开Chrome开发工具，进入Source>Filesystem，将项目添加到工作区并开始调试。 查看更多信息[如何调试SubQuery项目](https://doc.subquery.network/tutorials_examples/debug-projects/)
+## 运行Query服务(subql/query)
+
+### 安装
 
 ```shell
 # NPM
 npm install -g @subql/query
 ```
 
-Please note that we **DO NOT** encourage the use of `yarn global` due to its poor dependency management which may lead to an errors down the line.
+请注意我们不推荐使用 `yarn global` ，因为它的依赖管理性能不佳，可能导致在运行中出现错误。
 
-### Running the Query service
-
+### 运行Query服务
 ``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct.
+Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct. 此外，请检查环境变量是否配置正确。
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+成功运行subql查询服务后，打开浏览器并转到`http://localhost:3000`. 您将会看到 GraphQL playground 会已准备查询的模式显示在资源管理器中。

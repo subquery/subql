@@ -54,7 +54,7 @@ GitHub URL'nizi not alın, SubQuery'nin erişebilmesi için bunun herkese açık
 
 ## 3. GitHub'a itin
 
-Proje dizininizde, git dizini olarak başlatın. Aksi takdirde, "önemli: git deposu (veya üst dizinlerden herhangi biri değil): .git" hatasını alabilirsiniz
+Proje dizininizde, git dizini olarak başlatın. Aksi takdirde, "fatal: not a git repository (or any of the parent directories): .git" hatasını alabilirsiniz
 
 ```shell
 git init
@@ -71,7 +71,7 @@ Bu temel olarak uzak deponuzu "https://github.com/seandotau/subqlHelloWorld.git"
 Daha sonra kodu aşağıdaki komutlarla repomuza ekliyoruz:
 
 ```shell
-> git ekleyin.
+> git add .
 > git commit -m "First commit"
 [master (root-commit) a999d88] First commit
 10 files changed, 3512 insertions(+)
@@ -87,13 +87,13 @@ create mode 100644 tsconfig.json
 create mode 100644 yarn.lock
 > git push origin master
 Enumerating objects: 14, done.
-Nesneleri sayma: %100 (14/14), bitti.
-12 iş parçacığına kadar kullanarak delta sıkıştırma
-Nesneleri sıkıştırma: %100 (13/13), bitti.
-Yazma nesneleri: %100 (14/14), 59.35 KiB | 8.48 MiB/s, bitti.
-Toplam 14 (delta 0), yeniden kullanılan 0 (delta 0)
-https://github.com/seandotau/subqlHelloWorld.git için
- * [yeni dal] usta -> ustası
+Counting objects: 100% (14/14), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (13/13), done.
+Writing objects: 100% (14/14), 59.35 KiB | 8.48 MiB/s, done.
+Total 14 (delta 0), reused 0 (delta 0)
+To https://github.com/seandotau/subqlHelloWorld.git
+ * [new branch]      master -> master
 
 ```
 
