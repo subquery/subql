@@ -37,7 +37,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
 
 const ipfsEndpoint = 'https://ipfs.thechainhub.com/api/v0';
 
-jest.setTimeout(90000);
+jest.setTimeout(120000);
 
 async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
