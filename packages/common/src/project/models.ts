@@ -174,11 +174,9 @@ export class CustomDataSourceBase<
 > implements SubqlCustomDatasource<K, T, M>
 {
   @IsString()
-  @IsDefined()
   kind: K;
   @Type(() => CustomMapping)
   @ValidateNested()
-  @IsDefined()
   mapping: M;
   @IsOptional()
   @IsInt()
@@ -187,8 +185,7 @@ export class CustomDataSourceBase<
   @ValidateNested({each: true})
   assets: {[p: string]: CustomDataSourceAsset};
   @Type(() => FileReferenceImpl)
-  @IsDefined()
-  @ValidateNested()
+  @IsObject()
   processor: FileReference;
   @IsOptional()
   @IsObject()
