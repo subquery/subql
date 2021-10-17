@@ -45,7 +45,7 @@ dataSources:
 
 Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks. 在不同的网络环境之间，一些设置可能会发生变化（例如索引起始块）。 因此，我们允许用户自定义数据源，这意味着一个SubQuery项目可以在多个不同的网络中使用。
 
-Users can add a `filter` on `dataSources` to decide which data source to run on each network.
+用户可以在 `filter` 中通过添加`dataSources` 来决定在每个网络上运行哪个数据源。
 
 下方示例是Polkadot和Kusama网络中不同的数据源。
 
@@ -79,7 +79,7 @@ dataSources:
 
 ## 映射过滤
 
-映射过滤是一个非常有用的特性，是用决定哪些块、事件或外部程序将触发映射的过滤器。
+映射过滤是一个非常有用的选项，是用决定哪些块、事件或外部程序将触发映射的过滤器。
 
 映射函数只处理满足筛选条件的传入数据。 Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
 
@@ -91,18 +91,18 @@ filter:
    success: true
 ```
 
-The following table explains filters supported by different handlers.
+下表将说明不同处理程序支持的筛选器。
 
-| Handler                                    | Supported filter             |
+| 处理程序                                       | 支持的过滤器：                      |
 | ------------------------------------------ | ---------------------------- |
 | [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
 | [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
 | [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
 
--  Module and method filters are supported on any substrate-based chain.
-- The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges. The following examples describe how to set version ranges.
+-  模块和方法过滤器支持所有基于SubQery的平行链。
+- 过滤器的`成功运行`需要一个布尔值，用于根据外部对象的成功状态进行过滤。
+- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges. 以下示例将描述如何设置版本范围。
 
 ```yaml
 filter:
@@ -114,11 +114,11 @@ filter:
   specVersion: [null, 23] #Index block with specVersion less than or equal 23.
 ```
 
-## Custom Chains
+## 自定义链
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules.
+You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules. 在`network.types`中添加此区块链支持的特定类型。 我们支持Substrate 运行时模块使用的其他类型。
 
-`typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
+同样支持`typesAlias`, `typesBundle`, `typesChain`, 和 `typesSpec` 。
 
 ``` yml
 specVersion: "0.0.1"
