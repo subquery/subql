@@ -1,8 +1,8 @@
 # 配置文件
 
-The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
+`project.yaml`清单文件可以看作是项目的入口点，它定义了关于SubQuery 如何索引和转换链数据的大部分细节。
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
+The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`. 在本文档中，我们将在所有示例中使用YAML格式。 下面是`project.yaml`文件的标准示例。
 
 ``` yml
 specVersion: "0.0.1"
@@ -33,7 +33,7 @@ dataSources:
           kind: substrate/CallHandler
 ```
 
-- `network.endpoint` defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.
+- `network.endpoint`定义要索引的区块链的wss或ws端点-**必须是完整的存档节点**。
 - `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
 - `dataSources` defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
   - `kind` only supports `substrate/Runtime` for now.
