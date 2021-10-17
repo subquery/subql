@@ -39,23 +39,32 @@ function testSubqueryProject(): SubqueryProject {
 
 jest.setTimeout(200000);
 
+async function createFetchService(
+  project = testSubqueryProject(),
+  batchSize = 20,
+): Promise<FetchService> {
+  const apiService = new ApiService(project, new EventEmitter2());
+  await apiService.init();
+  const dictionaryService = new DictionaryService(project);
+  const dsPluginService = new DsProcessorService(project);
+  return new FetchService(
+    apiService,
+    new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+    project,
+    dictionaryService,
+    dsPluginService,
+    new EventEmitter2(),
+  );
+}
+
 describe('FetchService', () => {
   it('fetch meta data once when spec version not changed in range', async () => {
     const batchSize = 30;
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2());
-    const dsPluginService = new DsProcessorService(project);
-    const dictionaryService = new DictionaryService(project);
-    await apiService.init();
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
-    const api = apiService.getApi();
+
+    const fetchService = await createFetchService(project, batchSize);
+
+    const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
       (api as any)._rpcCore.state.getMetadata,
       'raw',
@@ -76,19 +85,10 @@ describe('FetchService', () => {
   it('fetch metadata two times when spec version changed in range', async () => {
     const batchSize = 20;
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
-    const dsPluginService = new DsProcessorService(project);
-    const dictionaryService = new DictionaryService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
-    const api = apiService.getApi();
+
+    const fetchService = await createFetchService(project, batchSize);
+
+    const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
       (api as any)._rpcCore.state.getMetadata,
       'raw',
@@ -111,8 +111,6 @@ describe('FetchService', () => {
   it('not use dictionary if dictionary is not defined in project config', async () => {
     const batchSize = 20;
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
     //filter is defined
     project.projectManifest.asV0_0_1.dataSources = [
       {
@@ -130,16 +128,9 @@ describe('FetchService', () => {
         },
       },
     ];
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
+
+    const fetchService = await createFetchService(project, batchSize);
+
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -168,18 +159,8 @@ describe('FetchService', () => {
     //set dictionary to a different network
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
+
+    const fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -223,18 +204,7 @@ describe('FetchService', () => {
         },
       },
     ];
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
+    const fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -286,18 +256,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
+    const fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -345,18 +304,9 @@ describe('FetchService', () => {
         },
       },
     ];
-    const apiService = new ApiService(project, new EventEmitter2());
-    await apiService.init();
-    const dictionaryService = new DictionaryService(project);
-    const dsPluginService = new DsProcessorService(project);
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      new EventEmitter2(),
-    );
+
+    const fetchService = await createFetchService(project, batchSize);
+
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,

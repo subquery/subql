@@ -75,6 +75,7 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
       property: 'kind',
       subTypes: [{value: RuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
     },
+    keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_2_0 | SubqlCustomDatasource)[];
 }

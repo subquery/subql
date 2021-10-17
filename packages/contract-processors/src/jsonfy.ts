@@ -13,7 +13,7 @@ import {
 
 export type JsonfyDatasource = SubqlCustomDatasource<'substrate/Jsonfy'>;
 
-export const EVMDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', SubqlNetworkFilter> = {
+export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', SubqlNetworkFilter> = {
   kind: 'substrate/Jsonfy',
   validate(ds: JsonfyDatasource): void {
     return;
@@ -28,7 +28,7 @@ export const EVMDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', S
       transformer(original: SubstrateEvent, ds: JsonfyDatasource): Record<string, unknown> {
         return JSON.parse(JSON.stringify(original.toJSON()));
       },
-      filterProcessor(filter: SubqlEventFilter, input: Record<string, unknown>, ds) {
+      filterProcessor(filter: SubqlEventFilter, input: Record<string, unknown>, ds: JsonfyDatasource) {
         return (
           filter.module &&
           (input.event as any).section === filter.module &&
@@ -39,3 +39,5 @@ export const EVMDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', S
     },
   },
 };
+
+export default JsonfyDatasourcePlugin;

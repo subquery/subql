@@ -14,17 +14,12 @@ network:
     file: ./types.json
 
 dataSources:
-  - kind: substrate/Runtime
+  - kind: substrate/Jsonfy
     startBlock: 1
+    # processor:
+    #   file: '@subql/contract-processors/jsonfy.js'
     mapping:
       file: dist/index.js
       handlers:
-        - handler: handleBlock
-          kind: substrate/BlockHandler
         - handler: handleEvent
-          kind: substrate/EventHandler
-          filter: #Filter is optional
-            module: balances
-            method: Deposit
-        - handler: handleCall
-          kind: substrate/CallHandler
+          kind: substrate/JsonfyEvent

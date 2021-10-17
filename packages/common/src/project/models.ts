@@ -29,6 +29,7 @@ import {
   IsString,
   IsObject,
   ValidateNested,
+  IsDefined,
 } from 'class-validator';
 
 export class BlockFilter implements SubqlBlockFilter {
@@ -104,6 +105,13 @@ export class EventHandler {
   handler: string;
 }
 
+export class CustomHandler implements SubqlCustomHandler {
+  @IsString()
+  kind: string;
+  @IsString()
+  handler: string;
+}
+
 export class Mapping implements SubqlMapping {
   @Transform((handlers: SubqlHandler[]) => {
     return handlers.map((handler) => {
@@ -122,6 +130,15 @@ export class Mapping implements SubqlMapping {
   @IsArray()
   @ValidateNested()
   handlers: SubqlHandler[];
+}
+
+export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
+  @IsArray()
+  @Type(() => CustomHandler)
+  @ValidateNested()
+  handlers: CustomHandler[];
+  @IsString()
+  file: string;
 }
 
 export class SubqlNetworkFilterImpl implements SubqlNetworkFilter {
@@ -158,7 +175,7 @@ export class CustomDataSourceBase<
 {
   @IsString()
   kind: K;
-  @Type(() => Mapping)
+  @Type(() => CustomMapping)
   @ValidateNested()
   mapping: M;
   @IsOptional()
@@ -168,7 +185,7 @@ export class CustomDataSourceBase<
   @ValidateNested({each: true})
   assets: {[p: string]: CustomDataSourceAsset};
   @Type(() => FileReferenceImpl)
-  @ValidateNested()
+  @IsObject()
   processor: FileReference;
   @IsOptional()
   @IsObject()
