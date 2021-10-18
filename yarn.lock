@@ -4970,9 +4970,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/contract-ds-processors@workspace:packages/contract-processors":
+"@subql/contract-processors@workspace:packages/contract-processors":
   version: 0.0.0-use.local
-  resolution: "@subql/contract-ds-processors@workspace:packages/contract-processors"
+  resolution: "@subql/contract-processors@workspace:packages/contract-processors"
   dependencies:
     "@subql/types": "workspace:*"
     ethers: ^5.4.7

@@ -1,5 +1,5 @@
 {
-  "name": "@subql/contract-ds-processors",
+  "name": "@subql/contract-processors",
   "version": "0.1.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",

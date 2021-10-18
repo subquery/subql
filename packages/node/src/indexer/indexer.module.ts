@@ -6,6 +6,7 @@ import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
+import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
@@ -21,6 +22,7 @@ import { StoreService } from './store.service';
     FetchService,
     BenchmarkService,
     DictionaryService,
+    DsProcessorService,
     PoiService,
     MmrService,
   ],

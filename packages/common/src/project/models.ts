@@ -110,6 +110,8 @@ export class CustomHandler implements SubqlCustomHandler {
   kind: string;
   @IsString()
   handler: string;
+  @IsObject()
+  filter?: Record<string, unknown>;
 }
 
 export class Mapping implements SubqlMapping {
