@@ -11,6 +11,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
+import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 
 @Module({
@@ -22,6 +23,7 @@ import { StoreService } from './store.service';
     FetchService,
     BenchmarkService,
     DictionaryService,
+    SandboxService,
     DsProcessorService,
     PoiService,
     MmrService,

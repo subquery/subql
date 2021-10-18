@@ -12,7 +12,7 @@ import { VMScript } from '@subql/x-vm2';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { isCustomDs } from '../utils/project';
-import { Sandbox } from './sandbox';
+import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {
   root: string;
