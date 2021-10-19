@@ -1,13 +1,12 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "src",
+    "target": "es2017",
+    "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
-    "outDir": "dist",
-    "noImplicitAny": true
+    "rootDir": "src",
+    "outDir": "./dist"
   },
-  "references": [
-    {"path": "../types"}
-  ],
+  "references": [{"path": "../types"}],
   "include": ["src/**/*"]
 }

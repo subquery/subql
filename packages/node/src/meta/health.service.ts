@@ -52,13 +52,13 @@ export class HealthService {
 
   getHealth() {
     if (
-      !this.recordBlockTimestamp ||
+      this.recordBlockTimestamp &&
       Date.now() - this.recordBlockTimestamp > this.blockTime * 10
     ) {
       throw new Error('Endpoint is not healthy');
     }
     if (
-      !this.currentProcessingTimestamp ||
+      this.currentProcessingTimestamp &&
       Date.now() - this.currentProcessingTimestamp > this.healthTimeout
     ) {
       throw new Error('Indexer is not healthy');

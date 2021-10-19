@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {RegisteredTypes} from '@polkadot/types/types';
-import {IProjectManifest, ProjectNetworkConfig, SubqlRuntimeDatasource, SubqlNetworkFilter} from '../../types';
+import {SubqlNetworkFilter, SubqlRuntimeDatasource} from '@subql/types';
+import {IProjectManifest, ProjectNetworkConfig} from '../../types';
 
 export type ProjectNetworkConfigV0_0_1 = ProjectNetworkConfig & RegisteredTypes;
 
