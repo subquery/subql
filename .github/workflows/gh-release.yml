@@ -20,6 +20,10 @@ jobs:
       - run: yarn install
 
       #Create github releases
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
         with:
@@ -28,17 +32,22 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/cli
+          package-path: packages/contract-processors
           repo-token: ${{ secrets.REPO_TOKEN }}
-      
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/types
-          repo-token: ${{ secrets.REPO_TOKEN }}
-     
+
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/query
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
