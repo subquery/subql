@@ -24,6 +24,7 @@ import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
+
 export function wrapBlock(
   signedBlock: SignedBlock,
   events: EventRecord[],
@@ -128,7 +129,12 @@ export function filterExtrinsics(
   extrinsics: SubstrateExtrinsic[],
   filterOrFilters: SubqlCallFilter | SubqlCallFilter[] | undefined,
 ): SubstrateExtrinsic[] {
-  if (!filterOrFilters) return extrinsics;
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return extrinsics;
+  }
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
   return extrinsics.filter(({ block, extrinsic, success }) =>
@@ -153,8 +159,9 @@ export function filterEvents(
   if (
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
-  )
+  ) {
     return events;
+  }
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
   return events.filter(({ block, event }) =>
