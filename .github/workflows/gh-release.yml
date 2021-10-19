@@ -50,7 +50,7 @@ jobs:
 
       - run: yarn install
 
-      #Publish to npm registry and create github releases
+      #Create github releases
 
       - if: steps.changed-common.outputs.changed == 'true'
         uses: ./.github/actions/create-release
