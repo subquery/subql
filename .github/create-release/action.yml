@@ -1,0 +1,20 @@
+# Composite action needed to access github context
+
+name: 'Create Release'
+description: 'This will publish to NPM registry and create Github release'
+inputs:
+  package-path: # id of input
+    description: 'package path to run action e.g. package/common'
+    required: true
+  repo-token:
+    description: 'token to create github release'
+    required: true
+  
+runs:
+  using: "composite"
+  steps:
+    - working-directory: ${{ github.workspace }}
+      run: node ${{ github.action_path }}/gh-release-script.js ${{ github.workspace }}/${{ inputs.package-path }}
+      env: 
+        REPO_TOKEN: ${{ inputs.repo-token }}
+      shell: bash
