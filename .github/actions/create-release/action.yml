@@ -17,7 +17,7 @@ runs:
   using: "composite"
   steps:
     - working-directory: ${{ inputs.package-path }}
-      run: echo "Changes exist in cli" && npm publish --access public 
+      run: echo "Changes exist in ${{ inputs.package-path }}" && npm publish --access public 
       env:
         NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       shell: bash
