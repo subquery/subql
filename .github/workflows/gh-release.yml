@@ -1,0 +1,84 @@
+name: "Github Release"
+on:
+  workflow_dispatch:
+
+jobs:
+  github-release:
+    name: github-release
+    runs-on: ubuntu-latest
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common
+        with:
+          paths: packages/common
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-cli
+        with:
+          paths: packages/cli
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node
+        with:
+          paths: packages/node
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-query
+        with:
+          paths: packages/query
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-validator
+        with:
+          paths: packages/validator
+
+      - run: yarn install
+
+      #Create github releases
+
+      - if: steps.changed-common.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - if: steps.changed-cli.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
+      
+      - if: steps.changed-types.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+     
+      - if: steps.changed-node.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - if: steps.changed-validator.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/validator
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          
