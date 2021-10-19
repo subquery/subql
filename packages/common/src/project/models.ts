@@ -29,7 +29,6 @@ import {
   IsString,
   IsObject,
   ValidateNested,
-  IsDefined,
 } from 'class-validator';
 
 export class BlockFilter implements SubqlBlockFilter {
@@ -111,6 +110,7 @@ export class CustomHandler implements SubqlCustomHandler {
   @IsString()
   handler: string;
   @IsObject()
+  @IsOptional()
   filter?: Record<string, unknown>;
 }
 

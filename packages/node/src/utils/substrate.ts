@@ -150,7 +150,11 @@ export function filterEvents(
   events: SubstrateEvent[],
   filterOrFilters?: SubqlEventFilter | SubqlEventFilter[] | undefined,
 ): SubstrateEvent[] {
-  if (!filterOrFilters) return events;
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  )
+    return events;
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
   return events.filter(({ block, event }) =>

@@ -30,6 +30,7 @@ export class DsPluginSandbox extends Sandbox {
         path.join(option.root, 'ds_sandbox'),
       ),
     );
+    this.freeze(logger, 'logger');
   }
 
   getDsPlugin<
