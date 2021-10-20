@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
   BestBlockPayload,
@@ -11,6 +11,7 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
+import { StoreService } from '../indexer/store.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
@@ -28,6 +29,11 @@ export class MetaService {
   private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
+
+  constructor(
+    @Inject(forwardRef(() => StoreService))
+    private storeService: StoreService,
+  ) {}
 
   getMeta() {
     return {
@@ -47,6 +53,11 @@ export class MetaService {
     };
   }
 
+  syncMetadata() {
+    const meta = this.getMeta();
+    console.log(meta);
+  }
+
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
@@ -57,11 +68,17 @@ export class MetaService {
   handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
+    this.storeService.setMetadata('lastProcessedHeight', blockPayload.height);
+    this.storeService.setMetadata(
+      'lastProcessedTimestamp',
+      blockPayload.height,
+    );
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
     this.targetHeight = blockPayload.height;
+    this.storeService.setMetadata('targetHeight', blockPayload.height);
   }
 
   @OnEvent(IndexerEvent.BlockBest)
@@ -72,6 +89,9 @@ export class MetaService {
   @OnEvent(IndexerEvent.NetworkMetadata)
   handleNetworkMetadata(networkMeta: NetworkMetadataPayload): void {
     this.networkMeta = networkMeta;
+    this.storeService.setMetadata('chain', networkMeta.chain);
+    this.storeService.setMetadata('specName', networkMeta.specName);
+    this.storeService.setMetadata('genesisHash', networkMeta.genesisHash);
   }
 
   @OnEvent(IndexerEvent.ApiConnected)

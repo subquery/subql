@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { buildSchema, getAllEntitiesRelations } from '@subql/common';
@@ -22,6 +22,7 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
+import { MetaService } from '../meta/meta.service';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { isCustomDs, isRuntimeDs } from '../utils/project';
@@ -56,6 +57,8 @@ export class IndexerManager {
     private storeService: StoreService,
     private fetchService: FetchService,
     private poiService: PoiService,
+    @Inject(forwardRef(() => MetaService))
+    private metaService: MetaService,
     protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
@@ -183,6 +186,8 @@ export class IndexerManager {
         value: offsetValue,
       });
     }
+
+    this.metaService.syncMetadata();
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {

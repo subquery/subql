@@ -7,7 +7,13 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { GraphQLModelsRelations } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst } from 'lodash';
-import { QueryTypes, Sequelize, Transaction, Utils } from 'sequelize';
+import {
+  DataTypes,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  Utils,
+} from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
@@ -167,9 +173,16 @@ export class StoreService {
     }
   }
 
+  async setMetadata(key: string, value: any) {
+    if (this.sequelize.isDefined(`_metadata`)) {
+      const model = this.sequelize.model('_metadata');
+      await model.upsert({ key, value }, { transaction: this.tx });
+    }
+  }
+
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
     const model = this.sequelize.model('_poi');
-    assert(model, `model _poi not exists`);
+    assert(model, `model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
