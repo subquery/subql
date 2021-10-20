@@ -16,7 +16,7 @@
     "/dist"
   ],
   "peerDependencies": {
-    "@polkadot/api": "^5"
+    "@polkadot/api": "^6"
   },
   "devDependencies": {
     "@polkadot/api": "^6",
