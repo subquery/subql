@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import {
   BestBlockPayload,
@@ -30,10 +30,7 @@ export class MetaService {
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
 
-  constructor(
-    @Inject(forwardRef(() => StoreService))
-    private storeService: StoreService,
-  ) {}
+  constructor(private storeService: StoreService) {}
 
   getMeta() {
     return {
@@ -65,20 +62,24 @@ export class MetaService {
   }
 
   @OnEvent(IndexerEvent.BlockLastProcessed)
-  handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
+  async handleLastProcessedBlock(
+    blockPayload: ProcessBlockPayload,
+  ): Promise<void> {
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
-    this.storeService.setMetadata('lastProcessedHeight', blockPayload.height);
-    this.storeService.setMetadata(
-      'lastProcessedTimestamp',
-      blockPayload.height,
-    );
+    await Promise.all([
+      this.storeService.setMetadata('lastProcessedHeight', blockPayload.height),
+      this.storeService.setMetadata(
+        'lastProcessedTimestamp',
+        blockPayload.height,
+      ),
+    ]);
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
-  handleTargetBlock(blockPayload: TargetBlockPayload): void {
+  async handleTargetBlock(blockPayload: TargetBlockPayload): Promise<void> {
     this.targetHeight = blockPayload.height;
-    this.storeService.setMetadata('targetHeight', blockPayload.height);
+    await this.storeService.setMetadata('targetHeight', blockPayload.height);
   }
 
   @OnEvent(IndexerEvent.BlockBest)
@@ -87,11 +88,16 @@ export class MetaService {
   }
 
   @OnEvent(IndexerEvent.NetworkMetadata)
-  handleNetworkMetadata(networkMeta: NetworkMetadataPayload): void {
+  async handleNetworkMetadata(
+    networkMeta: NetworkMetadataPayload,
+  ): Promise<void> {
     this.networkMeta = networkMeta;
-    this.storeService.setMetadata('chain', networkMeta.chain);
-    this.storeService.setMetadata('specName', networkMeta.specName);
-    this.storeService.setMetadata('genesisHash', networkMeta.genesisHash);
+    console.log(this.networkMeta);
+    await Promise.all([
+      this.storeService.setMetadata('chain', networkMeta.chain),
+      this.storeService.setMetadata('specName', networkMeta.specName),
+      this.storeService.setMetadata('genesisHash', networkMeta.genesisHash),
+    ]);
   }
 
   @OnEvent(IndexerEvent.ApiConnected)

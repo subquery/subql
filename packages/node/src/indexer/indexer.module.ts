@@ -3,7 +3,6 @@
 
 import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
-import { MetaModule } from '../meta/meta.module';
 import { MetaService } from '../meta/meta.service';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
@@ -17,7 +16,7 @@ import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery']), MetaModule],
+  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     IndexerManager,
     StoreService,
@@ -29,7 +28,8 @@ import { StoreService } from './store.service';
     DsProcessorService,
     PoiService,
     MmrService,
+    MetaService,
   ],
-  exports: [StoreService],
+  exports: [],
 })
 export class IndexerModule {}

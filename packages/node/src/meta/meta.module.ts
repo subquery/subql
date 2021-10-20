@@ -6,7 +6,8 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
-import { IndexerModule } from '../indexer/indexer.module';
+import { PoiService } from '../indexer/poi.service';
+import { StoreService } from '../indexer/store.service';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
@@ -14,7 +15,7 @@ import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 
 @Module({
-  imports: [PrometheusModule.register(), IndexerModule],
+  imports: [PrometheusModule.register()],
   controllers: [MetaController, HealthController],
   providers: [
     MetricEventListener,
@@ -60,7 +61,8 @@ import { MetaService } from './meta.service';
     }),
     MetaService,
     HealthService,
+    StoreService,
+    PoiService,
   ],
-  exports: [MetaService],
 })
 export class MetaModule {}

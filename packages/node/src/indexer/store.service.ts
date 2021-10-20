@@ -173,7 +173,7 @@ export class StoreService {
     }
   }
 
-  async setMetadata(key: string, value: any) {
+  async setMetadata(key: string, value: any): Promise<void> {
     if (this.sequelize.isDefined(`_metadata`)) {
       const model = this.sequelize.model('_metadata');
       await model.upsert({ key, value }, { transaction: this.tx });

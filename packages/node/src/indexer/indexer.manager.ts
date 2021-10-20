@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { buildSchema, getAllEntitiesRelations } from '@subql/common';
@@ -57,7 +57,6 @@ export class IndexerManager {
     private storeService: StoreService,
     private fetchService: FetchService,
     private poiService: PoiService,
-    @Inject(forwardRef(() => MetaService))
     private metaService: MetaService,
     protected mmrService: MmrService,
     private sequelize: Sequelize,
