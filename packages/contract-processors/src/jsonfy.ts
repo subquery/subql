@@ -36,6 +36,9 @@ export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy'
           (input.event as any).method === filter.method
         );
       },
+      filterValidator(filter: SubqlEventFilter): void {
+        return;
+      },
     },
   },
 };

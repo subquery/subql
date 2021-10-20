@@ -133,7 +133,7 @@ export interface SubqlCustomDatasource<
   M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
 > extends ISubqlDatasource<M, T> {
   kind: K;
-  assets: {[key: string]: CustomDataSourceAsset};
+  assets: Map<string, CustomDataSourceAsset>;
   processor: FileReference;
 }
 
@@ -157,4 +157,5 @@ export interface SecondLayerHandlerProcessor<K extends SubqlHandlerKind, F, E> {
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
   transformer: HandlerInputTransformer<K, E>;
   filterProcessor: (filter: F, input: E, ds: SubqlCustomDatasource<string, SubqlNetworkFilter>) => boolean;
+  filterValidator: (filter: F) => void;
 }

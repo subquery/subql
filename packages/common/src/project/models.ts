@@ -185,7 +185,7 @@ export class CustomDataSourceBase<
   startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: {[p: string]: CustomDataSourceAsset};
+  assets: Map<string, CustomDataSourceAsset>;
   @Type(() => FileReferenceImpl)
   @IsObject()
   processor: FileReference;

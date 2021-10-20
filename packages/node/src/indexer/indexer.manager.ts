@@ -220,7 +220,7 @@ export class IndexerManager {
         await project.save();
       } else if (project.networkGenesis !== genesisHash) {
         logger.error(
-          `Not same network: genesisHash different - ${project.networkGenesis} : ${genesisHash}`,
+          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
         );
         process.exit(1);
       }
@@ -348,6 +348,7 @@ export class IndexerManager {
       if (isBlockHandlerProcessor(processor)) {
         const transformedOutput = processor.transformer(block, ds);
         if (
+          !handler.filter ||
           processor.filterProcessor(
             handler.filter as any,
             transformedOutput,
@@ -364,6 +365,7 @@ export class IndexerManager {
         for (const extrinsic of filteredExtrinsics) {
           const transformedOutput = processor.transformer(extrinsic, ds);
           if (
+            !handler.filter ||
             processor.filterProcessor(
               handler.filter as any,
               transformedOutput,
@@ -381,6 +383,7 @@ export class IndexerManager {
         for (const event of filteredEvents) {
           const transformedOutput = processor.transformer(event, ds);
           if (
+            !handler.filter ||
             processor.filterProcessor(
               handler.filter as any,
               transformedOutput,

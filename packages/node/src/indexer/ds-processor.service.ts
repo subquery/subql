@@ -53,7 +53,9 @@ export class DsProcessorService {
       const processor = this.getDsProcessor(ds);
       /* Standard validation applicable to all custom ds and processors */
       if (ds.kind !== processor.kind) {
-        throw new Error('ds kind doesnt match processor');
+        throw new Error(
+          `ds kind (${ds.kind}) doesnt match processor (${processor.kind})`,
+        );
       }
 
       for (const handler of ds.mapping.handlers) {

@@ -4995,6 +4995,8 @@ __metadata:
   resolution: "@subql/contract-processors@workspace:packages/contract-processors"
   dependencies:
     "@subql/types": "workspace:*"
+    class-transformer: ^0.4.0
+    class-validator: ^0.13.1
     ethers: ^5.4.7
   peerDependencies:
     "@polkadot/api": ^6
@@ -9501,6 +9503,13 @@ __metadata:
   version: 0.3.1
   resolution: "class-transformer@npm:0.3.1"
   checksum: 3ae3ef2510d2822766a97d31eb7ca550dabda56cbfe70968f295420531667ca95b4d84cddfe2dc302abc41c8e26d667d43235b0f4759eee09a007741cc307bc8
+  languageName: node
+  linkType: hard
+
+"class-transformer@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "class-transformer@npm:0.4.0"
+  checksum: 915db337796f6a4d0c2c09bf1c0214eff01e1247836524fdaa170f0c3457f4b5f9ece1068cdb2667e42e01572aa1b08b9995c298f2956d1c8a84884c8d5ea5ff
   languageName: node
   linkType: hard
 

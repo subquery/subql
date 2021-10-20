@@ -18,6 +18,9 @@ dataSources:
     startBlock: 1
     processor:
       file: '@subql/contract-processors/jsonfy.js'
+    assets:
+      test:
+        file: './abi.json'
     mapping:
       file: dist/index.js
       handlers:

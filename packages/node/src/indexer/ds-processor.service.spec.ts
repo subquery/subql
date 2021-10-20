@@ -53,7 +53,7 @@ describe('DsProcessorService', () => {
     const badDs: SubqlCustomDatasource<string, any> = {
       kind: 'substrate/invalid',
       processor: { file: 'contract-processors/dist/jsonfy.js' },
-      assets: {},
+      assets: new Map([]),
       mapping: {
         handlers: [],
       },
