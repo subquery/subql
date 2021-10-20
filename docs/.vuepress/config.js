@@ -162,6 +162,19 @@ module.exports = config({
         ]
       },
       {
+        title: 'The Hero Course',
+        path: '/herocourse/welcome',
+        collapsable: true,
+        children: [
+          '/herocourse/welcome.md',
+          '/herocourse/module1.md',
+          '/herocourse/module2.md',
+          '/herocourse/module3.md',
+          '/herocourse/module4.md',
+          '/herocourse/module5.md',
+        ]
+      },
+      {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
         collapsable: true,
