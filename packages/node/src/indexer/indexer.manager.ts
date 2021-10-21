@@ -289,6 +289,11 @@ export class IndexerManager {
         return true;
       }
     });
+
+    if (!filteredDs.length) {
+      logger.error(`Did not find any datasources with associated processor`);
+      process.exit(1);
+    }
     return filteredDs;
   }
 
