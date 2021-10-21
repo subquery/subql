@@ -162,19 +162,6 @@ module.exports = config({
         ]
       },
       {
-        title: 'The Hero Course',
-        path: '/herocourse/welcome',
-        collapsable: true,
-        children: [
-          '/herocourse/welcome.md',
-          '/herocourse/module1.md',
-          '/herocourse/module2.md',
-          '/herocourse/module3.md',
-          '/herocourse/module4.md',
-          '/herocourse/module5.md',
-        ]
-      },
-      {
         title: 'Tutorials & Examples',
         path: '/tutorials_examples/introduction',
         collapsable: true,
@@ -186,6 +173,20 @@ module.exports = config({
           '/tutorials_examples/dictionary.md',
           '/tutorials_examples/debug-projects.md',
           '/tutorials_examples/terminology.md',
+        ]
+      },
+      {
+        title: 'The Hero Course',
+        path: '/academy/herocourse',
+        collapsable: true,
+        children: [
+          '/academy/herocourse/',
+          '/academy/herocourse/module1.md',
+          '/academy/herocourse/module2.md',
+          '/academy/herocourse/module3.md',
+          '/academy/herocourse/module4.md',
+          '/academy/herocourse/module5.md',
+          '/academy/herocourse/module6.md',
         ]
       },
       {
