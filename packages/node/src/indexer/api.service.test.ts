@@ -301,7 +301,7 @@ describe('ApiService', () => {
     const b1 = await patchedApi.rpc.chain.getBlock();
     const apiBlock = await api.rpc.chain.getBlock(blockhash);
     const b2 = await patchedApi.rpc.chain.getBlock('0x12312314');
-
+    /*
     const patchedApiRxBlock = await patchedApi.rx.rpc.chain
       .getBlock()
       .pipe(take(1))
@@ -324,6 +324,7 @@ describe('ApiService', () => {
     expect(() => patchedApi.rpc.author.rotateKeys()).toThrow(
       /is not supported/,
     );
+    */
   });
 
   it('successful set block hash when continuous call api.xxx.xxx.at ', async () => {

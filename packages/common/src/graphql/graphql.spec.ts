@@ -28,7 +28,9 @@ describe('utils that handle schema.graphql', () => {
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
     expect(entities.models).toMatchObject([{name: 'KittyBirthInfo'}]);
-    expect(entities.models[0].fields).toEqual([{isArray: false, name: 'id', nullable: false, type: 'ID'}]);
+    expect(entities.models[0].fields).toEqual([
+      {isArray: false, name: 'id', nullable: false, type: 'ID', isEnum: false},
+    ]);
   });
 
   it('throw error for unsupported types', () => {
