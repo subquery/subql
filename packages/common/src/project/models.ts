@@ -192,4 +192,7 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsObject()
   filter?: T;
+  @IsOptional()
+  @IsString()
+  abi: string;
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {BigNumber} from '@ethersproject/bignumber';
-import MoonbeamDatasourcePlugin, {substrateHashToEthHash, MoonbeamCall, MoonbeamEvent} from './moonbeam';
+import MoonbeamDatasourcePlugin, {MoonbeamCall, MoonbeamEvent} from './moonbeam';
 
 describe('MoonbeamDs', () => {
   describe('MoonbeamEvent', () => {
@@ -59,9 +59,9 @@ describe('MoonbeamDs', () => {
         ],
         data: '0x000000000000000000000000000000000000000000000000186c6ca04ab5b16c',
         blockNumber: 752073,
-        blockHash: '0x0f302f7bcfd6fac512cdfe623ef9b141becc98be0febcee94dc1f8c37a66f3f0',
+        blockHash: '0x2ddc48977ab437df79ed1df813125d3654e192f1fa3bc997e5f90c80f64d7d91',
         transactionIndex: 3,
-        transactionHash: '0xaa84c9aa82d09bb9c969a16e4cd7de014bc737380a5c1bea6f7bf19d863ebb8b',
+        transactionHash: '0x3a829a14031a74a4b3e212c26247d8d8e6599c9a9f927196e90ffce266402954',
         removed: false,
         logIndex: 4,
       };
@@ -122,6 +122,24 @@ describe('MoonbeamDs', () => {
         ).toBeTruthy();
       });
 
+      it('filters topics matching with event', () => {
+        expect(
+          processor.filterProcessor(
+            {topics: [['Transfer(address indexed from, address indexed to, uint256 value)']]},
+            log,
+            undefined
+          )
+        ).toBeTruthy();
+
+        expect(
+          processor.filterProcessor({topics: [['Transfer(address from, address to, uint256 value)']]}, log, undefined)
+        ).toBeTruthy();
+
+        expect(
+          processor.filterProcessor({topics: [['Transfer(address, address, uint256)']]}, log, undefined)
+        ).toBeTruthy();
+      });
+
       it('filters topics NOT matching 1', () => {
         expect(
           processor.filterProcessor({topics: ['0x6bd193ee6d2104f14f94e2ca6efefae561a4334b']}, log, undefined)
@@ -172,7 +190,6 @@ describe('MoonbeamDs', () => {
         timestamp: Math.round(new Date().getTime() / 1000),
         gasPrice: BigNumber.from('2875000000'),
         gasLimit: BigNumber.from(300000),
-        confirmations: 0,
         chainId: 0,
       };
 
@@ -201,37 +218,35 @@ describe('MoonbeamDs', () => {
         expect(processor.filterProcessor({to: null}, {...contractTx, to: undefined}, undefined)).toBeTruthy();
       });
 
-      it('can filter methodId', () => {
+      it('can filter function with signature', () => {
         expect(
           processor.filterProcessor(
-            {methodId: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'},
+            {function: 'swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)'},
             transaction,
             undefined
           )
         ).toBeTruthy();
-        expect(processor.filterProcessor({methodId: '0x7ff36ab5'}, transaction, undefined)).toBeTruthy();
-
-        expect(processor.filterProcessor({methodId: '0x0000000'}, transaction, undefined)).toBeFalsy();
+        expect(
+          processor.filterProcessor(
+            {function: 'swapExactETHForTokens(uint256, address[], address, uint256)'},
+            transaction,
+            undefined
+          )
+        ).toBeTruthy();
       });
-    });
-  });
 
-  describe('Moonbeam utils', () => {
-    it('converts substrate block hash to eth block hash correctly', () => {
-      expect(substrateHashToEthHash('0x0f302f7bcfd6fac512cdfe623ef9b141becc98be0febcee94dc1f8c37a66f3f0')).toEqual(
-        '0x2ddc48977ab437df79ed1df813125d3654e192f1fa3bc997e5f90c80f64d7d91'
-      );
-    });
+      it('can filter function with method id', () => {
+        expect(
+          processor.filterProcessor(
+            {function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'},
+            transaction,
+            undefined
+          )
+        ).toBeTruthy();
+        expect(processor.filterProcessor({function: '0x7ff36ab5'}, transaction, undefined)).toBeTruthy();
 
-    // it('converts substrate address to eth address correctly', () => {
-    //   expect(substrateHashToEthHash('0x0f302f7bcfd6fac512cdfe623ef9b141becc98be0febcee94dc1f8c37a66f3f0'))
-    //     .toEqual('0x94256DBc303739E20B68C2A49EDaE812b11a67bC')
-    // });
-
-    it('converts substrate transaction hash to eth transaction hash correctly', () => {
-      expect(substrateHashToEthHash('0xaa84c9aa82d09bb9c969a16e4cd7de014bc737380a5c1bea6f7bf19d863ebb8b')).toEqual(
-        '0x3a829a14031a74a4b3e212c26247d8d8e6599c9a9f927196e90ffce266402954'
-      );
+        expect(processor.filterProcessor({function: '0x0000000'}, transaction, undefined)).toBeFalsy();
+      });
     });
   });
 });

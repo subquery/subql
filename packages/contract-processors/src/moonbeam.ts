@@ -1,11 +1,12 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {EventFragment, FunctionFragment, Interface, Result} from '@ethersproject/abi';
 import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
-import {isHexString, hexStripZeros} from '@ethersproject/bytes';
+import {isHexString, hexStripZeros, hexDataSlice} from '@ethersproject/bytes';
+import {id} from '@ethersproject/hash';
 import {ApiPromise} from '@polkadot/api';
-import {CodecHash} from '@polkadot/types/interfaces';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -25,6 +26,7 @@ import {
   ValidatorConstraintInterface,
   Validate,
   IsEthereumAddress,
+  IsString,
 } from 'class-validator';
 
 type TopicFilter = string | string[] | null | undefined;
@@ -39,23 +41,27 @@ export interface MoonbeamEventFilter {
 export interface MoonbeamCallFilter {
   from?: string;
   to?: string;
-  methodId?: string;
+  function?: string;
 }
 
-export type MoonbeamEvent = Log;
-export type MoonbeamCall = Omit<TransactionResponse, 'wait'>;
+export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T};
+export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {args?: T};
 
 @ValidatorConstraint({name: 'topifFilterValidator', async: false})
 export class TopicFilterValidator implements ValidatorConstraintInterface {
   validate(value: TopicFilter): boolean {
-    return (
-      !value ||
-      (typeof value === 'string'
-        ? isHexString(value)
-        : Array.isArray(value)
-        ? !value.find((v) => !isHexString(v))
-        : false)
-    );
+    try {
+      return (
+        !value ||
+        (typeof value === 'string'
+          ? !!eventToTopic(value)
+          : Array.isArray(value)
+          ? !!value.map((v) => !eventToTopic(v))
+          : false)
+      );
+    } catch (e) {
+      return false;
+    }
   }
 
   defaultMessage(): string {
@@ -80,8 +86,8 @@ class MoonbeamCallFilterImpl implements MoonbeamCallFilter {
   @IsEthereumAddress()
   to?: string;
   @IsOptional()
-  @IsHexadecimal()
-  methodId?: string;
+  @IsString()
+  function?: string;
 }
 
 type RawEvent = {
@@ -113,11 +119,16 @@ type ExecutionEvent = {
   status: unknown;
 };
 
-export function substrateHashToEthHash(original: CodecHash | string): string {
-  const originalStr = typeof original === 'string' ? original : original.toHex();
+function eventToTopic(input: string): string {
+  if (isHexString(input)) return input;
 
-  // TODO something like this https://github.com/PureStake/moonbeam/blob/master/client/rpc/txpool/src/lib.rs#L87
-  return originalStr;
+  return id(EventFragment.fromString(input).format());
+}
+
+function functionToSighash(input: string): string {
+  if (isHexString(input)) return input;
+
+  return hexDataSlice(id(FunctionFragment.fromString(input).format()), 0, 4);
 }
 
 function hexStringEq(a: string, b: string): boolean {
@@ -146,23 +157,44 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
   };
 }
 
+async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promise<string> {
+  const block = await api.rpc.eth.getBlockByNumber(blockNumber, false);
+
+  return (block.toJSON() as any).blockHash;
+}
+
 const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, MoonbeamEventFilter, MoonbeamEvent> = {
   baseFilter: [{module: 'evm', method: 'Log'}],
   baseHandlerKind: 'substrate/EventHandler' as any /*SubqlHandlerKind.Event*/,
-  transformer(original: SubstrateEvent): Log {
+  async transformer(
+    original: SubstrateEvent,
+    ds: SubqlCustomDatasource,
+    api: ApiPromise,
+    assets: Record<string, string>
+  ): Promise<MoonbeamEvent> {
     const [eventData] = original.event.data;
 
     const {hash} = getExecutionEvent(original.extrinsic);
 
-    const log = {
+    const log: MoonbeamEvent = {
       ...(eventData.toJSON() as unknown as RawEvent),
       blockNumber: original.block.block.header.number.toNumber(),
-      blockHash: substrateHashToEthHash(original.block.hash), // EXPECT 0x2ddc48977ab437df79ed1df813125d3654e192f1fa3bc997e5f90c80f64d7d91
+      blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
       transactionIndex: original.extrinsic?.idx ?? -1,
       transactionHash: hash,
       removed: false, // TODO what does this mean?
       logIndex: original.idx, // Might be index of block not index relevant to tx
     };
+
+    try {
+      const iface = new Interface(assets[ds.abi]);
+
+      log.args = iface.parseLog(log).args;
+    } catch (e) {
+      // This would make sense to log if we filtered first
+      // TODO setup ts config with global defs
+      // (global as any).logger.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
+    }
 
     return log;
   },
@@ -180,7 +212,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
         }
 
         const topicArr = typeof topic === 'string' ? [topic] : topic;
-        if (!topicArr.find((singleTopic) => hexStringEq(singleTopic, input.topics[i]))) {
+        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), input.topics[i]))) {
           return false;
         }
       }
@@ -203,7 +235,12 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
 const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, MoonbeamCallFilter, MoonbeamCall> = {
   baseFilter: [{module: 'ethereum', method: 'transact'}],
   baseHandlerKind: 'substrate/CallHandler' as any /*SubqlHandlerKind.Call*/,
-  transformer(original: SubstrateExtrinsic): MoonbeamCall {
+  async transformer(
+    original: SubstrateExtrinsic,
+    ds: SubqlCustomDatasource,
+    api: ApiPromise,
+    assets: Record<string, string>
+  ): Promise<MoonbeamCall> {
     const [tx] = original.extrinsic.method.args;
     const rawTx = tx.toJSON() as unknown as RawTransaction;
 
@@ -224,10 +261,19 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
       // Transaction response properties
       hash,
       blockNumber: original.block.block.header.number.toNumber(),
-      blockHash: substrateHashToEthHash(original.block.hash),
+      blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
       timestamp: Math.round(original.block.timestamp.getTime() / 1000),
-      confirmations: 0, // TODO
     };
+
+    try {
+      const iface = new Interface(assets[ds.abi]);
+
+      call.args = iface.decodeFunctionData(iface.getFunction(hexDataSlice(call.data, 0, 4)), call.data);
+    } catch (e) {
+      // This would make sense to log if we filtered first
+      // TODO setup ts config with global defs
+      // (global as any).logger.warn(`Unable to parse call arguments, will be omitted from result`);
+    }
 
     return call;
   },
@@ -241,7 +287,7 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
       return false;
     }
 
-    if (filter.methodId && input.data.indexOf(filter.methodId) !== 0) {
+    if (filter.function && input.data.indexOf(functionToSighash(filter.function)) !== 0) {
       return false;
     }
 
@@ -262,11 +308,12 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
 export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Moonbeam', SubqlNetworkFilter> = {
   kind: 'substrate/Moonbeam',
   validate(ds: MoonbeamDatasource): void {
-    // TODO move to ds-processor
-    ds.mapping.handlers.map((handler) => this.handlerProcessors[handler.kind].filterValidator(handler.filter));
+    if (ds.abi && !ds.assets?.get(ds.abi)) {
+      throw new Error(`Abi named "${ds.abi}" not referenced in assets`);
+    }
     return;
   },
-  dsFilterProcessor(ds: MoonbeamDatasource, api: ApiPromise): boolean {
+  dsFilterProcessor(ds: MoonbeamDatasource): boolean {
     return ds.kind === this.kind;
   },
   handlerProcessors: {

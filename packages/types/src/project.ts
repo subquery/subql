@@ -135,12 +135,18 @@ export interface SubqlCustomDatasource<
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
   processor: FileReference;
+  abi?: string; // Should be a key of assets
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
 
 export interface HandlerInputTransformer<T extends SubqlHandlerKind, U> {
-  (original: RuntimeHandlerInputMap[T], ds: SubqlCustomDatasource): U; //  | SubqlBuiltinDataSource
+  (
+    original: RuntimeHandlerInputMap[T],
+    ds: SubqlCustomDatasource,
+    api: ApiPromise,
+    assets: Record<string, string>
+  ): Promise<U>; //  | SubqlBuiltinDataSource
 }
 
 export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetworkFilter> {

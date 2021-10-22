@@ -351,14 +351,15 @@ export class IndexerManager {
     for (const handler of ds.mapping.handlers) {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {
-        const transformedOutput = processor.transformer(block, ds);
+        const transformedOutput = await processor.transformer(
+          block,
+          ds,
+          this.api,
+          await this.dsProcessorService.getAssets(ds),
+        );
         if (
           !handler.filter ||
-          processor.filterProcessor(
-            handler.filter as any,
-            transformedOutput,
-            ds,
-          )
+          processor.filterProcessor(handler.filter, transformedOutput, ds)
         ) {
           await vm.securedExec(handler.handler, [transformedOutput]);
         }
@@ -368,14 +369,15 @@ export class IndexerManager {
           processor.baseFilter,
         );
         for (const extrinsic of filteredExtrinsics) {
-          const transformedOutput = processor.transformer(extrinsic, ds);
+          const transformedOutput = await processor.transformer(
+            extrinsic,
+            ds,
+            this.api,
+            await this.dsProcessorService.getAssets(ds),
+          );
           if (
             !handler.filter ||
-            processor.filterProcessor(
-              handler.filter as any,
-              transformedOutput,
-              ds,
-            )
+            processor.filterProcessor(handler.filter, transformedOutput, ds)
           ) {
             await vm.securedExec(handler.handler, [transformedOutput]);
           }
@@ -386,14 +388,15 @@ export class IndexerManager {
           processor.baseFilter,
         );
         for (const event of filteredEvents) {
-          const transformedOutput = processor.transformer(event, ds);
+          const transformedOutput = await processor.transformer(
+            event,
+            ds,
+            this.api,
+            await this.dsProcessorService.getAssets(ds),
+          );
           if (
             !handler.filter ||
-            processor.filterProcessor(
-              handler.filter as any,
-              transformedOutput,
-              ds,
-            )
+            processor.filterProcessor(handler.filter, transformedOutput, ds)
           ) {
             await vm.securedExec(handler.handler, [transformedOutput]);
           }
