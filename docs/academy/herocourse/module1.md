@@ -1,7 +1,20 @@
 # Module 1: Getting started
 
-**Coming Soon!**
+## Lesson 1: Hello World with Docker
 
-This module will be released on Friday 22nd October 2021.
+**Documentation reference**
 
-Make sure you join our [Discord community](https://discord.com/invite/subquery) or follow us on [Twitter](https://twitter.com/SubQueryNetwork) to be notified!
+[Hello World(localhost with Docker](https://doc.subquery.network/quickstart/helloworld-localhost/#)
+
+[Hello World explained](https://doc.subquery.network/quickstart/understanding-helloworld/)
+
+## Lesson 2: Hello World with SubQuery Projects
+
+**Documentation reference**
+
+[Hello World(SubQuery hosted](https://doc.subquery.network/quickstart/helloworld-hosted/)
+
+## Exercise
+**Workbook**: [Hello World](/assets/pdf/Hello_World_Lab.pdf)
+
+**Github**: [Subql Starter](https://github.com/subquery/subql-starter)
