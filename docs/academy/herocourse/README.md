@@ -8,6 +8,10 @@ The Academy is designed to up-skill and empower developers in the SubQuery ecosy
 
 ## The SubQuery Hero Course
 
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/LgkXd4f3WKg" frameborder="0" allowfullscreen="true"></iframe>
+</figure>
+
 Our first course is the SubQuery Hero Course and will be available from Friday 22 October 2021. The course will be released with a new module every week for six weeks based on the following structure:
 
 | Module                                                                         | Release Date              |
