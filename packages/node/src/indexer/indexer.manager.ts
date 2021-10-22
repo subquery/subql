@@ -5,12 +5,13 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import { buildSchema, getAllEntitiesRelations } from '@subql/common';
 import {
+  buildSchema,
+  getAllEntitiesRelations,
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
-} from '@subql/common/project/utils';
+} from '@subql/common';
 import {
   SubqlCustomDatasource,
   SubqlDatasource,
