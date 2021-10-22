@@ -43,11 +43,12 @@ import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 import {argv} from '../../yargs';
-import {GetMetadataPlugin} from './GetMetadataPlugin';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
+import {GetMetadataPlugin} from './GetMetadataPlugin';
+import {MapMetadataPlugin} from './MapMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 
 /* eslint-enable */
@@ -106,4 +107,6 @@ export const plugins = [
 
 if (argv(`indexer`)) {
   plugins.push(GetMetadataPlugin);
+} else {
+  plugins.push(MapMetadataPlugin);
 }
