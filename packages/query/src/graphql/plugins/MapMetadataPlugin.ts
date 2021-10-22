@@ -39,8 +39,6 @@ export const MapMetadataPlugin = makeExtendSchemaPlugin((build) => {
         _metadata: async (parentObject, args, context, info): Promise<Metadata> => {
           const {rows} = await context.pgClient.query('select * from subquery_1._metadata');
 
-          //maybe need to catch here
-
           const metadata = {} as Metadata;
 
           rows.map((row: {key: string; value: string | number}) => {

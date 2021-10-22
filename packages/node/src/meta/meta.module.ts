@@ -6,6 +6,8 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
+import { IndexerManager } from '../indexer/indexer.manager';
+import { IndexerModule } from '../indexer/indexer.module';
 import { PoiService } from '../indexer/poi.service';
 import { StoreService } from '../indexer/store.service';
 import { MetricEventListener } from './event.listener';
@@ -15,7 +17,7 @@ import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 
 @Module({
-  imports: [PrometheusModule.register()],
+  imports: [PrometheusModule.register(), IndexerModule],
   controllers: [MetaController, HealthController],
   providers: [
     MetricEventListener,
@@ -59,9 +61,19 @@ import { MetaService } from './meta.service';
       name: 'subql_indexer_skip_dictionary_count',
       help: 'The number of times indexer been skip use dictionary',
     }),
+    {
+      provide: MetaService,
+      useFactory: async (
+        indexerManager: IndexerManager,
+        storeService: StoreService,
+      ) => {
+        await indexerManager.start();
+        return new MetaService(storeService);
+      },
+      inject: [IndexerManager, StoreService],
+    },
     MetaService,
     HealthService,
-    StoreService,
     PoiService,
   ],
 })

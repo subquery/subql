@@ -40,6 +40,8 @@ import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
+const { version: packageVersion } = require('../../package.json');
+
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('indexer');
@@ -57,7 +59,6 @@ export class IndexerManager {
     private storeService: StoreService,
     private fetchService: FetchService,
     private poiService: PoiService,
-    private metaService: MetaService,
     protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
@@ -139,6 +140,9 @@ export class IndexerManager {
         this.mmrService.init(this.subqueryState.dbSchema),
       ]);
     }
+
+    this.apiService.emitNetworkEvent();
+
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
@@ -186,7 +190,7 @@ export class IndexerManager {
       });
     }
 
-    this.metaService.syncMetadata();
+    await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {

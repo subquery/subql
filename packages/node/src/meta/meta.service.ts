@@ -50,11 +50,6 @@ export class MetaService {
     };
   }
 
-  syncMetadata() {
-    const meta = this.getMeta();
-    console.log(meta);
-  }
-
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
@@ -65,13 +60,14 @@ export class MetaService {
   async handleLastProcessedBlock(
     blockPayload: ProcessBlockPayload,
   ): Promise<void> {
+    console.log('here');
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
     await Promise.all([
       this.storeService.setMetadata('lastProcessedHeight', blockPayload.height),
       this.storeService.setMetadata(
         'lastProcessedTimestamp',
-        blockPayload.height,
+        blockPayload.timestamp,
       ),
     ]);
   }
@@ -92,7 +88,6 @@ export class MetaService {
     networkMeta: NetworkMetadataPayload,
   ): Promise<void> {
     this.networkMeta = networkMeta;
-    console.log(this.networkMeta);
     await Promise.all([
       this.storeService.setMetadata('chain', networkMeta.chain),
       this.storeService.setMetadata('specName', networkMeta.specName),

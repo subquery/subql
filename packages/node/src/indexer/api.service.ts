@@ -17,6 +17,7 @@ import { BlockHash } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
+import { delay } from '../utils/promise';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 
 const NOT_SUPPORT = (name: string) => () => {
@@ -50,6 +51,7 @@ export class ApiService implements OnApplicationShutdown {
       provider = new HttpProvider(network.endpoint);
       throwOnConnect = true;
     }
+
     this.apiOption = {
       provider,
       throwOnConnect,
@@ -66,7 +68,6 @@ export class ApiService implements OnApplicationShutdown {
         6000,
     };
 
-    this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
@@ -89,6 +90,10 @@ export class ApiService implements OnApplicationShutdown {
 
   getApi(): ApiPromise {
     return this.api;
+  }
+
+  emitNetworkEvent(): void {
+    this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
   }
 
   async getPatchedApi(): Promise<ApiPromise> {

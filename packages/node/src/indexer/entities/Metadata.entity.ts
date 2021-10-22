@@ -8,21 +8,6 @@ export interface Metadata {
   value: string;
 }
 
-// export interface MetadataEnum {
-//   lastProcessedHeight: number;
-//   lastProcessedTimestamp: number;
-//   targetHeight: number;
-//   chain: string;
-//   specName: string;
-//   genesisHash: string;
-
-// The reason it's not working is
-
-//   indexerHealthy: boolean;
-//   indexerNodeVersion: string;
-//   queryNodeVersion: string;
-// }
-
 export interface MetadataModel extends Model<Metadata>, Metadata {}
 
 export type MetadataRepo = typeof Model & {

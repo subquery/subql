@@ -3,7 +3,6 @@
 
 import { Module } from '@nestjs/common';
 import { DbModule } from '../db/db.module';
-import { MetaService } from '../meta/meta.service';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
@@ -28,8 +27,7 @@ import { StoreService } from './store.service';
     DsProcessorService,
     PoiService,
     MmrService,
-    MetaService,
   ],
-  exports: [],
+  exports: [StoreService, IndexerManager],
 })
 export class IndexerModule {}

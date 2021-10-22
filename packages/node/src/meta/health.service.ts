@@ -10,6 +10,7 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
+import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;
 
@@ -22,7 +23,10 @@ export class HealthService {
   private blockTime = 6000;
   private healthTimeout: number;
 
-  constructor(protected nodeConfig: NodeConfig) {
+  constructor(
+    protected nodeConfig: NodeConfig,
+    private storeService: StoreService,
+  ) {
     this.healthTimeout = Math.max(
       DEFAULT_TIMEOUT,
       this.nodeConfig.timeout * 1000,
@@ -34,6 +38,7 @@ export class HealthService {
     if (this.recordBlockHeight !== blockPayload.height) {
       this.recordBlockHeight = blockPayload.height;
       this.recordBlockTimestamp = Date.now();
+      this.setHealth();
     }
   }
 
@@ -42,12 +47,23 @@ export class HealthService {
     if (this.currentProcessingHeight !== blockPayload.height) {
       this.currentProcessingHeight = blockPayload.height;
       this.currentProcessingTimestamp = blockPayload.timestamp;
+      this.setHealth();
     }
   }
 
   @OnEvent(IndexerEvent.NetworkMetadata)
   handleNetworkMetadata({ blockTime }: NetworkMetadataPayload): void {
     this.blockTime = blockTime;
+    this.setHealth();
+  }
+
+  async setHealth() {
+    try {
+      this.getHealth();
+      await this.storeService.setMetadata('indexerHealthy', true);
+    } catch (e) {
+      await this.storeService.setMetadata('indexerHealthy', false);
+    }
   }
 
   getHealth() {
