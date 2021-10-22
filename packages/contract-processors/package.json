@@ -21,6 +21,6 @@
     "@subql/types": "workspace:*"
   },
   "peerDependencies": {
-    "@polkadot/api": "^5"
+    "@polkadot/api": "^6"
   }
 }
