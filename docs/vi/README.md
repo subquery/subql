@@ -15,7 +15,7 @@
       </p>
       <span class="button">
         <router-link :to="{path: '/quickstart/helloworld-localhost/'}">
-          <span>Get started</span>
+          <span>Bắt đầu</span>
         </router-link>
       </span>
     </div>
