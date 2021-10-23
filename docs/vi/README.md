@@ -11,7 +11,7 @@
   <section class="startSection main">
     <div>
       <h2 class="title">Hướng Dẫn <span>Nhanh</span></h2>
-      <p>Hiểu SubQuery bằng cách làm theo ví dụ Hello World truyền thống. Sử dụng dự án mẫu trong môi trường Docker, bạn có thể nhanh chóng thiết lập và chạy một nút và bắt đầu truy vấn chuỗi khối chỉ trong vài phút với một vài lệnh đơn giản.
+      <p>Hiểu SubQuery bằng cách làm theo ví dụ với Hello World truyền thống. Sử dụng dự án mẫu trong môi trường Docker, bạn có thể nhanh chóng thiết lập và chạy một nút và bắt đầu truy vấn chuỗi khối chỉ trong vài phút với một vài lệnh đơn giản.
       </p>
       <span class="button">
         <router-link :to="{path: '/quickstart/helloworld-localhost/'}">
@@ -29,7 +29,7 @@
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>Hướng dẫn và Ví dụ</span>
-            <p>Học thông qua thực hành. Tutorials and examples on how to build various SubQuery projects.</p>
+            <p>Học thông qua thực hành. Hướng dẫn và ví dụ về cách xây dựng các dự án SubQuery khác nhau.</p>
           </div>
         </router-link>
       </li>
@@ -38,7 +38,7 @@
           <div>
             <img src="/assets/img/docsIcon.svg" />
             <span>Tài liệu tham khảo về vấn đề kỹ thuật</span>
-            <p>Viết bởi developer, dành cho dân developer. Tìm ra thứ bạn cần để nhanh chóng xây dựng một dApp tuyệt đỉnh.</p>
+            <p>Được viết bởi nhà phát triển dành cho nhà phát triển. Tìm ra thứ bạn cần để nhanh chóng xây dựng một dApp tuyệt đỉnh.</p>
           </div>
         </router-link>
       </li>
@@ -47,7 +47,7 @@
           <div>
             <img src="/assets/img/networkIcon.svg" />
             <span>Mạng SubQuery</span>
-            <p>Tương lai theo cơ chế phi tập trung của SubQuery. Tìm hiểu thêm về cách để người lập Index và người tiêu dùng kiếm được phần thưởng.</p>
+            <p>Tương lai phi tập trung của SubQuery. Tìm hiểu thêm về cách để người lập chỉ mục và người tiêu dùng kiếm được phần thưởng.</p>
           </div>
         </a>
       </li>
@@ -76,7 +76,7 @@
       <li>
         <div class="title">Làm cách nào để tôi có thể đóng góp hoặc đưa ra phản hồi cho SubQuery?</div>
         <div class="content">
-          <p>Chúng tôi rất mong nhận được ý kiến đóng góp hoặc phản hồi từ cộng đồng. Khi muốn đóng góp code, hãy tạo fork (bản sao) cho repository bạn quan tâm và đưa ra những thay đổi. Sau đó hãy sử dụng chức năng Pull Request hay gọi tắt là PR. À, nhớ đừng quên test thử đấy nhé! Ngoài ra, bạn có thể xem các nguyên tắc về vấn đề đóng góp của chúng tôi (sẽ sớm được công khai). </p>
+          <p>Chúng tôi rất mong nhận được ý kiến đóng góp hoặc phản hồi từ cộng đồng. Để đóng góp mã, hãy tạo bản sao cho kho lưu trữ bạn quan tâm và đưa ra những thay đổi. Sau đó hãy sử dụng chức năng Pull Request hay gọi tắt là PR. À, đừng quên chạy thử đấy nhé! Ngoài ra, hãy xem các nguyên tắc đóng góp của chúng tôi (sẽ sớm được công khai). </p>
           <span class="more">
             <router-link :to="{path: '/faqs/faqs/#what-is-the-best-way-to-get-started-with-subquery'}">ĐỌC THÊM</router-link>
           </span>
@@ -92,14 +92,14 @@
         </div>
       </li>
     </ul><br>
-    For further frequently asked questions, please see our <router-link :to="{path: '/faqs/faqs/'}">FAQ's</router-link> page.    
+    Để biết các câu hỏi thường gặp, vui lòng xem trang <router-link :to="{path: '/faqs/faqs/'}">FAQ's</router-link> page.    
   </div>
 </section>
 <section class="main">
   <div>
     <div class="lastIntroduce lastIntroduce_1">
         <h5>Tích hợp với Chuỗi tùy chỉnh của bạn?</h5>
-        <p>Cho dù bạn đang xây dựng một parachain hay một blockchain hoàn toàn mới trên Substrate - SubQuery đều có thể giúp bạn lập Index và khắc phục sự cố dữ liệu trên chuỗi. SubQuery được thiết kế để dễ dàng tích hợp với blockchain tùy chỉnh dựa trên Substrate.</p>
+        <p>Cho dù bạn đang xây dựng một parachain hay một blockchain hoàn toàn mới trên Substrate - SubQuery đều có thể giúp bạn lập chỉ mục và khắc phục sự cố dữ liệu trên chuỗi. SubQuery được thiết kế để dễ dàng tích hợp với blockchain tùy chỉnh dựa trên Substrate.</p>
         <span class="more">
           <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">TÌM HIỂU CÁCH TÍCH HỢP VỚI BLOCKCHAIN CỦA BẠN</router-link>
         </span>
