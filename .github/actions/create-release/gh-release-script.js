@@ -4,8 +4,7 @@ const core = require('@actions/core');
 const { request } = require('@octokit/request');
 
 const myArgs = process.argv.slice(2);
-
-const pJson = require(`${myArgs[0]}/package.json`)
+const pJson = require(`${myArgs[0]}/package.json`);
 
 const version = pJson.version;
 const repoName = pJson.name; 
@@ -50,7 +49,7 @@ function gatherReleaseInfo(logPath) {
         core.setFailed("No release info found, either missing in changelog or changelog is formatted incorrectly")
     }
 
-    console.log("Gathered release info...")  
+    console.info("Gathered release info...")  
     return releaseInfo;
 }
 
@@ -61,7 +60,7 @@ async function publishRelease(releaseInfo) {
         headers: {
             authorization: `token ${process.env.REPO_TOKEN}`,
         },
-        owner: 'subquery',
+        owner: 'subql',
         name: `[${version}] ${repoName}`,
         repo: 'subql',
         tag_name: `${repoTagName[1]}/${version}`,
@@ -70,11 +69,11 @@ async function publishRelease(releaseInfo) {
         core.setFailed(err)
     })
 
-    console.log("Release Created...")  
+    console.info("Release Created...")  
 }
 
 checkForBetaVersion(version);
 
-const releaseInfo = gatherReleaseInfo(`./packages/common/CHANGELOG.md`);
+const releaseInfo = gatherReleaseInfo(`${myArgs[0]}/CHANGELOG.md`);
 
 publishRelease(releaseInfo);

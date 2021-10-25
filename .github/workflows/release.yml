@@ -78,7 +78,7 @@ jobs:
         with:
           package-path: packages/common
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN}}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
@@ -86,7 +86,7 @@ jobs:
         with:
           package-path: packages/cli
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN}}
+          npm-token: ${{ secrets.NPM_TOKEN }}
       
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
@@ -94,15 +94,23 @@ jobs:
         with:
           package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN}}
-     
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish Node
         if: steps.changed-node.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/node
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN}}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+     
+      - name: Publish Query
+        if: steps.changed-query.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/query
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Validator
         if: steps.changed-validator.outputs.changed == 'true'
@@ -110,4 +118,4 @@ jobs:
         with:
           package-path: packages/validator
           repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN}}
+          npm-token: ${{ secrets.NPM_TOKEN }}
