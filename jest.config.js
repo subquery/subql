@@ -193,7 +193,9 @@ module.exports = {
   //   "\\.pnp\\.[^\\/]+$"
   // ],
 
-  transformIgnorePatterns: ['node_modules/(?!(@polkadot|@babel/runtime/helpers/esm)/)'],
+  "transformIgnorePatterns": [
+    "node_modules/(?!(@polkadot|@babel/runtime/helpers/esm)/)"
+  ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them
   // unmockedModulePathPatterns: undefined,
