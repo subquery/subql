@@ -4977,6 +4977,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
+    "@subql/types": "workspace:*"
     "@types/js-yaml": ^4.0.1
     "@types/pino": ^6.3.11
     class-transformer: 0.3.1
