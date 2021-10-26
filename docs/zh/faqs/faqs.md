@@ -14,7 +14,7 @@ SubQuery 还为开发者提供免费的项目生产级托管，免除人员配�
 
 我们热爱社区的贡献和反馈。 若要贡献代码，请创建您感兴趣的分支，并在分支上做出更改。 然后提交 PR 或 Pull 请求。 这里提示下，不要忘记对于分钟的测试工作。 同时您可查看我们的贡献指南线 (TBA)。
 
-要提供反馈，请通过 hello@subquery.network联系我们，或跳到我们的 [Discord频道](https://discord.com/invite/78zg8aBSMG)
+要提供反馈，请通过 hello@subquery.network联系我们，或进入我们的 [Discord 频道](https://discord.com/invite/78zg8aBSMG)
 
 ## 在SubQuery项目中托管我的项目需要如何收费？
 
@@ -22,32 +22,32 @@ SubQuery 还为开发者提供免费的项目生产级托管，免除人员配�
 
 ## 什么是部署插槽？
 
-部署位置是 [SubQuery 项目](https://project.subquery.network) 中的一个功能，相当于一个开发环境。 例如，在任何软件组织中，通常都有一种最起码的开发环境和生产环境(无视本地环境)。 Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+部署位置是 [SubQuery 项目](https://project.subquery.network) 中的一个功能，相当于一个开发环境。 例如，在任何软件组织中，通常都有一种最起码的开发环境和生产环境(无视本地环境)。 在典型的软件产品开发中，根据具体软件开发需求的要求，包括了其他环境，例如灰度环境、生产环境和测试环境等。
 
-SubQuery currently has two slots available. A staging slot and a production slot. SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery 目前有两个可用的插槽。 一个中转插槽和一个生产插槽。 这使得开发人员可以将他们的 SubQuery 部署到模拟环境中，并且在点击按钮时“发布到生产环境”。
 
-## What is the advantage of a staging slot?
+## 中转插槽的优点是什么？
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications. You can wait for the staging slot to reindex all data without affecting your production applications.
+使用中转插槽的主要好处是，它允许您准备新版本的 SubQuery 项目而不公开。 您可以等待中转插槽重新设置所有数据而不影响您的生产环境应用程序。
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production. And of course, the separate environment allows you to test your new code without affecting production.
+中转插槽不会在 [Explorer](https://explorer.subquery.network/) 中向公众展示，而且有一个唯一的URL，只有您可以看到。 当然，这个单独的环境允许您在不影响生产的情况下测试您的新代码。
 
-## What are extrinsics?
+## 什么是外部状态？
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+如果你已经熟悉区块链基本概念，你可以将外部状态理解为区块链中的交易。 但更加正式的理解是，外部状态是一种来自链外并被包含在一个区块中的信息。 外部状态的类别包含3种， 分别为：inherents、signed transactions、unsigned transactions。
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+Inherent外部状态是指未经签名且仅由区块作者插入区块的信息。
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain. They stands to pay a fee to have the transaction included on chain.
+Signed transaction外部状态是指包含签发交易账户签名的交易。 该类型将支付一笔费用，以使得将该交易上链。
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam. Because of this, the transaction queue lacks economic logic to prevent spam.
+Unsigned transactions外部状态是指不包含交易账户签名的交易。 Unsigned transactions外部状态应当谨慎使用，该类型的外部状态没有人支付费用，因为它是signed的。 因此，该类型下交易队列缺乏防止欺骗的经济逻辑。
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+想了解更多信息，请点击 [这里](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics)。
 
-## What is the endpoint for the Kusama network?
+## Kusama网络端点是什么？
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+Kusama 网络端点的介绍 `wss://kusama.api.onfinality.io/publicws`。
 
-## What is the endpoint for the Polkadot mainnet network?
+## Polkadot 主网的端点是什么？
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+Polkadot网络端点的介绍 `wss://polkadot.api.onfinality.io/publicws`。
