@@ -125,7 +125,7 @@ export class IndexerManager {
   }
 
   async start(): Promise<void> {
-    this.dsProcessorService.validateCustomDs();
+    await this.dsProcessorService.validateCustomDs();
     await this.apiService.init();
     await this.fetchService.init();
     this.api = this.apiService.getApi();

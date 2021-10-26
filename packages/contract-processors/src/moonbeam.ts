@@ -20,7 +20,6 @@ import {
 import {plainToClass} from 'class-transformer';
 import {
   IsOptional,
-  IsHexadecimal,
   validateSync,
   ValidatorConstraint,
   ValidatorConstraintInterface,
@@ -160,7 +159,32 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
 async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promise<string> {
   const block = await api.rpc.eth.getBlockByNumber(blockNumber, false);
 
-  return (block.toJSON() as any).blockHash;
+  return block.unwrap().blockHash.toHex();
+}
+
+const contractInterfaces: Record<string, Interface> = {};
+
+function buildInterface(ds: SubqlCustomDatasource, assets: Record<string, string>): Interface | undefined {
+  if (!ds.abi) {
+    return;
+  }
+
+  if (!ds.assets?.get(ds.abi)) {
+    throw new Error(`ABI named "${ds.abi}" not referenced in assets`);
+  }
+
+  // This assumes that all datasources have a different abi name or they are the same abi
+  if (!contractInterfaces[ds.abi]) {
+    // Constructing the interface validates the ABI
+    try {
+      contractInterfaces[ds.abi] = new Interface(assets[ds.abi]);
+    } catch (e) {
+      (global as any).logger.error(`Unable to parse ABI: ${e.message}`);
+      throw new Error('ABI is invalid');
+    }
+  }
+
+  return contractInterfaces[ds.abi];
 }
 
 const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, MoonbeamEventFilter, MoonbeamEvent> = {
@@ -182,14 +206,14 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
       transactionIndex: original.extrinsic?.idx ?? -1,
       transactionHash: hash,
-      removed: false, // TODO what does this mean?
+      removed: false,
       logIndex: original.idx, // Might be index of block not index relevant to tx
     };
 
     try {
-      const iface = new Interface(assets[ds.abi]);
+      const iface = buildInterface(ds, assets);
 
-      log.args = iface.parseLog(log).args;
+      log.args = iface?.parseLog(log).args;
     } catch (e) {
       // This would make sense to log if we filtered first
       // TODO setup ts config with global defs
@@ -266,9 +290,9 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
     };
 
     try {
-      const iface = new Interface(assets[ds.abi]);
+      const iface = buildInterface(ds, assets);
 
-      call.args = iface.decodeFunctionData(iface.getFunction(hexDataSlice(call.data, 0, 4)), call.data);
+      call.args = iface?.decodeFunctionData(iface.getFunction(hexDataSlice(call.data, 0, 4)), call.data);
     } catch (e) {
       // This would make sense to log if we filtered first
       // TODO setup ts config with global defs
@@ -307,10 +331,9 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
 
 export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Moonbeam', SubqlNetworkFilter> = {
   kind: 'substrate/Moonbeam',
-  validate(ds: MoonbeamDatasource): void {
-    if (ds.abi && !ds.assets?.get(ds.abi)) {
-      throw new Error(`Abi named "${ds.abi}" not referenced in assets`);
-    }
+  validate(ds: MoonbeamDatasource, assets: Record<string, string>): void {
+    buildInterface(ds, assets); // Will throw if unable to construct
+
     return;
   },
   dsFilterProcessor(ds: MoonbeamDatasource): boolean {

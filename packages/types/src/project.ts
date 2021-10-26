@@ -151,7 +151,7 @@ export interface HandlerInputTransformer<T extends SubqlHandlerKind, U> {
 
 export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetworkFilter> {
   kind: K;
-  validate(ds: SubqlCustomDatasource<K, F>): void;
+  validate(ds: SubqlCustomDatasource<K, F>, assets: Record<string, string>): void;
   dsFilterProcessor(ds: SubqlCustomDatasource<K, F>, api: ApiPromise): boolean;
   handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown>};
 }
