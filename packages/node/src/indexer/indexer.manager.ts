@@ -80,7 +80,12 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      await this.apiService.setBlockhash(block.block.hash);
+      const isUpgraded = block.specVersion !== this.prevSpecVersion;
+      // if parentBlockHash injected, which means we need to check runtime upgrade
+      await this.apiService.setBlockhash(
+        block.block.hash,
+        isUpgraded ? block.block.header.parentHash : undefined,
+      );
       for (const ds of this.filteredDataSources) {
         const vm = await this.sandboxService.getDsProcessor(ds);
         if (isRuntimeDs(ds)) {

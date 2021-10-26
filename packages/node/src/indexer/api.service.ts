@@ -13,7 +13,7 @@ import {
   RpcMethodResult,
 } from '@polkadot/api/types';
 import { RpcInterface } from '@polkadot/rpc-core/types';
-import { BlockHash } from '@polkadot/types/interfaces';
+import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
@@ -28,6 +28,7 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
+  private currentRuntimeVersion: RuntimeVersion;
   private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
@@ -128,12 +129,20 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash): Promise<void> {
+  async setBlockhash(
+    blockHash: BlockHash,
+    parentBlockHash?: BlockHash,
+  ): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
     this.currentBlockHash = blockHash;
-    const apiAt = await this.api.at(blockHash);
+    if (parentBlockHash) {
+      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
+        parentBlockHash,
+      );
+    }
+    const apiAt = await this.api.at(blockHash, this.currentRuntimeVersion);
     this.patchApiQuery(this.patchedApi, apiAt);
     this.patchApiFind(this.patchedApi, apiAt);
     this.patchApiQueryMulti(this.patchedApi, apiAt);
