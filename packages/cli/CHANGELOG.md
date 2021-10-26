@@ -12,7 +12,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Added publish CLI command which uploads a project to IPFS if it is using project manifest v0.2.0 (#486)
 ### Changed
-- Update Polkadot/api to 6.5.1 (#561)
+- Update Polkadot/api to 6.5.2 (#564)
 
 ## [0.13.0] - 2021-10-12
 ### Added

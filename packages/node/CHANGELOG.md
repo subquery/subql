@@ -14,7 +14,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 This feature will be running along with the Proof of index service, also allow the user to specify a local path for .mmr by using flag `--mmr-path`. (#488)
 - Introduce custom datasource (beta), enable subql to support a vary kind of smart contract solutions that embedded in parachains (#512)
 ### Changed
-- Update Polkadot/api to 6.5.1 (#561)
+- Update Polkadot/api to 6.5.2 (#564)
 
 ## [0.22.0] - 2021-10-12
 Upgrade priority: High. To align with runtime upgrade of Kusama and Polakdot, upgraded api will support Metadata V14 and .
