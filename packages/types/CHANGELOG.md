@@ -9,6 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.9.0] - 2021-10-26
+### Changed
+- Update Polkadot/api to v6 (#548)
+- Move project manifest types to @subql/types because it is now also required by subquery project. (#512)
+
 ## [0.8.5] - 2021-10-12
 ### Changed
 - Update Polkadot/api to 6.3.1 (#505)

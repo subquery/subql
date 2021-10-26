@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.12.0] - 2021-10-26
+### Changed
+- Move project manifest types to @subql/types because it is now also required by subquery project. (#512)
+
 ## [0.11.0] - 2021-10-12
 ### Added
 - Support for new project manifest spec v0.2.0. Which has many improvements including, no longer requiring the package.json file, multiple code entry points, referencing files via other protocols such as IPFS (#495)

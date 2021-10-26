@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+
+## [0.23.0] - 2021-10-26
 ### Added
 - Add MMR service allow to acquire Proof of index information and generate Merkle mountain range root, create and store root value in a file-based database, simultaneously it updates in the corresponding MMR value in the `_poi` table.
-This feature will be running along with the Proof of index service, also allow the user to specify a local path for .mmr by using flag `--mmr-path`.
+This feature will be running along with the Proof of index service, also allow the user to specify a local path for .mmr by using flag `--mmr-path`. (#488)
+- Introduce custom datasource (beta), enable subql to support a vary kind of smart contract solutions that embedded in parachains (#512)
+### Changed
+- Update Polkadot/api to 6.5.2 (#564)
+### Fixed
+- Performance improvement (#565)
 
 ## [0.22.0] - 2021-10-12
 Upgrade priority: High. To align with runtime upgrade of Kusama and Polakdot, upgraded api will support Metadata V14 and .
