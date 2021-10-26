@@ -8,21 +8,33 @@ import { ApiPromise } from '@polkadot/api';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSrouceV0_0_1,
+} from '@subql/common';
+import {
   SubqlCallFilter,
   SubqlEventFilter,
-  SubqlKind,
-} from '@subql/common';
+  SubqlHandlerKind,
+  SubqlHandler,
+  SubqlDatasource,
+  SubqlHandlerFilter,
+} from '@subql/types';
 import { isUndefined, range } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
+import {
+  isBaseHandler,
+  isCustomDs,
+  isCustomHandler,
+  isRuntimeDs,
+} from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
+import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent, ProjectIndexFilters } from './types';
 
@@ -54,9 +66,10 @@ export class FetchService implements OnApplicationShutdown {
 
   constructor(
     private apiService: ApiService,
-    protected nodeConfig: NodeConfig,
-    protected project: SubqueryProject,
+    private nodeConfig: NodeConfig,
+    private project: SubqueryProject,
     private dictionaryService: DictionaryService,
+    private dsProcessorService: DsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
@@ -86,52 +99,52 @@ export class FetchService implements OnApplicationShutdown {
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
-      if (ds.kind === SubqlKind.Runtime) {
-        for (const handler of ds.mapping.handlers) {
-          switch (handler.kind) {
-            case SubqlKind.BlockHandler:
-              return;
-            case SubqlKind.CallHandler: {
+      for (const handler of ds.mapping.handlers) {
+        const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
+        const filterList = isRuntimeDs(ds)
+          ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
+          : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
+        if (!filterList.length) return;
+        switch (baseHandlerKind) {
+          case SubqlHandlerKind.Block:
+            return;
+          case SubqlHandlerKind.Call: {
+            for (const filter of filterList as SubqlCallFilter[]) {
               if (
-                handler.filter?.module !== undefined &&
-                handler.filter?.method !== undefined
+                filter.module !== undefined &&
+                filter.method !== undefined &&
+                extrinsicFilters.findIndex(
+                  (extrinsic) =>
+                    extrinsic.module === filter.module &&
+                    extrinsic.method === filter.method,
+                ) < 0
               ) {
-                if (
-                  extrinsicFilters.findIndex(
-                    (event) =>
-                      event.module === handler.filter.module &&
-                      event.method === handler.filter.method,
-                  ) < 0
-                ) {
-                  extrinsicFilters.push(handler.filter);
-                }
+                extrinsicFilters.push(handler.filter);
               } else {
                 return;
               }
-              break;
             }
-            case SubqlKind.EventHandler: {
+            break;
+          }
+          case SubqlHandlerKind.Event: {
+            for (const filter of filterList as SubqlEventFilter[]) {
               if (
-                handler.filter?.module !== undefined &&
-                handler.filter?.method !== undefined
+                filter.module !== undefined &&
+                filter.method !== undefined &&
+                eventFilters.findIndex(
+                  (event) =>
+                    event.module === filter.module &&
+                    event.method === filter.method,
+                ) < 0
               ) {
                 eventFilters.push(handler.filter);
-                if (
-                  eventFilters.findIndex(
-                    (event) =>
-                      event.module === handler.filter.module &&
-                      event.method === handler.filter.method,
-                  ) < 0
-                ) {
-                  eventFilters.push(handler.filter);
-                }
               } else {
                 return;
               }
-              break;
             }
-            default:
+            break;
           }
+          default:
         }
       }
     }
@@ -223,6 +236,7 @@ export class FetchService implements OnApplicationShutdown {
   latestProcessed(height: number): void {
     this.latestProcessedHeight = height;
   }
+
   async startLoop(initBlockHeight: number): Promise<void> {
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
@@ -381,5 +395,39 @@ export class FetchService implements OnApplicationShutdown {
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
       value: this.blockNumberBuffer.size,
     });
+  }
+
+  private getBaseHandlerKind(
+    ds: SubqlDatasource,
+    handler: SubqlHandler,
+  ): SubqlHandlerKind {
+    if (isRuntimeDs(ds) && isBaseHandler(handler)) {
+      return handler.kind;
+    } else if (isCustomDs(ds) && isCustomHandler(handler)) {
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
+      const baseHandler =
+        plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
+      if (!baseHandler) {
+        throw new Error(
+          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
+        );
+      }
+      return baseHandler;
+    }
+  }
+
+  private getBaseHandlerFilters<T extends SubqlHandlerFilter>(
+    ds: SubqlDatasource,
+    handlerKind: string,
+  ): T[] {
+    if (isCustomDs(ds)) {
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
+      const processor = plugin.handlerProcessors[handlerKind];
+      return processor.baseFilter instanceof Array
+        ? (processor.baseFilter as T[])
+        : ([processor.baseFilter] as T[]);
+    } else {
+      throw new Error(`expect custom datasource here`);
+    }
   }
 }

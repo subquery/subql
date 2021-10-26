@@ -3,7 +3,7 @@
 
 import * as path from 'path';
 import { NodeConfig } from '../configure/NodeConfig';
-import { IndexerSandbox } from './sandbox';
+import { IndexerSandbox } from './sandbox.service';
 
 describe('sandbox for subql-node', () => {
   let vm: IndexerSandbox;
@@ -11,18 +11,6 @@ describe('sandbox for subql-node', () => {
   afterEach(() => {
     vm.removeAllListeners();
   });
-
-  // it('resolve entry from package.json', () => {
-  //   vm = new IndexerSandbox(
-  //     {
-  //       store: undefined,
-  //       api: undefined,
-  //       root: path.resolve(__dirname, '../../test/sandbox'),
-  //     },
-  //     new NodeConfig({ subquery: '', subqueryName: '' }),
-  //   );
-  //   expect(vm.entry).toEqual('./main.js');
-  // });
 
   it('wait until promise resolved', async () => {
     vm = new IndexerSandbox(

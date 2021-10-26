@@ -15,8 +15,6 @@ import {
   SubqlBlockFilter,
   SubqlCallFilter,
   SubqlEventFilter,
-} from '@subql/common';
-import {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -26,6 +24,7 @@ import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
+
 export function wrapBlock(
   signedBlock: SignedBlock,
   events: EventRecord[],
@@ -128,34 +127,52 @@ export function filterBlock(
 
 export function filterExtrinsics(
   extrinsics: SubstrateExtrinsic[],
-  filter?: SubqlCallFilter,
+  filterOrFilters: SubqlCallFilter | SubqlCallFilter[] | undefined,
 ): SubstrateExtrinsic[] {
-  if (!filter) return extrinsics;
-  return extrinsics.filter(
-    ({ block, extrinsic, success }) =>
-      (filter.specVersion === undefined ||
-        block.specVersion === undefined ||
-        checkSpecRange(filter.specVersion, block.specVersion)) &&
-      (filter.module === undefined ||
-        extrinsic.method.section === filter.module) &&
-      (filter.method === undefined ||
-        extrinsic.method.method === filter.method) &&
-      (filter.success === undefined || success === filter.success),
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return extrinsics;
+  }
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+  return extrinsics.filter(({ block, extrinsic, success }) =>
+    filters.find(
+      (filter) =>
+        (filter.specVersion === undefined ||
+          block.specVersion === undefined ||
+          checkSpecRange(filter.specVersion, block.specVersion)) &&
+        (filter.module === undefined ||
+          extrinsic.method.section === filter.module) &&
+        (filter.method === undefined ||
+          extrinsic.method.method === filter.method) &&
+        (filter.success === undefined || success === filter.success),
+    ),
   );
 }
 
 export function filterEvents(
   events: SubstrateEvent[],
-  filter?: SubqlEventFilter,
+  filterOrFilters?: SubqlEventFilter | SubqlEventFilter[] | undefined,
 ): SubstrateEvent[] {
-  if (!filter) return events;
-  return events.filter(
-    ({ block, event }) =>
-      (filter.specVersion === undefined ||
-        block.specVersion === undefined ||
-        checkSpecRange(filter.specVersion, block.specVersion)) &&
-      (filter.module ? event.section === filter.module : true) &&
-      (filter.method ? event.method === filter.method : true),
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return events;
+  }
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+  return events.filter(({ block, event }) =>
+    filters.find(
+      (filter) =>
+        (filter.specVersion === undefined ||
+          block.specVersion === undefined ||
+          checkSpecRange(filter.specVersion, block.specVersion)) &&
+        (filter.module ? event.section === filter.module : true) &&
+        (filter.method ? event.method === filter.method : true),
+    ),
   );
 }
 

@@ -3,17 +3,20 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectManifestVersioned, SubqlKind } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common';
+import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
+import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
+import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 
 jest.mock('sequelize', () => {
@@ -61,21 +64,21 @@ function testSubqueryProjectV0_0_1(): SubqueryProject {
       dataSources: [
         {
           name: 'runtime0',
-          kind: SubqlKind.Runtime,
+          kind: SubqlDatasourceKind.Runtime,
           startBlock: 1,
           mapping: {
             handlers: [
-              { handler: 'testSandbox', kind: SubqlKind.EventHandler },
+              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
             ],
           },
         },
         {
           name: 'runtime1',
-          kind: SubqlKind.Runtime,
+          kind: SubqlDatasourceKind.Runtime,
           startBlock: 1,
           mapping: {
             handlers: [
-              { handler: 'testSandbox', kind: SubqlKind.EventHandler },
+              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
             ],
           },
         },
@@ -98,23 +101,23 @@ function testSubqueryProject(): SubqueryProject {
       dataSources: [
         {
           name: 'runtime0',
-          kind: SubqlKind.Runtime,
+          kind: SubqlDatasourceKind.Runtime,
           startBlock: 1,
           mapping: {
             file: './main.js',
             handlers: [
-              { handler: 'testSandbox', kind: SubqlKind.EventHandler },
+              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
             ],
           },
         },
         {
           name: 'runtime1',
-          kind: SubqlKind.Runtime,
+          kind: SubqlDatasourceKind.Runtime,
           startBlock: 1,
           mapping: {
             file: './main.js',
             handlers: [
-              { handler: 'testSandbox', kind: SubqlKind.EventHandler },
+              { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
             ],
           },
         },
@@ -135,17 +138,26 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
 
   const apiService = new ApiService(project, eventEmitter);
   const dictionaryService = new DictionaryService(project);
+
+  const dsPluginService = new DsProcessorService(project);
   const fetchService = new FetchService(
     apiService,
     nodeConfig,
     project,
     dictionaryService,
+    dsPluginService,
     eventEmitter,
   );
   const poiService = new PoiService(nodeConfig, project, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig, poiService);
   const subqueryRepo = SubqueryFactory(sequilize);
   const mmrService = new MmrService(nodeConfig, project, sequilize);
+  const sandboxService = new SandboxService(
+    apiService,
+    storeService,
+    nodeConfig,
+    project,
+  );
 
   return new IndexerManager(
     apiService,
@@ -156,6 +168,8 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     sequilize,
     project,
     nodeConfig,
+    sandboxService,
+    dsPluginService,
     subqueryRepo,
     eventEmitter,
   );

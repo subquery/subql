@@ -1,0 +1,26 @@
+{
+  "name": "@subql/contract-processors",
+  "version": "0.1.0",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "/dist"
+  ],
+  "dependencies": {
+    "ethers": "^5.4.7"
+  },
+  "devDependencies": {
+    "@subql/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "@polkadot/api": "^6"
+  }
+}

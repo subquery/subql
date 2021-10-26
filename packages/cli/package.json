@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.13.0",
+  "version": "0.13.1-0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -11,7 +11,7 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
-    "@polkadot/api": "^5.9.1",
+    "@polkadot/api": "^6.4.2",
     "@subql/common": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.0.6",

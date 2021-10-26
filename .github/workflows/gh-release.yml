@@ -1,0 +1,52 @@
+name: "Github Release"
+on:
+  workflow_dispatch:
+
+jobs:
+  github-release:
+    name: github-release
+    runs-on: ubuntu-latest
+    steps:
+      #Check out
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: yarn install
+
+      #Create github releases
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/query
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/validator
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          

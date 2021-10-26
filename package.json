@@ -35,11 +35,12 @@
     "vuepress-plugin-right-anchor": "^0.5.3"
   },
   "resolutions": {
-    "@polkadot/api": "6.3.1"
+    "@polkadot/api": "6.4.2"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
+    "build": "yarn workspaces foreach -pt run build",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
     "test:all": "jest --coverage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --detectOpenHandles",

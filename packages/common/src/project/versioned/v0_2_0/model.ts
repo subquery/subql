@@ -1,9 +1,16 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+  SubqlCustomDatasource,
+  SubqlCustomHandler,
+  SubqlMapping,
+  SubqlNetworkFilter,
+  SubqlRuntimeHandler,
+} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
-import {Mapping, RuntimeDataSourceBase} from '../../models';
+import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
 import {ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 
@@ -31,13 +38,21 @@ export class ProjectMappingV0_2_0 extends Mapping {
 }
 
 export class RuntimeDataSourceV0_2_0Impl
-  extends RuntimeDataSourceBase<SubqlMappingV0_2_0>
+  extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
   implements RuntimeDataSourceV0_2_0
 {
   @Type(() => ProjectMappingV0_2_0)
   @ValidateNested()
-  mapping: SubqlMappingV0_2_0;
+  mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
 }
+
+export class CustomDataSourceV0_2_0Impl<
+    K extends string = string,
+    T extends SubqlNetworkFilter = SubqlNetworkFilter,
+    M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
+  >
+  extends CustomDataSourceBase<K, T, M>
+  implements SubqlCustomDatasource<K, T, M> {}
 
 export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_2_0 {
   @Equals('0.2.0')
@@ -55,6 +70,12 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => RuntimeDataSourceV0_2_0Impl)
-  dataSources: RuntimeDataSourceV0_2_0[];
+  @Type(() => CustomDataSourceV0_2_0Impl, {
+    discriminator: {
+      property: 'kind',
+      subTypes: [{value: RuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
+    },
+    keepDiscriminatorProperty: true,
+  })
+  dataSources: (RuntimeDataSourceV0_2_0 | SubqlCustomDatasource)[];
 }

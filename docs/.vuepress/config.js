@@ -176,6 +176,20 @@ module.exports = config({
         ]
       },
       {
+        title: 'The Hero Course',
+        path: '/academy/herocourse',
+        collapsable: true,
+        children: [
+          '/academy/herocourse/',
+          '/academy/herocourse/module1.md',
+          '/academy/herocourse/module2.md',
+          '/academy/herocourse/module3.md',
+          '/academy/herocourse/module4.md',
+          '/academy/herocourse/module5.md',
+          '/academy/herocourse/module6.md',
+        ]
+      },
+      {
         title: 'FAQs',
         path: '/faqs/faqs.md',
         collapsable: true,

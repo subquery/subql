@@ -2,6 +2,8 @@
 specVersion: '0.2.0'
 description: ''
 repository: 'https://github.com/subquery/subql-starter'
+name: Test
+version: '0.0.0'
 
 schema:
   file: ./schema.graphql
