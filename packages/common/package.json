@@ -13,6 +13,7 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "dependencies": {
+    "@subql/types": "workspace:*",
     "class-transformer": "0.3.1",
     "class-validator": "^0.13.1",
     "flatted": "^3.1.1",
