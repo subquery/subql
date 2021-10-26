@@ -31,8 +31,7 @@ describe('substrate utils', () => {
     }
   });
 
-  //skip until https://github.com/polkadot-js/api/issues/4111 resolved
-  it.skip('when failed to fetch, log block height and re-throw error', async () => {
+  it('when failed to fetch, log block height and re-throw error', async () => {
     //some large number of block height
     await expect(fetchBlocks(api, 100000000, 100000019)).rejects.toThrow(
       /Unable to retrieve header and parent from supplied hash/,
