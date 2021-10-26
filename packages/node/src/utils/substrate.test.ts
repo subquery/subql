@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { assert } from '@polkadot/util/index';
-import { take } from 'rxjs/operators';
 import {
   fetchBlocks,
   fetchBlocksViaRangeQuery,
