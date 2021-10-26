@@ -187,7 +187,6 @@ export class ApiService implements OnApplicationShutdown {
           argsClone[hashIndex] = this.currentBlockHash;
           return original(...argsClone);
         }) as RpcMethodResult<T, AnyFunction>;
-        ret.json = NOT_SUPPORT('api.rpc.*.*.json');
         ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
         ret.meta = original.meta;
         return ret;
@@ -197,7 +196,6 @@ export class ApiService implements OnApplicationShutdown {
       T,
       AnyFunction
     >;
-    ret.json = NOT_SUPPORT('api.rpc.*.*.json');
     ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
     ret.meta = original.meta;
     return ret;
