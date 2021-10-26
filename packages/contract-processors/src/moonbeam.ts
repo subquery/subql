@@ -13,7 +13,6 @@ import {
   SubqlHandlerKind,
   SubqlNetworkFilter,
   SubstrateEvent,
-  SubqlEventFilter,
   SecondLayerHandlerProcessor,
   SubstrateExtrinsic,
 } from '@subql/types';
@@ -157,6 +156,11 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
 }
 
 async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promise<string> {
+  return undefined;
+
+  // This is too expensive to call for each call/event, we need to find a more efficient approach
+  // In the mean time blockNumber can be used
+  // See https://github.com/subquery/subql/issues/568 for more info
   const block = await api.rpc.eth.getBlockByNumber(blockNumber, false);
 
   return block.unwrap().blockHash.toHex();
@@ -189,7 +193,7 @@ function buildInterface(ds: SubqlCustomDatasource, assets: Record<string, string
 
 const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, MoonbeamEventFilter, MoonbeamEvent> = {
   baseFilter: [{module: 'evm', method: 'Log'}],
-  baseHandlerKind: 'substrate/EventHandler' as any /*SubqlHandlerKind.Event*/,
+  baseHandlerKind: SubqlHandlerKind.Event,
   async transformer(
     original: SubstrateEvent,
     ds: SubqlCustomDatasource,
@@ -258,7 +262,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
 
 const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, MoonbeamCallFilter, MoonbeamCall> = {
   baseFilter: [{module: 'ethereum', method: 'transact'}],
-  baseHandlerKind: 'substrate/CallHandler' as any /*SubqlHandlerKind.Call*/,
+  baseHandlerKind: SubqlHandlerKind.Call,
   async transformer(
     original: SubstrateExtrinsic,
     ds: SubqlCustomDatasource,
