@@ -32,6 +32,11 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
+          package-path: packages/contract-processors
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
           package-path: packages/node
           repo-token: ${{ secrets.REPO_TOKEN }}
 
@@ -49,4 +54,3 @@ jobs:
         with:
           package-path: packages/validator
           repo-token: ${{ secrets.REPO_TOKEN }}
-          
