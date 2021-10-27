@@ -18,11 +18,8 @@ import { BlockHash } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
-import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { StoreService } from './store.service';
-
-const logger = getLogger('fetch');
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
