@@ -6,10 +6,12 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
+import { ApiService } from '../indexer/api.service';
 import { IndexerManager } from '../indexer/indexer.manager';
 import { IndexerModule } from '../indexer/indexer.module';
 import { PoiService } from '../indexer/poi.service';
 import { StoreService } from '../indexer/store.service';
+import { delay } from '../utils/promise';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
@@ -63,16 +65,27 @@ import { MetaService } from './meta.service';
     }),
     {
       provide: MetaService,
-      useFactory: async (
-        indexerManager: IndexerManager,
-        storeService: StoreService,
-      ) => {
-        await indexerManager.start();
-        return new MetaService(storeService);
+      useFactory: async (apiService: ApiService) => {
+        //The reason this is not working is indexermanager.start
+        //wont run until dependencys are resolve which the method
+        //is preventing us from doing
+
+        /*eslint no-constant-condition: ["error", { "checkLoops": false }]*/
+        while (true) {
+          const networkMetaReady = apiService.getMeta();
+          if (networkMetaReady) {
+            break;
+          } else {
+            await delay(5);
+          }
+        }
+
+        return new MetaService(apiService);
       },
-      inject: [IndexerManager, StoreService],
+      inject: [ApiService],
     },
-    MetaService,
+    ApiService,
+    StoreService,
     HealthService,
     PoiService,
   ],

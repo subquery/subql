@@ -3,6 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { ApiService } from '../indexer/api.service';
 import {
   BestBlockPayload,
   EventPayload,
@@ -11,7 +12,6 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
-import { StoreService } from '../indexer/store.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
@@ -30,7 +30,9 @@ export class MetaService {
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
 
-  constructor(private storeService: StoreService) {}
+  constructor(apiService: ApiService) {
+    apiService.emitNetworkMetaEvent();
+  }
 
   getMeta() {
     return {
@@ -57,25 +59,14 @@ export class MetaService {
   }
 
   @OnEvent(IndexerEvent.BlockLastProcessed)
-  async handleLastProcessedBlock(
-    blockPayload: ProcessBlockPayload,
-  ): Promise<void> {
-    console.log('here');
+  handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
-    await Promise.all([
-      this.storeService.setMetadata('lastProcessedHeight', blockPayload.height),
-      this.storeService.setMetadata(
-        'lastProcessedTimestamp',
-        blockPayload.timestamp,
-      ),
-    ]);
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
-  async handleTargetBlock(blockPayload: TargetBlockPayload): Promise<void> {
+  handleTargetBlock(blockPayload: TargetBlockPayload): void {
     this.targetHeight = blockPayload.height;
-    await this.storeService.setMetadata('targetHeight', blockPayload.height);
   }
 
   @OnEvent(IndexerEvent.BlockBest)
@@ -84,29 +75,22 @@ export class MetaService {
   }
 
   @OnEvent(IndexerEvent.NetworkMetadata)
-  async handleNetworkMetadata(
-    networkMeta: NetworkMetadataPayload,
-  ): Promise<void> {
+  handleNetworkMetadata(networkMeta: NetworkMetadataPayload): void {
     this.networkMeta = networkMeta;
-    await Promise.all([
-      this.storeService.setMetadata('chain', networkMeta.chain),
-      this.storeService.setMetadata('specName', networkMeta.specName),
-      this.storeService.setMetadata('genesisHash', networkMeta.genesisHash),
-    ]);
   }
 
   @OnEvent(IndexerEvent.ApiConnected)
-  handleApiConnected({ value }: EventPayload<number>) {
+  handleApiConnected({ value }: EventPayload<number>): void {
     this.apiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.InjectedApiConnected)
-  handleInjectedApiConnected({ value }: EventPayload<number>) {
+  handleInjectedApiConnected({ value }: EventPayload<number>): void {
     this.injectedApiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)
-  handleUsingDictionary({ value }: EventPayload<number>) {
+  handleUsingDictionary({ value }: EventPayload<number>): void {
     this.usingDictionary = !!value;
   }
 }

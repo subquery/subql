@@ -53,10 +53,11 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
+  private initialised: boolean;
 
   constructor(
-    private apiService: ApiService,
     private storeService: StoreService,
+    private apiService: ApiService,
     private fetchService: FetchService,
     private poiService: PoiService,
     protected mmrService: MmrService,
@@ -67,7 +68,9 @@ export class IndexerManager {
     private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    this.initialised = false;
+  }
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
@@ -120,16 +123,22 @@ export class IndexerManager {
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
+
+    const date = Date.now();
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: blockHeight,
-      timestamp: Date.now(),
+      timestamp: date,
     });
+    await Promise.all([
+      this.storeService.setMetadata('lastProcessedHeight', blockHeight),
+      this.storeService.setMetadata('lastProcessedTimestamp', date),
+    ]);
   }
 
   async start(): Promise<void> {
     this.dsProcessorService.validateCustomDs();
-    await this.apiService.init();
     await this.fetchService.init();
+    const api = await this.apiService.init();
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
@@ -140,8 +149,6 @@ export class IndexerManager {
         this.mmrService.init(this.subqueryState.dbSchema),
       ]);
     }
-
-    this.apiService.emitNetworkEvent();
 
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
@@ -159,6 +166,10 @@ export class IndexerManager {
         process.exit(1);
       });
     }
+  }
+
+  getIsInitialized() {
+    return this.initialised;
   }
 
   private getStartBlockFromDataSources() {
@@ -190,7 +201,8 @@ export class IndexerManager {
       });
     }
 
-    await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+    this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+    this.initialised = true;
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
@@ -235,13 +247,14 @@ export class IndexerManager {
     return project;
   }
 
-  private async initDbSchema(): Promise<void> {
+  private async initDbSchema(): Promise<boolean> {
     const schema = this.subqueryState.dbSchema;
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
     );
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
+    return true;
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {

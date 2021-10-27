@@ -36,6 +36,7 @@ import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
+import { StoreService } from './store.service';
 import { BlockContent, ProjectIndexFilters } from './types';
 
 const logger = getLogger('fetch');
@@ -71,6 +72,7 @@ export class FetchService implements OnApplicationShutdown {
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private eventEmitter: EventEmitter2,
+    private storeService: StoreService,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
       this.nodeConfig.batchSize * 3,
@@ -207,6 +209,10 @@ export class FetchService implements OnApplicationShutdown {
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
           height: this.latestFinalizedHeight,
         });
+        await this.storeService.setMetadata(
+          'targetHeight',
+          this.latestFinalizedHeight,
+        );
       }
     } catch (e) {
       logger.error(e, `Having a problem when get finalized block`);

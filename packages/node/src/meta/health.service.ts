@@ -22,6 +22,7 @@ export class HealthService {
   private currentProcessingTimestamp?: number;
   private blockTime = 6000;
   private healthTimeout: number;
+  private isHealthy: boolean;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -34,11 +35,12 @@ export class HealthService {
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
-  handleTargetBlock(blockPayload: TargetBlockPayload) {
+  handleTargetBlock(blockPayload: TargetBlockPayload): void {
     if (this.recordBlockHeight !== blockPayload.height) {
       this.recordBlockHeight = blockPayload.height;
       this.recordBlockTimestamp = Date.now();
-      this.setHealth();
+      this.evaluateHealth();
+      this.storeService.setMetadata('indexerHealthy', this.isHealthy);
     }
   }
 
@@ -47,22 +49,24 @@ export class HealthService {
     if (this.currentProcessingHeight !== blockPayload.height) {
       this.currentProcessingHeight = blockPayload.height;
       this.currentProcessingTimestamp = blockPayload.timestamp;
-      this.setHealth();
+      this.evaluateHealth();
+      this.storeService.setMetadata('indexerHealthy', this.isHealthy);
     }
   }
 
   @OnEvent(IndexerEvent.NetworkMetadata)
   handleNetworkMetadata({ blockTime }: NetworkMetadataPayload): void {
     this.blockTime = blockTime;
-    this.setHealth();
+    this.evaluateHealth();
+    this.storeService.setMetadata('indexerHealthy', this.isHealthy);
   }
 
-  async setHealth() {
+  evaluateHealth() {
     try {
       this.getHealth();
-      await this.storeService.setMetadata('indexerHealthy', true);
+      this.isHealthy = true;
     } catch (e) {
-      await this.storeService.setMetadata('indexerHealthy', false);
+      this.isHealthy = false;
     }
   }
 

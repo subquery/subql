@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import console from 'console';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
@@ -17,8 +18,11 @@ import { BlockHash } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
-import { delay } from '../utils/promise';
+import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
+import { StoreService } from './store.service';
+
+const logger = getLogger('fetch');
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -30,6 +34,7 @@ export class ApiService implements OnApplicationShutdown {
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
   private apiOption: ApiOptions;
+  private storeService: StoreService;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -92,8 +97,26 @@ export class ApiService implements OnApplicationShutdown {
     return this.api;
   }
 
-  emitNetworkEvent(): void {
+  getMeta(): boolean {
+    if (Object.prototype.hasOwnProperty.call(this.networkMeta, 'chain')) {
+      if (typeof this.networkMeta.chain === 'string') {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async emitNetworkMetaEvent(): Promise<void> {
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
+
+    await Promise.all([
+      this.storeService.setMetadata('chain', this.networkMeta.chain),
+      this.storeService.setMetadata('specName', this.networkMeta.specName),
+      this.storeService.setMetadata(
+        'genesisHash',
+        this.networkMeta.genesisHash,
+      ),
+    ]);
   }
 
   async getPatchedApi(): Promise<ApiPromise> {
