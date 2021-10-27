@@ -247,7 +247,7 @@ export class IndexerManager {
     return project;
   }
 
-  private async initDbSchema() {
+  private async initDbSchema(): Promise<void> {
     const schema = this.subqueryState.dbSchema;
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
