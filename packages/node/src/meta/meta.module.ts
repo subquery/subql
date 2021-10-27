@@ -85,9 +85,7 @@ import { MetaService } from './meta.service';
       inject: [ApiService],
     },
     ApiService,
-    StoreService,
     HealthService,
-    PoiService,
   ],
 })
 export class MetaModule {}
