@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
@@ -48,12 +49,14 @@ export class DsProcessorService {
   } = {};
   constructor(private project: SubqueryProject) {}
 
-  validateCustomDs(): void {
+  async validateCustomDs(): Promise<void> {
     for (const ds of this.project.dataSources.filter(isCustomDs)) {
       const processor = this.getDsProcessor(ds);
       /* Standard validation applicable to all custom ds and processors */
       if (ds.kind !== processor.kind) {
-        throw new Error('ds kind doesnt match processor');
+        throw new Error(
+          `ds kind (${ds.kind}) doesnt match processor (${processor.kind})`,
+        );
       }
 
       for (const handler of ds.mapping.handlers) {
@@ -66,8 +69,14 @@ export class DsProcessorService {
         }
       }
 
+      ds.mapping.handlers.map((handler) =>
+        processor.handlerProcessors[handler.kind].filterValidator(
+          handler.filter,
+        ),
+      );
+
       /* Additional processor specific validation */
-      processor.validate(ds);
+      processor.validate(ds, await this.getAssets(ds));
     }
   }
 
@@ -92,5 +101,32 @@ export class DsProcessorService {
     return this.processorCache[
       ds.processor.file
     ] as unknown as SubqlDatasourceProcessor<D, T>;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getAssets(ds: SubqlCustomDatasource): Promise<Record<string, string>> {
+    if (!isCustomDs(ds)) {
+      throw new Error(`data source is not a custom data source`);
+    }
+
+    if (!ds.assets) {
+      return {};
+    }
+
+    const res: Record<string, string> = {};
+
+    for (const [name, { file }] of ds.assets) {
+      // TODO update with https://github.com/subquery/subql/pull/511
+      try {
+        res[name] = fs.readFileSync(path.join(this.project.path, file), {
+          encoding: 'utf8',
+        });
+      } catch (e) {
+        logger.error(`Failed to load datasource asset ${file}`);
+        throw e;
+      }
+    }
+
+    return res;
   }
 }

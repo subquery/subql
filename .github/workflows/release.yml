@@ -42,6 +42,11 @@ jobs:
           paths: packages/common
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-contract-processors
+        with:
+          paths: packages/contract-processors
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-cli
         with:
           paths: packages/cli
@@ -79,6 +84,13 @@ jobs:
           package-path: packages/common
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
+
+    - name: Publish Contract Processors
+        if: steps.changed-contract-processors.outputs.changed == 'true'
+        working-directory: packages/contract-processors
+        run: echo "Changes exist in contract-processors" && yarn npm publish --access public
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'

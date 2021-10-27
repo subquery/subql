@@ -23,6 +23,7 @@ module.exports = {
   collectCoverageFrom: [
     'packages/cli/src/**/*.ts',
     'packages/common/src/**/*.ts',
+    'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/validator/src/**/*.ts',
   ],

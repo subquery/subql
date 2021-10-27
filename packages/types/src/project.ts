@@ -133,19 +133,25 @@ export interface SubqlCustomDatasource<
   M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
 > extends ISubqlDatasource<M, T> {
   kind: K;
-  assets: {[key: string]: CustomDataSourceAsset};
+  assets: Map<string, CustomDataSourceAsset>;
   processor: FileReference;
+  abi?: string; // Should be a key of assets
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
 
 export interface HandlerInputTransformer<T extends SubqlHandlerKind, U> {
-  (original: RuntimeHandlerInputMap[T], ds: SubqlCustomDatasource): U; //  | SubqlBuiltinDataSource
+  (
+    original: RuntimeHandlerInputMap[T],
+    ds: SubqlCustomDatasource,
+    api: ApiPromise,
+    assets: Record<string, string>
+  ): Promise<U>; //  | SubqlBuiltinDataSource
 }
 
 export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetworkFilter> {
   kind: K;
-  validate(ds: SubqlCustomDatasource<K, F>): void;
+  validate(ds: SubqlCustomDatasource<K, F>, assets: Record<string, string>): void;
   dsFilterProcessor(ds: SubqlCustomDatasource<K, F>, api: ApiPromise): boolean;
   handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown>};
 }
@@ -157,4 +163,5 @@ export interface SecondLayerHandlerProcessor<K extends SubqlHandlerKind, F, E> {
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
   transformer: HandlerInputTransformer<K, E>;
   filterProcessor: (filter: F, input: E, ds: SubqlCustomDatasource<string, SubqlNetworkFilter>) => boolean;
+  filterValidator: (filter: F) => void;
 }

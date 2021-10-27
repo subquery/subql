@@ -45,15 +45,16 @@ describe('DsProcessorService', () => {
     service = new DsProcessorService(project);
   });
 
-  it('can validate custom ds', () => {
-    expect(() => service.validateCustomDs()).not.toThrow();
+  it('can validate custom ds', async () => {
+    await service.validateCustomDs();
+    await expect(service.validateCustomDs()).resolves.not.toThrow();
   });
 
-  it('can catch an invalid datasource kind', () => {
+  it('can catch an invalid datasource kind', async () => {
     const badDs: SubqlCustomDatasource<string, any> = {
       kind: 'substrate/invalid',
       processor: { file: 'contract-processors/dist/jsonfy.js' },
-      assets: {},
+      assets: new Map([]),
       mapping: {
         handlers: [],
       },
@@ -62,7 +63,7 @@ describe('DsProcessorService', () => {
     project = getTestProject([badDs]);
     service = new DsProcessorService(project);
 
-    expect(() => service.validateCustomDs()).toThrow();
+    await expect(service.validateCustomDs()).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {
