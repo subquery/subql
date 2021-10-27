@@ -31,7 +31,7 @@ describe('DbModule', () => {
     await app.init();
     const sequelize = app.get(Sequelize);
     await expect(sequelize.authenticate()).resolves.not.toThrow();
-  }, 10000);
+  }, 30000);
 
   it('can load subquery model', async () => {
     const module = await Test.createTestingModule({
@@ -51,5 +51,5 @@ describe('DbModule', () => {
     await app.init();
     const subqueryRepo: SubqueryRepo = app.get('Subquery');
     await expect(subqueryRepo.describe()).resolves.toBeTruthy();
-  }, 10000);
+  }, 30000);
 });
