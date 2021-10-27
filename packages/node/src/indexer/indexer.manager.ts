@@ -247,14 +247,13 @@ export class IndexerManager {
     return project;
   }
 
-  private async initDbSchema(): Promise<boolean> {
+  private async initDbSchema() {
     const schema = this.subqueryState.dbSchema;
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
     );
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
-    return true;
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
