@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.23.1] - 2021-10-27
+### Fixed
+- Disable the profiler on health check and remove logs (#569) 
+
 ## [0.23.0] - 2021-10-26
 ### Added
 - Add MMR service allow to acquire Proof of index information and generate Merkle mountain range root, create and store root value in a file-based database, simultaneously it updates in the corresponding MMR value in the `_poi` table.
