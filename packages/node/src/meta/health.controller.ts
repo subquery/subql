@@ -3,7 +3,6 @@
 
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
 import { HealthService } from './health.service';
 
 const logger = getLogger('health');
@@ -13,9 +12,7 @@ export class HealthController {
   constructor(private healthService: HealthService) {}
 
   @Get()
-  @profiler(true)
   getHealth() {
-    logger.info(`health start`);
     try {
       this.healthService.getHealth();
     } catch (e) {
@@ -28,6 +25,5 @@ export class HealthController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-    logger.info(`health end`);
   }
 }
