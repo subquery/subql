@@ -54,6 +54,7 @@ export class <%= props.className %> implements Entity {
 <% }); %>
 
     static create(record: Partial<Omit<<%=props.className %>, FunctionPropertyNames<<%=props.className %>>>> & Entity): <%=props.className %> {
+        assert(typeof record.id === 'string', "id must be provided");
         let entity = new <%=props.className %>(record.id);
         Object.assign(entity,record);
         return entity;
