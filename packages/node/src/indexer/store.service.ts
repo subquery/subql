@@ -9,6 +9,7 @@ import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst } from 'lodash';
 import {
   DataTypes,
+  Model,
   QueryTypes,
   Sequelize,
   Transaction,
@@ -173,6 +174,20 @@ export class StoreService {
     }
   }
 
+  async findMetadataValue(key: string, value: any): Promise<Model | null> {
+    const model = this.sequelize.model('_metadata');
+    assert(model, `model _metadata does not exist`);
+
+    const result = await model.findOne({
+      where: {
+        key: key,
+        value: value,
+      },
+    });
+
+    return result;
+  }
+
   async setMetadata(key: string, value: any): Promise<void> {
     if (this.sequelize.isDefined(`_metadata`)) {
       const model = this.sequelize.model('_metadata');
@@ -308,7 +323,7 @@ group by
         });
         return record?.toJSON() as Entity;
       },
-      set: async (entity: string, id: string, data: Entity): Promise<void> => {
+      set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.upsert(data, { transaction: this.tx });

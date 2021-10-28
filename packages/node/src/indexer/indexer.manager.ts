@@ -129,10 +129,6 @@ export class IndexerManager {
       height: blockHeight,
       timestamp: date,
     });
-    await Promise.all([
-      this.storeService.setMetadata('lastProcessedHeight', blockHeight),
-      this.storeService.setMetadata('lastProcessedTimestamp', date),
-    ]);
   }
 
   async start(): Promise<void> {
@@ -193,6 +189,7 @@ export class IndexerManager {
     const blockOffset = await metadataRepo.findOne({
       where: { key: 'blockOffset' },
     });
+
     if (!blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await metadataRepo.create({
@@ -201,8 +198,15 @@ export class IndexerManager {
       });
     }
 
-    this.storeService.setMetadata('indexerNodeVersion', packageVersion);
-    this.initialised = true;
+    const indexerVersion = await metadataRepo.findOne({
+      where: { key: 'indexerNodeVersion' },
+    });
+
+    if (!indexerVersion) {
+      this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+    }
+
+    await this.apiService.emitStoreMetadata();
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {

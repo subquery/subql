@@ -3,6 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import { ApiService } from '../indexer/api.service';
 import {
   BestBlockPayload,
@@ -12,6 +13,7 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
+import { StoreService } from '../indexer/store.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
@@ -29,10 +31,9 @@ export class MetaService {
   private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
+  private changed: boolean;
 
-  constructor(apiService: ApiService) {
-    apiService.emitNetworkMetaEvent();
-  }
+  constructor(private storeService: StoreService) {}
 
   getMeta() {
     return {
@@ -52,6 +53,25 @@ export class MetaService {
     };
   }
 
+  @Interval(60000)
+  async checkTargetHeight() {
+    if (this.changed) {
+      const instance = await this.storeService.findMetadataValue(
+        'lastProcessedHeight',
+        this.lastProcessedHeight,
+      );
+
+      if (instance === null) {
+        await this.storeService.setMetadata(
+          'targetHeight',
+          this.lastProcessedHeight,
+        );
+      }
+
+      this.changed = false;
+    }
+  }
+
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
@@ -62,6 +82,7 @@ export class MetaService {
   handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
+    this.changed = true;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

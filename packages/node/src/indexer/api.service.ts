@@ -18,11 +18,8 @@ import { BlockHash } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
-import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { StoreService } from './store.service';
-
-const logger = getLogger('fetch');
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -34,11 +31,11 @@ export class ApiService implements OnApplicationShutdown {
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
   private apiOption: ApiOptions;
-  private storeService: StoreService;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
     protected project: SubqueryProject,
+    private storeService: StoreService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -63,15 +60,6 @@ export class ApiService implements OnApplicationShutdown {
       ...chainTypes,
     };
     this.api = await ApiPromise.create(this.apiOption);
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-      blockTime:
-        this.api.consts.babe?.expectedBlockTime.toNumber() ||
-        this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
-        6000,
-    };
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
@@ -90,6 +78,16 @@ export class ApiService implements OnApplicationShutdown {
       );
     }
 
+    this.networkMeta = {
+      chain: this.api.runtimeChain.toString(),
+      specName: this.api.runtimeVersion.specName.toString(),
+      genesisHash: this.api.genesisHash.toString(),
+      blockTime:
+        this.api.consts.babe?.expectedBlockTime.toNumber() ||
+        this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
+        6000,
+    };
+
     return this;
   }
 
@@ -97,18 +95,9 @@ export class ApiService implements OnApplicationShutdown {
     return this.api;
   }
 
-  getMeta(): boolean {
-    if (Object.prototype.hasOwnProperty.call(this.networkMeta, 'chain')) {
-      if (typeof this.networkMeta.chain === 'string') {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  async emitNetworkMetaEvent(): Promise<void> {
+  async emitStoreMetadata(): Promise<void> {
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
-
+    // probably can just store directly in table
     await Promise.all([
       this.storeService.setMetadata('chain', this.networkMeta.chain),
       this.storeService.setMetadata('specName', this.networkMeta.specName),

@@ -28,6 +28,6 @@ import { StoreService } from './store.service';
     PoiService,
     MmrService,
   ],
-  exports: [StoreService, ApiService, IndexerManager],
+  exports: [StoreService, PoiService],
 })
 export class IndexerModule {}
