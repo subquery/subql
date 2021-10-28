@@ -1,6 +1,6 @@
-# Hello World (localhost + Docker)
+# Hello World (本地主机 + Docker)
 
-欢迎使用 SubQuery Hello World 快速入门。 快速入门旨在通过几个简单的步骤向您展示如何在 Docker 中运行默认的启动项目。
+欢迎使用 SubQuery Hello World 快速启动。 快速入门旨在通过几个简单的步骤向您展示如何在 Docker 中运行默认的启动项目。
 
 ## 学习目标
 
@@ -57,7 +57,7 @@ My docker version is: Docker version 20.10.5, build 55c4c88
 - [SubQuery CLI](quickstart.md#install-the-subquery-cli)
 - [Docker](https://docs.docker.com/get-docker/)
 
-## 第 1 步：初始化项目
+## 1. 步骤一：初始化项目
 
 开始使用 SubQuery 的第一步是运行 `subql init` 命令。 让我们初始化一个名为 `subqlHelloWorld` 的启动项目。 请注意，只有作者是强制性的。 其他所有内容都在下面都是空着的。
 
@@ -79,19 +79,11 @@ Init the starter package... subqlHelloWorld is ready
 cd subqlHelloWorld
 ```
 
-## 第 2 步：安装依赖包
+## 2. 步骤2：安装依赖项
 
 现在执行 yarn 或 node install 以安装各种依赖包。
 
-```shell
-# Yarn
-yarn install
-
-# NPM
-npm install
-```
-
-`yarn install`示例
+<CodeGroup> # Yarn yarn install # NPM npm install
 
 ```shell
 > yarn install
@@ -103,21 +95,19 @@ info No lockfile found.
 [4/4] 🔨  Building fresh packages...
 success Saved lockfile.
 ✨  Done in 31.84s.
+[1/4] 🔍  Resolving packages...
+[2/4] 🚚  Fetching packages...
+[3/4] 🔗  Linking dependencies...
+[4/4] 🔨  Building fresh packages...
+success Saved lockfile.
+✨  Done in 31.84s.
 ```
 
-## 第 3 步：生成代码
+## 3. 步骤4：生成代码
 
-现在运行 `yarn codegen` 生成来自 GraphQL schema 的 Typescript。
+现在运行 `yarn codegen` 生成来自 GraphQL schema 的Typescript。
 
-```shell
-# Yarn
-yarn codegen
-
-# NPM
-npm run-script codegen
-```
-
-An example of `yarn codegen`
+<CodeGroup> # Yarn yarn codegen # NPM npm run-script codegen
 
 ```shell
 > yarn codegen
@@ -130,23 +120,18 @@ $ ./node_modules/.bin/subql codegen
 * Models index generated !
 * Types index generated !
 ✨  Done in 1.02s.
+* Models index generated !
+* Types index generated !
+✨  Done in 1.02s.
 ```
 
 **Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
 
-## 第 4 步: 构建代码
+## 4. `yarn build` 示例
 
 下一步是使用 `yarn building` 来构建代码。
 
-```shell
-# Yarn
-yarn build
-
-# NPM
-npm run-script build
-```
-
-`yarn build` 示例
+<CodeGroup> # Yarn yarn build # NPM npm run-script build
 
 ```shell
 > yarn build
@@ -155,7 +140,7 @@ $ tsc -b
 ✨  Done in 5.68s.
 ```
 
-## 第 5 步：运行 Docker
+## 5. 运行 Docker
 
 使用 Docker 可以让您非常快速地运行此示例，因为 Docker 中提供所有必需的基础设施。 运行 `docker-compose praw && docker-compose up`.
 
@@ -174,10 +159,16 @@ graphql-engine_1  | 2021-06-05T22:20:39.383Z <nestjs> INFO GraphqlModule depende
 graphql-engine_1  | 2021-06-05T22:20:39.809Z <nestjs> INFO Nest application successfully started
 subquery-node_1   | 2021-06-05T22:20:41.122Z <fetch> INFO fetch block [201, 300]
 graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
+graphql-engine_1  | 2021-06-05T22:20:39.382Z <nestjs> INFO AppModule dependencies initialized
+graphql-engine_1  | 2021-06-05T22:20:39.382Z <nestjs> INFO ConfigureModule dependencies initialized
+graphql-engine_1  | 2021-06-05T22:20:39.383Z <nestjs> INFO GraphqlModule dependencies initialized
+graphql-engine_1  | 2021-06-05T22:20:39.809Z <nestjs> INFO Nest application successfully started
+subquery-node_1   | 2021-06-05T22:20:41.122Z <fetch> INFO fetch block [201, 300]
+graphql-engine_1  | 2021-06-05T22:20:43.244Z <express> INFO request completed
 
 ```
 
-## 第 6 步：浏览 playground
+## 6. Browse playground
 
 导航到 http://localhost:3000/， 并将下面的查询粘贴到屏幕左侧，然后点击播放按钮。
 
