@@ -2,36 +2,34 @@
 
 Zuordnungsfunktionen definieren, wie Kettendaten in die optimierten GraphQL-Entitäten umgewandelt werden, die wir zuvor in der Datei `schema.graphql` definiert haben.
 
-Mappings werden in einer Teilmenge von TypeScript namens AssemblyScript geschrieben, die in WASM (WebAssembly) kompiliert werden kann.
-
 - Mappings werden im Verzeichnis `src/mappings` definiert und als Funktion exportiert
 - Diese Zuordnungen werden auch in `src/index.ts` exportiert
 - Die Mapping-Dateien sind in `project.yaml` unter den Mapping-Handlern referenziert.
 
-Es gibt drei Klassen von Zuordnungsfunktionen; [Blockhandler](#block-handler), [Ereignishandler](#event-handler) und [Anrufhandler](#call-handler).
+There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
 
 ## Blockhandler
 
-Sie können Blockhandler verwenden, um jedes Mal Informationen zu erfassen, wenn ein neuer Block an die Substratkette angehängt wird, z. Blocknummer. Dazu wird für jeden Block einmal ein definierter BlockHandler aufgerufen.
+You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
 
 ```ts
-import {SubstrateBlock} from '@subql/types';
+import {SubstrateBlock} from "@subql/types";
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
-  // Create a new StarterEntity with the block hash as it's ID
-  const record = new starterEntity(block.block.header.hash.toString());
-  record.field1 = block.block.header.number.toNumber();
-  await record.save();
+    // Create a new StarterEntity with the block hash as it's ID
+    const record = new starterEntity(block.block.header.hash.toString());
+    record.field1 = block.block.header.number.toNumber();
+    await record.save();
 }
 ```
 
-Ein [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) ist ein erweiterter Schnittstellentyp von [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), beinhaltet aber auch die `specVersion` und den `timestamp`.
+A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
 
 ## Ereignishandler
 
-Sie können Ereignishandler verwenden, um Informationen zu erfassen, wenn bestimmte Ereignisse in einem neuen Block enthalten sind. Die Ereignisse, die Teil der standardmäßigen Substrate-Laufzeit und ein Block sind, können mehrere Ereignisse enthalten.
+You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
 
-Während der Verarbeitung erhält der Ereignishandler ein Substratereignis als Argument mit den typisierten Ein- und Ausgaben des Ereignisses. Jede Art von Ereignis löst das Mapping aus, sodass Aktivitäten mit der Datenquelle erfasst werden können. Sie sollten in Ihrem Manifest [Zuordnungsfilter](./manifest.md#mapping-filters) verwenden, um Ereignisse zu filtern, um die Zeit zum Indexieren von Daten zu verkürzen und die Zuordnungsleistung zu verbessern.
+During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
 
 ```ts
 importiere {SubstrateEvent} aus "@subql/types";
@@ -45,11 +43,11 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
      warten record.save();
 ```
 
-Ein [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) ist ein erweiterter Schnittstellentyp des [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Neben den Ereignisdaten enthält es auch eine `id` (der Block, zu dem dieses Ereignis gehört) und die Extrinsic innerhalb dieses Blocks.
+A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
 
 ## Call Handler
 
-Call-Handler werden verwendet, wenn Sie Informationen zu bestimmten externen Substraten erfassen möchten.
+Call handlers are used when you want to capture information on certain substrate extrinsics.
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -59,22 +57,19 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-Das [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) erweitert [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Ihm wird eine `id` zugewiesen (der Block, zu dem diese Extrinsic gehört) und stellt eine extrinsische Eigenschaft bereit, die die Ereignisse innerhalb dieses Blocks erweitert. Darüber hinaus zeichnet es den Erfolgsstatus dieses Extrinsic auf.
+The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
 
 ## Abfragestatus
+Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
 
-Unser Ziel ist es, alle Datenquellen für Benutzer für das Mapping von Handlern abzudecken (mehr als nur die drei oben genannten Schnittstellenereignistypen). Aus diesem Grund haben wir einige der @polkadot/api-Schnittstellen bereitgestellt, um die Fähigkeiten zu erweitern.
-
-Dies sind die Schnittstellen, die wir derzeit unterstützen:
-
+These are the interfaces we currently support:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) fragt den <strong>aktuellen</strong> Block ab.
 - 72 / 5000 [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) führt im aktuellen Block mehrere Abfragen des <strong>gleichen</strong>-Typs durch.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) führt im aktuellen Block mehrere Abfragen <strong>verschiedener</strong> Typen durch.
 
-Dies sind die Schnittstellen, die wir derzeit **NICHT** unterstützen:
-
-- ~~api.tx.\*~~
-- ~~api.derive.\*~~
+These are the interfaces we do **NOT** support currently:
+- ~~api.tx.*~~
+- ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.abfrage.&lt;module&gt;.&lt;method&gt;.entriesAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
@@ -84,13 +79,13 @@ Dies sind die Schnittstellen, die wir derzeit **NICHT** unterstützen:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-Sehen Sie sich ein Beispiel für die Verwendung dieser API in unserem [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold)-Beispielanwendungsfall an.
+See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
 
 ## RPC-Anrufe
 
-Wir unterstützen auch einige API-RPC-Methoden, bei denen es sich um Remoteaufrufe handelt, die es der Zuordnungsfunktion ermöglichen, mit dem tatsächlichen Knoten, der Abfrage und der Übermittlung zu interagieren. Eine Kernprämisse von SubQuery ist, dass es deterministisch ist. Um die Ergebnisse konsistent zu halten, erlauben wir daher nur historische RPC-Aufrufe.
+We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
 
-Dokumente in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) stellen einige Methoden bereit, die `BlockHash` als Eingabeparameter verwenden (z. B. `at?: BlockHash`), die jetzt erlaubt sind. Wir haben diese Methoden auch geändert, um standardmäßig den aktuellen Indexierungsblock-Hash zu verwenden.
+Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
 
 ```typescript
 // Nehmen wir an, wir indizieren gerade einen Block mit dieser Hash-Nummer
@@ -102,29 +97,28 @@ const b1 = warten api.rpc.chain.getBlock(blockhash);
 // Es wird der aktuelle Block verwendet, der standardmäßig so ist
 const b2 = api.rpc.chain.getBlock() erwarten;
 ```
-
 - Informationen zu [Benutzerdefinierten Substratketten](#custom-substrate-chains) RPC-Aufrufen finden Sie unter [Verwendung](#usage).
 
 ## Module und Bibliotheken
 
-Um die Datenverarbeitungsfähigkeiten von SubQuery zu verbessern, haben wir einige der integrierten Module von NodeJS zum Ausführen von Mapping-Funktionen in der [Sandbox](#the-sandbox) zugelassen und den Benutzern erlaubt, Bibliotheken von Drittanbietern aufzurufen.
+To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
 
-Bitte beachten Sie, dass dies eine **experimentelle Funktion** ist und Sie möglicherweise auf Fehler oder Probleme stoßen, die sich negativ auf Ihre Mapping-Funktionen auswirken können. Bitte melden Sie alle Fehler, die Sie finden, indem Sie ein Problem in [GitHub](https://github.com/subquery/subql) erstellen.
+Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
 
 ### Eingebaute Module
 
-Derzeit erlauben wir die folgenden NodeJS-Module: `assert`, `buffer`, `crypto`, `util` und `path `.
+Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
 
-Anstatt das gesamte Modul zu importieren, empfehlen wir, nur die erforderliche(n) Methode(n) zu importieren. Einige Methoden in diesen Modulen weisen möglicherweise nicht unterstützte Abhängigkeiten auf und schlagen beim Importieren fehl.
+Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
 
 ```ts
-import {hashMessage} from 'ethers/lib/utils'; //Good way
-import {utils} from 'ethers'; //Bad way
+import {hashMessage} from "ethers/lib/utils"; //Good way
+import {utils} from "ethers" //Bad way
 
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-  record.field1 = hashMessage('Hello');
-  await record.save();
+    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+    record.field1 = hashMessage('Hello');
+    await record.save();
 }
 ```
 
@@ -140,7 +134,7 @@ SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
 You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-In the following sections, we use our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty) to explain the integration process.
+In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
 
 ### Preparation
 
@@ -153,7 +147,6 @@ We need metadata to generate the actual API endpoints. In the kitty example, we 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-
 or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
 
 ```shell
@@ -164,22 +157,19 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/subql-examples/tree/main/kitty), we have created `api-interface/kitty.json`.
+Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
 
 #### Type definitions
-
 We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
 
 Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-
 - `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
 
 ```ts
-export {default as kitties} from './kitties/definitions';
+export { default as kitties } from './kitties/definitions';
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
-
 ```ts
 export default {
     // custom types
@@ -250,29 +240,28 @@ This command will generate the metadata and a new api-augment for the APIs. As w
 ```json
 {
   "compilerOptions": {
-    // this is the package name we use (in the interface imports, --package for generators) */
-    "kitty-birthinfo/*": ["src/*"],
-    // here we replace the @polkadot/api augmentation with our own, generated from chain
-    "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
-    // replace the augmented types with our own, as generated from definitions
-    "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
-  }
+      // this is the package name we use (in the interface imports, --package for generators) */
+      "kitty-birthinfo/*": ["src/*"],
+      // here we replace the @polkadot/api augmentation with our own, generated from chain
+      "@polkadot/api/augment": ["src/interfaces/augment-api.ts"],
+      // replace the augmented types with our own, as generated from definitions
+      "@polkadot/types/augment": ["src/interfaces/augment-types.ts"]
+    }
 }
 ```
 
 ### Usage
 
 Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
-
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
-  //return the KittyIndex type
-  const nextKittyId = await api.query.kitties.nextKittyId();
-  // return the Kitty type, input parameters types are AccountId and KittyIndex
-  const allKitties = await api.query.kitties.kitties('xxxxxxxxx', 123);
-  logger.info(`Next kitty id ${nextKittyId}`);
-  //Custom rpc, set undefined to blockhash
-  const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined, nextKittyId);
+    //return the KittyIndex type
+    const nextKittyId = await api.query.kitties.nextKittyId();
+    // return the Kitty type, input parameters types are AccountId and KittyIndex
+    const allKitties  = await api.query.kitties.kitties('xxxxxxxxx',123)
+    logger.info(`Next kitty id ${nextKittyId}`)
+    //Custom rpc, set undefined to blockhash
+    const kittyPrice = await api.rpc.kitties.getKittyPrice(undefined,nextKittyId);
 }
 ```
 
@@ -281,7 +270,6 @@ export async function kittyApiHandler(): Promise<void> {
 ### Custom chain rpc calls
 
 To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
-
 ```yaml
 ...
   types: {
