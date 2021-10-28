@@ -1,4 +1,4 @@
-# 映射
+# Mapping
 
 映射函数定义了如何将链数据转换为我们先前在`schema.GraphQL`文件中定义的优化GraphQL的具体解决办法。
 
@@ -6,11 +6,11 @@
 - 这些映射也可以在`src/index.ts中导出</li>
 <li>映射文件在映射处理程序下的<code>project.yaml`中引用。
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+共有三类映射函数的: [Block handlers](#block-handler)，[Event Handlers](#event-handler)和[Call Handlers](#call-handler)。
 
-## 区块处理器
+## Block Handler
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+当一个新的区块底层链产生时，您可以使用区块处理程序来获取信息，例如，区块号。 为了实现这一点，将为每个区块调用一次已定义的BlockHandler。
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -23,13 +23,13 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16)是[signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/)的扩展接口类型，同样包括`specVersion`和`timestamp`。
 
-## 事件处理器
+## Event Handler
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+在某些事件写入一个新的区块上时，您可以使用事件处理程序来捕获信息。 一部分事件是默认的 Substrate 运行时间, 一个区块可能会包括多个事件。
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+在处理过程中，事件处理程序将收到一个底层事件作为事件类型的输入和输出的参数。 任何类型的事件都会触发映射，从而允许捕捉到包含数据的活动。 您应该在程序清单中使用 [Mapping Filters](./manifest.md#mapping-filters) 来过滤事件，以缩短为数据建立索引的时间和改进映射性能。
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -43,11 +43,11 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     await record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) 是 [ EventRecord ](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) 的扩展接口类型。 除了事件数据外，它还包括一个 `id` (该事件所属的区块) 以及此区块的外部地址。
 
 ## Call Handler
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+当您想要捕获某些底层外部的信息时，可以使用 Call handlers。
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -57,53 +57,53 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) 继承了 [ GenericExtrinsic ](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). 它被分配了一个 `id` (该外包属于的方块)，并提供了扩展此方块中的事件的外在属性。 此外，它还记录了这个外包的成功状态。
 
 ## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+我们的目标是通过映射处理函数为用户提供所有数据源(不仅仅是上述三种接口事件类型)。 因此，我们开放了一些@polkadot/api的接口来丰富能力。
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
+这些是我们当前支持的接口：
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query)  将查询 <strong>当前</strong> 区块。
 - [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) 将在当前块上进行多个 <strong>相同</strong> 类型的查询。
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) 将在当前块进行<strong>不同</strong>类型的多个查询。
 
-These are the interfaces we do **NOT** support currently:
-- ~~api.tx.*~~
+这些是我们 **当前不支持** 的接口：
+- ~~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
-- ~~api.query.&lt;module&gt;.&lt;method&gt;.hash~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
+- ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.keysAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.keysPaged~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
+请看我们在 [alidator-threshold](https://github.com/subquery/tutorials-validator-threshold) 实例中使用此 API 的例子。
 
 ## RPC calls
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+我们还支持一些API RPC方法，这些方法是允许映射函数能够与实际节点、查询和提交进行交互的远程调用。 SubQuery的一个核心前提是，它具有确定性，因此为了保证结果一致我们只允许已经发生的RPC调用。
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) 中的文档提供了一些方法, 以 `BlockHash` 作为输入参数 (比如,  `at?: BlockHash`), 现在是被允许。 我们还修改了这些方法以默认使用当前索引区块哈希。
 
 ```typescript
-// Let's say we are currently indexing a block with this hash number
-const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d064871148e9d41ef086f6a`;
+// 比如，我们正在用这个哈希值找到区块索引
+const blockhash = `0x844047c4cf1719ba6d54891e92c071a41e3dfe789d0681148e9d41ef086f6a`;
 
-// Original method has an optional input is block hash
-const b1 = await api.rpc.chain.getBlock(blockhash);
+// 原始方法的可选输入是区块哈希
+const b1 = await api.pc.chain.getBlock(blockhash)；
 
-// It will use the current block has by default like so
+// 如果默认是当前方块我们就可以这么使用
 const b2 = await api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- 对于 [自定义 Substrate 链](#custom-substrate-chains) 的RPC 调用，请参阅 [使用方法](#usage)。
 
 ## Modules and Libraries
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+为了提高SubQuery的数据处理能力, 我们已经允许NodeJS 的一些内置模块在 [沙盒](#the-sandbox)中运行映射函, 并且允许用户调用第三方库。
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+请注意这是一个 **实验性功能** ，您可能遇到可能对您的映射功能产生不利影响的bug或问题。 Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
 
 ### Built-in modules
 
