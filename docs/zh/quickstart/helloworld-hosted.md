@@ -168,7 +168,7 @@ push 命令的意思是“请将我的代码从我的主本地存储库推送到
 
 这将带您进入熟悉的“Playground”，您可以在其中单击播放按钮并查看查询结果。
 
-![Subquery playground](/assets/img/subquery_playground.png)
+![Subquery 项目列表](/assets/img/subquery_playground.png)
 
 ## 7. 奖励步骤
 
