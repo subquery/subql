@@ -1,27 +1,27 @@
 # Hello World (本地主机 + Docker)
 
-欢迎使用 SubQuery Hello World 快速启动。 快速入门旨在通过几个简单的步骤向您展示如何在 Docker 中运行默认的启动项目。
+欢迎来到 SubQuery Hello World 快速入门教程。 快速入门旨在通过几个简单的步骤向您展示如何在 Docker 中运行默认的启动项目。
 
 ## 学习目标
 
 在本快速入门结束时，您应该：
 
-- 了解所需的先决条件
+- 了解所需的前期准备
 - 了解基本的常用命令
 - 能够导航到 localhost:3000 并查看 playground
 - 运行一个简单的查询来获取 Polkadot 主网的区块高度
 
 ## 目标受众
 
-本指南面向具有一些开发经验并有兴趣了解更多关于 SubQuery 的新开发人员。
+本指南面向具有一些开发经验并有兴趣了解更多关于 SubQuery 开发的开发人员。
 
-## 视频指南
+##
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/j034cyUYb7k" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## 先决条件
+## 在学习本教程之前
 
 您会需要：
 
