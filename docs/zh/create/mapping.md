@@ -103,13 +103,13 @@ const b2 = await api.rpc.chain.getBlock();
 
 为了提高SubQuery的数据处理能力, 我们已经允许NodeJS 的一些内置模块在 [沙盒](#the-sandbox)中运行映射函, 并且允许用户调用第三方库。
 
-请注意这是一个 **实验性功能** ，您可能遇到可能对您的映射功能产生不利影响的bug或问题。 Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+请注意这是一个 **实验性功能** ，您可能遇到可能对您的映射功能产生不利影响的bug或问题。 如果您发现了任何bug, 请在 [GitHub](https://github.com/subquery/subql) 中创建一个issue来报告给我们。
 
 ### Built-in modules
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+目前，我们允许下列NodeJS 模块： `assert`, `buffer`, `crypto`, `util`, and `path`.
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+相比导入整个模块，我们建议只导入您需要的方法。 这些模块中的某些方法可能有依赖关系, 如果想导入不受支持的模块将会导致导入失败。
 
 ```ts
 import {hashMessage} from "ethers/lib/utils"; //Good way
@@ -124,52 +124,52 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 ### Third-party libraries
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+由于虚拟机在我们的沙盒中的局限性，我们目前只支持由 **CommonJS** 编写的第三方库。
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+我们还支持一个 ** hybrid ** 库，如默认使用ESM`@polkadot/*` 。 然而，如果任何第三方库依赖于 **ESM** 格式的任何模块，虚拟机将**不会** 编译并返回错误。
 
 ## Custom Substrate Chains
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+SubQuery 可以用于任何基于 Substrate 的链，而不仅仅是 Polkadot 或 Kusama。
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+您可以使用基于自定义的 Substrate 链，我们通过使用[@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/)来自动导入类型、接口和其他方法。
 
-In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
+在以下章节中，我们使用我们的 [kitty 示例](https://github.com/subquery/tutorials-kitty-chain) 来解释集成过程。
 
-### Preparation
+### 准备
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+在项目 `src` 文件夹下创建一个新的目录 `api-interface` 来存储所有需要和生成的文件。 我们还创建了一个 `api-interface/kites` 目录，因为我们想要从 `kites` 模块中为API 添加装饰方法。
 
-#### Metadata
+#### 元数据
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
+我们需要元数据才能生成实际的 API 端点。 在kitty的例子中，我们使用本地测试网的端点，并提供额外的类型。 按照 [PolkadotJS 元数据设置](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) 的步骤从 **HTTP** 端点追溯节点的元数据。
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+或者也可以使用 **websocket**, 请查看[`websocat`](https://github.com/vi/websocat)文档。
 
 ```shell
-//Install the websocat
+//安装 websocat
 brew install websocat
 
-//Get metadata
+//获取元数据
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
+接下来，复制输出并粘贴到一个 JSON 文件。 在我们的 [kitty 示例](https://github.com/subquery/tutorials-kitty-chain)，我们创建了 `api-interface/kitty.json`。
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### 类型定义
+我们假定用户知道该链中的特定类型和RPC支持，它是在 [ Manifest ](./manifest.md) 中定义的。
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+按照 [类型设置](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), 我们首先创建:
+- `src/api-interfaces/definitions.ts` - 这将导出所有子文件夹中的定义
 
 ```ts
 export { default as kitties } from './kitties/definitions';
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kitties/definitions.ts` - kitty模块的类型定义
 ```ts
 export default {
     // custom types
@@ -191,12 +191,12 @@ export default {
                     isOptional: false
 ```
 
-#### Packages
+#### 包
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts. We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- 在 `package.json` 中， 请务必添加 `@polkadot/typegen` 作为一个拓展依赖关系和 `@polkadot/api` 作为普通依赖关系(最好是相同的版本)。 我们还需要 `ts-node` 作为一种拓展依赖来帮助我们运行脚本。
+- 我们添加脚本来运行这两种类型； `generate:defs` 和元数据 `generate:meta` 生成器(按此顺序，元数据可以使用这些类型)。
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+这里是 `package.json` 的简单示例。 请在 **scripts** 部分中，确认包名是正确的，目录是有效的。
 
 ```json
 {
@@ -215,26 +215,23 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
   }
 ```
 
-### Type generation
+### 类型生成
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+现在已经完成了准备工作，我们可以生成类型和元数据。 运行下面的命令：
 
 ```shell
-# Yarn to install new dependencies
+# 使用Yarn来安装新的依赖
 yarn
-
-# Generate types
-yarn generate:defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+在每个模块文件夹(比如 `/kitties`), 现在应该有一个生成的 `types.ts`, 其中定义了此模块定义中的所有接口，同时还有一个文件 `index.ts` ，可以用来导出所有接口。
 
 ```shell
-# Generate metadata
+# 生成元数据
 yarn generate:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+这个命令将为 API 生成元数据和一个新的 api-augment。 由于我们不想使用内置的 API，我们需要在我们的 `tsconfig.json`中添加一个明确的重载来替换它们。 更新后，配置中的路径将看起来像这样(没有注释)：
 
 ```json
 {
@@ -249,9 +246,9 @@ This command will generate the metadata and a new api-augment for the APIs. As w
 }
 ```
 
-### Usage
+### 使用
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+现在，在映射函数中，我们可以演示元数据和类型如何实际装饰API。 RPC 端点将支持我们在上面声明的模块和方法。 若要使用自定义的 rpc 调用，请查看 [Custom chain rpc calls](#custom-chain-rpc-calls)章节。
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -264,11 +261,11 @@ export async function kittyApiHandler(): Promise<void> {
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**如果您想要将此项目发布给我们的探索者，请把生成的文件放在 `src/api-interface` 中。**
 
-### Custom chain rpc calls
+### 自定义链的 rpc 调用
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+为了支持自定义链的RPC调用，我们必须为允许per-spec 配置的`typesBundle`手动注入RPC 定义。 你可以在 `project.yml`中定义 `typesBundle`。 并且请记住我们只支持 ` isHistoric ` 类型的调用。
 ```yaml
 ...
   ...
