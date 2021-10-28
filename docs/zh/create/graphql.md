@@ -1,4 +1,4 @@
-# Learn more about GraphQL
+# GraphQL方案
 
 ## 定义实体
 
