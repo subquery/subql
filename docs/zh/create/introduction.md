@@ -1,9 +1,8 @@
-# 创建子查询项目
+# 教程 &
 
-在 [快速开始](/quickstart/quickstart.md) 指南， 我们很快地演示了一个榜样，让您知道什么是 SubQuery 以及它是如何运作的。 我们会在创建您的项目和您将要处理的关键文件时更仔细地查看工作流。
+在 [快速开始](/quickstart/quickstart.md) 指南， 我们很快地演示了一个榜样，让您知道什么是SubQuery以及它是如何运作的。 我们会在创建您的项目和您将要处理的关键文件时更仔细地查看工作流。
 
-## 基本工作流
-
+## SubQuery 示例
 以下一些示例将假定您在 [快速启动](../quickstart/quickstart.md) 部分中成功初始化了启动器包。 从这个启动程序包，我们会走过标准进程来定制和执行您的 SubQuery 项目。
 
 1. 使用 `subql init PROJECT_NAME` 初始化您的项目
@@ -31,7 +30,7 @@
   L .gitignore
 ```
 
-例如：
+示例
 
 ![子查询目录结构](/assets/img/subQuery_directory_stucture.png)
 
@@ -47,21 +46,11 @@ yarn 编码器
 
 ## 构建...
 
-为了在本地托管的 SubQuery 节点上运行您的 SubQuery 项目，您需要首先构建您的工作。
+为了在本地托管的 SubQuery 节点上运行您的SubQuery 项目，您需要首先构建您的工作。
 
 从项目的根目录运行构建命令。
 
-```shell
-# Yarn
-yarn build
-
-# NPM
-npm run-script building
-```
-
-## 日志记录
-
-`console.log` 方法**不再受支持**。 相反， `Logger` 模块已被注入到类型中，这意味着我们可以支持一个可以接受不同日志级别的日志器。
+<CodeGroup> `console.log` 方法**不再受支持**。 相反， `Logger` 模块已被注入到类型中，这意味着我们可以支持一个可以接受不同日志级别的日志器。
 
 ```typescript
 logger.info('Info level message');
