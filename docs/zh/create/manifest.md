@@ -2,7 +2,7 @@
 
 `project.yaml`清单文件可以看作是项目的入口点，它定义了关于SubQuery 如何索引和转换链数据的大部分细节。
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`. 在本文档中，我们将在所有示例中使用YAML格式。 下面是`project.yaml`文件的标准示例。
+该清单文件可以是YAML或JSON格式。 在本文档中，我们将在所有示例中使用YAML格式。 下面是`project.yaml`文件的标准示例。
 
 ``` yml
 specVersion: "0.0.1"
