@@ -53,7 +53,6 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
-  private initialised: boolean;
 
   constructor(
     private storeService: StoreService,
@@ -68,9 +67,7 @@ export class IndexerManager {
     private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
-  ) {
-    this.initialised = false;
-  }
+  ) {}
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
@@ -124,17 +121,15 @@ export class IndexerManager {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
 
-    const date = Date.now();
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: blockHeight,
-      timestamp: date,
+      timestamp: Date.now(),
     });
   }
 
   async start(): Promise<void> {
     this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
-    const api = await this.apiService.init();
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
@@ -162,10 +157,6 @@ export class IndexerManager {
         process.exit(1);
       });
     }
-  }
-
-  getIsInitialized() {
-    return this.initialised;
   }
 
   private getStartBlockFromDataSources() {

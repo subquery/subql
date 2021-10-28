@@ -96,7 +96,7 @@ export class ApiService implements OnApplicationShutdown {
 
   async emitStoreMetadata(): Promise<void> {
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
-    // probably can just store directly in table
+
     await Promise.all([
       this.storeService.setMetadata('chain', this.networkMeta.chain),
       this.storeService.setMetadata('specName', this.networkMeta.specName),

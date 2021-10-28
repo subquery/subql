@@ -31,7 +31,7 @@ export class MetaService {
   private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
-  private changed: boolean;
+  private changedHeight: boolean;
 
   constructor(private storeService: StoreService) {}
 
@@ -55,7 +55,7 @@ export class MetaService {
 
   @Interval(60000)
   async checkTargetHeight() {
-    if (this.changed) {
+    if (this.changedHeight) {
       const instance = await this.storeService.findMetadataValue(
         'lastProcessedHeight',
         this.lastProcessedHeight,
@@ -63,12 +63,12 @@ export class MetaService {
 
       if (instance === null) {
         await this.storeService.setMetadata(
-          'targetHeight',
+          'lastProcessedHeight',
           this.lastProcessedHeight,
         );
       }
 
-      this.changed = false;
+      this.changedHeight = false;
     }
   }
 
@@ -82,7 +82,7 @@ export class MetaService {
   handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
     this.lastProcessedHeight = blockPayload.height;
     this.lastProcessedTimestamp = blockPayload.timestamp;
-    this.changed = true;
+    this.changedHeight = true;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

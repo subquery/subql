@@ -14,7 +14,7 @@ export class ProjectService {
       `select *
        from public.subqueries
        where name = $1`,
-      [name[0]]
+      [name]
     );
     if (rows.length === 0) {
       throw new Error(`unknown project name ${this.config.get('name')}`);
