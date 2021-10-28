@@ -18,20 +18,27 @@ subql help
 ```
 ## 安装@subql/cli节点
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+SubQuery 节点能够从 SubQuery 项目提取基于底层的区块链数据并将其保存到 Postgres 数据库。
 
-Install SubQuery node globally on your terminal by using Yarn or NPM:
+使用 Yarn 或 NPM在您的终端上全局安装SubQuery节点：
 
-<CodeGroup> # Yarn yarn global add @subql/node # NPM npm install -g @subql/node
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure.
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global added @subql/node ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm install -g @subql/node ``` </CodeGroupItem> </CodeGroup>
 
-## Install @subql/query
+一旦安装完毕， 您可以用以下方式开始一个节点：
 
-The SubQuery query library provides a service that allows you to query your project in a "playground" environment via your browser.
+```shell
+subql-node <command>
+```
+> 注意：如果使用 Docker或托管您的项目，您可以跳过这一步。 这是因为SubQuery 节点已经在 Docker 容器和主机基础设施中提供。
 
-Install SubQuery query globally on your terminal by using Yarn or NPM:
+## 安装 @subql/query
 
-<CodeGroup> <CodeGroupItem title="YARN" active> # Yarn yarn global add @subql/query # NPM npm install -g @subql/query </CodeGroupItem>
-<CodeGroupItem title="NPM"> subql-node &lt;command&gt; </CodeGroupItem> </CodeGroup>
+SubQuery 查询库提供了一个服务，允许您通过浏览器在“playground”环境中查询您的项目。
 
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step also. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. 
+使用 Yarn 或 NPM在您的终端上全局安装subql/query：
+
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global add @subql/quick ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm install -g @subql/quy ``` </CodeGroupItem> </CodeGroup>
+
+> 注意：如果使用 Docker或托管您的项目，您可以跳过这一步。 这是因为SubQuery 节点已经在 Docker 容器和主机基础设施中提供。 
