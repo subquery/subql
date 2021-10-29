@@ -49,9 +49,9 @@ subql-node -f your-project-path
 
 #### 使用字典
 
-Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在特定情况下，我们可以看到索引性能提高了10倍。
+在测试期间或第一次索引期间，使用全链字典可以显著加快SubQuery项目的处理速度。 在特定情况下，我们可以看到索引性能提高了10倍。
 
-完整的链词库预先索引特定链中所有事件和外观的位置，并允许您的节点服务在索引时跳到相关位置，而不是检查每个区块。
+一个完整的链词典预先索引特定链中所有事件和外部函数的位置，并允许节点服务在索引时跳到相关位置，而不是检查每个块。
 
 您可以在`project.yaml`文件中添加字典端点（请参见[Manifest File](../create/manifest.md)），或在运行时使用以下命令指定它：
 
@@ -72,23 +72,23 @@ export DB_PORT=5432
 subql-node -f your-project-path 
 ````
 
-Depending on the configuration of your Postgres database (e.g. a different database password), please ensure also that both the indexer (`subql/node`) and the query service (`subql/query`) can establish a connection to it.
+根据您的 Postgres 数据库的配置(例如不同的数据库密码) ，请确保索引器(‘ subql/node’)和查询服务(‘ subql/query’)都能与其建立连接。
 
-#### Specify a configuration file
 
-#### Specify a configuration file
+
+#### 指定一个配置文件
 
 ```
 subql-node -c your-project-config.yml
 ```
 
-This will point the query node to a configuration file which can be in YAML or JSON format. Check out the example below.
+这将把查询节点指向一个可以是 YAML 或 JSON 格式的配置文件。看看下面的例子。
 
 ```yaml
-subquery: ../../../../subql-example/extrinsics
+subquery:../../../../subql-example/extrinsics
 subqueryName: extrinsics
-batchSize:100
-localMode:true 看看下面的例子。
+batchSize: 100
+localMode: true 查看下面的示例。
 
 ```yaml
 subquery: ../../../../subql-example/extrinsics
@@ -97,7 +97,7 @@ batchSize:100
 localMode:true
 ```
 
-#### 如何更改区块链批处理大小
+#### 更改获取批大小的块
 
 ```
 subql-node -f your-project-path --batch-size 200
@@ -107,15 +107,15 @@ Result:
 [IndexerManager] fetch block [403, 602]
 ```
 
-When the indexer first indexes the chain, fetching single blocks will significantly decrease the performance. Increasing the batch size to adjust the number of blocks fetched will decrease the overall processing time. The current default batch size is 100. 增加批量处理的规模以调整获取的区块数量，这将会减少整个处理时间。 默认的批处理大小为100。
+索引器首次对链进行索引时，获取单个块将显著降低性能。 增加批量处理的规模以调整获取的区块数量，这将会减少整个处理时间。 默认的批处理大小为100。
 
-#### Local mode
+#### 在本地模式下运行
 
 ```
 subql-node -f your-project-path --local
 ```
 
-当需要进行调试时，用户可以在本地模式下运行节点。 For debugging purposes, users can run the node in local mode. Switching to local model will create Postgres tables in the default schema `public`.
+当需要进行调试时，用户可以在本地模式下运行节点。 切换到本地模式后将在默认架构 `public` 中创建 Postgres 表。
 
 如果未使用本地模式，则使用初始的Postgres 模式，并将创建初始的 `subquery_` 和与其相对应的项目表。
 
@@ -124,8 +124,8 @@ subql-node -f your-project-path --local
 
 有两个端口可用来检查和监视所运行的 SubQuery 节点的健康状况。
 
-- 返回普通 200 响应的健康检查端口
-- Metadata端口，其中包括您正在运行的 SubQuery 节点的额外分析
+- 健康检查端点，返回一个简单的200响应
+- 元数据端点，包括正在运行的 SubQuery 节点的附加分析
 
 将其附加到您的 SubQuery 节点的基本URL。 例如：`http://localhost:3000/meta` 将会返回
 
@@ -150,7 +150,7 @@ subql-node -f your-project-path --local
 }
 ```
 
-After running the subql-query service successfully, open your browser and head to `http://localhost:3000`. You should see a GraphQL playground showing in the Explorer and the schema that is ready to query.
+`http://localhost:3000/health` 如果成功将返回 HTTP 200。
 
 如果索引器出现错误，将返回500错误。 这通常可以在节点启动时看到。
 
@@ -176,15 +176,15 @@ After running the subql-query service successfully, open your browser and head t
 使用 [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) 来运行以下命令。
 
 ```shell
-This guide works through how to run a local SubQuery node on your infrastructure, which includes both the indexer and query service. Don't want to worry about running your own SubQuery infrastructure? SubQuery provides a <a href="https://explorer.subquery.network">managed hosted service</a> to the community for free. <a href="../publish/publish.md">Follow our publishing guide</a> to see how you can upload your project to <a href="https://project.subquery.network">SubQuery Projects</a>.
+node --inspect-brk <path to subql-node> -f <path to subQuery project>
 ```
 
 例如：
 ```shell
-node --inspect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-helloworld/
-Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
-For help, see: https://nodejs.org/en/docs/inspector
-Debugger attached.
+node --expect-brk /usr/local/bin/subql-node -f ~/Code/subQuery/projects/subql-Helloworld/
+Debugger 监听ws:127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
+关于帮助，请参阅：https://nodejs.org/en/docs/spector
+Debugger 已附后。
 ```
 然后打开Chrome开发工具，进入Source>Filesystem，将项目添加到工作区并开始调试。 查看更多信息[如何调试SubQuery项目](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## 运行Query服务(subql/query)
@@ -199,8 +199,8 @@ npm install -g @subql/query
 请注意我们不推荐使用 `yarn global` ，因为它的依赖管理性能不佳，可能导致在运行中出现错误。
 
 ### 运行Query服务
-``` export DB_HOST=localhost subql-query --name <project_name> --playground ````
+`` 导出 DB_HOST=localhost subql-quy --name <project_name> --playground````
 
-Make sure the project name is the same as the project name when you [initialize the project](../quickstart/quickstart.md#initialise-the-starter-subquery-project). Also, check the environment variables are correct. 此外，请检查环境变量是否配置正确。
+当您 [初始化项目](../quickstart/quickstart.md#initialise-the-starter-subquery-project) 时，请确保项目名称的相同。 此外，请检查环境变量是否配置正确。
 
-成功运行subql查询服务后，打开浏览器并转到`http://localhost:3000`. 您将会看到 GraphQL playground 会已准备查询的模式显示在资源管理器中。
+成功运行subql查询服务后，打开浏览器并转到`http://localhost:3000`. 您应该看到在 Explorer 中显示的 GraphQL 播放地和准备查询的模式。
