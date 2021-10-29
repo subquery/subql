@@ -4,7 +4,7 @@
 
 **Documentation reference**
 
-[Hello World(localhost with Docker](https://doc.subquery.network/quickstart/helloworld-localhost/#)
+[Hello World (localhost with Docker)](https://doc.subquery.network/quickstart/helloworld-localhost/#)
 
 [Hello World explained](https://doc.subquery.network/quickstart/understanding-helloworld/)
 
@@ -12,7 +12,7 @@
 
 **Documentation reference**
 
-[Hello World(SubQuery hosted](https://doc.subquery.network/quickstart/helloworld-hosted/)
+[Hello World (SubQuery hosted)](https://doc.subquery.network/quickstart/helloworld-hosted/)
 
 ## Exercise
 **Workbook**: [Hello World](/assets/pdf/Hello_World_Lab.pdf)
