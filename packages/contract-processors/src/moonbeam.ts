@@ -1,11 +1,10 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {EventFragment, FunctionFragment, Interface, Result} from '@ethersproject/abi';
+import {Interface, Result} from '@ethersproject/abi';
 import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
-import {isHexString, hexStripZeros, hexDataSlice} from '@ethersproject/bytes';
-import {id} from '@ethersproject/hash';
+import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
 import {
   SubqlDatasourceProcessor,
@@ -26,6 +25,7 @@ import {
   IsEthereumAddress,
   IsString,
 } from 'class-validator';
+import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from './utils';
 
 type TopicFilter = string | string[] | null | undefined;
 
@@ -116,25 +116,6 @@ type ExecutionEvent = {
   hash: string;
   status: unknown;
 };
-
-function eventToTopic(input: string): string {
-  if (isHexString(input)) return input;
-
-  return id(EventFragment.fromString(input).format());
-}
-
-function functionToSighash(input: string): string {
-  if (isHexString(input)) return input;
-
-  return hexDataSlice(id(FunctionFragment.fromString(input).format()), 0, 4);
-}
-
-function hexStringEq(a: string, b: string): boolean {
-  if (!isHexString(a) || !isHexString(b)) {
-    throw new Error('Inputs are not hex strings');
-  }
-  return hexStripZeros(a) === hexStripZeros(b);
-}
 
 function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
   const executionEvent = extrinsic.events.find(
@@ -227,7 +208,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
     return log;
   },
   filterProcessor(filter: MoonbeamEventFilter, input: MoonbeamEvent): boolean {
-    if (filter.address && filter.address !== input.address) {
+    if (filter.address && !stringNormalizedEq(filter.address, input.address)) {
       return false;
     }
 
@@ -306,12 +287,12 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
     return call;
   },
   filterProcessor(filter: MoonbeamCallFilter, input: MoonbeamCall): boolean {
-    if (filter.from && filter.from !== input.from) {
+    if (filter.from && !stringNormalizedEq(filter.from, input.from)) {
       return false;
     }
 
     // if `to` is null then we handle contract creation
-    if ((filter.to && filter.to !== input.to) || (filter.to === null && !!input.to)) {
+    if ((filter.to && !stringNormalizedEq(filter.to, input.to)) || (filter.to === null && !!input.to)) {
       return false;
     }
 
