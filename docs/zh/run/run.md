@@ -18,7 +18,7 @@ docker-compose pull && docker-compose up
 
 需求：
 
-- [Postgres](https://www.postgresql.org/) 数据库 (版本12或更高). [Postgres](https://www.postgresql.org/) database (version 12 or higher). While the [SubQuery node](#start-a-local-subquery-node) is indexing the blockchain, the extracted data is stored in an external database instance.
+- [Postgres](https://www.postgresql.org/) 数据库 (版本12或更高). 当[SubQuery node](#start-a-local-subquery-node)  对区块链进行索引时，提取的数据将会存储在外部数据库实例中。
 
 SubQuery 节点需要一个加载的过程，它能够从 SubQuery 项目中提取基于子区块链的数据，并将其保存到 Postgres 数据库。
 
@@ -39,7 +39,7 @@ subql-node <command>
 
 ### 输入命令
 
-The following commands will assist you to complete the configuration of a SubQuery node and begin indexing. To find out more, you can always run `--help`. 要了解更多信息，您可以运行 `--help`。
+以下命令将帮助您完成子查询节点的配置并开始索引。 要了解更多信息，您可以运行 `--help`。
 
 #### 指向本地项目路径
 
@@ -47,7 +47,7 @@ The following commands will assist you to complete the configuration of a SubQue
 subql-node -f your-project-path
 ```
 
-#### Using a Dictionary
+#### 使用字典
 
 Using a full chain dictionary can dramatically speed up the processing of a SubQuery project during testing or during your first index. In some cases, we've seen indexing performance increases of up to 10x. 在特定情况下，我们可以看到索引性能提高了10倍。
 
