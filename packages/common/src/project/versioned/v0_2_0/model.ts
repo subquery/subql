@@ -25,6 +25,9 @@ export class ProjectNetworkV0_2_0 {
   @IsString()
   @IsOptional()
   endpoint: string;
+  @IsString()
+  @IsOptional()
+  dictionary: string;
   @IsObject()
   @ValidateNested()
   @Type(() => FileType)

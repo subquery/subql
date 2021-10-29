@@ -10,6 +10,7 @@ schema:
 
 network:
   genesisHash: '0x'
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
   chaintypes:
     file: ./types.json
 
