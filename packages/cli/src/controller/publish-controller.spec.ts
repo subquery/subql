@@ -46,7 +46,7 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
   await createProject(tmpdir, projectSpec);
 
   // Install dependencies
-  childProcess.execSync('npm i', {cwd: projectDir});
+  childProcess.execSync(`npm i`, {cwd: projectDir});
 
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-l', projectDir]);
@@ -58,7 +58,11 @@ describe('Cli publish', () => {
   let projectDir: string;
 
   afterEach(() => {
-    promisify(rimraf)(projectDir);
+    try {
+      await promisify(rimraf)(projectDir);
+    } catch (e) {
+      console.warn('Failed to clean up tmp dir after test');
+    }
   });
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {

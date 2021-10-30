@@ -55,7 +55,7 @@
       "eslint --cache --fix",
       "prettier --write"
     ],
-    "packages/**/*.!(*ts)": [
+    "packages/**/*.!(*ejs|ts)": [
       "prettier --write"
     ]
   }

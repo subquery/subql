@@ -1,5 +1,5 @@
 // Auto-generated , DO NOT EDIT
-import {Entity} from "@subql/types";
+import {Entity, FunctionPropertyNames} from "@subql/types";
 import assert from 'assert';
 <%if (props.importJsonInterfaces.length !== 0) { %>
 import {<% props.importJsonInterfaces.forEach(function(interface){ %>
@@ -53,7 +53,8 @@ export class <%= props.className %> implements Entity {
     }
 <% }); %>
 
-    static create(record){
+    static create(record: Partial<Omit<<%=props.className %>, FunctionPropertyNames<<%=props.className %>>>> & Entity): <%=props.className %> {
+        assert(typeof record.id === 'string', "id must be provided");
         let entity = new <%=props.className %>(record.id);
         Object.assign(entity,record);
         return entity;
