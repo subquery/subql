@@ -6,6 +6,7 @@ import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
+import {EthTransaction, ExitReason} from '@polkadot/types/interfaces';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -43,7 +44,10 @@ export interface MoonbeamCallFilter {
 }
 
 export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T};
-export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {args?: T};
+export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
+  args?: T;
+  success: boolean;
+};
 
 @ValidatorConstraint({name: 'topifFilterValidator', async: false})
 export class TopicFilterValidator implements ValidatorConstraintInterface {
@@ -114,7 +118,7 @@ type ExecutionEvent = {
   from: string;
   to?: string; // Can be undefined for contract creation
   hash: string;
-  status: unknown;
+  status: ExitReason;
 };
 
 function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
@@ -123,7 +127,7 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
   );
 
   if (!executionEvent) {
-    throw new Error('Extrinsic is not an etheruem transaction');
+    throw new Error('eth execution failed');
   }
 
   const [from, to, hash, status] = executionEvent.event.data;
@@ -132,7 +136,7 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
     from: from.toHex(),
     to: to.toHex(),
     hash: hash.toHex(),
-    status,
+    status: status as ExitReason,
   };
 }
 
@@ -183,7 +187,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
   ): Promise<MoonbeamEvent> {
     const [eventData] = original.event.data;
 
-    const {hash} = getExecutionEvent(original.extrinsic);
+    const {hash} = getExecutionEvent(original.extrinsic); // shouldn't failed here
 
     const log: MoonbeamEvent = {
       ...(eventData.toJSON() as unknown as RawEvent),
@@ -250,15 +254,25 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
     api: ApiPromise,
     assets: Record<string, string>
   ): Promise<MoonbeamCall> {
-    const [tx] = original.extrinsic.method.args;
+    const [tx] = original.extrinsic.method.args as [EthTransaction];
     const rawTx = tx.toJSON() as unknown as RawTransaction;
-
-    const {from, hash, to} = getExecutionEvent(original);
+    let success = true;
+    const from = original.extrinsic.signer.toString();
+    const to = tx.action.isCall ? tx.action.asCall.toString() : undefined;
+    let executionEvent;
+    try {
+      executionEvent = getExecutionEvent(original);
+      if (!executionEvent.status.isSucceed) {
+        success = false;
+      }
+    } catch (e) {
+      success = false;
+    }
 
     const call: MoonbeamCall = {
       // Transaction properties
       from,
-      to,
+      to: to ?? executionEvent?.to, // when contract creation
       nonce: rawTx.nonce,
       gasLimit: BigNumber.from(rawTx.gasLimit),
       gasPrice: BigNumber.from(rawTx.gasPrice),
@@ -268,10 +282,11 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
       ...rawTx.signature,
 
       // Transaction response properties
-      hash,
+      hash: executionEvent?.hash,
       blockNumber: original.block.block.header.number.toNumber(),
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
       timestamp: Math.round(original.block.timestamp.getTime() / 1000),
+      success,
     };
 
     try {
