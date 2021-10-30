@@ -191,6 +191,7 @@ describe('MoonbeamDs', () => {
         gasPrice: BigNumber.from('2875000000'),
         gasLimit: BigNumber.from(300000),
         chainId: 0,
+        success: true,
       };
 
       it('can filter from', () => {
