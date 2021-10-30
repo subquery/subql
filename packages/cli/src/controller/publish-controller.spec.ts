@@ -59,7 +59,7 @@ describe('Cli publish', () => {
 
   afterEach(() => {
     try {
-      promisify(rimraf)(projectDir);
+      await promisify(rimraf)(projectDir);
     } catch (e) {
       console.warn('Failed to clean up tmp dir after test');
     }
