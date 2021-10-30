@@ -9,7 +9,6 @@ import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import {
   IndexerEvent,
-  NetworkMetadataPayload,
   ProcessBlockPayload,
   TargetBlockPayload,
 } from './events';
@@ -25,7 +24,6 @@ export class BenchmarkService {
   private lastRegisteredHeight: number;
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
-  private blockTimeSec = 6;
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
@@ -37,8 +35,7 @@ export class BenchmarkService {
           this.currentProcessingHeight - this.lastRegisteredHeight;
         const timeDiff =
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
-        this.blockPerSecond =
-          heightDiff / (timeDiff / 1000) - 1 / this.blockTimeSec;
+        this.blockPerSecond = heightDiff / (timeDiff / 1000);
 
         const duration = dayjs.duration(
           (this.targetHeight - this.currentProcessingHeight) /
@@ -70,10 +67,5 @@ export class BenchmarkService {
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeight = blockPayload.height;
-  }
-
-  @OnEvent(IndexerEvent.NetworkMetadata)
-  handleNetworkMetadata({ blockTime }: NetworkMetadataPayload): void {
-    this.blockTimeSec = blockTime / 1000;
   }
 }

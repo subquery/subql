@@ -61,10 +61,6 @@ export class ApiService implements OnApplicationShutdown {
       chain: this.api.runtimeChain.toString(),
       specName: this.api.runtimeVersion.specName.toString(),
       genesisHash: this.api.genesisHash.toString(),
-      blockTime:
-        this.api.consts.babe?.expectedBlockTime.toNumber() ||
-        this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
-        6000,
     };
 
     this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
