@@ -256,15 +256,13 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
   ): Promise<MoonbeamCall> {
     const [tx] = original.extrinsic.method.args as [EthTransaction];
     const rawTx = tx.toJSON() as unknown as RawTransaction;
-    let success = true;
-    const from = original.extrinsic.signer.toString();
-    const to = tx.action.isCall ? tx.action.asCall.toString() : undefined;
-    let executionEvent;
+    let from, hash, to, success;
     try {
-      executionEvent = getExecutionEvent(original);
-      if (!executionEvent.status.isSucceed) {
-        success = false;
-      }
+      const executionEvent = getExecutionEvent(original);
+      from = executionEvent.from;
+      to = executionEvent.to;
+      hash = executionEvent.hash;
+      success = executionEvent.status.isSucceed;
     } catch (e) {
       success = false;
     }
@@ -272,7 +270,7 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
     const call: MoonbeamCall = {
       // Transaction properties
       from,
-      to: to ?? executionEvent?.to, // when contract creation
+      to, // when contract creation
       nonce: rawTx.nonce,
       gasLimit: BigNumber.from(rawTx.gasLimit),
       gasPrice: BigNumber.from(rawTx.gasPrice),
@@ -282,7 +280,7 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
       ...rawTx.signature,
 
       // Transaction response properties
-      hash: executionEvent?.hash,
+      hash,
       blockNumber: original.block.block.header.number.toNumber(),
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
       timestamp: Math.round(original.block.timestamp.getTime() / 1000),
