@@ -57,7 +57,7 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
 describe('Cli publish', () => {
   let projectDir: string;
 
-  afterEach(() => {
+  afterEach(async () => {
     try {
       await promisify(rimraf)(projectDir);
     } catch (e) {
