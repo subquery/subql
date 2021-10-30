@@ -9,7 +9,6 @@
     "build": "rm -rf dist && tsc -b"
   },
   "author": "Ian He",
-  "main": "dist/index.js",
   "license": "Apache-2.0",
   "files": [
     "/dist"
