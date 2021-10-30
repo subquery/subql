@@ -16,7 +16,7 @@
   "dependencies": {
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
-    "ethers": "^5.4.7"
+    "ethers": "^5.5.1"
   },
   "devDependencies": {
     "@subql/types": "workspace:*"

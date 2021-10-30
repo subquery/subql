@@ -115,7 +115,8 @@ export class CustomHandler implements SubqlCustomHandler {
 }
 
 export class Mapping implements SubqlMapping {
-  @Transform((handlers: SubqlHandler[]) => {
+  @Transform((params) => {
+    const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
         case SubqlHandlerKind.Event:

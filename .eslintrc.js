@@ -36,6 +36,7 @@ module.exports = {
   rules: {
     // rules turned off in upstream project (also required when recommended-requiring-type-checking is extended)
     '@typescript-eslint/explicit-function-return-type': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
     '@typescript-eslint/no-unsafe-assignment': 'off',
     '@typescript-eslint/no-unsafe-call': 'off',
     '@typescript-eslint/no-unsafe-member-access': 'off',
