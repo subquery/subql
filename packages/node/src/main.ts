@@ -3,7 +3,6 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ApiService } from './indexer/api.service';
 import { IndexerManager } from './indexer/indexer.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { argv } from './yargs';

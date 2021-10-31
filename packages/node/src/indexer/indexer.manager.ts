@@ -18,7 +18,7 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import { Op, QueryTypes, Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
@@ -178,8 +178,8 @@ export class IndexerManager {
 
     const networkMeta = this.apiService.getNetworkMetadata();
 
-    console.log('here');
-
+    //block offset should only been create once, never update
+    //if change offset will require re-index and re-sync poi.
     const count = await metadataRepo.count({
       where: {
         key: [
@@ -193,8 +193,6 @@ export class IndexerManager {
     });
 
     if (count < 5) {
-      //block offset should only been create once, never update.
-      //if change offset will require re-index and re-sync poi
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
 
       await Promise.all([
