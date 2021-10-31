@@ -65,13 +65,13 @@ describe('Cli publish', () => {
     }
   });
 
-  it('should not allow uploading a v0.0.1 spec version project', async () => {
+  it.skip('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
 
     await expect(uploadToIpfs(ipfsEndpoint, projectDir)).rejects.toBeDefined();
   });
 
-  it('should upload appropriate files to IPFS', async () => {
+  it.skip('should upload appropriate files to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
     const cid = await uploadToIpfs(ipfsEndpoint, projectDir);
 
