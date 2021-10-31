@@ -8,6 +8,7 @@ import {
   ProjectManifestV0_2_0,
   ProjectManifestVersioned,
   ProjectNetworkV0_0_1,
+  ChainTypes,
 } from '@subql/common';
 import {cli} from 'cli-ux';
 import yaml from 'js-yaml';
@@ -84,7 +85,6 @@ export async function migrate(
       genesisHash: project.genesisHash,
       endpoint: manifest.asV0_0_1.network.endpoint,
     };
-    //TODO: check if validation rule is updated
     if (manifest.asV0_0_1.network.dictionary) {
       data.network.dictionary = manifest.asV0_0_1.network.dictionary;
     }
@@ -128,7 +128,7 @@ async function conversion(originManifestPath: string, manifestV0_0_1: string, ma
 }
 
 export async function createChainTypes(projectV1Network: ProjectNetworkV0_0_1, path: string): Promise<void> {
-  const data = {} as any; //TODO, find the correct type
+  const data = {} as ChainTypes;
   if (projectV1Network.types) data.types = projectV1Network.types;
   if (projectV1Network.typesBundle) data.typesBundle = projectV1Network.typesBundle;
   if (projectV1Network.typesAlias) data.typesAlias = projectV1Network.typesAlias;
@@ -136,4 +136,5 @@ export async function createChainTypes(projectV1Network: ProjectNetworkV0_0_1, p
   if (projectV1Network.typesSpec) data.typesChain = projectV1Network.typesSpec;
   const chainTypes = yaml.dump(data);
   await fs.promises.writeFile(path, chainTypes, 'utf8');
+  console.log(`* chainTypes is created`);
 }
