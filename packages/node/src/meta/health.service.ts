@@ -6,7 +6,6 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { NodeConfig } from '../configure/NodeConfig';
 import {
   IndexerEvent,
-  NetworkMetadataPayload,
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
@@ -43,11 +42,6 @@ export class HealthService {
       this.currentProcessingHeight = blockPayload.height;
       this.currentProcessingTimestamp = blockPayload.timestamp;
     }
-  }
-
-  @OnEvent(IndexerEvent.NetworkMetadata)
-  handleNetworkMetadata({ blockTime }: NetworkMetadataPayload): void {
-    this.blockTime = blockTime;
   }
 
   getHealth() {
