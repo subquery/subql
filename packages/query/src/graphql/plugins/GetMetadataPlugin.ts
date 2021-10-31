@@ -112,11 +112,13 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
               const metadata = fetchFromTable(rows);
               return metadata;
             }
-          } else if (argv(`indexer`)) {
-            return metaCache;
-          } else {
-            return;
           }
+
+          if (argv(`indexer`)) {
+            return metaCache;
+          }
+
+          return;
         },
       },
     },
