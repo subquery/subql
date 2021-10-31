@@ -66,6 +66,9 @@ export async function prepare(
       {default: jsonProjectData.main, required: true}
     );
     delete dataSource.name;
+    const handlers = dataSource.mapping.handlers;
+    delete dataSource.mapping.handlers; // adjust position
+    dataSource.mapping.handlers = handlers;
   }
   return [project, chainTypesRelativePath];
 }
