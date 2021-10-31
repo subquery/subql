@@ -17,12 +17,8 @@ async function bootstrap() {
     await app.init();
 
     const indexerManager = app.get(IndexerManager);
-    const apiService = app.get(ApiService);
-
-    await apiService.init();
-    await apiService.emitStoreMetadata();
-
     await indexerManager.start();
+
     await app.listen(3000);
     getLogger('subql-node').info('node started');
   } catch (e) {

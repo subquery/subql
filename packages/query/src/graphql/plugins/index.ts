@@ -46,8 +46,7 @@ import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
-// import {GetMetadataPlugin} from './GetMetadataPlugin';
-import {MetadataPlugin} from './MetadataPlugin';
+import {GetMetadataPlugin} from './GetMetadataPlugin';
 
 import {smartTagsPlugin} from './smartTagsPlugin';
 
@@ -103,5 +102,5 @@ export const plugins = [
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
   smartTagsPlugin,
-  MetadataPlugin,
+  GetMetadataPlugin,
 ];

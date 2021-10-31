@@ -34,7 +34,6 @@ export class ApiService implements OnApplicationShutdown {
 
   constructor(
     protected project: SubqueryProject,
-    private storeService: StoreService,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -94,17 +93,8 @@ export class ApiService implements OnApplicationShutdown {
     return this.api;
   }
 
-  async emitStoreMetadata(): Promise<void> {
-    this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
-
-    await Promise.all([
-      this.storeService.setMetadata('chain', this.networkMeta.chain),
-      this.storeService.setMetadata('specName', this.networkMeta.specName),
-      this.storeService.setMetadata(
-        'genesisHash',
-        this.networkMeta.genesisHash,
-      ),
-    ]);
+  getNetworkMetadata(): NetworkMetadataPayload {
+    return this.networkMeta;
   }
 
   async getPatchedApi(): Promise<ApiPromise> {

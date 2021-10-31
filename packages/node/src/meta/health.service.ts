@@ -4,7 +4,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import {
   IndexerEvent,
@@ -15,6 +14,7 @@ import {
 import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;
+const CHECK_HEALTH_INTERVAL = 60000;
 
 @Injectable()
 export class HealthService {
@@ -25,7 +25,6 @@ export class HealthService {
   private blockTime = 6000;
   private healthTimeout: number;
   private indexerHealthy: boolean;
-  private changed: boolean;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -35,27 +34,22 @@ export class HealthService {
       DEFAULT_TIMEOUT,
       this.nodeConfig.timeout * 1000,
     );
-
-    this.changed = false;
   }
 
-  @Interval(60000)
+  @Interval(CHECK_HEALTH_INTERVAL)
   async checkHealthStatus() {
-    if (this.changed) {
-      this.evaluateHealth();
-      const instance = await this.storeService.findMetadataValue(
-        'indexerHealthy',
-        this.indexerHealthy,
-      );
+    let healthy: boolean;
 
-      if (instance === null) {
-        await this.storeService.setMetadata(
-          'indexerHealthy',
-          this.indexerHealthy,
-        );
-      }
+    try {
+      this.getHealth();
+      healthy = true;
+    } catch (e) {
+      healthy = false;
+    }
 
-      this.changed = false;
+    if (healthy !== this.indexerHealthy) {
+      await this.storeService.setMetadata('indexerHealthy', healthy);
+      this.indexerHealthy = healthy;
     }
   }
 
@@ -64,7 +58,6 @@ export class HealthService {
     if (this.recordBlockHeight !== blockPayload.height) {
       this.recordBlockHeight = blockPayload.height;
       this.recordBlockTimestamp = Date.now();
-      this.changed = true;
     }
   }
 
@@ -73,23 +66,12 @@ export class HealthService {
     if (this.currentProcessingHeight !== blockPayload.height) {
       this.currentProcessingHeight = blockPayload.height;
       this.currentProcessingTimestamp = blockPayload.timestamp;
-      this.changed = true;
     }
   }
 
   @OnEvent(IndexerEvent.NetworkMetadata)
   handleNetworkMetadata({ blockTime }: NetworkMetadataPayload): void {
     this.blockTime = blockTime;
-    this.changed = true;
-  }
-
-  evaluateHealth() {
-    try {
-      this.getHealth();
-      this.indexerHealthy = true;
-    } catch (e) {
-      this.indexerHealthy = false;
-    }
   }
 
   getHealth() {

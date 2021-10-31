@@ -7,8 +7,6 @@ import {
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { IndexerModule } from '../indexer/indexer.module';
-import { PoiService } from '../indexer/poi.service';
-import { StoreService } from '../indexer/store.service';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
@@ -60,9 +58,7 @@ import { MetaService } from './meta.service';
       name: 'subql_indexer_skip_dictionary_count',
       help: 'The number of times indexer been skip use dictionary',
     }),
-    StoreService,
     MetaService,
-    PoiService,
     HealthService,
   ],
 })

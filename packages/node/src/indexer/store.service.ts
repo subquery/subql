@@ -174,24 +174,10 @@ export class StoreService {
     }
   }
 
-  async findMetadataValue(key: string, value: any): Promise<Model | null> {
-    const model = this.sequelize.model('_metadata');
-    assert(model, `model _metadata does not exist`);
-
-    const result = await model.findOne({
-      where: {
-        key: key,
-        value: value,
-      },
-    });
-
-    return result;
-  }
-
   async setMetadata(key: string, value: any): Promise<void> {
     if (this.sequelize.isDefined(`_metadata`)) {
       const model = this.sequelize.model('_metadata');
-      await model.upsert({ key, value }, { transaction: this.tx });
+      await model.upsert({ key, value });
     }
   }
 

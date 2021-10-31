@@ -18,11 +18,10 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import { QueryTypes, Sequelize } from 'sequelize';
+import { Op, QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
-import { MetaService } from '../meta/meta.service';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { isCustomDs, isRuntimeDs } from '../utils/project';
@@ -134,6 +133,7 @@ export class IndexerManager {
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.ensureMetadata(this.subqueryState.dbSchema);
+
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
         this.poiService.init(this.subqueryState.dbSchema),
@@ -175,29 +175,38 @@ export class IndexerManager {
 
   private async ensureMetadata(schema: string) {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
-    //block offset should only been create once, never update.
-    //if change offset will require re-index and re-sync poi
-    const blockOffset = await metadataRepo.findOne({
-      where: { key: 'blockOffset' },
+
+    const networkMeta = this.apiService.getNetworkMetadata();
+
+    console.log('here');
+
+    const count = await metadataRepo.count({
+      where: {
+        key: [
+          'blockOffset',
+          'indexerNodeVersion',
+          'chain',
+          'specName',
+          'genesisHash',
+        ],
+      },
     });
 
-    if (!blockOffset) {
+    if (count < 5) {
+      //block offset should only been create once, never update.
+      //if change offset will require re-index and re-sync poi
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await metadataRepo.create({
-        key: 'blockOffset',
-        value: offsetValue,
-      });
+
+      await Promise.all([
+        this.storeService.setMetadata('blockOffset', offsetValue),
+        this.storeService.setMetadata('indexerNodeVersion', packageVersion),
+        this.storeService.setMetadata('chain', networkMeta.chain),
+        this.storeService.setMetadata('specName', networkMeta.specName),
+        this.storeService.setMetadata('genesisHash', networkMeta.genesisHash),
+      ]);
+
+      this.eventEmitter.emit(IndexerEvent.NetworkMetadata, networkMeta);
     }
-
-    const indexerVersion = await metadataRepo.findOne({
-      where: { key: 'indexerNodeVersion' },
-    });
-
-    if (!indexerVersion) {
-      this.storeService.setMetadata('indexerNodeVersion', packageVersion);
-    }
-
-    await this.apiService.emitStoreMetadata();
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
