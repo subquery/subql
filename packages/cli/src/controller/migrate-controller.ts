@@ -41,22 +41,29 @@ export async function prepare(
     projectV1Network.typesChain ||
     projectV1Network.typesSpec
   ) {
-    chainTypesRelativePath = await cli.prompt('Project network chain types', {default: './types.yaml', required: true});
+    chainTypesRelativePath = await cli.prompt('Please provide network chain types path', {
+      default: './types.json',
+      required: true,
+    });
+    const {ext} = path.parse(chainTypesRelativePath);
+    if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+      throw new Error(`Extension ${ext} not supported`);
+    }
     const projectChainTypesPath = path.join(location, chainTypesRelativePath);
     //check if the file path is exist, if not create one
     if (fs.existsSync(projectChainTypesPath)) {
       if (await cli.confirm(`${projectChainTypesPath} already exist, do you want override it [Y/N]`)) {
-        await createChainTypes(projectV1Network, projectChainTypesPath);
+        await createChainTypes(projectV1Network, projectChainTypesPath, ext);
       }
     } else {
-      await createChainTypes(projectV1Network, projectChainTypesPath);
+      await createChainTypes(projectV1Network, projectChainTypesPath, ext);
     }
   }
   //Patch manifest here
   for (const dataSource of manifest.asV0_2_0.dataSources) {
     dataSource.mapping.file = await cli.prompt(
-      `Please provide relative path for dataSource ${dataSource.name} 's mapping entry `,
-      {default: './dist/index.js', required: true}
+      `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
+      {default: jsonProjectData.main, required: true}
     );
     delete dataSource.name;
   }
@@ -127,14 +134,22 @@ async function conversion(originManifestPath: string, manifestV0_0_1: string, ma
   }
 }
 
-export async function createChainTypes(projectV1Network: ProjectNetworkV0_0_1, path: string): Promise<void> {
+export async function createChainTypes(
+  projectV1Network: ProjectNetworkV0_0_1,
+  absolutePath: string,
+  ext: string
+): Promise<void> {
   const data = {} as ChainTypes;
   if (projectV1Network.types) data.types = projectV1Network.types;
   if (projectV1Network.typesBundle) data.typesBundle = projectV1Network.typesBundle;
   if (projectV1Network.typesAlias) data.typesAlias = projectV1Network.typesAlias;
   if (projectV1Network.typesChain) data.typesChain = projectV1Network.typesChain;
   if (projectV1Network.typesSpec) data.typesChain = projectV1Network.typesSpec;
-  const chainTypes = yaml.dump(data);
-  await fs.promises.writeFile(path, chainTypes, 'utf8');
+
+  if (ext === '.json') {
+    await fs.promises.writeFile(absolutePath, JSON.stringify(data, null, 2));
+  } else {
+    await fs.promises.writeFile(absolutePath, yaml.dump(data), 'utf8');
+  }
   console.log(`* chainTypes is created`);
 }
