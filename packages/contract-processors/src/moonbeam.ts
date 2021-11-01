@@ -33,13 +33,11 @@ type TopicFilter = string | string[] | null | undefined;
 export type MoonbeamDatasource = SubqlCustomDatasource<'substrate/Moonbeam'>;
 
 export interface MoonbeamEventFilter {
-  address?: string;
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
 
 export interface MoonbeamCallFilter {
   from?: string;
-  to?: string;
   function?: string;
 }
 
@@ -73,9 +71,6 @@ export class TopicFilterValidator implements ValidatorConstraintInterface {
 
 class MoonbeamEventFilterImpl implements MoonbeamEventFilter {
   @IsOptional()
-  @IsEthereumAddress()
-  address?: string;
-  @IsOptional()
   @Validate(TopicFilterValidator, {each: true})
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
@@ -84,9 +79,6 @@ class MoonbeamCallFilterImpl implements MoonbeamCallFilter {
   @IsOptional()
   @IsEthereumAddress()
   from?: string;
-  @IsOptional()
-  @IsEthereumAddress()
-  to?: string;
   @IsOptional()
   @IsString()
   function?: string;
@@ -187,6 +179,14 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
   ): Promise<MoonbeamEvent> {
     const [eventData] = original.event.data;
 
+    const baseFilter = Array.isArray(EventProcessor.baseFilter)
+      ? EventProcessor.baseFilter
+      : [EventProcessor.baseFilter];
+    const evmEvents =
+      original.extrinsic?.events.filter((evt) =>
+        baseFilter.find((filter) => filter.module === evt.event.section && filter.method === evt.event.method)
+      ) ?? [];
+
     const {hash} = getExecutionEvent(original.extrinsic); // shouldn't failed here
 
     const log: MoonbeamEvent = {
@@ -196,7 +196,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
       transactionIndex: original.extrinsic?.idx ?? -1,
       transactionHash: hash,
       removed: false,
-      logIndex: original.idx, // Might be index of block not index relevant to tx
+      logIndex: evmEvents.indexOf(original),
     };
 
     try {
@@ -211,8 +211,8 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
 
     return log;
   },
-  filterProcessor(filter: MoonbeamEventFilter, input: MoonbeamEvent): boolean {
-    if (filter.address && !stringNormalizedEq(filter.address, input.address)) {
+  filterProcessor(filter: MoonbeamEventFilter, input: MoonbeamEvent, ds: SubqlCustomDatasource): boolean {
+    if (ds.address && !stringNormalizedEq(ds.address, input.address)) {
       return false;
     }
 
@@ -299,13 +299,13 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
 
     return call;
   },
-  filterProcessor(filter: MoonbeamCallFilter, input: MoonbeamCall): boolean {
+  filterProcessor(filter: MoonbeamCallFilter, input: MoonbeamCall, ds: SubqlCustomDatasource): boolean {
     if (filter.from && !stringNormalizedEq(filter.from, input.from)) {
       return false;
     }
 
     // if `to` is null then we handle contract creation
-    if ((filter.to && !stringNormalizedEq(filter.to, input.to)) || (filter.to === null && !!input.to)) {
+    if ((ds.address && !stringNormalizedEq(ds.address, input.to)) || (ds.address === null && !!input.to)) {
       return false;
     }
 

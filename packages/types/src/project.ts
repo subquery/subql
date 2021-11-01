@@ -136,6 +136,7 @@ export interface SubqlCustomDatasource<
   assets: Map<string, CustomDataSourceAsset>;
   processor: FileReference;
   abi?: string; // Should be a key of assets
+  address?: string;
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
