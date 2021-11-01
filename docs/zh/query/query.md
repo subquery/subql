@@ -1,6 +1,6 @@
 # 如何在 SubQuery Explorer 中查询您的项目
 
-[SubQuery Explorer](https://explorer.subquery.network) 是一个在线托管服务( [explorer.subquery)。 etwork](https://explorer.subquery.network)() 提供访问我们社区贡献者制作并由SubQuery团队管理的已发布的 SubQuery 项目的机会。 您可以按照我们的指南 [发布您自己的 SubQuery 项目](../publish/publish.md) 向我们的浏览器发布您自己的 SubQuery 项目。
+[SubQuery Explorer](https://explorer.subquery.network) 是一个在线托管服务的浏览器，它支持用户访问已经发布的 SubQuery 项目，这些项目是由我们世界各地的社群贡献者制作的，并由SubQuery 团队管理。 您可以按照我们的指南 [发布您自己的 SubQuery 项目](../publish/publish.md) 向我们的浏览器发布您自己的 SubQuery 项目。
 
 ![SubQuery 浏览器](https://static.subquery.network/media/explorer/explorer-header.png)
 
