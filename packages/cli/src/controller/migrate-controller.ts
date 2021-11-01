@@ -12,8 +12,8 @@ import {
 } from '@subql/common';
 import {cli} from 'cli-ux';
 import yaml from 'js-yaml';
+import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecV0_2_0} from '../types';
-import {getGenesisHash} from './init-controller';
 
 const MANIFEST_PATH = 'project.yaml';
 const MANIFEST_V_0_0_1 = `project_0_0_1.yaml`;
