@@ -4948,7 +4948,6 @@ __metadata:
     "@oclif/config": ^1.17.0
     "@oclif/dev-cli": ^1.26.0
     "@oclif/plugin-help": ^3.2.2
-    "@polkadot/api": ^6.5.2
     "@subql/common": "workspace:*"
     "@subql/validator": "workspace:*"
     "@types/ejs": ^3.0.6
