@@ -7,7 +7,7 @@ import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import {
   isRuntimeDataSourceV0_2_0,
-  RuntimeDataSrouceV0_0_1,
+  RuntimeDataSourceV0_0_1,
 } from '@subql/common';
 import {
   SubqlCallFilter,
@@ -94,8 +94,8 @@ export class FetchService implements OnApplicationShutdown {
     const dataSources = this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSrouceV0_0_1).filter.specName ===
+        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
+        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
