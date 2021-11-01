@@ -13,7 +13,10 @@ import {
   isEventHandlerProcessor,
 } from '@subql/common';
 import {
+  RuntimeHandlerInputMap,
+  SecondLayerHandlerProcessor,
   SubqlCustomDatasource,
+  SubqlCustomHandler,
   SubqlDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
@@ -353,59 +356,40 @@ export class IndexerManager {
     { block, events, extrinsics }: BlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
+    const assets = await this.dsProcessorService.getAssets(ds);
+
+    const processData = async <K extends SubqlHandlerKind>(
+      processor: SecondLayerHandlerProcessor<K, unknown, unknown>,
+      handler: SubqlCustomHandler<string, Record<string, unknown>>,
+      filteredData: RuntimeHandlerInputMap[K][],
+    ): Promise<void> => {
+      const transformedData = await Promise.all(
+        filteredData
+          .filter((data) => processor.filterProcessor(handler.filter, data, ds))
+          .map((data) => processor.transformer(data, ds, this.api, assets)),
+      );
+
+      for (const data of transformedData) {
+        await vm.securedExec(handler.handler, [data]);
+      }
+    };
+
     for (const handler of ds.mapping.handlers) {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {
-        const transformedOutput = await processor.transformer(
-          block,
-          ds,
-          this.api,
-          await this.dsProcessorService.getAssets(ds),
-        );
-        if (
-          !handler.filter ||
-          processor.filterProcessor(handler.filter, transformedOutput, ds)
-        ) {
-          await vm.securedExec(handler.handler, [transformedOutput]);
-        }
+        await processData(processor, handler, [block]);
       } else if (isCallHandlerProcessor(processor)) {
         const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
           extrinsics,
           processor.baseFilter,
         );
-        for (const extrinsic of filteredExtrinsics) {
-          const transformedOutput = await processor.transformer(
-            extrinsic,
-            ds,
-            this.api,
-            await this.dsProcessorService.getAssets(ds),
-          );
-          if (
-            !handler.filter ||
-            processor.filterProcessor(handler.filter, transformedOutput, ds)
-          ) {
-            await vm.securedExec(handler.handler, [transformedOutput]);
-          }
-        }
+        await processData(processor, handler, filteredExtrinsics);
       } else if (isEventHandlerProcessor(processor)) {
         const filteredEvents = SubstrateUtil.filterEvents(
           events,
           processor.baseFilter,
         );
-        for (const event of filteredEvents) {
-          const transformedOutput = await processor.transformer(
-            event,
-            ds,
-            this.api,
-            await this.dsProcessorService.getAssets(ds),
-          );
-          if (
-            !handler.filter ||
-            processor.filterProcessor(handler.filter, transformedOutput, ds)
-          ) {
-            await vm.securedExec(handler.handler, [transformedOutput]);
-          }
-        }
+        await processData(processor, handler, filteredEvents);
       }
     }
   }

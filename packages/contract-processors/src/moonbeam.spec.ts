@@ -1,10 +1,9 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BigNumber} from '@ethersproject/bignumber';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
-import {SubqlCustomDatasource} from '@subql/types';
+import {SubqlCustomDatasource, SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
 import {typesBundle} from 'moonbeam-types-bundle';
 import MoonbeamDatasourcePlugin, {MoonbeamCall, MoonbeamDatasource, MoonbeamEvent} from './moonbeam';
 
@@ -129,6 +128,15 @@ const erc20MiniAbi = `[
 ]`;
 
 describe('MoonbeamDs', () => {
+  let api: ApiPromise;
+
+  beforeAll(async () => {
+    api = await ApiPromise.create({
+      provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
+      typesBundle: typesBundle as any,
+    });
+  });
+
   describe('FilterValidator', () => {
     const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamEvent'];
 
@@ -177,21 +185,13 @@ describe('MoonbeamDs', () => {
   describe('FilterProcessor', () => {
     describe('MoonbeamEvent', () => {
       const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamEvent'];
-      const log: MoonbeamEvent = {
-        address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b',
-        topics: [
-          '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-          '0x0000000000000000000000000000000000000000000000000000000000000000',
-          '0x000000000000000000000000f884c8774b09b3302f98e38c944eb352264024f8',
-        ],
-        data: '0x000000000000000000000000000000000000000000000000186c6ca04ab5b16c',
-        blockNumber: 752073,
-        blockHash: '0x2ddc48977ab437df79ed1df813125d3654e192f1fa3bc997e5f90c80f64d7d91',
-        transactionIndex: 3,
-        transactionHash: '0x3a829a14031a74a4b3e212c26247d8d8e6599c9a9f927196e90ffce266402954',
-        removed: false,
-        logIndex: 4,
-      };
+      let log: SubstrateEvent;
+
+      beforeAll(async () => {
+        const [{events}] = await fetchBlocks(api, 752073, 752073);
+
+        log = events[4];
+      });
 
       it('filters just a matching address', () => {
         expect(
@@ -318,21 +318,14 @@ describe('MoonbeamDs', () => {
 
     describe('MoonbeamCall', () => {
       const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamCall'];
-      const transaction: MoonbeamCall = {
-        from: '0x0a3f21A6B1B93f15F0d9Dbf0685e3dFdC4889EB0',
-        to: '0xAA30eF758139ae4a7f798112902Bf6d65612045f',
-        data: '0x7ff36ab5000000000000000000000000000000000000000000000000000000003f71d93b00000000000000000000000000000000000000000000000000000000000000800000000000000000000000000a3f21a6b1b93f15f0d9dbf0685e3dfdc4889eb00000000000000000000000000000000000000000000000000000000061708a44000000000000000000000000000000000000000000000000000000000000000200000000000000000000000098878b06940ae243284ca214f92bb71a2b032b8a000000000000000000000000e3f5a90f9cb311505cd691a46596599aa1a0ad7d',
-        value: BigNumber.from(0),
-        nonce: 3378,
-        hash: '0xd2e478f9159967a2c4e70c28d07a62126165ea39127a579aaf18f17d58de180c',
-        blockNumber: 763971,
-        blockHash: '0xfe3bd9d990b3320afdc61e2e78e06801c1adcb20c308825994804c5fa5a283a9',
-        timestamp: Math.round(new Date().getTime() / 1000),
-        gasPrice: BigNumber.from('2875000000'),
-        gasLimit: BigNumber.from(300000),
-        chainId: 0,
-        success: true,
-      };
+
+      let transaction: SubstrateExtrinsic;
+
+      beforeAll(async () => {
+        const [{extrinsics}] = await fetchBlocks(api, 763971, 763971);
+
+        transaction = extrinsics[3];
+      });
 
       it('can filter from', () => {
         expect(
@@ -364,14 +357,13 @@ describe('MoonbeamDs', () => {
         ).toBeFalsy();
       });
 
-      it('can filter for contract creation', () => {
-        const contractTx = {...transaction};
-        delete contractTx.to;
+      it('can filter for contract creation', async () => {
+        const blockNumber = 442090;
+        const [{extrinsics}] = await fetchBlocks(api, blockNumber, blockNumber);
+
+        const contractTx = extrinsics[4];
         expect(processor.filterProcessor({}, contractTx, {address: null} as SubqlCustomDatasource)).toBeTruthy();
-        expect(
-          processor.filterProcessor({}, {...contractTx, to: undefined}, {address: null} as SubqlCustomDatasource)
-        ).toBeTruthy();
-      });
+      }, 40000);
 
       it('can filter function with signature', () => {
         expect(
@@ -410,8 +402,6 @@ describe('MoonbeamDs', () => {
   });
 
   describe('MoonbeamTransformation', () => {
-    let api: ApiPromise;
-
     const baseDS: MoonbeamDatasource = {
       kind: 'substrate/Moonbeam',
       assets: new Map([['erc20', {file: erc20MiniAbi}]]),
@@ -427,13 +417,6 @@ describe('MoonbeamDs', () => {
         ],
       },
     };
-
-    beforeAll(async () => {
-      api = await ApiPromise.create({
-        provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
-        typesBundle: typesBundle as any,
-      });
-    });
 
     describe('MoonbeamEvents', () => {
       const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamEvent'];
@@ -607,7 +590,7 @@ describe('MoonbeamDs', () => {
         expect(call.hash).toBe(undefined);
         expect(call.to).toBe(undefined);
         expect(call.from).toBe(undefined);
-      }, 30000);
+      }, 40000);
     });
   });
 });

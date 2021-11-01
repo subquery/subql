@@ -307,7 +307,7 @@ export async function fetchRuntimeVersionRange(
 
 export async function fetchBlocksBatches(
   api: ApiPromise,
-  blockArray,
+  blockArray: number[],
   overallSpecVer?: number,
   // specVersionMap?: number[],
 ): Promise<BlockContent[]> {

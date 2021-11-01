@@ -211,13 +211,16 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
 
     return log;
   },
-  filterProcessor(filter: MoonbeamEventFilter, input: MoonbeamEvent, ds: SubqlCustomDatasource): boolean {
-    if (ds.address && !stringNormalizedEq(ds.address, input.address)) {
+  filterProcessor(filter: MoonbeamEventFilter | undefined, input: SubstrateEvent, ds: SubqlCustomDatasource): boolean {
+    const [eventData] = input.event.data;
+    const rawEvent = eventData.toJSON() as unknown as RawEvent;
+
+    if (ds.address && !stringNormalizedEq(ds.address, rawEvent.address)) {
       return false;
     }
 
     // Follows bloom filters https://docs.ethers.io/v5/concepts/events/#events--filters
-    if (filter.topics) {
+    if (filter?.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
         const topic = filter.topics[i];
         if (!topic) {
@@ -225,7 +228,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
         }
 
         const topicArr = typeof topic === 'string' ? [topic] : topic;
-        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), input.topics[i]))) {
+        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), rawEvent.topics[i]))) {
           return false;
         }
       }
@@ -299,21 +302,35 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
 
     return call;
   },
-  filterProcessor(filter: MoonbeamCallFilter, input: MoonbeamCall, ds: SubqlCustomDatasource): boolean {
-    if (filter.from && !stringNormalizedEq(filter.from, input.from)) {
+  filterProcessor(
+    filter: MoonbeamCallFilter | undefined,
+    input: SubstrateExtrinsic,
+    ds: SubqlCustomDatasource
+  ): boolean {
+    try {
+      const {from, to} = getExecutionEvent(input);
+
+      if (filter?.from && !stringNormalizedEq(filter.from, from)) {
+        return false;
+      }
+
+      const [tx] = input.extrinsic.method.args as [EthTransaction];
+
+      // if `to` is null then we handle contract creation
+      if ((ds.address && !stringNormalizedEq(ds.address, to)) || (ds.address === null && !tx.action.isCreate)) {
+        return false;
+      }
+
+      const rawTx = tx.toJSON() as unknown as RawTransaction;
+      if (filter?.function && rawTx.input.indexOf(functionToSighash(filter.function)) !== 0) {
+        return false;
+      }
+
+      return true;
+    } catch (e) {
+      (global as any).logger.warn('Unable to properly filter input');
       return false;
     }
-
-    // if `to` is null then we handle contract creation
-    if ((ds.address && !stringNormalizedEq(ds.address, input.to)) || (ds.address === null && !!input.to)) {
-      return false;
-    }
-
-    if (filter.function && input.data.indexOf(functionToSighash(filter.function)) !== 0) {
-      return false;
-    }
-
-    return true;
   },
   filterValidator(filter?: MoonbeamCallFilter): void {
     if (!filter) return;

@@ -29,12 +29,12 @@ export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy'
       async transformer(original: SubstrateEvent, ds: JsonfyDatasource): Promise<Record<string, unknown>> {
         return JSON.parse(JSON.stringify(original.toJSON()));
       },
-      filterProcessor(filter: SubqlEventFilter, input: Record<string, unknown>, ds: JsonfyDatasource) {
+      filterProcessor(filter: SubqlEventFilter, input: SubstrateEvent, ds: JsonfyDatasource) {
         return (
           filter.module &&
-          (input.event as any).section === filter.module &&
+          input.event.section === filter.module &&
           filter.method &&
-          (input.event as any).method === filter.method
+          input.event.method === filter.method
         );
       },
       filterValidator(filter: SubqlEventFilter): void {

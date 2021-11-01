@@ -5212,6 +5212,7 @@ __metadata:
     class-transformer: ^0.4.0
     class-validator: ^0.13.1
     ethers: ^5.5.1
+    moonbeam-types-bundle: ^1.2.7
   peerDependencies:
     "@polkadot/api": ^6
   languageName: unknown
