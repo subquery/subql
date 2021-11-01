@@ -58,7 +58,7 @@ SubQuery 项目是您管理上传到SubQuery平台的所有托管项目的地方
 
 ![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
 
-或者，您可以点击项目标题旁边的三个点并在 SubQuery Explorer 上查看它。 您可以在这里使用浏览器内的播放场开始 - [阅读更多关于如何在这里使用我们的资源管理器](../query/query.md) 的信息。
+或者，您可以点击项目标题旁边的"..."并在 SubQuery Explorer 上查看它。 您可以在这里使用浏览器内的播放场开始 - [阅读更多关于如何在这里使用我们的资源管理器](../query/query.md) 的信息。
 
 ![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
 
@@ -68,7 +68,7 @@ SubQuery 项目是您管理上传到SubQuery平台的所有托管项目的地方
 
 ![Switch between GitHub accounts](/assets/img/projects-account-switcher.png)
 
-如果您看不到您的 GitHub 组织帐户列在交换机中， 您可能需要授予您的 GitHub 组织 SubQuery 访问权限(或向管理员请求访问权限)。 要做到这一点，您首先需要撤销您的 GitHub 帐户的权限到 SubQuery 应用程序。 要做到这一点，请登录您在 GitHub 中的帐户设置，请转到应用程序，并在授权的 OAuth 应用程序选项卡下登录。 撤销SubQuery - [您可以在这里跟随精确的步骤](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth)。 **不要担心，这将不会删除您的 SubQuery 项目，并且您不会丢失任何数据**
+如果您看不到您的 GitHub 组织帐户， 您可能需要授予您的 GitHub 组织 SubQuery 访问权限(或向管理员请求访问权限)。 要做到这一点，您首先需要撤销您的 GitHub 帐户的权限到 SubQuery 应用程序。 要做到这一点，请登录您在 GitHub 中的帐户设置，请转到应用程序，并在授权的 OAuth 应用程序选项卡下登录。 撤回SubQuery - [您可以在这里跟随精确的步骤](https://docs.github.com/en/github/authenticating-to-github/keeping-your-account-and-data-secure/reviewing-your-authorized-applications-oauth)。 **不要担心，这将不会删除您的 SubQuery 项目，并且您不会丢失任何数据**
 
 ![Revoke access to GitHub account](/assets/img/project_auth_revoke.png)
 
