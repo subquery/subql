@@ -4954,6 +4954,7 @@ __metadata:
     "@types/ejs": ^3.0.6
     "@types/node": ^10.17.60
     "@types/rimraf": ^3.0.0
+    "@types/websocket": ^1
     chalk: ^4.1.1
     cli-ux: ^5.6.2
     ejs: ^3.1.6
@@ -4968,6 +4969,7 @@ __metadata:
     tslib: ^2.1.0
     webpack: ^5.52.1
     webpack-merge: ^5.8.0
+    websocket: ^1.0.34
   bin:
     subql: ./bin/run
   languageName: unknown
@@ -6209,7 +6211,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/websocket@npm:^1.0.4":
+"@types/websocket@npm:^1, @types/websocket@npm:^1.0.4":
   version: 1.0.4
   resolution: "@types/websocket@npm:1.0.4"
   dependencies:

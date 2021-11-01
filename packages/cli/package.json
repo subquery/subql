@@ -11,7 +11,6 @@
     "@oclif/command": "^1.8.0",
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.2",
-    "@polkadot/api": "^6.5.2",
     "@subql/common": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.0.6",
@@ -24,12 +23,14 @@
     "ts-loader": "^9.2.5",
     "tslib": "^2.1.0",
     "webpack": "^5.52.1",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.8.0",
+    "websocket": "^1.0.34"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
     "@types/node": "^10.17.60",
     "@types/rimraf": "^3.0.0",
+    "@types/websocket": "^1",
     "eslint": "^7.29.0",
     "eslint-config-oclif": "^3.1.0",
     "eslint-config-oclif-typescript": "^0.2.0",

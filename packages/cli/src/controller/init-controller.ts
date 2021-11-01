@@ -5,7 +5,6 @@ import childProcess from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ApiPromise, HttpProvider, WsProvider} from '@polkadot/api';
 import {ProjectManifestV0_0_1, ProjectManifestV0_2_0} from '@subql/common';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
@@ -92,12 +91,4 @@ function checkYarnExists(): boolean {
   } catch (e) {
     return false;
   }
-}
-
-export async function getGenesisHash(endpoint: string): Promise<string> {
-  const provider = endpoint.startsWith('ws') ? new WsProvider(endpoint) : new HttpProvider(endpoint);
-
-  const api = await ApiPromise.create({provider});
-
-  return api.genesisHash.toString();
 }
