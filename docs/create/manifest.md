@@ -68,9 +68,28 @@ dataSources:
   </CodeGroupItem>
 </CodeGroup>
 
-
 ## Overview
 
+### Main things to note when migrating from v0.0.1 to v0.2.0 project.yaml
+
+#### Under `network`
+  
+  - There is a new **required** genesisHash field which helps to identify the chain being used.
+
+  - For v0.2.0 and above, you will need to link seperate [chaintype file](#custom-chains) is using.
+
+#### Under `dataSources`
+
+  - Can directly link index.js entry point for mapping handlers. This index.js will be generated from index.ts after yarn run build.
+
+  - For data sources can now add either a regular runtime data source or [custom data source](#custom-data-sources).
+
+<br />
+
+**If you have a project with specVersion v0.0.1, you can use `subql migrate` to quickly upgrade. [See here](#cli-options) for more information**
+
+
+### Top Level Spec
 | Field           |  v0.0.1                            | v0.2.0                             |   Description |
 | --------------- |:--------------------------------:  |:---------------------------------: | -------------:|
 | **specVersion** | String                             | String                             | `0.0.1` or `0.2.0`, the spec version of the manifest file |
@@ -92,10 +111,10 @@ dataSources:
 ### Network Spec
 | Field                    | v0.0.1         |v0.2.0        |  Description  |
 | ------------------------ |:--------------:|:-----------: |:-------------:|
-| **genesisHashe**         |                |              | The genesis hash of the network |
+| **genesisHash**         |                |              | The genesis hash of the network |
 | **endpoint**             | String         | String       | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.|
 | **dictionary**           | String         | String       | Optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).|
-| **chaintypes**           | 𐄂              | {file:String}| Path to chain types file, accpet `.json` or `.yaml` format|
+| **chaintypes**           | 𐄂              | {file:String}| Path to chain types file, accept `.json` or `.yaml` format|
 
 
 ### Datasource Spec
@@ -211,7 +230,6 @@ dataSources:
 </CodeGroup>
 
 
-
 ## Custom data sources
 
 TODO, need a introduction for custom datasources
@@ -222,6 +240,23 @@ Here is a list of supported custom datasources
 | Kind            | Supported Handlers | Filters        | Description   |
 | --------------- |:------------------:|:--------------:|:-------------:|
 | [substrate/Moonbeam](../datasources/moonbeam/#manifest-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Description... |
+
+## CLI Options
+
+`subql init --specVersion 0.2.0 <projectName>`
+
+  - For now to generate a project with v0.2.0 project.yaml this flag must be used.
+
+`subql migrate`
+
+  - You can run this from your project root to upgrade old subquery project's project.yaml.
+
+
+| Options | Description |
+|:-----:|:-----------:|
+| -f,  --force| |
+| -l, --location | local folder to run migrate in (must contain project.yaml) |
+| --file=file | to specify the project.yaml to migrate |
 
 ## Network Filters 
 
