@@ -3,7 +3,7 @@
 
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
-import {SubqlCustomDatasource, SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
+import {SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
 import {typesBundle} from 'moonbeam-types-bundle';
 import MoonbeamDatasourcePlugin, {MoonbeamCall, MoonbeamDatasource, MoonbeamEvent} from './moonbeam';
 
@@ -198,13 +198,15 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
 
       it('filters just a non-matching address', () => {
-        expect(processor.filterProcessor({}, log, {address: '0x00'} as SubqlCustomDatasource)).toBeFalsy();
+        expect(
+          processor.filterProcessor({}, log, {processorOptions: {address: '0x00'}} as MoonbeamDatasource)
+        ).toBeFalsy();
       });
 
       it('filters topics matching 1', () => {
@@ -212,7 +214,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -222,7 +224,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: [null, null, '0x000000000000000000000000f884c8774b09b3302f98e38c944eb352264024f8']},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -238,7 +240,7 @@ describe('MoonbeamDs', () => {
               ],
             },
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -248,7 +250,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: [['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', '0x00']]},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -258,7 +260,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: [['Transfer(address indexed from, address indexed to, uint256 value)']]},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
 
@@ -266,16 +268,12 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: [['Transfer(address from, address to, uint256 value)']]},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {topics: [['Transfer(address, address, uint256)']]},
-            log,
-            {} as SubqlCustomDatasource
-          )
+          processor.filterProcessor({topics: [['Transfer(address, address, uint256)']]}, log, {} as MoonbeamDatasource)
         ).toBeTruthy();
       });
 
@@ -284,7 +282,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: ['0x6bd193ee6d2104f14f94e2ca6efefae561a4334b']},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeFalsy();
       });
@@ -300,7 +298,7 @@ describe('MoonbeamDs', () => {
               ],
             },
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeFalsy();
       });
@@ -310,7 +308,7 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {topics: [null, null, '0xf884c8774b09b3302f98e38c944eb352264024f8']},
             log,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -332,14 +330,14 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {from: '0x0a3f21A6B1B93f15F0d9Dbf0685e3dFdC4889EB0'},
             transaction,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
         expect(
           processor.filterProcessor(
             {from: '0x0000000000000000000000000000000000000000'},
             transaction,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeFalsy();
       });
@@ -347,13 +345,13 @@ describe('MoonbeamDs', () => {
       it('can filter contract address', () => {
         expect(
           processor.filterProcessor({}, transaction, {
-            address: '0xAA30eF758139ae4a7f798112902Bf6d65612045f',
-          } as SubqlCustomDatasource)
+            processorOptions: {address: '0xAA30eF758139ae4a7f798112902Bf6d65612045f'},
+          } as MoonbeamDatasource)
         ).toBeTruthy();
         expect(
           processor.filterProcessor({}, transaction, {
-            address: '0x0000000000000000000000000000000000000000',
-          } as SubqlCustomDatasource)
+            processorOptions: {address: '0x0000000000000000000000000000000000000000'},
+          } as MoonbeamDatasource)
         ).toBeFalsy();
       });
 
@@ -362,7 +360,9 @@ describe('MoonbeamDs', () => {
         const [{extrinsics}] = await fetchBlocks(api, blockNumber, blockNumber);
 
         const contractTx = extrinsics[4];
-        expect(processor.filterProcessor({}, contractTx, {address: null} as SubqlCustomDatasource)).toBeTruthy();
+        expect(
+          processor.filterProcessor({}, contractTx, {processorOptions: {address: null}} as MoonbeamDatasource)
+        ).toBeTruthy();
       }, 40000);
 
       it('can filter function with signature', () => {
@@ -370,14 +370,14 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {function: 'swapExactETHForTokens(uint256 amountOutMin, address[] path, address to, uint256 deadline)'},
             transaction,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
         expect(
           processor.filterProcessor(
             {function: 'swapExactETHForTokens(uint256, address[], address, uint256)'},
             transaction,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
       });
@@ -387,16 +387,12 @@ describe('MoonbeamDs', () => {
           processor.filterProcessor(
             {function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'},
             transaction,
-            {} as SubqlCustomDatasource
+            {} as MoonbeamDatasource
           )
         ).toBeTruthy();
-        expect(
-          processor.filterProcessor({function: '0x7ff36ab5'}, transaction, {} as SubqlCustomDatasource)
-        ).toBeTruthy();
+        expect(processor.filterProcessor({function: '0x7ff36ab5'}, transaction, {} as MoonbeamDatasource)).toBeTruthy();
 
-        expect(
-          processor.filterProcessor({function: '0x0000000'}, transaction, {} as SubqlCustomDatasource)
-        ).toBeFalsy();
+        expect(processor.filterProcessor({function: '0x0000000'}, transaction, {} as MoonbeamDatasource)).toBeFalsy();
       });
     });
   });
@@ -405,8 +401,10 @@ describe('MoonbeamDs', () => {
     const baseDS: MoonbeamDatasource = {
       kind: 'substrate/Moonbeam',
       assets: new Map([['erc20', {file: erc20MiniAbi}]]),
-      abi: 'erc20',
       processor: {file: ''},
+      processorOptions: {
+        abi: 'erc20',
+      },
       mapping: {
         handlers: [
           {
