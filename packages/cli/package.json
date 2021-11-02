@@ -17,7 +17,7 @@
     "chalk": "^4.1.2",
     "cli-ux": "^5.6.3",
     "ejs": "^3.1.6",
-    "ipfs-http-client": "^53.0.1",
+    "ipfs-http-client": "^52.0.5",
     "rimraf": "^3.0.2",
     "simple-git": "^2.47.0",
     "ts-loader": "^9.2.6",
