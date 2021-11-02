@@ -112,7 +112,7 @@ Defines the data that will be filtered and extracted and the location of the map
 ### Mapping Spec
 | Field           | v0.0.1         | v0.2.0        | Description
 | --------------- |:--------------:|:-------------:|:-------------:|
-| **file**        | String         | 𐄂             | Name of the data source |
+| **file**        | String         | 𐄂             | Path to the mapping entry |
 | **handlers & filters** | [Default handlers and filters](./manifest/#mapping-handlers-and-filters) | Default handlers and filters, <br />[Custom handlers and filters](#custom-data-sources)| List all the [mapping functions](./mapping.md) and their corresponding handler types, with additional mapping filters. <br /><br /> For custom runtimes mapping handlers please view under [Custom data sources](#custom-data-sources) | 
 
 ## Data Sources
@@ -214,12 +214,14 @@ dataSources:
 
 ## Custom data sources
 
-Here is a list of supported custom runtime
+TODO, need a introduction for custom datasources
 
-| Kind                  | Supported Handlers                                         |
-|---------------------------|----------------------------------------------------|
-| [substrate/Moonbeam](./) | `substrate/MoonbeamEvent`,`substrate/MoonbeamCall` |
+Here is a list of supported custom datasources 
 
+
+| Kind            | Supported Handlers | Filters        | Description   |
+| --------------- |:------------------:|:--------------:|:-------------:|
+| [substrate/Moonbeam](../datasources/moonbeam/#manifest-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Description... |
 
 ## Network Filters 
 

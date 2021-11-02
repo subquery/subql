@@ -134,6 +134,16 @@ module.exports = config({
         ]
       },
       {
+        title: 'Data sources',
+        path: '/datasources/introduction',
+        collapsable: true,
+        children: [
+          '/datasources/introduction.md',
+          '/datasources/moonbeam.md',
+
+        ]
+      },
+      {
         title: 'Run a Project',
         path: '/run/run',
         collapsable: true,
