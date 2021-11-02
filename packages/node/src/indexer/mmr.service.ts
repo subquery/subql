@@ -50,11 +50,51 @@ export class MmrService implements OnApplicationShutdown {
     this.poiRepo = PoiFactory(this.sequelize, schema);
     this.blockOffset = await this.fetchBlockOffsetFromDb();
     this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
-    this.nextMmrHeight =
-      (await this.fileBasedMmr.getLeafLength()) + this.blockOffset;
+
+    const fileBasedMmrLeafLength = await this.fileBasedMmr.getLeafLength();
+    this.nextMmrHeight = fileBasedMmrLeafLength + this.blockOffset;
+
+    // let poiStartHeight:number;
+
+    const poiWithoutMmr = await this.getFirstPoiWithoutMmr();
+    // Found the first Poi with null mmr .
+    const latestPoiWithMmr = await this.getLatestPoiWithMmr();
+    // In case, poi table is fully synced
+    // if(poiWithoutMmr){
+    //   poiStartHeight = poiWithoutMmr.id;
+    // }else if(latestPoiWithMmr){
+    //   poiStartHeight = latestPoiWithMmr.id;
+    // }
+
+    const poiStartHeight = poiWithoutMmr
+      ? poiWithoutMmr.id
+      : latestPoiWithMmr?.id;
+
+    if (poiStartHeight && poiStartHeight < this.nextMmrHeight) {
+      // If File based db mmr is ahead of Poi table mmr
+      // to make sure file based mmr is correct, we reset it to poiStart height -1 position.
+      // When update mmr to Poi, mmr value will be compared and verified.
+      await this.resetFileBasedMmr(poiStartHeight);
+    } else if (!poiStartHeight && fileBasedMmrLeafLength > 0) {
+      //Poi is not ready, but file based db have mmr already, reset file based db.
+      await this.resetFileBasedMmr(0);
+    }
+
     logger.info(
       `file based database MMR start with height ${this.nextMmrHeight}`,
     );
+  }
+
+  async resetFileBasedMmr(blockHeight: number): Promise<void> {
+    this.nextMmrHeight = Math.max(blockHeight - 1, 0);
+    await this.fileBasedMmr.delete(this.nextMmrHeight); //reset file based mmr to previous block
+    logger.info(`Reset mmr start from block height ${this.nextMmrHeight}`);
+  }
+
+  async getFileBasedMmr(mmrHeight: number): Promise<Uint8Array> {
+    const blockLeafHeight = mmrHeight + this.blockOffset;
+    const mmr = await this.fileBasedMmr.getRoot(blockLeafHeight - 1);
+    return mmr;
   }
 
   async fetchBlockOffsetFromDb(): Promise<number | null> {
@@ -81,8 +121,12 @@ export class MmrService implements OnApplicationShutdown {
       //next mmr append leaf index should be same as block height
       await this.fileBasedMmr.append(newLeaf, blockLeafHeight);
       mmrRoot = await this.fileBasedMmr.getRoot(blockLeafHeight);
+      console.log(`--- Generate mmr from fileBased at height ${poiBlock.id}`);
     } else if (blockLeafHeight < mmrNextLeafIndex) {
       //when FileBased Mmr height is ahead of Poi table, fetch mmr from fd and compare to poi
+      console.log(
+        `+++ Direct fetch mmr from fileBased at height ${poiBlock.id}`,
+      );
       mmrRoot = await this.fileBasedMmr.getRoot(blockLeafHeight);
     }
     await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
@@ -99,6 +143,10 @@ export class MmrService implements OnApplicationShutdown {
         `Poi block height ${id}, Poi mmr ${u8aToHex(
           poiBlock.mmrRoot,
         )} not same as filebased mmr: ${u8aToHex(mmrValue)}`,
+      );
+    } else if (u8aEq(poiBlock.mmrRoot, mmrValue)) {
+      logger.info(
+        `CHECKING : Poi block height ${id}, Poi mmr is same as filebased mmr`, //TODO, remove for debug
       );
     }
   }
@@ -120,6 +168,29 @@ export class MmrService implements OnApplicationShutdown {
         await delay(MMR_AWAIT_TIME);
       }
     }
+  }
+
+  async getFirstPoi(): Promise<ProofOfIndex> {
+    const poiBlock = await this.poiRepo.findOne({
+      order: [['id', 'ASC']],
+    });
+    return poiBlock;
+  }
+
+  async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
+    const poiBlock = await this.poiRepo.findOne({
+      order: [['id', 'DESC']],
+      where: { mmrRoot: { [Op.ne]: null } },
+    });
+    return poiBlock;
+  }
+
+  async getFirstPoiWithoutMmr(): Promise<ProofOfIndex> {
+    const poiBlock = await this.poiRepo.findOne({
+      order: [['id', 'ASC']],
+      where: { mmrRoot: { [Op.eq]: null } },
+    });
+    return poiBlock;
   }
 
   async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
