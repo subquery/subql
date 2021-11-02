@@ -76,7 +76,7 @@ dataSources:
   
   - There is a new **required** genesisHash field which helps to identify the chain being used.
 
-  - For v0.2.0 and above, you will need to link seperate [chaintype file](#custom-chains) is using.
+  - For v0.2.0 and above, you will need to link seperate [chaintype file](#custom-chains) if using.
 
 #### Under `dataSources`
 
@@ -245,7 +245,7 @@ Here is a list of supported custom datasources
 
 `subql init --specVersion 0.2.0 <projectName>`
 
-  - For now to generate a project with v0.2.0 project.yaml this flag must be used.
+  - For now to initialise a project with v0.2.0 project.yaml this flag must be used.
 
 `subql migrate`
 
