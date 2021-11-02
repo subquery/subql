@@ -131,14 +131,7 @@ module.exports = config({
           '/create/manifest.md',
           '/create/graphql.md',
           '/create/mapping.md',
-        ]
-      },
-      {
-        title: 'Moonbeam EVM Support',
-        path: '/datasources/moonbeam',
-        collapsable: true,
-        children: [
-          '/datasources/moonbeam.md',
+          '/create/moonbeam.md'
         ]
       },
       {

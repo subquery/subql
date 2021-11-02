@@ -14,29 +14,29 @@ description: '' # Description of your project
 repository: 'https://github.com/subquery/subql-starter' # Git repository address of your project
 
 schema:
-  file: ./schema.graphql # The location of your GraphQL schema file
+file: ./schema.graphql # The location of your GraphQL schema file
 
 network:
-  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' # Genesis hash of the network
-  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
-  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
+genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' # Genesis hash of the network
+endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+
+# Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
+
+dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
-  - kind: substrate/Runtime
-    startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
-    mapping:
-      file: dist/index.js # Entry path for this mapping
-      handlers: 
-        - handler: handleBlock
-          kind: substrate/BlockHandler
-        - handler: handleEvent
-          kind: substrate/EventHandler
-          filter:
-            module: balances
-            method: Deposit
-        - handler: handleCall
-          kind: substrate/CallHandler
+
+- kind: substrate/Runtime
+  startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
+  mapping:
+  file: dist/index.js # Entry path for this mapping
+  handlers: - handler: handleBlock
+  kind: substrate/BlockHandler - handler: handleEvent
+  kind: substrate/EventHandler
+  filter:
+  module: balances
+  method: Deposit - handler: handleCall
+  kind: substrate/CallHandler
 
 ````
   </CodeGroupItem>
@@ -70,6 +70,7 @@ dataSources:
         - handler: handleCall
           kind: substrate/CallHandler
 ````
+
   </CodeGroupItem>
 </CodeGroup>
 
@@ -161,7 +162,7 @@ dataSources:
 
 ### Mapping handlers and Filters
 
-The following table explains filters supported by different handlers. 
+The following table explains filters supported by different handlers.
 
 **Your SubQuery project will be much more efficient when you only use event and call handlers with appropriate mapping filters**
 
@@ -253,9 +254,9 @@ Custom Data Sources can be used with normal data sources.
 
 Here is a list of supported custom datasources:
 
-| Kind                                                               |                                                         Supported Handlers                                                         |             Filters             |                                   Description                                    |
-| ------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------: | :------------------------------------------------------------------------------: |
-| [substrate/Moonbeam](../datasources/moonbeam/#data-source-example) | [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
+| Kind                                                  |                                            Supported Handlers                                            |             Filters             |                                   Description                                    |
+| ----------------------------------------------------- | :------------------------------------------------------------------------------------------------------: | :-----------------------------: | :------------------------------------------------------------------------------: |
+| [substrate/Moonbeam](./moonbeam/#data-source-example) | [substrate/MoonbeamEvent](./moonbeam/#moonbeamevent), [substrate/MoonbeamCall](./moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
 
 ## Network Filters
 

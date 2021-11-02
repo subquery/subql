@@ -1,4 +1,4 @@
-# Moonbeam
+# Moonbeam EVM Support
 
 We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
 
