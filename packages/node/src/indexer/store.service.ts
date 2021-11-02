@@ -76,16 +76,49 @@ export class StoreService {
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `custom_enum_${i}`;
+      const enumTypeName = `${schema}_custom_enum_${i}`;
 
-      await this.sequelize.query(
-        `DROP TYPE IF EXISTS ${enumTypeName}; CREATE TYPE ${enumTypeName} as ENUM (${e.values
-          .map(() => '?')
-          .join(',')});`,
-        {
-          replacements: e.values,
-        },
+      const [results] = await this.sequelize.query(
+        `select e.enumlabel as enum_value
+         from pg_type t 
+         join pg_enum e on t.oid = e.enumtypid
+         where t.typname = ?;`,
+        { replacements: [enumTypeName] },
       );
+
+      if (results.length === 0) {
+        await this.sequelize.query(
+          `CREATE TYPE ${enumTypeName} as ENUM (${e.values
+            .map(() => '?')
+            .join(',')});`,
+          {
+            replacements: e.values,
+          },
+        );
+      } else {
+        const currentValues = results.map((v: any) => v.enum_value);
+        // Assert the existing enum has the same values
+
+        // Make it a function to not execute potentially big joins unless needed
+        const differentValuesError = () =>
+          new Error(
+            `Can't modify enum ${enumTypeName} between runs, it used to have values: ${currentValues.join(
+              ', ',
+            )} but now has ${e.values.join(
+              ', ',
+            )} you must rerun the full subquery to do such a change`,
+          );
+
+        if (e.values.length !== currentValues.length) {
+          throw differentValuesError();
+        }
+        const newSet = new Set(e.values);
+        for (const value of currentValues) {
+          if (!newSet.has(value)) {
+            throw differentValuesError();
+          }
+        }
+      }
 
       const comment = `@enum\\n@enumName ${e.name}${
         e.description ? `\\n ${e.description}` : ''
