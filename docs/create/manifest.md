@@ -2,28 +2,32 @@
 
 The Manifest `project.yaml` file can be seen as an entry point of your project and it defines most of the details on how SubQuery will index and transform the chain data.
 
-The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`. 
+The Manifest can be in either YAML or JSON format. In this document, we will use YAML in all the examples. Below is a standard example of a basic `project.yaml`.
 
 <CodeGroup>
   <CodeGroupItem title="v0.2.0" active>
 ``` yml
 specVersion: 0.2.0
-name: example-project  #Provide the project name
-version: 1.0.0  #Project version
-description: ''
-repository: 'https://github.com/subquery/subql-starter'
+name: example-project # Provide the project name
+version: 1.0.0  # Project version
+description: '' # Description of your project
+repository: 'https://github.com/subquery/subql-starter' # Git repository address of your project
+
 schema:
-  file: ./schema.graphql  
+  file: ./schema.graphql # The location of your GraphQL schema file
+
 network:
-  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' #Genesis hash of the network
+  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' # Genesis hash of the network
   endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
   dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
+
 dataSources:
   - kind: substrate/Runtime
-    startBlock: 1
+    startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
     mapping:
-      file: dist/index.js #Entry path for this mapping
-      handlers:
+      file: dist/index.js # Entry path for this mapping
+      handlers: 
         - handler: handleBlock
           kind: substrate/BlockHandler
         - handler: handleEvent
@@ -33,26 +37,27 @@ dataSources:
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
-```
+
+````
   </CodeGroupItem>
 
   <CodeGroupItem title="v0.0.1">
 ``` yml
 specVersion: "0.0.1"
-description: ""
-repository: "https://github.com/subquery/subql-starter"
+description: '' # Description of your project
+repository: 'https://github.com/subquery/subql-starter' # Git repository address of your project
 
-schema: "./schema.graphql"
+schema: ./schema.graphql # The location of your GraphQL schema file
 
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
   # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-  dictionary: "https://api.subquery.network/sq/subquery/dictionary-polkadot"
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
   - name: main
     kind: substrate/Runtime
-    startBlock: 1
+    startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
     mapping:
       handlers:
         - handler: handleBlock
@@ -64,7 +69,7 @@ dataSources:
             method: Deposit
         - handler: handleCall
           kind: substrate/CallHandler
-```
+````
   </CodeGroupItem>
 </CodeGroup>
 
@@ -72,137 +77,130 @@ dataSources:
 
 **If you have a project with specVersion v0.0.1, you can use `subql migrate` to quickly upgrade. [See here](#cli-options) for more information**
 
-#### Under `network`
-  
-  - There is a new **required** genesisHash field which helps to identify the chain being used.
+Under `network`:
 
-  - For v0.2.0 and above, you will need to link seperate [chaintype file](#custom-chains) if using.
+- There is a new **required** `genesisHash` field which helps to identify the chain being used.
+- For v0.2.0 and above, you are able to reference an external [chaintype file](#custom-chains) if you are referencing a custom chain.
 
-#### Under `dataSources`
+Under `dataSources`:
 
-  - Can directly link index.js entry point for mapping handlers. This index.js will be generated from index.ts after yarn run build.
+- Can directly link an `index.js` entry point for mapping handlers. By default this `index.js` will be generated from `index.ts` during the build process.
+- Data sources can now be either a regular runtime data source or [custom data source](#custom-data-sources).
 
-  - For data sources can now add either a regular runtime data source or [custom data source](#custom-data-sources).
+### CLI Options
 
-#### CLI Options
+While the v0.2.0 spec version is in beta, you will need to explicitly define it during project initialisation by running `subql init --specVersion 0.2.0 PROJECT_NAME`
 
-`subql init --specVersion 0.2.0 <projectName>`
+`subql migrate` can be run in an existing project to migrate the project manifest to the latest version.
 
-  - For now to initialise a project with v0.2.0 project.yaml this flag must be used.
-
-`subql migrate`
-
-  - You can run this from your project root to upgrade old subquery project's project.yaml.
-
-
-| Options | Description |
-|:-----:|:-----------:|
-| -f,  --force| |
+|    Options     |                        Description                         |
+| :------------: | :--------------------------------------------------------: |
+|  -f, --force   |                                                            |
 | -l, --location | local folder to run migrate in (must contain project.yaml) |
-| --file=file | to specify the project.yaml to migrate |
-
-
+|  --file=file   |           to specify the project.yaml to migrate           |
 
 ## Overview
 
 ### Top Level Spec
-| Field           |  v0.0.1                            | v0.2.0                             |   Description |
-| --------------- |:--------------------------------:  |:---------------------------------: | -------------:|
-| **specVersion** | String                             | String                             | `0.0.1` or `0.2.0`, the spec version of the manifest file |
-| **name**        | 𐄂                                  | String                             | Name of the project|
-| **version**     | 𐄂                                  | String                             | Version of the project|
-| **description** | String                             | String                             | Discription of the project|
-| **repository**  | String                             | String                             | Repository of the project|
-| **schema**      | String                             | [Schema Spec](#schema-spec)        | Schema file   |
-| **network**     | [Network Spec](#network-spec)      | Network Spec                       | Detail of the network to be indexed|
-| **dataSources** | [DataSource Spec](#datasource-spec)| DataSource Spec                    |               |
 
+| Field           |               v0.0.1                |           v0.2.0            |                                                Description |
+| --------------- | :---------------------------------: | :-------------------------: | ---------------------------------------------------------: |
+| **specVersion** |               String                |           String            | `0.0.1` or `0.2.0` - the spec version of the manifest file |
+| **name**        |                  𐄂                  |           String            |                                       Name of your project |
+| **version**     |                  𐄂                  |           String            |                                    Version of your project |
+| **description** |               String                |           String            |                                Discription of your project |
+| **repository**  |               String                |           String            |                     Git repository address of your project |
+| **schema**      |               String                | [Schema Spec](#schema-spec) |                   The location of your GraphQL schema file |
+| **network**     |    [Network Spec](#network-spec)    |        Network Spec         |                        Detail of the network to be indexed |
+| **dataSources** | [DataSource Spec](#datasource-spec) |       DataSource Spec       |                                                            |
 
 ### Schema Spec
-| Field           | Type           | v0.0.1         | v0.2.0        |  Description  |
-| --------------- |:--------------:|:-------------: |:-------------:| -------------:|
-| **file**        | String         | 𐄂              |               | Entry path to `schema.graphql` |
 
+| Field    |  Type  | v0.0.1 | v0.2.0 |                              Description |
+| -------- | :----: | :----: | :----: | ---------------------------------------: |
+| **file** | String |   𐄂    |        | The location of your GraphQL schema file |
 
 ### Network Spec
-| Field                    | v0.0.1         |v0.2.0        |  Description  |
-| ------------------------ |:--------------:|:-----------: |:-------------:|
-| **genesisHash**         |                |              | The genesis hash of the network |
-| **endpoint**             | String         | String       | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**.|
-| **dictionary**           | String         | String       | Optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).|
-| **chaintypes**           | 𐄂              | {file:String}| Path to chain types file, accept `.json` or `.yaml` format|
 
+| Field           | v0.0.1 |    v0.2.0     |                                                                                                Description                                                                                                 |
+| --------------- | :----: | :-----------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| **genesisHash** |        |               |                                                                                      The genesis hash of the network                                                                                       |
+| **endpoint**    | String |    String     | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io) |
+| **dictionary**  | String |    String     |               It is suggested to provide the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).                |
+| **chainTypes**  |   𐄂    | {file:String} |                                                                         Path to chain types file, accept `.json` or `.yaml` format                                                                         |
 
 ### Datasource Spec
-Defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied. 
-| Field           | v0.0.1         | v0.2.0        | Description
-| --------------- |:--------------:|:-------------:|:-------------:|
-| **name**        | String         | 𐄂             | Name of the data source |
-| **kind**        | [substrate/Runtime](./manifest/#data-sources) | substrate/Runtime, [substrate/CustomDataSource](./manifest/#custom-data-sources)| We supports data type from default substrate runtime such as block, event and extrinsic(call). <br /> From v0.2.0, we support data from custom runtime, such as smart contract.|
-| **startBlock**  | Integer | Integer | Specifies the block height to start indexing from.|        
-| **mapping**     | Mapping Spec| Mapping Spec |  |
-| **filter**      | [network-filters](./manifest/#network-filters)| 𐄂  | Filter the data source to execute by the network endpoint spec name |
 
+Defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
+| Field | v0.0.1 | v0.2.0 | Description
+| --------------- |:--------------:|:-------------:|:-------------:|
+| **name** | String | 𐄂 | Name of the data source |
+| **kind** | [substrate/Runtime](./manifest/#data-sources-and-mapping) | substrate/Runtime, [substrate/CustomDataSource](./manifest/#custom-data-sources)| We supports data type from default substrate runtime such as block, event and extrinsic(call). <br /> From v0.2.0, we support data from custom runtime, such as smart contract.|
+| **startBlock** | Integer | Integer | This changes your indexing start block, set this higher to skip initial blocks with less data|  
+| **mapping** | Mapping Spec| Mapping Spec | |
+| **filter** | [network-filters](./manifest/#network-filters)| 𐄂 | Filter the data source to execute by the network endpoint spec name |
 
 ### Mapping Spec
-| Field           | v0.0.1         | v0.2.0        | Description
-| --------------- |:--------------:|:-------------:|:-------------:|
-| **file**        | String         | 𐄂             | Path to the mapping entry |
-| **handlers & filters** | [Default handlers and filters](./manifest/#mapping-handlers-and-filters) | Default handlers and filters, <br />[Custom handlers and filters](#custom-data-sources)| List all the [mapping functions](./mapping.md) and their corresponding handler types, with additional mapping filters. <br /><br /> For custom runtimes mapping handlers please view under [Custom data sources](#custom-data-sources) | 
 
-## Data Sources
+| Field                  |                                  v0.0.1                                  |                                         v0.2.0                                          |                                                                                                           Description                                                                                                            |
+| ---------------------- | :----------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| **file**               |                                  String                                  |                                            𐄂                                            |                                                                                                    Path to the mapping entry                                                                                                     |
+| **handlers & filters** | [Default handlers and filters](./manifest/#mapping-handlers-and-filters) | Default handlers and filters, <br />[Custom handlers and filters](#custom-data-sources) | List all the [mapping functions](./mapping.md) and their corresponding handler types, with additional mapping filters. <br /><br /> For custom runtimes mapping handlers please view [Custom data sources](#custom-data-sources) |
 
-In this section, we will talk about the default substrate runtime and its mapping, here is an example: 
+## Data Sources and Mapping
+
+In this section, we will talk about the default substrate runtime and its mapping. Here is an example:
+
 ```yaml
 dataSources:
-  - kind: substrate/Runtime  #Indicate this is default runtime
-    startBlock: 1
+  - kind: substrate/Runtime # Indicates that this is default runtime
+    startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
     mapping:
-      file: dist/index.js
-...
+      file: dist/index.js # Entry path for this mapping
 ```
+
 ### Mapping handlers and Filters
 
-The following table explains filters supported by different handlers.
+The following table explains filters supported by different handlers. 
 
-| Handler                   | Supported filter                                          |
-|---------------------------|----------------------------------------------------|
-| [BlockHandler](./mapping.md#block-handler) | `specVersion` |
-| [EventHandler](./mapping.md#event-handler) | `module`,`method` |
-| [CallHandler](./mapping.md#call-handler) | `module`,`method` ,`success`|
+**Your SubQuery project will be much more efficient when you only use event and call handlers with appropriate mapping filters**
 
+| Handler                                    | Supported filter             |
+| ------------------------------------------ | ---------------------------- |
+| [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
+| [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
+| [CallHandler](./mapping.md#call-handler)   | `module`,`method` ,`success` |
 
-Default runtime mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler. 
+Default runtime mapping filters are an extremely useful feature to decide what block, event, or extrinsic will trigger a mapping handler.
 
-Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are highly recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
 
 ```yaml
-#Example filter from callHandler
-filter: 
-   module: balances
-   method: Deposit
-   success: true
+# Example filter from callHandler
+filter:
+  module: balances
+  method: Deposit
+  success: true
 ```
 
--  Module and method filters are supported on any substrate-based chain.
+- Module and method filters are supported on any substrate-based chain.
 - The `success` filter takes a boolean value and can be used to filter the extrinsic by its success status.
 - The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges.
 
 ```yaml
 filter:
-  specVersion: [23, 24]   #Index block with specVersion in between 23 and 24 (inclusive).
-  specVersion: [100]      #Index block with specVersion greater than or equal 100.
-  specVersion: [null, 23] #Index block with specVersion less than or equal 23.
+  specVersion: [23, 24]   # Index block with specVersion in between 23 and 24 (inclusive).
+  specVersion: [100]      # Index block with specVersion greater than or equal 100.
+  specVersion: [null, 23] # Index block with specVersion less than or equal 23.
 ```
-
 
 ## Custom Chains
 
-You can index data from custom chains by also including chain types in the manifest. 
+You can index data from custom chains by also including chain types in the manifest.
 
 We support the additional types used by substrate runtime modules, `typesAlias`, `typesBundle`, `typesChain`, and `typesSpec` are also supported.
 
-In the example of v0.2.0 below, the `network.chaintypes` are pointing to a file that saved all custom types, which declare the specific types supported by this blockchain. And this file can be either in `.json` or `.yaml` format.
+In the v0.2.0 example below, the `network.chaintypes` are pointing to a file that has all the custom types included, This is a standard chainspec file that declares the specific types supported by this blockchain in either `.json` or `.yaml` format.
 
 <CodeGroup>
   <CodeGroupItem title="v0.2.0" active>
@@ -211,7 +209,7 @@ network:
   genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'
   endpoint: 'ws://host.kittychain.io/public-ws'
   chaintypes:
-    file: ./types.json # Where custom types stored
+    file: ./types.json # The relative filepath to where custom types are stored
 ...
 ```
   </CodeGroupItem>
@@ -245,7 +243,6 @@ dataSources:
   </CodeGroupItem>
 </CodeGroup>
 
-
 ## Custom Data Sources
 
 Custom Data Sources provide network specific functionality that makes dealing with data easier. They act as a middleware that can provide extra filtering and data transformation.
@@ -256,15 +253,13 @@ Custom Data Sources can be used with normal data sources.
 
 Here is a list of supported custom datasources:
 
+| Kind                                                               |                                                         Supported Handlers                                                         |             Filters             |                                   Description                                    |
+| ------------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------: | :-----------------------------: | :------------------------------------------------------------------------------: |
+| [substrate/Moonbeam](../datasources/moonbeam/#data-source-example) | [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
 
-| Kind            | Supported Handlers | Filters        | Description   |
-| --------------- |:------------------:|:--------------:|:-------------:|
-| [substrate/Moonbeam](../datasources/moonbeam/#data-source-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
+## Network Filters
 
-
-## Network Filters 
-
-**Network filters only applies to manifest spec v0.0.1**. 
+**Network filters only applies to manifest spec v0.0.1**.
 
 Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks.
 
@@ -272,14 +267,13 @@ Users can add a `filter` on `dataSources` to decide which data source to run on 
 
 Below is an example that shows different data sources for both the Polkadot and Kusama networks.
 
-
 <CodeGroup>
   <CodeGroupItem title="v0.0.1">
 
 ```yaml
-...
+---
 network:
-  endpoint: "wss://polkadot.api.onfinality.io/public-ws"
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
 
 #Create a template to avoid redundancy
 definitions:
@@ -291,19 +285,18 @@ definitions:
 dataSources:
   - name: polkadotRuntime
     kind: substrate/Runtime
-    filter:  #Optional
-        specName: polkadot
+    filter: #Optional
+      specName: polkadot
     startBlock: 1000
     mapping: *mymapping #use template here
   - name: kusamaRuntime
     kind: substrate/Runtime
-    filter: 
-        specName: kusama
-    startBlock: 12000 
+    filter:
+      specName: kusama
+    startBlock: 12000
     mapping: *mymapping # can reuse or change
 ```
 
   </CodeGroupItem>
 
 </CodeGroup>
-

@@ -1,12 +1,19 @@
 # Moonbeam
 
-We provide a custom data source processor for Moonbeam EVM. This offers a simple way to filter and handle EVM activity on Moonbeam networks.
+We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+
+Supported networks:
+- Moonbeam
+- Moonriver
+- Moonbase Alpha
 
 ## Getting started
 
 1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
 2. Add a custom data source as described below
 3. Add handlers for the custom data source to your code
+
+**You can also refer to the [basic ERC20 example project](https://github.com/subquery/subql-starter/tree/moonriver-ds) with an event and call handler.**
 
 
 ## Data Source Spec
@@ -69,17 +76,12 @@ Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, in
 Changes from the `Log` type:
 * `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
-
-Supported networks:
-
-- Moonbeam
-- Moonbase Alpha
-- Moonriver
-
-
 ## Data Source Example
 
+This is an extract from the `project.yaml` manifest file.
+
 ```yaml
+dataSources:
   - kind: substrate/Moonbeam
     startBlock: 752073
     processor:
@@ -112,11 +114,7 @@ Supported networks:
 
 ```
 
-## Example Project
-
-* [Basic ERC20 Example](https://github.com/subquery/subql-starter/tree/moonriver-ds) with an event handler and a call handler
-
-## Limitations
+## Known Limitations
 
 * There is currently no way to query EVM state within a handler
 * There is no way to get the transaction receipts with call handlers
