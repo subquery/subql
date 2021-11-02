@@ -15,8 +15,8 @@ describe('Validator', () => {
 
   it('should validate get reports', async () => {
     const result = await v.getValidateReports();
-    expect(result.length).toBe(7);
-    expect(result.filter((r) => r.valid).length).toBe(7);
+    expect(result.length).toBe(8);
+    expect(result.filter((r) => r.valid).length).toBe(8);
   });
 
   it('should return validate result', async () => {
