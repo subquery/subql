@@ -135,12 +135,10 @@ module.exports = config({
       },
       {
         title: 'Data sources',
-        path: '/datasources/introduction',
+        path: '/datasources/moonbeam',
         collapsable: true,
         children: [
-          '/datasources/introduction.md',
           '/datasources/moonbeam.md',
-
         ]
       },
       {

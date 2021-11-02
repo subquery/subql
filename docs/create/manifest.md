@@ -68,9 +68,9 @@ dataSources:
   </CodeGroupItem>
 </CodeGroup>
 
-## Overview
+## Migrating from v0.0.1 to v0.2.0 <Badge text="upgrade" type="warning"/>
 
-### Main things to note when migrating from v0.0.1 to v0.2.0 project.yaml
+**If you have a project with specVersion v0.0.1, you can use `subql migrate` to quickly upgrade. [See here](#cli-options) for more information**
 
 #### Under `network`
   
@@ -84,10 +84,26 @@ dataSources:
 
   - For data sources can now add either a regular runtime data source or [custom data source](#custom-data-sources).
 
-<br />
+#### CLI Options
 
-**If you have a project with specVersion v0.0.1, you can use `subql migrate` to quickly upgrade. [See here](#cli-options) for more information**
+`subql init --specVersion 0.2.0 <projectName>`
 
+  - For now to initialise a project with v0.2.0 project.yaml this flag must be used.
+
+`subql migrate`
+
+  - You can run this from your project root to upgrade old subquery project's project.yaml.
+
+
+| Options | Description |
+|:-----:|:-----------:|
+| -f,  --force| |
+| -l, --location | local folder to run migrate in (must contain project.yaml) |
+| --file=file | to specify the project.yaml to migrate |
+
+
+
+## Overview
 
 ### Top Level Spec
 | Field           |  v0.0.1                            | v0.2.0                             |   Description |
@@ -245,22 +261,6 @@ Here is a list of supported custom datasources:
 | --------------- |:------------------:|:--------------:|:-------------:|
 | [substrate/Moonbeam](../datasources/moonbeam/#data-source-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
 
-## CLI Options
-
-`subql init --specVersion 0.2.0 <projectName>`
-
-  - For now to initialise a project with v0.2.0 project.yaml this flag must be used.
-
-`subql migrate`
-
-  - You can run this from your project root to upgrade old subquery project's project.yaml.
-
-
-| Options | Description |
-|:-----:|:-----------:|
-| -f,  --force| |
-| -l, --location | local folder to run migrate in (must contain project.yaml) |
-| --file=file | to specify the project.yaml to migrate |
 
 ## Network Filters 
 
