@@ -280,7 +280,7 @@ export async function kittyApiHandler(): Promise<void> {
 
 ### Panggilan rpc chain kustom
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+Untuk mendukung panggilan RPC berantai yang disesuaikan, kita harus memasukkan definisi RPC secara manual untuk `typesBundle`, yang memungkinkan konfigurasi per spesifikasi. Anda dapat menentukan `typesBundle` di `project.yml`. Dan harap diingat hanya jenis panggilan `isHistoric` yang didukung.
 ```yaml
 ...
   types: {
