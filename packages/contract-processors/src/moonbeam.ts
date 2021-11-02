@@ -6,7 +6,7 @@ import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
-import {EthTransaction, ExitReason} from '@polkadot/types/interfaces';
+import {EthTransaction, EvmLog, ExitReason} from '@polkadot/types/interfaces';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -213,9 +213,9 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
   },
   filterProcessor(filter: MoonbeamEventFilter | undefined, input: SubstrateEvent, ds: SubqlCustomDatasource): boolean {
     const [eventData] = input.event.data;
-    const rawEvent = eventData.toJSON() as unknown as RawEvent;
+    const rawEvent = eventData as EvmLog;
 
-    if (ds.address && !stringNormalizedEq(ds.address, rawEvent.address)) {
+    if (ds.address && !stringNormalizedEq(ds.address, rawEvent.address.toString())) {
       return false;
     }
 
@@ -228,7 +228,7 @@ const EventProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Event, Moonbe
         }
 
         const topicArr = typeof topic === 'string' ? [topic] : topic;
-        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), rawEvent.topics[i]))) {
+        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), rawEvent.topics[i].toHex()))) {
           return false;
         }
       }
@@ -321,8 +321,7 @@ const CallProcessor: SecondLayerHandlerProcessor<SubqlHandlerKind.Call, Moonbeam
         return false;
       }
 
-      const rawTx = tx.toJSON() as unknown as RawTransaction;
-      if (filter?.function && rawTx.input.indexOf(functionToSighash(filter.function)) !== 0) {
+      if (filter?.function && tx.input.toHex().indexOf(functionToSighash(filter.function)) !== 0) {
         return false;
       }
 
