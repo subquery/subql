@@ -229,11 +229,11 @@ type User @entity {
 }
 ````
 
-### Querying JSON fields
+### JSON フィールドのクエリ
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+JSON型を使用することの欠点は、テキスト検索を行うたびにエンティティ全体を対象としているため、フィルタリング時のクエリ効率に若干の影響があることです。
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+しかし、その影響はクエリサービスではまだ許容範囲内です。 ここでは、JSONフィールドのGraphQLクエリで`contains`演算子を使用して、”0064”を含む電話番号を所有する最初の5人のユーザーを検索する例を紹介します。
 
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
