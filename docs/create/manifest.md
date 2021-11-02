@@ -230,16 +230,20 @@ dataSources:
 </CodeGroup>
 
 
-## Custom data sources
+## Custom Data Sources
 
-TODO, need a introduction for custom datasources
+Custom Data Sources provide network specific functionality that makes dealing with data easier. They act as a middleware that can provide extra filtering and data transformation.
 
-Here is a list of supported custom datasources 
+A good example of this is EVM support, having a custom data source processor for EVM means that you can filter at the EVM level (e.g. filter contract methods or logs) and data is transformed into structures farmiliar to the Ethereum ecosystem as well as parsing parameters with ABIs.
+
+Custom Data Sources can be used with normal data sources.
+
+Here is a list of supported custom datasources:
 
 
 | Kind            | Supported Handlers | Filters        | Description   |
 | --------------- |:------------------:|:--------------:|:-------------:|
-| [substrate/Moonbeam](../datasources/moonbeam/#manifest-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Description... |
+| [substrate/Moonbeam](../datasources/moonbeam/#data-source-example)| [substrate/MoonbeamEvent](../datasources/moonbeam/#moonbeamevent), [substrate/MoonbeamCall](../datasources/moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
 
 ## CLI Options
 
