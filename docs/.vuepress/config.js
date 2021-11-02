@@ -134,7 +134,7 @@ module.exports = config({
         ]
       },
       {
-        title: 'Data sources',
+        title: 'Moonbeam EVM Support',
         path: '/datasources/moonbeam',
         collapsable: true,
         children: [
