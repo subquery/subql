@@ -5173,7 +5173,7 @@ __metadata:
     eslint-config-oclif: ^4.0.0
     eslint-config-oclif-typescript: ^1.0.2
     globby: ^12.0.2
-    ipfs-http-client: ^53.0.1
+    ipfs-http-client: ^52.0.5
     rimraf: ^3.0.2
     simple-git: ^2.47.0
     ts-loader: ^9.2.6
@@ -5322,7 +5322,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@types/js-yaml": ^4.0.4
     axios: ^0.24.0
-    ipfs-http-client: ^53.0.1
+    ipfs-http-client: ^52.0.5
     js-yaml: ^4.1.0
     package-json-type: ^1.0.3
   languageName: unknown
@@ -13673,6 +13673,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"form-data@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "form-data@npm:4.0.0"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.8
+    mime-types: ^2.1.12
+  checksum: ecbe8f41bcf5c415f38e39058b34598a9261bb74a3d54b633d0b5dd8b7cf9a30b0626cd06ae8e79874a2ca88c222041142a7893e5afdd35fdfc3272264d03d44
+  languageName: node
+  linkType: hard
+
 "form-data@npm:~2.3.2":
   version: 2.3.3
   resolution: "form-data@npm:2.3.3"
@@ -15258,21 +15269,27 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"interface-datastore@npm:^6.0.2":
-  version: 6.0.3
-  resolution: "interface-datastore@npm:6.0.3"
+"interface-datastore@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "interface-datastore@npm:5.2.0"
   dependencies:
-    interface-store: ^2.0.1
+    err-code: ^3.0.1
+    interface-store: ^1.0.2
+    ipfs-utils: ^8.1.2
+    it-all: ^1.0.2
+    it-drain: ^1.0.1
+    it-filter: ^1.0.2
+    it-take: ^1.0.1
     nanoid: ^3.0.2
     uint8arrays: ^3.0.0
-  checksum: 51e0cc7f2ff37c79ab172eab029de6d1e21e997783c37f58218944e54ae6888bb8a3b26bb0aa479c39f7a4ca58640a74fea1f07c7a4d60bef7b6588065b8851f
+  checksum: b39f8acac60235620329abf7d20f0bd4b7856819482ea3eeddd0ca734daf33697cf0e54b30af0d6eaafaaef80c889f122c58f062a38c803a562e18b0ba54d5cf
   languageName: node
   linkType: hard
 
-"interface-store@npm:^2.0.1":
-  version: 2.0.1
-  resolution: "interface-store@npm:2.0.1"
-  checksum: d00edd17138df2f2bc8be85e01b5c09f6db6105cff6379e8ed8482f46fa6ce7adda53512217f4da8c716944e23042307c3cca872f268f508c8ff83d6483608c5
+"interface-store@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "interface-store@npm:1.0.2"
+  checksum: ccf075bfb14959fef418b653774647a814b73a66b729b21492d8f73eabfe79d9a51a6c1bc28c1d245fbb7d94faeaf5f078e17ad33dc2c4c412fbbf798e9f37ee
   languageName: node
   linkType: hard
 
@@ -15346,48 +15363,44 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"ipfs-core-types@npm:^0.8.1":
-  version: 0.8.1
-  resolution: "ipfs-core-types@npm:0.8.1"
+"ipfs-core-types@npm:^0.7.3":
+  version: 0.7.3
+  resolution: "ipfs-core-types@npm:0.7.3"
   dependencies:
-    interface-datastore: ^6.0.2
+    interface-datastore: ^5.2.0
     multiaddr: ^10.0.0
     multiformats: ^9.4.1
-  checksum: 5c86d39cbb39bb13fc57c32cf14b1da0127d0b170931b6e6e5becc2282fec411bec63cd639e7d6cb1f1496b338ab77d2b8e27069538525621349256510a5f3fb
+  checksum: 04b6ae9697313420856a1247d4ef55f4a72ba7571aa56dd000d821f4ecc28fa83b3e9aef469282fc611846f995fbcf2eb626d7d65ba8ee0046d497834739ed09
   languageName: node
   linkType: hard
 
-"ipfs-core-utils@npm:^0.11.1":
-  version: 0.11.1
-  resolution: "ipfs-core-utils@npm:0.11.1"
+"ipfs-core-utils@npm:^0.10.5":
+  version: 0.10.5
+  resolution: "ipfs-core-utils@npm:0.10.5"
   dependencies:
     any-signal: ^2.1.2
     blob-to-it: ^1.0.1
     browser-readablestream-to-it: ^1.0.1
-    debug: ^4.1.1
     err-code: ^3.0.1
-    ipfs-core-types: ^0.8.1
+    ipfs-core-types: ^0.7.3
     ipfs-unixfs: ^6.0.3
-    ipfs-utils: ^9.0.2
+    ipfs-utils: ^8.1.4
     it-all: ^1.0.4
     it-map: ^1.0.4
     it-peekable: ^1.0.2
-    it-to-stream: ^1.0.0
-    merge-options: ^3.0.4
     multiaddr: ^10.0.0
     multiaddr-to-uri: ^8.0.0
     multiformats: ^9.4.1
-    nanoid: ^3.1.23
     parse-duration: ^1.0.0
     timeout-abort-controller: ^1.1.1
     uint8arrays: ^3.0.0
-  checksum: c4325b932cd16b44484551e23f93ff8c65a7d0f0519ad734219e95d340c9095e97c9eb539d1659f899c8bef23d2a9b01cdd9170e53d702bc288b05b9b438672d
+  checksum: cf2ab45653130f195b95371a96ab7cade167960724b7a490fdfde7945dc5935b188ecee7c470288e4502952a3d0ff291f46b3c757687f82f1bb2cf86d6029844
   languageName: node
   linkType: hard
 
-"ipfs-http-client@npm:^53.0.1":
-  version: 53.0.1
-  resolution: "ipfs-http-client@npm:53.0.1"
+"ipfs-http-client@npm:^52.0.5":
+  version: 52.0.5
+  resolution: "ipfs-http-client@npm:52.0.5"
   dependencies:
     "@ipld/dag-cbor": ^6.0.5
     "@ipld/dag-pb": ^2.1.3
@@ -15395,19 +15408,22 @@ fsevents@~2.3.1:
     any-signal: ^2.1.2
     debug: ^4.1.1
     err-code: ^3.0.1
-    ipfs-core-types: ^0.8.1
-    ipfs-core-utils: ^0.11.1
-    ipfs-utils: ^9.0.2
+    form-data: ^4.0.0
+    ipfs-core-types: ^0.7.3
+    ipfs-core-utils: ^0.10.5
+    ipfs-utils: ^8.1.4
     it-first: ^1.0.6
     it-last: ^1.0.4
+    it-to-stream: ^1.0.0
     merge-options: ^3.0.4
     multiaddr: ^10.0.0
     multiformats: ^9.4.1
+    nanoid: ^3.1.12
     native-abort-controller: ^1.0.3
     parse-duration: ^1.0.0
     stream-to-it: ^0.2.2
     uint8arrays: ^3.0.0
-  checksum: 31027d59c2c1e9422eea747b0a13afd7a44297f6bdbf164690c66b06a0dfe832c9cbe915619401795f5a05aa253791cb3c8e12b1f69d79bd1df57c975c3c1b27
+  checksum: 7ace4ec199727a521771b889448e1b6e04bb9c06ec805b05bfd305a8c1c23a4e62dca898d6126d1d039092c67ec2f38bc3e936a4fcd7f378c5675751f245d647
   languageName: node
   linkType: hard
 
@@ -15421,9 +15437,9 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"ipfs-utils@npm:^9.0.2":
-  version: 9.0.2
-  resolution: "ipfs-utils@npm:9.0.2"
+"ipfs-utils@npm:^8.1.2, ipfs-utils@npm:^8.1.4":
+  version: 8.1.6
+  resolution: "ipfs-utils@npm:8.1.6"
   dependencies:
     abort-controller: ^3.0.0
     any-signal: ^2.1.0
@@ -15432,7 +15448,7 @@ fsevents@~2.3.1:
     err-code: ^3.0.1
     is-electron: ^2.2.0
     iso-url: ^1.1.5
-    it-glob: ^1.0.1
+    it-glob: ~0.0.11
     it-to-stream: ^1.0.0
     merge-options: ^3.0.4
     nanoid: ^3.1.20
@@ -15441,7 +15457,7 @@ fsevents@~2.3.1:
     node-fetch: "https://registry.npmjs.org/@achingbrain/node-fetch/-/node-fetch-2.6.7.tgz"
     react-native-fetch-api: ^2.0.0
     stream-to-it: ^0.2.2
-  checksum: f11e89268c2158f8d9c7cc62ee40a5f7c7c41752f9de08b2d186f13053ef061ecbe81951ea9b3fdd768efe92d2ce1777a4d28731bad51f3d323f67dbbd5a8d8f
+  checksum: 47d0e92616f6a06f7fb5c42131a42bef73f452535f3d352adb28d31a06d9f223379ac376bcd22ad3e039cc36df8c74da4001fe64275bbe34ce1ec49065677dc0
   languageName: node
   linkType: hard
 
@@ -16223,10 +16239,31 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"it-all@npm:^1.0.2":
+  version: 1.0.6
+  resolution: "it-all@npm:1.0.6"
+  checksum: 0e802c85f00dc5921b2d792404e0df77c68dc4d453afe1caafcabe07551dabee4a78570f879e64dc380afa326d151425635f412213119faa5fdaad85ad38df83
+  languageName: node
+  linkType: hard
+
 "it-all@npm:^1.0.4":
   version: 1.0.5
   resolution: "it-all@npm:1.0.5"
   checksum: f641ca761951b2180b5ac7c7146e92c58363a50438cd874f61fdc5e1af7ef0e636deaa1d7535b656ea46bb31aa0663b288569f6656cc8b46360492d9780a4532
+  languageName: node
+  linkType: hard
+
+"it-drain@npm:^1.0.1":
+  version: 1.0.5
+  resolution: "it-drain@npm:1.0.5"
+  checksum: 7476daa54e817477ab5bba5514cf499b26d2ae5ed01d891ff3367efcc3611b5c239e6c77e3e1f09358205c68f14189793753120324c101ccae2cd6bfae9ebe1c
+  languageName: node
+  linkType: hard
+
+"it-filter@npm:^1.0.2":
+  version: 1.0.3
+  resolution: "it-filter@npm:1.0.3"
+  checksum: f268cd4280c518630cf9f750457ffacce17698e67674cf7031dab8e09eac485276539fb0893c71c5568e245f43225f8cccbe9bcdda34e3946d4d53e1a8f50719
   languageName: node
   linkType: hard
 
@@ -16237,13 +16274,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"it-glob@npm:^1.0.1":
-  version: 1.0.2
-  resolution: "it-glob@npm:1.0.2"
+"it-glob@npm:~0.0.11":
+  version: 0.0.14
+  resolution: "it-glob@npm:0.0.14"
   dependencies:
     "@types/minimatch": ^3.0.4
     minimatch: ^3.0.4
-  checksum: e96df7e5bd4cddf0fbe4eb1415b9f1843e1db1f3091e0b194ef4a2c7fc8438aeb73b128d395d477e77cfe2a0c10f382b8954c0287b218f55e3a15be58dd98cd0
+  checksum: adaaa48f77e606072abe0dd61931a935f3da779d9f33f9026b9ee9d1ebea22c0a5d201c1b4d54422d78a9bacadf68adf29dcd5775140d1b2132511702070c405
   languageName: node
   linkType: hard
 
@@ -16265,6 +16302,13 @@ fsevents@~2.3.1:
   version: 1.0.2
   resolution: "it-peekable@npm:1.0.2"
   checksum: 8ac217e422c62a0cda99265708ca0524fe1afafef3a3a6b1211f2e26dda81a5f7f05ae329d928b585e82feb01b3669d824e511958c0811e069ec25fe36f476e4
+  languageName: node
+  linkType: hard
+
+"it-take@npm:^1.0.1":
+  version: 1.0.2
+  resolution: "it-take@npm:1.0.2"
+  checksum: 2ef4102554195c5e3816e3087d11a08634c006811ae5ccba21ff67d99c1ee801b9187b573647e8b8f3f8c087df6384dfc1699956e0c642ba99991e3615aafa0d
   languageName: node
   linkType: hard
 
@@ -18613,7 +18657,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"nanoid@npm:^3.1.23":
+"nanoid@npm:^3.1.12":
   version: 3.1.30
   resolution: "nanoid@npm:3.1.30"
   bin:
