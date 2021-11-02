@@ -29,6 +29,7 @@ import {
   IsString,
   IsObject,
   ValidateNested,
+  IsEthereumAddress,
 } from 'class-validator';
 
 export class BlockFilter implements SubqlBlockFilter {
@@ -196,4 +197,7 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsString()
   abi: string;
+  @IsOptional()
+  @IsEthereumAddress()
+  address: string;
 }

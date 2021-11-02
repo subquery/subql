@@ -5,16 +5,8 @@ import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
-// export enum SubqlKind {
-//   Runtime = 'substrate/Runtime',
-//   BlockHandler = 'substrate/BlockHandler',
-//   CallHandler = 'substrate/CallHandler',
-//   EventHandler = 'substrate/EventHandler',
-// }
-
 export enum SubqlDatasourceKind {
   Runtime = 'substrate/Runtime',
-  // Custom = 'substrate/Custom',
 }
 
 export enum SubqlHandlerKind {
@@ -23,7 +15,7 @@ export enum SubqlHandlerKind {
   Event = 'substrate/EventHandler',
 }
 
-type RuntimeHandlerInputMap = {
+export type RuntimeHandlerInputMap = {
   [SubqlHandlerKind.Block]: SubstrateBlock;
   [SubqlHandlerKind.Event]: SubstrateEvent;
   [SubqlHandlerKind.Call]: SubstrateExtrinsic;
@@ -136,6 +128,8 @@ export interface SubqlCustomDatasource<
   assets: Map<string, CustomDataSourceAsset>;
   processor: FileReference;
   abi?: string; // Should be a key of assets
+  address?: string;
+  // [more: string]: unknown;
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
@@ -158,10 +152,13 @@ export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetwo
 
 // only allow one custom handler for each baseHandler kind
 export interface SecondLayerHandlerProcessor<K extends SubqlHandlerKind, F, E> {
-  // kind: string;
   baseHandlerKind: K;
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
   transformer: HandlerInputTransformer<K, E>;
-  filterProcessor: (filter: F, input: E, ds: SubqlCustomDatasource<string, SubqlNetworkFilter>) => boolean;
+  filterProcessor: (
+    filter: F | undefined,
+    input: RuntimeHandlerInputMap[K],
+    ds: SubqlCustomDatasource<string, SubqlNetworkFilter>
+  ) => boolean;
   filterValidator: (filter: F) => void;
 }
