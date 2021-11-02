@@ -26,13 +26,13 @@ export class RequireCustomDsValidation implements Rule {
         )).default;
 
         if (customDs.kind !== processor.kind) {
-          console.log(`ds kind (${customDs.kind}) doesnt match processor (${processor.kind})`);
+          ctx.logger.log(`ds kind (${customDs.kind}) doesnt match processor (${processor.kind})`);
           return false;
         }
 
         for (const handler of customDs.mapping.handlers) {
           if (!(handler.kind in processor.handlerProcessors)) {
-            console.log('Unsupported DS handler kind');
+            ctx.logger.log(`ds kind ${handler.kind} not one of ${Object.keys(processor.handlerProcessors).join(', ')}`);
             return false;
           }
         }
@@ -42,7 +42,7 @@ export class RequireCustomDsValidation implements Rule {
             processor.handlerProcessors[handler.kind].filterValidator(handler.filter)
           );
         } catch (e) {
-          console.log('Invalid filter for DS', e.message);
+          ctx.logger.log(`Invalid filter for DS: ${e.message}`);
           return false;
         }
       }
