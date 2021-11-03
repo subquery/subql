@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.24.0] - 2021-11-03
+### Added
+- Add moonbeam custom datasource processor (#547)
+### Changed
+- Bump dependencies (#584)
+- Moonbeam EVM,  filter before transforming with custom datasource (#593)
+- Update Polkadot/api to 6.6.1 (#599)
 ### Fixed
 - Moonbeam networks shows negative bps and fail Healthy checks (#589)
 
@@ -318,7 +326,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.12.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.24.0...HEAD
+[0.24.0]: https://github.com/subquery/subql/compare/node/0.23.1...node/0.24.0
 [0.23.1]: https://github.com/subquery/subql/compare/node/0.23.0...node/0.23.1
 [0.23.0]: https://github.com/subquery/subql/compare/v0.16.0...v0.16.1
 [0.22.0]: https://github.com/subquery/subql/compare/v0.16.0...v0.16.1
