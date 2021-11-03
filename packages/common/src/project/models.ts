@@ -171,11 +171,18 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
+export class Processor<O = any> extends FileReferenceImpl {
+  @IsOptional()
+  @IsObject()
+  options?: O;
+}
+
 export class CustomDataSourceBase<
   K extends string,
   T extends SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
-> implements SubqlCustomDatasource<K, T, M>
+  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
+  O = any
+> implements SubqlCustomDatasource<K, T, M, O>
 {
   @IsString()
   kind: K;
@@ -194,10 +201,4 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsObject()
   filter?: T;
-  @IsOptional()
-  @IsString()
-  abi: string;
-  @IsOptional()
-  @IsEthereumAddress()
-  address: string;
 }
