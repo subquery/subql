@@ -95,7 +95,7 @@ type Person @entity {
 }
 ```
 
-或
+或者
 
 ```graphql
 type Person @entity { 
