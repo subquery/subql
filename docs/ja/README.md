@@ -29,7 +29,7 @@
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
             <span>チュートリアルと使用例</span>
-            <p>実践で学ぶ。 様々な SubQuery プロジェクトをビルドする方法についてのチュートリアルと使用例。</p>
+            <p>実践で学びましょう。 様々な SubQuery プロジェクトをビルドする方法についてのチュートリアルと使用例。</p>
           </div>
         </router-link>
       </li>
