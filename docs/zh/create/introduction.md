@@ -32,7 +32,7 @@
 
 示例
 
-![子查询目录结构](/assets/img/subQuery_directory_stucture.png)
+![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
 
 ## 代码生成
 
@@ -60,14 +60,14 @@ logger.warn('Warning level message');
 
 要使用 `logger.info` 或 `logger.warn`，只需将行放入您的映射文件。
 
-![正在记录.信息](/assets/img/logging_info.png)
+![logging.info](/assets/img/logging_info.png)
 
 要使用 `logger.debug`, 需要一个额外的步骤。 将 `--log-level=debug` 添加到您的命令行。
 
 如果您正在运行一个停靠容器，请将此行添加到您的 `docker-compose.yaml` 文件中。
 
-![正在记录调试...](/assets/img/logging_debug.png)
+![logging.debug](/assets/img/logging_debug.png)
 
 您现在应该在终端屏幕上看到新的登录。
 
-![正在记录调试...](/assets/img/subquery_logging.png)
+![logging.debug](/assets/img/subquery_logging.png)
