@@ -8,12 +8,6 @@
 
 [Hello World explained](/quickstart/understanding-helloworld.md)
 
-## Lesson 2: Hello World with SubQuery Projects
-
-**Documentation reference**
-
-[Hello World (SubQuery hosted)](/quickstart/helloworld-hosted.md)
-
 ## Exercise
 **Workbook**: [Hello World](/assets/pdf/Hello_World_Lab.pdf)
 
