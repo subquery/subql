@@ -36,6 +36,11 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
           paths: packages/common
@@ -49,11 +54,6 @@ jobs:
         id: changed-cli
         with:
           paths: packages/cli
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-types
-        with:
-          paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -75,6 +75,13 @@ jobs:
       - name: build
         run: yarn workspaces foreach run build
 
+      - name: Bump types & deploy
+        if: steps.changed-types.outputs.changed == 'true'
+        working-directory: packages/types
+        run: echo "Changes exist in types" && yarn version prerelease && yarn npm publish --access public --tag dev
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump common & deploy
         if: steps.changed-common.outputs.changed == 'true'
         working-directory: packages/common
@@ -93,14 +100,6 @@ jobs:
         if: steps.changed-cli.outputs.changed == 'true'
         working-directory: packages/cli
         run: echo "Changes exist in cli" && yarn version prerelease && yarn npm publish --access public --tag dev
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-
-      - name: Bump types & deploy
-        if: steps.changed-types.outputs.changed == 'true'
-        working-directory: packages/types
-        run: echo "Changes exist in types" && yarn version prerelease && yarn npm publish --access public --tag dev
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 

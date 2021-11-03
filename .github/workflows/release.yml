@@ -37,6 +37,11 @@ jobs:
 
     #Identify changes
       - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
           paths: packages/common
@@ -50,11 +55,6 @@ jobs:
         id: changed-cli
         with:
           paths: packages/cli
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-types
-        with:
-          paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -77,6 +77,14 @@ jobs:
         run: yarn workspaces foreach run build
 
       #Publish to npm and github releases
+      - name: Publish Types
+        if: steps.changed-types.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         uses: ./.github/actions/create-release
@@ -98,14 +106,6 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/cli
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Types
-        if: steps.changed-types.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/types
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
