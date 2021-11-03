@@ -34,7 +34,7 @@ dataSources:
 ```
 
 - `network.endpoint`定义要索引的区块链的wss或ws端点-**必须是完整的存档节点**。
-- `network.dictionary` optionally provides the HTTP endpoint of a full chain dictionary to speed up processing - see [Running an Indexer](../run/run.md#using-a-dictionary)
+- `network.dictionary`可选地提供全链字典的HTTP端点以加快处理-[了解SubQuery字典的工作方式](../tutorials_examples/dictionary.md)。
 - `dataSources`定义要过滤和提取的数据以及要应用的数据转换的映射函数处理程序的位置。
   - `kind`目前只支持`substrate/Runtime`。
   - `startBlock`指定开始索引的块高度。
@@ -43,7 +43,7 @@ dataSources:
 
 ## 网络筛选器
 
-Usually the user will create a SubQuery and expect to reuse it for both their testnet and mainnet environments (e.g Polkadot and Kusama). Between networks, various options are likely to be different (e.g. index start block). Therefore, we allow users to define different details for each data source which means that one SubQuery project can still be used across multiple networks. 在不同的网络环境之间，一些设置可能会发生变化（例如索引起始块）。 因此，我们允许用户自定义数据源，这意味着一个SubQuery项目可以在多个不同的网络中使用。
+通常，用户创建一个SubQuery项目，使其能够在测试网和主网环境（例如Kusama和Polkadot）中都可以使用。 在不同的网络环境之间，一些设置可能会发生变化（例如索引起始块）。 因此，我们允许用户自定义数据源，这意味着一个SubQuery项目可以在多个不同的网络中使用。
 
 用户可以在 `filter` 中通过添加`dataSources` 来决定在每个网络上运行哪个数据源。
 
@@ -81,7 +81,7 @@ dataSources:
 
 过滤器映射是一个非常有用的选项，是用决定哪些块、事件或外部程序将触发映射的过滤器。
 
-映射函数只处理满足筛选条件的传入数据。 Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
+映射函数只处理满足筛选条件的传入数据。 映射筛选的选项是可选状态，但我们推荐使用，因为它可以显著减少SubQuery项目处理的数据量，并提高索引性能。
 
 ```yaml
 #Example filter from callHandler
@@ -102,7 +102,7 @@ filter:
 
 -  模块和方法过滤器支持所有基于SubQery的平行链。
 - 过滤器的`成功运行`需要一个布尔值，用于根据外部对象的成功状态进行过滤。
-- The `specVersion` filter specifies the spec version range for a substrate block. The following examples describe how to set version ranges. 以下示例将描述如何设置版本范围。
+- `specVersion`过滤器指定板块的规格版本范围。 以下示例将描述如何设置版本范围。
 
 ```yaml
 filter:
@@ -116,7 +116,7 @@ filter:
 
 ## 自定义链
 
-You can index data from custom chains by also including chain types in the `project.yaml`. Declare the specific types supported by this blockchain in `network.types`. We support the additional types used by substrate runtime modules. 在`network.types`中添加此区块链支持的特定类型。 我们支持Substrate 运行时模块使用的其他类型。
+你可以通过在`project.yaml`中添加链类型来索引自定义链中的数据。 在`network.types`中添加此区块链支持的特定类型。 我们支持Substrate 运行时模块使用的其他类型。
 
 同样支持`typesAlias`, `typesBundle`, `typesChain`, 和 `typesSpec` 。
 
