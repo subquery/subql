@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.24.0] - 2021-11-03
 ### Added
-- Add moonbeam custom datasource processor (#547)
+- [custom ds] Read and feed assets to custom ds's `validate()` (#547)
+- Improve error msg when fetch block fails (#602)
 ### Changed
 - Bump dependencies (#584)
 - Moonbeam EVM,  filter before transforming with custom datasource (#593)

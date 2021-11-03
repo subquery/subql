@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.0] - 2021-11-03
 ### Fixed
-- Fix evm tx from filed (#590)
+- Fix evm tx's `from` field (#590)
 ### Changed
 - Bump dependencies (#584)
 - Moonbeam EVM improvement (#593)

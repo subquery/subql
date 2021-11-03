@@ -10,8 +10,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.15.0] - 2021-11-03
 ### Changed
-- Update `create` function in model.ts template (#573)
+- Improve ts typing for `static create()` function in model.ts template (#573)
 - Use jsonrpc client to fetch genesis hash , drop dependencies of polkadot-api (#595)
+- Update `subql validate` to validate custom ds (#596)
 - Bump dependencies (#584)
 ### Added
 - New command `Subql migrate` allow convert project manifest v0.0.1 to v0.2.0 (#587)

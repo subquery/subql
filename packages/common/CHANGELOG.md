@@ -12,9 +12,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Add `abi` to to project CustomDataSourceBase (#547)
 - Add `address` and rule to project CustomDataSourceBase, improve Moonbeam EVM (#593);
+- Move `abi` and `address` under `processor.options` (#598)
 ### Changed
-- Allow dictionary in ProjectManifest v0.2.0 (#578)
 - Bump dependencies (#584)
+### Fixed
+- Allow dictionary in ProjectManifest v0.2.0 (#578)
 
 ## [0.12.0] - 2021-10-26
 ### Changed
