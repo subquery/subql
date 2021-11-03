@@ -125,7 +125,7 @@ $ ./node_modules/.bin/subql codegen
 ✨  Done in 1.02s.
 ```
 
-**Warning** When changes are made to the schema file, please remember to re-run `yarn codegen` to regenerate your types directory.
+**警告** 当更改schema 文件时，请记住重新运行 `yarn codegen` 以重新生成您的类型目录。
 
 ## 4. `yarn build` 示例
 
