@@ -52,10 +52,10 @@ subql init --starter PROJECT_NAME
 
 最后，在项目目录下，运行以下命令来安装新项目的依赖关系。
 
-<CodeGroup> cd PROJECT_NAME # Yarn yarn install # NPM npm install You will mainly be working on the following files:
+<CodeGroup> cd PROJECT_NAME # Yarn yarn install # NPM npm install 您将主要处理以下文件：
 
-- The Manifest in `project.yaml`
-- schema.graphql 的 GraphQL 架构
+- 在 `project.yaml`
+- `schema.graphql`中的 GraphQL 架构
 - `src/mappings/` 目录中的映射函数
 
 关于如何编写您自己的子查询的更多信息，请查阅 [Create a Project](../create/introduction.md) 下的我们的文档
