@@ -2,7 +2,7 @@
 
 ## 定义实体
 
-`schema.graphql` 文件定义了各种GraphQL schemas。 由于GraphQL查询语言的工作方式，方案文件基本上决定了您从 SubQuery 获取数据的形状。 There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
+`schema.graphql` 文件定义了各种GraphQL schemas。 由于GraphQL查询语言的工作方式，方案文件基本上决定了您从 SubQuery 获取数据的形状。 要更多地了解如何使用 GraphQL schema 语言写入，我们建议查看 [Schemas 和 Type](https://graphql.org/learn/schema/#type-language)。
 
 **重要：当您对模式文件做任何更改时， 请确保你重新生成你的类型目录，命令 `yarn codegen`**
 
