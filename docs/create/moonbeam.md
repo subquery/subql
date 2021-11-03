@@ -18,11 +18,17 @@ Supported networks:
 
 ## Data Source Spec
 
+| Field             |                                 Type                                | Required |                Description                 |
+| ----------------- | :-----------------------------------------------------------------: | :------: | :----------------------------------------: |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'`      |   Yes    | File reference to the data processor code  |
+| processor.options | [ProcessorOptions](#processor-options)                              |   No     | Options specific to the Moonbeam Processor |
+| assets            |                 `{ [key: String]: { file: String }}`                |    No    |     An object of external asset files      |
+
+### Processor Options
+
 | Field     |                                 Type                                  | Required |                                                Description                                                 |
 | --------- | :-------------------------------------------------------------------: | :------: | :--------------------------------------------------------------------------------------------------------: |
-| processor | `{file:'./node_modules/@subql/contract-processors/dist/moonbeam.js'}` |   Yes    |                                 File reference to the data processor code                                  |
 | abi       |                                String                                 |    No    |            The ABI that is used by the processor to parse arguments. MUST be a key of `assets`             |
-| assets    |                 `{ [key: String]: { file: String }}`                  |    No    |                                     An object of external asset files                                      |
 | address   |                           String or `null`                            |    No    | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
 
 ## MoonbeamCall
@@ -90,14 +96,14 @@ dataSources:
     startBlock: 752073
     processor:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
-    # Must be a key of assets
-    abi: erc20
+      options:
+        # Must be a key of assets
+        abi: erc20
+        # Contract address (or recipient if transfer) to filter, if `null` should be for contract creation
+        address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
     assets:
       erc20:
         file: './erc20.abi.json'
-
-    # Contract address to filter, if `null` should be for contract creation
-    address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
     mapping:
       file: './dist/index.js'
       handlers:
