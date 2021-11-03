@@ -5310,6 +5310,7 @@ __metadata:
     postgraphile-plugin-connection-filter: ^2.2.2
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
+    rxjs: ^7.1.0
     typescript: ^4.4.4
     yargs: ^16.2.0
   bin:
@@ -21764,7 +21765,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"rxjs@npm:^7.2.0, rxjs@npm:^7.3.0, rxjs@npm:^7.4.0":
+"rxjs@npm:^7.1.0, rxjs@npm:^7.2.0, rxjs@npm:^7.3.0, rxjs@npm:^7.4.0":
   version: 7.4.0
   resolution: "rxjs@npm:7.4.0"
   dependencies:
