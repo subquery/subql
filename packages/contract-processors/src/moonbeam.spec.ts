@@ -205,7 +205,7 @@ describe('MoonbeamDs', () => {
 
       it('filters just a non-matching address', () => {
         expect(
-          processor.filterProcessor({}, log, {processorOptions: {address: '0x00'}} as MoonbeamDatasource)
+          processor.filterProcessor({}, log, {processor: {options: {address: '0x00'}}} as MoonbeamDatasource)
         ).toBeFalsy();
       });
 
@@ -345,12 +345,12 @@ describe('MoonbeamDs', () => {
       it('can filter contract address', () => {
         expect(
           processor.filterProcessor({}, transaction, {
-            processorOptions: {address: '0xAA30eF758139ae4a7f798112902Bf6d65612045f'},
+            processor: {options: {address: '0xAA30eF758139ae4a7f798112902Bf6d65612045f'}},
           } as MoonbeamDatasource)
         ).toBeTruthy();
         expect(
           processor.filterProcessor({}, transaction, {
-            processorOptions: {address: '0x0000000000000000000000000000000000000000'},
+            processor: {options: {address: '0x0000000000000000000000000000000000000000'}},
           } as MoonbeamDatasource)
         ).toBeFalsy();
       });
@@ -361,7 +361,7 @@ describe('MoonbeamDs', () => {
 
         const contractTx = extrinsics[4];
         expect(
-          processor.filterProcessor({}, contractTx, {processorOptions: {address: null}} as MoonbeamDatasource)
+          processor.filterProcessor({}, contractTx, {processor: {options: {address: null}}} as MoonbeamDatasource)
         ).toBeTruthy();
       }, 40000);
 
@@ -401,9 +401,11 @@ describe('MoonbeamDs', () => {
     const baseDS: MoonbeamDatasource = {
       kind: 'substrate/Moonbeam',
       assets: new Map([['erc20', {file: erc20MiniAbi}]]),
-      processor: {file: ''},
-      processorOptions: {
-        abi: 'erc20',
+      processor: {
+        file: '',
+        options: {
+          abi: 'erc20',
+        },
       },
       mapping: {
         handlers: [

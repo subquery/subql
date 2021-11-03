@@ -162,7 +162,7 @@ async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promi
 const contractInterfaces: Record<string, Interface> = {};
 
 function buildInterface(ds: MoonbeamDatasource, assets: Record<string, string>): Interface | undefined {
-  const abi = ds.processorOptions.abi;
+  const abi = ds.processor?.options?.abi;
   if (!abi) {
     return;
   }
@@ -237,7 +237,10 @@ const EventProcessor: SecondLayerHandlerProcessor<
     const [eventData] = input.event.data;
     const rawEvent = eventData as EvmLog;
 
-    if (ds.processorOptions?.address && !stringNormalizedEq(ds.processorOptions.address, rawEvent.address.toString())) {
+    if (
+      ds.processor?.options?.address &&
+      !stringNormalizedEq(ds.processor.options.address, rawEvent.address.toString())
+    ) {
       return false;
     }
 
@@ -341,8 +344,8 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
       // if `to` is null then we handle contract creation
       if (
-        (ds.processorOptions?.address && !stringNormalizedEq(ds.processorOptions.address, to)) ||
-        (ds.processorOptions?.address === null && !tx.action.isCreate)
+        (ds.processor?.options?.address && !stringNormalizedEq(ds.processor.options.address, to)) ||
+        (ds.processor?.options?.address === null && !tx.action.isCreate)
       ) {
         return false;
       }
@@ -376,8 +379,8 @@ export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
 > = {
   kind: 'substrate/Moonbeam',
   validate(ds: MoonbeamDatasource, assets: Record<string, string>): void {
-    if (ds.processorOptions) {
-      const opts = plainToClass(MoonbeamProcessorOptions, ds.processorOptions);
+    if (ds.processor.options) {
+      const opts = plainToClass(MoonbeamProcessorOptions, ds.processor.options);
       const errors = validateSync(opts, {whitelist: true, forbidNonWhitelisted: true});
       if (errors?.length) {
         const errorMsgs = errors.map((e) => e.toString()).join('\n');

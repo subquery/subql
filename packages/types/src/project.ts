@@ -119,6 +119,8 @@ export interface FileReference {
 
 export type CustomDataSourceAsset = FileReference;
 
+export type Processor<O = any> = FileReference & {options?: O};
+
 export interface SubqlCustomDatasource<
   K extends string = string,
   T extends SubqlNetworkFilter = SubqlNetworkFilter,
@@ -127,8 +129,7 @@ export interface SubqlCustomDatasource<
 > extends ISubqlDatasource<M, T> {
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
-  processor: FileReference;
-  processorOptions?: O;
+  processor: Processor<O>;
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;

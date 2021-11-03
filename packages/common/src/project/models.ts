@@ -171,6 +171,12 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
+export class Processor<O = any> extends FileReferenceImpl {
+  @IsOptional()
+  @IsObject()
+  options?: O;
+}
+
 export class CustomDataSourceBase<
   K extends string,
   T extends SubqlNetworkFilter,
@@ -195,7 +201,4 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsObject()
   filter?: T;
-  @IsOptional()
-  @IsObject()
-  processorOptions?: O;
 }
