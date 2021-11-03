@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.14.1-4 linux-x64 node-v14.18.1
+@subql/cli/0.14.1-5 linux-x64 node-v14.18.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -36,7 +36,44 @@ USAGE
 
 <!-- commands -->
 
+- [`subql build`](#subql-build)
+- [`subql codegen`](#subql-codegen)
 - [`subql help [COMMAND]`](#subql-help-command)
+- [`subql init [PROJECTNAME]`](#subql-init-projectname)
+- [`subql migrate`](#subql-migrate)
+- [`subql publish`](#subql-publish)
+- [`subql validate`](#subql-validate)
+
+## `subql build`
+
+Build this SubQuery project code
+
+```
+USAGE
+  $ subql build
+
+OPTIONS
+  -l, --location=location                   local folder
+  --mode=(production|prod|development|dev)  [default: production]
+```
+
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/build.js)_
+
+## `subql codegen`
+
+Generate schemas for graph node
+
+```
+USAGE
+  $ subql codegen
+
+OPTIONS
+  -f, --force
+  -l, --location=location  local folder to run codegen in
+  --file=file
+```
+
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -54,5 +91,77 @@ OPTIONS
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
+
+## `subql init [PROJECTNAME]`
+
+Init a scaffold subquery project
+
+```
+USAGE
+  $ subql init [PROJECTNAME]
+
+ARGUMENTS
+  PROJECTNAME  Give the starter project name
+
+OPTIONS
+  -f, --force
+  -l, --location=location    local folder to create the project in
+  --install-dependencies     Install dependencies as well
+  --npm                      Force using NPM instead of yarn, only works with `install-dependencies` flag
+  --specVersion=specVersion  [default: 0.0.1] The spec version to be used by the project
+  --starter
+```
+
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/init.js)_
+
+## `subql migrate`
+
+Migrate Subquery project manifest v0.0.1 to v0.2.0
+
+```
+USAGE
+  $ subql migrate
+
+OPTIONS
+  -f, --force
+  -l, --location=location  local folder to run migrate in
+  --file=file
+```
+
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/migrate.js)_
+
+## `subql publish`
+
+Upload this SubQuery project to IPFS
+
+```
+USAGE
+  $ subql publish
+
+OPTIONS
+  -l, --location=location  local folder
+  --ipfs=ipfs              [default: http://localhost:5001/api/v0] IPFS gateway endpoint
+```
+
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/publish.js)_
+
+## `subql validate`
+
+check a folder or github repo is a validate subquery project
+
+```
+USAGE
+  $ subql validate
+
+OPTIONS
+  -l, --location=location  local folder, github repo url or IPFS cid
+
+  --ipfs=ipfs              [default: https://ipfs.thechainhub.com/api/v0] IPFS gateway endpoint, used for validating
+                           projects on IPFS
+
+  --silent
+```
+
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/validate.js)_
 
 <!-- commandsstop -->
