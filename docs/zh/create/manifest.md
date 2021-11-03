@@ -77,9 +77,9 @@ dataSources:
     mapping: *mymapping # can reuse or change
 ```
 
-## 映射过滤
+## 过滤器映射
 
-映射过滤是一个非常有用的选项，是用决定哪些块、事件或外部程序将触发映射的过滤器。
+过滤器映射是一个非常有用的选项，是用决定哪些块、事件或外部程序将触发映射的过滤器。
 
 映射函数只处理满足筛选条件的传入数据。 Only incoming data that satisfy the filter conditions will be processed by the mapping functions. Mapping filters are optional but are recommended as they significantly reduce the amount of data processed by your SubQuery project and will improve indexing performance.
 
