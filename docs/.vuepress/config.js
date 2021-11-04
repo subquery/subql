@@ -131,6 +131,7 @@ module.exports = config({
           '/create/manifest.md',
           '/create/graphql.md',
           '/create/mapping.md',
+          '/create/moonbeam.md'
         ]
       },
       {
