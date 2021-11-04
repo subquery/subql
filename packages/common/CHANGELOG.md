@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.13.0] - 2021-11-03
+### Added
+- Add `abi` to to project CustomDataSourceBase (#547)
+- Add `address` and rule to project CustomDataSourceBase, improve Moonbeam EVM (#593);
+- Move `abi` and `address` under `processor.options` (#598)
+### Changed
+- Bump dependencies (#584)
+### Fixed
+- Allow dictionary in ProjectManifest v0.2.0 (#578)
+
 ## [0.12.0] - 2021-10-26
 ### Changed
 - Move project manifest types to @subql/types because it is now also required by subquery project. (#512)
@@ -87,7 +97,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.8.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/0.13.0...HEAD
+[0.13.0]: https://github.com/subquery/subql/compare/common/0.12.0...common/0.13.0
 [0.8.2]: https://github.com/subquery/subql/compare/v0.8.0...v0.8.2
 [0.8.0]: https://github.com/subquery/subql/compare/v0.7.0...v0.8.0
 [0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
