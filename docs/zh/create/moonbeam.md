@@ -1,22 +1,22 @@
-# Moonbeam EVM Support
+# Moonbeam EVM 支持
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+我们为Moonbeam和Moonriver的EVM提供了一个自定义数据源处理器。 这提供了一种简单的方法来筛选和索引月球网络上的 EVM 和 Substrate 活动在一个单一的 SubQuery 项目中。
 
-Supported networks:
+支持的网络：
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| 网络名称           | Websocket 端点                                       | Dictionary 端点                                                        |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
 | Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
+**您也可以通过事件和调用处理程序来参考 [基本Moonrier EVM 示例项目](https://github.com/subquery/tutorials-moonriver-evm-starter)** 这个项目也存在于 [ SubQuery Explorer](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project) 中。
 
-## Getting started
+## 入门指南
 
-1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
-2. Add a custom data source as described below
-3. Add handlers for the custom data source to your code
+1. 添加自定义数据源作为依赖项 `yarn 添加 @subql/contract-processors`
+2. 添加自定义数据源，如下文所述。
+3. 将自定义数据源的处理程序添加到您的代码
 
 ## Data Source Spec
 
