@@ -175,12 +175,15 @@ export class IndexerManager {
 
   private async ensureMetadata(schema: string) {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
+    const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    const networkMeta = this.apiService.getNetworkMetadata();
+    //This is here instead of in api.init() because metaService isn't ready until after api.init()
+    this.eventEmitter.emit(
+      IndexerEvent.NetworkMetadata,
+      this.apiService.networkMeta,
+    );
 
-    //block offset should only been create once, never update
-    //if change offset will require re-index and re-sync poi.
-    const count = await metadataRepo.count({
+    const entries = await metadataRepo.findAll({
       where: {
         key: [
           'blockOffset',
@@ -190,20 +193,37 @@ export class IndexerManager {
           'genesisHash',
         ],
       },
+      raw: true,
     });
 
-    if (count < 5) {
+    const keyValue = [];
+
+    entries.map((entry) => {
+      const { key, value } = entry;
+      keyValue[key] = value;
+    });
+
+    //block offset and genesisHash should only been create once, never update
+    //if offset is changed, will require re-index and re-sync poi.
+    if (!Object.prototype.hasOwnProperty.call(keyValue, 'blockOffset')) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+      await this.storeService.setMetadata('blockOffset', offsetValue);
+    }
 
-      await Promise.all([
-        this.storeService.setMetadata('blockOffset', offsetValue),
-        this.storeService.setMetadata('indexerNodeVersion', packageVersion),
-        this.storeService.setMetadata('chain', networkMeta.chain),
-        this.storeService.setMetadata('specName', networkMeta.specName),
-        this.storeService.setMetadata('genesisHash', networkMeta.genesisHash),
-      ]);
+    if (!Object.prototype.hasOwnProperty.call(keyValue, 'genesisHash')) {
+      await this.storeService.setMetadata('genesisHash', genesisHash);
+    }
 
-      this.eventEmitter.emit(IndexerEvent.NetworkMetadata, networkMeta);
+    if (keyValue.chain !== chain) {
+      await this.storeService.setMetadata('chain', chain);
+    }
+
+    if (keyValue.specName !== specName) {
+      await this.storeService.setMetadata('specName', specName);
+    }
+
+    if (keyValue.indexerNodeVersion !== packageVersion) {
+      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
     }
   }
 

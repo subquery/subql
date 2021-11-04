@@ -47,7 +47,7 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-function fetchFromTable(rows): Metadata {
+async function fetchFromTable(context: any, schemaName: string): Promise<Metadata> {
   const metadata: Metadata = {
     lastProcessedHeight: undefined,
     lastProcessedTimestamp: undefined,
@@ -60,8 +60,18 @@ function fetchFromTable(rows): Metadata {
     queryNodeVersion: undefined,
   };
 
+  const {rows} = await context.pgClient.query(`select * from ${schemaName}._metadata`);
+
   for (const row of rows) {
-    metadata[row.key] = row.value;
+    const {key, value} = row;
+
+    if (Object.prototype.hasOwnProperty.call(metadata, key)) {
+      const field = metadata[key];
+      const typedValue = value as typeof field;
+      if (typedValue !== null) {
+        metadata[key] = typedValue;
+      }
+    }
   }
 
   metadata.queryNodeVersion = packageVersion;
@@ -106,10 +116,10 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
       Query: {
         _metadata: async (_parentObject, _args, context, _info): Promise<Metadata> => {
           if (metadataTableExists) {
-            const {rows} = await context.pgClient.query(`select * from ${schemaName}._metadata`);
-            if (rows.length > 1) {
-              //check if _metadata contains more than just block offset
-              const metadata = fetchFromTable(rows);
+            const metadata = await fetchFromTable(context, schemaName);
+
+            //check if _metadata contains more than just blockOffset
+            if (Object.keys(metadata).length > 1) {
               return metadata;
             }
           }

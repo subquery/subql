@@ -174,20 +174,22 @@ export class StoreService {
     }
   }
 
-  async setMetadata(key: string, value: any): Promise<void> {
-    if (this.sequelize.isDefined(`_metadata`)) {
-      const model = this.sequelize.model('_metadata');
-      await model.upsert({ key, value });
-    }
+  async setMetadata(
+    key: string,
+    value: string | number | boolean,
+  ): Promise<void> {
+    const model = this.metaDataRepo;
+    assert(model, `model _metadata does not exist`);
+    await model.upsert({ key, value });
   }
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
-    const model = this.sequelize.model('_poi');
+    const model = this.poiRepo;
     assert(model, `model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await model.upsert(blockPoi, { transaction: this.tx });
+    await model.upsert(blockPoi, { transaction: tx });
   }
 
   getOperationMerkleRoot(): Uint8Array {

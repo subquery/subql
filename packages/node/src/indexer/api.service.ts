@@ -18,7 +18,6 @@ import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
-import { StoreService } from './store.service';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -91,10 +90,6 @@ export class ApiService implements OnApplicationShutdown {
 
   getApi(): ApiPromise {
     return this.api;
-  }
-
-  getNetworkMetadata(): NetworkMetadataPayload {
-    return this.networkMeta;
   }
 
   async getPatchedApi(): Promise<ApiPromise> {
