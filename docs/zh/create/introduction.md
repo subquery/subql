@@ -1,12 +1,12 @@
-# 教程 &
+# 创建新的 SubQuery 项目
 
-在 [快速开始](/quickstart/quickstart.md) 指南， 我们很快地演示了一个榜样，让您知道什么是SubQuery以及它是如何运作的。 我们会在创建您的项目和您将要处理的关键文件时更仔细地查看工作流。
+在 [快速开始](/quickstart/quickstart.md) 指南， 我们快速地演示了一个DEMO，让您知道什么是SubQuery以及它是如何运作的。 在这里，我们将进一步了解创建项目流程及后续所需使用的关键文件的流程。
 
 ## SubQuery 示例
 
 以下一些示例将假定您在 [快速启动](../quickstart/quickstart.md) 部分中成功初始化了启动器包。 从这个启动程序包，我们会走过标准进程来定制和执行您的 SubQuery 项目。
 
-1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
+1. 使用 `subql init --specversion 0.2.0 PROJECT_NAME` 初始化您的项目。 alternatively you can use the old spec version `subql init PROJECT_NAME`
 2. 更新清单文件(`个项目。 aml`) 以包含关于您的 blockchain 以及您将要映射的实体的信息 - 查看 [清单文件](./manifest.md)
 3. 在您的架构中创建 GraphQL 实体(`架构)。 定义您要提取和持续查询的数据形状的 rapphql`- 参见 [GraphQL Schema](./graphql.md)
 4. 添加所有映射函数 (eg `映射处理器。 s`) 您想要调用来将链式数据转换为您已定义的 GraphQL 实体 - 查看 [映射](./mapping.md)
