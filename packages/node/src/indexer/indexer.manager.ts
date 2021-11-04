@@ -174,6 +174,8 @@ export class IndexerManager {
   }
 
   private async ensureMetadata(schema: string) {
+    type KeyValue = { [key: string]: string | number | boolean };
+
     const metadataRepo = MetadataFactory(this.sequelize, schema);
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
@@ -196,7 +198,7 @@ export class IndexerManager {
       raw: true,
     });
 
-    const keyValue = [];
+    const keyValue: KeyValue = {};
 
     entries.map((entry) => {
       const { key, value } = entry;
