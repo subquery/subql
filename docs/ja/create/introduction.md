@@ -1,8 +1,8 @@
-# Tutorials & Examples
+# チュートリアルと例
 
-In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
+[クイックスタート](/quickstart/quickstart.md) ガイドで SubQueryとは何か、そしてどのように動作するのかを説明するために、簡単な例を見てみました。 ここでは、プロジェクトを作成する際のワークフローと、使用する主要なファイルを詳しく見ていきます。
 
-## SubQuery Examples
+## SubQuery の例
 
 Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
