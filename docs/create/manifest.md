@@ -118,18 +118,18 @@ While the v0.2.0 spec version is in beta, you will need to explicitly define it 
 
 ### Schema Spec
 
-| Field    |  Type  | v0.0.1 | v0.2.0 |                              Description |
-| -------- | :----: | :----: | :----: | ---------------------------------------: |
-| **file** | String |   𐄂    |        | The location of your GraphQL schema file |
+| Field    | v0.0.1 | v0.2.0 |                              Description |
+| -------- | :----: | :----: | ---------------------------------------: |
+| **file** |   𐄂    | String | The location of your GraphQL schema file |
 
 ### Network Spec
 
 | Field           | v0.0.1 |    v0.2.0     |                                                                                                Description                                                                                                 |
 | --------------- | :----: | :-----------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
-| **genesisHash** |        |               |                                                                                      The genesis hash of the network                                                                                       |
+| **genesisHash** |   𐄂     |    String    |                                                                                      The genesis hash of the network                                                                                       |
 | **endpoint**    | String |    String     | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io) |
 | **dictionary**  | String |    String     |               It is suggested to provide the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).                |
-| **chainTypes**  |   𐄂    | {file:String} |                                                                         Path to chain types file, accept `.json` or `.yaml` format                                                                         |
+| **chaintypes**  |   𐄂    | {file:String} |                                                                         Path to chain types file, accept `.json` or `.yaml` format                                                                         |
 
 ### Datasource Spec
 
@@ -197,6 +197,18 @@ filter:
 ```
 
 ## Custom Chains
+
+### Network Spec
+
+When connecting to a different Polkadot parachain or even a custom substrate chain, you'll need to edit the [Network Spec](#network-spec) section of this manifest.
+
+The `genesisHash` must always be the hash of the first block of the custom network. You can retireve this easily by going to [PolkadotJS](https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fkusama.api.onfinality.io%2Fpublic-ws#/explorer/query/0) and looking for the hash on **block 0** (see the image below).
+
+![Genesis Hash](/assets/img/genesis-hash.jpg)
+
+Additionally you will need to update the `endpoint`. This defines the wss endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io)
+
+### Chain Types
 
 You can index data from custom chains by also including chain types in the manifest.
 
