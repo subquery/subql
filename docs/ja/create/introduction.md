@@ -4,17 +4,17 @@
 
 ## SubQuery の例
 
-Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
+以下の例では、 [クイックスタート](../quickstart/quickstart.md) セクションでスターターパッケージを正常に初期化したと仮定します。 そのスターターパッケージから、SubQueryプロジェクトをカスタマイズして実装するための標準プロセスを説明します。
 
-1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
-2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
-3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
-4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
-5. Generate, build, and publish your code to SubQuery Projects (or run in your own local node) - see [Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project) in our quick start guide.
+1. `subql init --specVersion 0.2.0 PROJECT_NAME` を使用してプロジェクトを初期化します。 または、古い仕様のバージョン `subql init PROJECT_NAME` を使用することもできます。
+2. マニフェストファイル（`project.yaml`）を更新して、ブロックチェーンとマッピングするエンティティに関する情報を含めます。（[マニフェストファイル](./manifest.md)を参照）
+3. スキーマ（`schema.graphql`）にGraphQLエンティティを作成し、クエリのために抽出・保存するデータの型を定義します。（[GraphQL Schema](./graphql.md)を参照）
+4. チェーンデータを定義したGraphQLエンティティに変換するために呼び出したいすべてのマッピング関数（例：`mappingHandlers.ts`）を追加します。（[Mapping](./mapping.md)を参照）
+5. コードの生成、ビルド、SubQuery Projectsへの公開（または自分のローカル・ノードでの実行）をします。（クイック・スタート・ガイドの[Running and Querying your Starter Project](./quickstart.md#running-and-querying-your-starter-project)を参照）
 
-## Directory Structure
+## ディレクトリ構造
 
-The following map provides an overview of the directory structure of a SubQuery project when the `init` command is run.
+以下のマップは、 `init` コマンドの実行時に展開されるSubQuery プロジェクトのディレクトリ構造の概要を示します。
 
 ```
 - project-name
@@ -31,27 +31,32 @@ The following map provides an overview of the directory structure of a SubQuery 
   L .gitignore
 ```
 
-Example
+例
 
-![SubQuery directory structure](/assets/img/subQuery_directory_stucture.png)
+![SubQuery ディレクトリ構造](/assets/img/subQuery_directory_stucture.png)
 
-## Code Generation
+## コード生成
 
-Whenever you change your GraphQL entities, you must regenerate your types directory with the following command.
+GraphQL エンティティを変更するたびに、次のコマンドで types ディレクトリを再生成する必要があります。
 
 ```
 yarn codegen
 ```
 
-This will create a new directory (or update the existing) `src/types` which contain generated entity classes for each type you have defined previously in `schema.graphql`. These classes provide type-safe entity loading, read and write access to entity fields - see more about this process in [the GraphQL Schema](./graphql.md).
+これは`schema.graphql`内で事前に定義した型ごとに生成されたエンティティ・クラスを含む `src/types` ディレクトリを作成します（または既存のディレクトリを更新します）。 これらのクラスは、タイプセーフなエンティティのロード、エンティティフィールドへの読み取りと書き込みのアクセスを提供します。（このプロセスについては、[the GraphQL Schema](./graphql.md)を参照）
 
-## Build
+## ビルド
 
-In order to run your SubQuery Project on a locally hosted SubQuery Node, you need to first build your work.
+ローカルホストの SubQuery Node 上で SubQuery プロジェクトを実行するには、最初にビルド作業をする必要があります。
 
-Run the build command from the project's root directory.
+プロジェクトのルートディレクトリからbuild コマンドを実行します。
 
-<CodeGroup> The `console.log` method is **no longer supported**. Instead, a `logger` module has been injected in the types, which means we can support a logger that can accept various logging levels.
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
+
+## ログ出力
+
+`console.log` 関数は **もうサポートが終了してます。** 代わりに、 `logger` モジュールが型に組み込まれています。つまり、さまざまなロガーレベルを受け入れることができるロガーをサポートすることができます。</p>
 
 ```typescript
 logger.info('Info level message');
@@ -59,16 +64,16 @@ logger.debug('Debugger level message');
 logger.warn('Warning level message');
 ```
 
-To use `logger.info` or `logger.warn`, just place the line into your mapping file.
+`logger.info` または `logger.warn`を使用するには、マッピングファイルに行を挿入してください。
 
 ![logging.info](/assets/img/logging_info.png)
 
-To use `logger.debug`, an additional step is required. Add `--log-level=debug` to your command line.
+`logger.debug`を使用するには、追加のステップが必要です。 コマンドラインに `--log-level=debug` を追加します。
 
-If you are running a docker container, add this line to your `docker-compose.yaml` file.
+Docker containerを実行している場合は、 `docker-compose.yaml` ファイルにこの行を追加してください。
 
 ![logging.debug](/assets/img/logging_debug.png)
 
-You should now see the new logging in the terminal screen.
+ターミナル画面に新しいログが表示されます。
 
 ![logging.debug](/assets/img/subquery_logging.png)
