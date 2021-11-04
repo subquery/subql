@@ -179,6 +179,8 @@ function getSidebar(locale, language){
         `${locale}/create/manifest.md`,
         `${locale}/create/graphql.md`,
         `${locale}/create/mapping.md`,
+        `${locale}/create/moonbeam.md`
+
       ]
     },
     {
@@ -187,7 +189,7 @@ function getSidebar(locale, language){
       collapsable: true,
       children: [
         `${locale}/run/run.md`,
-        `${locale}/run/sandbox.m`,
+        `${locale}/run/sandbox.md`,
       ]
     },
     {
