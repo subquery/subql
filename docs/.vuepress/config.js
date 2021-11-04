@@ -180,7 +180,6 @@ function getSidebar(locale, language){
         `${locale}/create/graphql.md`,
         `${locale}/create/mapping.md`,
         `${locale}/create/moonbeam.md`
-
       ]
     },
     {
