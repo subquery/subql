@@ -96,7 +96,7 @@ While the v0.2.0 spec version is in beta, you will need to explicitly define it 
 `subql migrate` can be run in an existing project to migrate the project manifest to the latest version.
 
 |    Options     |                        Description                         |
-| :------------: | :--------------------------------------------------------: |
+| ------------ | -------------------------------------------------------- |
 |  -f, --force   |                                                            |
 | -l, --location | local folder to run migrate in (must contain project.yaml) |
 |  --file=file   |           to specify the project.yaml to migrate           |
@@ -106,7 +106,7 @@ While the v0.2.0 spec version is in beta, you will need to explicitly define it 
 ### Top Level Spec
 
 | Field           |               v0.0.1                |           v0.2.0            |                                                Description |
-| --------------- | :---------------------------------: | :-------------------------: | ---------------------------------------------------------: |
+| --------------- | --------------------------------- | ------------------------- | --------------------------------------------------------- |
 | **specVersion** |               String                |           String            | `0.0.1` or `0.2.0` - the spec version of the manifest file |
 | **name**        |                  𐄂                  |           String            |                                       Name of your project |
 | **version**     |                  𐄂                  |           String            |                                    Version of your project |
@@ -119,13 +119,13 @@ While the v0.2.0 spec version is in beta, you will need to explicitly define it 
 ### Schema Spec
 
 | Field    | v0.0.1 | v0.2.0 |                              Description |
-| -------- | :----: | :----: | ---------------------------------------: |
+| -------- | ---- | ---- | --------------------------------------- |
 | **file** |   𐄂    | String | The location of your GraphQL schema file |
 
 ### Network Spec
 
 | Field           | v0.0.1 |    v0.2.0     |                                                                                                Description                                                                                                 |
-| --------------- | :----: | :-----------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| --------------- | ---- | ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **genesisHash** |   𐄂     |    String    |                                                                                      The genesis hash of the network                                                                                       |
 | **endpoint**    | String |    String     | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io) |
 | **dictionary**  | String |    String     |               It is suggested to provide the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).                |
@@ -135,7 +135,7 @@ While the v0.2.0 spec version is in beta, you will need to explicitly define it 
 
 Defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
 | Field | v0.0.1 | v0.2.0 | Description
-| --------------- |:--------------:|:-------------:|:-------------:|
+| --------------- |--------------|-------------|-------------|
 | **name** | String | 𐄂 | Name of the data source |
 | **kind** | [substrate/Runtime](./manifest/#data-sources-and-mapping) | substrate/Runtime, [substrate/CustomDataSource](./manifest/#custom-data-sources)| We supports data type from default substrate runtime such as block, event and extrinsic(call). <br /> From v0.2.0, we support data from custom runtime, such as smart contract.|
 | **startBlock** | Integer | Integer | This changes your indexing start block, set this higher to skip initial blocks with less data|  
@@ -145,7 +145,7 @@ Defines the data that will be filtered and extracted and the location of the map
 ### Mapping Spec
 
 | Field                  |                                  v0.0.1                                  |                                         v0.2.0                                          |                                                                                                           Description                                                                                                            |
-| ---------------------- | :----------------------------------------------------------------------: | :-------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: |
+| ---------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **file**               |                                  String                                  |                                            𐄂                                            |                                                                                                    Path to the mapping entry                                                                                                     |
 | **handlers & filters** | [Default handlers and filters](./manifest/#mapping-handlers-and-filters) | Default handlers and filters, <br />[Custom handlers and filters](#custom-data-sources) | List all the [mapping functions](./mapping.md) and their corresponding handler types, with additional mapping filters. <br /><br /> For custom runtimes mapping handlers please view [Custom data sources](#custom-data-sources) |
 
@@ -268,7 +268,7 @@ Custom Data Sources can be used with normal data sources.
 Here is a list of supported custom datasources:
 
 | Kind                                                  |                                            Supported Handlers                                            |             Filters             |                                   Description                                    |
-| ----------------------------------------------------- | :------------------------------------------------------------------------------------------------------: | :-----------------------------: | :------------------------------------------------------------------------------: |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------ |
 | [substrate/Moonbeam](./moonbeam/#data-source-example) | [substrate/MoonbeamEvent](./moonbeam/#moonbeamevent), [substrate/MoonbeamCall](./moonbeam/#moonbeamcall) | See filters under each handlers | Provides easy interaction with EVM transactions and events on Moonbeams networks |
 
 ## Network Filters
