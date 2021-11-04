@@ -4,9 +4,13 @@ We provide a custom data source processor for Moonbeam's and Moonriver's EVM. Th
 
 Supported networks:
 
-- Moonbeam
-- Moonriver
-- Moonbase Alpha
+| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
+| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
+| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+
+**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
 
 ## Getting started
 
@@ -14,22 +18,20 @@ Supported networks:
 2. Add a custom data source as described below
 3. Add handlers for the custom data source to your code
 
-**You can also refer to the [basic ERC20 example project](https://github.com/subquery/subql-starter/tree/moonriver-ds) with an event and call handler.**
-
 ## Data Source Spec
 
-| Field             |                              Type                              | Required |                Description                 |
-| ----------------- |:--------------------------------------------------------------:|:--------:|:------------------------------------------:|
-| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` |   Yes    | File reference to the data processor code  |
-| processor.options |             [ProcessorOptions](#processor-options)             |    No    | Options specific to the Moonbeam Processor |
-| assets            |              `{ [key: String]: { file: String }}`              |    No    |     An object of external asset files      |
+| Field             | Type                                                           | Required | Description                                |
+| ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Yes      | File reference to the data processor code  |
+| processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
+| assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
 
 ### Processor Options
 
-| Field   |       Type       | Required |                                                Description                                                 |
-| ------- |:----------------:|:--------:|:----------------------------------------------------------------------------------------------------------:|
-| abi     |      String      |    No    |            The ABI that is used by the processor to parse arguments. MUST be a key of `assets`             |
-| address | String or `null` |    No    | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+| Field   | Type             | Required | Description                                                                                                |
+| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
+| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
 
 ## MoonbeamCall
 
