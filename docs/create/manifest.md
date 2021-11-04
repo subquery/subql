@@ -6,6 +6,7 @@ The Manifest can be in either YAML or JSON format. In this document, we will use
 
 <CodeGroup>
   <CodeGroupItem title="v0.2.0" active>
+  
 ``` yml
 specVersion: 0.2.0
 name: example-project # Provide the project name
@@ -14,34 +15,34 @@ description: '' # Description of your project
 repository: 'https://github.com/subquery/subql-starter' # Git repository address of your project
 
 schema:
-file: ./schema.graphql # The location of your GraphQL schema file
+  file: ./schema.graphql # The location of your GraphQL schema file
 
 network:
-genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' # Genesis hash of the network
-endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
-
-# Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
-
-dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
+  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3' # Genesis hash of the network
+  endpoint: 'wss://polkadot.api.onfinality.io/public-ws'
+  # Optionally provide the HTTP endpoint of a full chain dictionary to speed up processing
+  dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
 
 dataSources:
-
-- kind: substrate/Runtime
-  startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
-  mapping:
-  file: dist/index.js # Entry path for this mapping
-  handlers: - handler: handleBlock
-  kind: substrate/BlockHandler - handler: handleEvent
-  kind: substrate/EventHandler
-  filter:
-  module: balances
-  method: Deposit - handler: handleCall
-  kind: substrate/CallHandler
-
+  - kind: substrate/Runtime
+    startBlock: 1 # This changes your indexing start block, set this higher to skip initial blocks with less data
+    mapping:
+      file: "./dist/index.js"
+      handlers:
+        - handler: handleBlock
+          kind: substrate/BlockHandler
+        - handler: handleEvent
+          kind: substrate/EventHandler
+          filter: #Filter is optional
+            module: balances
+            method: Deposit
+        - handler: handleCall
+          kind: substrate/CallHandler
 ````
   </CodeGroupItem>
 
   <CodeGroupItem title="v0.0.1">
+  
 ``` yml
 specVersion: "0.0.1"
 description: '' # Description of your project
