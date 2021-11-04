@@ -29,6 +29,7 @@ import {
   IsString,
   IsObject,
   ValidateNested,
+  IsEthereumAddress,
 } from 'class-validator';
 
 export class BlockFilter implements SubqlBlockFilter {
@@ -115,7 +116,8 @@ export class CustomHandler implements SubqlCustomHandler {
 }
 
 export class Mapping implements SubqlMapping {
-  @Transform((handlers: SubqlHandler[]) => {
+  @Transform((params) => {
+    const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
         case SubqlHandlerKind.Event:
@@ -169,11 +171,18 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
+export class Processor<O = any> extends FileReferenceImpl {
+  @IsOptional()
+  @IsObject()
+  options?: O;
+}
+
 export class CustomDataSourceBase<
   K extends string,
   T extends SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
-> implements SubqlCustomDatasource<K, T, M>
+  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
+  O = any
+> implements SubqlCustomDatasource<K, T, M, O>
 {
   @IsString()
   kind: K;
@@ -192,7 +201,4 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsObject()
   filter?: T;
-  @IsOptional()
-  @IsString()
-  abi: string;
 }

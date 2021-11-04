@@ -3,6 +3,11 @@
 
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
+import {
+  ApolloServerPluginCacheControl,
+  ApolloServerPluginLandingPageDisabled,
+  ApolloServerPluginLandingPageGraphQLPlayground,
+} from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
 import {Pool} from 'pg';
@@ -53,14 +58,16 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       context: {
         pgClient: this.pgPool,
       },
-      cacheControl: {
-        defaultMaxAge: 5,
-      },
+      plugins: [
+        ApolloServerPluginCacheControl({
+          defaultMaxAge: 5,
+          calculateHttpHeaders: true,
+        }),
+        this.config.get('playground')
+          ? ApolloServerPluginLandingPageGraphQLPlayground()
+          : ApolloServerPluginLandingPageDisabled(),
+      ],
       debug: this.config.get('NODE_ENV') !== 'production',
-      playground: this.config.get('playground'),
-      subscriptions: {
-        path: '/subscription',
-      },
     });
     app.use(
       ExpressPinoLogger({
@@ -70,12 +77,12 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         },
       })
     );
+    await server.start();
     server.applyMiddleware({
       app,
       path: '/',
       cors: true,
     });
-    server.installSubscriptionHandlers(httpServer);
 
     return server;
   }

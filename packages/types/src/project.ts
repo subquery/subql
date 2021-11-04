@@ -5,16 +5,8 @@ import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
-// export enum SubqlKind {
-//   Runtime = 'substrate/Runtime',
-//   BlockHandler = 'substrate/BlockHandler',
-//   CallHandler = 'substrate/CallHandler',
-//   EventHandler = 'substrate/EventHandler',
-// }
-
 export enum SubqlDatasourceKind {
   Runtime = 'substrate/Runtime',
-  // Custom = 'substrate/Custom',
 }
 
 export enum SubqlHandlerKind {
@@ -23,7 +15,7 @@ export enum SubqlHandlerKind {
   Event = 'substrate/EventHandler',
 }
 
-type RuntimeHandlerInputMap = {
+export type RuntimeHandlerInputMap = {
   [SubqlHandlerKind.Block]: SubstrateBlock;
   [SubqlHandlerKind.Event]: SubstrateEvent;
   [SubqlHandlerKind.Call]: SubstrateExtrinsic;
@@ -127,41 +119,50 @@ export interface FileReference {
 
 export type CustomDataSourceAsset = FileReference;
 
+export type Processor<O = any> = FileReference & {options?: O};
+
 export interface SubqlCustomDatasource<
   K extends string = string,
   T extends SubqlNetworkFilter = SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
+  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
+  O = any
 > extends ISubqlDatasource<M, T> {
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
-  processor: FileReference;
-  abi?: string; // Should be a key of assets
+  processor: Processor<O>;
 }
 
 //export type SubqlBuiltinDataSource = ISubqlDatasource;
 
-export interface HandlerInputTransformer<T extends SubqlHandlerKind, U> {
-  (
-    original: RuntimeHandlerInputMap[T],
-    ds: SubqlCustomDatasource,
-    api: ApiPromise,
-    assets: Record<string, string>
-  ): Promise<U>; //  | SubqlBuiltinDataSource
+export interface HandlerInputTransformer<
+  T extends SubqlHandlerKind,
+  U,
+  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+> {
+  (original: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets: Record<string, string>): Promise<U>; //  | SubqlBuiltinDataSource
 }
 
-export interface SubqlDatasourceProcessor<K extends string, F extends SubqlNetworkFilter> {
+export interface SubqlDatasourceProcessor<
+  K extends string,
+  F extends SubqlNetworkFilter,
+  DS extends SubqlCustomDatasource<K, F> = SubqlCustomDatasource<K, F>
+> {
   kind: K;
-  validate(ds: SubqlCustomDatasource<K, F>, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: SubqlCustomDatasource<K, F>, api: ApiPromise): boolean;
-  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown>};
+  validate(ds: DS, assets: Record<string, string>): void;
+  dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
+  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown, DS>};
 }
 
 // only allow one custom handler for each baseHandler kind
-export interface SecondLayerHandlerProcessor<K extends SubqlHandlerKind, F, E> {
-  // kind: string;
+export interface SecondLayerHandlerProcessor<
+  K extends SubqlHandlerKind,
+  F,
+  E,
+  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+> {
   baseHandlerKind: K;
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
-  transformer: HandlerInputTransformer<K, E>;
-  filterProcessor: (filter: F, input: E, ds: SubqlCustomDatasource<string, SubqlNetworkFilter>) => boolean;
+  transformer: HandlerInputTransformer<K, E, DS>;
+  filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
 }

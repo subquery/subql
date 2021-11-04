@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.14.1-3 linux-x64 node-v14.18.1
+@subql/cli/0.14.1-5 linux-x64 node-v14.18.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -57,7 +57,7 @@ OPTIONS
   --mode=(production|prod|development|dev)  [default: production]
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -73,7 +73,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -90,7 +90,7 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.2/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v3.2.3/src/commands/help.ts)_
 
 ## `subql init [PROJECTNAME]`
 
@@ -112,7 +112,7 @@ OPTIONS
   --starter
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/init.js)_
 
 ## `subql migrate`
 
@@ -128,7 +128,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/migrate.js)_
 
 ## `subql publish`
 
@@ -143,7 +143,7 @@ OPTIONS
   --ipfs=ipfs              [default: http://localhost:5001/api/v0] IPFS gateway endpoint
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -162,6 +162,6 @@ OPTIONS
   --silent
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.14.1-3/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.14.1-5/lib/commands/validate.js)_
 
 <!-- commandsstop -->
