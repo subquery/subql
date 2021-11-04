@@ -148,7 +148,7 @@ function getSidebar(locale, language){
     sidebar: [
     {
       title: 'Welcome to SubQuery',
-      path: `${locale == '' ? '/' : locale}`,
+      path: `${locale === '' ? '/' : locale}`,
       collapsable: true,
     },
     {
