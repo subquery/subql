@@ -6,14 +6,9 @@ import os from 'os';
 import path from 'path';
 import {
   SubqlRuntimeHandler,
-  SubqlCustomDatasource,
   SubqlCustomHandler,
-  SubqlDatasource,
-  SubqlDatasourceKind,
   SubqlHandler,
   SubqlHandlerKind,
-  SubqlNetworkFilter,
-  SubqlRuntimeDatasource,
 } from '@subql/types';
 import tar from 'tar';
 
@@ -29,19 +24,6 @@ export async function prepareProjectDir(projectPath: string): Promise<string> {
   } else if (stats.isDirectory()) {
     return projectPath;
   }
-}
-
-export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
-  return ds.kind === SubqlDatasourceKind.Runtime;
-}
-
-export function isCustomDs<F extends SubqlNetworkFilter>(
-  ds: SubqlDatasource,
-): ds is SubqlCustomDatasource<string, F> {
-  return (
-    ds.kind !== SubqlDatasourceKind.Runtime &&
-    !!(ds as SubqlCustomDatasource<string, F>).processor
-  );
 }
 
 // We cache this to avoid repeated reads from fs

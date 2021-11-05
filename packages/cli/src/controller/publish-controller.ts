@@ -3,12 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {
-  loadProjectManifest,
-  manifestIsV0_2_0,
-  ProjectManifestV0_0_1Impl,
-  ProjectManifestV0_2_0Impl,
-} from '@subql/common';
+import {loadProjectManifest, manifestIsV0_2_0, ProjectManifestV0_2_0Impl, isCustomDs} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 
@@ -59,9 +54,32 @@ async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileC
   return result.cid.toString();
 }
 
-function toMinifiedYaml(manifest: ProjectManifestV0_0_1Impl | ProjectManifestV0_2_0Impl): string {
-  return yaml.dump(manifest, {
+function toMinifiedYaml(manifest: ProjectManifestV0_2_0Impl): string {
+  const mx = {
+    ...manifest,
+    dataSources: manifest.dataSources.map((ds) => {
+      if (!isCustomDs(ds)) {
+        return ds;
+      }
+
+      return {
+        ...ds,
+        assets: mapToObject(ds.assets),
+      };
+    }),
+  };
+  return yaml.dump(mx, {
     sortKeys: true,
     condenseFlow: true,
   });
+}
+
+function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
+  // XXX can use Object.entries with newer versions of node.js
+  const assetsObj: Record<string, unknown> = {};
+  for (const key of map.keys()) {
+    assetsObj[key] = map.get(key);
+  }
+
+  return assetsObj;
 }
