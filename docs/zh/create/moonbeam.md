@@ -18,7 +18,7 @@
 2. 添加自定义数据源，如下文所述。
 3. 将自定义数据源的处理程序添加到您的代码
 
-## Data Source Spec
+## Datasource 说明
 
 | Field             | Type                                                           | Required | Description                                |
 | ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
@@ -26,38 +26,38 @@
 | processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
 | assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
 
-### Processor Options
+### 处理器选项：
 
-| Field   | Type             | Required | Description                                                                                                |
-| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
-| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+| Field   | Type             | Required | Description                          |
+| ------- | ---------------- | -------- | ------------------------------------ |
+| abi     | String           | No       | 处理器使用的 ABI 解析参数。 MUST 是 `asset的一个密钥` |
+| address | String or `null` | No       | 事件发生或呼叫的合同地址。 `null` 将捕获合同创建调用       |
 
 ## MoonbeamCall
 
-Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler) except with a different handler argument and minor filtering changes.
+使用 [Substrate/CallHandler](../create/mapping/#call-handler) 的同样方式，但不同的处理程序参数和较小的过滤更改。
 
-| Field  | Type                         | Required | Description                                 |
-| ------ | ---------------------------- | -------- | ------------------------------------------- |
-| kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
-| filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
+| Field  | Type                         | Required | Description  |
+| ------ | ---------------------------- | -------- | ------------ |
+| kind   | 'substrate/MoonbeamCall'     | Yes      | 指定这是通话类型处理程序 |
+| filter | [Call Filter](#call-filters) | No       | 筛选要执行的数据源    |
 
-### Call Filters
+### 通话过滤器
 
-| Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
-| -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
+| Field    | Type   | Example(s)                                    | Description                                                                                       |
+| -------- | ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| function | String | 0x095ea7b3, approve(address to,uint256 value) | [函数签名](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) 字符串或函数 `视野` 过滤被调用的函数。 |
+| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | 发送交易的 Ethereum 地址                                                                                 |
 
-### Handlers
+### 处理程序
 
-Unlike a normal handler you will not get a `SubstrateExtrinsic` as the parameter, instead you will get a `MoonbeamCall` which is based on Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type.
+与正常处理程序不同的是，你不会获得一个 `SubstrateExtrinsic` 作为参数， 相反，您将得到一个 `月球通话` 基于Ethers [交易响应](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) 类型。
 
-Changes from the `TransactionResponse` type:
+从 `交易响应` 类型的更改：
 
-- It doesn't have `wait` and `confirmations` properties
-- A `success` property is added to know if the transaction was a success
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- 它没有 `等待` 和 `确认` 属性
+- 一个 `成功` 属性被添加到知道交易是否成功
+- `args` 是在提供 `abi` 字段且参数可以成功分析时被添加
 
 ## MoonbeamEvent
 
