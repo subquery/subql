@@ -59,38 +59,38 @@
 - 一个 `成功` 属性被添加到知道交易是否成功
 - `args` 是在提供 `abi` 字段且参数可以成功分析时被添加
 
-## MoonbeamEvent
+## Moonbeam 事件
 
-Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
+使用 [Substrate/CallHandler](../create/mapping/#event-handler) 的同样方式，但不同的处理程序参数和较小的过滤更改。
 
-| Field  | Type                           | Required | Description                                  |
-| ------ | ------------------------------ | -------- | -------------------------------------------- |
-| kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
-| filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
+| Field  | Type                           | Required | Description  |
+| ------ | ------------------------------ | -------- | ------------ |
+| kind   | 'substrate/MoonbeamEvent'      | Yes      | 指定这是通话类型处理程序 |
+| filter | [Event Filter](#event-filters) | No       | 筛选要执行的数据源    |
 
-### Event Filters
+### 事件过滤
 
-| Field  | Type         | Example(s)                                                   | Description                                                                                                                                      |
-| ------ | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,u256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
+| Field  | Type         | Example(s)                                                   | Description                                                                               |
+| ------ | ------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
+| topics | String array | Transfer(address indexed from,address indexed to,u256 value) | 主题筛选器遵循Etherum JSON-PRC 日志过滤器，在这里可以找到更多文档 [](https://docs.ethers.io/v5/concepts/events/)。 |
 
-<b>Note on topics:</b>
-There are a couple of improvements from basic log filters:
+<b>关于主题的说明：</b>
+基本日志过滤器有一些改进：
 
-- Topics don't need to be 0 padded
-- [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
+- 主题不需要为 0 padded
+- [事件片段](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) 字符串可以提供并自动转换为他们的 id
 
-### Handlers
+### 处理程序
 
-Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
+与正常处理程序不同的是，你不会获得一个 `SubstrateExtrinsic` 作为参数， 相反，您将得到一个 `月球通话` 基于Ethers [交易响应](https://docs.ethers.io/v5/api/providers/types/#providers-Log) 类型。
 
-Changes from the `Log` type:
+来自 `日志` 类型的更改：
 
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- `args` 是在提供 `abi` 字段且参数可以成功分析时被添加
 
-## Data Source Example
+## 数据源示例
 
-This is an extract from the `project.yaml` manifest file.
+这是从 `project.yaml` 清单文件中提要。
 
 ```yaml
 dataSources:
@@ -125,8 +125,8 @@ dataSources:
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
 
-## Known Limitations
+## 已知的限制
 
-- There is currently no way to query EVM state within a handler
-- There is no way to get the transaction receipts with call handlers
-- `blockHash` properties are currently left undefined, the `blockNumber` property can be used instead
+- 目前无法在处理程序中查询 EVM 状态
+- 无法通过通话处理方式获取交易收据信息
+- `区块哈希` 属性当前未定义。 `区块编号` 属性可以改为使用
