@@ -9,6 +9,7 @@ import {
   ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
 } from '@subql/common';
+import {SubqlCustomDatasource, SubqlDatasource, SubqlNetworkFilter} from '@subql/types';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 
@@ -22,6 +23,10 @@ type FileObject = {
   mode?: number | string;
   mtime?: Date | number[] | {secs: number; nsecs?: number};
 };
+
+function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): ds is SubqlCustomDatasource<string, F> {
+  return !!(ds as SubqlCustomDatasource).processor?.file;
+}
 
 export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Promise<string> {
   const ipfs = IPFS.create({url: ipfsEndpoint});
@@ -59,9 +64,32 @@ async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileC
   return result.cid.toString();
 }
 
-function toMinifiedYaml(manifest: ProjectManifestV0_0_1Impl | ProjectManifestV0_2_0Impl): string {
-  return yaml.dump(manifest, {
+function toMinifiedYaml(manifest: ProjectManifestV0_2_0Impl): string {
+  const mx = {
+    ...manifest,
+    dataSources: manifest.dataSources.map((ds) => {
+      if (!isCustomDs(ds)) {
+        return ds;
+      }
+
+      return {
+        ...ds,
+        assets: mapToObject(ds.assets),
+      };
+    }),
+  };
+  return yaml.dump(mx, {
     sortKeys: true,
     condenseFlow: true,
   });
+}
+
+function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
+  // XXX can use Object.entries with newer versions of node.js
+  const assetsObj: Record<string, unknown> = {};
+  for (const key of map.keys()) {
+    assetsObj[key] = map.get(key);
+  }
+
+  return assetsObj;
 }
