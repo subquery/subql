@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned, isCustomDs } from '@subql/common';
 import { SubqlCustomDatasource } from '@subql/types';
 import { SubqueryProject } from '../configure/project.model';
-import { isCustomDs } from '../utils/project';
 import { DsProcessorService } from './ds-processor.service';
 
 function getTestProject(extraDataSources?: SubqlCustomDatasource[]) {

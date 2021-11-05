@@ -11,6 +11,8 @@ import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
+  isCustomDs,
+  isRuntimeDs,
 } from '@subql/common';
 import {
   RuntimeHandlerInputMap,
@@ -28,7 +30,6 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';

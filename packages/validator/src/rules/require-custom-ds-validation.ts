@@ -2,13 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {SubqlCustomDatasource, SubqlDatasource, SubqlDatasourceProcessor, SubqlNetworkFilter} from '@subql/types';
+import {isCustomDs} from '@subql/common';
+import {SubqlDatasourceProcessor, SubqlNetworkFilter} from '@subql/types';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
-
-function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): ds is SubqlCustomDatasource<string, F> {
-  return !!(ds as SubqlCustomDatasource).processor?.file;
-}
 
 export class RequireCustomDsValidation implements Rule {
   type = RuleType.Schema;

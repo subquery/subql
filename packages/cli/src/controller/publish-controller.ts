@@ -3,13 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {
-  loadProjectManifest,
-  manifestIsV0_2_0,
-  ProjectManifestV0_0_1Impl,
-  ProjectManifestV0_2_0Impl,
-} from '@subql/common';
-import {SubqlCustomDatasource, SubqlDatasource, SubqlNetworkFilter} from '@subql/types';
+import {loadProjectManifest, manifestIsV0_2_0, ProjectManifestV0_2_0Impl, isCustomDs} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 
@@ -23,10 +17,6 @@ type FileObject = {
   mode?: number | string;
   mtime?: Date | number[] | {secs: number; nsecs?: number};
 };
-
-function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): ds is SubqlCustomDatasource<string, F> {
-  return !!(ds as SubqlCustomDatasource).processor?.file;
-}
 
 export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Promise<string> {
   const ipfs = IPFS.create({url: ipfsEndpoint});

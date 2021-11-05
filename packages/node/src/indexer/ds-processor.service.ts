@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { isCustomDs } from '@subql/common';
 import {
   SubqlCustomDatasource,
   SubqlDatasourceProcessor,
@@ -12,7 +13,6 @@ import {
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
-import { isCustomDs } from '../utils/project';
 import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {

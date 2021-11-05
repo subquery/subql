@@ -1,7 +1,15 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SecondLayerHandlerProcessor, SubqlHandlerKind, SubqlNetworkFilter} from '@subql/types';
+import {
+  SecondLayerHandlerProcessor,
+  SubqlCustomDatasource,
+  SubqlDatasource,
+  SubqlDatasourceKind,
+  SubqlHandlerKind,
+  SubqlNetworkFilter,
+  SubqlRuntimeDatasource,
+} from '@subql/types';
 
 export function isBlockHandlerProcessor<T extends SubqlNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
@@ -19,4 +27,12 @@ export function isCallHandlerProcessor<T extends SubqlNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
 ): hp is SecondLayerHandlerProcessor<SubqlHandlerKind.Call, T, E> {
   return hp.baseHandlerKind === SubqlHandlerKind.Call;
+}
+
+export function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): ds is SubqlCustomDatasource<string, F> {
+  return ds.kind !== SubqlDatasourceKind.Runtime && !!(ds as SubqlCustomDatasource<string, F>).processor;
+}
+
+export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
+  return ds.kind === SubqlDatasourceKind.Runtime;
 }
