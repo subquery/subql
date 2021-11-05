@@ -32,7 +32,7 @@ import {
 } from './types';
 import {isFieldScalar} from './utils';
 
-export function getAllJsonObjects(_schema: GraphQLSchema | string) {
+export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   return Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
@@ -138,7 +138,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
 
 function packEntityField(
   typeString: FieldScalar | string,
-  field: GraphQLField<any, any>,
+  field: GraphQLField<unknown, unknown>,
   isForeignKey: boolean
 ): GraphQLEntityField {
   return {
@@ -151,7 +151,7 @@ function packEntityField(
 
 function packJSONField(
   typeString: string,
-  field: GraphQLField<any, any>,
+  field: GraphQLField<unknown, unknown>,
   jsonObject: GraphQLJsonObjectType
 ): GraphQLEntityField {
   return {
@@ -164,8 +164,8 @@ function packJSONField(
 }
 
 export function setJsonObjectType(
-  jsonObject: GraphQLObjectType<any, any>,
-  jsonObjects: GraphQLObjectType<any, any>[]
+  jsonObject: GraphQLObjectType<unknown, unknown>,
+  jsonObjects: GraphQLObjectType<unknown, unknown>[]
 ): GraphQLJsonObjectType {
   const graphQLJsonObject: GraphQLJsonObjectType = {
     name: jsonObject.name,
@@ -191,7 +191,7 @@ export function setJsonObjectType(
   return graphQLJsonObject;
 }
 
-type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<any, any>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
+type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<unknown, unknown>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
 //Get the type, ready to be convert to string
 function extractType(type: GraphQLOutputType): GraphQLNonListType {
   if (isUnionType(type)) {
