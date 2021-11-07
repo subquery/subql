@@ -153,6 +153,11 @@ export interface SubqlDatasourceProcessor<
   handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown, DS>};
 }
 
+// interface DictionaryQuery {
+//   entity: string;
+//   conditions: {field: string; value: string}[];
+// }
+
 // only allow one custom handler for each baseHandler kind
 export interface SecondLayerHandlerProcessor<
   K extends SubqlHandlerKind,
@@ -165,4 +170,5 @@ export interface SecondLayerHandlerProcessor<
   transformer: HandlerInputTransformer<K, E, DS>;
   filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
+  // dictionaryQuery: (filter: F) => DictionaryQuery;
 }
