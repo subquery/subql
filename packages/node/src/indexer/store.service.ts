@@ -178,18 +178,16 @@ export class StoreService {
     key: string,
     value: string | number | boolean,
   ): Promise<void> {
-    const model = this.metaDataRepo;
-    assert(model, `model _metadata does not exist`);
-    await model.upsert({ key, value });
+    assert(this.metaDataRepo, `model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value });
   }
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
-    const model = this.poiRepo;
-    assert(model, `model _poi does not exist`);
+    assert(this.poiRepo, `model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await model.upsert(blockPoi, { transaction: tx });
+    await this.poiRepo.upsert(blockPoi, { transaction: tx });
   }
 
   getOperationMerkleRoot(): Uint8Array {

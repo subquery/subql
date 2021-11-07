@@ -174,12 +174,9 @@ export class IndexerManager {
   }
 
   private async ensureMetadata(schema: string) {
-    type KeyValue = { [key: string]: string | number | boolean };
-
     const metadataRepo = MetadataFactory(this.sequelize, schema);
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    //This is here instead of in api.init() because metaService isn't ready until after api.init()
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
       this.apiService.networkMeta,
@@ -198,15 +195,15 @@ export class IndexerManager {
       raw: true,
     });
 
-    const keyValue: KeyValue = {};
+    const keyValue: { [key: string]: string | number | boolean } = {};
 
-    entries.map((entry) => {
+    entries.forEach((entry) => {
       const { key, value } = entry;
       keyValue[key] = value;
     });
 
-    //block offset and genesisHash should only been create once, never update
-    //if offset is changed, will require re-index and re-sync poi.
+    //blockOffset and genesisHash should only been create once, never update
+    //if blockOffset is changed, will require re-index and re-sync poi.
     if (!Object.prototype.hasOwnProperty.call(keyValue, 'blockOffset')) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await this.storeService.setMetadata('blockOffset', offsetValue);

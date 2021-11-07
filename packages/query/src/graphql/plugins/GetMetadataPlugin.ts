@@ -49,28 +49,31 @@ async function fetchFromApi(): Promise<void> {
 
 async function fetchFromTable(context: any, schemaName: string): Promise<Metadata> {
   const metadata: Metadata = {
-    lastProcessedHeight: undefined,
-    lastProcessedTimestamp: undefined,
-    targetHeight: undefined,
-    chain: undefined,
-    specName: undefined,
-    genesisHash: undefined,
-    indexerHealthy: undefined,
-    indexerNodeVersion: undefined,
-    queryNodeVersion: undefined,
+    lastProcessedHeight: 0,
+    lastProcessedTimestamp: 0,
+    targetHeight: 0,
+    chain: '',
+    specName: '',
+    genesisHash: '',
+    indexerHealthy: false,
+    indexerNodeVersion: '',
+    queryNodeVersion: '',
   };
 
-  const {rows} = await context.pgClient.query(`select * from ${schemaName}._metadata`);
+  const {rows} = await context.pgClient.query(`select key, value from ${schemaName}._metadata`);
 
-  for (const row of rows) {
+  const dbKeyValue = [];
+
+  rows.forEach((row: {key: string; value: string | number | boolean}) => {
     const {key, value} = row;
+    dbKeyValue[key] = value;
+  });
 
-    if (Object.prototype.hasOwnProperty.call(metadata, key)) {
-      const field = metadata[key];
-      const typedValue = value as typeof field;
-      if (typedValue !== null) {
-        metadata[key] = typedValue;
-      }
+  for (const key in metadata) {
+    if (typeof dbKeyValue[key] === typeof metadata[key]) {
+      metadata[key] = dbKeyValue[key];
+    } else {
+      metadata[key] = undefined;
     }
   }
 
@@ -118,8 +121,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
           if (metadataTableExists) {
             const metadata = await fetchFromTable(context, schemaName);
 
-            //check if _metadata contains more than just blockOffset
-            if (Object.keys(metadata).length > 1) {
+            if (Object.keys(metadata).length > 0) {
               return metadata;
             }
           }
