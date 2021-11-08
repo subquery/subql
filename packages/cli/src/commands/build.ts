@@ -25,11 +25,15 @@ const getBaseConfig = (dir: string, outputPath: string, development?: boolean): 
           },
         },
       },
+      {
+        test: /\.ya?ml$/,
+        use: 'yaml-loader',
+      },
     ],
   },
 
   resolve: {
-    extensions: ['.tsx', '.ts', '.js'],
+    extensions: ['.tsx', '.ts', '.js', '.json'],
   },
 
   output: {
