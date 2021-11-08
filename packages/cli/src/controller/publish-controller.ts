@@ -57,9 +57,12 @@ async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: s
       );
     }
 
-    for (const key in input) {
-      input[key] = await replaceFileReferences(ipfs, projectDir, input[key]);
-    }
+    const keys = Object.keys(input) as unknown as (keyof T)[];
+    await Promise.all(
+      keys.map(async (key) => {
+        input[key] = await replaceFileReferences(ipfs, projectDir, input[key]);
+      })
+    );
   }
 
   return input;
@@ -95,7 +98,7 @@ const processorCache: Record<string, string> = {};
 
 async function packProcessor(projectDir: string, processorEntry: string): Promise<string> {
   if (!processorCache[processorEntry]) {
-    const output = path.resolve(projectDir, `./dist/${path.basename(processorEntry)}`);
+    const output = path.resolve(projectDir, `./dist/processors/${path.basename(processorEntry)}`);
     await runWebpack(processorEntry, output, false);
 
     processorCache[processorEntry] = output;
