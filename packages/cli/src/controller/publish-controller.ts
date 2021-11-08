@@ -38,7 +38,7 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
 async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: string, input: T): Promise<T> {
   if (Array.isArray(input)) {
-    return (await Promise.all(input.map((val) => replaceFileReferences(ipfs, projectDir, val)))) as T;
+    return (await Promise.all(input.map((val) => replaceFileReferences(ipfs, projectDir, val)))) as unknown as T;
   } else if (typeof input === 'object') {
     if (input instanceof Map) {
       input = mapToObject(input) as T;
