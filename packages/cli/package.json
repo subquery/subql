@@ -24,7 +24,8 @@
     "tslib": "^2.3.1",
     "webpack": "^5.61.0",
     "webpack-merge": "^5.8.0",
-    "websocket": "^1.0.34"
+    "websocket": "^1.0.34",
+    "yaml-loader": "^0.6.0"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.0",
