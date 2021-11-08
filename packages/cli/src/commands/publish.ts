@@ -32,7 +32,7 @@ export default class Publish extends Command {
       this.error('Failed to build project');
     }
 
-    this.log('Uploading SupQuery project to ipfs');
+    this.log('Uploading SupQuery project to IPFS');
     const cid = await uploadToIpfs(flags.ipfs, directory);
 
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);

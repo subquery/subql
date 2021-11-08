@@ -7,6 +7,7 @@ import {loadProjectManifest, manifestIsV0_2_0, ProjectManifestV0_2_0Impl, isCust
 import {FileReference} from '@subql/types';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
+import {runWebpack} from './build-controller';
 
 // https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#filecontent
 type FileContent = Uint8Array | string | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
@@ -29,6 +30,12 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
     throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');
   }
 
+  for (const ds of manifest.dataSources) {
+    if (isCustomDs(ds)) {
+      ds.processor.file = await packProcessor(projectDir, ds.processor.file);
+    }
+  }
+
   const deployment = await replaceFileReferences(ipfs, projectDir, manifest);
 
   // Upload schema
@@ -45,7 +52,6 @@ async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: s
     }
 
     if (isFileReference(input)) {
-      console.log('Replacing file reference', input.file);
       input.file = await uploadFile(ipfs, fs.createReadStream(path.resolve(projectDir, input.file))).then(
         (cid) => `ipfs://${cid}`
       );
@@ -83,4 +89,17 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
 
 function isFileReference(value: any): value is FileReference {
   return value.file && typeof value.file === 'string';
+}
+
+const processorCache: Record<string, string> = {};
+
+async function packProcessor(projectDir: string, processorEntry: string): Promise<string> {
+  if (!processorCache[processorEntry]) {
+    const output = path.resolve(projectDir, `./dist/${path.basename(processorEntry)}`);
+    await runWebpack(processorEntry, output, false);
+
+    processorCache[processorEntry] = output;
+  }
+
+  return processorCache[processorEntry];
 }
