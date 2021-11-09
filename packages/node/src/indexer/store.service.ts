@@ -6,7 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
-import { camelCase, flatten, upperFirst } from 'lodash';
+import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import { QueryTypes, Sequelize, Transaction, Utils } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
@@ -97,26 +97,19 @@ export class StoreService {
         );
       } else {
         const currentValues = results.map((v: any) => v.enum_value);
-        // Assert the existing enum has the same values
+        // Assert the existing enum is same
 
         // Make it a function to not execute potentially big joins unless needed
-        const differentValuesError = () =>
-          new Error(
-            `Can't modify enum ${enumTypeName} between runs, it used to have values: ${currentValues.join(
-              ', ',
-            )} but now has ${e.values.join(
-              ', ',
-            )} you must rerun the full subquery to do such a change`,
+        if (!isEqual(e.values, currentValues)) {
+          throw new Error(
+            `\n * Can't modify enum "${
+              e.name
+            }" between runs: \n * Before: [${currentValues.join(
+              `,`,
+            )}] \n * After : [${e.values.join(
+              ',',
+            )}] \n * You must rerun the project to do such a change`,
           );
-
-        if (e.values.length !== currentValues.length) {
-          throw differentValuesError();
-        }
-        const newSet = new Set(e.values);
-        for (const value of currentValues) {
-          if (!newSet.has(value)) {
-            throw differentValuesError();
-          }
         }
       }
 
