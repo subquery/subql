@@ -56,12 +56,12 @@ v0.2.0のスペックバージョンはベータ版ですが、プロジェク�
 
 ### ネットワークの仕様
 
-| フィールド           | v0.0.1 | v0.2.0        | 説明                                                                                                                                                                                                         |
-| --------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **genesisHash** | 𐄂      | String        | The genesis hash of the network                                                                                                                                                                            |
-| **endpoint**    | String | String        | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io) |
-| **dictionary**  | String | String        | It is suggested to provide the HTTP endpoint of a full chain dictionary to speed up processing - read [how a SubQuery Dictionary works](../tutorials_examples/dictionary.md).                              |
-| **chaintypes**  | 𐄂      | {file:String} | Path to chain types file, accept `.json` or `.yaml` format                                                                                                                                                 |
+| フィールド           | v0.0.1 | v0.2.0        | 説明                                                                                                                                             |
+| --------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **genesisHash** | 𐄂      | String        | ネットワークの生成ハッシュ                                                                                                                                  |
+| **endpoint**    | String | String        | インデックスするブロックチェーンのwssまたはwsエンドポイントを定義します - **これはフルアーカイブノード** でなければなりません。 [OnFinality](https://app.onfinality.io)では、すべてのパラチェーンのエンドポイントを無料で取得できます。 |
+| **dictionary**  | String | String        | 処理を高速化するために、フルチェーンディクショナリのHTTPエンドポイントを提供することが推奨されます。[SubQuery Dictionaryの仕組み](../tutorials_examples/dictionary.md)を参照してください。                   |
+| **chaintypes**  | 𐄂      | {file:String} | チェーンタイプファイルへのパス。 `.json` または `.yaml` 形式を使用してください。                                                                                              |
 
 ### Datasource Spec
 
