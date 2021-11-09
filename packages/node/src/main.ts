@@ -9,6 +9,7 @@ import { argv } from './yargs';
 
 async function bootstrap() {
   const debug = argv('debug');
+  const port = argv('port') as number;
   try {
     const app = await NestFactory.create(AppModule, {
       logger: debug ? new NestLogger() : false,
@@ -16,8 +17,8 @@ async function bootstrap() {
     await app.init();
     const indexerManager = app.get(IndexerManager);
     await indexerManager.start();
-    await app.listen(3000);
-    getLogger('subql-node').info('node started');
+    await app.listen(port);
+    getLogger('subql-node').info(`node started on port: ${port}`);
   } catch (e) {
     getLogger('subql-node').error(e, 'node failed to start');
     process.exit(1);
