@@ -18,45 +18,45 @@
 
 `dataSources` 下:
 
-- Can directly link an `index.js` entry point for mapping handlers. By default this `index.js` will be generated from `index.ts` during the build process.
-- Data sources can now be either a regular runtime data source or [custom data source](#custom-data-sources).
+- マッピングハンドラの `index.js` エントリポイントを直接リンクすることができます。 デフォルトでは、この `index.js` は、ビルド プロセス中に `index.ts` から生成されます。
+- データソースは、通常のランタイムデータソースまたは [カスタムデータソース](#custom-data-sources)のいずれかになります。
 
-### CLI Options
+### コマンドラインオプション
 
-While the v0.2.0 spec version is in beta, you will need to explicitly define it during project initialisation by running `subql init --specVersion 0.2.0 PROJECT_NAME`
+v0.2.0のスペックバージョンはベータ版ですが、プロジェクトの初期化時に`subql init --specVersion 0.2.0 PROJECT_NAME`を実行して、明示的に定義する必要があります。
 
-`subql migrate` can be run in an existing project to migrate the project manifest to the latest version.
+`subql migration` は既存のプロジェクトで実行して、プロジェクトマニフェストを最新バージョンに移行できます。
 
-| Options        | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| -f, --force    |                                                            |
-| -l, --location | local folder to run migrate in (must contain project.yaml) |
-| --file=file    | to specify the project.yaml to migrate                     |
+| オプション          | 説明                                     |
+| -------------- | -------------------------------------- |
+| -f, --force    |                                        |
+| -l, --location | 移行するローカル フォルダ (project.yamlを含む必要があります) |
+| --file=file    | 移行するproject.yaml を指定します                |
 
-## Overview
+## 概要
 
-### Top Level Spec
+### トップレベルの仕様
 
-| Field           | v0.0.1                              | v0.2.0                      | Description                                                |
-| --------------- | ----------------------------------- | --------------------------- | ---------------------------------------------------------- |
-| **specVersion** | String                              | String                      | `0.0.1` or `0.2.0` - the spec version of the manifest file |
-| **name**        | 𐄂                                   | String                      | Name of your project                                       |
-| **version**     | 𐄂                                   | String                      | Version of your project                                    |
-| **description** | String                              | String                      | Discription of your project                                |
-| **repository**  | String                              | String                      | Git repository address of your project                     |
-| **schema**      | String                              | [Schema Spec](#schema-spec) | The location of your GraphQL schema file                   |
-| **network**     | [Network Spec](#network-spec)       | Network Spec                | Detail of the network to be indexed                        |
-| **dataSources** | [DataSource Spec](#datasource-spec) | DataSource Spec             |                                                            |
+| フィールド           | v0.0.1                              | v0.2.0                      | 説明                                    |
+| --------------- | ----------------------------------- | --------------------------- | ------------------------------------- |
+| **specVersion** | String                              | String                      | `0.0.1` または `0.2.0` - マニフェストファイルバージョン |
+| **name**        | 𐄂                                   | String                      | プロジェクト名                               |
+| **version**     | 𐄂                                   | String                      | プロジェクトのバージョン                          |
+| **description** | String                              | String                      | あなたのプロジェクトの説明                         |
+| **repository**  | String                              | String                      | プロジェクトの Git リポジトリアドレス                 |
+| **schema**      | String                              | [Schema Spec](#schema-spec) | GraphQLスキーマファイルの場所                    |
+| **network**     | [Network Spec](#network-spec)       | Network Spec                | インデックスを作成するネットワークの詳細                  |
+| **dataSources** | [DataSource Spec](#datasource-spec) | DataSource Spec             |                                       |
 
-### Schema Spec
+### スキーマの仕様
 
-| Field    | v0.0.1 | v0.2.0 | Description                              |
-| -------- | ------ | ------ | ---------------------------------------- |
-| **file** | 𐄂      | String | The location of your GraphQL schema file |
+| フィールド    | v0.0.1 | v0.2.0 | 説明                 |
+| -------- | ------ | ------ | ------------------ |
+| **file** | 𐄂      | String | GraphQLスキーマファイルの場所 |
 
-### Network Spec
+### ネットワークの仕様
 
-| Field           | v0.0.1 | v0.2.0        | Description                                                                                                                                                                                                |
+| フィールド           | v0.0.1 | v0.2.0        | 説明                                                                                                                                                                                                         |
 | --------------- | ------ | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **genesisHash** | 𐄂      | String        | The genesis hash of the network                                                                                                                                                                            |
 | **endpoint**    | String | String        | Defines the wss or ws endpoint of the blockchain to be indexed - **This must be a full archive node**. You can retrieve endpoints for all parachains for free from [OnFinality](https://app.onfinality.io) |
