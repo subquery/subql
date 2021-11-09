@@ -40,6 +40,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          platforms: arm64,amd64
           file: ./packages/query/Dockerfile
           tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
@@ -49,6 +50,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          platforms: arm64,amd64
           file: ./packages/query/Dockerfile
           tags: onfinality/subql-query:v${{ steps.get-query-version.outputs.QUERY_VERSION }},onfinality/subql-query:latest
           build-args: RELEASE_VERSION=${{ steps.get-query-version.outputs.QUERY_VERSION }}
