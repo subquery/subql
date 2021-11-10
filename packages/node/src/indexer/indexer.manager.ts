@@ -196,11 +196,7 @@ export class IndexerManager {
     });
 
     const keyValue: { [key: string]: string | number | boolean } = {};
-
-    entries.forEach((entry) => {
-      const { key, value } = entry;
-      keyValue[key] = value;
-    });
+    entries.forEach((o) => (keyValue[o.key] = o.value));
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.

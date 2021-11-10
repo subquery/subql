@@ -65,12 +65,10 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<Metada
   const keys = Object.keys(METADATA_TYPES);
 
   const {rows} = await pgClient.query(`select key, value from ${schemaName}._metadata WHERE key = ANY ($1)`, [keys]);
-
   const dbKeyValue = [];
 
-  rows.forEach((row: {key: string; value: string | number | boolean}) => {
-    const {key, value} = row;
-    dbKeyValue[key] = value;
+  rows.forEach((o: {key: string; value: string | number | boolean}) => {
+    dbKeyValue[o.key] = o.value;
   });
 
   for (const key in METADATA_TYPES) {
