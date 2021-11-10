@@ -196,6 +196,41 @@ export class IndexerManager {
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
+    if (argv['force-clean']) {
+      this.sequelize.authenticate();
+
+      try {
+        // map subquery project name to db schema
+        const [{ db_schema: subquerySchema }] = await this.sequelize.query(
+          `SELECT db_schema
+        FROM public.subqueries
+        where name = '${this.nodeConfig.subqueryName}'`,
+          {
+            type: QueryTypes.SELECT,
+          },
+        );
+
+        this.sequelize.dropSchema(subquerySchema, {
+          logging: false,
+          benchmark: false,
+        });
+
+        // remove db schema from project table
+        await this.sequelize.query(
+          ` DELETE
+          FROM public.subqueries
+          where db_schema = '${subquerySchema}'`,
+          {
+            type: QueryTypes.DELETE,
+          },
+        );
+
+        logger.info('force cleaned tables');
+      } catch (err) {
+        logger.error(err, 'failed to force clean schema and tables');
+      }
+    }
+
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
