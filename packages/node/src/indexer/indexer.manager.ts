@@ -182,7 +182,7 @@ export class IndexerManager {
       this.apiService.networkMeta,
     );
 
-    const entries = await metadataRepo.findAll({
+    const entries = (await metadataRepo.findAll({
       where: {
         key: [
           'blockOffset',
@@ -193,10 +193,14 @@ export class IndexerManager {
         ],
       },
       raw: true,
-    });
+    })) as any;
 
-    const keyValue: { [key: string]: string | number | boolean } = {};
-    entries.forEach((o) => (keyValue[o.key] = o.value));
+    const keyValue = entries.reduce(
+      (obj: any, e: { key: any; value: boolean | number | string }) => {
+        return { ...obj, [e.key]: e.value };
+      },
+      {},
+    );
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.

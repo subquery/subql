@@ -7,6 +7,8 @@ import {getPostGraphileBuilder} from 'postgraphile-core';
 import {plugins} from './plugins';
 
 describe('GraphqlModule', () => {
+  const dbSchema = 'subquery_1';
+
   const pool = new Pool({
     user: 'postgres',
     password: 'postgres',
@@ -15,7 +17,10 @@ describe('GraphqlModule', () => {
     database: 'postgres',
   });
 
-  const dbSchema = 'subquery_1';
+  pool.on('error', (err) => {
+    // tslint:disable-next-line no-console
+    console.error('PostgreSQL client generated error: ', err.message);
+  });
 
   async function insertMetadata(key: string, value: string) {
     await pool.query(`INSERT INTO subquery_1._metadata(
@@ -70,7 +75,7 @@ describe('GraphqlModule', () => {
 
   it('can query all metadata fields from database', async () => {
     await Promise.all([
-      insertMetadata('lastProcessedHeight', '20'),
+      insertMetadata('lastProcessedHeight', '398'),
       insertMetadata('lastProcessedTimestamp', '110101'),
       insertMetadata('targetHeight', '7595931'),
       insertMetadata('chain', `"Polkadot"`),
@@ -98,7 +103,7 @@ describe('GraphqlModule', () => {
     `;
 
     const mock = {
-      lastProcessedHeight: 20,
+      lastProcessedHeight: 398,
       lastProcessedTimestamp: '110101',
       targetHeight: 7595931,
       chain: 'Polkadot',
