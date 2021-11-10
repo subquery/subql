@@ -4,21 +4,23 @@
 import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
+import {Config} from '../configure';
 import {plugins} from './plugins';
 
 describe('GraphqlModule', () => {
   const dbSchema = 'subquery_1';
 
+  const config = new Config({});
+
   const pool = new Pool({
-    user: 'postgres',
-    password: 'postgres',
-    host: '127.0.0.1',
-    port: '5432',
-    database: 'postgres',
+    user: config.get('DB_USER'),
+    password: config.get('DB_PASS'),
+    host: config.get('DB_HOST_READ') ?? config.get('DB_HOST'),
+    port: config.get('DB_PORT'),
+    database: config.get('DB_DATABASE'),
   });
 
   pool.on('error', (err) => {
-    // tslint:disable-next-line no-console
     console.error('PostgreSQL client generated error: ', err.message);
   });
 
