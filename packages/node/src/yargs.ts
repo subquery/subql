@@ -104,6 +104,13 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    port: {
+      alias: 'p',
+      demandOption: false,
+      describe: 'The port the service will bind to',
+      type: 'number',
+      default: 3000,
+    },
   });
 }
 

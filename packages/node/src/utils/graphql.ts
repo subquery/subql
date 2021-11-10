@@ -28,17 +28,18 @@ const SEQUELIZE_TYPE_MAPPING = {
 
 export function modelsTypeToModelAttributes(
   modelType: GraphQLModelsType,
+  enums: Map<string, string>,
 ): ModelAttributes<any> {
   const fields = modelType.fields;
   return Object.values(fields).reduce((acc, field) => {
-    let allowNull = true;
-    if (!field.nullable) {
-      allowNull = false;
-    }
+    const allowNull = field.nullable;
     const columnOption: ModelAttributeColumnOptions<any> = {
-      type: field.isArray
+      type: field.isEnum
+        ? `${enums.get(field.type)}${field.isArray ? '[]' : ''}`
+        : field.isArray
         ? SEQUELIZE_TYPE_MAPPING.Json
         : SEQUELIZE_TYPE_MAPPING[field.type],
+      comment: field.description,
       allowNull,
       primaryKey: field.type === 'ID',
     };

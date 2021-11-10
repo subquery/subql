@@ -40,6 +40,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          platforms: arm64,amd64
           file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
@@ -49,6 +50,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           push: true
+          platforms: arm64,amd64
           file: ./packages/node/Dockerfile
           tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}

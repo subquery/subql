@@ -20,10 +20,7 @@ module.exports = {
   parserOptions: {
     tsconfigRootDir: __dirname,
     sourceType: 'module',
-    project: [
-      './tsconfig.json',
-      './packages/*/tsconfig.json',
-    ],
+    project: ['./tsconfig.json', './packages/*/tsconfig.json'],
     warnOnUnsupportedTypeScriptVersion: false,
     EXPERIMENTAL_useSourceOfProjectReferenceRedirect: true,
   },
@@ -67,26 +64,38 @@ module.exports = {
     // "@typescript-eslint/member-ordering": "error",
     // "@typescript-eslint/naming-convention": "error",
     // "@typescript-eslint/no-param-reassign": "error",
-    '@typescript-eslint/promise-function-async': ['error', { checkArrowFunctions: false }],
+    '@typescript-eslint/promise-function-async': ['error', {checkArrowFunctions: false}],
     // "arrow-body-style": "error",
-    complexity: 'error',
+    complexity: ['error', 21],
     curly: ['error', 'multi-line'],
     'default-case': 'error',
     eqeqeq: ['error', 'always'],
     'import/no-extraneous-dependencies': 'off',
-    'import/order': ['error', {
-      alphabetize: {
-        order: 'asc', /* sort in ascending order. Options: ['ignore', 'asc', 'desc'] */
-        caseInsensitive: true /* ignore case. Options: [true, false] */
-      }
-    }],
-    'header/header': [2, 'line', [//Copyright 2020-2021 OnFinality Limited authors & contributors
-      { "pattern": ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors' },
-      ' SPDX-License-Identifier: Apache-2.0'
-    ], 2],
-    'sort-destructure-keys/sort-destructure-keys': [2, {
-      caseSensitive: true
-    }],
+    'import/order': [
+      'error',
+      {
+        alphabetize: {
+          order: 'asc' /* sort in ascending order. Options: ['ignore', 'asc', 'desc'] */,
+          caseInsensitive: true /* ignore case. Options: [true, false] */,
+        },
+      },
+    ],
+    'header/header': [
+      2,
+      'line',
+      [
+        //Copyright 2020-2021 OnFinality Limited authors & contributors
+        {pattern: ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors'},
+        ' SPDX-License-Identifier: Apache-2.0',
+      ],
+      2,
+    ],
+    'sort-destructure-keys/sort-destructure-keys': [
+      2,
+      {
+        caseSensitive: true,
+      },
+    ],
     'no-console': 'off',
     'no-duplicate-imports': 'error',
     // "no-magic-numbers": "error",
@@ -98,7 +107,7 @@ module.exports = {
   settings: {
     'import/extensions': ['.js', '.ts'],
     'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx']
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
-  }
+  },
 };

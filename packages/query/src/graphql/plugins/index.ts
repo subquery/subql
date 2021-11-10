@@ -49,6 +49,7 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
+import {makeAddInflectorsPlugin} from 'graphile-utils';
 
 /* eslint-enable */
 
@@ -102,6 +103,25 @@ export const plugins = [
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
   smartTagsPlugin,
+  makeAddInflectorsPlugin((inflectors) => {
+    const {constantCase: oldConstantCase} = inflectors;
+    const enumValues = new Set();
+    return {
+      enumName: (v: string) => {
+        enumValues.add(v);
+        return v;
+      },
+      constantCase: (v: string) => {
+        // We don't want to change the names of all enum values to CONSTANT CASE
+        // because they could be specified in non CONSTANT CASE in their schema.graphql
+        if (enumValues.has(v)) {
+          return v;
+        } else {
+          return oldConstantCase(v);
+        }
+      },
+    };
+  }, true),
 ];
 
 if (argv(`indexer`)) {
