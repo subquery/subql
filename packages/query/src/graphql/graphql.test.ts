@@ -48,10 +48,6 @@ describe('GraphqlModule', () => {
     return server;
   }
 
-  beforeAll((done) => {
-    done();
-  });
-
   beforeEach(async () => {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS ${dbSchema}`);
     await pool.query(`CREATE TABLE IF NOT EXISTS subquery_1._metadata (
