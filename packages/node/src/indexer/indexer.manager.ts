@@ -204,12 +204,12 @@ export class IndexerManager {
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.
-    if (!Object.prototype.hasOwnProperty.call(keyValue, 'blockOffset')) {
+    if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await this.storeService.setMetadata('blockOffset', offsetValue);
     }
 
-    if (!Object.prototype.hasOwnProperty.call(keyValue, 'genesisHash')) {
+    if (!keyValue.genesisHash) {
       await this.storeService.setMetadata('genesisHash', genesisHash);
     }
 

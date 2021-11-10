@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {URL} from 'url';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
@@ -8,6 +9,18 @@ import {argv} from '../../yargs';
 
 const {version: packageVersion} = require('../../../package.json');
 const indexerUrl = argv('indexer') as string | undefined;
+
+const METADATA_TYPES = {
+  lastProcessedHeight: 'number',
+  lastProcessedTimestamp: 'number',
+  targetHeight: 'number',
+  chain: 'string',
+  specName: 'string',
+  genesisHash: 'string',
+  indexerHealthy: 'boolean',
+  indexerNodeVersion: 'string',
+  queryNodeVersion: 'string',
+};
 
 type Metadata = {
   lastProcessedHeight: number;
@@ -47,20 +60,13 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(context: any, schemaName: string): Promise<Metadata> {
-  const metadata: Metadata = {
-    lastProcessedHeight: 0,
-    lastProcessedTimestamp: 0,
-    targetHeight: 0,
-    chain: '',
-    specName: '',
-    genesisHash: '',
-    indexerHealthy: false,
-    indexerNodeVersion: '',
-    queryNodeVersion: '',
-  };
+async function fetchFromTable(pgClient: any, schemaName: string): Promise<Metadata> {
+  const metadata = {} as Metadata;
 
-  const {rows} = await context.pgClient.query(`select key, value from ${schemaName}._metadata`);
+  const keys = Object.keys(METADATA_TYPES);
+  const formattedKeys = `'${keys.join("','")}'`;
+
+  const {rows} = await pgClient.query(`select key, value from ${schemaName}._metadata WHERE key IN (${formattedKeys})`);
 
   const dbKeyValue = [];
 
@@ -69,11 +75,9 @@ async function fetchFromTable(context: any, schemaName: string): Promise<Metadat
     dbKeyValue[key] = value;
   });
 
-  for (const key in metadata) {
-    if (typeof dbKeyValue[key] === typeof metadata[key]) {
+  for (const key in METADATA_TYPES) {
+    if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {
       metadata[key] = dbKeyValue[key];
-    } else {
-      metadata[key] = undefined;
     }
   }
 
@@ -119,7 +123,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
       Query: {
         _metadata: async (_parentObject, _args, context, _info): Promise<Metadata> => {
           if (metadataTableExists) {
-            const metadata = await fetchFromTable(context, schemaName);
+            const metadata = await fetchFromTable(context.pgClient, schemaName);
 
             if (Object.keys(metadata).length > 0) {
               return metadata;
