@@ -29,7 +29,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataModel } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
@@ -182,25 +182,28 @@ export class IndexerManager {
       this.apiService.networkMeta,
     );
 
-    const entries = (await metadataRepo.findAll({
+    const keys = [
+      'blockOffset',
+      'indexerNodeVersion',
+      'chain',
+      'specName',
+      'genesisHash',
+    ] as const;
+
+    const entries = await metadataRepo.findAll({
       where: {
-        key: [
-          'blockOffset',
-          'indexerNodeVersion',
-          'chain',
-          'specName',
-          'genesisHash',
-        ],
+        key: keys,
       },
       raw: true,
-    })) as any;
+    });
 
     const keyValue = entries.reduce(
-      (obj: any, e: { key: any; value: boolean | number | string }) => {
-        return { ...obj, [e.key]: e.value };
+      (arr: MetadataModel[], curr: MetadataModel) => {
+        arr[curr.key] = curr.value;
+        return arr;
       },
-      {},
-    );
+      [],
+    ) as unknown as { [key in typeof keys[number]]: string | boolean | number };
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.

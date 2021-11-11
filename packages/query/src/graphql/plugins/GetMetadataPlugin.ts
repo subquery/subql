@@ -22,6 +22,10 @@ const METADATA_TYPES = {
   queryNodeVersion: 'string',
 };
 
+type MetaType = number | string | boolean;
+
+type MetaEntry = {key: string; value: MetaType};
+
 type Metadata = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
@@ -66,9 +70,10 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<Metada
 
   const {rows} = await pgClient.query(`select key, value from ${schemaName}._metadata WHERE key = ANY ($1)`, [keys]);
 
-  const dbKeyValue = rows.reduce((obj: any, e: {key: string; value: boolean | number | string}) => {
-    return {...obj, [e.key]: e.value};
-  }, {});
+  const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
+    array[curr.key] = curr.value;
+    return array;
+  }, {}) as {[key: string]: MetaType};
 
   for (const key in METADATA_TYPES) {
     if (typeof dbKeyValue[key] === METADATA_TYPES[key]) {

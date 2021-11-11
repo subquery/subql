@@ -121,6 +121,31 @@ describe('GraphqlModule', () => {
     expect(fetchedMeta).toMatchObject(mock);
   });
 
+  it('wont resolve fields that arent allowed metadata', async () => {
+    await Promise.all([
+      insertMetadata('lastProcessedHeight', '398'),
+      insertMetadata('chain', `"Polkadot"`),
+      insertMetadata('indexerHealthy', 'true'),
+      insertMetadata('fakeMeta', 'true'),
+    ]);
+
+    const server = await createApolloServer();
+
+    const GET_META = gql`
+      query {
+        _metadata {
+          lastProcessedHeight
+          chain
+          indexerHealthy
+          fake
+        }
+      }
+    `;
+
+    const results = await server.executeOperation({query: GET_META});
+    expect(`${results.errors}`).toEqual(`ValidationError: Cannot query field "fakeMeta" on type "_Metadata".`);
+  });
+
   it('resolve incorrect fields in db to null when queried from graphql', async () => {
     await Promise.all([
       insertMetadata('lastProcessedHeight', `"Polkadot"`),
