@@ -195,34 +195,63 @@ export class IndexerManager {
     }
   }
 
+  private async createProjectSchema(name: string): Promise<SubqueryModel> {
+    let projectSchema: string;
+    const { chain, genesisHash } = this.apiService.networkMeta;
+    if (this.nodeConfig.localMode) {
+      // create tables in default schema if local mode is enabled
+      projectSchema = DEFAULT_DB_SCHEMA;
+    } else {
+      const suffix = await this.nextSubquerySchemaSuffix();
+      projectSchema = `subquery_${suffix}`;
+      const schemas = await this.sequelize.showAllSchemas(undefined);
+      if (!(schemas as unknown as string[]).includes(projectSchema)) {
+        await this.sequelize.createSchema(projectSchema, undefined);
+      }
+    }
+    return this.subqueryRepo.create({
+      name,
+      dbSchema: projectSchema,
+      hash: '0x',
+      nextBlockHeight: this.getStartBlockFromDataSources(),
+      network: chain,
+      networkGenesis: genesisHash,
+    });
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
     const { chain, genesisHash } = this.apiService.networkMeta;
     if (!project) {
-      let projectSchema: string;
-      if (this.nodeConfig.localMode) {
-        // create tables in default schema if local mode is enabled
-        projectSchema = DEFAULT_DB_SCHEMA;
-      } else {
-        const suffix = await this.nextSubquerySchemaSuffix();
-        projectSchema = `subquery_${suffix}`;
-        const schemas = await this.sequelize.showAllSchemas(undefined);
-        if (!(schemas as unknown as string[]).includes(projectSchema)) {
-          await this.sequelize.createSchema(projectSchema, undefined);
-        }
-      }
-
-      project = await this.subqueryRepo.create({
-        name,
-        dbSchema: projectSchema,
-        hash: '0x',
-        nextBlockHeight: this.getStartBlockFromDataSources(),
-        network: chain,
-        networkGenesis: genesisHash,
-      });
+      project = await this.createProjectSchema(name);
     } else {
+      if (argv['force-clean']) {
+        try {
+          // drop existing project schema
+          this.sequelize.dropSchema(project.dbSchema, {
+            logging: false,
+            benchmark: false,
+          });
+
+          // remove schema from project table
+          await this.sequelize.query(
+            ` DELETE
+          FROM public.subqueries
+          where db_schema = :subquerySchema`,
+            {
+              replacements: { subquerySchema: project.dbSchema },
+              type: QueryTypes.DELETE,
+            },
+          );
+
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        project = await this.createProjectSchema(name);
+      }
       if (!project.networkGenesis || !project.network) {
         project.network = chain;
         project.networkGenesis = genesisHash;
