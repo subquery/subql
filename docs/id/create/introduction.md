@@ -1,12 +1,12 @@
-# Membuat Proyek SubQuery
+# Tutorial & Contoh
 
 Di panduan [mulai cepat](/quickstart/quickstart.md), kami dengan sangat cepat memberikan contoh untuk menjelaskan pada Anda apa itu SubQuery dan bagaimana cara kerjanya. Di sini kita akan melihat lebih dekat alur kerja saat membuat proyek Anda dan file kunci yang akan Anda ikut sertakan.
 
-## Alur Kerja Dasar
+## Contoh SubQuery
 
 Sebagian contoh berikut akan mengasumsikan Anda telah berhasil menginisialisasi paket pemula di bagian [Mulai cepat](../quickstart/quickstart.md). Dari paket pemula itu, kita akan berjalan melewati proses standar untuk menyesuaikan dan mengimplementasikan proyek SubQuery Anda.
 
-1. Inisialisasi proyek Anda menggunakan `subql init PROJECT_NAME`
+1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
 2. Perbarui file Manifest (`project.yaml`) untuk menyertakan informasi tentang blockchain Anda, dan entitas yang akan Anda petakan - lihat [File Manifest](./manifest.md)
 3. Buat entitas GraphQL di skema Anda (`schema.graphql`) yang menentuakn bentuk data yang akan Anda ekstrak dan coba untuk kueri - lihat [Skema GraphQL](./graphql.md)
 4. Tambahkan semua fungsi pemetaan (mis `mappingHandlers.ts` yang ingin Anda minta untuk ubah data chainnya ke entitas GraphQL yang sudah Anda tentukan - lihat [Pemetaan](./mapping.md)
@@ -51,13 +51,8 @@ Untuk menjalankan Proyek SubQuery Anda di host Node SubQuery secara lokal, perta
 
 Jalankan perintah bentuk dari direktori proyek.
 
-```shell
-# Yarn
-yarn build
-
-# NPM
-npm run-script build
-```
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
 ## Logging
 
@@ -73,7 +68,7 @@ Untuk menggunakan `logger.info` atau `logger.warn`, tempatkan barisannya ke file
 
 ![logging.info](/assets/img/logging_info.png)
 
-Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Untuk menggunakan `logger. debug`, langkah tambahan diperlukan.
+Untuk menggunakan `logger.debug`, langkah tambahan diperlukan. Tambahkan `--log-level=debug` ke baris perintah Anda.
 
 Jika Anda sedang menjalankan docker container, tambahkan barisan ini ke file `docker-compose.yaml` Anda.
 

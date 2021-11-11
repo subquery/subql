@@ -1,12 +1,12 @@
-# Tạo một dự án SubQuery
+# Hướng dẫn & Ví dụ
 
-Trong hướng dẫn [bắt đầu nhan](/quickstart/quickstart.md), chúng tôi đã xem nhanh một ví dụ để bạn hiểu SubQuery là gì và nó hoạt động như thế nào. Ở đây chúng ta sẽ xem xét kỹ hơn quy trình làm việc khi tạo dự án của bạn và các tệp chính mà bạn sẽ làm việc.
+Trong hướng dẫn [ bắt đầu nhanh ](/quickstart/quickstart.md), chúng tôi đã đưa ra một ví dụ để bạn hiểu SubQuery là gì và nó hoạt động như thế nào. Ở đây chúng ta sẽ xem xét kỹ hơn quy trình làm việc khi tạo dự án của bạn và các tập tin chính mà bạn sẽ làm việc.
 
-## Quy trình làm việc cơ bản
+## Ví dụ SubQuery
 
-Một số ví dụ sau sẽ giả sử bạn đã khởi tạo thành công gói khởi động trong phần [Bắt đầu nhanh](../quickstart/quickstart.md). Từ gói khởi động đó, chúng tôi sẽ hướng dẫn quy trình chuẩn để tùy chỉnh và triển khai dự án SubQuery của bạn.
+Một vài ví dụ sau sẽ xem như bạn đã khởi tạo thành công gói khởi động trong phần [ Bắt đầu nhanh ](../quickstart/quickstart.md). Từ gói khởi động đó, chúng tôi sẽ hướng dẫn quy trình chuẩn để tùy chỉnh và triển khai dự án SubQuery của bạn.
 
-1. Khởi tạo dự án của bạn bằng `subql init PROJECT_NAME`
+1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
 2. Cập nhật tệp kê khai (`project.yaml`) để bao gồm thông tin về chuỗi khối của bạn và các thực thể mà bạn sẽ ánh xạ - xem [Manifest File](./manifest.md)
 3. Tạo các thực thể GraphQL trong lược đồ của bạn (`schema.graphql`) xác định hình dạng của dữ liệu mà bạn sẽ trích xuất và duy trì để truy vấn - xem [Lược đồ GraphQL](./graphql.md)
 4. Thêm tất cả các hàm ánh xạ (ví dụ: `mappingHandlers.ts`) mà bạn muốn gọi để chuyển đổi dữ liệu chuỗi thành các thực thể GraphQL mà bạn đã xác định - xem [Ánh xạ](./mapping.md)
@@ -51,13 +51,8 @@ Thao tác này sẽ tạo một thư mục mới (hoặc cập nhật thư mục
 
 Chạy lệnh xây dựng từ thư mục gốc của dự án.
 
-```shell
-# Yarn
-yarn build
-
-# NPM
-npm run-script build
-```
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
 ## Ghi nhật ký
 

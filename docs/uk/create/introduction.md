@@ -1,12 +1,12 @@
-# Creating a SubQuery Project
+# Tutorials & Examples
 
 In the [quick start](/quickstart/quickstart.md) guide, we very quickly ran through an example to give you a taste of what SubQuery is and how it works. Here we'll take a closer look at the workflow when creating your project and the key files you'll be working with.
 
-## The Basic Workflow
+## SubQuery Examples
 
 Some of the following examples will assume you have successfully initialized the starter package in the [Quick start](../quickstart/quickstart.md) section. From that starter package, we'll walk through the standard process to customise and implement your SubQuery project.
 
-1. Initialise your project using `subql init PROJECT_NAME`
+1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
 2. Update the Manifest file (`project.yaml`) to include information about your blockchain, and the entities that you will map - see [Manifest File](./manifest.md)
 3. Create GraphQL entities in your schema (`schema.graphql`) that define the shape of the data that you will extract and persist for querying - see [GraphQL Schema](./graphql.md)
 4. Add all the mapping functions (eg `mappingHandlers.ts`) you wish to invoke to transform chain data to the GraphQL entities that you have defined - see [Mapping](./mapping.md)
@@ -51,13 +51,8 @@ In order to run your SubQuery Project on a locally hosted SubQuery Node, you nee
 
 Run the build command from the project's root directory.
 
-```shell
-# Yarn
-yarn build
-
-# NPM
-npm run-script build
-```
+<CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn build ``` </CodeGroupItem>
+<CodeGroupItem title="NPM"> ```bash npm run-script build ``` </CodeGroupItem> </CodeGroup>
 
 ## Logging
 

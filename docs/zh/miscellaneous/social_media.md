@@ -1,28 +1,28 @@
-# Social Media Links
+# 社交媒体链接
 
-SubQuery is an active project that maintains and communicates with our followers through many social media channels.
+SubQuery 是一个活跃的项目，通过许多社交媒体与我们的用户保持联系和沟通。
 
-It is our aim to always listen and engage with our loyal community so please join the conversation and send us your ideas or questions!
+我们希望倾听社区的声音，所以请加入社区并向我们发送您的想法或问题！
 
-## Official SubQuery Communities
+## SubQuery官方社区
 
-- [Linktree](https://linktr.ee/subquerynetwork)
-- [Discord](https://discord.com/invite/subquery) (Primary Community with dedicated technical support channels)
-- [Medium](https://subquery.medium.com) (Primary announcements channel)
+- [链接树](https://linktr.ee/subquerynetwork)
+- [Discord](https://discord.com/invite/subquery) (拥有专业技术支持频道的主社区)
+- [ Medium ](https://subquery.medium.com) (主要通知公告)
 - [Twitter](https://twitter.com/subquerynetwork)
-- [Telegram](https://t.me/subquerynetwork) (Announcements channel only)
+- [Telegram](https://t.me/subquerynetwork) (公告频道)
 - [GitHub](https://github.com/SubQuery/subql)
-- [Matrix/Riot](https://matrix.to/#/#subquery:matrix.org)
+- [Matrix/Riot ](https://matrix.to/#/#subquery:matrix.org)
 - [LinkedIn](https://www.linkedin.com/company/subquery)
 
-## Unofficial SubQuery Communities
+## SubQuery非官方社区
 
-These communities are not moderated by the SubQuery team, but our ambassadors may be there to provide support. 请小心诈骗，因为 SubQuery**不对**其中发生的事情负责。 Please be careful of scams as SubQuery is **not** responsible for what happens within them.
+这些社区并不是由SubQuery团队搭建的，但我们的大使可能在那里提供支持。 请注意防骗，因为SubQuery **不** 负责它们内部发生的事情。
 
-- [Telegram (Chinese)](https://t.me/subquerychina)
-- [Telegram (Russian)](https://t.me/SubQuery_russia)
-- [Telegram (Spanish)](https://t.me/SubQueryES)
+- [Telegram (Chinese) ](https://t.me/subquerychina)
+- [Telegram (Russian) ](https://t.me/SubQuery_russia)
+- [Telegram (Spanish) ](https://t.me/SubQueryES)
 - [Telegram (Thai)](https://t.me/subquerynetworkthai)
 - [Telegram (Turkish)](https://t.me/subquery_TR)
-- [Telegram (Vietnamese)](https://t.me/subqueryvietnam)
-- [Telegram (Vietnamese Announcement)](https://t.me/subqueryannvn)
+- [Telegram (Vietname)](https://t.me/subqueryvietnam)
+- [Telegram (Vietnamese Announcement) ](https://t.me/subqueryannvn)

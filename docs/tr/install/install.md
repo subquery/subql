@@ -1,44 +1,44 @@
-# Installing SubQuery
+# SubQuery'i Kurmak
 
-There are various components required when creating a SubQuery project. The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) tool is used to create SubQuery projects. The [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) component is required to run an indexer. The [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) library is required to generate queries.
+Bir SubQuery projesi oluştururken gerekli olan bazı bileşenler var. The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) tool is used to create SubQuery projects. Bir dizin oluşturucuyu çalıştırmak için [@subql/node](https://github.com/subquery/subql/tree/docs-new-section/packages/node) bileşeni gereklidir. Sorguları oluşturmak için [@subql/query](https://github.com/subquery/subql/tree/docs-new-section/packages/query) kütüphanesi gereklidir.
 
-## Install @subql/cli
+## @subql/cli'yi kurun
 
 The [@subql/cli](https://github.com/subquery/subql/tree/docs-new-section/packages/cli) tool helps to create a project framework or scaffold meaning you don't have to start from scratch.
 
-Install SubQuery CLI globally on your terminal by using Yarn or NPM:
+Yarn veya NPM kullanarak SubQuery CLI'yi global biçimde terminalinize kurun:
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global add @subql/cli ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install -g @subql/cli ``` </CodeGroupItem> </CodeGroup>
 
-You can then run help to see available commands and usage provide by CLI:
+Ardından, CLI tarafından sağlanan kullanılabilir komutları ve kullanım biçimlerini görüntülemek için help komutunu çalıştırabilirsiniz:
 
 ```shell
 subql help
 ```
-## Install @subql/node
+## @subql/node'u kurun
 
-A SubQuery node is an implementation that extracts substrate-based blockchain data per the SubQuery project and saves it into a Postgres database.
+Bir SubQuery node'u, SubQuery projesindeki alt-tabanlı blok zinciri verilerini çıkaran ve bir Postgres veritabanına kaydeden bir uygulamadır.
 
-Install SubQuery node globally on your terminal by using Yarn or NPM:
+Yarn veya NPM kullanarak SubQuery node'unu global biçimde terminalinize kurun:
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global add @subql/node ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install -g @subql/node ``` </CodeGroupItem> </CodeGroup>
 
-Once installed, you can can start a node with:
+Kurulduktan sonra, aşağıdaki şekilde bir node başlatabilirsiniz:
 
 ```shell
 subql-node <command>
 ```
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure.
+> Not: Docker kullanıyorsanız veya projenizi SubQuery Projelerinde barındırıyorsanız, bu adımı atlayabilirsiniz. Bunun nedeni, SubQuery node'unun Docker konteynerında ve barındırma altyapısında zaten sağlanmış olmasıdır.
 
-## Install @subql/query
+## @subql/query'yi kurun
 
-The SubQuery query library provides a service that allows you to query your project in a "playground" environment via your browser.
+SubQuery sorgu kütüphanesi, projenizi tarayıcınız aracılığıyla bir "çalışma alanı" ortamında sorgulamanıza olanak tanıyan bir hizmet sunar.
 
-Install SubQuery query globally on your terminal by using Yarn or NPM:
+Yarn veya NPM kullanarak SubQuery sorgusunu global biçimde terminalinize kurun:
 
 <CodeGroup> <CodeGroupItem title="YARN" active> ```shell yarn global add @subql/query ``` </CodeGroupItem>
 <CodeGroupItem title="NPM"> ```bash npm install -g @subql/query ``` </CodeGroupItem> </CodeGroup>
 
-> Note: If you are using Docker or hosting your project in SubQuery Projects, you do can skip this step also. This is because the SubQuery node is already provided in the Docker container and the hosting infrastructure. 
+> Not: Docker kullanıyorsanız veya projenizi SubQuery Projelerinde barındırıyorsanız, bu adımı atlayabilirsiniz. Bunun nedeni, SubQuery node'unun Docker konteynerında ve barındırma altyapısında zaten sağlanmış olmasıdır. 

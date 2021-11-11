@@ -2,7 +2,7 @@
 
 在我们所设想的使用情况下，SubQuery节点通常是由一个受信任的主机来管理的。 而用户向节点所提交的 SubQuery 项目代码并不完全可信。
 
-Some malicious code is likely to attack the host or even compromise it, and cause damage to the data of other projects in the same host. Therefore, we use the [VM2](https://www.npmjs.com/package/vm2) sandbox secured mechanism to reduce risks. This: 因此，我们使用 [VM2](https://www.npmjs.com/package/vm2) 沙盒安全机制来降低风险。 如下：
+一些恶意代码很有可能攻击主机甚至破坏主机，造成同一主机内其他项目的数据损坏。 因此，我们使用 [VM2](https://www.npmjs.com/package/vm2) 沙盒安全机制来降低风险。 如下：
 
 - 在受隔离的系统中运行不受信任的代码，这些代码不会访问主机的网络和文件系统，除非通过我们注入沙箱的公共接口。
 
