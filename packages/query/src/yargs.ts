@@ -38,6 +38,11 @@ export function getYargsOption() {
       describe: 'Url that allow query to access indexer metadata',
       type: 'string',
     },
+    unsafe: {
+      demandOption: false,
+      describe: 'Disable limits on query depth and allowable number returned query records',
+      type: 'boolean',
+    },
   });
 }
 

@@ -5,10 +5,13 @@
 // to support max record rewrite, which to prevent the db performance issue.
 
 import {QueryBuilder} from 'graphile-build-pg';
+import {argv} from '../../yargs';
 
 const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
 
 const MAX_RECORD_COUNT = 100;
+
+const unsafe = argv('unsafe') as boolean;
 
 export default (builder) => {
   builder.hook(
@@ -37,7 +40,9 @@ export default (builder) => {
       addArgDataGenerator(function connectionFirstLastBeforeAfter({after, before, first, last, offset}) {
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
-            queryBuilder.limit(MAX_RECORD_COUNT);
+            if (!unsafe) {
+              queryBuilder.limit(MAX_RECORD_COUNT);
+            }
             if (first) {
               if (first > MAX_RECORD_COUNT) {
                 first = MAX_RECORD_COUNT;
