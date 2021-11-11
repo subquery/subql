@@ -7,7 +7,9 @@ import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import {
   isRuntimeDataSourceV0_2_0,
-  RuntimeDataSrouceV0_0_1,
+  RuntimeDataSourceV0_0_1,
+  isCustomDs,
+  isRuntimeDs,
 } from '@subql/common';
 import {
   SubqlCallFilter,
@@ -22,12 +24,7 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
-import {
-  isBaseHandler,
-  isCustomDs,
-  isCustomHandler,
-  isRuntimeDs,
-} from '../utils/project';
+import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
@@ -94,8 +91,8 @@ export class FetchService implements OnApplicationShutdown {
     const dataSources = this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSrouceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSrouceV0_0_1).filter.specName ===
+        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
+        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {

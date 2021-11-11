@@ -3,10 +3,12 @@
 
 import {
   SubqlCustomDatasource,
+  SubqlCustomHandler,
   SubqlDatasource,
   SubqlDatasourceKind,
   SubqlHandler,
   SubqlMapping,
+  SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
 } from '@subql/types';
@@ -17,6 +19,11 @@ export interface SubqlMappingV0_2_0<T extends SubqlHandler> extends SubqlMapping
 }
 
 export type RuntimeDataSourceV0_2_0 = SubqlRuntimeDatasource<SubqlMappingV0_2_0<SubqlRuntimeHandler>>;
+export type CustomDatasourceV0_2_0 = SubqlCustomDatasource<
+  string,
+  SubqlNetworkFilter,
+  SubqlMappingV0_2_0<SubqlCustomHandler>
+>;
 
 export interface ProjectManifestV0_2_0 extends IProjectManifest {
   name: string;
@@ -28,12 +35,13 @@ export interface ProjectManifestV0_2_0 extends IProjectManifest {
   network: {
     genesisHash: string;
     endpoint?: string;
+    dictionary?: string;
     chaintypes?: {
       file: string;
     };
   };
 
-  dataSources: (RuntimeDataSourceV0_2_0 | SubqlCustomDatasource)[];
+  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
 }
 
 export function isRuntimeDataSourceV0_2_0(dataSource: SubqlDatasource): dataSource is RuntimeDataSourceV0_2_0 {

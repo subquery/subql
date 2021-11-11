@@ -37,19 +37,24 @@ jobs:
 
     #Identify changes
       - uses: marceloprado/has-changed-path@v1
+        id: changed-types
+        with:
+          paths: packages/types
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
           paths: packages/common
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-contract-processors
+        with:
+          paths: packages/contract-processors
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-cli
         with:
           paths: packages/cli
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-types
-        with:
-          paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
@@ -71,45 +76,59 @@ jobs:
       - name: build
         run: yarn workspaces foreach run build
 
-        #Publish to npm
+      #Publish to npm and github releases
+      - name: Publish Types
+        if: steps.changed-types.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
-        working-directory: packages/common
-        run: echo "Changes exist in common" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Contract Processors
+        if: steps.changed-contract-processors.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/contract-processors
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Cli
         if: steps.changed-cli.outputs.changed == 'true'
-        working-directory: packages/cli
-        run: echo "Changes exist in cli" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Types
-        if: steps.changed-types.outputs.changed == 'true'
-        working-directory: packages/types
-        run: echo "Changes exist in types" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/cli
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Node
         if: steps.changed-node.outputs.changed == 'true'
-        working-directory: packages/node
-        run: echo "Changes exist in node" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Query
         if: steps.changed-query.outputs.changed == 'true'
-        working-directory: packages/query
-        run: echo "Changes exist in query" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/query
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Validator
         if: steps.changed-validator.outputs.changed == 'true'
-        working-directory: packages/validator
-        run: echo "Changes exist in validator" && yarn npm publish --access public
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/validator
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}

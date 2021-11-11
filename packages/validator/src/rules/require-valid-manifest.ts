@@ -16,6 +16,7 @@ export class RequireValidManifest implements Rule {
       schema.validate();
       return true;
     } catch (e) {
+      ctx.logger.error(e.message);
       return false;
     }
   }

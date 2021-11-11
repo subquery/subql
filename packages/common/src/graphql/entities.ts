@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import {type} from 'os';
 import {
   assertListType,
   getDirectiveValues,
   getNullableType,
   GraphQLField,
+  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
@@ -25,14 +27,14 @@ import {
   GraphQLEntityField,
   GraphQLJsonFieldType,
   GraphQLJsonObjectType,
-  GraphQLModelsRelations,
+  GraphQLModelsRelationsEnums,
   GraphQLModelsType,
   GraphQLRelationsType,
   IndexType,
 } from './types';
 import {isFieldScalar} from './utils';
 
-export function getAllJsonObjects(_schema: GraphQLSchema | string) {
+export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   return Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
@@ -40,34 +42,61 @@ export function getAllJsonObjects(_schema: GraphQLSchema | string) {
     .filter(isObjectType);
 }
 
-export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelations {
+export function getAllEnums(_schema: GraphQLSchema | string) {
+  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
+  return Object.values(schema.getTypeMap())
+    .filter(isEnumType)
+    .map((node) => node);
+}
+
+export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelationsEnums {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.Entity))
-    .map((node) => node)
     .filter(isObjectType);
 
   const jsonObjects = getAllJsonObjects(schema);
 
   const entityNameSet = entities.map((entity) => entity.name);
 
-  const modelRelations = {models: [], relations: []} as GraphQLModelsRelations;
+  const enums = new Map(
+    Object.values(schema.getTypeMap())
+      .filter(isEnumType)
+      .map((node) => [
+        node.name,
+        {name: node.name, description: node.description, values: node.getValues().map((v) => v.value)},
+      ])
+  );
+
+  const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
   const derivedFrom = schema.getDirective('derivedFrom');
   const indexDirective = schema.getDirective('index');
   for (const entity of entities) {
     const newModel: GraphQLModelsType = {
       name: entity.name,
+      description: entity.description,
       fields: [],
       indexes: [],
     };
 
     for (const field of Object.values(entity.getFields())) {
-      const typeString = extractType(field.type).name;
+      const typeString = extractType(field.type);
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       //If is a basic scalar type
       if (isFieldScalar(typeString)) {
         newModel.fields.push(packEntityField(typeString, field, false));
+      }
+      // If is an enum
+      else if (enums.has(typeString)) {
+        newModel.fields.push({
+          type: typeString,
+          description: field.description,
+          isEnum: true,
+          isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
+          nullable: !isNonNullType(field.type),
+          name: field.name,
+        });
       }
       // If is a foreign key
       else if (entityNameSet.includes(typeString) && !derivedFromDirectValues) {
@@ -138,34 +167,38 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
 
 function packEntityField(
   typeString: FieldScalar | string,
-  field: GraphQLField<any, any>,
+  field: GraphQLField<unknown, unknown>,
   isForeignKey: boolean
 ): GraphQLEntityField {
   return {
     name: isForeignKey ? `${field.name}Id` : field.name,
     type: isForeignKey ? FieldScalar.String : typeString,
+    description: field.description,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
+    isEnum: false,
   };
 }
 
 function packJSONField(
   typeString: string,
-  field: GraphQLField<any, any>,
+  field: GraphQLField<unknown, unknown>,
   jsonObject: GraphQLJsonObjectType
 ): GraphQLEntityField {
   return {
     name: field.name,
     type: 'Json',
+    description: field.description,
     jsonInterface: jsonObject,
     isArray: isListType(isNonNullType(field.type) ? getNullableType(field.type) : field.type),
     nullable: !isNonNullType(field.type),
+    isEnum: false,
   };
 }
 
 export function setJsonObjectType(
-  jsonObject: GraphQLObjectType<any, any>,
-  jsonObjects: GraphQLObjectType<any, any>[]
+  jsonObject: GraphQLObjectType<unknown, unknown>,
+  jsonObjects: GraphQLObjectType<unknown, unknown>[]
 ): GraphQLJsonObjectType {
   const graphQLJsonObject: GraphQLJsonObjectType = {
     name: jsonObject.name,
@@ -173,7 +206,7 @@ export function setJsonObjectType(
   };
   for (const field of Object.values(jsonObject.getFields())) {
     //check if field is also json
-    const typeString = extractType(field.type).name;
+    const typeString = extractType(field.type);
     const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
     graphQLJsonObject.fields.push({
       name: field.name,
@@ -191,24 +224,23 @@ export function setJsonObjectType(
   return graphQLJsonObject;
 }
 
-type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<any, any>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
+type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<unknown, unknown>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
 //Get the type, ready to be convert to string
-function extractType(type: GraphQLOutputType): GraphQLNonListType {
+function extractType(type: GraphQLOutputType): string {
   if (isUnionType(type)) {
     throw new Error(`Not support Union type`);
   }
   if (isInterfaceType(type)) {
     throw new Error(`Not support Interface type`);
   }
-  if (isEnumType(type)) {
-    throw new Error(`Not support Enum type`);
-  }
   const offNullType = isNonNullType(type) ? getNullableType(type) : type;
   const offListType = isListType(offNullType) ? assertListType(offNullType).ofType : type;
-  return isNonNullType(offListType) ? getNullableType(offListType) : offListType;
+  return isNonNullType(offListType)
+    ? (getNullableType(offListType) as unknown as GraphQLNamedType).name
+    : offListType.name;
 }
 
-function validateRelations(modelRelations: GraphQLModelsRelations): void {
+function validateRelations(modelRelations: GraphQLModelsRelationsEnums): void {
   for (const r of modelRelations.relations.filter((model) => model.type === 'hasMany' || model.type === 'hasOne')) {
     assert(
       modelRelations.models.find(

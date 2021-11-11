@@ -5,6 +5,7 @@ import {Context} from '../context';
 import {RequireBuildScript} from './require-build-script';
 import {RequireCliDep} from './require-cli-dep';
 import {RequireCodegenScript} from './require-codegen-script';
+import {RequireCustomDsValidation} from './require-custom-ds-validation';
 import RequireValidChainTypes from './require-valid-chaintypes';
 import {RequireValidManifest} from './require-valid-manifest';
 
@@ -27,4 +28,5 @@ export const commonRules: Rule[] = [
   new RequireCliDep(),
   new RequireValidManifest(),
   new RequireValidChainTypes(),
+  new RequireCustomDsValidation(),
 ];

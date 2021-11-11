@@ -259,21 +259,29 @@ export async function fetchBlocksViaRangeQuery(
   });
 }
 
+async function getBlockByHeight(
+  api: ApiPromise,
+  height: number,
+): Promise<SignedBlock> {
+  const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
+    logger.error(`failed to fetch BlockHash ${height}`);
+    throw e;
+  });
+  return api.rpc.chain.getBlock(blockHash).catch((e) => {
+    logger.error(`failed to fetch Block ${blockHash}`);
+    throw e;
+  });
+}
+
 export async function fetchBlocksRange(
   api: ApiPromise,
   startHeight: number,
   endHeight: number,
 ): Promise<SignedBlock[]> {
   return Promise.all(
-    range(startHeight, endHeight + 1).map(async (height) => {
-      try {
-        const blockHash = await api.rpc.chain.getBlockHash(height);
-        return await api.rpc.chain.getBlock(blockHash);
-      } catch (err) {
-        logger.error(`failed to fetch block at height ${height}`);
-        throw err;
-      }
-    }),
+    range(startHeight, endHeight + 1).map(async (height) =>
+      getBlockByHeight(api, height),
+    ),
   );
 }
 
@@ -282,10 +290,7 @@ export async function fetchBlocksArray(
   blockArray: number[],
 ): Promise<SignedBlock[]> {
   return Promise.all(
-    blockArray.map(async (height) => {
-      const blockHash = await api.rpc.chain.getBlockHash(height);
-      return api.rpc.chain.getBlock(blockHash);
-    }),
+    blockArray.map(async (height) => getBlockByHeight(api, height)),
   );
 }
 
@@ -293,7 +298,14 @@ export async function fetchEventsRange(
   api: ApiPromise,
   hashs: BlockHash[],
 ): Promise<Vec<EventRecord>[]> {
-  return Promise.all(hashs.map((hash) => api.query.system.events.at(hash)));
+  return Promise.all(
+    hashs.map((hash) =>
+      api.query.system.events.at(hash).catch((e) => {
+        logger.error(`failed to fetch events at block ${hash}`);
+        throw e;
+      }),
+    ),
+  );
 }
 
 export async function fetchRuntimeVersionRange(
@@ -301,13 +313,18 @@ export async function fetchRuntimeVersionRange(
   hashs: BlockHash[],
 ): Promise<RuntimeVersion[]> {
   return Promise.all(
-    hashs.map((hash) => api.rpc.state.getRuntimeVersion(hash)),
+    hashs.map((hash) =>
+      api.rpc.state.getRuntimeVersion(hash).catch((e) => {
+        logger.error(`failed to fetch RuntimeVersion at block ${hash}`);
+        throw e;
+      }),
+    ),
   );
 }
 
 export async function fetchBlocksBatches(
   api: ApiPromise,
-  blockArray,
+  blockArray: number[],
   overallSpecVer?: number,
   // specVersionMap?: number[],
 ): Promise<BlockContent[]> {

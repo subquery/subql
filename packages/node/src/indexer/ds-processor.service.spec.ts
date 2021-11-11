@@ -2,10 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned, isCustomDs } from '@subql/common';
 import { SubqlCustomDatasource } from '@subql/types';
 import { SubqueryProject } from '../configure/project.model';
-import { isCustomDs } from '../utils/project';
 import { DsProcessorService } from './ds-processor.service';
 
 function getTestProject(extraDataSources?: SubqlCustomDatasource[]) {
@@ -45,15 +44,16 @@ describe('DsProcessorService', () => {
     service = new DsProcessorService(project);
   });
 
-  it('can validate custom ds', () => {
-    expect(() => service.validateCustomDs()).not.toThrow();
+  it('can validate custom ds', async () => {
+    await service.validateCustomDs();
+    await expect(service.validateCustomDs()).resolves.not.toThrow();
   });
 
-  it('can catch an invalid datasource kind', () => {
+  it('can catch an invalid datasource kind', async () => {
     const badDs: SubqlCustomDatasource<string, any> = {
       kind: 'substrate/invalid',
       processor: { file: 'contract-processors/dist/jsonfy.js' },
-      assets: {},
+      assets: new Map([]),
       mapping: {
         handlers: [],
       },
@@ -62,7 +62,7 @@ describe('DsProcessorService', () => {
     project = getTestProject([badDs]);
     service = new DsProcessorService(project);
 
-    expect(() => service.validateCustomDs()).toThrow();
+    await expect(service.validateCustomDs()).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {

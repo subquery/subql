@@ -5,7 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
-import {createProject, installDependencies, getGenesisHash} from '../controller/init-controller';
+import {createProject, installDependencies} from '../controller/init-controller';
+import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
 
 export default class Init extends Command {

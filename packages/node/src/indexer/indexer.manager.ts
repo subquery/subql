@@ -5,14 +5,20 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
-import { buildSchema, getAllEntitiesRelations } from '@subql/common';
 import {
+  buildSchema,
+  getAllEntitiesRelations,
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
-} from '@subql/common/project/utils';
+  isCustomDs,
+  isRuntimeDs,
+} from '@subql/common';
 import {
+  RuntimeHandlerInputMap,
+  SecondLayerHandlerProcessor,
   SubqlCustomDatasource,
+  SubqlCustomHandler,
   SubqlDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
@@ -24,7 +30,6 @@ import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { isCustomDs, isRuntimeDs } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
@@ -81,7 +86,12 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      await this.apiService.setBlockhash(block.block.hash);
+      const isUpgraded = block.specVersion !== this.prevSpecVersion;
+      // if parentBlockHash injected, which means we need to check runtime upgrade
+      await this.apiService.setBlockhash(
+        block.block.hash,
+        isUpgraded ? block.block.header.parentHash : undefined,
+      );
       for (const ds of this.filteredDataSources) {
         const vm = await this.sandboxService.getDsProcessor(ds);
         if (isRuntimeDs(ds)) {
@@ -230,41 +240,70 @@ export class IndexerManager {
     }
   }
 
+  private async createProjectSchema(name: string): Promise<SubqueryModel> {
+    let projectSchema: string;
+    const { chain, genesisHash } = this.apiService.networkMeta;
+    if (this.nodeConfig.localMode) {
+      // create tables in default schema if local mode is enabled
+      projectSchema = DEFAULT_DB_SCHEMA;
+    } else {
+      const suffix = await this.nextSubquerySchemaSuffix();
+      projectSchema = `subquery_${suffix}`;
+      const schemas = await this.sequelize.showAllSchemas(undefined);
+      if (!(schemas as unknown as string[]).includes(projectSchema)) {
+        await this.sequelize.createSchema(projectSchema, undefined);
+      }
+    }
+    return this.subqueryRepo.create({
+      name,
+      dbSchema: projectSchema,
+      hash: '0x',
+      nextBlockHeight: this.getStartBlockFromDataSources(),
+      network: chain,
+      networkGenesis: genesisHash,
+    });
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
     const { chain, genesisHash } = this.apiService.networkMeta;
     if (!project) {
-      let projectSchema: string;
-      if (this.nodeConfig.localMode) {
-        // create tables in default schema if local mode is enabled
-        projectSchema = DEFAULT_DB_SCHEMA;
-      } else {
-        const suffix = await this.nextSubquerySchemaSuffix();
-        projectSchema = `subquery_${suffix}`;
-        const schemas = await this.sequelize.showAllSchemas(undefined);
-        if (!(schemas as unknown as string[]).includes(projectSchema)) {
-          await this.sequelize.createSchema(projectSchema, undefined);
-        }
-      }
-
-      project = await this.subqueryRepo.create({
-        name,
-        dbSchema: projectSchema,
-        hash: '0x',
-        nextBlockHeight: this.getStartBlockFromDataSources(),
-        network: chain,
-        networkGenesis: genesisHash,
-      });
+      project = await this.createProjectSchema(name);
     } else {
+      if (argv['force-clean']) {
+        try {
+          // drop existing project schema
+          this.sequelize.dropSchema(project.dbSchema, {
+            logging: false,
+            benchmark: false,
+          });
+
+          // remove schema from project table
+          await this.sequelize.query(
+            ` DELETE
+          FROM public.subqueries
+          where db_schema = :subquerySchema`,
+            {
+              replacements: { subquerySchema: project.dbSchema },
+              type: QueryTypes.DELETE,
+            },
+          );
+
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        project = await this.createProjectSchema(name);
+      }
       if (!project.networkGenesis || !project.network) {
         project.network = chain;
         project.networkGenesis = genesisHash;
         await project.save();
       } else if (project.networkGenesis !== genesisHash) {
         logger.error(
-          `Not same network: genesisHash different - ${project.networkGenesis} : ${genesisHash}`,
+          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
         );
         process.exit(1);
       }
@@ -333,6 +372,11 @@ export class IndexerManager {
         return true;
       }
     });
+
+    if (!filteredDs.length) {
+      logger.error(`Did not find any datasources with associated processor`);
+      process.exit(1);
+    }
     return filteredDs;
   }
 
@@ -387,53 +431,40 @@ export class IndexerManager {
     { block, events, extrinsics }: BlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
+    const assets = await this.dsProcessorService.getAssets(ds);
+
+    const processData = async <K extends SubqlHandlerKind>(
+      processor: SecondLayerHandlerProcessor<K, unknown, unknown>,
+      handler: SubqlCustomHandler<string, Record<string, unknown>>,
+      filteredData: RuntimeHandlerInputMap[K][],
+    ): Promise<void> => {
+      const transformedData = await Promise.all(
+        filteredData
+          .filter((data) => processor.filterProcessor(handler.filter, data, ds))
+          .map((data) => processor.transformer(data, ds, this.api, assets)),
+      );
+
+      for (const data of transformedData) {
+        await vm.securedExec(handler.handler, [data]);
+      }
+    };
+
     for (const handler of ds.mapping.handlers) {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {
-        const transformedOutput = processor.transformer(block, ds);
-        if (
-          processor.filterProcessor(
-            handler.filter as any,
-            transformedOutput,
-            ds,
-          )
-        ) {
-          await vm.securedExec(handler.handler, [transformedOutput]);
-        }
+        await processData(processor, handler, [block]);
       } else if (isCallHandlerProcessor(processor)) {
         const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
           extrinsics,
           processor.baseFilter,
         );
-        for (const extrinsic of filteredExtrinsics) {
-          const transformedOutput = processor.transformer(extrinsic, ds);
-          if (
-            processor.filterProcessor(
-              handler.filter as any,
-              transformedOutput,
-              ds,
-            )
-          ) {
-            await vm.securedExec(handler.handler, [transformedOutput]);
-          }
-        }
+        await processData(processor, handler, filteredExtrinsics);
       } else if (isEventHandlerProcessor(processor)) {
         const filteredEvents = SubstrateUtil.filterEvents(
           events,
           processor.baseFilter,
         );
-        for (const event of filteredEvents) {
-          const transformedOutput = processor.transformer(event, ds);
-          if (
-            processor.filterProcessor(
-              handler.filter as any,
-              transformedOutput,
-              ds,
-            )
-          ) {
-            await vm.securedExec(handler.handler, [transformedOutput]);
-          }
-        }
+        await processData(processor, handler, filteredEvents);
       }
     }
   }

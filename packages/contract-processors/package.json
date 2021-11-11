@@ -1,6 +1,6 @@
 {
   "name": "@subql/contract-processors",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -9,18 +9,20 @@
     "build": "rm -rf dist && tsc -b"
   },
   "author": "Ian He",
-  "main": "dist/index.js",
   "license": "Apache-2.0",
   "files": [
     "/dist"
   ],
   "dependencies": {
-    "ethers": "^5.4.7"
+    "@subql/types": "workspace:*",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
+    "ethers": "^5.5.1"
   },
   "devDependencies": {
-    "@subql/types": "workspace:*"
+    "moonbeam-types-bundle": "^1.2.7"
   },
   "peerDependencies": {
-    "@polkadot/api": "^5"
+    "@polkadot/api": "^6"
   }
 }

@@ -13,7 +13,7 @@ import {
   RpcMethodResult,
 } from '@polkadot/api/types';
 import { RpcInterface } from '@polkadot/rpc-core/types';
-import { BlockHash } from '@polkadot/types/interfaces';
+import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
@@ -28,6 +28,7 @@ export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
+  private currentRuntimeVersion: RuntimeVersion;
   private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
 
@@ -79,10 +80,6 @@ export class ApiService implements OnApplicationShutdown {
       chain: this.api.runtimeChain.toString(),
       specName: this.api.runtimeVersion.specName.toString(),
       genesisHash: this.api.genesisHash.toString(),
-      blockTime:
-        this.api.consts.babe?.expectedBlockTime.toNumber() ||
-        this.api.consts.timestamp?.minimumPeriod.muln(2).toNumber() ||
-        6000,
     };
 
     return this;
@@ -129,12 +126,20 @@ export class ApiService implements OnApplicationShutdown {
     (this.patchedApi as any).isPatched = true;
   }
 
-  async setBlockhash(blockHash: BlockHash): Promise<void> {
+  async setBlockhash(
+    blockHash: BlockHash,
+    parentBlockHash?: BlockHash,
+  ): Promise<void> {
     if (!this.patchedApi) {
       await this.getPatchedApi();
     }
     this.currentBlockHash = blockHash;
-    const apiAt = await this.api.at(blockHash);
+    if (parentBlockHash) {
+      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
+        parentBlockHash,
+      );
+    }
+    const apiAt = await this.api.at(blockHash, this.currentRuntimeVersion);
     this.patchApiQuery(this.patchedApi, apiAt);
     this.patchApiFind(this.patchedApi, apiAt);
     this.patchApiQueryMulti(this.patchedApi, apiAt);
@@ -188,7 +193,6 @@ export class ApiService implements OnApplicationShutdown {
           argsClone[hashIndex] = this.currentBlockHash;
           return original(...argsClone);
         }) as RpcMethodResult<T, AnyFunction>;
-        ret.json = NOT_SUPPORT('api.rpc.*.*.json');
         ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
         ret.meta = original.meta;
         return ret;
@@ -198,7 +202,6 @@ export class ApiService implements OnApplicationShutdown {
       T,
       AnyFunction
     >;
-    ret.json = NOT_SUPPORT('api.rpc.*.*.json');
     ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
     ret.meta = original.meta;
     return ret;

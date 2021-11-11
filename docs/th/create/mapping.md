@@ -2,7 +2,6 @@
 
 Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
 
-Mappings are written in a subset of TypeScript called AssemblyScript which can be compiled to WASM (WebAssembly).
 - Mappings are defined in the `src/mappings` directory and are exported as a function
 - These mappings are also exported in `src/index.ts`
 - The mappings files are reference in `project.yaml` under the mapping handlers.

@@ -7,7 +7,7 @@ import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'c
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
 import {ProjectNetworkConfig} from '../../types';
 import {ProjectManifestBaseImpl} from '../base';
-import {ProjectManifestV0_0_1, RuntimeDataSrouceV0_0_1} from './types';
+import {ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
 export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkConfig {
   @IsString()
@@ -19,7 +19,7 @@ export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkCo
 
 export class RuntimeDataSourceV0_0_1Impl
   extends RuntimeDataSourceBase<SubqlMapping<SubqlRuntimeHandler>>
-  implements RuntimeDataSrouceV0_0_1
+  implements RuntimeDataSourceV0_0_1
 {
   @IsString()
   name: string;
@@ -37,5 +37,5 @@ export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implement
   @IsArray()
   @ValidateNested()
   @Type(() => RuntimeDataSourceV0_0_1Impl)
-  dataSources: RuntimeDataSrouceV0_0_1[];
+  dataSources: RuntimeDataSourceV0_0_1[];
 }

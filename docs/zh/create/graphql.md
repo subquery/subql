@@ -1,34 +1,31 @@
-# GraphQL 方案
+# GraphQL方案
 
 ## 定义实体
 
-`schema.graphql` 文件定义了各种 GraphQL schemas。 由于 GraphQL 查询语言的工作方式，方案文件基本上决定了您从 SubQuery 获取数据的形状。 要更多地了解如何使用 GraphQL schema 语言写入，我们建议查看 [Schemas 和 Type](https://graphql.org/learn/schema/#type-language)。
+`schema.graphql` 文件定义了各种GraphQL schemas。 由于GraphQL查询语言的工作方式，方案文件基本上决定了您从 SubQuery 获取数据的形状。 要更多地了解如何使用 GraphQL schema 语言写入，我们建议查看 [Schemas 和 Type](https://graphql.org/learn/schema/#type-language)。
 
 **重要：当您对模式文件做任何更改时， 请确保你重新生成你的类型目录，命令 `yarn codegen`**
 
 ### 实体
-
 每个实体必须使用 `ID!` 类型定义其必填字段 `id`。 它被用作同类所有实体的主要钥匙和独特之处。
 
-实体中不可用字段由 `表示！`。 请参阅下面的示例：
+实体中不可用字段由 `表示！ 请参阅下面的示例：</p>
 
-```graphql
-输入示例 @entity 然后
-  id: ID! # id 字段总是必需的，必须看起来像此
-  名称：字符串！ # 这是必填字段
-  地址：字符串 # 这是一个可选字段
+<pre><code class="graphql">type Example @entity {
+  id: ID!  # id field is always required and must look like this
+  name: String! # This is a required field
+  address: String # This is an optional field
 }
-```
+`</pre>
 
 ### 支持的标尺和类型
 
 我们目前支持流量缩放类型：
-
 - `ID`
-- `英寸`
-- `字符串`
+- `Int`
+- `String`
 - `BigInt`
-- `日期`
+- `Date`
 - `Boolean`
 - `<EntityName>` 对于嵌套关系实体，您可以使用定义实体的名称作为字段之一。 请在 [实体关系](#entity-relationships) 中查看。
 - `JSON` 也可以存储结构化数据，请查看 [JSON 类型](#json-type)
@@ -42,18 +39,17 @@
 这里就是一个例子。
 
 ```graphql
-输入用户 @entity 然后
-  id!
-  名称: 字符串 ！ @index(唯一：true) # 唯一可以设置为 true 或 false
-  title: Title! # 索引被自动添加到外国密钥字段
+type User @entity {
+  id: ID!
+  name: String! @index(unique: true) # unique can be set to true or false
+  title: Title! # Indexes are automatically added to foreign key field 
 }
 
-类型标题 @entity 。
-  id: ID！
-  名称: 字符串 ！ @index(唯一:true)
+type Title @entity {
+  id: ID!  
+  name: String! @index(unique:true)
 }
 ```
-
 假定我们知道这个用户的名字，但我们不知道确切的 id 值。 而不是提取所有用户，然后通过名称过滤，我们可以在名称字段后面添加 `@index` 这使查询速度更快，我们还可以通过 `的唯一性：真的` 来确保唯一性。
 
 **如果字段不是唯一的，最大结果设置为 100**
@@ -67,8 +63,8 @@ INSERT INTO title (id, name) VALUES('id_1', 'Captain')
 
 ```typescript
 // 映射函数中的处理程序
-import {User} from '../types/models/User';
-import {Title} from '../types/models/Title';
+import {User} from "../types/models/User"
+import {Title} from "../types/models/Title"
 
 const jack = await User.getByName('Jack Sparrow');
 
@@ -90,27 +86,28 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Cap
 例如：护照只属于一人，只有一本护照(例如)：
 
 ```graphql
-输入人员 @entity 然后
-  id!
-}
+type Person @entity { 
+   id: ID!
 
-输入 PassPassport @entity Windows
-  id: ID!
-  所有者：个人！
+  owner: Person!
+}
+  owner: Person!
 }
 ```
 
-或
+或者
 
 ```graphql
-type Person @entity {
-  id: ID!
-  passport: Passport!
+type Person @entity { 
+   id: ID!
+
+   passport: Passport!
 }
 
 type Passport @entity {
   id: ID!
-  所有者：个人！
+    owner: Person!
+
 }
 ```
 
@@ -123,23 +120,29 @@ type Passport @entity {
 ```graphql
 type Person @entity {
   id: ID!
-  accounts: [Account]
+  type Person @entity {
+  id: ID!
+  accounts: [Account] 
 }
 
 type Account @entity {
   id: ID!
   publicAddress: String!
 }
+  publicAddress: String!
+}
 ```
 
 ### 多对多关系
-
 通过建立一个映射实体，将另外两个实体连接起来，可以实现多对多的关系。
 
 示例：每个人都是多个组的一部分(个人组)，还有多个不同的人(个人组)。
 
 ```graphql
 type Person @entity {
+  id: ID!
+  name: String!
+  type Person @entity {
   id: ID!
   name: String!
   groups: [PersonGroup]
@@ -155,6 +158,15 @@ type Group @entity {
   id: ID!
   name: String!
   人员: [PersonGroup]
+}
+  person: Person!
+  Group: Group!
+}
+
+type Group @entity {
+  id: ID!
+  name: String!
+  persons: [PersonGroup]
 }
 ```
 
@@ -189,6 +201,9 @@ type Transfer @entity {
 ```graphql
 type Account @entity {
   id: ID!
+   publicAddress: String!
+  type Account @entity {
+  id: ID!
   publicAddress: String!
   sentTransfers: [Transfer] @derivedFrom(field: "from")
   receivedTransfers: [Transfer] @derivedFrom(field: "to")
@@ -200,6 +215,10 @@ type Transfer @entity {
   from: Account!
   to: Account!
 }
+  amount: BigInt
+  from: Account!
+  to: Account!
+}
 ```
 
 ## JSON 类型
@@ -207,18 +226,16 @@ type Transfer @entity {
 我们支持将数据保存为 JSON 类型，这是存储结构化数据的一个快速方法。 我们会自动生成相应的 JSON 接口来查询此数据，并节省您的时间来定义和管理实体。
 
 我们推荐用户在以下场景中使用 JSON 类型：
-
 - 在一个单一领域储存结构化数据比创建多个单独实体更易管理。
 - 保存任意键/值用户首选项 (其中值可以是布尔值、文本或数字，并且您不希望不同数据类型有单独的列)
 - 模式不稳定且经常变化
 
 ### 定义 JSON 指令
-
 通过在实体中添加 `jsonField` 注解来定义属性为 JSON 类型。 这将自动为您项目中 `types/interfaces.ts` 下的所有 JSON 对象生成接口，您可以在映射函数中访问它们。
 
-与实体不同，jsonField 指令对象不需要 `id` 字段。 JSON 对象也可以与其他 JSON 对象嵌套。
+与实体不同，jsonField 指令对象不需要 `id` 字段。 JSON对象也可以与其他JSON对象嵌套。
 
-```graphql
+````graphql
 type AddressDetail @jsonField {
   street: String!
   district: String!
@@ -230,23 +247,37 @@ type ContactCard @jsonField {
 }
 
 type User @entity {
-  id: ID!
+  id: ID! 
   contact: [ContactCard] # Store a list of JSON objects
 }
-```
+  district: String!
+}
+   address: AddressDetail # Nested JSON
+} 
+  contact: [ContactCard] # Store a list of JSON objects
+}
+````
 
 ### 查询 JSON 字段
 
 使用 JSON 类型的缺点对过滤时查询效率有轻微的影响， 每次进行文本搜索时，它都在整个实体上。
 
-然而，我们的查询服务仍然可以接受这种影响。 这里是如何使用 `的示例在 JSON 字段的 GraphQL 查询中包含` 操作员来找到拥有包含 '0064 ' 的电话号码的前 5 个用户。
+然而，我们的查询服务仍然可以接受这种影响。 这里是如何使用 `的示例在 JSON 字段的 GraphQL 查询中包含` 操作员来找到拥有包含 '0064 ' 的电话号码的前5个用户。
 
 ```graphql
 #要找到前5个用户自己的电话号码包含 '0064'。
 
-query {
-  user(first: 5, filter: {contactCard: {contains: [{phone: "0064"}]}}) {
-    nodes {
+#To find the the first 5 users own phone numbers contains '0064'.
+
+query{
+  user(
+    first: 5,
+    filter: {
+      contactCard: {
+        contains: [{ phone: "0064" }]
+    }
+}){
+    nodes{
       id
       contactCard
     }

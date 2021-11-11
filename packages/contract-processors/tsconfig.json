@@ -5,7 +5,8 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noImplicitAny": true
   },
   "references": [{"path": "../types"}],
   "include": ["src/**/*"]

@@ -1,6 +1,6 @@
 {
   "name": "@subql/types",
-  "version": "0.8.6-0",
+  "version": "0.10.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -16,7 +16,7 @@
     "/dist"
   ],
   "peerDependencies": {
-    "@polkadot/api": "^5"
+    "@polkadot/api": "^6"
   },
   "devDependencies": {
     "@polkadot/api": "^6",

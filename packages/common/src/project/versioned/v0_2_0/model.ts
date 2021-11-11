@@ -12,7 +12,7 @@ import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
 import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
-import {ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
+import {CustomDatasourceV0_2_0, ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 
 export class FileType {
   @IsString()
@@ -25,6 +25,9 @@ export class ProjectNetworkV0_2_0 {
   @IsString()
   @IsOptional()
   endpoint: string;
+  @IsString()
+  @IsOptional()
+  dictionary: string;
   @IsObject()
   @ValidateNested()
   @Type(() => FileType)
@@ -77,5 +80,5 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_2_0 | SubqlCustomDatasource)[];
+  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
 }

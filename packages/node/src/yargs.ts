@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { argv as yargv } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -29,6 +28,11 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
       describe: 'Use local mode',
+    },
+    'force-clean': {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Force clean the database, dropping project schemas and tables',
     },
     'batch-size': {
       demandOption: false,
@@ -99,6 +103,13 @@ export function getYargsOption() {
       describe: 'Enable/disable proof of index',
       type: 'boolean',
       default: false,
+    },
+    port: {
+      alias: 'p',
+      demandOption: false,
+      describe: 'The port the service will bind to',
+      type: 'number',
+      default: 3000,
     },
   });
 }
