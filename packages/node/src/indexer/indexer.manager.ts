@@ -190,12 +190,13 @@ export class IndexerManager {
       'genesisHash',
     ] as const;
 
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-      raw: true,
-    });
+    const entries = (
+      await metadataRepo.findAll({
+        where: {
+          key: keys,
+        },
+      })
+    ).map((el) => el.get({ plain: true }));
 
     const keyValue = entries.reduce(
       (arr: MetadataModel[], curr: MetadataModel) => {
