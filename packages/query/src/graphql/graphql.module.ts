@@ -10,6 +10,7 @@ import {
 } from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
+import depthLimit from 'graphql-depth-limit';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
@@ -44,7 +45,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   private async createServer() {
     const app = this.httpAdapterHost.httpAdapter.getInstance();
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
-
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
     const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
       replaceAllPlugins: plugins,
@@ -68,6 +68,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
           : ApolloServerPluginLandingPageDisabled(),
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
+      validationRules: [depthLimit(10)],
     });
     app.use(
       ExpressPinoLogger({

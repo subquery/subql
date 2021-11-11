@@ -5304,6 +5304,7 @@ __metadata:
     graphile-build-pg: ^4.12.2
     graphile-utils: ^4.12.2
     graphql: ^15.7.2
+    graphql-depth-limit: ^1.1.0
     lodash: ^4.17.21
     nodemon: ^2.0.14
     pg: ^8.7.1
@@ -8131,6 +8132,13 @@ __metadata:
     define-properties: ^1.1.3
     es-abstract: ^1.19.0
   checksum: 2ccf448b61c3336754e3b5e52ab0389b2e6255b5c446adbf142fdeadaeddbf7bc2d92d455d6c00f65c58670de8e55e46b7e0bde3041287032ae47e957d4bc13f
+  languageName: node
+  linkType: hard
+
+"arrify@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "arrify@npm:1.0.1"
+  checksum: f1d3bae819f49f51a09da5f5c5ce282e79ca69bbdb32db1d9f6c62b151ef801b74398d007cfe89686e2c5aeb62576a398b9068e5172b7f4e20157aa3284076d3
   languageName: node
   linkType: hard
 
@@ -14343,6 +14351,17 @@ fsevents@~2.3.1:
   dependencies:
     lodash: ^4.17.15
   checksum: 86e4433af9cf450c414d8cc58481ac8b96321fc25ecbbf08d27f0694a5e3a72a5c7a973795683b5ed5bbced75af1b0706c2b6e964f44f27b9078b229b652abee
+  languageName: node
+  linkType: hard
+
+"graphql-depth-limit@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "graphql-depth-limit@npm:1.1.0"
+  dependencies:
+    arrify: ^1.0.1
+  peerDependencies:
+    graphql: "*"
+  checksum: 9e8c0981abcc9928674ca608aed678c29c5daa91349d354e63217a81ba3a87cedf5d413178f40091df16e557a0b09587c909f56ba0d3b3690bc52a3bbc5e7abd
   languageName: node
   linkType: hard
 

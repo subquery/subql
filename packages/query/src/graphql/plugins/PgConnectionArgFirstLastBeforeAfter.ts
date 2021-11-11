@@ -4,6 +4,8 @@
 // overwrite the official plugin: https://github.com/graphile/graphile-engine/blob/v4/packages/graphile-build-pg/src/plugins/PgConnectionArgFirstLastBeforeAfter.js
 // to support max record rewrite, which to prevent the db performance issue.
 
+import {QueryBuilder} from 'graphile-build-pg';
+
 const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
 
 const MAX_RECORD_COUNT = 100;
@@ -34,7 +36,8 @@ export default (builder) => {
 
       addArgDataGenerator(function connectionFirstLastBeforeAfter({after, before, first, last, offset}) {
         return {
-          pgQuery: (queryBuilder) => {
+          pgQuery: (queryBuilder: QueryBuilder) => {
+            queryBuilder.limit(MAX_RECORD_COUNT);
             if (first) {
               if (first > MAX_RECORD_COUNT) {
                 first = MAX_RECORD_COUNT;
