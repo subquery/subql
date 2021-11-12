@@ -160,8 +160,8 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   );
 
   return new IndexerManager(
-    apiService,
     storeService,
+    apiService,
     fetchService,
     poiService,
     mmrService,

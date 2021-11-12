@@ -17,6 +17,7 @@ async function bootstrap() {
       logger: debug ? new NestLogger() : false,
     });
     await app.init();
+
     const indexerManager = app.get(IndexerManager);
     await indexerManager.start();
     await app.listen(port);
