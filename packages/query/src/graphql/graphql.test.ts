@@ -44,12 +44,6 @@ describe('GraphqlModule', () => {
       context: {
         pgClient: pool,
       },
-      cacheControl: {
-        defaultMaxAge: 5,
-      },
-      subscriptions: {
-        path: '/subscription',
-      },
     });
 
     return server;
@@ -71,7 +65,7 @@ describe('GraphqlModule', () => {
   });
 
   afterAll((done) => {
-    pool.close();
+    pool.end();
     done();
   });
 
@@ -126,7 +120,7 @@ describe('GraphqlModule', () => {
       insertMetadata('lastProcessedHeight', '398'),
       insertMetadata('chain', `"Polkadot"`),
       insertMetadata('indexerHealthy', 'true'),
-      insertMetadata('fakeMeta', 'true'),
+      insertMetadata('fakeMetadata', 'true'),
     ]);
 
     const server = await createApolloServer();
@@ -137,13 +131,13 @@ describe('GraphqlModule', () => {
           lastProcessedHeight
           chain
           indexerHealthy
-          fake
+          fakeMetadata
         }
       }
     `;
 
     const results = await server.executeOperation({query: GET_META});
-    expect(`${results.errors}`).toEqual(`ValidationError: Cannot query field "fakeMeta" on type "_Metadata".`);
+    expect(`${results.errors}`).toEqual(`ValidationError: Cannot query field "fakeMetadata" on type "_Metadata".`);
   });
 
   it('resolve incorrect fields in db to null when queried from graphql', async () => {
