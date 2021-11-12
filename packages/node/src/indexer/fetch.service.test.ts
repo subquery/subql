@@ -61,13 +61,10 @@ async function createFetchService(
 describe('FetchService', () => {
   let fetchService: FetchService;
 
-  afterEach(async () => {
-    const api: ApiPromise = (
+  afterEach(() => {
+    return (
       fetchService as unknown as any
-    )?.apiService?.getApi();
-    if (api) {
-      return api.disconnect();
-    }
+    )?.apiService?.onApplicationShutdown();
   });
 
   it('fetch meta data once when spec version not changed in range', async () => {
