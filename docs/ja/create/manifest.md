@@ -63,27 +63,27 @@ v0.2.0のスペックバージョンはベータ版ですが、プロジェク�
 | **dictionary**  | String | String        | 処理を高速化するために、フルチェーンディクショナリのHTTPエンドポイントを提供することが推奨されます。[SubQuery Dictionaryの仕組み](../tutorials_examples/dictionary.md)を参照してください。                   |
 | **chaintypes**  | 𐄂      | {file:String} | チェーンタイプファイルへのパス。 `.json` または `.yaml` 形式を使用してください。                                                                                              |
 
-### Datasource Spec
+### データソース仕様
 
-Defines the data that will be filtered and extracted and the location of the mapping function handler for the data transformation to be applied.
-| Field          | v0.0.1                                                    | v0.2.0                                                                           | Description                                                                                                                                                                           |
-| -------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **name**       | String                                                    | 𐄂                                                                                | Name of the data source                                                                                                                                                               |
-| **kind**       | [substrate/Runtime](./manifest/#data-sources-and-mapping) | substrate/Runtime, [substrate/CustomDataSource](./manifest/#custom-data-sources) | We supports data type from default substrate runtime such as block, event and extrinsic(call). <br /> From v0.2.0, we support data from custom runtime, such as smart contract. |
-| **startBlock** | Integer                                                   | Integer                                                                          | This changes your indexing start block, set this higher to skip initial blocks with less data                                                                                         |
-| **mapping**    | Mapping Spec                                              | Mapping Spec                                                                     |                                                                                                                                                                                       |
-| **filter**     | [network-filters](./manifest/#network-filters)            | 𐄂                                                                                | Filter the data source to execute by the network endpoint spec name                                                                                                                   |
+フィルターされ抽出されるデータと、適用されるデータ変換のためのマッピング関数ハンドラーの場所を定義します。
+| フィールド          | v0.0.1                                                    | v0.2.0                                                                           | 説明                                                                                                                          |
+| -------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **name**       | String                                                    | 𐄂                                                                                | データソースの名前                                                                                                                   |
+| **kind**       | [substrate/Runtime](./manifest/#data-sources-and-mapping) | substrate/Runtime, [substrate/CustomDataSource](./manifest/#custom-data-sources) | デフォルトのsubstrateランタイムから、ブロック、イベント、外部関数(コール)などのデータタイプをサポートしています。 <br /> v0.2.0からは、スマートコントラクトなどのカスタムランタイムからのデータをサポートします。 |
+| **startBlock** | Integer                                                   | Integer                                                                          | インデックス開始ブロックを変更します。データ量が少ない最初のブロックをスキップするように設定します。                                                                          |
+| **mapping**    | Mapping Spec                                              | Mapping Spec                                                                     |                                                                                                                             |
+| **filter**     | [network-filters](./manifest/#network-filters)            | 𐄂                                                                                | ネットワークエンドポイントの仕様名で実行するデータソースをフィルタする                                                                                         |
 
-### Mapping Spec
+### マッピング仕様
 
-| Field                  | v0.0.1                                                                   | v0.2.0                                                                                        | Description                                                                                                                                                                                                                                  |
-| ---------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **file**               | String                                                                   | 𐄂                                                                                             | Path to the mapping entry                                                                                                                                                                                                                    |
-| **handlers & filters** | [Default handlers and filters](./manifest/#mapping-handlers-and-filters) | Default handlers and filters, <br />[Custom handlers and filters](#custom-data-sources) | List all the [mapping functions](./mapping.md) and their corresponding handler types, with additional mapping filters. <br /><br /> For custom runtimes mapping handlers please view [Custom data sources](#custom-data-sources) |
+| フィールド            | v0.0.1                                                      | v0.2.0                                                             | 説明                                                                                                                                                                      |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **file**         | String                                                      | 𐄂                                                                  | マッピングエントリへのパス                                                                                                                                                           |
+| **ハンドラ & フィルター** | [デフォルトのハンドラとフィルタ](./manifest/#mapping-handlers-and-filters) | デフォルトのハンドラとフィルタ、 <br />[カスタムハンドラとフィルタ](#custom-data-sources) | 追加のマッピングフィルタを使用して、すべての [マッピング関数](./mapping.md) とそれに対応するハンドラータイプをリストします。 <br /><br /> カスタムランタイムマッピングハンドラについては、 [カスタムデータソース](#custom-data-sources) を参照してください。 |
 
-## Data Sources and Mapping
+## データソースとマッピング
 
-In this section, we will talk about the default substrate runtime and its mapping. Here is an example:
+このセクションでは、デフォルトの Substrate ランタイムとそのマッピングについて説明します。 次に例を示します。
 
 ```yaml
 dataSources:
@@ -93,13 +93,13 @@ dataSources:
       file: dist/index.js # Entry path for this mapping
 ```
 
-### Mapping handlers and Filters
+### デフォルトのハンドラとフィルタ
 
-The following table explains filters supported by different handlers.
+以下の表では、異なるハンドラでサポートされているフィルタについて説明します。
 
-**Your SubQuery project will be much more efficient when you only use event and call handlers with appropriate mapping filters**
+**SubQuery プロジェクトは、イベントと適切なマッピングフィルタを使用するだけで、より効率的になります。**
 
-| Handler                                    | Supported filter             |
+| ハンドラ                                       | サポートされるフィルタ                  |
 | ------------------------------------------ | ---------------------------- |
 | [BlockHandler](./mapping.md#block-handler) | `specVersion`                |
 | [EventHandler](./mapping.md#event-handler) | `module`,`method`            |
