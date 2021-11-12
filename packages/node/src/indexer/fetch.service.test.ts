@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ApiPromise } from '@polkadot/api';
 import { ProjectManifestVersioned } from '@subql/common';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -58,11 +59,22 @@ async function createFetchService(
 }
 
 describe('FetchService', () => {
+  let fetchService: FetchService;
+
+  afterEach(async () => {
+    const api: ApiPromise = (
+      fetchService as unknown as any
+    )?.apiService?.getApi();
+    if (api) {
+      return api.disconnect();
+    }
+  });
+
   it('fetch meta data once when spec version not changed in range', async () => {
     const batchSize = 30;
     const project = testSubqueryProject();
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
@@ -86,7 +98,7 @@ describe('FetchService', () => {
     const batchSize = 5;
     const project = testSubqueryProject();
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
@@ -129,7 +141,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
@@ -160,7 +172,7 @@ describe('FetchService', () => {
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -204,7 +216,7 @@ describe('FetchService', () => {
         },
       },
     ];
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -256,7 +268,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -305,7 +317,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
