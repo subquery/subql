@@ -22,11 +22,5 @@
   <iframe src="https://www.youtube.com/embed/TMT00Ggs7tc" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-**Goals of this lesson**
-
-  - Understanding GraphQL (to explorer other projects)
-
-  - Understanding how to read the project docs
-
 ### Exercise
 **Workbook**: [Deplying a project to SubQuery Explorer](/assets/pdf/Deploying_Subquery_Project)
