@@ -137,7 +137,7 @@ export class IndexerManager {
   }
 
   async start(): Promise<void> {
-    this.dsProcessorService.validateCustomDs();
+    await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
@@ -200,21 +200,16 @@ export class IndexerManager {
       'genesisHash',
     ] as const;
 
-    const entries = (
-      await metadataRepo.findAll({
-        where: {
-          key: keys,
-        },
-      })
-    ).map((el) => el.get({ plain: true }));
-
-    const keyValue = entries.reduce(
-      (arr: MetadataModel[], curr: MetadataModel) => {
-        arr[curr.key] = curr.value;
-        return arr;
+    const entries = await metadataRepo.findAll({
+      where: {
+        key: keys,
       },
-      [],
-    ) as unknown as { [key in typeof keys[number]]: string | boolean | number };
+    });
+
+    const keyValue = entries.reduce((arr, curr) => {
+      arr[curr.key] = curr.value;
+      return arr;
+    }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.
@@ -283,8 +278,8 @@ export class IndexerManager {
           // remove schema from project table
           await this.sequelize.query(
             ` DELETE
-          FROM public.subqueries
-          where db_schema = :subquerySchema`,
+              FROM public.subqueries
+              where db_schema = :subquerySchema`,
             {
               replacements: { subquerySchema: project.dbSchema },
               type: QueryTypes.DELETE,
