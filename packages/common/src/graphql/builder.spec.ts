@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {validate} from 'graphql/validation';
 import {buildQuery, GqlNode, GqlVar} from './builder';
 
 describe('build gql', () => {
@@ -49,6 +50,8 @@ describe('build gql', () => {
         ],
       },
     ];
-    console.log(buildQuery(vars, nodes));
+    const {query, variables} = buildQuery(vars, nodes);
+    expect(variables.e_1_value).toBe('balances');
+    expect(query).toMatch(/query\(\$e_1_value:String!\)/);
   });
 });
