@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {URL} from 'url';
+import {MetaData} from '@subql/common';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
@@ -26,21 +27,9 @@ type MetaType = number | string | boolean;
 
 type MetaEntry = {key: string; value: MetaType};
 
-type Metadata = {
-  lastProcessedHeight: number;
-  lastProcessedTimestamp: number;
-  targetHeight: number;
-  chain: string;
-  specName: string;
-  genesisHash: string;
-  indexerHealthy: boolean;
-  indexerNodeVersion: string;
-  queryNodeVersion: string;
-};
-
 const metaCache = {
   queryNodeVersion: packageVersion,
-} as Metadata;
+} as MetaData;
 
 async function fetchFromApi(): Promise<void> {
   let health: Response;
@@ -64,8 +53,8 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient: any, schemaName: string): Promise<Metadata> {
-  const metadata = {} as Metadata;
+async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaData> {
+  const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
   const {rows} = await pgClient.query(`select key, value from ${schemaName}._metadata WHERE key = ANY ($1)`, [keys]);
@@ -121,7 +110,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, _args, context, _info): Promise<Metadata> => {
+        _metadata: async (_parentObject, _args, context, _info): Promise<MetaData> => {
           if (metadataTableExists) {
             const metadata = await fetchFromTable(context.pgClient, schemaName);
 

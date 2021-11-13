@@ -3,8 +3,6 @@
 
 import {
   Entity,
-  SubqlCallFilter,
-  SubqlEventFilter,
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -14,11 +12,6 @@ export interface BlockContent {
   block: SubstrateBlock;
   extrinsics: SubstrateExtrinsic[];
   events: SubstrateEvent[];
-}
-
-export interface ProjectIndexFilters {
-  eventFilters: SubqlEventFilter[];
-  extrinsicFilters: SubqlCallFilter[];
 }
 
 export enum OperationType {

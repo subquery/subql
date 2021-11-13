@@ -37,7 +37,7 @@ import {
 } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
-import { BlockContent, ProjectIndexFilters } from './types';
+import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
