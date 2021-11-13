@@ -19,7 +19,7 @@ import {
   SubqlDatasource,
   SubqlHandlerFilter,
 } from '@subql/types';
-import { isUndefined, range } from 'lodash';
+import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
@@ -30,7 +30,11 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import { Dictionary, DictionaryService } from './dictionary.service';
+import {
+  Dictionary,
+  DictionaryQueryEntry,
+  DictionaryService,
+} from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent, ProjectIndexFilters } from './types';
@@ -48,6 +52,34 @@ const fetchBlocksBatches = argv.profiler
     )
   : SubstrateUtil.fetchBlocksBatches;
 
+function eventFilterToQueryEntry(
+  filter: SubqlEventFilter,
+): DictionaryQueryEntry {
+  return {
+    entity: 'events',
+    conditions: [
+      { field: 'module', value: `"${filter.module}"` },
+      {
+        field: 'event',
+        value: `"${filter.method}"`,
+      },
+    ],
+  };
+}
+
+function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
+  return {
+    entity: 'extrinsics',
+    conditions: [
+      { field: 'module', value: `"${filter.module}"` },
+      {
+        field: 'call',
+        value: `"${filter.method}"`,
+      },
+    ],
+  };
+}
+
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
@@ -59,7 +91,7 @@ export class FetchService implements OnApplicationShutdown {
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
-  private projectIndexFilters: ProjectIndexFilters;
+  private dictionaryQueryEntries?: DictionaryQueryEntry[];
 
   constructor(
     private apiService: ApiService,
@@ -85,9 +117,10 @@ export class FetchService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  getIndexFilters(): ProjectIndexFilters | undefined {
-    const eventFilters: SubqlEventFilter[] = [];
-    const extrinsicFilters: SubqlCallFilter[] = [];
+  // TODO: if custom ds doesn't support dictionary, use baseFilter, if yes, let
+  getDictionaryQueryEntries(): DictionaryQueryEntry[] {
+    const queryEntries: DictionaryQueryEntry[] = [];
+
     const dataSources = this.project.dataSources.filter(
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
@@ -101,42 +134,26 @@ export class FetchService implements OnApplicationShutdown {
         const filterList = isRuntimeDs(ds)
           ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
           : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
-        if (!filterList.length) return;
+        if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:
-            return;
+            return [];
           case SubqlHandlerKind.Call: {
             for (const filter of filterList as SubqlCallFilter[]) {
-              if (
-                filter.module !== undefined &&
-                filter.method !== undefined &&
-                extrinsicFilters.findIndex(
-                  (extrinsic) =>
-                    extrinsic.module === filter.module &&
-                    extrinsic.method === filter.method,
-                ) < 0
-              ) {
-                extrinsicFilters.push(handler.filter);
+              if (filter.module !== undefined && filter.method !== undefined) {
+                queryEntries.push(callFilterToQueryEntry(filter));
               } else {
-                return;
+                return [];
               }
             }
             break;
           }
           case SubqlHandlerKind.Event: {
             for (const filter of filterList as SubqlEventFilter[]) {
-              if (
-                filter.module !== undefined &&
-                filter.method !== undefined &&
-                eventFilters.findIndex(
-                  (event) =>
-                    event.module === filter.module &&
-                    event.method === filter.method,
-                ) < 0
-              ) {
-                eventFilters.push(handler.filter);
+              if (filter.module !== undefined && filter.method !== undefined) {
+                queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
-                return;
+                return [];
               }
             }
             break;
@@ -145,13 +162,20 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
     }
-    return { eventFilters, extrinsicFilters };
+
+    return uniqBy(
+      queryEntries,
+      (item) =>
+        `${item.entity}|${JSON.stringify(
+          sortBy(item.conditions, (c) => c.field),
+        )}`,
+    );
   }
 
   register(next: (value: BlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
-      while (!stopper) {
+      while (!stopper && !this.isShutdown) {
         const block = await this.blockBuffer.take();
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
           value: this.blockBuffer.size,
@@ -177,9 +201,10 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
-    this.projectIndexFilters = this.getIndexFilters();
+    this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
     this.useDictionary =
-      !!this.projectIndexFilters && !!this.project.network.dictionary;
+      !!this.dictionaryQueryEntries?.length &&
+      !!this.project.network.dictionary;
 
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
@@ -267,7 +292,7 @@ export class FetchService implements OnApplicationShutdown {
             startBlockHeight,
             queryEndBlock,
             this.nodeConfig.batchSize,
-            this.projectIndexFilters,
+            this.dictionaryQueryEntries,
           );
           //TODO
           // const specVersionMap = dictionary.specVersions;
