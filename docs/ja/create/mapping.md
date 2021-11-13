@@ -1,16 +1,16 @@
-# Mapping
+# マッピング
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+マッピング関数は、 `schema.graphql` ファイルで定義したチェーンデータを最適化したGraphQLエンティティに変換する方法を定義します。
 
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+- マッピングは `src/mappings` ディレクトリに定義され、関数としてエクスポートされます。
+- これらのマッピングは `src/index.ts` にもエクスポートされます。
+- マッピングファイルはマッピングハンドラの下の `project.yaml` 内で参照されます。
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+マッピング関数には次の3つのクラスがあります。 [ブロックハンドラ](#block-handler), [イベントハンドラ](#event-handler), [コールハンドラ](#call-handler)
 
-## Block Handler
+## ブロックハンドラ
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+新しいブロックが Substrate チェーンに接続されるたびに、ブロックハンドラを使用して情報を取得できます。例えば、ブロック番号です。 これを実行するために、定義されたブロックハンドラが各ブロックに対して1回呼び出されます。
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
