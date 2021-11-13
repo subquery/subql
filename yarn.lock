@@ -5206,6 +5206,7 @@ __metadata:
     "@subql/types": "workspace:*"
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
+    bn.js: ^4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.1
     flatted: ^3.2.2
@@ -5214,6 +5215,7 @@ __metadata:
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
 
@@ -8711,7 +8713,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.1, bn.js@npm:^4.12.0":
+"bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.1, bn.js@npm:^4.11.6, bn.js@npm:^4.12.0":
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
   checksum: cfe7494de9c8a472c3534418f64f9c30a3f18134a8ad0c3ba4e0e934feb5d1a9110bba049a47ec6b79a1d649467df212f64ba6b22aaccbea0c3c208bef0b4110
@@ -22028,7 +22030,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.9.0":
+"sequelize@npm:^6.6.2, sequelize@npm:^6.9.0":
   version: 6.9.0
   resolution: "sequelize@npm:6.9.0"
   dependencies:

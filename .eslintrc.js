@@ -66,7 +66,7 @@ module.exports = {
     // "@typescript-eslint/no-param-reassign": "error",
     '@typescript-eslint/promise-function-async': ['error', {checkArrowFunctions: false}],
     // "arrow-body-style": "error",
-    complexity: ['error', 21],
+    complexity: ['error', 20],
     curly: ['error', 'multi-line'],
     'default-case': 'error',
     eqeqeq: ['error', 'always'],

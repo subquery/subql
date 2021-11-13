@@ -93,4 +93,5 @@ export enum FieldScalar {
   Date = 'Date',
   Boolean = 'Boolean',
   Bytes = 'Bytes',
+  Float = 'Float',
 }

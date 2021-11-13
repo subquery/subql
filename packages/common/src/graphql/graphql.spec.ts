@@ -43,16 +43,18 @@ describe('utils that handle schema.graphql', () => {
     expect(() => buildSchemaFromDocumentNode(graphqlSchema)).toThrow();
   });
 
-  it('support Bytes types', () => {
+  it('support Bytes and Float types', () => {
     const graphqlSchema = gql`
       type Test @entity {
         id: ID!
         hash: Bytes
+        rate: Float
       }
     `;
     const schema = buildSchemaFromDocumentNode(graphqlSchema);
     const entities = getAllEntitiesRelations(schema);
     expect(entities.models[0].fields[1].type).toBe('Bytes');
+    expect(entities.models[0].fields[2].type).toBe('Float');
   });
 
   it('throw error for union/enum/interface type', () => {

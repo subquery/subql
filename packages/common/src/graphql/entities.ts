@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import {getTypeByScalarName} from '@subql/common';
 import {
   assertListType,
   getDirectiveValues,
   getNullableType,
   GraphQLField,
-  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
@@ -31,7 +31,6 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
-import {isFieldScalar} from './utils';
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
@@ -48,6 +47,7 @@ export function getAllEnums(_schema: GraphQLSchema | string) {
     .map((node) => node);
 }
 
+// eslint-disable-next-line complexity
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelationsEnums {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
@@ -79,11 +79,12 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
     };
 
     for (const field of Object.values(entity.getFields())) {
-      const typeString = extractType(field.type);
+      const typeString = extractType(field.type).name;
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       //If is a basic scalar type
-      if (isFieldScalar(typeString)) {
+      const typeClass = getTypeByScalarName(typeString);
+      if (typeClass?.fieldScalar) {
         newModel.fields.push(packEntityField(typeString, field, false));
       }
       // If is an enum
@@ -139,7 +140,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       }
       // handle indexes
       if (indexDirectiveVal) {
-        if (typeString !== 'ID' && isFieldScalar(typeString)) {
+        if (typeString !== 'ID' && typeClass) {
           newModel.indexes.push({
             unique: indexDirectiveVal.unique,
             fields: [field.name],
@@ -205,7 +206,7 @@ export function setJsonObjectType(
   };
   for (const field of Object.values(jsonObject.getFields())) {
     //check if field is also json
-    const typeString = extractType(field.type);
+    const typeString = extractType(field.type).name;
     const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
     graphQLJsonObject.fields.push({
       name: field.name,
@@ -223,9 +224,9 @@ export function setJsonObjectType(
   return graphQLJsonObject;
 }
 
-type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<unknown, unknown>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
+type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<any, any>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
 //Get the type, ready to be convert to string
-function extractType(type: GraphQLOutputType): string {
+function extractType(type: GraphQLOutputType): GraphQLNonListType {
   if (isUnionType(type)) {
     throw new Error(`Not support Union type`);
   }
@@ -234,9 +235,7 @@ function extractType(type: GraphQLOutputType): string {
   }
   const offNullType = isNonNullType(type) ? getNullableType(type) : type;
   const offListType = isListType(offNullType) ? assertListType(offNullType).ofType : type;
-  return isNonNullType(offListType)
-    ? (getNullableType(offListType) as unknown as GraphQLNamedType).name
-    : offListType.name;
+  return isNonNullType(offListType) ? getNullableType(offListType) : offListType;
 }
 
 function validateRelations(modelRelations: GraphQLModelsRelationsEnums): void {
