@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise } from '@polkadot/api';
 import { ProjectManifestVersioned } from '@subql/common';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -68,7 +67,7 @@ describe('FetchService', () => {
   });
 
   it('fetch meta data once when spec version not changed in range', async () => {
-    const batchSize = 30;
+    const batchSize = 5;
     const project = testSubqueryProject();
 
     fetchService = await createFetchService(project, batchSize);

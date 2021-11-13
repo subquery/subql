@@ -10,7 +10,6 @@ import {
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/common';
-import { SubqlCallFilter, SubqlEventFilter } from '@subql/types';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';

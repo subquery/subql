@@ -175,7 +175,7 @@ export class FetchService implements OnApplicationShutdown {
   register(next: (value: BlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
-      while (!stopper) {
+      while (!stopper && !this.isShutdown) {
         const block = await this.blockBuffer.take();
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
           value: this.blockBuffer.size,
