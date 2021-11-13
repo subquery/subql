@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {type} from 'os';
 import {
   assertListType,
   getDirectiveValues,
