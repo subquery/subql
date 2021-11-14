@@ -10,7 +10,7 @@ import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
 
 export default class Init extends Command {
-  static description = 'Init a scaffold subquery project';
+  static description = 'Initialize a scaffold subquery project';
 
   static flags = {
     force: flags.boolean({char: 'f'}),

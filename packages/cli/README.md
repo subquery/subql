@@ -77,7 +77,7 @@ _See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.15.
 
 ## `subql help [COMMAND]`
 
-display help for subql
+Display help for subql
 
 ```
 USAGE
@@ -147,7 +147,7 @@ _See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.15.
 
 ## `subql validate`
 
-check a folder or github repo is a validate subquery project
+Check a folder or github repo is a validate subquery project
 
 ```
 USAGE
