@@ -22,7 +22,7 @@ SubQuery Projectsであなたのプロジェクトを公開することは完全
 
 ## デプロイスロットとは何ですか？
 
-デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 たとえば、どのソフトウェア組織においても、通常は開発環境と本番環境を最小限に抑えています(つまり、localhostは無視しています)。 Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 例えば、ソフトウェアを扱う組織では、最低でも通常、開発環境と本番環境が存在します（localhostは無視します）。 Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
 
 SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
 
