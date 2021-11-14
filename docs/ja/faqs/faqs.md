@@ -1,28 +1,28 @@
-# Frequently Asked Questions
+# よくある質問
 
-## What is SubQuery?
+## SubQueryとは?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQueryは開発者がSubstrateチェーンのデータにインデックスを付け、変換し、クエリを実行して、アプリケーションを強化するためのオープンソースプロジェクトです。
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+また、SubQueryは開発者向けにプロジェクトの高品質のホスティングを無料で提供しているため、インフラ管理の責任を負うことなく、開発者はビルドに最善を尽くす事ができます。
 
-## What is the best way to get started with SubQuery?
+## SubQueryを始めるための最良の方法は何ですか?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+SubQueryを始める最良の方法は、 [Hello Worldチュートリアル](../quickstart/helloworld-localhost.md) を試してみることです。 これはスターターテンプレートをダウンロードし、プロジェクトを構築するための簡単な5分です。 次にDocker を使用して、localhost上でノードを実行し、単純なクエリを実行します。
 
-## How can I contribute or give feedback to SubQuery?
+## SubQueryに貢献したりフィードバックを与えたりするにはどうすればいいですか?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+私たちはコミュニティからの貢献とフィードバックが大好きです。 コードに貢献するためには、関心のあるリポジトリをフォークして変更を加えます。 次にPRまたはPullリクエストを送信します。 ああ、テストすることを忘れないでください! 私たちの貢献ガイドラインもチェックしてください(近日公開)。
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+フィードバックをいただくには、hello@subquery.network までお問い合わせいただくか、 [discordチャンネル](https://discord.com/invite/78zg8aBSMG)に参加してください。
 
-## How much does it cost to host my project in SubQuery Projects?
+## 自分のプロジェクトをSubQuery Projectsで公開するにはどのくらいの費用がかかりますか？
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+SubQuery Projectsであなたのプロジェクトを公開することは完全に無料です - それはコミュニティに還元する私たちの方法です。 プロジェクトを公開する方法については、 [Hello World (SubQuery Hosted)](../quickstart/helloworld-hosted.md) チュートリアルをご覧ください。
 
-## What are deployment slots?
+## デプロイスロットとは何ですか？
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 たとえば、どのソフトウェア組織においても、通常は開発環境と本番環境を最小限に抑えています(つまり、localhostは無視しています)。 Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
 
 SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
 
@@ -43,3 +43,11 @@ Signed transaction extrinsics are transactions that contain a signature of the a
 Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
 
 For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+
+## What is the endpoint for the Kusama network?
+
+The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+
+## What is the endpoint for the Polkadot mainnet network?
+
+The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
