@@ -8,6 +8,7 @@ import {
   getDirectiveValues,
   getNullableType,
   GraphQLField,
+  GraphQLNamedType,
   GraphQLObjectType,
   GraphQLOutputType,
   GraphQLScalarType,
@@ -79,7 +80,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
     };
 
     for (const field of Object.values(entity.getFields())) {
-      const typeString = extractType(field.type).name;
+      const typeString = extractType(field.type);
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       //If is a basic scalar type
@@ -206,7 +207,7 @@ export function setJsonObjectType(
   };
   for (const field of Object.values(jsonObject.getFields())) {
     //check if field is also json
-    const typeString = extractType(field.type).name;
+    const typeString = extractType(field.type);
     const isJsonType = jsonObjects.map((json) => json.name).includes(typeString);
     graphQLJsonObject.fields.push({
       name: field.name,
@@ -224,9 +225,8 @@ export function setJsonObjectType(
   return graphQLJsonObject;
 }
 
-type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<any, any>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
 //Get the type, ready to be convert to string
-function extractType(type: GraphQLOutputType): GraphQLNonListType {
+function extractType(type: GraphQLOutputType): string {
   if (isUnionType(type)) {
     throw new Error(`Not support Union type`);
   }
@@ -235,7 +235,9 @@ function extractType(type: GraphQLOutputType): GraphQLNonListType {
   }
   const offNullType = isNonNullType(type) ? getNullableType(type) : type;
   const offListType = isListType(offNullType) ? assertListType(offNullType).ofType : type;
-  return isNonNullType(offListType) ? getNullableType(offListType) : offListType;
+  return isNonNullType(offListType)
+    ? (getNullableType(offListType) as unknown as GraphQLNamedType).name
+    : offListType.name;
 }
 
 function validateRelations(modelRelations: GraphQLModelsRelationsEnums): void {
