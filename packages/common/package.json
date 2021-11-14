@@ -14,7 +14,6 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@subql/types": "workspace:*",
-    "bn.js": "^4.12.0",
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.1",
     "flatted": "^3.2.2",
@@ -26,7 +25,6 @@
     "sequelize": "^6.6.2"
   },
   "devDependencies": {
-    "@types/bn.js": "4.11.6",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
   }

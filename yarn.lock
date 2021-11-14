@@ -5204,10 +5204,8 @@ __metadata:
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
     "@subql/types": "workspace:*"
-    "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
-    bn.js: ^4.12.0
     class-transformer: 0.4.0
     class-validator: ^0.13.1
     flatted: ^3.2.2
@@ -5508,7 +5506,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bn.js@npm:4.11.6, @types/bn.js@npm:^4.11.6":
+"@types/bn.js@npm:^4.11.6":
   version: 4.11.6
   resolution: "@types/bn.js@npm:4.11.6"
   dependencies:
