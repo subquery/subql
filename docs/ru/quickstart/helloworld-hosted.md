@@ -1,37 +1,37 @@
 # Hello World (SubQuery hosted)
 
-The aim of this quick start is to show how you can get the default starter project running in SubQuery Projects (our managed service) in a few easy steps.
+Цель этого краткого руководства - показать, как можно за несколько простых шагов запустить стартовый проект по умолчанию в SubQuery Projects (наша управляемая служба).
 
-We will take the simple starter project (and everything we've learned thus far) but instead of running it locally within Docker, we'll take advantage of SubQuery's managed hosting infrastructure. In other words, we let SubQuery do all the heavy lifting, running and managing production infrastructure.
+Мы возьмем простой стартовый проект (и все, что мы узнали до сих пор), но вместо того, чтобы запускать его локально в Docker, мы воспользуемся преимуществами инфраструктуры управляемого хостинга SubQuery. Другими словами, мы позволяем SubQuery выполнять всю тяжелую работу, запускать и управлять производственной инфраструктурой.
 
-## Learning objectives
+## Цели обучения
 
-At the end of this quick start, you should:
+В конце этого краткого руководства вам следует:
 
-- understand the required pre-requisites
-- be able host a project in [SubQuery Projects](https://project.subquery.network/)
-- run a simple query to get the block height of the Polkadot mainnet using the playground
-- run a simple GET query to get the block height of the Polkadot mainnet using cURL
+- понимать необходимые предварительные условия
+- иметь возможность разместить проект в [ SubQuery Projects ](https://project.subquery.network/)
+- запустите простой запрос, чтобы получить высоту блока основной сети Polkadot, используя игровую площадку
+- запустите простой запрос GET, чтобы получить высоту блока основной сети Polkadot, используя cURL
 
-## Intended audience
+## Целевая аудитория
 
-This guide is geared towards new developers who have some development experience and are interested in learning more about SubQuery.
+Это руководство предназначено для новых разработчиков, имеющих некоторый опыт разработки и заинтересованных в получении дополнительных сведений о SubQuery.
 
-## Video guide
+## Видео-гайд
 
 <figure class="video_container">
   <iframe src="https://www.youtube.com/embed/b-ba8-zPOoo" frameborder="0" allowfullscreen="true"></iframe>
 </figure>
 
-## Pre-requisites
+## Предварительные условия
 
-You will need:
+Вам понадобится:
 
-- a GitHub account
+- аккаунт GitHub
 
-## Step 1: Create your project
+## 1. Шаг 1: Создайте свой проект
 
-Let's create a project called subql_hellowworld and run the obligatory install, codegen and build with your favourite package manager.
+Давайте создадим проект с именем subql_hellowworld и запустим обязательную установку, генерацию кода и сборку с вашим любимым менеджером пакетов.
 
 ```shell
 > subql init --starter subqlHelloWorld
@@ -40,35 +40,35 @@ yarn codegen
 yarn build
 ```
 
-Do NOT run the docker commands though.
+Однако НЕ запускайте docker команды.
 
-## Step 2: Create a GitHub repo
+## 2. Шаг 2. Создайте репозиторий GitHub
 
-In GitHub, create a new public repository. Provide a name and set your visibility to public. Here, everything is kept as the default for now.
+В GitHub создайте новый публичный репозиторий. Укажите имя и сделайте его общедоступным. Здесь пока все по умолчанию.
 
-![create github repo](/assets/img/github_create_new_repo.png)
+![Создать репозиторий GitHub](/assets/img/github_create_new_repo.png)
 
-Take note of your GitHub URL, this must be public for SubQuery to access it.
+Обратите внимание на свой URL-адрес GitHub, он должен быть общедоступным, чтобы SubQuery мог получить к нему доступ.
 
-![create github repo](/assets/img/github_repo_url.png)
+![Создать репозиторий GitHub](/assets/img/github_repo_url.png)
 
-## Step 3: Push to GitHub
+## 3. Шаг 3. Отправьте на GitHub
 
-Back in your project directory, initialise it as a git directory. Otherwise, you might get the error "fatal: not a git repository (or any of the parent directories): .git"
+Вернувшись в каталог проекта, инициализируйте его как каталог git. В противном случае вы можете получить ошибку «fatal: not a git repository (или любой из parent directories): .git»
 
 ```shell
 git init
 ```
 
-Then add a remote repository with the command:
+Затем добавьте удаленный репозиторий с помощью команды:
 
 ```shell
 git remote add origin https://github.com/seandotau/subqlHelloWorld.git
 ```
 
-This basically sets your remote repository to “https://github.com/seandotau/subqlHelloWorld.git” and gives it the name “origin” which is the standard nomenclature for a remote repository in GitHub.
+Это в основном устанавливает ваш удаленный репозиторий на «https://github.com/seandotau/subqlHelloWorld.git» и дает ему имя «origin», которое является стандартной номенклатурой для удаленного репозитория в GitHub.
 
-Next we add the code to our repo with the following commands:
+Затем мы добавляем код в наш репо с помощью следующих команд:
 
 ```shell
 > git add .
@@ -97,94 +97,94 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 ```
 
-The push command means "please push my code TO the origin repo FROM my master local repo". Refreshing GitHub should show all the code in GitHub.
+Команда push означает «пожалуйста, отправьте мой код В исходное репо ИЗ моего главного локального репозитория». При обновлении GitHub должен отображаться весь код в GitHub.
 
 ![First commit](/assets/img/first_commit.png)
 
-Now that you have got your code into GitHub, let's look at how we can host it in SubQuery Projects.
+Теперь, когда у вас есть код в GitHub, давайте посмотрим, как мы можем разместить его в проектах SubQuery.
 
-## Step 4: Create your project
+## 4. Создайте свой проект
 
-Navigate to [https://project.subquery.network](https://project.subquery.network) and log in with your GitHub account.
+Перейдите к [ https://project.subquery.network ](https://project.subquery.network) и войдите в свою учетную запись GitHub.
 
-![Welcome to SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
+![Добро пожаловать в SubQuery Projects](/assets/img/welcome_to_subquery_projects.png)
 
-Then create a new project,
+Затем создайте новый проект,
 
-![Welcome to SubQuery Projects](/assets/img/subquery_create_project.png)
+![Добро пожаловать в SubQuery Projects](/assets/img/subquery_create_project.png)
 
-And fill in the various fields with the appropriate details.
+И заполните различные поля соответствующими данными.
 
-- **GitHub account:** If you have more than one GitHub account, select what account this project will be created under. Projects created in an GitHub organisation account are shared between members in that organisation.
-- **Project Name:** Give your project a name here.
-- **Subtitle:** Provide a subtitle for your project.
-- **Description:** Explain what your SubQuery project does.
-- **GitHub Repository URL:** This must be a valid GitHub URL to a public repository that contains your SubQuery project. The schema.graphql file must be in the root of your directory.
-- **Hide project:** If selected, this will hide the project from the public SubQuery explorer. Keep this unselected if you want to share your SubQuery with the community!
+- ** Учетная запись GitHub: ** Если у вас более одной учетной записи GitHub, выберите, под какой учетной записью будет создан этот проект. Проекты, созданные в учетной записи организации GitHub, совместно используются участниками в этой организации.
+- ** Название проекта: ** Дайте здесь название вашему проекту.
+- ** Субтитры: ** Обеспечьте субтитры для вашего проекта.
+- ** Описание: ** Объясните, что делает ваш проект SubQuery.
+- ** URL-адрес репозитория GitHub: ** Это должен быть действующий URL-адрес GitHub для общедоступного репозитория, содержащего ваш проект SubQuery. Файл schema.graphql должен находиться в корне вашего каталога.
+- **Hide project:**: если этот флажок установлен, проект будет скрыт от общедоступного SubQuery explorer. Не устанавливайте этот флажок, если хотите поделиться своим SubQuery с сообществом!
 
-![Create SubQuery parameters](/assets/img/create_subquery_project_parameters.png)
+![Создать параметры SubQuery](/assets/img/create_subquery_project_parameters.png)
 
-When you click create, you'll be taken to your dashboard.
+Когда вы нажмете «Создать», вы попадете на свою панель управления.
 
-![SubQuery Project dashboard](/assets/img/subquery_project_dashboard.png)
+![Панель управления SubQuery Project](/assets/img/subquery_project_dashboard.png)
 
-The dashboard contains lots of useful information such as the network it is using, the GitHub repository URL of the source code it is running, when it was created and last updated, and in particular the deployment details.
+Панель управления содержит много полезной информации, такой как сеть, которую она использует, URL-адрес репозитория GitHub исходного кода, который он запускает, когда он был создан и последний раз обновлялся, и, в частности, сведения о развертывании.
 
-## Step 5: Deploy your project
+## 5. Шаг 5. Разверните свой проект
 
-Now that you have created your project within SubQuery Projects, setting up the display behaviour, the next step is to deploy your project making it operational. Deploying a version triggers a new SubQuery indexing operation to start, and sets up the required query service to start accepting GraphQL requests. You can also deploy new versions to existing projects here.
+Теперь, когда вы создали свой проект в SubQuery Projects и настроили отображение дисплея, следующим шагом будет развертывание вашего проекта, чтобы он стал работоспособным. Развертывание версии запускает новую операцию индексирования SubQuery и настраивает необходимую службу запросов для начала приема запросов GraphQL. Здесь вы также можете развернуть новые версии в существующих проектах.
 
-You can choose to deploy to various environments such as a production slot or a staging slot. Here we'll deploy to a production slot. Clicking on the "Deploy" button brings up a screen with the following fields:
+Вы можете выбрать развертывание в различных средах, таких как производственный слот или промежуточный слот. Здесь мы произведём развёртывание в производственный слот. При нажатии на кнопку «Развернуть» открывается экран со следующими полями:
 
-![Deploy to production slot](/assets/img/deploy_production_slot.png)
+![Развёртывание в производственный слот](/assets/img/deploy_production_slot.png)
 
-- **Commit Hash of new Version:** From GitHub select the correct commit of the SubQuery project codebase that you want deployed
-- **Indexer Version:** This is the version of SubQuery's node service that you want to run this SubQuery on. See [@subql/node](https://www.npmjs.com/package/@subql/node)
-- **Query Version:** This is the version of SubQuery's query service that you want to run this SubQuery on. See [@subql/query](https://www.npmjs.com/package/@subql/query)
+- **Commit Hash of new Version:** В GitHub выберите правильную фиксацию SubQuery project codebase, которую вы хотите развернуть
+- **Indexer Version:** Это версия службы узла SubQuery, на которой вы хотите запустить этот SubQuery. См. [ @ subql / node ](https://www.npmjs.com/package/@subql/node)
+- **Query Version:** Это версия службы запросов SubQuery, в которой вы хотите запустить этот SubQuery. См. [ @ subql / node ](https://www.npmjs.com/package/@subql/query)
 
-Because we only have one commit, there is only a single option in the drop down. We'll also work with the latest version of the indexer and query version so we will accept the defaults and then click "Deploy Update".
+Поскольку у нас есть только один commit, в раскрывающемся списке есть только один вариант. Мы также будем работать с последней Indexer Version и query version, поэтому примем значения по умолчанию и затем нажмем «Deploy Update».
 
-You’ll then see your deployment in “Processing” status. Here, your code is getting deployed onto the SubQuery's managed infrastructure. Basically a server is getting spun up on demand and being provisioned for you. This will take a few minutes so time to grab a coffee!
+После этого вы увидите свое развертывание в статусе «Processing». Здесь ваш код развертывается в управляемой инфраструктуре SubQuery. В основном сервер раскручивается по запросу и подготавливается для вас. Это займет несколько минут, так что самое время, чтобы выпить кофе!
 
-![Deployment processing](/assets/img/deployment_processing.png)
+![Обработка развертывания](/assets/img/deployment_processing.png)
 
-The deployment is now running.
+Развертывание запущено.
 
-![Deployment running](/assets/img/deployment_running.png)
+![Запуск развёртывания](/assets/img/deployment_running.png)
 
-## Step 6: Testing your project
+## 6. Шаг 6. Тестирование вашего проекта
 
-To test your project, click on the 3 ellipsis and select "View on SubQuery Explorer".
+Чтобы протестировать свой проект, нажмите на 3 многоточия и выберите «View on SubQuery Explorer».
 
-![View Subquery project](/assets/img/view_on_subquery.png)
+![Просмотр проектов Subquery](/assets/img/view_on_subquery.png)
 
-This will take you to the ever familiar "Playground" where you can click the play button and see the results of the query.
+Это перенесет вас на знакомую «Playground», где вы можете нажать кнопку воспроизведения и просмотреть результаты запроса.
 
-![Subquery playground](/assets/img/subquery_playground.png)
+![Площадка Subquery](assets/img/subquery_playground.png)
 
-## Step 7: Bonus step
+## 7. Шаг 7: Бонусный шаг
 
-For the astute amongst us, you will recall that in the learning objectives, the last point was to run a simple GET query. To do this, we will need to grab the "Query Endpoint" displayed in the deployment details.
+Для проницательных: вы помните, что в целях обучения последним пунктом было выполнение простого запроса GET. Для этого нам нужно будет получить «Query Endpoint», отображаемую в деталях развертывания.
 
-![Query endpoing](/assets/img/query_endpoint.png)
+![Конечная точка запроса](/assets/img/query_endpoint.png)
 
-You can then send a GET request to this endpoint either using your favourite client such as [Postman](https://www.postman.com/) or [Mockoon](https://mockoon.com/) or via cURL in your terminal. For simplicity, cURL will be shown below.
+Затем вы можете отправить запрос GET на эту конечную точку либо с помощью вашего любимого клиента, такого как [ Postman ](https://www.postman.com/) или [ Mockoon ](https://mockoon.com/), либо через cURL в вашем терминале. Для простоты ниже будет показан cURL.
 
-The curl command to run is:
+Команда curl для запуска:
 
 ```shell
 curl https://api.subquery.network/sq/seandotau/subqueryhelloworld -d "query=query { starterEntities (first: 5, orderBy: CREATED_AT_DESC) { totalCount nodes { id field1 field2 field3 } } }"
 ```
 
-giving the results of:
+выдача результатов:
 
 ```shell
 {"data":{"starterEntities":{"totalCount":23098,"nodes":[{"id":"0x29dfe9c8e5a1d51178565c2c23f65d249b548fe75a9b6d74cebab777b961b1a6","field1":23098,"field2":null,"field3":null},{"id":"0xab7d3e0316a01cdaf9eda420cf4021dd53bb604c29c5136fef17088c8d9233fb","field1":23097,"field2":null,"field3":null},{"id":"0x534e89bbae0857f2f07b0dea8dc42a933f9eb2d95f7464bf361d766a644d17e3","field1":23096,"field2":null,"field3":null},{"id":"0xd0af03ab2000a58b40abfb96a61d312a494069de3670b509454bd06157357db6","field1":23095,"field2":null,"field3":null},{"id":"0xc9f5a92f4684eb039e11dffa4b8b22c428272b2aa09aff291169f71c1ba0b0f7","field1":23094,"field2":null,"field3":null}]}}}
 
 ```
 
-Readability is not a concern here as you will probably have some front end code to consume and parse this JSON response.
+Читаемость здесь не важна, так как у вас, вероятно, будет какой-то внешний код для использования и анализа этого ответа JSON.
 
-## Summary
+## Заключение
 
-In this SubQuery hosted quick start we showed how quick and easy it was to take a Subql project and deploy it to [SubQuery Projects](https://project.subquery.network) where all the infrastructure is provided for your convenience. There is an inbuilt playground for running various queries as well as an API endpoint for your code to integrate with.
+В этом кратком руководстве, размещенном в SubQuery, мы показали, насколько быстро и легко было взять проект Subql и развернуть его в [ SubQuery Projects ](https://project.subquery.network), где для вашего удобства предоставляется вся инфраструктура. Существует встроенная игровая площадка для выполнения различных запросов, а также конечная точка API для интеграции вашего кода.
