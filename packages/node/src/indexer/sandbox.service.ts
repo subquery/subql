@@ -13,8 +13,11 @@ import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
+
+const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
@@ -28,7 +31,9 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wasm: false,
   sandbox: {},
   require: {
-    builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
+    builtin: argv.unsafe
+      ? ['*']
+      : ['assert', 'buffer', 'crypto', 'util', 'path'],
     external: true,
     context: 'sandbox',
   },

@@ -34,6 +34,11 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Force clean the database, dropping project schemas and tables',
     },
+    unsafe: {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Allows usage of any built-in module for sandbox service',
+    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',
