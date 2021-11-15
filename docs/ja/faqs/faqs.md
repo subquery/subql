@@ -22,13 +22,13 @@ SubQuery Projectsであなたのプロジェクトを公開することは完全
 
 ## デプロイスロットとは何ですか？
 
-デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 例えば、ソフトウェアを扱う組織では、最低でも通常、開発環境と本番環境が存在します（localhostは無視します）。 Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 例えば、ソフトウェアを扱う組織では、最低でも通常、開発環境と本番環境が存在します（localhostは無視します）。 一般的には、組織のニーズや開発体制に応じて、ステージング環境やプリプロ環境、さらには本番前環境などの追加環境が含まれます。
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery には現在 2 つのスロットがあります。 ステージングスロットと本番環境スロット。 これにより、開発者はSubQueryをステージング環境にデプロイし、ボタンをクリックするだけで「本番環境への反映」を行うことができます。
 
-## What is the advantage of a staging slot?
+## ステージングスロットの利点は何ですか?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+ステージングスロットを使用する主な利点は、公開せずに SubQuery プロジェクトの新しいリリースを準備できることです。 You can wait for the staging slot to reindex all data without affecting your production applications.
 
 The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
 
