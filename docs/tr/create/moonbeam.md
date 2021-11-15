@@ -1,22 +1,27 @@
-# Moonbeam EVM Support
+# Moonbeam EVM Desteği
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+Moonbeam'in ve Moonriver'ın EVM'si için özel bir veri kaynağı işlemcisi sağlıyoruz. Bu, tek bir SubQuery projesi içinde Moonbeam ağlarındaki hem EVM hem de Substrat etkinliğini filtrelemek ve indekslemek için basit bir yol sunar.
 
-Supported networks:
+Desteklenen ağlar:
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| Ağ Adı         | Websocket Bitim Noktası                            | Sözlük Bitim Noktası                                                 |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
-| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
+| Moonbeam       | _Çok yakında_                                      | _Çok yakında_                                                        |
 | Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
+**Ayrıca bir olay ve çağrı işleyici ile
+temel Moonriver EVM örnek projesine de başvurabilirsiniz. Bu proje ayrıca burada SubQuery Gezgini'nde canlı olarak barındırılmaktadır.</p> 
 
-## Getting started
 
-1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
+
+## Başlarken
+
+1. Özel veri kaynağını bir bağımlılık olarak ekleyin `yarn @subql/contract-processors` ekleyin
 2. Add a custom data source as described below
 3. Add handlers for the custom data source to your code
+
+
 
 ## Data Source Spec
 
@@ -26,12 +31,18 @@ Supported networks:
 | processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
 | assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
 
+
+
+
 ### Processor Options
 
 | Field   | Type             | Required | Description                                                                                                |
 | ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
 | abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
 | address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+
+
+
 
 ## MoonbeamCall
 
@@ -42,12 +53,18 @@ Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler
 | kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
 | filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
 
+
+
+
 ### Call Filters
 
 | Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
 | -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
 | from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
+
+
+
 
 ### Handlers
 
@@ -59,6 +76,8 @@ Changes from the `TransactionResponse` type:
 - A `success` property is added to know if the transaction was a success
 - `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
+
+
 ## MoonbeamEvent
 
 Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
@@ -67,6 +86,9 @@ Works in the same way as [substrate/EventHandler](../create/mapping/#event-handl
 | ------ | ------------------------------ | -------- | -------------------------------------------- |
 | kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
 | filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
+
+
+
 
 ### Event Filters
 
@@ -80,6 +102,8 @@ There are a couple of improvements from basic log filters:
 - Topics don't need to be 0 padded
 - [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
 
+
+
 ### Handlers
 
 Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
@@ -88,9 +112,13 @@ Changes from the `Log` type:
 
 - `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
+
+
 ## Data Source Example
 
 This is an extract from the `project.yaml` manifest file.
+
+
 
 ```yaml
 dataSources:
@@ -124,6 +152,9 @@ dataSources:
             function: approve(address to,uint256 value)
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
+
+
+
 
 ## Known Limitations
 
