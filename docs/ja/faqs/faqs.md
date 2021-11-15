@@ -28,26 +28,26 @@ SubQuery には現在 2 つのスロットがあります。 ステージング�
 
 ## ステージングスロットの利点は何ですか?
 
-ステージングスロットを使用する主な利点は、公開せずに SubQuery プロジェクトの新しいリリースを準備できることです。 You can wait for the staging slot to reindex all data without affecting your production applications.
+ステージングスロットを使用する主な利点は、公開せずに SubQuery プロジェクトの新しいリリースを準備できることです。 本番アプリケーションに影響を与えることなく、ステージングスロットがすべてのデータに対してインデックス再作成するのを待つことができます。
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+[エクスプローラ](https://explorer.subquery.network/) では、ステージングスロットは一般には表示されず、あなただけに表示される固有のURLを持っています。 もちろん、個別の環境では、プロダクションに影響を与えずに新しいコードをテストすることができます。
 
-## What are extrinsics?
+## 外部関数とは何ですか?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+すでにブロックチェーンの概念に慣れている人は、外部関数をトランザクションに匹敵するものと考えることができます。 より正式には、外部関数とはチェーンの外から来て、ブロックに含まれる情報のことです。 外部関数には3つのカテゴリーがあります。 これらは継承、署名されたトランザクション、および署名されていないトランザクションです。
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+固有の外部関数とは、署名されておらず、ブロック作成者によってのみブロックに挿入される情報のことです。
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+署名されたトランザクションの外部関数は、トランザクションを発行したアカウントの署名を含むトランザクションです。 それらは、取引がチェーンに含まれるための手数料を支払うことになります。
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+署名されてないトランザクションの外部関数 とは、トランザクションを発行したアカウントの署名を含まないトランザクションです。 署名されていないトランザクションの外部関数は、署名されているがゆえに、誰も手数料を支払っていないので、注意して使用する必要があります。 このため、トランザクションキューはスパムを防ぐための経済的ロジックを欠いています。
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+詳細については、 [ここ](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics) をクリックしてください。
 
-## What is the endpoint for the Kusama network?
+## Kusamaネットワークのエンドポイントとは何ですか?
 
-The network.endpoint for the Kusama network is `wss://kusama.api.onfinality.io/public-ws`.
+Kusama ネットワークのエンドポイントは `wss://kusama.api.onfinality.io/public-ws` です。
 
-## What is the endpoint for the Polkadot mainnet network?
+## Polkadot メインネット のエンドポイントとは何ですか?
 
-The network.endpoint for the Polkadot network is `wss://polkadot.api.onfinality.io/public-ws`.
+Polkadotネットワークのエンドポイントは `wss://polkadot.api.onfinality.io/public-ws` です。
