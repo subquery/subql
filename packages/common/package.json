@@ -21,7 +21,8 @@
     "graphql-tag": "^2.12.5",
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
-    "reflect-metadata": "^0.1.13"
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^6.6.2"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.4",

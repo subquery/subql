@@ -7,9 +7,12 @@ type goodEntity @entity {
   field1: Int!
 
   field2: String #filed2 is an optional field
+
   field3: BigInt
 
   field4: Date
 
   field5: Test
+
+  field6: Float
 }

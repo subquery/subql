@@ -5214,6 +5214,7 @@ __metadata:
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
 
@@ -22028,7 +22029,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.9.0":
+"sequelize@npm:^6.6.2, sequelize@npm:^6.9.0":
   version: 6.9.0
   resolution: "sequelize@npm:6.9.0"
   dependencies:
