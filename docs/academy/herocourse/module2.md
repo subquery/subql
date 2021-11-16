@@ -50,7 +50,7 @@
 
 [Call Handler](/create/mapping.md#call-handler)
 
-## Exercise
+### Exercise
 **Workbook**: [Account Balances](/assets/pdf/Account_Balances.pdf)
 
-**Github**: [Account Transfers](https://github.com/subquery/tutorials-account-balances)
+**Github**: [Account Balances](https://github.com/subquery/tutorials-account-balances)

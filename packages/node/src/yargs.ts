@@ -29,6 +29,11 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Use local mode',
     },
+    'force-clean': {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Force clean the database, dropping project schemas and tables',
+    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',

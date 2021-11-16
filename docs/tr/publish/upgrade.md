@@ -1,35 +1,35 @@
-# Deploy a new version of your SubQuery project
+# SubQuery Projenizin Yeni Bir Sürümünü Dağıtın
 
-## Guidelines
+## Yönergeler
 
-Although you have the freedom to always upgrade and deploy new versions of your SubQuery project, please be considerate during this process if your SubQuery project is public for the world. Some key points to note:
-- If your upgrade is a breaking change, either create a new project (e.g. `My SubQuery Project V2`) or give your community plenty of warning of the change through social media channels.
-- Deploying a new SubQuery project version causes some downtime as the new version indexes the complete chain from the genesis block.
+SubQuery projenizin yeni sürümlerini yükseltme ve dağıtma özgürlüğüne her zaman sahipsiniz, bununla birlikte, SubQuery projeniz tüm dünyaya açıksa lütfen bu süreçte dikkatli olmayı ihmal etmeyin. Not alınması gereken bazı anahtar noktalar:
+- Yükseltmeniz son derece önemli bir değişikliği beraberinde getiriyorsa, ya yeni bir proje oluşturun (ör. `My SubQuery Project V2`) ya da sosyal medya kanalları aracılığıyla topluluğunuza söz konusu değişiklikle ilgili tüm gerekli uyarıları verin.
+- Yeni bir SubQuery proje sürümünün dağıtımının yapılması, yeni sürüm, genesis bloğundan tüm zinciri endekslediği için, bazı kesinti sürelerinin yaşanması söz konusu olabilir.
 
-## Deploy Changes
+## Değişiklikleri Dağıt
 
-Log into SubQuery Project and select the project you want to deploy a new version of. You can choose to either deploy to the production or staging slot. These two slots are isolated environments and each has their own databases and synchronise independently.
+SubQuery Projelerine giriş yapın ve yeni bir sürümünü dağıtmak istediğiniz projeyi bulun. Production veya staging slotuna dağıtmayı seçebilirsiniz. Bu iki slot yalıtılmış ortamlardır ve her birinin kendi veritabanları olup bağımsız olarak senkronize edilirler.
 
-We recommend deploying to your staging slot only for final staging testing or when you need to resync your project data. You can then promote it to production with zero downtime. You will find testing is faster when [running a project locally](../run/run.md) as you can more [easily debug issues](../tutorials_examples/debug-projects.md).
+Yalnızca son staging testleri için veya proje verilerinizi yeniden senkronize etmeniz gerektiğinde staging slotuna dağıtım yapmanızı öneririz. Daha sonra sıfır kesinti süresi ile production ortamına yükseltebilirsiniz. Sorunları daha kolay [ayıklayabileceğiniz için](../tutorials_examples/debug-projects.md), [bir projeyi yerel ortamda ayağa kaldırırken](../run/run.md) test işlemlerinin daha hızlı olduğunu göreceksiniz.
 
-The staging slot is perfect for:
-* Final validation of changes to your SubQuery Project in a separate environment. The staging slot has a different URL to production that you can use in your dApps.
-* Warming up and indexing data for an updated SubQuery project to eliminate downtime in your dApp
-* Preparing a new release for your SubQuery Project without exposing it publicly. The staging slot is not shown to the public in the Explorer and has a unique URL that is visible only to you.
+Staging slotu aşağıdakiler için idealdir:
+* Ayrı bir ortamda SubQuery Projenizde yapılan değişikliklerin nihai doğrulaması. Staging slotu, dApp'lerinizde kullanabileceğiniz farklı bir production URL'sine sahiptir.
+* dApp'inizdeki kesinti süresini ortadan kaldırmak amacıyla güncellenmiş bir SubQuery projesi için verilerin hazırlanması ve dizine eklenmesi
+* SubQuery Projeniz için kamuya açık hale getirmeksizin yeni bir sürüm hazırlamak. Staging slotu tarayıcıda herkese açık değildir ve yalnızca sizin görebileceğiniz benzersiz bir URL'si vardır.
 
-![Staging slot](/assets/img/staging_slot.png)
+![Staging slotu](/assets/img/staging_slot.png)
 
-#### Upgrade to the Latest Indexer and Query Service
+#### En Son İndeksleyici ve Sorgu Hizmetine Yükseltin
 
-If you just want to upgrade to the latest indexer ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) or query service ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) to take advantage of our regular performance and stability improvements, just select a newer versions of our packages and save. This will cause only a few minutes of downtime.
+Düzenli performans ve stabilite iyileştirmelerimizden yararlanmak için yalnızca en son endeksleyiciye ([`@subql/node`](https://www.npmjs.com/package/@subql/node)) veya sorgu hizmetine ([`@subql/query`](https://www.npmjs.com/package/@subql/query)) yükseltmek istiyorsanız, sadece paketlerimizin daha yeni sürümlerini seçin ve kaydedin. Bu, yalnızca birkaç dakikalık kesinti süresine neden olacaktır.
 
-#### Deploy New Version of your SubQuery Project
+#### SubQuery Projenizin Yeni Sürümünü Dağıtın
 
-Fill in the Commit Hash from GitHub (copy the full commit hash) of the version of your SubQuery project codebase that you want deployed. This will cause a longer downtime depending on the time it takes to index the current chain. You can always report back here for progress.
+Dağıtılmasını istediğiniz SubQuery proje kod tabanınızın sürümünün GitHub'dan Commit Hash'ini doldurun (tam Commit Hash'ini kopyalayın). Bu, mevcut zincirin endekslenmesi için geçen süreye bağlı olarak daha uzun bir kesinti süresine neden olacaktır. Buradan her zaman ilerleme raporları sağlayabilirsiniz.
 
-## Next Steps - Connect to your Project
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed GraphQL Query endpoint.
+## Sonraki Adımlar - Projenize Bağlanın
+Dağıtımınız başarıyla tamamlandıktan ve node'larımız zincirdeki verilerinizi dizine ekledikten sonra, görüntülenen GraphQL Query uç noktası aracılığıyla projenize bağlanabileceksiniz.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![Projenize yeni sürümü dağıtın](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started - [read more about how to user our Explorer here](../query/query.md).
+Alternatif olarak, projenizin başlığının yanında bulunan üç noktaya tıklayabilir ve onu SubQuery Explorer'da görüntüleyebilirsiniz. Başlamak için orada tarayıcıdaki oyun alanını kullanabilirsiniz - [Tarayıcımızı nasıl kullanabileceğiniz hakkında buradan daha fazla bilgi edinebilirsiniz](../query/query.md).

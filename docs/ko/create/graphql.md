@@ -1,4 +1,4 @@
-# Learn more about GraphQL
+# GraphQL 개요
 
 ## 엔티티 정의
 

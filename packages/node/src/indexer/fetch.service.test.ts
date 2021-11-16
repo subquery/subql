@@ -41,7 +41,7 @@ jest.setTimeout(200000);
 
 async function createFetchService(
   project = testSubqueryProject(),
-  batchSize = 20,
+  batchSize = 5,
 ): Promise<FetchService> {
   const apiService = new ApiService(project, new EventEmitter2());
   await apiService.init();
@@ -58,11 +58,19 @@ async function createFetchService(
 }
 
 describe('FetchService', () => {
+  let fetchService: FetchService;
+
+  afterEach(() => {
+    return (
+      fetchService as unknown as any
+    )?.apiService?.onApplicationShutdown();
+  });
+
   it('fetch meta data once when spec version not changed in range', async () => {
-    const batchSize = 30;
+    const batchSize = 5;
     const project = testSubqueryProject();
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
@@ -83,10 +91,10 @@ describe('FetchService', () => {
   });
 
   it('fetch metadata two times when spec version changed in range', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const api = fetchService.api;
     const getMetaSpy = jest.spyOn(
@@ -109,7 +117,7 @@ describe('FetchService', () => {
   }, 100000);
 
   it('not use dictionary if dictionary is not defined in project config', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
     //filter is defined
     project.projectManifest.asV0_0_1.dataSources = [
@@ -129,7 +137,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
@@ -154,13 +162,13 @@ describe('FetchService', () => {
   }, 500000);
 
   it('not use dictionary if filters not defined in datasource', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
     //set dictionary to a different network
     project.projectManifest.asV0_0_1.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -184,7 +192,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('not use dictionary if block handler is defined in datasource', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
     //set dictionary to a different network
     project.projectManifest.asV0_0_1.network.dictionary =
@@ -204,7 +212,7 @@ describe('FetchService', () => {
         },
       },
     ];
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -228,7 +236,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('not use dictionary if one of the handler filter module or method is not defined', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
     //set dictionary to a different network
     project.projectManifest.asV0_0_1.network.dictionary =
@@ -256,7 +264,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -280,7 +288,7 @@ describe('FetchService', () => {
   }, 500000);
 
   it('set useDictionary to false if dictionary metadata not match with the api', async () => {
-    const batchSize = 20;
+    const batchSize = 5;
     const project = testSubqueryProject();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
@@ -305,7 +313,7 @@ describe('FetchService', () => {
       },
     ];
 
-    const fetchService = await createFetchService(project, batchSize);
+    fetchService = await createFetchService(project, batchSize);
 
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

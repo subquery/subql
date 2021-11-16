@@ -1,16 +1,16 @@
-# Connect to your new project
+# Yeni Projenize Bağlanın
 
-Once your deployment has succesfully completed and our nodes have indexed your data from the chain, you'll be able to connect to your project via the displayed Query endpoint.
+Dağıtımınız başarıyla tamamlandıktan ve node'larımız zincirdeki verilerinizi dizine ekledikten sonra, görüntülenen Query uç noktası aracılığıyla projenize bağlanabileceksiniz.
 
-![Project being deployed and synced](/assets/img/projects-deploy-sync.png)
+![Proje dağıtılıyor ve senkronize ediliyor](/assets/img/projects-deploy-sync.png)
 
-Alternatively, you can click on the three dots next to the title of your project, and view it on SubQuery Explorer. There you can use the in browser playground to get started.
+Alternatif olarak, projenizin başlığının yanında bulunan üç noktaya tıklayabilir ve projenizi SubQuery Explorer'da görüntüleyebilirsiniz. Başlamak için tarayıcıda bulunan çalışma alanını kullanabilirsiniz.
 
-![Projects in SubQuery Explorer](/assets/img/projects-explorer.png)
+![SubQuery Explorer'deki Projeler](/assets/img/projects-explorer.png)
 
-# Learn more about GraphQL
+# GraphQL hakkında daha fazla bilgi edinin
 
-You can follow the [official GraphQL guide here](https://graphql.org/learn/) to learn more about GraphQL, how it works, and how to use it:
-- There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
-- For an in-depth learning experience with practical tutorials, see [How to GraphQL](https://www.howtographql.com/).
-- Check out the free online course, [Exploring GraphQL: A Query Language for APIs](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis).
+GraphQL, nasıl çalıştığı ve nasıl kullanılacağı hakkında daha fazla bilgi edinmek için [resmi GraphQL rehberini buradan](https://graphql.org/learn/) takip edebilirsiniz:
+- GraphQL'yi [birçok farklı dillerde](https://graphql.org/code/) implemente etmenize yardımcı olacak kütüphaneler mevcuttur
+- Pratik öğreticilerle derinlemesine bir öğrenme deneyimi için [GraphQL Nasıl Kullanılır](https://www.howtographql.com/) bölümüne göz atın.
+- [GraphQL'yi Keşfetmek: API'ler için Bir Sorgu Dili](https://www.edx.org/course/exploring-graphql-a-query-language-for-apis) isimli ücretsiz çevrimiçi kursa göz atın.

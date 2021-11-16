@@ -2,36 +2,34 @@
 
 Функции сопоставления определяют, как данные цепи преобразуются в оптимизированные GraphQL-сущности, которые мы ранее определили в файле `schema.graphql`.
 
-Сопоставления написаны в подгруппе TypeScript называется AssemblyScript, который может быть скомпилирован в WASM (WebAssembly).
-
 - Сопоставления определяются в директории `src/mapappings` и экспортируются как функция
 - Эти сопоставления также экспортированы в `src/index.ts`
 - Файлы сопоставлений являются ссылками в `project.yaml` под обработчиками сопоставлений.
 
-Существует три класса функций сопоставления; [Block handlers](#block-handler), [Event Handlers](#event-handler), и [Call Handlers](#call-handler).
+There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
 
 ## Обработчик блоков
 
-Вы можете использовать обработчики блоков для создания информации каждый раз, когда новый блок прикрепляется к цепочке Substrate, например номер блока. Для достижения этой цели, определенный BlockHandler будет вызываться один раз для каждого блока.
+You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
 
 ```ts
-import {SubstrateBlock} from '@subql/types';
+import {SubstrateBlock} from "@subql/types";
 
 export async function handleBlock(block: SubstrateBlock): Promise<void> {
-  // Create a new StarterEntity with the block hash as it's ID
-  const record = new starterEntity(block.block.header.hash.toString());
-  record.field1 = block.block.header.number.toNumber();
-  await record.save();
+    // Create a new StarterEntity with the block hash as it's ID
+    const record = new starterEntity(block.block.header.hash.toString());
+    record.field1 = block.block.header.number.toNumber();
+    await record.save();
 }
 ```
 
-[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) является расширенным интерфейсом типа [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), но также включает в себя `specVersion` и `timestamp`.
+A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
 
 ## Обработчик событий
 
-Вы можете использовать обработчики событий для сбора информации, когда определенные события включены в новый блок. События, входящие в стандартное время выполнения Substrate, и блок могут содержать несколько событий.
+You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
 
-Во время обработки события в качестве аргумента с напечатанными входами и выходами, обработчик событий будет получать подстрочное событие. Любой тип события запускает сопоставление, позволяя фиксировать действия с источником данных. Вы должны использовать [Mapping Filters](./manifest.md#mapping-filters) в вашем манифесте для фильтрации событий, чтобы сократить время, необходимое для индексирования данных и улучшения производительности сопоставления.
+During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
 
 ```ts
 импортировать {SubstrateEvent} из "@subql/types";
@@ -45,36 +43,33 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     ожидание record.save();
 ```
 
-[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) является расширенным интерфейсом типа [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Помимо данных события, он также включает в себя `id` (блок к которому принадлежит это событие) и дополнительным внутри этого блока.
+A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
 
 ## Обработчик вызовов
 
-Обработчики вызовов используются, когда вы хотите запечатлеть информацию о некоторых substrate extrinsics.
+Call handlers are used when you want to capture information on certain substrate extrinsics.
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
-  const record = new starterEntity(extrinsic.block.block.header.hash.toString());
-  record.field4 = extrinsic.block.timestamp;
-  await record.save();
+    const record = new starterEntity(extrinsic.block.block.header.hash.toString());
+    record.field4 = extrinsic.block.timestamp;
+    await record.save();
 }
 ```
 
-[SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) расширяет [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Назначенный `id` (блок, к которому принадлежит), и предоставляет дополнительное свойство, которое расширяет события среди этого блока. Кроме того, он регистрирует успешный статус этой надбавки.
+The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
 
 ## Состояния запроса
+Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
 
-Наша цель - охватить все источники данных для пользователей для сопоставления обработчиков (более чем три типа событий интерфейса выше). Поэтому мы выставили некоторые из интерфейсов @polkadot/api для увеличения возможностей.
-
-Это интерфейсы, которые мы поддерживаем в настоящее время:
-
+These are the interfaces we currently support:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) будет запрашивать <strong>current</strong> блок.
 - [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) сделает несколько запросов типа <strong>same</strong> в текущем блоке.
 - [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) сделает несколько запросов <strong>разных типов</strong> в текущем блоке.
 
-Это интерфейсы, которые мы **НЕ** поддерживаем сейчас:
-
-- ~~api.tx.\*~~
-- ~~api.derive.\*~~
+These are the interfaces we do **NOT** support currently:
+- ~~api.tx.*~~
+- ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesAt~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.entriesPaged~~
@@ -84,13 +79,13 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-Смотрите пример использования этого API в нашем [validator-threshold](https://github.com/subquery/subql-examples/tree/main/validator-threshold) варианте использования.
+See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
 
 ## RPC-вызовы
 
-Мы также поддерживаем некоторые методы API RPC, которые являются удалёнными вызовами, которые позволяют функции сопоставления взаимодействовать с реальным узлом, запросом и отправкой. Основной предпосылкой подзапроса является то, что он детерминирует и, следовательно, держать последовательные результаты мы разрешаем только исторические RPC-вызовы.
+We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
 
-Документы в [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) предоставляют некоторые методы, которые используют `BlockHash` в качестве входного параметра (e. . `в?: BlockHash`), которые теперь разрешены. Мы также изменили эти методы, чтобы получить по умолчанию хэш текущего блока индексации.
+Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
 
 ```typescript
 // Скажем, мы сейчас индексируем блок с этим хэшем номером
@@ -102,20 +97,19 @@ const b1 = ожидание api. pc.chain.getBlock(blockhash);
 // Он будет использовать текущий блок по умолчанию так:
 const b2 = await api.rpc.chain.getBlock();
 ```
-
 - Для [Custom Substrate Chains](#custom-substrate-chains) RPC звонки смотрите [usage](#usage).
 
 ## Модули и Библиотеки
 
-Для улучшения возможностей обработки данных SubQuery, мы разрешили некоторые встроенные модули NodeJS для запущенных функций сопоставления в [песочнице](#the-sandbox), и разрешили пользователям звонить в сторонние библиотеки.
+To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
 
-Пожалуйста, обратите внимание, что это **экспериментальная функция** и вы можете столкнуться с ошибками или проблемами, которые могут негативно повлиять на ваши функции сопоставления. Пожалуйста, сообщите о любых ошибках, создав вопрос в [GitHub](https://github.com/subquery/subql).
+Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
 
 ### Встроенные модули
 
-В настоящее время мы разрешаем следующие модули NodeJS:`assert`, `buffer`, `crypto`, `util`, and `path`.
+Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
 
-Вместо того, чтобы импортировать весь модуль, мы рекомендуем импортировать только нужный метод(ы). Некоторые методы в этих модулях могут иметь неподдерживаемые зависимости и не будут выполнены при импорте.
+Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
 
 ```ts
 импортировать {hashMessage} из "ethers/lib/utils"; //Хороший способ
@@ -130,31 +124,30 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 
 ### Сторонние библиотеки
 
-Из-за ограничений виртуальной машины в песочнице мы поддерживаем только сторонние библиотеки, написанные **CommonJS**.
+Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
 
-Мы также поддерживаем **гибридную библиотеку** , такую как `@polkadot/*` , использующую ESM по умолчанию. Однако, если другие библиотеки зависят от модулей в формате **ESM** , виртуальная машина **НЕ** компилирует и возвращает ошибку.
+We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
 
 ## Кастомные Substrate цепи
 
-Subquery может быть использован не только в Polkadot или Kusama.
+SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
 
-Вы можете использовать кастомную Substrate цепь, и мы предоставляем инструменты для импорта типов, интерфейсов и дополнительных методов, автоматически используя [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
 
-В следующих разделах мы используем наш [набор](https://github.com/subquery/subql-examples/tree/main/kitty) для объяснения процесса интеграции.
+In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
 
 ### Подготовка
 
-Создайте новый каталог `api-интерфейсов` в папке проекта `src` для хранения всех необходимых и сгенерированных файлов. Мы также создаем каталог `api-interfaces/kitties` , так как хотим добавить декорирование в API из модуля `наборов`.
+Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
 
 #### Метаданные
 
-Нам нужны метаданные для создания реальных конечных точек API. В примере c котятами мы используем конечную точку из локальной тестовой сети, и она предоставляет дополнительные типы. Выполните шаги в [настройках метаданных PolkadotJS](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) , чтобы получить метаданные узла из конечной точки **HTTP**.
+We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-
-или из его **веб-сокета** с помощью [`websocet`](https://github.com/vi/websocat):
+or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
 
 ```shell
 //Установить websocat
@@ -164,14 +157,12 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Далее скопируйте и вставьте вывод в файл JSON. В нашем [примере c котятами](https://github.com/subquery/subql-examples/tree/main/kitty), мы создали `api-interface/kitty.json`.
+Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
 
 #### Определения типов
+We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
 
-Мы предполагаем, что пользователь знает конкретные типы и поддержку RPC из цепочки, и она определена в [Манифесте](./manifest.md).
-
-Следующие [типа установки](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), мы создаем :
-
+Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
 - `src/api-interfaces/definitions.ts` - экспортирует все определения подпапок
 
 ```ts
@@ -179,7 +170,6 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
 - `src/api-interfaces/kitties/definitions.ts` - определения типа для модуля котят
-
 ```ts
 экспорт по умолчанию {
     // пользовательские типы
@@ -202,7 +192,7 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 - В пакете `. son` файл, не забудьте добавить `@polkadot/typegen` в качестве зависимостей для разработки и `@polkadot/api` как обычную зависимость (в идеале ту же версию). Нам также нужно `ts-node` в качестве зависимости для разработки, чтобы помочь нам запустить скрипты.
 - Мы добавляем скрипты для запуска обоих типов; `generate:defs` и метаданных `generate:meta` generators (в таком порядке, чтобы метаданные могли использовать типы).
 
-Вот упрощённая версия `package.json`. Убедитесь, что в разделе **скрипты** имя пакета верно, и каталоги верны.
+Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
 
 ```json
 {
@@ -224,7 +214,7 @@ echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 
 ### Генерация типов
 
-Теперь, когда подготовка завершена, мы готовы генерировать типы и метаданные. Выполните следующие команды:
+Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
 
 ```shell
 # Для установки новых зависимостей
@@ -234,32 +224,29 @@ yarn
 yarn generate:defs
 ```
 
-В каждой папке модулей (например, `/ kitties`) теперь должен быть сгенерированный `types.ts`, который определяет все интерфейсы из определений этих модулей, а также файл `index.ts`, который их все экспортирует.
+In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
 
 ```shell
 # Сгенерировать метаданные
 yarn generate:meta
 ```
 
-Эта команда сгенерирует метаданные и новые api-дополнения к API. Поскольку мы не хотим использовать встроенный API, нам нужно будет заменить их, добавив явное переопределение в нашем `tsconfig. сын`. После обновления пути в конфигурации будут выглядеть следующим образом (без комментариев):
+This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
 
 ```json
 {
   "compilerOptions": {
-    // это имя пакета, которое мы используем (в импорте интерфейса, --пакет для генераторов)*/
-    "Информация о рождении/*": ["src/*"],
-    // здесь мы заменим добавление @polkadot/api своим генерируется из цепи
-    "@polkadot/api/augment": ["src/interfaces/augment-api. s"],
-    // заменить дополненные типы собственными, в соответствии с определениями
-    "@polkadot/types/augment": ["src/interfaces/augment-types. s"]
-  }
-}
+      // это имя пакета, которое мы используем (в импорте интерфейса, --пакет для генераторов)*/
+      "Информация о рождении/*": ["src/*"],
+      // здесь мы заменим добавление @polkadot/api своим генерируется из цепи
+      "@polkadot/api/augment": ["src/interfaces/augment-api. s"],
+      // заменить дополненные типы собственными, в соответствии с определениями
+      "@polkadot/types/augment": ["src/interfaces/augment-types.
 ```
 
 ### Использование
 
-Теперь в функции сопоставления, мы можем показать, как метаданные и типы на самом деле украшают API. Конечная точка RPC будет поддерживать модули и методы, описанные выше. Для использования пользовательского вызова rpc см. раздел [Пользовательские вызовы rpc цепи](#custom-chain-rpc-calls)
-
+Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -272,12 +259,11 @@ export async function kittyApiHandler(): Promise<void> {
 }
 ```
 
-**Если вы хотите опубликовать этот проект нашему исследователю, пожалуйста, включите сгенерированные файлы в `src/api-интерфейсы`.**
+**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
 
 ### Пользовательские вызовы в цепочке rpc
 
-Для поддержки пользовательских вызовов в цепочке RPC мы должны вручную вставить определения RPC для `typesBundle`, что позволяет конфигурацию для каждой точки. Вы можете определить `typesBundle` в `project.yml`. И пожалуйста, помните только `isHistoric` тип звонков поддерживается.
-
+To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
 ```yaml
 ...
   типы: {

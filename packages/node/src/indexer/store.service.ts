@@ -222,13 +222,20 @@ export class StoreService {
     }
   }
 
+  async setMetadata(
+    key: string,
+    value: string | number | boolean,
+  ): Promise<void> {
+    assert(this.metaDataRepo, `model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value });
+  }
+
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
-    const model = this.sequelize.model('_poi');
-    assert(model, `model _poi not exists`);
+    assert(this.poiRepo, `model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await model.upsert(blockPoi, { transaction: this.tx });
+    await this.poiRepo.upsert(blockPoi, { transaction: tx });
   }
 
   getOperationMerkleRoot(): Uint8Array {
@@ -350,7 +357,7 @@ group by
         });
         return record?.toJSON() as Entity;
       },
-      set: async (entity: string, id: string, data: Entity): Promise<void> => {
+      set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.upsert(data, { transaction: this.tx });

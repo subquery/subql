@@ -144,7 +144,7 @@ Bunu SubQuery düğümünüzün temel URL'sine ekleyin. Örneğin `http://localh
 
 `http://localhost:3000/health` başarılı olursa HTTP 200 döndürür.
 
-A 500 error will be returned if the indexer is not healthy. This can often be seen when the node is booting up.
+Dizin oluşturucu çalışmıyorsa 500 hatası döndürülür. Bu, genellikle node ilk açılırken görülebilen bir hata mesajıdır.
 
 ```shell
 {
@@ -153,7 +153,7 @@ A 500 error will be returned if the indexer is not healthy. This can often be se
 }
 ```
 
-If an incorrect URL is used, a 404 not found error will be returned.
+Eğer yanlış bir URL kullanılırsa, geriye bir 404 bulunamadı hatası döndürülür.
 
 ```shell
 {
@@ -163,9 +163,9 @@ If an incorrect URL is used, a 404 not found error will be returned.
 }
 ```
 
-#### Debug your project
+#### Projenizdeki hataları ayıklayın
 
-Use the [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) to run the following command.
+Aşağıdaki komutu çalıştırmak için [node inspector](https://nodejs.org/en/docs/guides/debugging-getting-started/) kullanın.
 
 ```shell
 node --inspect-brk <path to subql-node> -f <path to subQuery project>
@@ -178,7 +178,7 @@ Debugger listening on ws://127.0.0.1:9229/56156753-c07d-4bbe-af2d-2c7ff4bcc5ad
 For help, see: https://nodejs.org/en/docs/inspector
 Debugger attached.
 ```
-Then open up the Chrome dev tools, go to Source > Filesystem and add your project to the workspace and start debugging. For more information, check out [How to debug a SubQuery project](https://doc.subquery.network/tutorials_examples/debug-projects/)
+Ardından Chrome geliştirme araçlarını açın, Kaynak > Dosya sistemi menüsüne gidin, projenizi çalışma alanına ekleyin ve hataları ayıklamaya başlayın. Daha fazla bilgi için, kontrol edin [Bir SubQuery projesinde hatalar nasıl ayıklanır](https://doc.subquery.network/tutorials_examples/debug-projects/)
 ## Sorgu Hizmeti Çalıştırma (altql/query)
 
 ### Kurma

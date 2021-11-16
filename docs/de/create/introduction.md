@@ -1,12 +1,12 @@
-# Erstellung eines SubQuery-Projekts
+# Tutorials & Examples
 
 In der [Kurzanleitung](/quickstart/quickstart.md) haben wir sehr schnell ein Beispiel durchgespielt, um Ihnen einen Eindruck davon zu geben, was SubQuery ist und wie es funktioniert. Hier sehen wir uns den Workflow beim Erstellen Ihres Projekts und die Schlüsseldateien, mit denen Sie arbeiten, genauer an.
 
-## Der grundlegende Arbeitsablauf
+## SubQuery Examples
 
 Einige der folgenden Beispiele gehen davon aus, dass Sie das Startpaket im Abschnitt [Schnellstart](../quickstart/quickstart.md) erfolgreich initialisiert haben. Ausgehend von diesem Startpaket durchlaufen wir den Standardprozess zum Anpassen und Implementieren Ihres SubQuery-Projekts.
 
-1. Initialisieren Sie Ihr Projekt mit `subql init PROJECT_NAME`
+1. Initialise your project using `subql init --specVersion 0.2.0 PROJECT_NAME`. alternatively you can use the old spec version `subql init PROJECT_NAME`
 2. Aktualisieren Sie die Manifestdatei (`project.yaml`), um Informationen über Ihre Blockchain und die zuzuordnenden Entitäten aufzunehmen – siehe [Manifestdatei](./manifest.md)
 3. Erstellen Sie GraphQL-Entitäten in Ihrem Schema (`schema.graphql`), die die Form der Daten definieren, die Sie extrahieren und für die Abfrage beibehalten – siehe [GraphQL-Schema](./graphql.md)
 4. Fügen Sie alle Mapping-Funktionen (zB `mappingHandlers.ts`) hinzu, die Sie aufrufen möchten, um Kettendaten in die von Ihnen definierten GraphQL-Entitäten umzuwandeln - siehe [Mapping](./mapping.md)
@@ -31,7 +31,7 @@ Die folgende Übersicht bietet einen Überblick über die Verzeichnisstruktur ei
   L .gitignore
 ```
 
-Zum Beispiel:
+Example
 
 ![SubQuery-Verzeichnisstruktur](/assets/img/subQuery_directory_stucture.png)
 
@@ -51,22 +51,14 @@ Um Ihr SubQuery-Projekt auf einem lokal gehosteten SubQuery-Knoten auszuführen,
 
 Führen Sie den Build-Befehl aus dem Stammverzeichnis des Projekts aus.
 
-```shell
+<CodeGroup> Die `console.log` Methode wird **nicht mehr unterstützt**. Stattdessen wurde ein `Logger`-Modul in die Typen eingefügt, was bedeutet, dass wir einen Logger unterstützen können, der verschiedene Logging-Level akzeptiert.
+
+```typescript
 # Yarn
 yarn build
 
 # NPM
 npm run-script build
-```
-
-## Protokollierung
-
-Die `console.log` Methode wird **nicht mehr unterstützt**. Stattdessen wurde ein `Logger`-Modul in die Typen eingefügt, was bedeutet, dass wir einen Logger unterstützen können, der verschiedene Logging-Level akzeptiert.
-
-```typescript
-logger.info('Info Level Message');
-logger.debug('Debugger Level Message');
-logger.warn('Warnung Level Message');
 ```
 
 Um `logger.info` oder `logger.warn`zu verwenden, legen Sie die Zeile einfach in Ihre Mapping-Datei ein.

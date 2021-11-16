@@ -51,19 +51,14 @@ export class ApiService implements OnApplicationShutdown {
       provider = new HttpProvider(network.endpoint);
       throwOnConnect = true;
     }
+
     this.apiOption = {
       provider,
       throwOnConnect,
       ...chainTypes,
     };
     this.api = await ApiPromise.create(this.apiOption);
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-    };
 
-    this.eventEmitter.emit(IndexerEvent.NetworkMetadata, this.networkMeta);
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
@@ -80,6 +75,12 @@ export class ApiService implements OnApplicationShutdown {
         `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
       );
     }
+
+    this.networkMeta = {
+      chain: this.api.runtimeChain.toString(),
+      specName: this.api.runtimeVersion.specName.toString(),
+      genesisHash: this.api.genesisHash.toString(),
+    };
 
     return this;
   }
