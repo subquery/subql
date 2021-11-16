@@ -6,7 +6,7 @@ import {commonRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
 
 export default class Validate extends Command {
-  static description = 'check a folder or github repo is a validate subquery project';
+  static description = 'Check a folder or github repo is a validate subquery project';
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder, github repo url or IPFS cid'}),
