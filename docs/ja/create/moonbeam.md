@@ -7,8 +7,8 @@ MoonbeamとMoonriverのEVM用にカスタムデータソースプロセッサを
 | ネットワーク名        | Websocket エンドポイント                                  | ディクショナリエンドポイント                                                       |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _準備中_                                              | _準備中_                                                                |
-| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
 **また、イベントと呼び出しハンドラを備えた[basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter)を参照することもできます。**このプロジェクトは、[SubQuery Explorer](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project)でもご覧いただけます。
 
