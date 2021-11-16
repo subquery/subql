@@ -7,8 +7,8 @@ Desteklenen ağlar:
 | Ağ Adı         | Websocket Bitim Noktası                            | Sözlük Bitim Noktası                                                 |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Çok yakında_                                      | _Çok yakında_                                                        |
-| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
 **Ayrıca bir olay ve çağrı işleyici ile
 temel Moonriver EVM örnek projesine de başvurabilirsiniz. Bu proje ayrıca burada SubQuery Gezgini'nde canlı olarak barındırılmaktadır.</p> 
@@ -18,28 +18,28 @@ temel Moonriver EVM örnek projesine de başvurabilirsiniz. Bu proje ayrıca bur
 ## Başlarken
 
 1. Özel veri kaynağını bir bağımlılık olarak ekleyin `yarn @subql/contract-processors` ekleyin
-2. Add a custom data source as described below
-3. Add handlers for the custom data source to your code
+2. Aşağıda açıklandığı gibi özel bir veri kaynağı ekleyin
+3. Kodunuza özel veri kaynağı için işleyiciler ekleyin
 
 
 
-## Data Source Spec
+## Veri Kaynağı Spesifikasyonu
 
-| Field             | Type                                                           | Required | Description                                |
-| ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
-| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Yes      | File reference to the data processor code  |
-| processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
-| assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
-
-
+| Alan              | Tip                                                            | Gerekli | Açıklama                               |
+| ----------------- | -------------------------------------------------------------- | ------- | -------------------------------------- |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Evet    | Veri işlemci koduna dosya referansı    |
+| processor.options | [ProcessorOptions](#processor-options)                         | Hayır   | Moonbeam İşlemciye özel seçenekler     |
+| varlıklar         | `{ [key: String]: { file: String }}`                           | Hayır   | Harici varlık dosyalarının bir nesnesi |
 
 
-### Processor Options
 
-| Field   | Type             | Required | Description                                                                                                |
-| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
-| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+
+### İşlemci Seçenekleri
+
+| Alan    | Tip              | Gerekli | Açıklama                                                                                                   |
+| ------- | ---------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
+| abi     | String           | No      | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
+| address | String or `null` | No      | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
 
 
 
