@@ -8,4 +8,5 @@ export const scalas = gql`
   scalar BigDecimal
   scalar Date
   scalar Bytes
+  scalar Float
 `;

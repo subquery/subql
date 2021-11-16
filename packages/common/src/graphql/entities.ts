@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import {getTypeByScalarName} from '@subql/common';
 import {
   assertListType,
   getDirectiveValues,
@@ -31,7 +32,6 @@ import {
   GraphQLRelationsType,
   IndexType,
 } from './types';
-import {isFieldScalar} from './utils';
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
@@ -48,6 +48,7 @@ export function getAllEnums(_schema: GraphQLSchema | string) {
     .map((node) => node);
 }
 
+// eslint-disable-next-line complexity
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelationsEnums {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   const entities = Object.values(schema.getTypeMap())
@@ -83,7 +84,8 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       const derivedFromDirectValues = getDirectiveValues(derivedFrom, field.astNode);
       const indexDirectiveVal = getDirectiveValues(indexDirective, field.astNode);
       //If is a basic scalar type
-      if (isFieldScalar(typeString)) {
+      const typeClass = getTypeByScalarName(typeString);
+      if (typeClass?.fieldScalar) {
         newModel.fields.push(packEntityField(typeString, field, false));
       }
       // If is an enum
@@ -139,7 +141,7 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
       }
       // handle indexes
       if (indexDirectiveVal) {
-        if (typeString !== 'ID' && isFieldScalar(typeString)) {
+        if (typeString !== 'ID' && typeClass) {
           newModel.indexes.push({
             unique: indexDirectiveVal.unique,
             fields: [field.name],
@@ -223,7 +225,6 @@ export function setJsonObjectType(
   return graphQLJsonObject;
 }
 
-type GraphQLNonListType = GraphQLScalarType | GraphQLObjectType<unknown, unknown>; // check | GraphQLInterfaceType | GraphQLUnionType | GraphQLEnumType;
 //Get the type, ready to be convert to string
 function extractType(type: GraphQLOutputType): string {
   if (isUnionType(type)) {

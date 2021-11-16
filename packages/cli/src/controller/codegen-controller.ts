@@ -9,13 +9,15 @@ import {
   loadProjectManifest,
   getAllJsonObjects,
   setJsonObjectType,
+  getTypeByScalarName,
+  GraphQLEntityField,
+  GraphQLJsonFieldType,
+  GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/common';
-import {GraphQLEntityField, GraphQLJsonFieldType, GraphQLEntityIndex} from '@subql/common/graphql/types';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
-import {transformTypes} from './types-mapping';
 
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
@@ -135,7 +137,6 @@ export function processFields(
       injectField.indexed = indexed;
       injectField.unique = unique;
     }
-
     if ((field as GraphQLEntityField).isEnum) {
       injectField.type = field.type;
       injectField.isEnum = true;
@@ -143,7 +144,7 @@ export function processFields(
     } else {
       switch (field.type) {
         default: {
-          injectField.type = transformTypes(className, field.type.toString());
+          injectField.type = getTypeByScalarName(field.type).tsType;
           if (!injectField.type) {
             throw new Error(
               `Schema: undefined type "${field.type.toString()}" on field "${

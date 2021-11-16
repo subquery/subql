@@ -221,6 +221,7 @@ function getSidebar(locale, language){
         `${locale}/tutorials_examples/run-indexer.md`,
         `${locale}/tutorials_examples/dictionary.md`,
         `${locale}/tutorials_examples/debug-projects.md`,
+        `${locale}/tutorials_examples/delete-projects.md`,
         `${locale}/tutorials_examples/terminology.md`,
       ]
     },
