@@ -37,7 +37,7 @@ export function getYargsOption() {
     unsafe: {
       type: 'boolean',
       demandOption: false,
-      describe: 'Allows usage of any built-in module for sandbox service',
+      describe: 'Allows usage of any built-in module within the sandbox',
     },
     'batch-size': {
       demandOption: false,
