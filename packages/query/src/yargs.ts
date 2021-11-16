@@ -10,12 +10,12 @@ export function getYargsOption() {
   return yargs(hideBin(process.argv)).options({
     name: {
       alias: 'n',
-      describe: 'project name',
+      describe: 'Project name',
       type: 'string',
       demandOption: true,
     },
     playground: {
-      describe: 'enable graphql playground',
+      describe: 'Enable graphql playground',
       type: 'boolean',
       demandOption: false,
     },
@@ -35,7 +35,7 @@ export function getYargsOption() {
     },
     indexer: {
       demandOption: false,
-      describe: 'Url that allow query to access indexer metadata',
+      describe: 'Url that allows query to access indexer metadata',
       type: 'string',
     },
     unsafe: {

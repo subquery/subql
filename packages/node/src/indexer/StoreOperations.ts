@@ -1,7 +1,8 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { u8aConcat, numberToU8a, u8aToBuffer, isString } from '@polkadot/util';
+import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
+import { getTypeByScalarName } from '@subql/common';
 import { GraphQLModelsType } from '@subql/common/graphql/types';
 import { Entity } from '@subql/types';
 import MerkleTools from 'merkle-tools';
@@ -32,33 +33,15 @@ export class StoreOperations {
       for (const field of operationModel.fields) {
         const fieldValue = operation.data[field.name];
         dataBufferArray.push(Buffer.from(field.name));
+
         if (fieldValue !== undefined && fieldValue !== null) {
-          switch (field.type) {
-            case 'Date':
-              dataBufferArray.push(
-                Buffer.from(numberToU8a(fieldValue.getTime())),
-              );
-              break;
-            case 'BigInt':
-              dataBufferArray.push(Buffer.from(fieldValue.toString()));
-              break;
-            case 'ID':
-              dataBufferArray.push(Buffer.from(fieldValue.toString()));
-              break;
-            case 'Int':
-              dataBufferArray.push(numberToU8a(fieldValue.toString()));
-              break;
-            case 'Boolean':
-              dataBufferArray.push(
-                Buffer.from(numberToU8a(fieldValue ? 1 : 0)),
-              );
-              break;
-            case 'String':
-              dataBufferArray.push(Buffer.from(fieldValue.toString()));
-              break;
-            default:
-              dataBufferArray.push(Buffer.from(JSON.stringify(fieldValue)));
-              break;
+          if (field.isEnum) {
+            //if it is a enum, process it as string
+            getTypeByScalarName('String').hashCode(fieldValue);
+          } else {
+            dataBufferArray.push(
+              getTypeByScalarName(field.type).hashCode(fieldValue),
+            );
           }
         }
       }
