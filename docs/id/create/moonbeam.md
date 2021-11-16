@@ -7,8 +7,8 @@ Jaringan yang didukung:
 | Nama Jaringan  | Titik akhir soket web                              | Titik Akhir Kamus                                                    |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Segera akan datang_                               | _Segera akan datang_                                                 |
-| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
 **Anda juga dapat merujuk ke [contoh proyek dasar Moonriver EVM](https://github.com/subquery/tutorials-moonriver-evm-starter) dengan event dan pengendali panggilan.** Proyek ini juga dihosting secara langsung di SubQuery Explorer [di sini](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project) .
 
