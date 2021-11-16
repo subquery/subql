@@ -18,6 +18,7 @@ import { StorageEntry } from '@polkadot/types/primitive/types';
 import { AnyFunction, AnyTuple } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
+import { ApiAt } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -26,7 +27,6 @@ const NOT_SUPPORT = (name: string) => () => {
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
-  private patchedApi: ApiPromise;
   private currentBlockHash: BlockHash;
   private currentRuntimeVersion: RuntimeVersion;
   private apiOption: ApiOptions;
@@ -38,7 +38,7 @@ export class ApiService implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect(), this.patchedApi?.disconnect()]);
+    await Promise.all([this.api?.disconnect()]);
   }
 
   async init(): Promise<ApiService> {
@@ -89,60 +89,17 @@ export class ApiService implements OnApplicationShutdown {
     return this.api;
   }
 
-  async getPatchedApi(): Promise<ApiPromise> {
-    if (this.patchedApi) {
-      return this.patchedApi;
-    }
-    const patchedApi = this.getApi().clone();
-    Object.defineProperty(
-      (patchedApi as any)._rpcCore.provider,
-      'hasSubscriptions',
-      { value: false },
-    );
-    patchedApi.on('connected', () =>
-      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-        value: 1,
-      }),
-    );
-    patchedApi.on('disconnected', () =>
-      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-        value: 0,
-      }),
-    );
-    await patchedApi.isReady;
-    this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-      value: 1,
-    });
-    this.patchedApi = patchedApi;
-    this.patchApi();
-    return this.patchedApi;
-  }
-
-  private patchApi(): void {
-    this.patchApiAt(this.patchedApi);
-    this.patchApiTx(this.patchedApi);
-    this.patchDerive(this.patchedApi);
-    this.patchApiRpc(this.patchedApi);
-    (this.patchedApi as any).isPatched = true;
-  }
-
-  async setBlockhash(
+  async getPatchedApi(
     blockHash: BlockHash,
     parentBlockHash?: BlockHash,
-  ): Promise<void> {
-    if (!this.patchedApi) {
-      await this.getPatchedApi();
-    }
+  ): Promise<ApiAt> {
     this.currentBlockHash = blockHash;
     if (parentBlockHash) {
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         parentBlockHash,
       );
     }
-    const apiAt = await this.api.at(blockHash, this.currentRuntimeVersion);
-    this.patchApiQuery(this.patchedApi, apiAt);
-    this.patchApiFind(this.patchedApi, apiAt);
-    this.patchApiQueryMulti(this.patchedApi, apiAt);
+    return this.api.at(blockHash, this.currentRuntimeVersion);
   }
 
   private redecorateStorageEntryFunction(
@@ -309,6 +266,7 @@ export class ApiService implements OnApplicationShutdown {
       return acc;
     }, {});
   }
+
   private patchApiQueryMulti(
     api: ApiPromise,
     apiAt: ApiDecoration<'promise' | 'rxjs'>,

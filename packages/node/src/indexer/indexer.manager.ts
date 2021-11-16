@@ -34,7 +34,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataFactory, MetadataModel } from './entities/Metadata.entity';
+import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
@@ -75,7 +75,7 @@ export class IndexerManager {
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
-    const { block, events, extrinsics } = blockContent;
+    const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -88,12 +88,12 @@ export class IndexerManager {
     try {
       const isUpgraded = block.specVersion !== this.prevSpecVersion;
       // if parentBlockHash injected, which means we need to check runtime upgrade
-      await this.apiService.setBlockhash(
+      const apiAt = await this.apiService.getPatchedApi(
         block.block.hash,
         isUpgraded ? block.block.header.parentHash : undefined,
       );
       for (const ds of this.filteredDataSources) {
-        const vm = await this.sandboxService.getDsProcessor(ds);
+        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
         if (isRuntimeDs(ds)) {
           await this.indexBlockForRuntimeDs(
             vm,
