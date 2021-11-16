@@ -67,6 +67,12 @@ export class ApiService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
 
+    this.networkMeta = {
+      chain: this.api.runtimeChain.toString(),
+      specName: this.api.runtimeVersion.specName.toString(),
+      genesisHash: this.api.genesisHash.toString(),
+    };
+
     if (
       network.genesisHash &&
       network.genesisHash !== this.networkMeta.genesisHash
@@ -75,12 +81,6 @@ export class ApiService implements OnApplicationShutdown {
         `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
       );
     }
-
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-    };
 
     return this;
   }
