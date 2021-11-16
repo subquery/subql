@@ -7,8 +7,8 @@
 | 网络名称           | Websocket 端点                                       | Dictionary 端点                                                        |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
-| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
 **您也可以通过事件和调用处理程序来参考 [基本Moonrier EVM 示例项目](https://github.com/subquery/tutorials-moonriver-evm-starter)** 这个项目也存在于 [ SubQuery Explorer](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project) 中。
 
