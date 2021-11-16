@@ -21,6 +21,13 @@ async function bootstrap() {
     const indexerManager = app.get(IndexerManager);
     await indexerManager.start();
     await app.listen(port);
+
+    if (argv('unsafe')) {
+      getLogger('subql-node').warn(
+        'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service',
+      );
+    }
+
     getLogger('subql-node').info(`node started on port: ${port}`);
   } catch (e) {
     logger.error(e, 'node failed to start');

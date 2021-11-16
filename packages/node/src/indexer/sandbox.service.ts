@@ -28,7 +28,7 @@ export interface SandboxOption {
 
 const DEFAULT_OPTION: NodeVMOptions = {
   console: 'redirect',
-  wasm: false,
+  wasm: argv.unsafe,
   sandbox: {},
   require: {
     builtin: argv.unsafe
