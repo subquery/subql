@@ -12,6 +12,12 @@ const logger = getLogger('subql-node');
 async function bootstrap() {
   const debug = argv('debug');
   const port = argv('port') as number;
+  if (argv('unsafe')) {
+    logger.warn(
+      'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service',
+    );
+  }
+
   try {
     const app = await NestFactory.create(AppModule, {
       logger: debug ? new NestLogger() : false,
@@ -22,13 +28,7 @@ async function bootstrap() {
     await indexerManager.start();
     await app.listen(port);
 
-    if (argv('unsafe')) {
-      getLogger('subql-node').warn(
-        'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service',
-      );
-    }
-
-    getLogger('subql-node').info(`node started on port: ${port}`);
+    logger.info(`node started on port: ${port}`);
   } catch (e) {
     logger.error(e, 'node failed to start');
     process.exit(1);
