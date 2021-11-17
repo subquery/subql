@@ -54,7 +54,6 @@ describe('unsafe', () => {
             key   INT, 
             value INT )`);
 
-    // Seed table with 200 rows of monotonically increasing key value pairs
     for (let i = 0; i < 200; i++) {
       await insertPair(i, i);
     }
@@ -70,7 +69,6 @@ describe('unsafe', () => {
   });
 
   it('unbounded query capped to safe bound', async () => {
-    // unbounded query
     const LARGE_UNBOUND_QUERY = gql`
       query {
         tables {
@@ -88,11 +86,10 @@ describe('unsafe', () => {
   });
 
   it('above safe bound query capped to safe bound', async () => {
-    // Large query that goes above the defined safe parameter of 100
     const LARGE_BOUNDED_QUERY = gql`
       query {
-        tables {
-          nodes(first: 200) {
+        tables(first: 200) {
+          nodes {
             key
             value
           }
