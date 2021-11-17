@@ -17,7 +17,7 @@ export class RequireCustomDsValidation implements Rule {
 
     if (schema.isV0_2_0) {
       for (const customDs of schema.dataSources.filter(isCustomDs)) {
-        const processor: SubqlDatasourceProcessor<string, SubqlNetworkFilter> = require(path.join(
+        const processor: SubqlDatasourceProcessor<string, SubqlNetworkFilter> = require(path.resolve(
           ctx.data.projectPath,
           customDs.processor.file
         )).default;
