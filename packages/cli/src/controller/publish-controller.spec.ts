@@ -33,7 +33,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   description: 'this is test for init controller',
   version: '',
   license: '',
-  endpoint: '',
+  endpoint: 'wss://rpc.polkadot.io/public-ws',
 };
 
 const ipfsEndpoint = 'https://ipfs.thechainhub.com/api/v0';

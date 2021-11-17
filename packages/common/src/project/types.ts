@@ -8,7 +8,8 @@ export interface IProjectManifest {
   description: string;
   repository: string;
   dataSources: SubqlDatasource[];
-  toDeployment(): string | undefined;
+  toDeployment(): string;
+  validate(): void;
 }
 
 export interface ProjectNetworkConfig {

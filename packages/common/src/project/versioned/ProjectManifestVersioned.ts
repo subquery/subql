@@ -38,7 +38,7 @@ export class ProjectManifestVersioned implements IProjectManifest {
     this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
   }
 
-  get asImpl(): IProjectManifest {
+  get asImpl(): ProjectManifestImpls {
     return this._impl;
   }
 
@@ -63,12 +63,7 @@ export class ProjectManifestVersioned implements IProjectManifest {
   }
 
   validate(): void {
-    const errors = validateSync(this._impl, {whitelist: true, forbidNonWhitelisted: true});
-    if (errors?.length) {
-      // TODO: print error details
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
-    }
+    this._impl.validate();
   }
 
   get dataSources(): SubqlDatasource[] {
