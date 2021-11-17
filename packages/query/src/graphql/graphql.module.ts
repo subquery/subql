@@ -18,6 +18,9 @@ import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
 import {ProjectService} from './project.service';
 
+// Maximum query depth supported
+const MAXIMUM_DEPTH_LIMIT = 10;
+
 @Module({
   providers: [ProjectService],
 })
@@ -69,7 +72,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
           : ApolloServerPluginLandingPageDisabled(),
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
-      validationRules: this.config.get('unsafe') ? [] : [depthLimit(10)],
+      validationRules: this.config.get('unsafe') ? [] : [depthLimit(MAXIMUM_DEPTH_LIMIT)],
     });
     app.use(
       ExpressPinoLogger({

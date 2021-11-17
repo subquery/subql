@@ -37,7 +37,6 @@ describe('unsafe', () => {
     });
 
     const schema = builder.buildSchema();
-    console.log(schema);
 
     return new ApolloServer({
       schema,
@@ -54,6 +53,7 @@ describe('unsafe', () => {
             key   INT, 
             value INT )`);
 
+    // Seed database with key/value pairs
     for (let i = 0; i < 200; i++) {
       await insertPair(i, i);
     }
@@ -98,7 +98,24 @@ describe('unsafe', () => {
     `;
 
     const server = await createApolloServer();
+    expect((await server.executeOperation({query: LARGE_BOUNDED_QUERY})).errors).toBeDefined();
+  });
+
+  // Check that the query bounds are respected even
+  it('below safe bound first with limit', async () => {
+    const LARGE_BOUNDED_QUERY = gql`
+      query {
+        tables(first: 50) {
+          nodes {
+            key
+            value
+          }
+        }
+      }
+    `;
+
+    const server = await createApolloServer();
     const results = await server.executeOperation({query: LARGE_BOUNDED_QUERY});
-    expect(results.data.tables.nodes.length).toEqual(100);
+    expect(results.data.tables.nodes.length).toEqual(50);
   });
 });
