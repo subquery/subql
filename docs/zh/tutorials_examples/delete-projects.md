@@ -1,8 +1,8 @@
-# How to delete a SubQuery project?
+# 如何调试一个SubQuery项目？
 
-## Introduction
+## 简介
 
-It is important to keep your projects in SubQuery Project relevant and up to date. For any projects that uploaded to SubQuery Project for testing purposes, it is recommended to delete them afterwards to conserve resources and save cost.
+在SubQuery项目中保持您的项目的相关性和最新性很重要。 对于上传到SubQuery项目进行测试的任何项目，我们建议您随后予以删除，以节省资源和节省费用。
 
 Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
 
