@@ -53,7 +53,6 @@ describe('unsafe', () => {
             key   INT, 
             value INT )`);
 
-    // Seed database with key/value pairs
     for (let i = 0; i < 200; i++) {
       await insertPair(i, i);
     }
@@ -68,7 +67,7 @@ describe('unsafe', () => {
     done();
   });
 
-  it('unbounded query capped to safe bound', async () => {
+  it('unbounded query clamped to safe bound', async () => {
     const LARGE_UNBOUND_QUERY = gql`
       query {
         tables {
@@ -85,7 +84,7 @@ describe('unsafe', () => {
     expect(results.data.tables.nodes.length).toEqual(100);
   });
 
-  it('above safe bound query capped to safe bound', async () => {
+  it('bounded unsafe query clamped to safe bound', async () => {
     const LARGE_BOUNDED_QUERY = gql`
       query {
         tables(first: 200) {
@@ -98,11 +97,11 @@ describe('unsafe', () => {
     `;
 
     const server = await createApolloServer();
-    expect((await server.executeOperation({query: LARGE_BOUNDED_QUERY})).errors).toBeDefined();
+    const results = await server.executeOperation({query: LARGE_BOUNDED_QUERY});
+    expect(results.data.tables.nodes.length).toEqual(100);
   });
 
-  // Check that the query bounds are respected even
-  it('below safe bound first with limit', async () => {
+  it('bounded safe query remains unchanged', async () => {
     const LARGE_BOUNDED_QUERY = gql`
       query {
         tables(first: 50) {
