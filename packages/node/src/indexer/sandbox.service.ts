@@ -12,9 +12,12 @@ import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
 import { ApiAt } from './types';
+
+const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
@@ -24,10 +27,12 @@ export interface SandboxOption {
 
 const DEFAULT_OPTION: NodeVMOptions = {
   console: 'redirect',
-  wasm: false,
+  wasm: argv.unsafe,
   sandbox: {},
   require: {
-    builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
+    builtin: argv.unsafe
+      ? ['*']
+      : ['assert', 'buffer', 'crypto', 'util', 'path'],
     external: true,
     context: 'sandbox',
   },
