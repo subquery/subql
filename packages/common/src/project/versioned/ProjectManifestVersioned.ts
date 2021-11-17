@@ -58,6 +58,10 @@ export class ProjectManifestVersioned implements IProjectManifest {
     return this._impl as ProjectManifestV0_2_0Impl;
   }
 
+  toDeployment(): string | undefined {
+    return this.toDeployment();
+  }
+
   validate(): void {
     const errors = validateSync(this._impl, {whitelist: true, forbidNonWhitelisted: true});
     if (errors?.length) {

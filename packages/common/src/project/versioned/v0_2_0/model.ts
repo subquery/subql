@@ -8,18 +8,21 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import {Type} from 'class-transformer';
+import {Expose, plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import yaml from 'js-yaml';
 import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
 import {CustomDatasourceV0_2_0, ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 
 export class FileType {
+  @Expose()
   @IsString()
   file: string;
 }
 
 export class ProjectNetworkV0_2_0 {
+  @Expose()
   @IsString()
   genesisHash: string;
   @IsString()
@@ -28,6 +31,7 @@ export class ProjectNetworkV0_2_0 {
   @IsString()
   @IsOptional()
   dictionary: string;
+  @Expose()
   @IsObject()
   @ValidateNested()
   @Type(() => FileType)
@@ -57,6 +61,17 @@ export class CustomDataSourceV0_2_0Impl<
   extends CustomDataSourceBase<K, T, M>
   implements SubqlCustomDatasource<K, T, M> {}
 
+export class DeploymentV0_2_0 {
+  @Expose()
+  specVersion: string;
+  @Expose()
+  schema: FileType;
+  @Expose()
+  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
+  @Expose()
+  network: ProjectNetworkV0_2_0;
+}
+
 export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_2_0 {
   @Equals('0.2.0')
   specVersion: string;
@@ -81,4 +96,13 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
     keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
+  toDeployment(): string {
+    const deployment = plainToClass(DeploymentV0_2_0, this, {excludeExtraneousValues: true});
+    //manually assign the datasource
+    deployment.dataSources = this.dataSources;
+    return yaml.dump(deployment, {
+      sortKeys: true,
+      condenseFlow: true,
+    });
+  }
 }

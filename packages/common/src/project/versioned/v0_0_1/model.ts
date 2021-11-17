@@ -38,4 +38,7 @@ export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implement
   @ValidateNested()
   @Type(() => RuntimeDataSourceV0_0_1Impl)
   dataSources: RuntimeDataSourceV0_0_1[];
+  toDeployment(): undefined {
+    throw new Error('Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above');
+  }
 }
