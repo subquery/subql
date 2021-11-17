@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
 import {
   Entity,
@@ -26,4 +27,4 @@ export type OperationEntity = {
   data: Entity | string;
 };
 
-export type ApiAt = ApiDecoration<'promise'>;
+export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };
