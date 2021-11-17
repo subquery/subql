@@ -1,9 +1,12 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import {ApolloServer, gql} from 'apollo-server-express';
+import depthLimit from 'graphql-depth-limit';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {plugins} from './plugins';
-import depthLimit from 'graphql-depth-limit';
 
 describe('unsafe', () => {
   const dbSchema = 'subquery_1';
@@ -22,10 +25,8 @@ describe('unsafe', () => {
     console.error('PostgreSQL client generated error: ', err.message);
   });
 
-  async function insertMetadata(key: string, value: string) {
-    await pool.query(`INSERT INTO subquery_1._metadata(
-            key, value, "createdAt", "updatedAt")
-            VALUES ('${key}', '${value}', '2021-11-07 07:02:31.768+00', '2021-11-07 07:02:31.768+00');`);
+  async function insertPair(key: number, value: number) {
+    await pool.query(`INSERT INTO subquery_1.table( key, value) VALUES ('${key}', '${value}');`);
   }
 
   async function createApolloServer() {
@@ -43,24 +44,24 @@ describe('unsafe', () => {
       context: {
         pgClient: pool,
       },
-      // XXX: this must stay in sync with validation rules, surely there's a better way to init this?
-      validationRules: config.get('unsafe') ? [] : [depthLimit(10)],
+      validationRules: config.get('unsafe') ? [] : [depthLimit(10)], // TODO: move validation rules to a default config
     });
   }
 
   beforeEach(async () => {
     await pool.query(`CREATE SCHEMA IF NOT EXISTS ${dbSchema}`);
-    await pool.query(`CREATE TABLE IF NOT EXISTS subquery_1._metadata (
-            key character varying(255) COLLATE pg_catalog."default" NOT NULL,
-            value jsonb,
-            "createdAt" timestamp with time zone NOT NULL,
-            "updatedAt" timestamp with time zone NOT NULL,
-            CONSTRAINT _metadata_pkey PRIMARY KEY (key)
-        )`);
+    await pool.query(`CREATE TABLE IF NOT EXISTS subquery_1.table (
+            key   INT, 
+            value INT )`);
+
+    // Seed table with 200 rows of monotonically increasing key value pairs
+    for (let i = 0; i < 200; i++) {
+      await insertPair(i, i);
+    }
   });
 
   afterEach(async () => {
-    await pool.query(`DROP TABLE subquery_1._metadata`);
+    await pool.query(`DROP TABLE subquery_1.table`);
   });
 
   afterAll((done) => {
@@ -68,25 +69,39 @@ describe('unsafe', () => {
     done();
   });
 
-  it('vampires', async () => {
-    for (let i = 0; i < 1000; i++) {
-      await insertMetadata(i.toString(), i.toString());
-    }
-
-    const GET_BIG_BOY = gql`
+  it('unbounded query capped to safe bound', async () => {
+    // unbounded query
+    const LARGE_UNBOUND_QUERY = gql`
       query {
-        _metadata {
+        tables {
           nodes {
-            key,
+            key
+            value
           }
         }
       }
     `;
 
     const server = await createApolloServer();
+    const results = await server.executeOperation({query: LARGE_UNBOUND_QUERY});
+    expect(results.data.tables.nodes.length).toEqual(100);
+  });
 
-    const results = await server.executeOperation({query: GET_BIG_BOY});
-    //const fetchedMeta = results.data._metadata;
-    console.log(results);
+  it('above safe bound query capped to safe bound', async () => {
+    // Large query that goes above the defined safe parameter of 100
+    const LARGE_BOUNDED_QUERY = gql`
+      query {
+        tables {
+          nodes(first: 200) {
+            key
+            value
+          }
+        }
+      }
+    `;
+
+    const server = await createApolloServer();
+    const results = await server.executeOperation({query: LARGE_BOUNDED_QUERY});
+    expect(results.data.tables.nodes.length).toEqual(100);
   });
 });
