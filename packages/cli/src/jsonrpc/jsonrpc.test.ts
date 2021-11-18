@@ -12,7 +12,7 @@ describe('test jsonrpc client', () => {
   it("Query polkadot's genesisHash via ws endpoint", async () => {
     const genesisHash = await getGenesisHash(WS_ENDPOINT);
     expect(genesisHash).toEqual(GENESIS_HASH);
-  });
+  }, 10000);
 
   it("Query polkadot's genesisHash via http endpoint", async () => {
     const genesisHash = await getGenesisHash(HTTP_ENDPOINT);
