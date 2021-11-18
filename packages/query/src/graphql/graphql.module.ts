@@ -10,7 +10,6 @@ import {
 } from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
-import depthLimit from 'graphql-depth-limit';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';

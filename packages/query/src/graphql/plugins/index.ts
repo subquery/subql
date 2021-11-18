@@ -47,7 +47,6 @@ import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
 import {GetMetadataPlugin} from './GetMetadataPlugin';
-
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 

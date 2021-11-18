@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ApolloServer, gql} from 'apollo-server-express';
-import depthLimit from 'graphql-depth-limit';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
@@ -10,7 +9,7 @@ import {plugins} from './plugins';
 
 describe('query limits', () => {
   const dbSchema = 'subquery_1';
-  const config = new Config({unsafe: false});
+  const config = new Config({});
   let pool: Pool;
 
   async function createApolloServer() {
@@ -27,7 +26,6 @@ describe('query limits', () => {
       context: {
         pgClient: pool,
       },
-      validationRules: config.get('unsafe') ? [] : [depthLimit(10)], // TODO: move validation rules to a default config
     });
   }
 
@@ -50,7 +48,7 @@ describe('query limits', () => {
     done();
   });
 
-  describe('query entity limit', () => {
+  describe('entity limits', () => {
     async function insertPair(key: number, value: number) {
       await pool.query(`INSERT INTO subquery_1.table( key, value) VALUES ('${key}', '${value}');`);
     }
