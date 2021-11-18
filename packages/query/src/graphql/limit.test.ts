@@ -121,29 +121,4 @@ describe('query limits', () => {
       expect(results.data.tables.nodes.length).toEqual(50);
     });
   });
-
-  describe('query depth limit', () => {
-    async function insertPair(key: number, value: number) {
-      await pool.query(`INSERT INTO subquery_1.table( key, value) VALUES ('${key}', '${value}');`);
-    }
-
-    beforeEach(async () => {
-      await pool.query(`CREATE SCHEMA IF NOT EXISTS ${dbSchema}`);
-      await pool.query(`CREATE TABLE IF NOT EXISTS subquery_1.table (
-            key   INT, 
-            value INT )`);
-
-      for (let i = 0; i < 200; i++) {
-        await insertPair(i, i);
-      }
-    });
-
-    afterEach(async () => {
-      await pool.query(`DROP TABLE subquery_1.table`);
-    });
-
-    it('depth exceeded rejected', async () => {
-      //todo
-    });
-  });
 });
