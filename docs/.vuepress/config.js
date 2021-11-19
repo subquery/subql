@@ -98,7 +98,7 @@ module.exports = config({
     sidebarDepth: 2,
     themeColor: false,
     locales: {
-      '/': getSidebar('/en', 'English'),
+      '/': getSidebar('', 'English'),
       '/zh/': getSidebar('/zh', 'Chinese'),
       '/de/': getSidebar('/de', 'German'),
       '/vi/': getSidebar('/vi', 'Vietnamese')
@@ -148,7 +148,7 @@ function getSidebar(locale, language){
     sidebar: [
     {
       title: 'Welcome to SubQuery',
-      path: locale,
+      path: `${locale === '' ? '/' : locale}`,
       collapsable: true,
     },
     {
