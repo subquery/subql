@@ -10,7 +10,7 @@ import {plugins} from './plugins';
 describe('GraphqlModule', () => {
   const dbSchema = 'subquery_1';
 
-  const config: Config = new Config({});
+  const config = new Config({});
 
   const pool: Pool = new Pool({
     user: config.get('DB_USER'),

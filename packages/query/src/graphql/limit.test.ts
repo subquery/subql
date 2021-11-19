@@ -9,8 +9,20 @@ import {plugins} from './plugins';
 
 describe('query limits', () => {
   const dbSchema = 'subquery_1';
+
   const config = new Config({});
-  let pool: Pool;
+
+  const pool = new Pool({
+    user: config.get('DB_USER'),
+    password: config.get('DB_PASS'),
+    host: config.get('DB_HOST_READ') ?? config.get('DB_HOST'),
+    port: config.get('DB_PORT'),
+    database: config.get('DB_DATABASE'),
+  });
+
+  pool.on('error', (err) => {
+    console.error('PostgreSQL client generated error: ', err.message);
+  });
 
   async function createApolloServer() {
     const builder = await getPostGraphileBuilder(pool, [dbSchema], {
@@ -28,20 +40,6 @@ describe('query limits', () => {
       },
     });
   }
-
-  beforeAll(() => {
-    pool = new Pool({
-      user: config.get('DB_USER'),
-      password: config.get('DB_PASS'),
-      host: config.get('DB_HOST_READ') ?? config.get('DB_HOST'),
-      port: config.get('DB_PORT'),
-      database: config.get('DB_DATABASE'),
-    });
-
-    pool.on('error', (err) => {
-      console.error('PostgreSQL client generated error: ', err.message);
-    });
-  });
 
   afterAll((done) => {
     pool.end();
