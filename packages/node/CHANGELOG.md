@@ -6,6 +6,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2021-11-19
+### Fixed: 
+- Fix publish failing with custom ds and assets (#610)
+- Support for enum, add into store and store operations (#551)
+### Added:
+- Allow running node from a different port through flag `—port`(#618)
+- Add flag `force-clean`, force clean the database, dropping project schemas and tables (#619)
+- Add `unsafe` flag for subql/node (#629)
+### Changed:
+- Merge metadata from query and node (#555)
+- Refactor dictionary gql queries (#613)
+- Use types mapping in storeOperation (#532)
+- Replace patch api with `api.at()` (#638)
+- Update polkadot api to 6.8.1 (#642)
+
 ## [0.24.0] - 2021-11-03
 ### Added
 - [custom ds] Read and feed assets to custom ds's `validate()` (#547)
@@ -327,7 +342,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.24.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.25.0...HEAD
+[0.25.0]: https://github.com/subquery/subql/compare/node/0.24.0...node/0.25.0
 [0.24.0]: https://github.com/subquery/subql/compare/node/0.23.1...node/0.24.0
 [0.23.1]: https://github.com/subquery/subql/compare/node/0.23.0...node/0.23.1
 [0.23.0]: https://github.com/subquery/subql/compare/v0.16.0...v0.16.1

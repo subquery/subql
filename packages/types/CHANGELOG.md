@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.10.1] - 2021-11-19
+### Changed
+- Update patch api type (#638)
+
 ## [0.10.0] - 2021-11-03
 ### Changed
 - Update interface under project for Moonbeam custom datasource processor (#579)
@@ -75,7 +79,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/0.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/0.10.1...HEAD
+[0.10.1]: https://github.com/subquery/subql/compare/types/0.10.0...types/0.10.1
 [0.10.0]: https://github.com/subquery/subql/compare/types/0.9.0...types/0.10.0
 [0.7.0]: https://github.com/subquery/subql/compare/v0.6.1...v0.7.0
 [0.6.1]: https://github.com/subquery/subql/compare/v0.6.0...v0.6.1

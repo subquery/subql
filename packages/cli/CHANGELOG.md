@@ -7,8 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+
+## [0.16.0] - 2021-11-19
+### Fixed
+- Fix migrate datasource entry path (#641)
+- Touch up command line description (#628)
+### Changed
+- Codegen controller using new type mappings (#532)
+- Update publish command to handle custom datasource (#641)
 ### Added
-- Support Float type in Cli
+- Support enums in codegen (#551)
 
 ## [0.15.0] - 2021-11-03
 ### Changed
@@ -105,7 +113,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.16.0...HEAD
+[0.16.0]: https://github.com/subquery/subql/compare/cli/0.15.0...cli/0.16.0
+[0.15.0]: https://github.com/subquery/subql/compare/cli/0.14.0...cli/0.15.0
 [0.14.0]: https://github.com/subquery/subql/compare/cli/0.13.0...cli/0.14.0
 [0.9.2]: https://github.com/subquery/subql/compare/v0.9.0...v0.9.2
 [0.9.0]: https://github.com/subquery/subql/compare/v0.8.0...v0.9.0
