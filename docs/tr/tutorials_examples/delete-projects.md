@@ -1,19 +1,19 @@
-# How to delete a SubQuery project?
+# Bir SubQuery projesi nasıl silinir?
 
-## Introduction
+## Tanıtım
 
-It is important to keep your projects in SubQuery Project relevant and up to date. For any projects that uploaded to SubQuery Project for testing purposes, it is recommended to delete them afterwards to conserve resources and save cost.
+SubQuery Project'teki projelerinizi alakalı ve güncel tutmanız önemlidir. Test amacıyla SubQuery Project'e yüklenen projeler için, kaynakları korumak ve maliyetten tasarruf etmek için daha sonra silinmeleri önerilir.
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+Bir dizin oluşturucu düğümü çalıştırmak, Docker kullanmanın veya[SubQuery Projeleri'nde](https://project.subquery.network/) sizin için bir proje barındırmanın dışında başka bir seçenektir. Daha fazla zaman ve çaba gerektirir, ancak SubQuery'nin kapaklar altında nasıl çalıştığına dair anlayışınızı geliştirecektir.
 
-## Deleting a project from the staging slot
+## Bir projeyi hazırlama yuvasından silme
 
-To delete a project from the staging slot, click on the 3 dots in the staging slot section within the deployment details on your project detail dashboard page and select delete.
+Bir projeyi hazırlama yuvasından silmek için, proje ayrıntısı kontrol paneli sayfanızdaki dağıtım ayrıntılarında bulunan hazırlama yuvası bölümündeki 3 noktaya tıklayın ve sil'i seçin.
 
-![Deleting a project from the staging slot](/assets/img/delete_staging.png)
+![Bir projeyi hazırlama yuvasından silme](/assets/img/delete_staging.png)
 
-## Deleting a project from the production slot
+## Bir projeyi üretim yuvasından silme
 
-To delete a project from the production slot, you'll have to delete the entire project instead. Navigate to the top right corner and click on the 3 dots which is the settings for the entire project. Then select "Delete Project".
+Bir projeyi üretim yuvasından silmek için bunun yerine tüm projeyi silmeniz gerekir. Sağ üst köşeye gidin ve tüm proje için ayarlar olan 3 noktaya tıklayın. Ardından "Projeyi Sil" i seçin.
 
-![Deleting a project from the production slot](/assets/img/delete_production.png)
+![Bir projeyi üretim yuvasından silme](/assets/img/delete_production.png)
