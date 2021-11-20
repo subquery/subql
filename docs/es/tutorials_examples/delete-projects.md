@@ -8,7 +8,7 @@ Ejecutar un nodo indexador es otra opción fuera de usar Docker o tener un proye
 
 ## Elimina un proyecto del slot puesto en escena
 
-Para eliminar un proyecto del slot de preparación, haga clic en los 3 puntos de la sección del slot de preparación dentro de los detalles del despliegue en la página del panel de detalles del proyecto y seleccione eliminar.
+Para eliminar un proyecto de la ranura de preparación, haga clic en los 3 puntos de la sección de la ranura de preparación dentro de los detalles del despliegue en la página del panel de detalles del proyecto y seleccione eliminar.
 
 ![Elimina un proyecto del slot puesto en escena](/assets/img/delete_staging.png)
 
