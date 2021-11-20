@@ -1,7 +1,12 @@
-# Module 5: Aggregation and Event Calls
+# Module 5: Aggregation
 
-**Coming Soon!**
+## Lesson 1: Aggregation Basics
 
-This module will be released on Friday 19th November 2021.
+<figure class="video_container">
+  <iframe src="https://www.youtube.com/embed/3s5ePkDERGQ" frameborder="0" allowfullscreen="true"></iframe>
+</figure>
 
-Make sure you join our [Discord community](https://discord.com/invite/subquery) or follow us on [Twitter](https://twitter.com/SubQueryNetwork) to be notified!
+### Exercise
+**Workbook**: [Sum Rewards](/assets/pdf/Sum_Rewards.pdf)
+
+**Github**: [Sum Rewards](https://github.com/subquery/tutorials-simple-aggregation)
