@@ -4,20 +4,12 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
-import {
-  ApiDecoration,
-  ApiInterfaceRx,
-  ApiOptions,
-  DecoratedRpc,
-  QueryableStorageEntry,
-  RpcMethodResult,
-} from '@polkadot/api/types';
-import { RpcInterface } from '@polkadot/rpc-core/types';
+import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
-import { StorageEntry } from '@polkadot/types/primitive/types';
-import { AnyFunction, AnyTuple } from '@polkadot/types/types';
+import { AnyFunction } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
+import { ApiAt } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -26,8 +18,7 @@ const NOT_SUPPORT = (name: string) => () => {
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
-  private patchedApi: ApiPromise;
-  private currentBlockHash: BlockHash;
+  private currentBlockHash: string;
   private currentRuntimeVersion: RuntimeVersion;
   private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
@@ -38,7 +29,7 @@ export class ApiService implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect(), this.patchedApi?.disconnect()]);
+    await Promise.all([this.api?.disconnect()]);
   }
 
   async init(): Promise<ApiService> {
@@ -67,6 +58,12 @@ export class ApiService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
 
+    this.networkMeta = {
+      chain: this.api.runtimeChain.toString(),
+      specName: this.api.runtimeVersion.specName.toString(),
+      genesisHash: this.api.genesisHash.toString(),
+    };
+
     if (
       network.genesisHash &&
       network.genesisHash !== this.networkMeta.genesisHash
@@ -76,12 +73,6 @@ export class ApiService implements OnApplicationShutdown {
       );
     }
 
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-    };
-
     return this;
   }
 
@@ -89,99 +80,26 @@ export class ApiService implements OnApplicationShutdown {
     return this.api;
   }
 
-  async getPatchedApi(): Promise<ApiPromise> {
-    if (this.patchedApi) {
-      return this.patchedApi;
-    }
-    const patchedApi = this.getApi().clone();
-    Object.defineProperty(
-      (patchedApi as any)._rpcCore.provider,
-      'hasSubscriptions',
-      { value: false },
-    );
-    patchedApi.on('connected', () =>
-      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-        value: 1,
-      }),
-    );
-    patchedApi.on('disconnected', () =>
-      this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-        value: 0,
-      }),
-    );
-    await patchedApi.isReady;
-    this.eventEmitter.emit(IndexerEvent.InjectedApiConnected, {
-      value: 1,
-    });
-    this.patchedApi = patchedApi;
-    this.patchApi();
-    return this.patchedApi;
-  }
-
-  private patchApi(): void {
-    this.patchApiAt(this.patchedApi);
-    this.patchApiTx(this.patchedApi);
-    this.patchDerive(this.patchedApi);
-    this.patchApiRpc(this.patchedApi);
-    (this.patchedApi as any).isPatched = true;
-  }
-
-  async setBlockhash(
-    blockHash: BlockHash,
-    parentBlockHash?: BlockHash,
-  ): Promise<void> {
-    if (!this.patchedApi) {
-      await this.getPatchedApi();
-    }
-    this.currentBlockHash = blockHash;
+  async getPatchedApi(
+    blockHash: string | BlockHash,
+    parentBlockHash?: string | BlockHash,
+  ): Promise<ApiAt> {
+    this.currentBlockHash = blockHash.toString();
     if (parentBlockHash) {
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         parentBlockHash,
       );
     }
-    const apiAt = await this.api.at(blockHash, this.currentRuntimeVersion);
-    this.patchApiQuery(this.patchedApi, apiAt);
-    this.patchApiFind(this.patchedApi, apiAt);
-    this.patchApiQueryMulti(this.patchedApi, apiAt);
-  }
-
-  private redecorateStorageEntryFunction(
-    original: QueryableStorageEntry<'promise' | 'rxjs', AnyTuple>,
-    apiType: 'promise' | 'rxjs',
-  ): QueryableStorageEntry<'promise' | 'rxjs', AnyTuple> {
-    const newEntryFunc = original;
-    newEntryFunc.at = NOT_SUPPORT('at');
-    newEntryFunc.entriesAt = NOT_SUPPORT('entriesAt');
-    newEntryFunc.entriesPaged = NOT_SUPPORT('entriesPaged');
-    newEntryFunc.hash = NOT_SUPPORT('hash');
-    newEntryFunc.keysAt = NOT_SUPPORT('keysAt');
-    newEntryFunc.keysPaged = NOT_SUPPORT('keysPaged');
-    newEntryFunc.range = NOT_SUPPORT('range');
-    newEntryFunc.sizeAt = NOT_SUPPORT('sizeAt');
-    newEntryFunc.multi = ((args: unknown[]) => {
-      let keys: [StorageEntry, unknown[]][];
-      const creator = original.creator;
-      if (creator.meta.type.asMap.hashers.length === 1) {
-        keys = args.map((a) => [creator, [a]]);
-      } else {
-        keys = args.map((a) => [creator, a as unknown[]]);
-      }
-      if (apiType === 'promise') {
-        return this.api.rpc.state.queryStorageAt(keys, this.currentBlockHash);
-      } else {
-        return this.api.rx.rpc.state.queryStorageAt(
-          keys,
-          this.currentBlockHash,
-        );
-      }
-    }) as any;
-
-    return newEntryFunc;
+    const apiAt = (await this.api.at(
+      blockHash,
+      this.currentRuntimeVersion,
+    )) as ApiAt;
+    this.patchApiRpc(this.api, apiAt);
+    return apiAt;
   }
 
   private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
     original: RpcMethodResult<T, AnyFunction>,
-    apiType: T,
   ): RpcMethodResult<T, AnyFunction> {
     if (original.meta.params) {
       const hashIndex = original.meta.params.findIndex(
@@ -207,146 +125,16 @@ export class ApiService implements OnApplicationShutdown {
     return ret;
   }
 
-  private patchApiFind(
-    api: ApiPromise,
-    apiAt: ApiDecoration<'promise' | 'rxjs'>,
-  ): void {
-    api.findCall = apiAt.findCall;
-    api.findError = apiAt.findError;
-  }
-
-  private patchApiQuery(
-    api: ApiPromise,
-    apiAt: ApiDecoration<'promise' | 'rxjs'>,
-  ): void {
-    (api as any)._query = Object.entries(apiAt.query).reduce(
-      (acc, [module, moduleStorageItems]) => {
-        acc[module] = Object.entries(moduleStorageItems).reduce(
-          (accInner, [storageName, storageEntry]) => {
-            accInner[storageName] = this.redecorateStorageEntryFunction(
-              storageEntry,
-              'promise',
-            );
-            return accInner;
-          },
-          {},
-        );
-        return acc;
-      },
-      {},
-    );
-    (api as any)._rx.query = Object.entries(
-      (api as any)._rx.query as ApiInterfaceRx['query'],
-    ).reduce((acc, [module, moduleStorageItems]) => {
-      acc[module] = Object.entries(moduleStorageItems).reduce(
-        (accInner, [storageName, storageEntry]) => {
-          accInner[storageName] = this.redecorateStorageEntryFunction(
-            storageEntry,
-            'rxjs',
-          );
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {});
-  }
-
-  private patchApiTx(api: ApiPromise): void {
-    (api as any)._extrinsics = Object.entries(api.tx).reduce(
-      (acc, [module, moduleExtrinsics]) => {
-        acc[module] = Object.entries(moduleExtrinsics).reduce(
-          (accInner, [name]) => {
-            accInner[name] = NOT_SUPPORT('api.tx.*');
-            return accInner;
-          },
-          {},
-        );
-        return acc;
-      },
-      {},
-    );
-    (api as any)._rx.tx = Object.entries(
-      (api as any)._rx.tx as ApiInterfaceRx['tx'],
-    ).reduce((acc, [module, moduleExtrinsics]) => {
-      acc[module] = Object.entries(moduleExtrinsics).reduce(
-        (accInner, [name]) => {
-          accInner[name] = NOT_SUPPORT('api.tx.*');
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {});
-  }
-
-  private patchApiRpc(api: ApiPromise): void {
-    (api as any)._rpc = Object.entries(
-      api.rpc as DecoratedRpc<'promise', RpcInterface>,
-    ).reduce((acc, [module, rpcMethods]) => {
+  private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
+    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
       acc[module] = Object.entries(rpcMethods).reduce(
         (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(
-            rpcPromiseResult,
-            'promise',
-          );
+          accInner[name] = this.redecorateRpcFunction(rpcPromiseResult);
           return accInner;
         },
         {},
       );
       return acc;
-    }, {});
-    (api as any)._rx.rpc = Object.entries(
-      (api as any)._rx.rpc as ApiInterfaceRx['rpc'],
-    ).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce(
-        (accInner, [name, rpcRxResult]) => {
-          accInner[name] = this.redecorateRpcFunction(rpcRxResult, 'rxjs');
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {});
-  }
-  private patchApiQueryMulti(
-    api: ApiPromise,
-    apiAt: ApiDecoration<'promise' | 'rxjs'>,
-  ): void {
-    (api as any)._queryMulti = apiAt.queryMulti;
-    (api as any).rx.queryMulti = NOT_SUPPORT('api.rx.queryMulti');
-  }
-
-  private patchDerive(api: ApiPromise): void {
-    (api as any)._derive = Object.entries((api as any).derive).reduce(
-      (acc, [module, deriveMethods]) => {
-        acc[module] = Object.entries(deriveMethods).reduce(
-          (accInner, [name]) => {
-            accInner[name] = NOT_SUPPORT('api.derive.*');
-            return accInner;
-          },
-          {},
-        );
-        return acc;
-      },
-      {},
-    );
-    (api as any)._rx.derive = Object.entries((api as any)._rx.derive).reduce(
-      (acc, [module, deriveMethods]) => {
-        acc[module] = Object.entries(deriveMethods).reduce(
-          (accInner, [name]) => {
-            accInner[name] = NOT_SUPPORT('api.derive.*');
-            return accInner;
-          },
-          {},
-        );
-        return acc;
-      },
-      {},
-    );
-  }
-
-  private patchApiAt(api: ApiPromise): void {
-    (api as any).at = NOT_SUPPORT('api.at()');
+    }, {} as ApiPromise['rpc']);
   }
 }

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+### Added
+- Support Float type in Cli
 
 ## [0.15.0] - 2021-11-03
 ### Changed

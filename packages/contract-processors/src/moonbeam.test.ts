@@ -137,6 +137,8 @@ describe('MoonbeamDs', () => {
     });
   });
 
+  afterAll(async () => api?.disconnect(), 30000);
+
   describe('FilterValidator', () => {
     const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamEvent'];
 

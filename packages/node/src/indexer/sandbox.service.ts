@@ -3,7 +3,6 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { ApiPromise } from '@polkadot/api';
 import { isRuntimeDataSourceV0_2_0, levelFilter } from '@subql/common';
 import { Store, SubqlDatasource } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
@@ -13,22 +12,27 @@ import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
+import { ApiAt } from './types';
+
+const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
-  api?: ApiPromise;
   root: string;
   entry: string;
 }
 
 const DEFAULT_OPTION: NodeVMOptions = {
   console: 'redirect',
-  wasm: false,
+  wasm: argv.unsafe,
   sandbox: {},
   require: {
-    builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
+    builtin: argv.unsafe
+      ? ['*']
+      : ['assert', 'buffer', 'crypto', 'util', 'path'],
     external: true,
     context: 'sandbox',
   },
@@ -89,12 +93,9 @@ export class IndexerSandbox extends Sandbox {
     }
   }
 
-  private injectGlobals({ api, store }: SandboxOption) {
+  private injectGlobals({ store }: SandboxOption) {
     if (store) {
       this.freeze(store, 'store');
-    }
-    if (api) {
-      this.freeze(api, 'api');
     }
     this.freeze(logger, 'logger');
   }
@@ -111,22 +112,23 @@ export class SandboxService {
     private readonly project: SubqueryProject,
   ) {}
 
-  async getDsProcessor(ds: SubqlDatasource): Promise<IndexerSandbox> {
+  getDsProcessor(ds: SubqlDatasource, api: ApiAt): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
-
-    if (!this.processorCache[entry]) {
-      this.processorCache[entry] = new IndexerSandbox(
+    let processor = this.processorCache[entry];
+    if (!processor) {
+      processor = new IndexerSandbox(
         {
-          api: await this.apiService.getPatchedApi(),
+          // api: await this.apiService.getPatchedApi(),
           entry,
           root: this.project.path,
           store: this.storeService.getStore(),
         },
         this.nodeConfig,
       );
+      this.processorCache[entry] = processor;
     }
-
-    return this.processorCache[entry];
+    processor.freeze(api, 'api');
+    return processor;
   }
 
   private getDataSourceEntry(ds: SubqlDatasource): string {

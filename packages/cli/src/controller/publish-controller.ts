@@ -39,7 +39,7 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
   const deployment = await replaceFileReferences(ipfs, projectDir, manifest);
 
   // Upload schema
-  return uploadFile(ipfs, toMinifiedYaml(deployment));
+  return uploadFile(ipfs, deployment.toDeployment());
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */

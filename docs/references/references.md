@@ -15,6 +15,8 @@ Options:
       --subquery-name       Name of the subquery project                [string]
   -c, --config              Specify configuration file                  [string]
       --local               Use local mode                             [boolean]
+      --force-clean         Force clean the database, dropping project schemas
+                            and tables                                 [boolean]
       --batch-size          Batch size of blocks to fetch in one round  [number]
       --timeout             Timeout for indexer sandbox to execute the mapping
                             functions                                   [number]
@@ -35,8 +37,12 @@ Options:
       --timestamp-field     Enable/disable created_at and updated_at in schema
                                                        [boolean] [default: true]
   -d, --network-dictionary  Specify the dictionary api for this network [string]
+  -m, --mmr-path            Local path of the merkle mountain range (.mmr) file
+                                                                        [string]
       --proof-of-index      Enable/disable proof of index
                                                       [boolean] [default: false]
+  -p, --port                The port the service will bind to
+                                                        [number] [default: 3000]
 ```
 
 ### --version
@@ -92,6 +98,10 @@ subql-node -f . --local
 ```
 
 Note that once you use this flag, removing it won't mean that it will point to another database. To repoint to another database you will have to create a NEW database and change the env settings to this new database. In other words, "export DB_DATABASE=<new_db_here>"
+
+### --force-clean
+
+This flag forces the project schemas and tables to be regenerated, helpful to use when iteratively developing graphql schemas such that new runs of the project are always working with a clean state. Note that this flag will also wipe all indexed data.
 
 ### --batch-size
 
@@ -215,11 +225,11 @@ subql-node -f . -d "https://api.subquery.network/sq/subquery/dictionary-polkadot
 This shows the help options.
 
 ```shell
-ns:
+Options:
       --help        Show help                                          [boolean]
       --version     Show version number                                [boolean]
-  -n, --name        project name                             [string] [required]
-      --playground  enable graphql playground                          [boolean]
+  -n, --name        Project name                             [string] [required]
+      --playground  Enable graphql playground                          [boolean]
       --output-fmt  Print log as json or plain text
                       [string] [choices: "json", "colored"] [default: "colored"]
       --log-level   Specify log level to print.
