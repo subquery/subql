@@ -15,6 +15,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Changed
 - Codegen controller using new type mappings (#532)
 - Update publish command to handle custom datasource (#641)
+- init command now create spec v0.2.0 project by default (#643)
 ### Added
 - Support enums in codegen (#551)
 
