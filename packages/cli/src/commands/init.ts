@@ -22,7 +22,8 @@ export default class Init extends Command {
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: flags.string({
       required: false,
-      default: '0.0.1',
+      options: ['0.0.1', '0.2.0'],
+      default: '0.2.0',
       description: 'The spec version to be used by the project',
     }),
   };
@@ -63,7 +64,7 @@ export default class Init extends Command {
     project.author = await cli.prompt('Authors', {required: true});
     project.description = await cli.prompt('Description', {required: false});
     project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});
-    project.license = await cli.prompt('License:', {default: 'Apache-2.0', required: true});
+    project.license = await cli.prompt('License:', {default: 'MIT', required: true});
 
     if (flags.starter && project.name) {
       try {
