@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [0.7.4] - 2021-11-03
 ### Changed
 - Bump dependencies (#584)
