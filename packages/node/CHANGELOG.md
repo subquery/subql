@@ -19,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor dictionary gql queries (#613)
 - Use types mapping in storeOperation (#532)
 - Replace patch api with `api.at()` (#638)
-- Update polkadot api to 6.8.1 (#642)
+- Update polkadot api to 6.9.2 (#648)
 
 ## [0.24.0] - 2021-11-03
 ### Added
