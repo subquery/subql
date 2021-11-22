@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2021-11-19
+### Changed
+- Reduce jest mem in Moonbeam test(#613)
+
 ## [0.3.0] - 2021-11-03
 ### Fixed
 - Fix evm tx's `from` field (#590)
@@ -22,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Basic implementation for moonbeam evm processor (#547)
 
-[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.3.1...HEAD
+[0.3.1]: https://github.com/subquery/subql/compare/contract-processors/0.3.0...contract-processors/0.3.1
 [0.3.0]: https://github.com/subquery/subql/compare/contract-processors/0.2.0...contract-processors/0.3.0
 

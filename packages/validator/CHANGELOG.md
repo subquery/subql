@@ -9,6 +9,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.0] - 2021-11-19
+### Added
+- Added ipfs-reader and update reader (#486)
+- Add validator that runs custom ds processor validation (#596)
+### Changed
+- Bump deps (#584)
+- Move `isCustomDs` to Common (#610)
+### Fixed
+- Fix validating custom DS if location param is provided (#639)
+
 ## [0.3.0] - 2021-10-12
 ### Added
 - Add validation for manifest v0.2.0 (#495)
@@ -22,4 +32,5 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/subquery/subql/compare/query/0.3.0...query/0.4.0
