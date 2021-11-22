@@ -16,7 +16,9 @@ const STARTER_PATH = 'https://github.com/subquery/subql-starter';
 export async function createProject(localPath: string, project: ProjectSpecBase): Promise<string> {
   const projectPath = path.join(localPath, project.name);
 
-  const cloneArgs = isProjectSpecV0_2_0(project) ? ['-b', 'v0.2.0', '--single-branch'] : [];
+  const cloneArgs = isProjectSpecV0_2_0(project)
+    ? ['-b', 'v0.2.0', '--single-branch']
+    : ['-b', 'v0.0.1', '--single-branch'];
   try {
     await simpleGit().clone(STARTER_PATH, projectPath, cloneArgs);
   } catch (e) {
