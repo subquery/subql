@@ -19,6 +19,7 @@ export async function createProject(localPath: string, project: ProjectSpecBase)
   const cloneArgs = isProjectSpecV0_2_0(project)
     ? ['-b', 'v0.2.0', '--single-branch']
     : ['-b', 'v0.0.1', '--single-branch'];
+
   try {
     await simpleGit().clone(STARTER_PATH, projectPath, cloneArgs);
   } catch (e) {
