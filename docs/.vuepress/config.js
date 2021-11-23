@@ -104,7 +104,6 @@ module.exports = config({
       '/vi/': getSidebar('/vi', 'Vietnamese')
     },
     plugins: [
-      ['fulltext-search'],
       [
         '@vuepress/plugin-google-analytics',
         {
@@ -112,6 +111,11 @@ module.exports = config({
         },
       ],
     ],
+    algolia: {
+      appId: 'BH4D9OD16A',
+      apiKey: '428771a0ad4007642cf305d46ca6be3d',
+      indexName: 'subquery'
+    },
     markdown: {
       extractHeaders: ['h2', 'h3'],
     }
