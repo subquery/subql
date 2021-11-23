@@ -31,8 +31,11 @@ import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { BlockedQueue } from './BlockedQueue';
-import { Dictionary, DictionaryService } from './dictionary.service';
+import { AutoQueue, BlockedQueue } from './BlockedQueue';
+import {
+  Dictionary,
+  DictionaryService,
+} from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent } from './types';
@@ -115,6 +118,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
   private blockBuffer: BlockedQueue<BlockContent>;
+  private blockBuffer2: AutoQueue<any>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private parentSpecVersion: number;
@@ -137,6 +141,7 @@ export class FetchService implements OnApplicationShutdown {
       this.nodeConfig.batchSize * 3,
     );
     this.batchSizeScale = 1;
+    this.blockBuffer2 = new AutoQueue();
   }
 
   onApplicationShutdown(): void {
@@ -220,33 +225,33 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  register(next: (value: BlockContent) => Promise<void>): () => void {
-    let stopper = false;
-    void (async () => {
-      while (!stopper && !this.isShutdown) {
-        const block = await this.blockBuffer.take();
-        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-          value: this.blockBuffer.size,
-        });
-        let success = false;
-        while (!success) {
-          try {
-            await next(block);
-            success = true;
-          } catch (e) {
-            logger.error(
-              e,
-              `failed to index block at height ${block.block.block.header.number.toString()} ${
-                e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
-              }`,
-            );
-            process.exit(1);
-          }
-        }
-      }
-    })();
-    return () => (stopper = true);
-  }
+  // register(next: (value: BlockContent) => Promise<void>): () => void {
+  //   let stopper = false;
+  //   void (async () => {
+  //     while (!stopper && !this.isShutdown) {
+  //       const block = await this.blockBuffer.take();
+  //       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+  //         value: this.blockBuffer.size,
+  //       });
+  //       let success = false;
+  //       while (!success) {
+  //         try {
+  //           await next(block);
+  //           success = true;
+  //         } catch (e) {
+  //           logger.error(
+  //             e,
+  //             `failed to index block at height ${block.block.block.header.number.toString()} ${
+  //               e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
+  //             }`,
+  //           );
+  //           process.exit(1);
+  //         }
+  //       }
+  //     }
+  //   })();
+  //   return () => (stopper = true);
+  // }
 
   async init(): Promise<void> {
     this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
@@ -276,7 +281,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedBlockHead() {
+  async getFinalizedBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -298,7 +303,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getBestBlockHead() {
+  async getBestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;
@@ -321,14 +326,69 @@ export class FetchService implements OnApplicationShutdown {
     this.latestProcessedHeight = height;
   }
 
-  async startLoop(initBlockHeight: number): Promise<void> {
+  async startLoop(
+    initBlockHeight: number,
+    processor: (value: BlockContent) => Promise<void> | void,
+  ): Promise<void> {
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
-    await Promise.all([
-      this.fillNextBlockBuffer(initBlockHeight),
-      this.fillBlockBuffer(),
-    ]);
+    // await Promise.all([
+    //   this.fillNextBlockBuffer(initBlockHeight),
+    //   this.fillBlockBuffer(),
+    // ]);
+
+    await this.fetchMeta(initBlockHeight);
+
+    while (!this.isShutdown) {
+      const startBlockHeight = this.latestBufferedHeight
+        ? this.latestBufferedHeight + 1
+        : initBlockHeight;
+      const endHeight = this.nextEndBlockHeight(startBlockHeight);
+      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
+      this.setLatestBufferedHeight(endHeight);
+
+      const takeCount = this.nodeConfig.batchSize;
+
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+
+      const metadataChanged = await this.fetchMeta(
+        bufferBlocks[bufferBlocks.length - 1],
+      );
+
+      const blocks = await fetchBlocksBatches(
+        this.api,
+        bufferBlocks,
+        metadataChanged ? undefined : this.parentSpecVersion,
+      );
+      logger.info(
+        `fetch block [${bufferBlocks[0]},${
+          bufferBlocks[bufferBlocks.length - 1]
+        }], total ${bufferBlocks.length} blocks`,
+      );
+
+      await Promise.all(
+        this.blockBuffer2.putMany(
+          blocks.map((block) => async () => {
+            try {
+              await processor(block);
+            } catch (e) {
+              logger.error(
+                e,
+                `failed to index block at height ${block.block.block.header.number.toString()} ${
+                  e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
+                }`,
+              );
+              process.exit(1);
+            }
+          }),
+        ),
+      );
+
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+        value: this.blockBuffer.size,
+      });
+    }
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {

@@ -54,3 +54,78 @@ export class BlockedQueue<T> {
     return result;
   }
 }
+
+export class Queue<T> {
+  private items: T[] = [];
+
+  get size(): number {
+    return this.items.length;
+  }
+
+  put(item: T): void {
+    this.putMany([item]);
+  }
+
+  putMany(items: T[]): void {
+    this.items.push(...items);
+  }
+
+  take(): T | undefined {
+    return this.items.shift();
+  }
+
+  takeAll(): T[] {
+    const result = this.items;
+
+    this.items = [];
+    return result;
+  }
+}
+
+type Action<T> = {
+  task: () => Promise<T> | T;
+  resolve: (value: T) => void;
+  reject: (reason: any) => void;
+};
+
+export class AutoQueue<T> {
+  private pendingPromise = false;
+  private queue = new Queue<Action<T>>();
+
+  async put(item: () => T): Promise<T> {
+    return this.putMany([item])[0];
+  }
+
+  putMany(tasks: Array<() => T>): Promise<T>[] {
+    return tasks.map((task, index) => {
+      return new Promise((resolve, reject) => {
+        this.queue.put({ task, resolve, reject });
+        if (tasks.length - 1 === index) {
+          void this.take();
+        }
+      });
+    });
+  }
+
+  async take(): Promise<boolean> {
+    if (this.pendingPromise) return false;
+
+    const action = this.queue.take();
+
+    if (!action) return false;
+
+    try {
+      this.pendingPromise = true;
+      const payload = await action.task();
+
+      action.resolve(payload);
+    } catch (e) {
+      action.reject(e);
+    } finally {
+      this.pendingPromise = false;
+      void this.take();
+    }
+
+    return true;
+  }
+}

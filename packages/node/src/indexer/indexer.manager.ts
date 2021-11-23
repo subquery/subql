@@ -157,14 +157,14 @@ export class IndexerManager {
     }
 
     void this.fetchService
-      .startLoop(this.subqueryState.nextBlockHeight)
+      .startLoop(this.subqueryState.nextBlockHeight, (b) => this.indexBlock(b))
       .catch((err) => {
         logger.error(err, 'failed to fetch block');
         // FIXME: retry before exit
         process.exit(1);
       });
     this.filteredDataSources = this.filterDataSources();
-    this.fetchService.register((block) => this.indexBlock(block));
+    // this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
       void this.mmrService.syncFileBaseFromPoi().catch((err) => {

@@ -285,13 +285,17 @@ describe('FetchService', () => {
     );
     fetchService.fetchMeta = jest.fn();
     await fetchService.init();
-    const loopPromise = fetchService.startLoop(1);
-    // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.register(async (content) => {
+    const loopPromise = fetchService.startLoop(1, (content) => {
       if (content.block.block.header.number.toNumber() === 10) {
         fetchService.onApplicationShutdown();
       }
     });
+    // eslint-disable-next-line @typescript-eslint/require-await
+    // fetchService.register(async (content) => {
+    //   if (content.block.block.header.number.toNumber() === 10) {
+    //     fetchService.onApplicationShutdown();
+    //   }
+    // });
     await loopPromise;
   }, 500000);
 
@@ -344,7 +348,7 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 1005;
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
+    const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
     eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       // [1000,1001,1002,1003,1004]
       if (nextBufferSize.value >= 5) {
@@ -404,7 +408,7 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 1005;
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
+    const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
     eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       // [1000,1001,1002,1003,1004]
       if (nextBufferSize.value >= 5) {
@@ -462,7 +466,7 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 16000;
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
+    const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
     eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       if (nextBufferSize.value >= 5) {
         fetchService.onApplicationShutdown();
@@ -516,7 +520,7 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 16000;
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
+    const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
     eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
       if (nextBufferSize.value >= 8) {
         fetchService.onApplicationShutdown();
@@ -551,13 +555,17 @@ describe('FetchService', () => {
 
     await fetchService.init();
 
-    const loopPromise = fetchService.startLoop(1);
-    // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.register(async (content) => {
+    const loopPromise = fetchService.startLoop(1, (content) => {
       if (content.block.block.header.number.toNumber() === 10) {
         fetchService.onApplicationShutdown();
       }
     });
+    // eslint-disable-next-line @typescript-eslint/require-await
+    // fetchService.register(async (content) => {
+    //   if (content.block.block.header.number.toNumber() === 10) {
+    //     fetchService.onApplicationShutdown();
+    //   }
+    // });
     await loopPromise;
 
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
