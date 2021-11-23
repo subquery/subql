@@ -5370,7 +5370,7 @@ __metadata:
   resolution: "@subql/contract-processors@workspace:packages/contract-processors"
   dependencies:
     "@subql/types": "workspace:*"
-    class-transformer: ^0.4.0
+    class-transformer: 0.4.0
     class-validator: ^0.13.1
     ethers: ^5.5.1
     moonbeam-types-bundle: ^1.2.7
@@ -9705,7 +9705,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-transformer@npm:0.4.0, class-transformer@npm:^0.4.0":
+"class-transformer@npm:0.4.0":
   version: 0.4.0
   resolution: "class-transformer@npm:0.4.0"
   checksum: 915db337796f6a4d0c2c09bf1c0214eff01e1247836524fdaa170f0c3457f4b5f9ece1068cdb2667e42e01572aa1b08b9995c298f2956d1c8a84884c8d5ea5ff
