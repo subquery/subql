@@ -1,12 +1,7 @@
-# Module 5: Aggregation
+# Module 5: Projects & Explorer
 
-## Lesson 1: Aggregation Basics
+**Coming Soon!**
 
-<figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/3s5ePkDERGQ" frameborder="0" allowfullscreen="true"></iframe>
-</figure>
+This module will be released on Friday 26th November 2021.
 
-### Exercise
-**Workbook**: [Sum Rewards](/assets/pdf/Sum_Rewards.pdf)
-
-**Github**: [Sum Rewards](https://github.com/subquery/tutorials-simple-aggregation)
+Make sure you join our [Discord community](https://discord.com/invite/subquery) or follow us on [Twitter](https://twitter.com/SubQueryNetwork) to be notified!
