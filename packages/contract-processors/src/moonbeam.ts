@@ -48,7 +48,7 @@ export interface MoonbeamCallFilter {
   function?: string;
 }
 
-export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T};
+export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
 export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
   success: boolean;
@@ -209,12 +209,13 @@ const EventProcessor: SecondLayerHandlerProcessor<
         baseFilter.find((filter) => filter.module === evt.event.section && filter.method === evt.event.method)
       ) ?? [];
 
-    const {hash} = getExecutionEvent(original.extrinsic); // shouldn't failed here
+    const {hash} = getExecutionEvent(original.extrinsic); // shouldn't fail here
 
     const log: MoonbeamEvent = {
       ...(eventData.toJSON() as unknown as RawEvent),
       blockNumber: original.block.block.header.number.toNumber(),
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
+      blockTimestamp: original.block.timestamp,
       transactionIndex: original.extrinsic?.idx ?? -1,
       transactionHash: hash,
       removed: false,
@@ -226,9 +227,8 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
       log.args = iface?.parseLog(log).args;
     } catch (e) {
-      // This would make sense to log if we filtered first
       // TODO setup ts config with global defs
-      // (global as any).logger.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
+      (global as any).logger.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
     }
 
     return log;
@@ -325,9 +325,8 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
       call.args = iface?.decodeFunctionData(iface.getFunction(hexDataSlice(call.data, 0, 4)), call.data);
     } catch (e) {
-      // This would make sense to log if we filtered first
       // TODO setup ts config with global defs
-      // (global as any).logger.warn(`Unable to parse call arguments, will be omitted from result`);
+      (global as any).logger.warn(`Unable to parse call arguments, will be omitted from result`);
     }
 
     return call;
