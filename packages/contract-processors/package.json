@@ -1,6 +1,6 @@
 {
   "name": "@subql/contract-processors",
-  "version": "0.3.2-0",
+  "version": "0.3.2",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
