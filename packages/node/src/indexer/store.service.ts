@@ -40,7 +40,7 @@ export class StoreService {
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
   private poiRepo: PoiRepo;
-  private metaDataRepo: MetadataRepo;
+  metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
 
   constructor(

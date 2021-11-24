@@ -140,8 +140,8 @@ export class IndexerManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
+    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.ensureMetadata(this.subqueryState.dbSchema);
 
     if (this.nodeConfig.proofOfIndex) {
@@ -193,6 +193,7 @@ export class IndexerManager {
     );
 
     const keys = [
+      'name',
       'blockOffset',
       'indexerNodeVersion',
       'chain',
@@ -213,6 +214,9 @@ export class IndexerManager {
 
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.
+    if (!keyValue.name) {
+      await this.storeService.setMetadata('name', this.nodeConfig.subqueryName);
+    }
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await this.storeService.setMetadata('blockOffset', offsetValue);
@@ -260,6 +264,7 @@ export class IndexerManager {
   }
 
   private async ensureProject(name: string): Promise<SubqueryModel> {
+    console.log(this.storeService.metaDataRepo);
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
@@ -274,17 +279,6 @@ export class IndexerManager {
             logging: false,
             benchmark: false,
           });
-
-          // remove schema from project table
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              where db_schema = :subquerySchema`,
-            {
-              replacements: { subquerySchema: project.dbSchema },
-              type: QueryTypes.DELETE,
-            },
-          );
 
           logger.info('force cleaned schema and tables');
         } catch (err) {
@@ -314,6 +308,8 @@ export class IndexerManager {
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
   }
+
+  //convert from name to dbschema name
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
     const seqExists = await this.sequelize.query(
