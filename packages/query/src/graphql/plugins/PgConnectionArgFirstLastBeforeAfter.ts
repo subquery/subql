@@ -4,9 +4,15 @@
 // overwrite the official plugin: https://github.com/graphile/graphile-engine/blob/v4/packages/graphile-build-pg/src/plugins/PgConnectionArgFirstLastBeforeAfter.js
 // to support max record rewrite, which to prevent the db performance issue.
 
-const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
+import {QueryBuilder} from 'graphile-build-pg';
+import {argv} from '../../yargs';
 
-const MAX_RECORD_COUNT = 100;
+const unsafe = argv('unsafe') as boolean;
+
+const MAX_ENTITY_COUNT = 100;
+
+const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
+const safeClamp = (x: number) => (unsafe ? x : Math.min(x, MAX_ENTITY_COUNT));
 
 export default (builder) => {
   builder.hook(
@@ -34,11 +40,12 @@ export default (builder) => {
 
       addArgDataGenerator(function connectionFirstLastBeforeAfter({after, before, first, last, offset}) {
         return {
-          pgQuery: (queryBuilder) => {
+          pgQuery: (queryBuilder: QueryBuilder) => {
+            if (!first && !last && !unsafe) {
+              queryBuilder.first(MAX_ENTITY_COUNT);
+            }
             if (first) {
-              if (first > MAX_RECORD_COUNT) {
-                first = MAX_RECORD_COUNT;
-              }
+              first = safeClamp(first);
               queryBuilder.first(first);
             }
             if (offset) {
@@ -58,9 +65,7 @@ export default (builder) => {
                 if (offset) {
                   throw new Error("We don't support setting both offset and last");
                 }
-                if (last > MAX_RECORD_COUNT) {
-                  last = MAX_RECORD_COUNT;
-                }
+                last = safeClamp(last);
                 queryBuilder.last(last);
               }
             }
