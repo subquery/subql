@@ -72,7 +72,7 @@ Works in the same way as [substrate/EventHandler](../create/mapping/#event-handl
 
 | Field  | Type         | Example(s)                                                   | Description                                                                                                                                      |
 | ------ | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,u256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
+| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
 
 <b>Note on topics:</b>
 There are a couple of improvements from basic log filters:
@@ -113,7 +113,7 @@ dataSources:
           kind: substrate/MoonbeamEvent
           filter:
             topics:
-              - Transfer(address indexed from,address indexed to,u256 value)
+              - Transfer(address indexed from,address indexed to,uint256 value)
         - handler: handleMoonriverCall
           kind: substrate/MoonbeamCall
           filter:
