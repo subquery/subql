@@ -92,6 +92,7 @@ export class FetchService implements OnApplicationShutdown {
   private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
+  private scaleBatchSize: number;
 
   constructor(
     private apiService: ApiService,
@@ -107,6 +108,7 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
+    this.scaleBatchSize = 1;
   }
 
   onApplicationShutdown(): void {
@@ -213,6 +215,54 @@ export class FetchService implements OnApplicationShutdown {
     await this.getBestBlockHead();
   }
 
+  @Interval(BLOCK_TIME_VARIANCE * 10000)
+  getMemoryUsage() {
+    // I need to figure out what the threshold of memory usage should be.
+    const formatMemoryUsage = (data) =>
+      `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
+    const highThreshold = 0.95;
+    const lowThreshold = 0.85;
+    const memoryData = process.memoryUsage();
+
+    const memoryUsage = {
+      rss: `${formatMemoryUsage(
+        memoryData.rss,
+      )} -> Resident Set Size - total memory allocated for the process execution`,
+      heapTotal: `${formatMemoryUsage(
+        memoryData.heapTotal,
+      )} -> total size of the allocated heap`,
+      heapUsed: `${formatMemoryUsage(
+        memoryData.heapUsed,
+      )} -> actual memory used during the execution`,
+      external: `${formatMemoryUsage(
+        memoryData.external,
+      )} -> V8 external memory`,
+    };
+    // I thing I should only let heapUsed get to a percentage of the heapTotal
+    // This way someone could adjust the memory size and my code will still work
+    const ratio = memoryData.heapUsed / memoryData.heapTotal;
+
+    //need to figure out how to alter amound
+    if (ratio > highThreshold) {
+      if (this.scaleBatchSize >= 0.05) {
+        this.scaleBatchSize -= 0.05;
+        console.log('Scale blocksize down');
+      }
+    }
+
+    if (ratio < lowThreshold) {
+      if (this.scaleBatchSize <= 0.95) {
+        this.scaleBatchSize += 0.05;
+        console.log('Scale blocksize up');
+      }
+    }
+    //I should maybe consider not doing this based on interval
+
+    console.log(memoryUsage);
+    console.log(Math.round(this.scaleBatchSize * this.nodeConfig.batchSize));
+    console.log(ratio);
+  }
+
   @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
@@ -273,13 +323,19 @@ export class FetchService implements OnApplicationShutdown {
     await this.fetchMeta(initBlockHeight);
 
     let startBlockHeight: number;
+    let scaledBatchSize: number;
 
     while (!this.isShutdown) {
       startBlockHeight = this.latestBufferedHeight
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
+
+      scaledBatchSize = Math.round(
+        this.scaleBatchSize * this.nodeConfig.batchSize,
+      );
+
       if (
-        this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
+        this.blockNumberBuffer.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
       ) {
         await delay(1);
@@ -291,7 +347,7 @@ export class FetchService implements OnApplicationShutdown {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
             queryEndBlock,
-            this.nodeConfig.batchSize,
+            scaledBatchSize,
             this.dictionaryQueryEntries,
           );
           //TODO
@@ -334,7 +390,7 @@ export class FetchService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       const takeCount = Math.min(
         this.blockBuffer.freeSize,
-        this.nodeConfig.batchSize,
+        Math.round(this.scaleBatchSize * this.nodeConfig.batchSize),
       );
 
       if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
@@ -382,7 +438,10 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private nextEndBlockHeight(startBlockHeight: number): number {
-    let endBlockHeight = startBlockHeight + this.nodeConfig.batchSize - 1;
+    let endBlockHeight =
+      startBlockHeight +
+      Math.round(this.scaleBatchSize * this.nodeConfig.batchSize) -
+      1;
     if (endBlockHeight > this.latestFinalizedHeight) {
       endBlockHeight = this.latestFinalizedHeight;
     }
