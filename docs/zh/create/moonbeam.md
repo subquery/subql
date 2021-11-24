@@ -1,12 +1,12 @@
-# Moonbeam EVM Support
+# Moonbeam EVM 支持
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+我们为Moonbeam和Moonriver的EVM提供了一个自定义数据源处理器。 这为单一的 SubQuery 项目中提供了一种简单的方法来筛选和索引Moonbeam的网络上的 EVM 和 底层活动。
 
-Supported networks:
+支持的网络：
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| 网络名称           | Websocket 终端                                       | Dictionary 终端                                                        |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
-| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
+| Moonbeam       | _即将上线_                                             | _即将上线_                                                               |
 | Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
