@@ -18,7 +18,6 @@ import {
   getFkConstraint,
   smartTags,
 } from '../utils/sync-helper';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
@@ -219,7 +218,6 @@ export class StoreService {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
   }
-
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
     assert(this.poiRepo, `model _poi does not exist`);

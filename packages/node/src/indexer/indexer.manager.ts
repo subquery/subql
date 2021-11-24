@@ -58,7 +58,7 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
-  public metaDataRepo: MetadataRepo;
+  metaDataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -143,7 +143,9 @@ export class IndexerManager {
     await this.fetchService.init();
     this.api = this.apiService.getApi();
 
-    const projectSchema = await this.ensureProject(this.nodeConfig.subqueryName);
+    const projectSchema = await this.ensureProject(
+      this.nodeConfig.subqueryName,
+    );
     await this.initDbSchema();
     await this.ensureMetadata();
 
@@ -174,8 +176,8 @@ export class IndexerManager {
 
   // Ensure that the project schema has been created, drop and recreate schema if configured to force clean
   private async ensureProject(projectName: string): Promise<string> {
-    let projectSchema = await this.getProjectSchema(projectName);
-    if (!projectSchema) {
+    let projectSchema;
+    if (!this.project.schema) {
       projectSchema = await this.createProjectSchema(projectName);
     } else {
       if (argv['force-clean']) {
@@ -300,39 +302,42 @@ export class IndexerManager {
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, projectSchema);
     await this.setMetadata('name', name);
-    await this.setMetadata( 'lastProcessedHeight', this.getStartBlockFromDataSources());
+    await this.setMetadata(
+      'lastProcessedHeight',
+      this.getStartBlockFromDataSources(),
+    );
     await this.setMetadata('chain', chain);
     await this.setMetadata('genesisHash', genesisHash);
     return projectSchema;
   }
 
-  async getProjectSchema(projectName: string): Promise<string> {
-    const result = await this.sequelize
-      .query(
-        `SELECT schema_name FROM  information_schema.schemata WHERE schema_name LIKE 'subquery_%'`,
-        {
-          type: QueryTypes.SELECT,
-        },
-      )
-      .then((obj: [{ schema_name: string }]) => obj.map((x) => x.schema_name));
-    if (result.length === 0) {
-      return undefined
-    }
-    for (const schema of result) {
-      const isSchema = await this.sequelize.query(
-        `SELECT 1
-      FROM ${schema}._metadata
-      WHERE key = 'projectName' AND value::jsonb->>0 = '${projectName}' `,
-        {
-          type: QueryTypes.SELECT,
-        },
-      );
-      if (isSchema) {
-        return schema;
-      }
-    }
-    return undefined;
-  }
+  // async getProjectSchema(projectName: string): Promise<string> {
+  //   const result = await this.sequelize
+  //     .query(
+  //       `SELECT schema_name FROM  information_schema.schemata WHERE schema_name LIKE 'subquery_%'`,
+  //       {
+  //         type: QueryTypes.SELECT,
+  //       },
+  //     )
+  //     .then((obj: [{ schema_name: string }]) => obj.map((x) => x.schema_name));
+  //   if (result.length === 0) {
+  //     return undefined
+  //   }
+  //   for (const schema of result) {
+  //     const isSchema = await this.sequelize.query(
+  //       `SELECT 1
+  //     FROM ${schema}._metadata
+  //     WHERE key = 'projectName' AND value::jsonb->>0 = '${projectName}' `,
+  //       {
+  //         type: QueryTypes.SELECT,
+  //       },
+  //     );
+  //     if (isSchema) {
+  //       return schema;
+  //     }
+  //   }
+  //   return undefined;
+  // }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
     const seqExists = await this.sequelize.query(
@@ -493,7 +498,7 @@ export class IndexerManager {
 
   async getMetadata(key: string): Promise<string | number | boolean> {
     assert(this.metaDataRepo, `model _metadata does not exist`);
-    return await this.metaDataRepo
+    return this.metaDataRepo
       .findOne({ where: { key: key } })
       .then((res) => res.value);
   }
