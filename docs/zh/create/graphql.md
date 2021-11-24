@@ -1,10 +1,10 @@
-# GraphQL Schema
+# GraphQL方案
 
-## Defining Entities
+## 定义Entities
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+`schema.graphql` 文件定义了各种GraphQL 模式。 遵循GraphQL查询语言的工作方式，模式文件基本上决定了您从 SubQuery 获取数据的格式。 为了更多地了解如何使用 GraphQL 模式语言，我们建议查看 [Schemas 和 Type](https://graphql.org/learn/schema/#type-language)。
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**重要提示：当您对模式文件做任何更改时， 请确保使用命令`yarn codegen`来重新生成你的类型目录。**
 
 ### Entities
 Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
