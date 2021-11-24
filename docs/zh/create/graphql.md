@@ -7,19 +7,19 @@
 **重要提示：当您对模式文件做任何更改时， 请确保使用命令`yarn codegen`来重新生成你的类型目录。**
 
 ### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+每个实体必须使用 `ID!` 类型定义必填字段 `id`。 它被用作主键，并且在所有相同类型的实体中是唯一的。
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+实体中非空字段由 `！`表示。 请参阅下面的示例：
 
 ```graphql
 type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+  id: ID! # id 字段总是必需的，必须像这样定义
+  name: String! # 这是必填字段
+  address: String # 这是一个可选字段
 }
 ```
 
-### Supported scalars and types
+### 支持的标量和类型
 
 We currently supporting flowing scalars types:
 - `ID`
@@ -238,7 +238,7 @@ The drawback of using JSON types is a slight impact on query efficiency when fil
 However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#为了找到电话号码中包含 '0064'的前5个用户。
 
 query{
   user(
