@@ -1,4 +1,4 @@
-# GraphQL方案
+# GraphQL模式
 
 ## 定义Entities
 
@@ -57,7 +57,7 @@ type Title @entity {
 
 **如果一个字段不是唯一的，最大的查询结果数据集大小为 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+运行代码生成时，它将自动在 `User` 模型下创建 `getByname` 。 外键字段 `title` 将创建 `getByTitleId` 方法，这两者可以通过映射函数直接访问。
 
 ```sql
 /* 为标题实体准备记录 */
@@ -186,7 +186,7 @@ type Transfer @entity {
 
 这将在实体上创建一个可以查询的虚拟字段。
 
-Account实体可以通过将sentTransfer或receivedTransfer设置为从各自的from或to字段派生其值来访问Account“from” Transfer。
+通过将Account实体的sentTransfer或receivedTransfer字段设置为从各自的from或to字段派生的值，我们从一个Account实体中访问Transfer中“from” 的Account。
 
 ```graphql
 type Account @entity {
@@ -206,40 +206,37 @@ type Transfer @entity {
 
 ## JSON 类型
 
-我们支持将数据保存为 JSON 类型，这样可以快速存储结构化数据。 We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+我们支持将数据保存为 JSON 类型，这样可以快速存储结构化数据。 我们将自动生成相应的JSON接口来查询这些数据，从而节省定义和管理实体的时间。
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+我们推荐用户在以下场景中使用 JSON 类型：
+- 在单个字段中存储结构化数据比创建多个单独的实体更易于管理。
+- 保存任意用户首选项的 键/值 数据 (其中值可以是布尔值、文本或数字，您肯定不希望为不同数据类型设置单独的列)
+- 模式多样性且经常变化
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### 定义 JSON 指令
+通过在实体中添加 `jsonField` 注解来定义属性为 JSON 类型。 这将自动为您项目中 `types/interfaces.ts` 下的所有 JSON 对象生成接口，您可以在映射函数中访问它们。
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+与实体不同，jsonField 指令对象不需要 `id` 字段。 JSON对象也可以与其他JSON对象嵌套。
 
 ````graphql
 type AddressDetail @jsonField {
   street: String!
   district: String!
 }
-
-type ContactCard @jsonField {
-  phone: String!
   address: AddressDetail # Nested JSON
 }
 
 type User @entity {
   id: ID! 
-  contact: [ContactCard] # Store a list of JSON objects
+  contact: [ContactCard] # 储存一系列JSON 对象
 }
 ````
 
-### Querying JSON fields
+### 查询 JSON 字段
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+使用JSON类型的缺点是过滤时对查询效率有轻微影响，因为每次执行文本搜索时，都会在整个实体上进行搜索。
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+然而，在我们的查询服务中，这种影响仍然可以接受。 这个例子展示了如何在GraphQL查询JSON字段中使用 `contains` 操作符来找到拥有包含 '0064 ' 的电话号码的前5个用户。
 
 ```graphql
 #为了找到电话号码中包含 '0064'的前5个用户。
