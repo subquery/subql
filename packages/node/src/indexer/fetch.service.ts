@@ -27,11 +27,10 @@ import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { AutoQueue, BlockedQueue } from './BlockedQueue';
+import { AutoQueue } from './BlockedQueue';
 import {
   Dictionary,
   DictionaryService,
@@ -50,13 +49,14 @@ const MINIMUM_BATCH_SIZE = 5;
 
 const { argv } = getYargsOption();
 
-const fetchBlocksBatches = argv.profiler
-  ? profilerWrap(
-      SubstrateUtil.fetchBlocksBatches,
-      'SubstrateUtil',
-      'fetchBlocksBatches',
-    )
-  : SubstrateUtil.fetchBlocksBatches;
+const fetchBlocksBatches: typeof SubstrateUtil.fetchBlocksBatches =
+  argv.profiler
+    ? profilerWrap(
+        SubstrateUtil.fetchBlocksBatches,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
+      )
+    : SubstrateUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
   filter: SubqlEventFilter,
@@ -117,9 +117,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
-  private blockBuffer: BlockedQueue<BlockContent>;
-  private blockBuffer2: AutoQueue<any>;
-  private blockNumberBuffer: BlockedQueue<number>;
+  private blockBuffer: AutoQueue<void>;
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
@@ -134,14 +132,8 @@ export class FetchService implements OnApplicationShutdown {
     private dsProcessorService: DsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.blockBuffer = new BlockedQueue<BlockContent>(
-      this.nodeConfig.batchSize * 3,
-    );
-    this.blockNumberBuffer = new BlockedQueue<number>(
-      this.nodeConfig.batchSize * 3,
-    );
     this.batchSizeScale = 1;
-    this.blockBuffer2 = new AutoQueue();
+    this.blockBuffer = new AutoQueue(this.nodeConfig.batchSize * 3);
   }
 
   onApplicationShutdown(): void {
@@ -225,34 +217,6 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  // register(next: (value: BlockContent) => Promise<void>): () => void {
-  //   let stopper = false;
-  //   void (async () => {
-  //     while (!stopper && !this.isShutdown) {
-  //       const block = await this.blockBuffer.take();
-  //       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-  //         value: this.blockBuffer.size,
-  //       });
-  //       let success = false;
-  //       while (!success) {
-  //         try {
-  //           await next(block);
-  //           success = true;
-  //         } catch (e) {
-  //           logger.error(
-  //             e,
-  //             `failed to index block at height ${block.block.block.header.number.toString()} ${
-  //               e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
-  //             }`,
-  //           );
-  //           process.exit(1);
-  //         }
-  //       }
-  //     }
-  //   })();
-  //   return () => (stopper = true);
-  // }
-
   async init(): Promise<void> {
     this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
     this.useDictionary =
@@ -326,6 +290,11 @@ export class FetchService implements OnApplicationShutdown {
     this.latestProcessedHeight = height;
   }
 
+  private getScaledBatchSize = () => Math.max(
+    Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+    MINIMUM_BATCH_SIZE,
+  );
+
   async startLoop(
     initBlockHeight: number,
     processor: (value: BlockContent) => Promise<void> | void,
@@ -333,166 +302,113 @@ export class FetchService implements OnApplicationShutdown {
     if (isUndefined(this.latestProcessedHeight)) {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
-    // await Promise.all([
-    //   this.fillNextBlockBuffer(initBlockHeight),
-    //   this.fillBlockBuffer(),
-    // ]);
 
     await this.fetchMeta(initBlockHeight);
 
-    while (!this.isShutdown) {
-      const startBlockHeight = this.latestBufferedHeight
-        ? this.latestBufferedHeight + 1
-        : initBlockHeight;
-      const endHeight = this.nextEndBlockHeight(startBlockHeight);
-      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
-      this.setLatestBufferedHeight(endHeight);
+    let isFetchingBlocks = false;
 
-      const takeCount = this.nodeConfig.batchSize;
+    // Setup initial blocks
+    await this.queueBlocks(initBlockHeight, processor, this.getScaledBatchSize());
 
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+    // Monitor queue size to replenish
+    this.blockBuffer.on('size', async (size) => {
+      if (this.isShutdown) return;
+      if (isFetchingBlocks) return;
 
-      const metadataChanged = await this.fetchMeta(
-        bufferBlocks[bufferBlocks.length - 1],
-      );
+      const scaledBatchSize = this.getScaledBatchSize();
+      if (this.blockBuffer.freeSpace < scaledBatchSize) return;
 
-      const blocks = await fetchBlocksBatches(
-        this.api,
-        bufferBlocks,
-        metadataChanged ? undefined : this.parentSpecVersion,
-      );
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
+      isFetchingBlocks = true;
 
-      await Promise.all(
-        this.blockBuffer2.putMany(
-          blocks.map((block) => async () => {
-            try {
-              await processor(block);
-            } catch (e) {
-              logger.error(
-                e,
-                `failed to index block at height ${block.block.block.header.number.toString()} ${
-                  e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
-                }`,
-              );
-              process.exit(1);
-            }
-          }),
-        ),
-      );
+      await this.queueBlocks(initBlockHeight, processor, scaledBatchSize);
+
+      isFetchingBlocks = false;
 
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
+        value: size,
       });
-    }
+    });
   }
 
-  async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
-    await this.fetchMeta(initBlockHeight);
+  private async queueBlocks(
+    initBlockHeight: number,
+    processor: (value: BlockContent) => Promise<void> | void,
+    batchSize: number,
+  ): Promise<void> {
+    const bufferBlocks = await this.nextBlocks(initBlockHeight, batchSize);
 
-    let startBlockHeight: number;
-    let scaledBatchSize: number;
 
-    while (!this.isShutdown) {
-      startBlockHeight = this.latestBufferedHeight
-        ? this.latestBufferedHeight + 1
-        : initBlockHeight;
+    const metadataChanged = await this.fetchMeta(
+      bufferBlocks[bufferBlocks.length - 1],
+    );
 
-      scaledBatchSize = Math.max(
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        MINIMUM_BATCH_SIZE,
-      );
+    const blocks = await fetchBlocksBatches(
+      this.api,
+      bufferBlocks,
+      metadataChanged ? undefined : this.parentSpecVersion,
+    );
+    logger.info(
+      `fetch block [${bufferBlocks[0]},${
+        bufferBlocks[bufferBlocks.length - 1]
+      }], total ${bufferBlocks.length} blocks`,
+    );
 
-      if (
-        this.blockNumberBuffer.freeSize < scaledBatchSize ||
-        startBlockHeight > this.latestFinalizedHeight
-      ) {
-        await delay(1);
-        continue;
-      }
-      if (this.useDictionary) {
-        const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
+    this.blockBuffer.putMany(
+      blocks.map((block) => async () => {
         try {
-          const dictionary = await this.dictionaryService.getDictionary(
-            startBlockHeight,
-            queryEndBlock,
-            scaledBatchSize,
-            this.dictionaryQueryEntries,
-          );
-          //TODO
-          // const specVersionMap = dictionary.specVersions;
-          if (
-            dictionary &&
-            this.dictionaryValidation(dictionary, startBlockHeight)
-          ) {
-            const { batchBlocks } = dictionary;
-            if (batchBlocks.length === 0) {
-              this.setLatestBufferedHeight(
-                Math.min(
-                  queryEndBlock - 1,
-                  dictionary._metadata.lastProcessedHeight,
-                ),
-              );
-            } else {
-              this.blockNumberBuffer.putAll(batchBlocks);
-              this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
-            }
-            this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-              value: this.blockNumberBuffer.size,
-            });
-            continue; // skip nextBlockRange() way
-          }
-          // else use this.nextBlockRange()
+          await processor(block);
         } catch (e) {
-          logger.debug(`Fetch dictionary stopped: ${e.message}`);
-          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+          logger.error(
+            e,
+            `failed to index block at height ${block.block.block.header.number.toString()} ${
+              e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
+            }`,
+          );
+          process.exit(1);
+        }
+      }),
+    );
+  }
+
+  /* Gets the next block range to query, this can be nonsequential with a dictionary */
+  private async nextBlocks(initBlockHeight: number, batchSize: number): Promise<number[]> {
+    const startBlockHeight = this.latestBufferedHeight
+      ? this.latestBufferedHeight + 1
+      : initBlockHeight;
+
+    if (this.useDictionary) {
+      const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
+      const dictionary = await this.dictionaryService.getDictionary(
+        startBlockHeight,
+        queryEndBlock,
+        batchSize,
+        this.dictionaryQueryEntries,
+      );
+      //TODO
+      // const specVersionMap = dictionary.specVersions;
+      if (
+        dictionary &&
+        this.dictionaryValidation(dictionary, startBlockHeight)
+      ) {
+        const { batchBlocks } = dictionary;
+        if (batchBlocks.length === 0) {
+          this.setLatestBufferedHeight(
+            Math.min(
+              queryEndBlock - 1,
+              dictionary._metadata.lastProcessedHeight,
+            ),
+          );
+          return [];
+        } else {
+          this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
+          return batchBlocks;
         }
       }
-      // the original method: fill next batch size of blocks
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
-      this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
-      this.setLatestBufferedHeight(endHeight);
     }
-  }
 
-  async fillBlockBuffer(): Promise<void> {
-    while (!this.isShutdown) {
-      const takeCount = Math.min(
-        this.blockBuffer.freeSize,
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-      );
-
-      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-        await delay(1);
-        continue;
-      }
-
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const metadataChanged = await this.fetchMeta(
-        bufferBlocks[bufferBlocks.length - 1],
-      );
-      const blocks = await fetchBlocksBatches(
-        this.api,
-        bufferBlocks,
-        metadataChanged ? undefined : this.parentSpecVersion,
-      );
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
-      this.blockBuffer.putAll(blocks);
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
-      });
-    }
+    const endHeight = this.nextEndBlockHeight(startBlockHeight, batchSize);
+    this.setLatestBufferedHeight(endHeight);
+    return range(startBlockHeight, endHeight + 1);
   }
 
   @profiler(argv.profiler)
@@ -550,9 +466,6 @@ export class FetchService implements OnApplicationShutdown {
 
   private setLatestBufferedHeight(height: number): void {
     this.latestBufferedHeight = height;
-    this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-      value: this.blockNumberBuffer.size,
-    });
   }
 
   private getBaseHandlerKind(

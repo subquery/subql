@@ -9,7 +9,7 @@ export enum IndexerEvent {
   BlockProcessing = 'block_processing_height',
   BlockLastProcessed = 'block_processed_height',
   BlockQueueSize = 'block_queue_size',
-  BlocknumberQueueSize = 'blocknumber_queue_size',
+  // BlocknumberQueueSize = 'blocknumber_queue_size',
   NetworkMetadata = 'network_metadata',
   UsingDictionary = 'using_dictionary',
   SkipDictionary = 'skip_dictionary',

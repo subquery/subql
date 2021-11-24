@@ -1,59 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { delay } from '../utils/promise';
-
-export class BlockedQueue<T> {
-  private _queue: T[] = [];
-  private _maxSize: number;
-
-  constructor(size: number) {
-    this._maxSize = size;
-  }
-
-  get size(): number {
-    return this._queue.length;
-  }
-
-  get freeSize(): number {
-    return this._maxSize - this._queue.length;
-  }
-
-  put(item: T): void {
-    if (this._queue.length >= this._maxSize) {
-      throw new Error('BlockedQueue exceed max size');
-    }
-    this._queue.push(item);
-  }
-
-  putAll(items: T[]): void {
-    if (this._queue.length + items.length > this._maxSize) {
-      throw new Error('BlockedQueue exceed max size');
-    }
-    this._queue.push(...items);
-  }
-
-  async take(): Promise<T> {
-    while (!this.size) {
-      await delay(0.1);
-    }
-    return this._queue.shift();
-  }
-  async takeAll(max?: number): Promise<T[]> {
-    while (!this.size) {
-      await delay(0.1);
-    }
-    let result;
-    if (max) {
-      result = this._queue.slice(0, max);
-      this._queue = this._queue.slice(max);
-    } else {
-      result = this._queue;
-      this._queue = [];
-    }
-    return result;
-  }
-}
+import { EventEmitter2 } from '@nestjs/event-emitter';
 
 export class Queue<T> {
   private items: T[] = [];
@@ -91,12 +39,40 @@ type Action<T> = {
 export class AutoQueue<T> {
   private pendingPromise = false;
   private queue = new Queue<Action<T>>();
+  private _capacity: number;
 
-  async put(item: () => T): Promise<T> {
+  private eventEmitter = new EventEmitter2();
+
+  constructor(capacity: number) {
+    this._capacity = capacity;
+  }
+
+  get size(): number {
+    return this.queue.size;
+  }
+
+  get capacity(): number {
+    return this._capacity;
+  }
+
+  get freeSpace(): number {
+    return this._capacity - this.queue.size;
+  }
+
+  /*
+   * We don't want this function to be async
+   * If it is async it will return a promise that throws rather than throwing the function
+   */
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  put(item: () => T | Promise<T>): Promise<T> {
     return this.putMany([item])[0];
   }
 
-  putMany(tasks: Array<() => T>): Promise<T>[] {
+  putMany(tasks: Array<() => T | Promise<T>>): Promise<T>[] {
+    if (this.queue.size + tasks.length >= this.capacity) {
+      throw new Error('Queue exceeds max size');
+    }
+
     return tasks.map((task, index) => {
       return new Promise((resolve, reject) => {
         this.queue.put({ task, resolve, reject });
@@ -107,12 +83,14 @@ export class AutoQueue<T> {
     });
   }
 
-  async take(): Promise<boolean> {
-    if (this.pendingPromise) return false;
+  private async take(): Promise<void> {
+    if (this.pendingPromise) return;
 
     const action = this.queue.take();
 
-    if (!action) return false;
+    if (!action) return;
+
+    this.eventEmitter.emit('size', this.queue.size);
 
     try {
       this.pendingPromise = true;
@@ -125,7 +103,14 @@ export class AutoQueue<T> {
       this.pendingPromise = false;
       void this.take();
     }
+  }
 
-    return true;
+  on(
+    evt: 'size',
+    callback: (size: number) => void | Promise<void>,
+  ): () => void {
+    this.eventEmitter.on(evt, callback as (size: number) => void);
+
+    return () => this.eventEmitter.off(evt, callback as (size: number) => void);
   }
 }
