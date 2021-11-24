@@ -69,7 +69,7 @@ export class IndexerManager {
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
+    // @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -141,13 +141,16 @@ export class IndexerManager {
     await this.fetchService.init();
     this.api = this.apiService.getApi();
     await this.initDbSchema();
-    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
-    await this.ensureMetadata(this.subqueryState.dbSchema);
+    const schemaName = await this.getProjectSchema(
+      this.nodeConfig.subqueryName,
+    );
+    await this.ensureMetadata();
+    await this.ensureProject(this.nodeConfig.subqueryName);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
-        this.poiService.init(this.subqueryState.dbSchema),
-        this.mmrService.init(this.subqueryState.dbSchema),
+        this.poiService.init(schemaName),
+        this.mmrService.init(schemaName),
       ]);
     }
 
@@ -183,8 +186,7 @@ export class IndexerManager {
     }
   }
 
-  private async ensureMetadata(schema: string) {
-    const metadataRepo = MetadataFactory(this.sequelize, schema);
+  private async ensureMetadata() {
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
     this.eventEmitter.emit(
@@ -201,7 +203,7 @@ export class IndexerManager {
       'genesisHash',
     ] as const;
 
-    const entries = await metadataRepo.findAll({
+    const entries = await this.storeService.metaDataRepo.findAll({
       where: {
         key: keys,
       },
@@ -239,7 +241,7 @@ export class IndexerManager {
     }
   }
 
-  private async createProjectSchema(name: string): Promise<SubqueryModel> {
+  private async createProjectSchema(name: string): Promise<string> {
     let projectSchema: string;
     const { chain, genesisHash } = this.apiService.networkMeta;
     if (this.nodeConfig.localMode) {
@@ -253,29 +255,26 @@ export class IndexerManager {
         await this.sequelize.createSchema(projectSchema, undefined);
       }
     }
-    return this.subqueryRepo.create({
-      name,
-      dbSchema: projectSchema,
-      hash: '0x',
-      nextBlockHeight: this.getStartBlockFromDataSources(),
-      network: chain,
-      networkGenesis: genesisHash,
-    });
+    await this.storeService.setMetadata('name', name);
+    await this.storeService.setMetadata(
+      'lastProcessedHeight',
+      this.getStartBlockFromDataSources(),
+    );
+    await this.storeService.setMetadata('chain', chain);
+    await this.storeService.setMetadata('genesisHash', genesisHash);
+    return projectSchema;
   }
 
-  private async ensureProject(name: string): Promise<SubqueryModel> {
-    console.log(this.storeService.metaDataRepo);
-    let project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
+  private async ensureProject(name: string) {
+    let schemaName = await this.getProjectSchema(this.nodeConfig.subqueryName);
     const { chain, genesisHash } = this.apiService.networkMeta;
-    if (!project) {
-      project = await this.createProjectSchema(name);
+    if (!schemaName) {
+      schemaName = await this.createProjectSchema(name);
     } else {
       if (argv['force-clean']) {
         try {
           // drop existing project schema
-          this.sequelize.dropSchema(project.dbSchema, {
+          this.sequelize.dropSchema(schemaName, {
             logging: false,
             benchmark: false,
           });
@@ -284,24 +283,31 @@ export class IndexerManager {
         } catch (err) {
           logger.error(err, 'failed to force clean schema and tables');
         }
-        project = await this.createProjectSchema(name);
+        schemaName = await this.createProjectSchema(name);
       }
-      if (!project.networkGenesis || !project.network) {
-        project.network = chain;
-        project.networkGenesis = genesisHash;
-        await project.save();
-      } else if (project.networkGenesis !== genesisHash) {
+      this.storeService.setMetadata('genesisHash', genesisHash);
+      this.storeService.setMetadata('genesisHash', genesisHash);
+      if (
+        !(await this.storeService.getMetadata('genesisHash')) ||
+        !(await this.storeService.getMetadata('chain'))
+      ) {
+        this.storeService.setMetadata('genesisHash', genesisHash);
+        this.storeService.setMetadata('chain', chain);
+      } else if (
+        (await this.storeService.getMetadata('genesisHash')) !== genesisHash
+      ) {
         logger.error(
-          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
+          `Not same network: genesisHash different. expected="${await this.storeService.getMetadata(
+            'genesisHash',
+          )}"" actual="${genesisHash}"`,
         );
         process.exit(1);
       }
     }
-    return project;
   }
 
   private async initDbSchema(): Promise<void> {
-    const schema = this.subqueryState.dbSchema;
+    const schema = await this.getProjectSchema(this.nodeConfig.subqueryName);
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
     );
@@ -309,7 +315,33 @@ export class IndexerManager {
     await this.storeService.init(modelsRelations, schema);
   }
 
-  //convert from name to dbschema name
+  async getProjectSchema(projectName: string): Promise<string> {
+    const result = await this.sequelize
+      .query(
+        `SELECT schema_name FROM  information_schema.schemata WHERE schema_name LIKE 'subquery_%'`,
+        {
+          type: QueryTypes.SELECT,
+        },
+      )
+      .then((obj: [{ schema_name: string }]) => obj.map((x) => x.schema_name));
+    if (result.length === 0) {
+      throw new Error(`unknown project name "${projectName}"`);
+    }
+    for (const schema of result) {
+      const isSchema = await this.sequelize.query(
+        `SELECT 1
+      FROM ${schema}._metadata
+      WHERE key = 'projectName' AND value::jsonb->>0 = '${projectName}' `,
+        {
+          type: QueryTypes.SELECT,
+        },
+      );
+      if (isSchema) {
+        return schema;
+      }
+    }
+    return undefined;
+  }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
     const seqExists = await this.sequelize.query(

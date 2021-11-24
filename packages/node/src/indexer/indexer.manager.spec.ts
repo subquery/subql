@@ -150,7 +150,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   );
   const poiService = new PoiService(nodeConfig, project, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig, poiService);
-  const subqueryRepo = SubqueryFactory(sequilize);
   const mmrService = new MmrService(nodeConfig, project, sequilize);
   const sandboxService = new SandboxService(
     apiService,
@@ -170,7 +169,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     nodeConfig,
     sandboxService,
     dsPluginService,
-    subqueryRepo,
     eventEmitter,
   );
 }

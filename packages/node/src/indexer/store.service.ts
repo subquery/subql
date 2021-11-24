@@ -40,7 +40,7 @@ export class StoreService {
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
   private poiRepo: PoiRepo;
-  metaDataRepo: MetadataRepo;
+  public metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
 
   constructor(
@@ -228,6 +228,13 @@ export class StoreService {
   ): Promise<void> {
     assert(this.metaDataRepo, `model _metadata does not exist`);
     await this.metaDataRepo.upsert({ key, value });
+  }
+
+  async getMetadata(key: string): Promise<string | number | boolean> {
+    assert(this.metaDataRepo, `model _metadata does not exist`);
+    return await this.metaDataRepo
+      .findOne({ where: { key: key } })
+      .then((res) => res.value);
   }
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
