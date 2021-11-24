@@ -47,7 +47,8 @@ export class HealthService {
     }
 
     if (healthy !== this.indexerHealthy) {
-      await this.storeService.setMetadata('indexerHealthy', healthy);
+      // XXX: Just for now!
+      // await this.storeService.setMetadata('indexerHealthy', healthy);
       this.indexerHealthy = healthy;
     }
   }

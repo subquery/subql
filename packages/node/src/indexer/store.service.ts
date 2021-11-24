@@ -40,7 +40,6 @@ export class StoreService {
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
   private poiRepo: PoiRepo;
-  public metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
 
   constructor(
@@ -206,7 +205,6 @@ export class StoreService {
     if (this.config.proofOfIndex) {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
-    this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
     await this.sequelize.sync();
     for (const query of extraQueries) {
@@ -222,20 +220,6 @@ export class StoreService {
     }
   }
 
-  async setMetadata(
-    key: string,
-    value: string | number | boolean,
-  ): Promise<void> {
-    assert(this.metaDataRepo, `model _metadata does not exist`);
-    await this.metaDataRepo.upsert({ key, value });
-  }
-
-  async getMetadata(key: string): Promise<string | number | boolean> {
-    assert(this.metaDataRepo, `model _metadata does not exist`);
-    return await this.metaDataRepo
-      .findOne({ where: { key: key } })
-      .then((res) => res.value);
-  }
 
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
     assert(this.poiRepo, `model _poi does not exist`);

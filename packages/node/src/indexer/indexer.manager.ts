@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -34,7 +35,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
@@ -57,6 +58,7 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
+  public metaDataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -140,17 +142,15 @@ export class IndexerManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
+
+    const projectSchema = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
-    const schemaName = await this.getProjectSchema(
-      this.nodeConfig.subqueryName,
-    );
     await this.ensureMetadata();
-    await this.ensureProject(this.nodeConfig.subqueryName);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
-        this.poiService.init(schemaName),
-        this.mmrService.init(schemaName),
+        this.poiService.init(projectSchema),
+        this.mmrService.init(projectSchema),
       ]);
     }
 
@@ -172,18 +172,37 @@ export class IndexerManager {
     }
   }
 
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
-      );
-      process.exit(1);
+  // Ensure that the project schema has been created, drop and recreate schema if configured to force clean
+  private async ensureProject(projectName: string): Promise<string> {
+    let projectSchema = await this.getProjectSchema(projectName);
+    if (!projectSchema) {
+      projectSchema = await this.createProjectSchema(projectName);
     } else {
-      return Math.min(...startBlocksList);
+      if (argv['force-clean']) {
+        try {
+          // drop existing project schema
+          this.sequelize.dropSchema(projectSchema, {
+            logging: false,
+            benchmark: false,
+          });
+
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        projectSchema = await this.createProjectSchema(projectName);
+        this.metaDataRepo = MetadataFactory(this.sequelize, projectSchema);
+      }
     }
+    return projectSchema;
+  }
+
+  private async initDbSchema(): Promise<void> {
+    const graphqlSchema = buildSchema(
+      path.join(this.project.path, this.project.schema), // XXX: is this the right project schema?
+    );
+    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
+    await this.storeService.init(modelsRelations, this.project.schema);
   }
 
   private async ensureMetadata() {
@@ -203,7 +222,7 @@ export class IndexerManager {
       'genesisHash',
     ] as const;
 
-    const entries = await this.storeService.metaDataRepo.findAll({
+    const entries = await this.metaDataRepo.findAll({
       where: {
         key: keys,
       },
@@ -214,33 +233,57 @@ export class IndexerManager {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    //blockOffset and genesisHash should only been create once, never update
-    //if blockOffset is changed, will require re-index and re-sync poi.
+    if ((await this.getMetadata('genesisHash')) !== genesisHash) {
+      logger.error(
+        `Not same network: genesisHash different. expected="${await this.getMetadata(
+          'genesisHash',
+        )}"" actual="${genesisHash}"`,
+      );
+      process.exit(1);
+    }
+
+    //blockOffset, name and genesisHash should only been created once, never updated
+    //if blockOffset is changed, it will required to re-index and re-sync poi.
     if (!keyValue.name) {
-      await this.storeService.setMetadata('name', this.nodeConfig.subqueryName);
+      await this.setMetadata('name', this.nodeConfig.subqueryName);
     }
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await this.storeService.setMetadata('blockOffset', offsetValue);
+      await this.setMetadata('blockOffset', offsetValue);
     }
 
     if (!keyValue.genesisHash) {
-      await this.storeService.setMetadata('genesisHash', genesisHash);
+      await this.setMetadata('genesisHash', genesisHash);
     }
 
     if (keyValue.chain !== chain) {
-      await this.storeService.setMetadata('chain', chain);
+      await this.setMetadata('chain', chain);
     }
 
     if (keyValue.specName !== specName) {
-      await this.storeService.setMetadata('specName', specName);
+      await this.setMetadata('specName', specName);
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
-      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+      await this.setMetadata('indexerNodeVersion', packageVersion);
     }
   }
 
+  private getStartBlockFromDataSources() {
+    const startBlocksList = this.getDataSourcesForSpecName().map(
+      (item) => item.startBlock ?? 1,
+    );
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
+      process.exit(1);
+    } else {
+      return Math.min(...startBlocksList);
+    }
+  }
+
+  // Create the schema for the project and initialize the metadata
   private async createProjectSchema(name: string): Promise<string> {
     let projectSchema: string;
     const { chain, genesisHash } = this.apiService.networkMeta;
@@ -255,64 +298,12 @@ export class IndexerManager {
         await this.sequelize.createSchema(projectSchema, undefined);
       }
     }
-    await this.storeService.setMetadata('name', name);
-    await this.storeService.setMetadata(
-      'lastProcessedHeight',
-      this.getStartBlockFromDataSources(),
-    );
-    await this.storeService.setMetadata('chain', chain);
-    await this.storeService.setMetadata('genesisHash', genesisHash);
+    this.metaDataRepo = MetadataFactory(this.sequelize, projectSchema);
+    await this.setMetadata('name', name);
+    await this.setMetadata( 'lastProcessedHeight', this.getStartBlockFromDataSources());
+    await this.setMetadata('chain', chain);
+    await this.setMetadata('genesisHash', genesisHash);
     return projectSchema;
-  }
-
-  private async ensureProject(name: string) {
-    let schemaName = await this.getProjectSchema(this.nodeConfig.subqueryName);
-    const { chain, genesisHash } = this.apiService.networkMeta;
-    if (!schemaName) {
-      schemaName = await this.createProjectSchema(name);
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema
-          this.sequelize.dropSchema(schemaName, {
-            logging: false,
-            benchmark: false,
-          });
-
-          logger.info('force cleaned schema and tables');
-        } catch (err) {
-          logger.error(err, 'failed to force clean schema and tables');
-        }
-        schemaName = await this.createProjectSchema(name);
-      }
-      this.storeService.setMetadata('genesisHash', genesisHash);
-      this.storeService.setMetadata('genesisHash', genesisHash);
-      if (
-        !(await this.storeService.getMetadata('genesisHash')) ||
-        !(await this.storeService.getMetadata('chain'))
-      ) {
-        this.storeService.setMetadata('genesisHash', genesisHash);
-        this.storeService.setMetadata('chain', chain);
-      } else if (
-        (await this.storeService.getMetadata('genesisHash')) !== genesisHash
-      ) {
-        logger.error(
-          `Not same network: genesisHash different. expected="${await this.storeService.getMetadata(
-            'genesisHash',
-          )}"" actual="${genesisHash}"`,
-        );
-        process.exit(1);
-      }
-    }
-  }
-
-  private async initDbSchema(): Promise<void> {
-    const schema = await this.getProjectSchema(this.nodeConfig.subqueryName);
-    const graphqlSchema = buildSchema(
-      path.join(this.project.path, this.project.schema),
-    );
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, schema);
   }
 
   async getProjectSchema(projectName: string): Promise<string> {
@@ -325,7 +316,7 @@ export class IndexerManager {
       )
       .then((obj: [{ schema_name: string }]) => obj.map((x) => x.schema_name));
     if (result.length === 0) {
-      throw new Error(`unknown project name "${projectName}"`);
+      return undefined
     }
     for (const schema of result) {
       const isSchema = await this.sequelize.query(
@@ -490,5 +481,20 @@ export class IndexerManager {
         await processData(processor, handler, filteredEvents);
       }
     }
+  }
+
+  async setMetadata(
+    key: string,
+    value: string | number | boolean,
+  ): Promise<void> {
+    assert(this.metaDataRepo, `model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value });
+  }
+
+  async getMetadata(key: string): Promise<string | number | boolean> {
+    assert(this.metaDataRepo, `model _metadata does not exist`);
+    return await this.metaDataRepo
+      .findOne({ where: { key: key } })
+      .then((res) => res.value);
   }
 }

@@ -56,15 +56,16 @@ export class MetaService {
   @Interval(UPDATE_HEIGHT_INTERVAL)
   async checkHeight() {
     await Promise.all([
-      this.storeService.setMetadata(
-        'lastProcessedHeight',
-        this.lastProcessedHeight,
-      ),
-      this.storeService.setMetadata(
-        'lastProcessedTimestamp',
-        this.lastProcessedTimestamp,
-      ),
-      this.storeService.setMetadata('targetHeight', this.targetHeight),
+      // XXX: just for now!
+      // this.storeService.setMetadata(
+      //   'lastProcessedHeight',
+      //   this.lastProcessedHeight,
+      // ),
+      // this.storeService.setMetadata(
+      //   'lastProcessedTimestamp',
+      //   this.lastProcessedTimestamp,
+      // ),
+      // this.storeService.setMetadata('targetHeight', this.targetHeight),
     ]);
   }
 
