@@ -21,7 +21,7 @@ type Example @entity {
 
 ### 支持的标量和类型
 
-We currently supporting flowing scalars types:
+我们目前支持以下标量类型：
 - `ID`
 - `Int`
 - `String`
@@ -29,23 +29,23 @@ We currently supporting flowing scalars types:
 - `Float`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
-- `Enum` types are a special kind of scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `<EntityName>` 对于嵌套关系实体，您可以使用定义实体的名称作为字段之一。 请在 [Entity Relationships](#entity-relationships) 中查看。
+- `JSON` 也可以存储结构化数据，请查看 [JSON 类型](#json-type)
+- `Enum` 类型是一种特殊类型的标量，仅限特定一组允许的值。 请查看 [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
-## Indexing by non-primary-key field
+## 按非主键字段索引
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+为了提高查询性能，只需在非主键字段实现 `@index` 注解，便可索引实体字段。
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+但是，我们不允许用户在任何 `JSON` 对象上添加 [@index](#json-type) 注解。 默认情况下，索引会自动添加到数据库的外键和JSON字段中，但这只是为了提高查询服务的性能。
 
-Here is an example.
+参见下面的示例。
 
 ```graphql
 type User @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  name: String! @index(unique：true) # unique可以设置为 true 或 false
+  title: Title! #索引被自动添加到外键字段
 }
 
 type Title @entity {
@@ -53,19 +53,19 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+假定我们知道这个用户的名字，但我们不知道确切的 id 值。 为了不提取所有用户然后通过名称来查找，我们可以在名称字段后面添加 `@index`。 这样查询速度更快，我们还可以传入 `unique：ture` 来确保唯一性。
 
-**If a field is not unique, the maximum result set size is 100**
+**如果一个字段不是唯一的，最大的查询结果数据集大小为 100**
 
 When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
 
 ```sql
-/* Prepare a record for title entity */
-INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
+/* 为标题实体准备记录 */
+INSERT INTO title (id, name) VALUES('id_1', 'Captain')
 ```
 
 ```typescript
-// Handler in mapping function
+// 映射函数中的handler
 import {User} from "../types/models/User"
 import {Title} from "../types/models/Title"
 
@@ -78,19 +78,19 @@ const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Cap
 
 ## Entity Relationships
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+一个实体往往与其他实体有嵌套的关系。 默认情况下，将字段值设置为另一个实体名称将定义这两个实体之间的一对一关系。
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+不同的实体关系（一对一、 一对多、 多对多）可以使用下面的例子进行配置。
 
-### One-to-One Relationships
+### 一对一关系
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+当只有一个实体被映射到另一个实体时，实体关系被默认为一对一。
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+例如：护照只能属于一人，一个人只能持有一本护照（参考下面的例子）：
 
 ```graphql
-type Person @entity {
-  id: ID!
+type Person @entity { 
+   id: ID!
 }
 
 type Passport @entity {
@@ -99,11 +99,11 @@ type Passport @entity {
 }
 ```
 
-or
+或者
 
 ```graphql
-type Person @entity {
-  id: ID!
+type Person @entity { 
+   id: ID!
   passport: Passport!
 }
 
@@ -113,14 +113,16 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### 一对多关系
 
-You can use square brackets to indicate that a field type includes multiple entities.
+您可以使用方括号来表示某个字段类型包含多个实体。
 
-Example: A person can have multiple accounts.
+例如：一个人可以拥有多个帐户。
 
 ```graphql
 type Person @entity {
+  id: ID!
+  type Person @entity {
   id: ID!
   accounts: [Account] 
 }
@@ -129,12 +131,14 @@ type Account @entity {
   id: ID!
   publicAddress: String!
 }
+  publicAddress: String!
+}
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### 多对多关系
+通过建立一个映射实体，将另外两个实体连接起来，可以实现多对多的关系。
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+示例: 每个人是多个组(PersonGroup) 的一部分，而组中有多个不同的人(PersonGroup)。
 
 ```graphql
 type Person @entity {
@@ -156,11 +160,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+此外，还可以在中间实体的多个字段中创建同一实体的连接。
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+例如，一个帐户可以有多个转账，每个转账都有一个源帐户和目标帐户。
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+下面的例子通过 Transfer 表在两个 Accounts (from 和 to) 之间建立双向关系。
 
 ```graphql
 type Account @entity {
@@ -176,13 +180,13 @@ type Transfer @entity {
 }
 ```
 
-### Reverse Lookups
+### 反向查询
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+要在一个实体上反向查找它的关系，请将 `@derivedFrom` 添加到字段并指向另一个实体的反向查找字段。
 
-This creates a virtual field on the entity that can be queried.
+这将在实体上创建一个可以查询的虚拟字段。
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+Account实体可以通过将sentTransfer或receivedTransfer设置为从各自的from或to字段派生其值来访问Account“from” Transfer。
 
 ```graphql
 type Account @entity {
@@ -200,9 +204,9 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## JSON 类型
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+我们支持将数据保存为 JSON 类型，这样可以快速存储结构化数据。 We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
 
 We recommend users use the JSON type in the following scenarios:
 - When storing structured data in a single field is more manageable than creating multiple separate entities.
