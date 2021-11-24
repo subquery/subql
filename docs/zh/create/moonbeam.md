@@ -1,24 +1,24 @@
-# Moonbeam EVM 支持
+# Moonbeam EVM Support
 
-我们为Moonbeam和Moonriver的EVM提供了一个自定义数据源处理器。 这提供了一种简单的方法来筛选和索引月球网络上的 EVM 和 Substrate 活动在一个单一的 SubQuery 项目中。
+We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
 
-支持的网络：
+Supported networks:
 
-| 网络名称           | Websocket 端点                                       | Dictionary 端点                                                        |
+| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
 | Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**您也可以通过事件和调用处理程序来参考 [基本Moonrier EVM 示例项目](https://github.com/subquery/tutorials-moonriver-evm-starter)** 这个项目也存在于 [ SubQuery Explorer](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project) 中。
+**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
 
-## 入门指南
+## Getting started
 
-1. 添加自定义数据源作为依赖项 `yarn 添加 @subql/contract-processors`
-2. 添加自定义数据源，如下文所述。
-3. 将自定义数据源的处理程序添加到您的代码
+1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
+2. Add a custom data source as described below
+3. Add handlers for the custom data source to your code
 
-## Datasource 说明
+## Data Source Spec
 
 | Field             | Type                                                           | Required | Description                                |
 | ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
@@ -26,71 +26,71 @@
 | processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
 | assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
 
-### 处理器选项：
+### Processor Options
 
-| Field   | Type             | Required | Description                          |
-| ------- | ---------------- | -------- | ------------------------------------ |
-| abi     | String           | No       | 处理器使用的 ABI 解析参数。 MUST 是 `asset的一个密钥` |
-| address | String or `null` | No       | 事件发生或呼叫的合同地址。 `null` 将捕获合同创建调用       |
+| Field   | Type             | Required | Description                                                                                                |
+| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
+| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
+| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
 
 ## MoonbeamCall
 
-使用 [Substrate/CallHandler](../create/mapping/#call-handler) 的同样方式，但不同的处理程序参数和较小的过滤更改。
+Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler) except with a different handler argument and minor filtering changes.
 
-| Field  | Type                         | Required | Description  |
-| ------ | ---------------------------- | -------- | ------------ |
-| kind   | 'substrate/MoonbeamCall'     | Yes      | 指定这是通话类型处理程序 |
-| filter | [Call Filter](#call-filters) | No       | 筛选要执行的数据源    |
+| Field  | Type                         | Required | Description                                 |
+| ------ | ---------------------------- | -------- | ------------------------------------------- |
+| kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
+| filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
 
-### 通话过滤器
+### Call Filters
 
-| Field    | Type   | Example(s)                                    | Description                                                                                       |
-| -------- | ------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| function | String | 0x095ea7b3, approve(address to,uint256 value) | [函数签名](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) 字符串或函数 `视野` 过滤被调用的函数。 |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | 发送交易的 Ethereum 地址                                                                                 |
+| Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
+| -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
+| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
 
-### 处理程序
+### Handlers
 
-与正常处理程序不同的是，你不会获得一个 `SubstrateExtrinsic` 作为参数， 相反，您将得到一个 `月球通话` 基于Ethers [交易响应](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) 类型。
+Unlike a normal handler you will not get a `SubstrateExtrinsic` as the parameter, instead you will get a `MoonbeamCall` which is based on Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type.
 
-从 `交易响应` 类型的更改：
+Changes from the `TransactionResponse` type:
 
-- 它没有 `等待` 和 `确认` 属性
-- 一个 `成功` 属性被添加到知道交易是否成功
-- `args` 是在提供 `abi` 字段且参数可以成功分析时被添加
+- It doesn't have `wait` and `confirmations` properties
+- A `success` property is added to know if the transaction was a success
+- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
-## Moonbeam 事件
+## MoonbeamEvent
 
-使用 [Substrate/CallHandler](../create/mapping/#event-handler) 的同样方式，但不同的处理程序参数和较小的过滤更改。
+Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
 
-| Field  | Type                           | Required | Description  |
-| ------ | ------------------------------ | -------- | ------------ |
-| kind   | 'substrate/MoonbeamEvent'      | Yes      | 指定这是通话类型处理程序 |
-| filter | [Event Filter](#event-filters) | No       | 筛选要执行的数据源    |
+| Field  | Type                           | Required | Description                                  |
+| ------ | ------------------------------ | -------- | -------------------------------------------- |
+| kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
+| filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
 
-### 事件过滤
+### Event Filters
 
-| Field  | Type         | Example(s)                                                   | Description                                                                               |
-| ------ | ------------ | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
-| topics | String array | Transfer(address indexed from,address indexed to,u256 value) | 主题筛选器遵循Etherum JSON-PRC 日志过滤器，在这里可以找到更多文档 [](https://docs.ethers.io/v5/concepts/events/)。 |
+| Field  | Type         | Example(s)                                                      | Description                                                                                                                                      |
+| ------ | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
 
-<b>关于主题的说明：</b>
-基本日志过滤器有一些改进：
+<b>Note on topics:</b>
+There are a couple of improvements from basic log filters:
 
-- 主题不需要为 0 padded
-- [事件片段](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) 字符串可以提供并自动转换为他们的 id
+- Topics don't need to be 0 padded
+- [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
 
-### 处理程序
+### Handlers
 
-与正常处理程序不同的是，你不会获得一个 `SubstrateExtrinsic` 作为参数， 相反，您将得到一个 `月球通话` 基于Ethers [交易响应](https://docs.ethers.io/v5/api/providers/types/#providers-Log) 类型。
+Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
 
-来自 `日志` 类型的更改：
+Changes from the `Log` type:
 
-- `args` 是在提供 `abi` 字段且参数可以成功分析时被添加
+- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
-## 数据源示例
+## Data Source Example
 
-这是从 `project.yaml` 清单文件中提要。
+This is an extract from the `project.yaml` manifest file.
 
 ```yaml
 dataSources:
@@ -113,7 +113,7 @@ dataSources:
           kind: substrate/MoonbeamEvent
           filter:
             topics:
-              - Transfer(address indexed from,address indexed to,u256 value)
+              - Transfer(address indexed from,address indexed to,uint256 value)
         - handler: handleMoonriverCall
           kind: substrate/MoonbeamCall
           filter:
@@ -125,8 +125,8 @@ dataSources:
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
 
-## 已知的限制
+## Known Limitations
 
-- 目前无法在处理程序中查询 EVM 状态
-- 无法通过通话处理方式获取交易收据信息
-- `区块哈希` 属性当前未定义。 `区块编号` 属性可以改为使用
+- There is currently no way to query EVM state within a handler
+- There is no way to get the transaction receipts with call handlers
+- `blockHash` properties are currently left undefined, the `blockNumber` property can be used instead
