@@ -4180,14 +4180,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-comment@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-comment@npm:1.20.4"
+"@mr-hope/vuepress-plugin-comment@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-comment@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-plugin-git": 1.20.4
-    "@mr-hope/vuepress-plugin-reading-time": 1.20.4
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-plugin-git": 1.21.0
+    "@mr-hope/vuepress-plugin-reading-time": 1.21.0
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     "@vssue/api-bitbucket-v2": ^1.4.7
     "@vssue/api-gitea-v1": ^1.4.7
     "@vssue/api-gitee-v5": ^1.4.7
@@ -4195,154 +4195,154 @@ __metadata:
     "@vssue/api-github-v4": ^1.4.7
     "@vssue/api-gitlab-v4": ^1.4.7
     "@vssue/vuepress-plugin-vssue": ^1.4.8
-    "@waline/client": ^1.3.11
+    "@waline/client": ^1.5.1
     balloon-css: ^1.2.0
     valine: ^1.4.16
     vssue: ^1.4.8
-  checksum: ddb892f3ede3880d6d3b0ee4f6914ef75a9123e6c59dc8a088f3bd4fcd6959d72963c576189a5c89a3c75ee05288cbe9ccebecc6c4d6a4d20f9731582544d7bf
+  checksum: e539775b348e88a8193c9cf72e461d510abf841517a534e1b63d2940d3e126b360973611a828cf707282b7959d66ea51aa50b221bcfd16234c0105d5b056fe30
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-components@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-components@npm:1.20.4"
+"@mr-hope/vuepress-plugin-components@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-components@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/lodash.debounce": ^4.0.6
     lodash.debounce: ^4.0.8
-    screenfull: ^5.1.0
+    screenfull: ^5.2.0
     vue-router: ^3.5.3
-  checksum: 2d21f80e2d7fa45f714e4294cea441642a7cbcb63c63a66712dd852ccc6a248de101c5e0d129e1c863cd8c7c8a906be8b4c5a2e62390e39eb837ef7fd75f86f5
+  checksum: 910dddf147fabe36b2ff51c41fe40dd5a3f6cbd686e076dc001ba5cd90092d271564925da2134b6328768b1b4fd65c8003bd932d6727dcf51ed4e94ac4e387dc
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-copy-code@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-copy-code@npm:1.20.4"
+"@mr-hope/vuepress-plugin-copy-code@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-copy-code@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     balloon-css: ^1.2.0
-  checksum: 4067edcad013e015111b10240068d49d54d5ba0b667d1ec005748a0386337686925b773cb7a691ef6b7cdb4566a77fe04f1697ff665c30f17c4754e67d773511
+  checksum: f6090512af1b8d980c882f93494d4645c83e98c0ce39bffd6b224b01bfbdb4bfabd934f3d4157184b8d4f2af8fe47466673c78b082620c0f692fe4e388ef8d60
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-feed@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-feed@npm:1.20.4"
+"@mr-hope/vuepress-plugin-feed@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-feed@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-types": 1.21.0
     chalk: ^4.1.2
     xml-js: ^1.6.11
-  checksum: cf8c206ffb84949489282ecad1b0e6906269ef2126723dd72a1d4158b7bf471d83a8eaa62a62ffed155cd1b0270b350a386ff55fa42794cd28a6e99b5603a4ed
+  checksum: 962bde784ebef39ec606a5278070ed74f9e150b736ef037f011a5a27c8ece509fc19e17d1427fcfac2c2cd95339093bdc757bfb386fe1da5bf2b4885eeb80aeb
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-git@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-git@npm:1.20.4"
+"@mr-hope/vuepress-plugin-git@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-git@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-types": 1.21.0
     dayjs: ^1.10.7
     execa: ^5.1.1
-  checksum: 618166e23a6bda0d21d8d7ca020cd59e99b351ab8d91db8ab06066d0c585235361603e9bbcca6af0ddd466d758a2cdd048609ad8e79240338103bfb75b79d1bb
+  checksum: ecf9915d5942bf056d774664ebd8541a50223f4c52a9f4e72d0155f7622d888e1d40820aa666a3e168e0ae5da6eebc6ae264676f48741d2225f965734c9b94b1
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-pwa@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-pwa@npm:1.20.4"
+"@mr-hope/vuepress-plugin-pwa@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-pwa@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/fs-extra": ^9.0.13
     chalk: ^4.1.2
     fs-extra: ^10.0.0
     register-service-worker: ^1.7.2
     workbox-build: ^6.3.0
-  checksum: b04d244763af2681e88b21311212186355f4318b150c7f3e9ca37d2525fccce0ef8e4625f1e94af5edf7d16e3261a18cab9166d66c54cf00d4bc366561912bcd
+  checksum: 3789783da6dbf6c4e2742980f5389fa1fd2dab603f88c2d1534504465041d61211ef8a6285f19bb34d4adbf9092012e042e985af7787303f61ce51e4eb4efdad
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-reading-time@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-reading-time@npm:1.20.4"
-  checksum: 2c59226fd4c411249950d41903f07c4ee63f6dc58fd56466c1ed18c118723467c33028a05754a9d49d2dd4cb411c57484365ea3ffa7bac7eb4b7a5e3951599b5
+"@mr-hope/vuepress-plugin-reading-time@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-reading-time@npm:1.21.0"
+  checksum: a00029c5df9bd22bfd3ee05b1bad03511f9696b4ca62e9518bf12f5a88ef8705cfa2a736e72ec47d280225889d63332a74ad9ff93298707e8db4f6a8167151e3
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-seo@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-seo@npm:1.20.4"
+"@mr-hope/vuepress-plugin-seo@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-seo@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/fs-extra": ^9.0.13
     chalk: ^4.1.2
     fs-extra: ^10.0.0
-  checksum: 9ff075095e1034f035c5a783ac2dc2588bc9d11936ba9f741843f1b0137e200df74c29e65bb866afcd48b5e3bdc1e4971e7103b98f58dd4f2171d7cccef9b0bf
+  checksum: b19fcbe5af7038b44976a6f85adf3572d56101d9c4d54de994cc0c870555dbf3cc6ff0e0f0980092ea06c695a6077af0782b2d7db58f008a7350b89b31baad3a
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-sitemap@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-sitemap@npm:1.20.4"
+"@mr-hope/vuepress-plugin-sitemap@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-sitemap@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/fs-extra": ^9.0.13
     chalk: ^4.1.2
     fs-extra: ^10.0.0
     sitemap: ^7.0.0
-  checksum: 7884f83ac161929a044eae6266cb0b1c9edd4f00c09d6c54fa997675d172555a01adf1eb74ff3adeec8548a9d4131898097d5de4be69c7a6a64d8dcc5eee9dab
+  checksum: 05dd6785e1a62ee713d3f0087fbd801e0474f6fc8c321242583e0a5a617aa538cc042032842955106b6a1693d9648a0d70c71dbca4dce33fae28e97fcfb9576e
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-plugin-smooth-scroll@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-plugin-smooth-scroll@npm:1.20.4"
+"@mr-hope/vuepress-plugin-smooth-scroll@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-plugin-smooth-scroll@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
-  checksum: 3b412eb0e1248abf8ff89d99b2ee2e3fcb11ad5e91d110e1eec841e9e5be2ba3c0e621c1176ef49582a2a8ad25da8b4e02aad0ea97d049809777440ad95025fa
+    "@mr-hope/vuepress-types": 1.21.0
+  checksum: b4093fd2f9bae7cf7746b8433457745ef6818ccab0baf435482d6cc0ef4dd643952ded5250f5ad15db48933e485688b133529012a80a49dc4829b4c51dcb5ca1
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-shared@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-shared@npm:1.20.4"
-  checksum: afc7e9e1a6925f71809ed2e5432b68cae505b74e79d100d5c520c56af9ff5fb6b80cb65dc2974ef4c4f5fc9efcab25fd9f624cfe85897e5fd48aa0c12ef86042
+"@mr-hope/vuepress-shared@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-shared@npm:1.21.0"
+  checksum: c24ee66d6606f68b4ff79e4a6db5ae00fcda7b1502dd9904b2ebb6c950d2862fc9495e35db55a9bbeb24c4d385781f22d616f999f2baf2083fe36df6a00f5643
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-theme-types@npm:1.20.5":
-  version: 1.20.5
-  resolution: "@mr-hope/vuepress-theme-types@npm:1.20.5"
+"@mr-hope/vuepress-theme-types@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-theme-types@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-plugin-comment": 1.20.4
-    "@mr-hope/vuepress-plugin-feed": 1.20.4
-    "@mr-hope/vuepress-plugin-git": 1.20.4
-    "@mr-hope/vuepress-plugin-pwa": 1.20.4
-    "@mr-hope/vuepress-plugin-reading-time": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
-    vuepress-plugin-md-enhance: 1.20.5
-    vuepress-plugin-photo-swipe: 1.20.4
-  checksum: 195361319df860d12b7a3c988e0695f5f475a25429b3bf441f1b17ce1f2226bd9402b978a2d809ca3253223b362632bd0fbf483487c61d72e8fea221133fbf72
+    "@mr-hope/vuepress-plugin-comment": 1.21.0
+    "@mr-hope/vuepress-plugin-feed": 1.21.0
+    "@mr-hope/vuepress-plugin-git": 1.21.0
+    "@mr-hope/vuepress-plugin-pwa": 1.21.0
+    "@mr-hope/vuepress-plugin-reading-time": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
+    vuepress-plugin-md-enhance: 1.21.0
+    vuepress-plugin-photo-swipe: 1.21.0
+  checksum: 8c96f5c52c3cf14687f0f31942bae9cc6c0a465a13dea964229ba5137f98a1f50ecfd5207f2ada7cb79d23819bd78d63e821d50fab3934c04fa2d11c2afd7893
   languageName: node
   linkType: hard
 
-"@mr-hope/vuepress-types@npm:1.20.4":
-  version: 1.20.4
-  resolution: "@mr-hope/vuepress-types@npm:1.20.4"
+"@mr-hope/vuepress-types@npm:1.21.0":
+  version: 1.21.0
+  resolution: "@mr-hope/vuepress-types@npm:1.21.0"
   dependencies:
     "@types/express": ^4.17.13
     "@types/markdown-it": ^10.0.3
     "@types/markdown-it-anchor": ^7.0.0
     "@types/webpack-dev-server": ^3.11.6
-    cac: ^6.7.11
+    cac: ^6.7.12
     vue: ^2.6.14
     webpack-chain: ^6.5.1
   peerDependencies:
     vuepress: ^1.8.2
-  checksum: cfdd1c9c56d66caf5f7b0dd2184d554d3d88af5cfc98a58e4f32b9afeab8a7b224e4aa53286e75866d29457f265238f901ffc0030ef4b22458038b0accbbfc39
+  checksum: 561cfe8f7402ed4571244ce30ecd1ab2339dae6c0781f1d8b84ef4e2a73c8db1aca20de32f9cf17c5f16b11b7746716590c3f6f5071b0ffa441971fb167aeb58
   languageName: node
   linkType: hard
 
@@ -6230,14 +6230,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^17.0.33":
-  version: 17.0.33
-  resolution: "@types/react@npm:17.0.33"
+"@types/react@npm:^17.0.34":
+  version: 17.0.37
+  resolution: "@types/react@npm:17.0.37"
   dependencies:
     "@types/prop-types": "*"
     "@types/scheduler": "*"
     csstype: ^3.0.2
-  checksum: ca343662dd2c1b323b5fa4f269334c786839a93b31a878d7a8a090be3a1ae65a7bd90992d0ebfb3aeb6e326d25c319cf4ae44fa7858dfbb8d953b099a91e59bd
+  checksum: 9edbfaf07cdfbb6cebdd30e972bca85e1f73dca082c83c0fdecd2b75a0f8af2159814748c55b80e64ab0a392a732340923fd1f0ca57789d17acba12ce3b22c99
   languageName: node
   linkType: hard
 
@@ -7131,7 +7131,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@waline/client@npm:^1.3.11":
+"@waline/client@npm:^1.5.1":
   version: 1.5.1
   resolution: "@waline/client@npm:1.5.1"
   checksum: b7ab319418435a4352a87383dec9983abc03c27eecae82d13b34893166db038526d0686e6b858e511188355f3c6aaaf8d252f0d6b10bc45ba7185c38e8801598
@@ -9289,10 +9289,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cac@npm:^6.7.11":
-  version: 6.7.11
-  resolution: "cac@npm:6.7.11"
-  checksum: 4a4c3922b30a8a78ae5eb7528ed60fec9ae157a1631643919002ac7d1ce113d064edc75f9b66c8ca07a96e609991f3f2baa175d1545316d1ef13dea46845e6b0
+"cac@npm:^6.7.12":
+  version: 6.7.12
+  resolution: "cac@npm:6.7.12"
+  checksum: 4cb6fd704c6af8a116317d4d0ad2927041f9e59bec9963fb4b0a7609528f1b5a3b52adc9418ff8cbafe29591af33b9055dcdcf1a5e908e99793ab941acee34b6
   languageName: node
   linkType: hard
 
@@ -17336,14 +17336,14 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"katex@npm:^0.13.23":
-  version: 0.13.24
-  resolution: "katex@npm:0.13.24"
+"katex@npm:^0.15.1":
+  version: 0.15.1
+  resolution: "katex@npm:0.15.1"
   dependencies:
     commander: ^8.0.0
   bin:
     katex: cli.js
-  checksum: 320ea089a4baa6c62a774a670be4bcdc15ad1731aad166fd452364b6a85158703485e7800b16bc8b81d378a06b47e21276e721d7bb5f1f131a11ae0176a914e5
+  checksum: d1db044d8b2f37c70adb4c331dfe55b453f2fc4a0cc72e050e76ff372a7f74201a3ac96998bda3f63cafac3622b2e2e89aecc4b2ed960c5fdd2dda2d8bfe5757
   languageName: node
   linkType: hard
 
@@ -21788,10 +21788,10 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"reveal.js@npm:^4.1.3":
-  version: 4.1.3
-  resolution: "reveal.js@npm:4.1.3"
-  checksum: fcd2bd693c7ae452c09f0c28645ac0e7291c38b57910e5e04228615c24b71e3f9c93d4c7e9036441fe05ddef4fc8d2ea35c0384ee526ab9c692c7c55b1b3743c
+"reveal.js@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "reveal.js@npm:4.2.0"
+  checksum: f78171797b39aa0c02b2d4f48f680cc1acf7d386e43fc7f4c0b4da11b00c0e75639a23cb79beaea96f499fab74980a9f1ea55c974bb6d023745e849a3e37ecff
   languageName: node
   linkType: hard
 
@@ -22043,10 +22043,10 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"screenfull@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "screenfull@npm:5.1.0"
-  checksum: 09373459c5dc184204de38020c24ed21ee31a6154b3ea82e468dc9edf5a7b8773d9583bdb78e16911b71db7849579d54ab04f176c5ed5647a6b9893de4adda24
+"screenfull@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "screenfull@npm:5.2.0"
+  checksum: 247dda31e1a98838cca257509851944875fcd7822b10e6c1d507ae64a036875f756869cbb4e91ab70fda0777317d6cd1d67fe1e2cccef9797baec6aec241f785
   languageName: node
   linkType: hard
 
@@ -23268,7 +23268,7 @@ fsevents@~2.3.1:
     vuepress: 1.8.2
     vuepress-plugin-fulltext-search: ^2.2.1
     vuepress-plugin-right-anchor: ^0.5.5
-    vuepress-theme-hope: ^1.20.5
+    vuepress-theme-hope: ^1.21.0
   languageName: unknown
   linkType: soft
 
@@ -24937,23 +24937,23 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"vuepress-plugin-active-hash@npm:1.20.4":
-  version: 1.20.4
-  resolution: "vuepress-plugin-active-hash@npm:1.20.4"
+"vuepress-plugin-active-hash@npm:1.21.0":
+  version: 1.21.0
+  resolution: "vuepress-plugin-active-hash@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/lodash.debounce": ^4.0.6
     lodash.debounce: ^4.0.8
-  checksum: 2e2558224777593264a74dc213446268b6882f6d03488b6d74b2a05a06071c2fe922906927eda5c219ab781b825e04245deaa4d7818ef46a58be2b6825f3f703
+  checksum: 657f9741442e10ab7657fe010109fe03b349cac6ccd8e237cda02dbf1145c5e43f4dd312bada216bc964dad0c94dbd4315be436286eecc224c3a1fd41dda3316
   languageName: node
   linkType: hard
 
-"vuepress-plugin-add-this@npm:1.20.4":
-  version: 1.20.4
-  resolution: "vuepress-plugin-add-this@npm:1.20.4"
+"vuepress-plugin-add-this@npm:1.21.0":
+  version: 1.21.0
+  resolution: "vuepress-plugin-add-this@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-types": 1.20.4
-  checksum: 2ff1ad103ca49109797205743419c1b0eb20e14adc163da86866963de5ea570aa8d028ae979880c63c11dfe773333c6c045ba09be82264a1f794c3be16cede94
+    "@mr-hope/vuepress-types": 1.21.0
+  checksum: 1f449569e334ec2c7fc716fad3519c8d7cde49389b34d68f414579acaaf51d7c3cf9caf57eaebe1a552a405dc6a6606a9967bf0f6673cf8414ec237f61a14643
   languageName: node
   linkType: hard
 
@@ -25025,37 +25025,37 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"vuepress-plugin-md-enhance@npm:1.20.5":
-  version: 1.20.5
-  resolution: "vuepress-plugin-md-enhance@npm:1.20.5"
+"vuepress-plugin-md-enhance@npm:1.21.0":
+  version: 1.21.0
+  resolution: "vuepress-plugin-md-enhance@npm:1.21.0"
   dependencies:
     "@babel/core": "*"
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/hash-sum": ^1.0.0
     "@types/katex": ^0.11.1
     "@types/lodash.debounce": ^4.0.6
     "@types/markdown-it": ^10.0.3
     "@types/mermaid": ^8.2.7
     flowchart.js: ^1.17.0
-    katex: ^0.13.23
+    katex: ^0.15.1
     lodash.debounce: ^4.0.8
     mermaid: ^8.13.3
-    reveal.js: ^4.1.3
+    reveal.js: ^4.2.0
     vuepress-plugin-container: ^2.1.5
-  checksum: fc4fba9aef1348210aaa4049a183547ca8e0f1c9b7beab47c3380d4d43c158d7b33a023b7068338d80d9d1ee73ee2ede59aa304e4d1bf15ea693226a5ab1428f
+  checksum: 848c308111bb036d4140d98c8ec6e2cfbe322edee7604bb90dfbb4867e8821aa82602ed5ab7cb9d7c85082790693aac846db2b51a984493920e7427d387fc40b
   languageName: node
   linkType: hard
 
-"vuepress-plugin-photo-swipe@npm:1.20.4":
-  version: 1.20.4
-  resolution: "vuepress-plugin-photo-swipe@npm:1.20.4"
+"vuepress-plugin-photo-swipe@npm:1.21.0":
+  version: 1.21.0
+  resolution: "vuepress-plugin-photo-swipe@npm:1.21.0"
   dependencies:
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-types": 1.20.4
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-types": 1.21.0
     "@types/photoswipe": ^4.1.2
     photoswipe: ^4.1.3
-  checksum: 9d1e05e6e5c228d8541dc4be9f958ac8c912c6ca50292fb094524ad3dfbd0a2dd91fa2df3e91c832c44fb6f0c99e29b7d8617d1c8c35c2e26105e0ade8900179
+  checksum: 1347014ca6022f498b9f04163175a5821be60735b8cb31fd34049b1d1b2356a1744165a6cfab819dfeffafea0d93e10175ce3a24574d64c46fdf1316f391fbd4
   languageName: node
   linkType: hard
 
@@ -25104,27 +25104,27 @@ typescript@4.3.5:
   languageName: node
   linkType: hard
 
-"vuepress-theme-hope@npm:^1.20.5":
-  version: 1.20.5
-  resolution: "vuepress-theme-hope@npm:1.20.5"
+"vuepress-theme-hope@npm:^1.21.0":
+  version: 1.21.0
+  resolution: "vuepress-theme-hope@npm:1.21.0"
   dependencies:
     "@docsearch/css": ^3.0.0-alpha.41
     "@docsearch/js": ^3.0.0-alpha.41
-    "@mr-hope/vuepress-plugin-comment": 1.20.4
-    "@mr-hope/vuepress-plugin-components": 1.20.4
-    "@mr-hope/vuepress-plugin-copy-code": 1.20.4
-    "@mr-hope/vuepress-plugin-feed": 1.20.4
-    "@mr-hope/vuepress-plugin-git": 1.20.4
-    "@mr-hope/vuepress-plugin-pwa": 1.20.4
-    "@mr-hope/vuepress-plugin-seo": 1.20.4
-    "@mr-hope/vuepress-plugin-sitemap": 1.20.4
-    "@mr-hope/vuepress-plugin-smooth-scroll": 1.20.4
-    "@mr-hope/vuepress-shared": 1.20.4
-    "@mr-hope/vuepress-theme-types": 1.20.5
+    "@mr-hope/vuepress-plugin-comment": 1.21.0
+    "@mr-hope/vuepress-plugin-components": 1.21.0
+    "@mr-hope/vuepress-plugin-copy-code": 1.21.0
+    "@mr-hope/vuepress-plugin-feed": 1.21.0
+    "@mr-hope/vuepress-plugin-git": 1.21.0
+    "@mr-hope/vuepress-plugin-pwa": 1.21.0
+    "@mr-hope/vuepress-plugin-seo": 1.21.0
+    "@mr-hope/vuepress-plugin-sitemap": 1.21.0
+    "@mr-hope/vuepress-plugin-smooth-scroll": 1.21.0
+    "@mr-hope/vuepress-shared": 1.21.0
+    "@mr-hope/vuepress-theme-types": 1.21.0
     "@types/bcryptjs": ^2.4.2
     "@types/lodash.debounce": ^4.0.6
     "@types/lodash.throttle": ^4.1.6
-    "@types/react": ^17.0.33
+    "@types/react": ^17.0.34
     "@vuepress/plugin-blog": ^1.9.4
     bcryptjs: ^2.4.3
     chalk: ^4.1.2
@@ -25132,17 +25132,17 @@ typescript@4.3.5:
     docsearch.js: ^2.6.3
     lodash.debounce: ^4.0.8
     lodash.throttle: ^4.1.1
-    vuepress-plugin-active-hash: 1.20.4
-    vuepress-plugin-add-this: 1.20.4
+    vuepress-plugin-active-hash: 1.21.0
+    vuepress-plugin-add-this: 1.21.0
     vuepress-plugin-container: ^2.1.5
     vuepress-plugin-copyright: ^1.0.2
-    vuepress-plugin-md-enhance: 1.20.5
-    vuepress-plugin-photo-swipe: 1.20.4
+    vuepress-plugin-md-enhance: 1.21.0
+    vuepress-plugin-photo-swipe: 1.21.0
     vuepress-plugin-typescript: ^0.3.1
   peerDependencies:
     typescript: ^4.4.4
     vuepress: ^1.8.2
-  checksum: a7e351a1c3a3c5c724e32143a5310045a7ce6b10783e9099379156ff0289e040533691440f174d305167365455f051a37632cc1bf766a5699c1b41238eef43a6
+  checksum: 9d181ceef978407974f0eb4b3e53379d221e0b96a0e904da53de7fdb98aef26a9906cbb384331bea2eb70ef35c0c3454f0311a9777f91ea236e50b2f33d71171
   languageName: node
   linkType: hard
 

@@ -1,16 +1,16 @@
-# Mapping
+# マッピング
 
-Mapping functions define how chain data is transformed into the optimised GraphQL entities that we have previously defined in the `schema.graphql` file.
+マッピング関数は、 `schema.graphql` ファイルで定義したチェーンデータを最適化したGraphQLエンティティに変換する方法を定義します。
 
-- Mappings are defined in the `src/mappings` directory and are exported as a function
-- These mappings are also exported in `src/index.ts`
-- The mappings files are reference in `project.yaml` under the mapping handlers.
+- マッピングは `src/mappings` ディレクトリに定義され、関数としてエクスポートされます。
+- これらのマッピングは `src/index.ts` にもエクスポートされます。
+- マッピングファイルはマッピングハンドラの下の `project.yaml` 内で参照されます。
 
-There are three classes of mappings functions; [Block handlers](#block-handler), [Event Handlers](#event-handler), and [Call Handlers](#call-handler).
+マッピング関数には次の3つのクラスがあります。 [ブロックハンドラ](#block-handler), [イベントハンドラ](#event-handler), [呼び出しハンドラ](#call-handler)
 
-## Block Handler
+## ブロックハンドラ
 
-You can use block handlers to capture information each time a new block is attached to the Substrate chain, e.g. block number. To achieve this, a defined BlockHandler will be called once for every block.
+新しいブロックが Substrate チェーンに接続されるたびに、ブロックハンドラを使用して情報を取得できます。例えば、ブロック番号です。 これを実行するために、定義されたブロックハンドラが各ブロックに対して1回呼び出されます。
 
 ```ts
 import {SubstrateBlock} from "@subql/types";
@@ -23,13 +23,13 @@ export async function handleBlock(block: SubstrateBlock): Promise<void> {
 }
 ```
 
-A [SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16) is an extended interface type of [signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/), but also includes the `specVersion` and `timestamp`.
+[SubstrateBlock](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L16)は[signedBlock](https://polkadot.js.org/docs/api/cookbook/blocks/)の拡張インターフェースタイプで、`specVersion`と`timestamp`も含まれています。
 
-## Event Handler
+## イベント ハンドラ
 
-You can use event handlers to capture information when certain events are included on a new block. The events that are part of the default Substrate runtime and a block may contain multiple events.
+特定のイベントが新しいブロックに含まれる場合、イベントハンドラを使用して情報を取得できます。 デフォルトの Substrate ランタイムとブロックの一部であるイベントには、複数のイベントが含まれます。
 
-During the processing, the event handler will receive a substrate event as an argument with the event's typed inputs and outputs. Any type of event will trigger the mapping, allowing activity with the data source to be captured. You should use [Mapping Filters](./manifest.md#mapping-filters) in your manifest to filter events to reduce the time it takes to index data and improve mapping performance.
+処理中、イベントハンドラは substrate イベントを受け取り、イベントの型付けされた入出力を持つ引数として受け取ります。 任意のタイプのイベントはマッピングを起動し、データソースとのアクティビティをキャプチャすることができます。 イベントをフィルタリングするには、マニフェストで [マッピングフィルタ](./manifest.md#mapping-filters) を使用し、データのインデックス化とマッピングのパフォーマンスを向上させる必要があります。
 
 ```ts
 import {SubstrateEvent} from "@subql/types";
@@ -43,11 +43,11 @@ export async function handleEvent(event: SubstrateEvent): Promise<void> {
     await record.save();
 ```
 
-A [SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) is an extended interface type of the [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149). Besides the event data, it also includes an `id` (the block to which this event belongs) and the extrinsic inside of this block.
+[SubstrateEvent](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L30) は [EventRecord](https://github.com/polkadot-js/api/blob/f0ce53f5a5e1e5a77cc01bf7f9ddb7fcf8546d11/packages/types/src/interfaces/system/types.ts#L149) の拡張インターフェイス型です。 イベントデータのほかに、 `id` (このイベントが属するブロック) と、このブロックの内部にある外部データも含まれています。
 
-## Call Handler
+## 呼び出しハンドラ
 
-Call handlers are used when you want to capture information on certain substrate extrinsics.
+呼び出しハンドラは、特定の Substrate 外部関数の情報をキャプチャするときに使用されます。
 
 ```ts
 export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
@@ -57,17 +57,17 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-The [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) extends [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). It is assigned an `id` (the block to which this extrinsic belongs) and provides an extrinsic property that extends the events among this block. Additionally, it records the success status of this extrinsic.
+[SubstrateExtinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) は [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170) を拡張します。 このブロックには、 `id` (この外部が属するブロック) が割り当てられており、このブロックの中でイベントを拡張する外部プロパティを提供します。 さらに、この外部関数の成功状況を記録します。
 
-## Query States
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Therefore, we have exposed some of the @polkadot/api interfaces to increase capabilities.
+## クエリの状態
+私たちの目標は、マッピングハンドラ(上記の3つのインターフェイスイベントタイプだけではなく)のためのユーザーのためのすべてのデータソースをカバーすることです。 したがって、私たちは @polkadot/api インタフェースのいくつかを公開しています。
 
-These are the interfaces we currently support:
-- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) will query the <strong>current</strong> block.
-- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) will make multiple queries of the <strong>same</strong> type at the current block.
-- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) will make multiple queries of <strong>different</strong> types at the current block.
+これらは現在サポートされているインターフェースです:
+- [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) は <strong>現在の</strong> ブロックを問い合わせます。
+- [api.query.&lt;module&gt;.&lt;method&gt;.multi()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-same-type) は、現在のブロックで <strong>同じ</strong> 型の複数のクエリを実行します。
+- [api.queryMulti()](https://polkadot.js.org/docs/api/start/api.query.multi/#multi-queries-distinct-types) は、現在のブロックで <strong>異なる</strong> 型の複数のクエリを実行します。
 
-These are the interfaces we do **NOT** support currently:
+これらは現在サポート **されていない** インターフェイスです：
 - ~~api.tx.*~~
 - ~~api.derive.*~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.at~~
@@ -79,13 +79,13 @@ These are the interfaces we do **NOT** support currently:
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.range~~
 - ~~api.query.&lt;module&gt;.&lt;method&gt;.sizeAt~~
 
-See an example of using this API in our [validator-threshold](https://github.com/subquery/tutorials-validator-threshold) example use case.
+[validator-threshold](https://github.com/subquery/tutorials-validator-threshold) のユースケースでこの API を使用する例をご覧ください。
 
-## RPC calls
+## RPCコール
 
-We also support some API RPC methods that are remote calls that allow the mapping function to interact with the actual node, query, and submission. A core premise of SubQuery is that it's deterministic, and therefore, to keep the results consistent we only allow historical RPC calls.
+また、マッピング関数が実際のノード、クエリー、および送信を行うことを可能にするリモートコールである API RPC 関数もサポートしています。 SubQueryは決定論的であることを前提としているため、結果の一貫性を保つために、過去のRPCコールのみを許可しています。
 
-Documents in [JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc) provide some methods that take `BlockHash` as an input parameter (e.g. `at?: BlockHash`), which are now permitted. We have also modified these methods to take the current indexing block hash by default.
+[JSON-RPC](https://polkadot.js.org/docs/substrate/rpc/#rpc)のドキュメントでは、`BlockHash`を入力パラメータとして受け取るいくつかのメソッド（例：`at?: BlockHash`）がありますが、これが許可されるようになりました。 また、これらの関数は、現在のインデックスブロックハッシュをデフォルトで受け取るように変更しました。
 
 ```typescript
 // Let's say we are currently indexing a block with this hash number
@@ -97,19 +97,19 @@ const b1 = await api.rpc.chain.getBlock(blockhash);
 // It will use the current block has by default like so
 const b2 = await api.rpc.chain.getBlock();
 ```
-- For [Custom Substrate Chains](#custom-substrate-chains) RPC calls, see [usage](#usage).
+- [カスタムサブストレイトチェーン](#custom-substrate-chains) RPCコールについては、 [使用法](#usage) を参照してください。
 
-## Modules and Libraries
+## モジュールとライブラリ
 
-To improve SubQuery's data processing capabilities, we have allowed some of the NodeJS's built-in modules for running mapping functions in the [sandbox](#the-sandbox), and have allowed users to call third-party libraries.
+SubQueryのデータ処理能力を向上させるには [sandbox](#the-sandbox)でマッピング関数を実行するための NodeJS の組み込みモジュールの一部を許可しました。 サードパーティのライブラリを呼び出すことができます
 
-Please note this is an **experimental feature** and you may encounter bugs or issues that may negatively impact your mapping functions. Please report any bugs you find by creating an issue in [GitHub](https://github.com/subquery/subql).
+これは **実験的機能** であり、マッピング関数に悪影響を与えるバグや問題が発生する可能性があります。 Issue を [GitHub](https://github.com/subquery/subql) で作成することで、バグを報告してください。
 
-### Built-in modules
+### 組み込みモジュール
 
-Currently, we allow the following NodeJS modules: `assert`, `buffer`, `crypto`, `util`, and `path`.
+現在、次のNodeJSモジュールを許可しています：`assert`, `buffer`, `crypto`, `util`,  `path`
 
-Rather than importing the whole module, we recommend only importing the required method(s) that you need. Some methods in these modules may have dependencies that are unsupported and will fail on import.
+モジュール全体をインポートするのではなく、必要なメソッドだけをインポートすることをお勧めします。 これらのモジュールのいくつかのメソッドにはサポートされていない依存関係があり、インポート時に失敗する可能性があります。
 
 ```ts
 import {hashMessage} from "ethers/lib/utils"; //Good way
@@ -122,32 +122,32 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 }
 ```
 
-### Third-party libraries
+### サードパーティライブラリ
 
-Due to the limitations of the virtual machine in our sandbox, currently, we only support third-party libraries written by **CommonJS**.
+サンドボックス内の仮想マシンが制限されているため、現在、 **CommonJS** によって書かれたサードパーティ製ライブラリのみをサポートしています。
 
-We also support a **hybrid** library like `@polkadot/*` that uses ESM as default. However, if any other libraries depend on any modules in **ESM** format, the virtual machine will **NOT** compile and return an error.
+**hybrid** ライブラリ(例えば `@polkadot/*` )もサポートしており、ESM をデフォルトとして使用しています。 しかし、他のライブラリが**ESM**形式のモジュールに依存している場合、仮想マシンはコンパイル**されず**、エラーを返します。
 
-## Custom Substrate Chains
+## カスタムサブストレイトチェーン
 
-SubQuery can be used on any Substrate-based chain, not just Polkadot or Kusama.
+SubQuery は、Polkadot や Kusama だけではなく、Substrate-based chain 上で使用できます。
 
-You can use a custom Substrate-based chain and we provide tools to import types, interfaces, and additional methods automatically using [@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/).
+Substrateベースのカスタムチェーンを使用することができ、[@polkadot/typegen](https://polkadot.js.org/docs/api/examples/promise/typegen/)を使用してタイプ、インターフェイス、追加関数を自動的にインポートするツールを提供しています。
 
-In the following sections, we use our [kitty example](https://github.com/subquery/tutorials-kitty-chain) to explain the integration process.
+以下のセクションでは、 [キティの例](https://github.com/subquery/tutorials-kitty-chain) を使用して統合プロセスを説明します。
 
-### Preparation
+### 準備
 
-Create a new directory `api-interfaces` under the project `src` folder to store all required and generated files. We also create an `api-interfaces/kitties` directory as we want to add decoration in the API from the `kitties` module.
+プロジェクトの `src` フォルダの下に新しいディレクトリ `api-interfaces` を作成し、必要なファイルと生成されたファイルをすべて保存します。 `kitties` モジュールからAPIにデコレーションを追加するため、 `api-interfaces/kitties` ディレクトリを作成します。
 
-#### Metadata
+#### メタデータ
 
-We need metadata to generate the actual API endpoints. In the kitty example, we use an endpoint from a local testnet, and it provides additional types. Follow the steps in [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) to retrieve a node's metadata from its **HTTP** endpoint.
+実際のAPIエンドポイントを生成するにはメタデータが必要です。 キティの例では、ローカルのテストネットからのエンドポイントを使用し、追加の型を提供します。 [PolkadotJS metadata setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup) の手順に従い、 **HTTP** endpoint からノードのメタデータを取得します。
 
 ```shell
 curl -H "Content-Type: application/json" -d '{"id":"1", "jsonrpc":"2.0", "method": "state_getMetadata", "params":[]}' http://localhost:9933
 ```
-or from its **websocket** endpoint with help from [`websocat`](https://github.com/vi/websocat):
+または、[`websocat`](https://github.com/vi/websocat)の助けを借りて、**websocket**エンドポイントから
 
 ```shell
 //Install the websocat
@@ -157,19 +157,19 @@ brew install websocat
 echo state_getMetadata | websocat 'ws://127.0.0.1:9944' --jsonrpc
 ```
 
-Next, copy and paste the output to a JSON file. In our [kitty example](https://github.com/subquery/tutorials-kitty-chain), we have created `api-interface/kitty.json`.
+次に、JSONファイルに出力結果をコピーし、貼り付けます。 [キティの例](https://github.com/subquery/tutorials-kitty-chain)では、 `api-interface/kitty.json` を作成しました。
 
-#### Type definitions
-We assume that the user knows the specific types and RPC support from the chain, and it is defined in the [Manifest](./manifest.md).
+#### 型の定義
+ここでは、ユーザーがチェーンから特定のタイプとRPCサポートを知っており、それが[Manifest](./manifest.md)で定義されていることを想定しています。
 
-Following [types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup), we create :
-- `src/api-interfaces/definitions.ts` - this exports all the sub-folder definitions
+[types setup](https://polkadot.js.org/docs/api/examples/promise/typegen#metadata-setup)に続いて作成します
+- `src/api-interfaces/definitions.ts` - 全てのサブフォルダ定義をエクスポートします
 
 ```ts
 export { default as kitties } from './kitties/definitions';
 ```
 
-- `src/api-interfaces/kitties/definitions.ts` - type definitions for the kitties module
+- `src/api-interfaces/kities/definitions.ts` - kittiesモジュールの型定義
 ```ts
 export default {
     // custom types
@@ -202,12 +202,12 @@ export default {
 }
 ```
 
-#### Packages
+#### パッケージ
 
-- In the `package.json` file, make sure to add `@polkadot/typegen` as a development dependency and `@polkadot/api` as a regular dependency (ideally the same version). We also need `ts-node` as a development dependency to help us run the scripts.
-- We add scripts to run both types; `generate:defs` and metadata `generate:meta` generators (in that order, so metadata can use the types).
+- `package.json`ファイルでは、`@polkadot/typegen`を開発用の依存関係に、`@polkadot/api`を通常の依存関係（理想的には同じバージョン）に追加してください。 また、スクリプトを実行するために、開発の依存性として `ts-node` も必要です。
+- 両方の型を実行するスクリプトを追加します; `generate:defs` と メタデータジェネレータ`generate:metadata` (この順序で、メタデータが型を使用できるようにします)
 
-Here is a simplified version of `package.json`. Make sure in the **scripts** section the package name is correct and the directories are valid.
+以下は `package.json` の簡略化されたバージョンです。 **スクリプト** セクションでパッケージ名が正しく、ディレクトリが有効であることを確認します。
 
 ```json
 {
@@ -227,9 +227,9 @@ Here is a simplified version of `package.json`. Make sure in the **scripts** sec
 }
 ```
 
-### Type generation
+### 型の生成
 
-Now that preparation is completed, we are ready to generate types and metadata. Run the commands below:
+これで準備が完了し、型とメタデータを生成する準備が整いました。 以下のコマンドを実行します。
 
 ```shell
 # Yarn to install new dependencies
@@ -239,14 +239,14 @@ yarn
 yarn generate:defs
 ```
 
-In each modules folder (eg `/kitties`), there should now be a generated `types.ts` that defines all interfaces from this modules' definitions, also a file `index.ts` that exports them all.
+各モジュールのフォルダ（例：`/kitties`）には、このモジュールの定義からすべてのインターフェイスを定義した`types.ts`と、それらすべてをエクスポートする`index.ts`が生成されているはずです。
 
 ```shell
 # Generate metadata
 yarn generate:meta
 ```
 
-This command will generate the metadata and a new api-augment for the APIs. As we don't want to use the built-in API, we will need to replace them by adding an explicit override in our `tsconfig.json`. After the updates, the paths in the config will look like this (without the comments):
+このコマンドは、API のメタデータと新しい拡張機能を生成します。 組み込みのAPIを使用したくないので、`tsconfig.json`に明示的なオーバーライドを追加して置き換える必要があります。 更新後、設定内のパスは次のようになります(コメントなし):
 
 ```json
 {
@@ -261,9 +261,9 @@ This command will generate the metadata and a new api-augment for the APIs. As w
 }
 ```
 
-### Usage
+### 使用法
 
-Now in the mapping function, we can show how the metadata and types actually decorate the API. The RPC endpoint will support the modules and methods we declared above. And to use custom rpc call, please see section [Custom chain rpc calls](#custom-chain-rpc-calls)
+マッピング関数では、メタデータと型が実際にAPIをどのようにデコレートするかを示すことができます。 RPCエンドポイントは、上記で宣言したモジュールと関数をサポートします。 カスタムRPC呼び出しを使用するには、[カスタムチェーンRPC呼び出し](#custom-chain-rpc-calls)のセクションを参照してください。
 ```typescript
 export async function kittyApiHandler(): Promise<void> {
     //return the KittyIndex type
@@ -276,11 +276,11 @@ export async function kittyApiHandler(): Promise<void> {
 }
 ```
 
-**If you wish to publish this project to our explorer, please include the generated files in `src/api-interfaces`.**
+**このプロジェクトをエクスプローラに公開したい場合は、生成されたファイルを `src/api-interface` に含めてください。**
 
-### Custom chain rpc calls
+### カスタムチェーンRPCコール
 
-To support customised chain RPC calls, we must manually inject RPC definitions for `typesBundle`, allowing per-spec configuration. You can define the `typesBundle` in the `project.yml`. And please remember only `isHistoric` type of calls are supported.
+カスタマイズされたチェーンRPC呼び出しをサポートするには、仕様ごとの設定を可能にする `typesBundle`に手動でRPC定義を挿入する必要があります。 `project.yml` で `typesBundle` を定義できます。 そして、 `isHistoric` タイプの呼び出しのみがサポートされていることを覚えておいてください。
 ```yaml
 ...
   types: {

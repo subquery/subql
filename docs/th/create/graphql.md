@@ -1,13 +1,13 @@
 # GraphQL Schema
 
-## การกำหนด Entities
+## Defining Entities
 
-ไฟล์ `schema.graphql` กำหนด GraphQL schemas ต่างๆ เนื่องจากวิธีการทำงานของภาษา GraphQL query, ไฟล์สคีมาจึงกำหนดรูปร่างของข้อมูลของคุณจาก SubQuery หากต้องการเรียนรู้เพิ่มเติมเกี่ยวกับวิธีการเขียนในภาษาสคีมา GraphQL เราขอแนะนำให้ตรวจสอบ [สคีมาและประเภท](https://graphql.org/learn/schema/#type-language)
+The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-**สำคัญ: เมื่อคุณทำการเปลี่ยนแปลงใดๆ กับไฟล์สคีมา โปรดตรวจสอบให้แน่ใจว่าคุณได้สร้างไดเร็กทอรี types ของคุณใหม่ด้วยคำสั่ง `yarn codegen`**
+**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
 ### Entities
-แต่ละเอนทิตีต้องกำหนดฟิลด์ `id` ที่จำเป็นด้วยประเภทของ `ID!` มันถูกใช้เป็น primary key และไม่ซ้ำกันในเอนทิตีทั้งหมดที่เป็นประเภทเดียวกัน
+Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
 Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
@@ -26,10 +26,12 @@ We currently supporting flowing scalars types:
 - `Int`
 - `String`
 - `BigInt`
+- `Float`
 - `Date`
 - `Boolean`
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
 - `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `Enum` types are a special kind of scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
 ## Indexing by non-primary-key field
 

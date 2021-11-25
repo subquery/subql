@@ -1,19 +1,19 @@
-# How to delete a SubQuery project?
+# 如何调试一个SubQuery项目？
 
-## Introduction
+## 简介
 
-It is important to keep your projects in SubQuery Project relevant and up to date. For any projects that uploaded to SubQuery Project for testing purposes, it is recommended to delete them afterwards to conserve resources and save cost.
+在SubQuery项目中保持您的项目的相关性和最新性很重要。 对于上传到SubQuery项目进行测试的任何项目，我们建议您随后予以删除，以节省资源和节省费用。
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+除了使用Docker或者在 [SubQuery Project](https://project.subquery.network/) 上托管项目， 您还可以选择运行indexer节点。 这需要花费更多的时间和精力，但是它可以帮助您加深对SubQuery工作原理的理解。
 
-## Deleting a project from the staging slot
+## 从暂存项中删除项目
 
-To delete a project from the staging slot, click on the 3 dots in the staging slot section within the deployment details on your project detail dashboard page and select delete.
+您可以打开项目细节面板页面，在部署详细信息中点击暂存项部分的3个点并选择删除，就可以从暂存项删除一个项目。
 
-![Deleting a project from the staging slot](/assets/img/delete_staging.png)
+![从暂存项中删除项目](/assets/img/delete_staging.png)
 
-## Deleting a project from the production slot
+## 从成品项中删除项目
 
-To delete a project from the production slot, you'll have to delete the entire project instead. Navigate to the top right corner and click on the 3 dots which is the settings for the entire project. Then select "Delete Project".
+如果您需要要从成品项删除一个项目，您必须删除整个项目。 导航到页面右上角，点击3个点，就可以打开整个项目的设置， 然后选择 “删除项目”。 然后选择 “删除项目”。
 
-![Deleting a project from the production slot](/assets/img/delete_production.png)
+![从成品项中删除项目](/assets/img/delete_production.png)
