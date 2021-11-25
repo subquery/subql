@@ -19,6 +19,11 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
     },
+    'log-in-file': {
+      describe: 'Log to file instead of stdout',
+      type: 'boolean',
+      demandOption: false,
+    },
     'output-fmt': {
       demandOption: false,
       describe: 'Print log as json or plain text',
