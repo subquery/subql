@@ -10,7 +10,15 @@ const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const logLevel = argv('log-level') as string | undefined;
 const logToFile = argv('log-to-file') as boolean | undefined;
 
-const logger = new Logger({level: logLevel, outputFormat: outputFmt, logToFile});
+console.log(logToFile);
+
+let logger: Logger;
+
+if (logToFile) {
+  logger = new Logger({level: logLevel, outputFormat: outputFmt, logToFile});
+} else {
+  logger = new Logger({level: logLevel, outputFormat: outputFmt});
+}
 
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);
