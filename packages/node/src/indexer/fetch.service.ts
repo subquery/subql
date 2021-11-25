@@ -217,7 +217,6 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(BLOCK_TIME_VARIANCE * 10000)
   getMemoryUsage() {
-    // I need to figure out what the threshold of memory usage should be.
     const formatMemoryUsage = (data) =>
       `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
 
@@ -256,7 +255,6 @@ export class FetchService implements OnApplicationShutdown {
       }
     }
 
-    //I should maybe consider not doing this based on interval
     console.log(memoryUsage);
     console.log(ratio);
   }
