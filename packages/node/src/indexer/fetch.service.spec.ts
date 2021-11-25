@@ -276,11 +276,11 @@ describe('FetchService', () => {
 
   it('loop until shutdown', async () => {
     const batchSize = 20;
-    (fetchBlocksBatches as jest.Mock).mockImplementation((api, blockArray) => {
-      return blockArray.map((height) => ({
+    (fetchBlocksBatches as jest.Mock).mockImplementation((api, blockArray) =>
+      blockArray.map((height) => ({
         block: { block: { header: { number: { toNumber: () => height } } } },
-      }));
-    });
+      })),
+    );
     const dictionaryService = new DictionaryService(project);
 
     const fetchService = createFetchService(

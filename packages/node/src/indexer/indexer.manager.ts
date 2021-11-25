@@ -164,7 +164,6 @@ export class IndexerManager {
         process.exit(1);
       });
     this.filteredDataSources = this.filterDataSources();
-    // this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
       void this.mmrService.syncFileBaseFromPoi().catch((err) => {
