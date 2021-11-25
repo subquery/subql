@@ -40,6 +40,7 @@ export class AutoQueue<T> {
   private pendingPromise = false;
   private queue = new Queue<Action<T>>();
   private _capacity: number;
+  private _abort = false;
 
   private eventEmitter = new EventEmitter2();
 
@@ -83,8 +84,13 @@ export class AutoQueue<T> {
     });
   }
 
-  private async take(): Promise<void> {
+  async take(): Promise<void> {
     if (this.pendingPromise) return;
+    if (this._abort) {
+      // Reset so it can be restarted
+      this._abort = false;
+      return;
+    }
 
     const action = this.queue.take();
 
@@ -103,6 +109,10 @@ export class AutoQueue<T> {
       this.pendingPromise = false;
       void this.take();
     }
+  }
+
+  abort(): void {
+    this._abort = true;
   }
 
   on(

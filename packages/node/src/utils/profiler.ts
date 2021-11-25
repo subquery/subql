@@ -5,7 +5,7 @@
 
 import { getLogger } from './logger';
 
-function isPromise(e: any): boolean {
+function isPromise<T>(e: any): e is Promise<T> {
   return !!e && typeof e.then === 'function';
 }
 const logger = getLogger('profiler');
@@ -47,13 +47,17 @@ export function profiler(enabled = true): any {
 }
 
 export const profilerWrap =
-  (method: any, target: any, name: string): any =>
+  <T extends any[], U>(
+    method: (...args: T) => U,
+    target: string,
+    name: string,
+  ): ((...args: T) => U) =>
   (...args) => {
     const start = new Date();
     const res = method(...args);
     if (isPromise(res)) {
       res.then(
-        (_: any) => {
+        (_: U) => {
           printCost(start, new Date(), target, name);
           return _;
         },
