@@ -31,7 +31,7 @@ type Example @entity {
 - `Boolean`
 - `<EntityName>` 对于嵌套关系实体，您可以使用定义实体的名称作为字段之一。 请在 [Entity Relationships](#entity-relationships) 中查看。
 - `JSON` 也可以存储结构化数据，请查看 [JSON 类型](#json-type)
-- `Enum` 类型是一种特殊类型的标量，仅限特定一组允许的值。 请查看 [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `<EnumName>` types are a special kind of enumerated scalar that is restricted to a particular set of allowed values. 请查看 [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
 ## 按非主键字段索引
 
