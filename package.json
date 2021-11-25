@@ -48,7 +48,7 @@
     "postinstall": "husky install"
   },
   "dependencies": {
-    "vuepress-theme-hope": "^1.20.5"
+    "vuepress-theme-hope": "^1.21.0"
   },
   "lint-staged": {
     "*.ts": [

@@ -20,12 +20,11 @@ module.exports = config({
     //   description:
     //     "Explore and transform your chain data to build intuitive dApps faster!.",
     // },
-    // "/ru/": {
-    //   lang: "ru",
-    //   title: "SubQuery Blog Posts",
-    //   description:
-    //     "Explore and transform your chain data to build intuitive dApps faster!.",
-    // },
+    "/ru/": {
+      lang: "ru",
+      title: "SubQuery Blog Posts",
+      description: "Explore and transform your chain data to build intuitive dApps faster!.",
+    },
     // "/th/": {
     //   lang: "th",
     //   title: "SubQuery Blog Posts",
@@ -41,8 +40,7 @@ module.exports = config({
     // "/uk/": {
     //   lang: "uk",
     //   title: "SubQuery Blog Posts",
-    //   description:
-    //     "Explore and transform your chain data to build intuitive dApps faster!.",
+    //   description: "Explore and transform your chain data to build intuitive dApps faster!.",
     // },
     "/vi/": {
       lang: "vi",
@@ -101,7 +99,9 @@ module.exports = config({
       '/': getSidebar('', 'English'),
       '/zh/': getSidebar('/zh', 'Chinese'),
       '/de/': getSidebar('/de', 'German'),
-      '/vi/': getSidebar('/vi', 'Vietnamese')
+      '/vi/': getSidebar('/vi', 'Vietnamese'),
+      '/ru/': getSidebar('/ru', 'Russian')
+      // '/uk/': getSidebar('/uk', 'Ukranian')
     },
     plugins: [
       ['fulltext-search'],
