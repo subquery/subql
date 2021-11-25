@@ -43,8 +43,8 @@
     "build": "yarn workspaces foreach -pt run build",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
-    "test:all": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
-    "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
+    "test:all": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage --maxWorkers=50% --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
+    "test:docker": "docker-compose -f test/docker-compose.yaml up --maxWorkers=50% --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
   },
   "dependencies": {
