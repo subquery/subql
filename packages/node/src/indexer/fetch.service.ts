@@ -92,7 +92,7 @@ export class FetchService implements OnApplicationShutdown {
   private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
-  private scaleBatchSize: number;
+  private batchSizeScale: number;
 
   constructor(
     private apiService: ApiService,
@@ -108,7 +108,7 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
-    this.scaleBatchSize = 1;
+    this.batchSizeScale = 1;
   }
 
   onApplicationShutdown(): void {
@@ -220,6 +220,7 @@ export class FetchService implements OnApplicationShutdown {
     // I need to figure out what the threshold of memory usage should be.
     const formatMemoryUsage = (data) =>
       `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
+
     const highThreshold = 0.95;
     const lowThreshold = 0.85;
     const memoryData = process.memoryUsage();
@@ -238,28 +239,25 @@ export class FetchService implements OnApplicationShutdown {
         memoryData.external,
       )} -> V8 external memory`,
     };
-    // I thing I should only let heapUsed get to a percentage of the heapTotal
-    // This way someone could adjust the memory size and my code will still work
+
     const ratio = memoryData.heapUsed / memoryData.heapTotal;
 
-    //need to figure out how to alter amound
     if (ratio > highThreshold) {
-      if (this.scaleBatchSize >= 0.05) {
-        this.scaleBatchSize -= 0.05;
-        console.log('Scale blocksize down');
+      if (this.batchSizeScale >= 0.1) {
+        this.batchSizeScale -= 0.05;
+        console.log('Scale batchSize down');
       }
     }
 
     if (ratio < lowThreshold) {
-      if (this.scaleBatchSize <= 0.95) {
-        this.scaleBatchSize += 0.05;
-        console.log('Scale blocksize up');
+      if (this.batchSizeScale <= 0.95) {
+        this.batchSizeScale += 0.05;
+        console.log('Scale batchSize up');
       }
     }
-    //I should maybe consider not doing this based on interval
 
+    //I should maybe consider not doing this based on interval
     console.log(memoryUsage);
-    console.log(Math.round(this.scaleBatchSize * this.nodeConfig.batchSize));
     console.log(ratio);
   }
 
@@ -331,7 +329,7 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
 
       scaledBatchSize = Math.round(
-        this.scaleBatchSize * this.nodeConfig.batchSize,
+        this.batchSizeScale * this.nodeConfig.batchSize,
       );
 
       if (
@@ -380,7 +378,10 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
       // the original method: fill next batch size of blocks
-      const endHeight = this.nextEndBlockHeight(startBlockHeight);
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
     }
@@ -390,7 +391,7 @@ export class FetchService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       const takeCount = Math.min(
         this.blockBuffer.freeSize,
-        Math.round(this.scaleBatchSize * this.nodeConfig.batchSize),
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
       );
 
       if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
@@ -437,11 +438,12 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  private nextEndBlockHeight(startBlockHeight: number): number {
-    let endBlockHeight =
-      startBlockHeight +
-      Math.round(this.scaleBatchSize * this.nodeConfig.batchSize) -
-      1;
+  private nextEndBlockHeight(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+  ): number {
+    let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
+
     if (endBlockHeight > this.latestFinalizedHeight) {
       endBlockHeight = this.latestFinalizedHeight;
     }
