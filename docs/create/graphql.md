@@ -32,7 +32,7 @@ We currently supporting flowing scalars types:
 - `Boolean`
 - `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
 - `JSON` can alternatively store structured data, please see [JSON type](#json-type)
-- `Enum` types are a special kind of scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `<EnumName>` types are a special kind of enumerated scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
 ## Indexing by non-primary-key field
 
