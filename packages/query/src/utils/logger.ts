@@ -10,8 +10,6 @@ const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const logLevel = argv('log-level') as string | undefined;
 const logToFile = argv('log-to-file') as boolean | undefined;
 
-console.log(logToFile);
-
 let logger: Logger;
 
 if (logToFile) {
