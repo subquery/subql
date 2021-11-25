@@ -225,6 +225,29 @@ describe('FetchService', () => {
     expect(nextEndBlockHeightSpy).toBeCalled();
   }, 500000);
 
+  it('keeps processing when up to date with chain', async () => {
+    const batchSize = 20;
+    const project = testSubqueryProject();
+
+    const fetchService = await createFetchService(project, batchSize);
+    fetchService.fetchMeta = jest.fn();
+    await fetchService.init();
+
+    await fetchService.getFinalizedBlockHead();
+    const latestFinalizedHeight = (fetchService as any).latestFinalizedHeight;
+
+    await fetchService.startLoop(latestFinalizedHeight, (content) => {
+      if (
+        content.block.block.header.number.toNumber() >
+        latestFinalizedHeight + 2
+      ) {
+        fetchService.onApplicationShutdown();
+      }
+    });
+
+    // Expect some result
+  }, 50000);
+
   it('not use dictionary if one of the handler filter module or method is not defined', async () => {
     const batchSize = 5;
     const project = testSubqueryProject();

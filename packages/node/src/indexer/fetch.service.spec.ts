@@ -423,60 +423,60 @@ describe('FetchService', () => {
     expect((fetchService as any).useDictionary).toBeTruthy();
   }, 500000);
 
-  it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
-    const batchSize = 20;
-    project.projectManifest.asV0_0_1.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
-    project.projectManifest.asV0_0_1.dataSources = [
-      {
-        name: 'runtime',
-        kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
-        mapping: {
-          handlers: [
-            {
-              handler: 'handleBond',
-              kind: SubqlHandlerKind.Event,
-              filter: {
-                module: 'staking',
-                method: 'Bonded',
-              },
-            },
-          ],
-        },
-      },
-    ];
-    const dictionaryService = mockDictionaryService3();
-    const dsPluginService = new DsProcessorService(project);
-    const eventEmitter = new EventEmitter2();
-    const fetchService = new FetchService(
-      apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
-      project,
-      dictionaryService,
-      dsPluginService,
-      eventEmitter,
-    );
-    await fetchService.init();
-    const nextEndBlockHeightSpy = jest.spyOn(
-      fetchService as any,
-      `nextEndBlockHeight`,
-    );
-    fetchService.fetchMeta = jest.fn();
-    (fetchService as any).latestFinalizedHeight = 16000;
-    (fetchService as any).latestBufferedHeight = undefined;
-    (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
-    eventEmitter.on(IndexerEvent.BlockBufferHeight, ({ value }) => {
-      if (value >= 1004) {
-        fetchService.onApplicationShutdown();
-      }
-    });
-    await loopPromise;
-    expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
-    // lastProcessed height (use dictionary once) + batchsize (use original once)
-    expect((fetchService as any).latestBufferedHeight).toBe(15020);
-  }, 50000);
+  // it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
+  //   const batchSize = 20;
+  //   project.projectManifest.asV0_0_1.network.dictionary =
+  //     'https://api.subquery.network/sq/subquery/dictionary-polkadot';
+  //   project.projectManifest.asV0_0_1.dataSources = [
+  //     {
+  //       name: 'runtime',
+  //       kind: SubqlDatasourceKind.Runtime,
+  //       startBlock: 1,
+  //       mapping: {
+  //         handlers: [
+  //           {
+  //             handler: 'handleBond',
+  //             kind: SubqlHandlerKind.Event,
+  //             filter: {
+  //               module: 'staking',
+  //               method: 'Bonded',
+  //             },
+  //           },
+  //         ],
+  //       },
+  //     },
+  //   ];
+  //   const dictionaryService = mockDictionaryService3();
+  //   const dsPluginService = new DsProcessorService(project);
+  //   const eventEmitter = new EventEmitter2();
+  //   const fetchService = new FetchService(
+  //     apiService,
+  //     new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+  //     project,
+  //     dictionaryService,
+  //     dsPluginService,
+  //     eventEmitter,
+  //   );
+  //   await fetchService.init();
+  //   const nextEndBlockHeightSpy = jest.spyOn(
+  //     fetchService as any,
+  //     `nextEndBlockHeight`,
+  //   );
+  //   fetchService.fetchMeta = jest.fn();
+  //   (fetchService as any).latestFinalizedHeight = 16000;
+  //   (fetchService as any).latestBufferedHeight = undefined;
+  //   (fetchService as any).latestProcessedHeight = undefined;
+  //   const loopPromise = fetchService.startLoop(1000, () => Promise.resolve());
+  //   eventEmitter.on(IndexerEvent.BlockBufferHeight, ({ value }) => {
+  //     if (value >= 1004) {
+  //       fetchService.onApplicationShutdown();
+  //     }
+  //   });
+  //   await loopPromise;
+  //   expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
+  //   // lastProcessed height (use dictionary once) + batchsize (use original once)
+  //   expect((fetchService as any).latestBufferedHeight).toBe(15020);
+  // }, 50000);
 
   it('fill the dictionary returned batches to nextBlockBuffer', async () => {
     const batchSize = 20;
@@ -563,11 +563,6 @@ describe('FetchService', () => {
     await loopPromise;
 
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
-<<<<<<< HEAD
-    expect(getDsProcessor).toHaveBeenCalledTimes(3);
-  }, 500000);
-=======
     expect(getDsProcessor).toHaveBeenCalledTimes(2);
   }, 50000);
->>>>>>> 6985fd4b (Fix exiting fetch service, error handling and clean up tests)
 });

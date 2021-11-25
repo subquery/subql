@@ -22,6 +22,7 @@ import {
   DictionaryQueryEntry,
 } from '@subql/types';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
+import { lastValueFrom, take } from 'rxjs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
@@ -305,6 +306,7 @@ export class FetchService implements OnApplicationShutdown {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
 
+    this.setLatestBufferedHeight(initBlockHeight);
     await this.fetchMeta(initBlockHeight);
 
     let isFetchingBlocks = false;
@@ -325,13 +327,9 @@ export class FetchService implements OnApplicationShutdown {
 
           isFetchingBlocks = true;
 
-          await this.queueBlocks(initBlockHeight, processor, scaledBatchSize);
+          await this.queueBlocks(processor, scaledBatchSize);
 
           isFetchingBlocks = false;
-
-          this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-            value: size,
-          });
         } catch (e) {
           logger.error(e, `Failed to enqueue blocks for processing`);
           // TODO should blockBufferSubscription be cleaned up
@@ -347,25 +345,34 @@ export class FetchService implements OnApplicationShutdown {
     });
 
     // Load initial blocks
-    await this.queueBlocks(initBlockHeight, processor, this.getScaledBatchSize());
+    await this.queueBlocks(processor, this.getScaledBatchSize());
 
     return task;
   }
 
   private async queueBlocks(
-    initBlockHeight: number,
     processor: (value: BlockContent) => Promise<void> | void,
     batchSize: number,
   ): Promise<void> {
-    const bufferBlocks = await this.nextBlocks(initBlockHeight, batchSize);
-
+    let bufferBlocks = await this.nextBlocks(batchSize);
 
     if (!bufferBlocks.length) {
-      logger.info('No blocks to queue');
-      return;
+      const wait = 3;
+      logger.info(
+        `Up to date with chain, waiting for ${wait} new blocks then trying again`,
+      );
+      const header = await lastValueFrom(
+        this.api.rx.rpc.chain.subscribeFinalizedHeads().pipe(take(wait)),
+      );
+
+      bufferBlocks = range(
+        this.latestBufferedHeight + 1,
+        header.number.toNumber() + 1,
+      );
     }
 
     const highestBufferBlock = bufferBlocks[bufferBlocks.length - 1];
+    this.setLatestBufferedHeight(highestBufferBlock);
     const metadataChanged = await this.fetchMeta(highestBufferBlock);
 
     logger.info(
@@ -402,14 +409,15 @@ export class FetchService implements OnApplicationShutdown {
         }
       }),
     );
+
+    this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+      value: this.blockBuffer.size,
+    });
   }
 
   /* Gets the next block range to query, this can be nonsequential with a dictionary */
-  private async nextBlocks(initBlockHeight: number, batchSize: number): Promise<number[]> {
-    const startBlockHeight = this.latestBufferedHeight
-      ? this.latestBufferedHeight + 1
-      : initBlockHeight;
-
+  private async nextBlocks(batchSize: number): Promise<number[]> {
+    const startBlockHeight = this.latestBufferedHeight + 1;
     if (this.useDictionary) {
       const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
       const dictionary = await this.dictionaryService.getDictionary(
@@ -425,22 +433,13 @@ export class FetchService implements OnApplicationShutdown {
         this.dictionaryValidation(dictionary, startBlockHeight)
       ) {
         const { batchBlocks } = dictionary;
-        if (batchBlocks.length === 0) {
-          this.setLatestBufferedHeight(
-            Math.min(
-              queryEndBlock - 1,
-              dictionary._metadata.lastProcessedHeight,
-            ),
-          );
-        } else {
-          this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
+        if (batchBlocks.length) {
           return batchBlocks;
         }
       }
     }
 
     const endHeight = this.nextEndBlockHeight(startBlockHeight, batchSize);
-    this.setLatestBufferedHeight(endHeight);
     return range(startBlockHeight, endHeight + 1);
   }
 
@@ -462,16 +461,9 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  private nextEndBlockHeight(
-    startBlockHeight: number,
-    scaledBatchSize: number,
-  ): number {
-    let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
-
-    if (endBlockHeight > this.latestFinalizedHeight) {
-      endBlockHeight = this.latestFinalizedHeight;
-    }
-    return endBlockHeight;
+  private nextEndBlockHeight(startBlockHeight: number, scaledBatchSize: number): number {
+    const endBlockHeight = startBlockHeight + scaledBatchSize - 1;
+    return Math.min(endBlockHeight, this.latestFinalizedHeight);
   }
 
   private dictionaryValidation(
