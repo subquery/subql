@@ -31,11 +31,12 @@ type Example @entity {
 - `Boolean`
 - `<EntityName>` 对于嵌套关系实体，您可以使用定义实体的名称作为字段之一。 请在 [Entity Relationships](#entity-relationships) 中查看。
 - `JSON` 也可以存储结构化数据，请查看 [JSON 类型](#json-type)
-- `<EnumName>` types are a special kind of enumerated scalar that is restricted to a particular set of allowed values. 请查看 [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `&lt; EnumName&gt; 类型是一种特殊类型的标量，仅限于特定的一组允许的值。 请查看 <a href="https://graphql.org/learn/schema/#enumeration-types">Graphql Enum</a></li>
+</ul>
 
-## 按非主键字段索引
+<h2 spaces-before="0">按非主键字段索引</h2>
 
-为了提高查询性能，只需在非主键字段实现 `@index` 注解，便可索引实体字段。
+<p spaces-before="0">为了提高查询性能，只需在非主键字段实现 <code>@index` 注解，便可索引实体字段。 </p>
 
 但是，我们不允许用户在任何 `JSON` 对象上添加 [@index](#json-type) 注解。 默认情况下，索引会自动添加到数据库的外键和JSON字段中，但这只是为了提高查询服务的性能。
 
