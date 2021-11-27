@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.25.1] - 2021-11-27
 Priority: high for projects use dictionary
 ### Fixed:
-- Fix variable replacement in dictionary's gql, remove the quote wrapping. 
+- Fix variable replacement in dictionary's gql, remove the quote wrapping (#673) 
 
 ## [0.25.0] - 2021-11-19
 ### Fixed: 
