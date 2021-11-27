@@ -58,10 +58,10 @@ function eventFilterToQueryEntry(
   return {
     entity: 'events',
     conditions: [
-      { field: 'module', value: `"${filter.module}"` },
+      { field: 'module', value: filter.module },
       {
         field: 'event',
-        value: `"${filter.method}"`,
+        value: filter.method,
       },
     ],
   };
@@ -71,10 +71,10 @@ function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
   return {
     entity: 'extrinsics',
     conditions: [
-      { field: 'module', value: `"${filter.module}"` },
+      { field: 'module', value: filter.module },
       {
         field: 'call',
-        value: `"${filter.method}"`,
+        value: filter.method,
       },
     ],
   };
