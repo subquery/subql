@@ -1,27 +1,27 @@
-# GraphQL Schema
+# Esquema GraphQL
 
-## Defining Entities
+## Definición de entidades
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+El archivo `schema.graphql` define los diversos esquemas GraphQL. Debido a la forma en que funciona el lenguaje de consulta de GraphQL, el archivo de esquema esencialmente dicta la forma de sus datos de SubQuery. Para obtener más información sobre cómo escribir en el lenguaje de esquema GraphQL, recomendamos revisar [Esquemas y tipos](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Importante: Cuando haga cambios en el archivo de esquema, por favor, asegúrate de regenerar el directorio de tus tipos con el siguiente comando `yarn codegen`**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Entidades
+Cada entidad debe definir sus campos requeridos `id` con el tipo de `ID!`. Se utiliza como la clave primaria y única entre todas las entidades del mismo tipo.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Los campos que no aceptan valores Null en la entidad se indican mediante `!`. Por favor vea el ejemplo a continuación:
 
 ```graphql
 type Example @entity {
-  id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+  id: ID! # campo id siempre es obligatorio y debe verse como este
+  name: String! # Este es un campo obligatorio
+  address: String # Este es un campo opcional
 }
 ```
 
-### Supported scalars and types
+### Escalares y tipos soportados
 
-We currently supporting flowing scalars types:
+Actualmente soportamos tipos de escalares fluidos:
 - `ID`
 - `Int`
 - `String`
@@ -29,23 +29,23 @@ We currently supporting flowing scalars types:
 - `Float`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
-- `<EnumName>` types are a special kind of enumerated scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `<EntityName>` para entidades de relación anidadas, puede utilizar el nombre de la entidad definida como uno de los campos. Consulte [Relaciones con Entidades](#entity-relationships).
+- `JSON` puede almacenar datos estructurados alternativamente, consulte [tipo JSON](#json-type)
+- `<EnumName>` tipos son un tipo especial de escalar enumerado que está restringido a un conjunto particular de valores permitidos. Por favor vea [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
-## Indexing by non-primary-key field
+## Indexando por un campo de clave no primaria
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Para mejorar el rendimiento de la consulta, indexar un campo de entidad simplemente implementando la anotación `@index` en un campo de clave no primaria.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Sin embargo, no permitimos que los usuarios añadan anotación `@index` en cualquier objeto [JSON](#json-type). Por defecto, los índices se añaden automáticamente a las claves foráneas y para los campos JSON en la base de datos, pero sólo para mejorar el rendimiento del servicio de consultas.
 
-Here is an example.
+Aquí tenemos un ejemplo.
 
 ```graphql
 type User @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  name: String! @index(unique: true) # unique puede establecerse en verdadero o falso
+ title: Title! # Los índices se añaden automáticamente al campo de clave foránea 
 }
 
 type Title @entity {
@@ -53,11 +53,11 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+Asumiendo que conocíamos el nombre de este usuario, pero no conocemos el valor exacto del id, en lugar de extraer todos los usuarios y luego filtrar por nombre podemos añadir `@index` detrás del campo nombre. Esto hace que la consulta sea mucho más rápida y además podemos pasar el `único: verdadero` para asegurar la unidad.
 
-**If a field is not unique, the maximum result set size is 100**
+**Si un campo no es único, el tamaño máximo del conjunto de resultados es 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Cuando se ejecuta la generación de código, esto creará automáticamente un `getByName` bajo el modelo `User`, y el campo de clave foránea `title` creará un método `getByTitleId`, a la que se puede acceder directamente ambos en la función de mapeo.
 
 ```sql
 /* Prepare a record for title entity */
@@ -238,7 +238,7 @@ The drawback of using JSON types is a slight impact on query efficiency when fil
 However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
 ```graphql
-#To find the the first 5 users own phone numbers contains '0064'.
+#Para encontrar los primeros 5 usuarios de los números de teléfono contienen '0064'.
 
 query{
   user(
