@@ -5,6 +5,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.25.1] - 2021-11-27
+Priority: high for projects use dictionary
+### Fixed:
+- Fix variable replacement in dictionary's gql, remove the quote wrapping. 
 
 ## [0.25.0] - 2021-11-19
 ### Fixed: 
