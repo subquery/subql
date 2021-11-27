@@ -8,7 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.25.1] - 2021-11-27
 Priority: high for projects use dictionary
 ### Fixed:
-- Fix variable replacement in dictionary's gql, remove the quote wrapping (#673) 
+- Fix variable replacement in dictionary's gql, remove the quote wrapping (#673)
+### Changed:
+- set default false for `--timestamp-field` (#661)
 
 ## [0.25.0] - 2021-11-19
 ### Fixed: 
@@ -347,6 +349,7 @@ Priority: high for projects use dictionary
 - bump @polkadot/api to 3.1.1
 
 [Unreleased]: https://github.com/subquery/subql/compare/node/0.25.0...HEAD
+[0.25.1]: https://github.com/subquery/subql/compare/node/0.25.0...node/0.25.1
 [0.25.0]: https://github.com/subquery/subql/compare/node/0.24.0...node/0.25.0
 [0.24.0]: https://github.com/subquery/subql/compare/node/0.23.1...node/0.24.0
 [0.23.1]: https://github.com/subquery/subql/compare/node/0.23.0...node/0.23.1
