@@ -60,8 +60,8 @@ Asumiendo que conocíamos el nombre de este usuario, pero no conocemos el valor 
 Cuando se ejecuta la generación de código, esto creará automáticamente un `getByName` bajo el modelo `User`, y el campo de clave foránea `title` creará un método `getByTitleId`, a la que se puede acceder directamente ambos en la función de mapeo.
 
 ```sql
-/* Prepare a record for title entity */
-INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
+/* Prepara un registro para la entidad de título */
+INSERT INTO titles (id, name) VALUES ('id_1', 'capitán')
 ```
 
 ```typescript
@@ -76,17 +76,17 @@ const captainTitle = await Title.getByName('Captain');
 const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
-## Entity Relationships
+## Relaciones de Entidades
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Una entidad a menudo tiene relaciones anidadas con otras entidades. Establecer el valor del campo a otro nombre de entidad definirá una relación uno a uno entre estas dos entidades por defecto.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Diferentes relaciones de entidad (uno a uno, uno a muchos, y muchos-a-muchos) pueden configurarse usando los ejemplos siguientes.
 
-### One-to-One Relationships
+### Relaciones de uno a uno
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Las relaciones de uno a uno son el valor por defecto cuando sólo una entidad es asignada a otra.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Ejemplo: Un pasaporte sólo pertenecerá a una persona y una persona sólo tiene un pasaporte (en este ejemplo):
 
 ```graphql
 type Person @entity {
@@ -99,7 +99,7 @@ type Passport @entity {
 }
 ```
 
-or
+o
 
 ```graphql
 type Person @entity {
@@ -113,11 +113,11 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### Relaciones de Uno a Muchos
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Puede usar corchetes cuadrados para indicar que un tipo de campo incluye múltiples entidades.
 
-Example: A person can have multiple accounts.
+Ejemplo: Una persona puede tener múltiples cuentas.
 
 ```graphql
 type Person @entity {
@@ -131,10 +131,10 @@ type Account @entity {
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### Relaciones Muchos-a-Muchos
+Una relación muchos-a-muchos puede lograrse implementando una entidad de mapeo para conectar las otras dos entidades.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Ejemplo: Cada persona es parte de múltiples grupos (PersonGrup) y los grupos tienen múltiples personas diferentes (PersonGrup).
 
 ```graphql
 type Person @entity {
@@ -156,11 +156,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+Además, es posible crear una conexión de la misma entidad en múltiples campos de la entidad media.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Por ejemplo, una cuenta puede tener múltiples transferencias, y cada transferencia tiene una cuenta de origen y destino.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Esto establecerá una relación bidireccional entre dos Cuentas (de y a) a través de la tabla Transferencia.
 
 ```graphql
 type Account @entity {
@@ -176,13 +176,13 @@ type Transfer @entity {
 }
 ```
 
-### Reverse Lookups
+### Búsqueda inversa
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Para habilitar una búsqueda inversa en una entidad a una relación, adjunta `@derivedFrom` al campo y apunta a su campo de búsqueda inversa de otra entidad.
 
-This creates a virtual field on the entity that can be queried.
+Esto crea un campo virtual en la entidad que se puede consultar.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+La transferencia "de" una Cuenta es accesible desde la entidad de la Cuenta estableciendo el sentTransfer o el receivedTransfer como teniendo su valor derivado de los respectivos campos from-de y to-para.
 
 ```graphql
 type Account @entity {
@@ -200,19 +200,19 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## Tipo JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Estamos soportando guardar datos como un tipo JSON, que es una forma rápida de almacenar datos estructurados. Generaremos automáticamente interfaces JSON correspondientes para consultar estos datos y ahorraremos tiempo definiendo y gestionando entidades.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Recomendamos que los usuarios usen el tipo JSON en los siguientes escenarios:
+- Al almacenar datos estructurados en un solo campo es más manejable que la creación de múltiples entidades separadas.
+- Guardando las preferencias de usuario clave/valor arbitrario (donde el valor puede ser booleano, textual, o numérico, y no quiere tener columnas separadas para diferentes tipos de datos)
+- El esquema es volátil y cambia con frecuencia
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### Define la directiva JSON
+Define la propiedad como un tipo JSON agregando la anotación `jsonField` en la entidad. Esto automáticamente generará interfaces para todos los objetos JSON en su proyecto bajo `types/interfaces.ts`, y puedes acceder a ellos desde tu función de mapeo.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+A diferencia de la entidad, el objeto de directiva jsonField no requiere ningún campo `id`. Un objeto JSON también es capaz de anidar con otros objetos JSON.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -227,15 +227,15 @@ type ContactCard @jsonField {
 
 type User @entity {
   id: ID! 
-  contact: [ContactCard] # Store a list of JSON objects
+  contact: [ContactCard] # Almacenar una lista de objetos JSON
 }
 ````
 
-### Querying JSON fields
+### Consulta de campos JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+El inconveniente del uso de tipos JSON es un ligero impacto en la eficiencia de la consulta al filtrar, como cada vez que realiza una búsqueda de texto, se encuentra en toda la entidad.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Sin embargo, el impacto sigue siendo aceptable en nuestro servicio de consultas. Aquí hay un ejemplo de cómo utilizar el operador `contains` en la consulta GraphQL en un campo JSON para encontrar los 5 primeros usuarios que poseen un número de teléfono que contiene '0064'.
 
 ```graphql
 #Para encontrar los primeros 5 usuarios de los números de teléfono contienen '0064'.
