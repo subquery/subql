@@ -9,14 +9,14 @@ export interface LoggerOption {
   outputFormat?: 'json' | 'colored';
   level?: string;
   nestedKey?: string;
-  toFile?: boolean;
+  logFileDir?: string;
 }
 
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel = 'info', nestedKey, outputFormat, toFile = false}: LoggerOption) {
+  constructor({level: logLevel = 'info', logFileDir, nestedKey, outputFormat}: LoggerOption) {
     const options = {
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -75,8 +75,8 @@ export class Logger {
       },
     } as Pino.LoggerOptions;
 
-    if (toFile) {
-      this.pino = Pino(options, Pino.destination('./logger.log'));
+    if (logFileDir) {
+      this.pino = Pino(options, Pino.destination(logFileDir));
     } else {
       this.pino = Pino(options);
     }

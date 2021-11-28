@@ -19,9 +19,9 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
     },
-    'log-in-file': {
-      describe: 'Log to file instead of stdout',
-      type: 'boolean',
+    'log-file': {
+      describe: 'Specify new file to log to instead of stdout, e.g ./logger.log',
+      type: 'string',
       demandOption: false,
     },
     'output-fmt': {
