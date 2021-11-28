@@ -74,8 +74,6 @@ export class ApiService implements OnApplicationShutdown {
       const err = new Error(`Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`);
       logger.error(err, err.message);
       throw err;
-      logger.error(err);
-      throw new Error(err);
     }
 
     return this;
