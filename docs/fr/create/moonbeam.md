@@ -1,96 +1,96 @@
-# Moonbeam EVM Support
+# Support de l'EVM Moonbeam
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+Nous fournissons un processeur de données sur mesure pour Moonbeam et MoonRiver EVM. Ceci offre un moyen simple de filtrer et d'indexer à la fois l'activité EVM et Substrate sur les réseaux de Moonbeam au sein d'un seul projet SubQuery.
 
-Supported networks:
+Réseaux pris en charge :
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| Nom du réseau  | Point de terminaison Websocket                     | Point de terminaison du dictionnaire                                 |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
-| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
+| Moonbeam       | _Bientôt disponible_                               | _Bientôt disponible_                                                 |
 | Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
+**Vous pouvez également vous référer au projet d'exemple [de Moonriver EVM](https://github.com/subquery/tutorials-moonriver-evm-starter) avec un gestionnaire d'événements et d'appels.** Ce projet est également hébergé en direct dans le SubQuery Explorer [ici](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
 
-## Getting started
+## Pour commencer
 
-1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
-2. Add a custom data source as described below
-3. Add handlers for the custom data source to your code
+1. Ajouter la source de données personnalisée en tant que dépendance `yarn add @subql/contract-processors`
+2. Ajouter une source de données personnalisée comme décrit ci-dessous
+3. Ajouter des gestionnaires pour la source de données personnalisée à votre code
 
-## Data Source Spec
+## Spécification de la source de données
 
-| Field             | Type                                                           | Required | Description                                |
-| ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
-| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Yes      | File reference to the data processor code  |
-| processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
-| assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
+| Champ             | Type                                                           | Requis | Description                                           |
+| ----------------- | -------------------------------------------------------------- | ------ | ----------------------------------------------------- |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Oui    | Référence du fichier au code du processeur de données |
+| processor.options | [Options du processeur](#processor-options)                    | Non    | Options spécifiques au processeur de Moonbeam         |
+| actifs            | `{ [key: String]: { file: String }}`                           | Non    | Un objet de fichiers de ressources externes           |
 
-### Processor Options
+### Options du processeur
 
-| Field   | Type             | Required | Description                                                                                                |
-| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
-| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+| Champ   | Type             | Requis | Description                                                                                                                |
+| ------- | ---------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- |
+| abi     | String           | Non    | L'ABI qui est utilisé par le processeur pour analyser les arguments. DOIT être une clé de `assets`                         |
+| adresse | String or `null` | Non    | Une adresse de contrat d'où l'événement provient ou un appel y ai fait. `null` capturera les appels de création de contrat |
 
 ## MoonbeamCall
 
-Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler) except with a different handler argument and minor filtering changes.
+Fonctionne de la même manière que [substrate/CallHandler](../create/mapping/#call-handler) sauf avec un argument de gestion différent et des modifications mineures de filtrage.
 
-| Field  | Type                         | Required | Description                                 |
-| ------ | ---------------------------- | -------- | ------------------------------------------- |
-| kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
-| filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
+| Champ  | Type                            | Requis | Description                                             |
+| ------ | ------------------------------- | ------ | ------------------------------------------------------- |
+| kind   | 'substrate/MoonbeamCall'        | Oui    | Spécifie qu'il s'agit d'un gestionnaire de type d'appel |
+| filter | [Filtre d'appel](#call-filters) | Non    | Filtrer la source de données à exécuter                 |
 
-### Call Filters
+### Filtres d'appel
 
-| Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
-| -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
+| Champ    | Type   | Exemple(s)                                    | Description                                                                                                                                                                             |
+| -------- | ------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| function | String | 0x095ea7b3, approve(address to,uint256 value) | Soit [Signature de fonction](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) chaînes </a> ou la fonction `sighash` pour filtrer la fonction appelée sur le contrat |
+| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | Une adresse Ethereum qui a envoyé la transaction                                                                                                                                        |
 
-### Handlers
+### Gestionnaires
 
-Unlike a normal handler you will not get a `SubstrateExtrinsic` as the parameter, instead you will get a `MoonbeamCall` which is based on Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type.
+Contrairement à un gestionnaire normal, vous n'obtiendrez pas un `SubstrateExtrinsic` en tant que paramètre, au lieu de cela, vous obtiendrez un `MoonbeamCall` qui est basé sur le type Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse).
 
-Changes from the `TransactionResponse` type:
+Changements depuis le type `TransactionResponse`:
 
-- It doesn't have `wait` and `confirmations` properties
-- A `success` property is added to know if the transaction was a success
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- Il n'a pas de propriétés `attendre` et `confirmer`
+- Une propriété `succes` est ajoutée pour savoir si la transaction a été un succès
+- `args` est ajouté si le champ `abi` est fourni et que les arguments peuvent être analysés avec succès
 
 ## MoonbeamEvent
 
-Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
+Fonctionne de la même manière que [substrate/CallHandler](../create/mapping/#event-handler) sauf avec un argument de gestion différent et des modifications mineures de filtrage.
 
-| Field  | Type                           | Required | Description                                  |
-| ------ | ------------------------------ | -------- | -------------------------------------------- |
-| kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
-| filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
+| Champ  | Type                                  | Requis | Description                                             |
+| ------ | ------------------------------------- | ------ | ------------------------------------------------------- |
+| kind   | 'substrate/MoonbeamEvent'             | Oui    | Spécifie qu'il s'agit d'un gestionnaire de type d'appel |
+| filter | [Filtre d’événements](#event-filters) | Non    | Filtrer la source de données à exécuter                 |
 
-### Event Filters
+### Filtres d'événement
 
-| Field  | Type         | Example(s)                                                      | Description                                                                                                                                      |
-| ------ | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
+| Champ  | Type         | Exemple(s)                                                      | Description                                                                                                                                                 |
+| ------ | ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | Le filtre des sujets suit les filtres de log Ethereum JSON-PRC , plus de documentation peut être trouvée [ici](https://docs.ethers.io/v5/concepts/events/). |
 
-<b>Note on topics:</b>
-There are a couple of improvements from basic log filters:
+<b>Note sur les sujets :</b>
+Il y a quelques améliorations à partir des filtres de log de base :
 
-- Topics don't need to be 0 padded
-- [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
+- Les sujets n'ont pas besoin d'être rembourrés 0
+- Les chaînes [fragments d'événement](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) peuvent être fournies et converties automatiquement à leur id
 
-### Handlers
+### Gestionnaires
 
-Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
+Contrairement à un gestionnaire normal, vous n'obtiendrez pas un `SubstrateExtrinsic` en tant que paramètre, au lieu de cela, vous obtiendrez un `MoonbeamCall` qui est basé sur le type Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-Log).
 
-Changes from the `Log` type:
+Changements depuis le type `Log`:
 
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- `args` est ajouté si le champ `abi` est fourni et que les arguments peuvent être analysés avec succès
 
-## Data Source Example
+## Exemple de Source de Données
 
-This is an extract from the `project.yaml` manifest file.
+Ceci est un extrait du fichier manifeste `project.yaml`.
 
 ```yaml
 dataSources:
@@ -125,8 +125,8 @@ dataSources:
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
 
-## Known Limitations
+## Limitations connues
 
-- There is currently no way to query EVM state within a handler
-- There is no way to get the transaction receipts with call handlers
-- `blockHash` properties are currently left undefined, the `blockNumber` property can be used instead
+- Il n'y a actuellement aucun moyen de interroger l'état EVM dans un gestionnaire
+- Il n'y a aucun moyen d'obtenir les reçus de transaction avec les gestionnaires d'appel
+- Les propriétés `blockHash` sont actuellement laissées indéfinies, la propriété `blockNumber` peut être utilisée à la place
