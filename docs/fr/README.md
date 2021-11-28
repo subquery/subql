@@ -3,19 +3,19 @@
   <section class="welcomeWords">
     <div class="main">
       <div>
-        <h2 class="welcomeTitle">Welcome to SubQuery’s <span>Docs</span></h2>
-        <p>Explore and transform your chain data to build intuitive dApps faster!</p>
+        <h2 class="welcomeTitle">Bienvenue dans la documentation <span>de SubQuery</span></h2>
+        <p>Explorez et transformez vos données en chaîne pour construire des dApps plus rapidement !</p>
       </div>
     </div>
   </section>
   <section class="startSection main">
     <div>
-      <h2 class="title">Quick Start <span>Guide</span></h2>
-      <p>Understand SubQuery by getting hands on with a traditional Hello World example. Using a template project within a Docker environment, you can quickly get a node up and running and start querying a blockchain in just a few minutes with a few simple commands.
+      <h2 class="title">Guide de <span>Démarrage rapide</span></h2>
+      <p>Comprenez SubQuery en mettant la main sur un exemple traditionnel de Hello World. Utiliser un projet de modèle dans un environnement Docker, vous pouvez rapidement faire démarrer un nœud et commencer à interroger une blockchain en quelques minutes à l'aide de quelques commandes simples.
       </p>
       <span class="button">
         <router-link :to="{path: '/quickstart/helloworld-localhost/'}">
-          <span>Get started</span>
+          <span>Commencez</span>
         </router-link>
       </span>
     </div>
@@ -28,8 +28,8 @@
         <router-link :to="{path: '/tutorials_examples/introduction/'}">
           <div>
             <img src="/assets/img/tutorialsIcon.svg" />
-            <span>Tutorials and Examples</span>
-            <p>Learning by doing. Tutorials and examples on how to build various SubQuery projects.</p>
+            <span>Tutoriels et Exemples</span>
+            <p>Apprentissage par la pratique. Tutoriels et exemples sur la façon de construire différents projets SubQuery.</p>
           </div>
         </router-link>
       </li>
@@ -37,8 +37,8 @@
         <router-link :to="{path: '/create/introduction/'}">
           <div>
             <img src="/assets/img/docsIcon.svg" />
-            <span>Technical Reference Docs</span>
-            <p>Written by developers for developers. Find what you need to build awesome dApps quickly.</p>
+            <span>Documents de référence technique</span>
+            <p>Écrit par des développeurs pour les développeurs. Trouvez ce dont vous avez besoin pour construire de super dApps rapidement.</p>
           </div>
         </router-link>
       </li>
@@ -46,8 +46,8 @@
         <a href="https://static.subquery.network/whitepaper.pdf" target="_blank">
           <div>
             <img src="/assets/img/networkIcon.svg" />
-            <span>The SubQuery Network</span>
-            <p>SubQuery’s decentralised future. Read more about how indexers and consumers are rewarded.</p>
+            <span>Le réseau SubQuery</span>
+            <p>Le futur décentralisé de SubQuery. En savoir plus sur la façon dont les indexeurs et les consommateurs sont récompensés.</p>
           </div>
         </a>
       </li>
@@ -59,7 +59,7 @@
     <h2 class="title">FAQ</h2>
     <ul class="faqList">
       <li>
-        <div class="title">What is SubQuery?</div>
+        <div class="title">Qu'est-ce que SubQuery ?</div>
         <div class="content">
           <p>SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.</p>
           <span class="more">
