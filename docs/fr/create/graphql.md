@@ -1,27 +1,27 @@
 # Le Schema GraphQL
 
-## Defining Entities
+## Définition d'entités
 
-The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
+Le fichier `schema.graphql` définit les différents schemas GraphQL. En raison de la façon dont le langage de requête GraphQL fonctionne, le fichier schema dicte essentiellement la forme de vos données venant de SubQuery. Pour en savoir plus sur la façon d'écrire dans le langage de schema GraphQL, nous vous recommandons de consulter [Schemas et Types](https://graphql.org/learn/schema/#type-language).
 
-**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
+**Important : Lorsque vous apportez des modifications au fichier schema, veuillez vous assurer que vous régénérez le répertoire de vos types avec la commande suivante `yarn codegen`**
 
-### Entities
-Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
+### Entités
+Chaque entité doit définir ses champs requis `id` avec le type `ID !`. Il est utilisé comme clé primaire et unique parmi toutes les entités du même type.
 
-Non-nullable fields in the entity are indicated by `!`. Please see the example below:
+Les champs non nullables dans l'entité sont indiqués par `!`. Veuillez consulter l'exemple ci-dessous:
 
 ```graphql
-type Example @entity {
+type Exemple @entity {
   id: ID! # id field is always required and must look like this
   name: String! # This is a required field
   address: String # This is an optional field
 }
 ```
 
-### Supported scalars and types
+### Les scalaires et les types supportés
 
-We currently supporting flowing scalars types:
+Nous prenons actuellement en charge les types de scalars fluides :
 - `ID`
 - `Int`
 - `String`
@@ -29,17 +29,17 @@ We currently supporting flowing scalars types:
 - `Float`
 - `Date`
 - `Boolean`
-- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
-- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
-- `<EnumName>` types are a special kind of enumerated scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
+- `<EntityName>` pour les entités de relation imbriquées, vous pouvez utiliser le nom de l'entité définie comme l'un des champs. Veuillez consulter la section [Relations avec les entités](#entity-relationships).
+- `JSON` peut alternativement stocker des données structurées, voir [type JSON](#json-type)
+- `<EnumName>` Les types sont un type spécial de scalaire énuméré qui est limité à un ensemble particulier de valeurs autorisées. Veuillez consulter [Énum Graphql](https://graphql.org/learn/schema/#enumeration-types)
 
-## Indexing by non-primary-key field
+## Indexation par le champ clé non primaire
 
-To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
+Pour améliorer les performances de requêtes, indexer un champ d'entité simplement en implémentant l'annotation `@index` sur un champ clé non primaire.
 
-However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
+Cependant, nous n'autorisons pas les utilisateurs à ajouter une annotation `@index` à aucun objet [JSON](#json-type). Par défaut, les index sont automatiquement ajoutés aux clés étrangères et pour les champs JSON dans la base de données, mais uniquement pour améliorer les performances du service de requête.
 
-Here is an example.
+Voici un exemple:
 
 ```graphql
 type User @entity {
@@ -53,11 +53,11 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
+En supposant que nous connaissions le nom de cet utilisateur, mais nous ne connaissons pas la valeur exacte de l'id plutôt que d'extraire tous les utilisateurs puis de filtrer par nom, nous pouvons ajouter `@index` derrière le champ de nom. Cela rend la requête beaucoup plus rapide et nous pouvons également passer le `unique : true` pour assurer l'unicité.
 
-**If a field is not unique, the maximum result set size is 100**
+**Si un champ n'est pas unique, la taille maximum du champs de résultats est de 100**
 
-When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
+Lorsque la génération de code est exécutée, cela créera automatiquement un `getByName` sous le modèle `User` et le champ clé étrangère `titre` créera une méthode `getByTitleId` , qui sont directement accessibles dans la fonction de mapping.
 
 ```sql
 /* Prepare a record for title entity */
@@ -76,17 +76,17 @@ const captainTitle = await Title.getByName('Captain');
 const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
-## Entity Relationships
+## Relations entre entités
 
-An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
+Une entité a souvent des relations imbriquées avec d'autres entités. Définir la valeur du champ à un autre nom d'entité définira par défaut une relation entre ces deux entités.
 
-Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
+Différentes relations entre les entités (une à une, une à une et plusieurs à plusieurs) peuvent être configurées en utilisant les exemples ci-dessous.
 
-### One-to-One Relationships
+### Relations individuelles
 
-One-to-one relationships are the default when only a single entity is mapped to another.
+Les relations individuelles sont la valeur par défaut lorsque seule une seule entité est associée à une autre.
 
-Example: A passport will only belong to one person and a person only has one passport (in this example):
+Exemple: Un passeport n'appartiendra qu'à une seule personne et une seule personne n'a qu'un passeport (dans cet exemple) :
 
 ```graphql
 type Person @entity {
@@ -99,7 +99,7 @@ type Passport @entity {
 }
 ```
 
-or
+ou
 
 ```graphql
 type Person @entity {
@@ -113,11 +113,11 @@ type Passport @entity {
 }
 ```
 
-### One-to-Many relationships
+### Relations une à plusieurs
 
-You can use square brackets to indicate that a field type includes multiple entities.
+Vous pouvez utiliser des crochets pour indiquer qu'un type de champ contient plusieurs entités.
 
-Example: A person can have multiple accounts.
+Exemple: Une personne peut avoir plusieurs comptes.
 
 ```graphql
 type Person @entity {
@@ -131,10 +131,10 @@ type Account @entity {
 }
 ```
 
-### Many-to-Many relationships
-A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
+### Relations de plusieurs à plusieurs
+Une relation de plusieurs à plusieurs peut être obtenue en implémentant une entité de cartographie pour relier les deux autres entités.
 
-Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
+Exemple: Chaque personne fait partie de groupes multiples (Groupe de personnes) et les groupes ont plusieurs personnes différentes (Groupe de personnes).
 
 ```graphql
 type Person @entity {
@@ -156,11 +156,11 @@ type Group @entity {
 }
 ```
 
-Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
+De plus, il est possible de créer une connexion de la même entité dans plusieurs champs de l'entité moyenne.
 
-For example, an account can have multiple transfers, and each transfer has a source and destination account.
+Par exemple, un compte peut avoir plusieurs transferts, et chaque transfert a un compte source et de destination.
 
-This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
+Cela établira une relation bidirectionnelle entre deux comptes clients (de et vers) par le biais de la table de transfert.
 
 ```graphql
 type Account @entity {
@@ -176,13 +176,13 @@ type Transfer @entity {
 }
 ```
 
-### Reverse Lookups
+### Recherche inversée
 
-To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
+Pour activer une recherche inversée sur une entité à une relation, attachez `@derivedDe` au champ et pointez vers son champ de recherche inversé d'une autre entité.
 
-This creates a virtual field on the entity that can be queried.
+Cela crée un champ virtuel sur l'entité qui peut être interrogée.
 
-The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
+Le transfert « à partir » d'un compte est accessible à partir de l'entité du compte en définissant la valeur de sentTransfer ou receivedTransfer comme ayant leur valeur dérivée des champs respectifs ou des champs.
 
 ```graphql
 type Account @entity {
@@ -200,19 +200,19 @@ type Transfer @entity {
 }
 ```
 
-## JSON type
+## Type JSON
 
-We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
+Nous prenons en charge l'enregistrement des données en tant que type JSON, ce qui est un moyen rapide de stocker des données structurées. Nous générerons automatiquement les interfaces JSON correspondantes pour interroger ces données et vous économiserons du temps pour définir et gérer les entités.
 
-We recommend users use the JSON type in the following scenarios:
-- When storing structured data in a single field is more manageable than creating multiple separate entities.
-- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
-- The schema is volatile and changes frequently
+Nous recommandons aux utilisateurs d'utiliser le type JSON dans les scénarios suivants :
+- Lorsque vous stockez des données structurées dans un seul champ est plus facile à gérer que de créer plusieurs entités séparées.
+- Sauvegarde des préférences utilisateur de clé arbitraire (où la valeur peut être booléenne, textuelle, ou numérique, et vous ne voulez pas avoir de colonnes séparées pour différents types de données)
+- Le schema est volatil et évolue fréquemment
 
-### Define JSON directive
-Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
+### Définissez la directive JSON
+Définissez la propriété en tant que type JSON en ajoutant l'annotation `jsonField` dans l'entité. Cela générera automatiquement des interfaces pour tous les objets JSON de votre projet sous `types/interfaces. s`, et vous pouvez y accéder dans votre fonction de mapping.
 
-Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
+Contrairement à l'entité, l'objet directive jsonField ne nécessite aucun champ `id`. Un objet JSON est également capable de s'imbriquer avec d'autres objets JSON.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -231,11 +231,11 @@ type User @entity {
 }
 ````
 
-### Querying JSON fields
+### Requête des champs JSON
 
-The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
+L'inconvénient d'utiliser des types JSON se retrouve sur l'efficacité de la requête lors du filtrage, comme chaque fois qu'il effectue une recherche de texte, cela se fait sur l'entité entière.
 
-However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
+Cependant, l'impact est acceptable dans notre service de requêtes. Voici un exemple de comment utiliser l'opérateur `contient` dans la requête GraphQL sur un champ JSON pour trouver les 5 premiers utilisateurs qui possèdent un numéro de téléphone qui contient '0064'.
 
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
