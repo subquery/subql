@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubqueryProject } from '../configure/project.model';
 import { DbModule } from '../db/db.module';
+import { getLogger } from '../utils/logger';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
@@ -15,6 +16,8 @@ import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
+
+const logger = getLogger('indexer-module');
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
@@ -27,9 +30,14 @@ import { StoreService } from './store.service';
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new ApiService(project, eventEmitter);
-        await apiService.init();
-        return apiService;
+        try {
+          const apiService = new ApiService(project, eventEmitter);
+          await apiService.init();
+          return apiService;
+        } catch (e) {
+          logger.error(e);
+          process.exit(1);
+        }
       },
       inject: [SubqueryProject, EventEmitter2],
     },
