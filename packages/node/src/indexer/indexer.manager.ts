@@ -249,6 +249,7 @@ export class IndexerManager {
         await this.sequelize.createSchema(projectSchema, undefined);
       }
     }
+
     return this.subqueryRepo.create({
       name,
       dbSchema: projectSchema,
@@ -259,12 +260,38 @@ export class IndexerManager {
     });
   }
 
+  private async getProjectSchema(): Promise<string> {
+    let schema = argv.schema;
+    if (!schema) {
+      schema = this.nodeConfig.subqueryName;
+    }
+    const schemas = (await this.sequelize.showAllSchemas(
+      undefined,
+    )) as unknown as string[];
+    if (!schemas.includes(schema)) {
+      const result = await this.sequelize.query(
+        `select db_schema from public.subqueries where name = :name`,
+        {
+          replacements: { name: schema },
+          type: QueryTypes.SELECT,
+        },
+      );
+      if (!result.length) {
+        schema = undefined;
+      } else {
+        schema = (result[0] as any).db_schema;
+      }
+    }
+    return schema;
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
-    let project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-    const { chain, genesisHash } = this.apiService.networkMeta;
-    if (!project) {
+    const schema = await this.getProjectSchema();
+    // XXX: how do I recreate this to be independent of the subqueryRepo (which is dependent on the subqueries table) I don't know how to fetch a metadataRepo as an object in the same manner
+    // let project = await this.subqueryRepo.findOne({
+    //   where: { name: this.nodeConfig.subqueryName },
+    // });
+    if (!schema) {
       project = await this.createProjectSchema(name);
     } else {
       if (argv['force-clean']) {
@@ -293,6 +320,7 @@ export class IndexerManager {
         project = await this.createProjectSchema(name);
       }
       if (!project.networkGenesis || !project.network) {
+        const { chain, genesisHash } = this.apiService.networkMeta;
         project.network = chain;
         project.networkGenesis = genesisHash;
         await project.save();
