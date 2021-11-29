@@ -7,15 +7,15 @@ Le fichier `schema.graphql` définit les différents schemas GraphQL. En raison 
 **Important : Lorsque vous apportez des modifications au fichier schema, veuillez vous assurer que vous régénérez le répertoire de vos types avec la commande suivante `yarn codegen`**
 
 ### Entités
-Chaque entité doit définir ses champs requis `id` avec le type `ID !`. Il est utilisé comme clé primaire et unique parmi toutes les entités du même type.
+Chaque entité doit définir ses champs requis `id` avec le type `ID!`. Il est utilisé comme clé primaire et unique parmi toutes les entités du même type.
 
 Les champs non nullables dans l'entité sont indiqués par `!`. Veuillez consulter l'exemple ci-dessous:
 
 ```graphql
 type Exemple @entity {
   id: ID! # id field is always required and must look like this
-  name: String! # This is a required field
-  address: String # This is an optional field
+  name: String! # Ceci est un champ obligatoire
+  address: String # Ceci est un champ facultatif
 }
 ```
 
@@ -44,8 +44,8 @@ Voici un exemple:
 ```graphql
 type User @entity {
   id: ID!
-  name: String! @index(unique: true) # unique can be set to true or false
-  title: Title! # Indexes are automatically added to foreign key field 
+  name: String! @index(unique: true) # unique peut être défini sur true ou false
+  title: Title! # Les index sont automatiquement ajoutés au champ de clé étrangère
 }
 
 type Title @entity {
@@ -60,12 +60,12 @@ En supposant que nous connaissions le nom de cet utilisateur, mais nous ne conna
 Lorsque la génération de code est exécutée, cela créera automatiquement un `getByName` sous le modèle `User` et le champ clé étrangère `titre` créera une méthode `getByTitleId` , qui sont directement accessibles dans la fonction de mapping.
 
 ```sql
-/* Prepare a record for title entity */
+/* Préparer un enregistrement pour l'entité titre */
 INSERT INTO titles (id, name) VALUES ('id_1', 'Captain')
 ```
 
 ```typescript
-// Handler in mapping function
+// Handler dans la fonction de mapping
 import {User} from "../types/models/User"
 import {Title} from "../types/models/Title"
 
@@ -210,7 +210,7 @@ Nous recommandons aux utilisateurs d'utiliser le type JSON dans les scénarios s
 - Le schema est volatil et évolue fréquemment
 
 ### Définissez la directive JSON
-Définissez la propriété en tant que type JSON en ajoutant l'annotation `jsonField` dans l'entité. Cela générera automatiquement des interfaces pour tous les objets JSON de votre projet sous `types/interfaces. s`, et vous pouvez y accéder dans votre fonction de mapping.
+Définissez la propriété en tant que type JSON en ajoutant l'annotation `jsonField` dans l'entité. Cela générera automatiquement des interfaces pour tous les objets JSON de votre projet sous `types/interfaces.ts`, et vous pouvez y accéder dans votre fonction de mapping.
 
 Contrairement à l'entité, l'objet directive jsonField ne nécessite aucun champ `id`. Un objet JSON est également capable de s'imbriquer avec d'autres objets JSON.
 
@@ -227,7 +227,7 @@ type ContactCard @jsonField {
 
 type User @entity {
   id: ID! 
-  contact: [ContactCard] # Store a list of JSON objects
+  contact: [ContactCard] # Stocker une liste d'objets JSON
 }
 ````
 
