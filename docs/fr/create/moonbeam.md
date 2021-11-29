@@ -30,7 +30,7 @@ Réseaux pris en charge :
 
 | Champ   | Type             | Requis | Description                                                                                                                |
 | ------- | ---------------- | ------ | -------------------------------------------------------------------------------------------------------------------------- |
-| abi     | String           | Non    | L'ABI qui est utilisé par le processeur pour analyser les arguments. DOIT être une clé de `assets`                         |
+| abi     | String           | Non    | L'ABI qui est utilisé par le processeur pour analyser les arguments. DOIT être une clé d' `actifs`                         |
 | adresse | String or `null` | Non    | Une adresse de contrat d'où l'événement provient ou un appel y ai fait. `null` capturera les appels de création de contrat |
 
 ## MoonbeamCall
@@ -70,9 +70,9 @@ Fonctionne de la même manière que [substrate/CallHandler](../create/mapping/#e
 
 ### Filtres d'événement
 
-| Champ  | Type         | Exemple(s)                                                      | Description                                                                                                                                                 |
-| ------ | ------------ | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | Le filtre des sujets suit les filtres de log Ethereum JSON-PRC , plus de documentation peut être trouvée [ici](https://docs.ethers.io/v5/concepts/events/). |
+| Champ  | Type         | Exemple(s)                                                      | Description                                                                                                                                              |
+| ------ | ------------ | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | Le filtre des sujets suit les filtres de log Ethereum JSON-PRC , vous trouverez plus de documentation [ici](https://docs.ethers.io/v5/concepts/events/). |
 
 <b>Note sur les sujets :</b>
 Il y a quelques améliorations à partir des filtres de log de base :
@@ -99,9 +99,9 @@ dataSources:
     processor:
       file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
       options:
-        # Must be a key of assets
+        # Doit être une clé d'actifs
         abi: erc20
-        # Contract address (or recipient if transfer) to filter, if `null` should be for contract creation
+        # Adresse du contrat (ou du destinataire en cas de transfert) à filtrer, si `null`, ce sera pour la création du contrat.
         address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
     assets:
       erc20:
@@ -117,7 +117,7 @@ dataSources:
         - handler: handleMoonriverCall
           kind: substrate/MoonbeamCall
           filter:
-            ## The function can either be the function fragment or signature
+            ## La fonction peut être soit un fragment de fonction, soit une signature.
             # function: '0x095ea7b3'
             # function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'
             # function: approve(address,uint256)
