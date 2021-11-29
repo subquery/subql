@@ -12,6 +12,8 @@ const {version: packageVersion} = require('../../../package.json');
 const indexerUrl = argv('indexer') as string | undefined;
 
 const METADATA_TYPES = {
+  name: 'string',
+  schema: 'string',
   lastProcessedHeight: 'number',
   lastProcessedTimestamp: 'number',
   targetHeight: 'number',

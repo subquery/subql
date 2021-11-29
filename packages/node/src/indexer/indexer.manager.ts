@@ -265,14 +265,15 @@ export class IndexerManager {
       }
     }
 
-    return this.subqueryRepo.create({
-      name,
-      dbSchema: projectSchema,
-      hash: '0x',
-      nextBlockHeight: this.getStartBlockFromDataSources(),
-      network: chain,
-      networkGenesis: genesisHash,
-    });
+    let metadataRepo = MetadataFactory(this.sequelize, projectSchema);
+    await Promise.all([
+      metadataRepo.upsert({ key: 'name', value: name}),
+      metadataRepo.upsert({ key: 'schema', value: projectSchema}),
+      metadataRepo.upsert({ key: 'chain', value: chain}),
+      metadataRepo.upsert({ key: 'genesisHash', value: genesisHash}),
+      metadataRepo.upsert({ key: 'lastProcessedHeight', value: this.getStartBlockFromDataSources() }),
+    ]);
+    return metadataRepo
   }
 
   // TODO: Turn this into getProjectMetadata
@@ -310,15 +311,14 @@ export class IndexerManager {
 
     // If found project convert the subqueries entry to a metadata entry
     if (project) {
-      const metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
-      let metadata = await this.getMetadata(metadataRepo);
-      metadata.name = project.name;
-      metadata.schema = project.dbSchema;
-      metadata.genesisHash = project.networkGenesis;
-      metadata.chain = project.network;
-      metadata.lastProcessedHeight = project.nextBlockHeight;
-      await this.setMetadata(metadataRepo, metadata);
-
+      let metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
+      await Promise.all([
+        metadataRepo.upsert({ key: 'name', value: name}),
+        metadataRepo.upsert({ key: 'schema', value: project.dbSchema}),
+        metadataRepo.upsert({ key: 'chain', value: project.network}),
+        metadataRepo.upsert({ key: 'genesisHash', value: project.networkGenesis}),
+        metadataRepo.upsert({ key: 'lastProcessedHeight', value: project.nextBlockHeight }),
+      ]);
       return metadataRepo;
     } else {
       logger.log('Could not find existing project in subqueries table');
@@ -527,40 +527,5 @@ export class IndexerManager {
         await processData(processor, handler, filteredEvents);
       }
     }
-  }
-
-  // Fetch a metadata object from a metadataRepo
-  private async getMetadata(metadataRepo: MetadataRepo) {
-    const keys = [
-      'name',
-      'schema',
-      'lastProcessedHeight',
-      'indexerNodeVersion',
-      'chain',
-      'specName',
-      'genesisHash',
-    ] as const;
-
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-    });
-
-    const kv = entries.reduce((arr, curr) => {
-      arr[curr.key] = curr.value;
-      return arr;
-    }, {} as { [key in typeof keys[number]]: string | boolean | number });
-
-    return kv 
-  }
-
-  // Upsert to a metadataRepo from a metadata object
-  private async setMetadata(metadataRepo: MetadataRepo, metadata: any) {
-    let changes = [];
-    for (const [k, v] of Object.entries(metadata)) {
-      changes.push(metadataRepo.upsert({key: k, value: v as any}))
-    } 
-    await Promise.all(changes);
   }
 }
