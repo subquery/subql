@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.8.0] - 2021-11-19
+### Added
+- Support enum in postgraphile plugin (#551)
+### Changed
+- Update `GetMetadataPlugin` to support fetch from both api and table (#555)
+
 ## [0.7.4] - 2021-11-03
 ### Changed
 - Bump dependencies (#584)
@@ -70,7 +76,8 @@ Upgrade priority: High. This fix the entities name conflict issue, for users who
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/0.7.4...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/0.8.0...HEAD
+[0.8.0]: https://github.com/subquery/subql/compare/query/0.7.4...query/0.8.0
 [0.7.4]: https://github.com/subquery/subql/compare/query/0.7.3...query/0.7.4
 [0.5.0]: https://github.com/subquery/subql/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/subquery/subql/compare/v0.3.2...v0.4.0

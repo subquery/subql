@@ -7,8 +7,8 @@ Supported networks:
 | Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
 | Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
-| Moonriver      | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
 **You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
 
@@ -72,7 +72,7 @@ Works in the same way as [substrate/EventHandler](../create/mapping/#event-handl
 
 | Field  | Type         | Example(s)                                                   | Description                                                                                                                                      |
 | ------ | ------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,u256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
+| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
 
 <b>Note on topics:</b>
 There are a couple of improvements from basic log filters:
@@ -113,7 +113,7 @@ dataSources:
           kind: substrate/MoonbeamEvent
           filter:
             topics:
-              - Transfer(address indexed from,address indexed to,u256 value)
+              - Transfer(address indexed from,address indexed to,uint256 value)
         - handler: handleMoonriverCall
           kind: substrate/MoonbeamCall
           filter:

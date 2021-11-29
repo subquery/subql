@@ -3,14 +3,17 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import { NodeConfig } from '../configure/NodeConfig';
 import {
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
+import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;
+const CHECK_HEALTH_INTERVAL = 60000;
 
 @Injectable()
 export class HealthService {
@@ -20,16 +23,37 @@ export class HealthService {
   private currentProcessingTimestamp?: number;
   private blockTime = 6000;
   private healthTimeout: number;
+  private indexerHealthy: boolean;
 
-  constructor(protected nodeConfig: NodeConfig) {
+  constructor(
+    protected nodeConfig: NodeConfig,
+    private storeService: StoreService,
+  ) {
     this.healthTimeout = Math.max(
       DEFAULT_TIMEOUT,
       this.nodeConfig.timeout * 1000,
     );
   }
 
+  @Interval(CHECK_HEALTH_INTERVAL)
+  async checkHealthStatus() {
+    let healthy: boolean;
+
+    try {
+      this.getHealth();
+      healthy = true;
+    } catch (e) {
+      healthy = false;
+    }
+
+    if (healthy !== this.indexerHealthy) {
+      await this.storeService.setMetadata('indexerHealthy', healthy);
+      this.indexerHealthy = healthy;
+    }
+  }
+
   @OnEvent(IndexerEvent.BlockTarget)
-  handleTargetBlock(blockPayload: TargetBlockPayload) {
+  handleTargetBlock(blockPayload: TargetBlockPayload): void {
     if (this.recordBlockHeight !== blockPayload.height) {
       this.recordBlockHeight = blockPayload.height;
       this.recordBlockTimestamp = Date.now();

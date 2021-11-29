@@ -44,6 +44,8 @@ import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
+const { version: packageVersion } = require('../../package.json');
+
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('indexer');
@@ -57,8 +59,8 @@ export class IndexerManager {
   private filteredDataSources: SubqlDatasource[];
 
   constructor(
-    private apiService: ApiService,
     private storeService: StoreService,
+    private apiService: ApiService,
     private fetchService: FetchService,
     private poiService: PoiService,
     protected mmrService: MmrService,
@@ -73,7 +75,7 @@ export class IndexerManager {
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
-    const { block, events, extrinsics } = blockContent;
+    const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -86,12 +88,12 @@ export class IndexerManager {
     try {
       const isUpgraded = block.specVersion !== this.prevSpecVersion;
       // if parentBlockHash injected, which means we need to check runtime upgrade
-      await this.apiService.setBlockhash(
+      const apiAt = await this.apiService.getPatchedApi(
         block.block.hash,
         isUpgraded ? block.block.header.parentHash : undefined,
       );
       for (const ds of this.filteredDataSources) {
-        const vm = await this.sandboxService.getDsProcessor(ds);
+        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
         if (isRuntimeDs(ds)) {
           await this.indexBlockForRuntimeDs(
             vm,
@@ -127,6 +129,7 @@ export class IndexerManager {
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
+
     this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
       height: blockHeight,
       timestamp: Date.now(),
@@ -135,18 +138,19 @@ export class IndexerManager {
 
   async start(): Promise<void> {
     await this.dsProcessorService.validateCustomDs();
-    await this.apiService.init();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
     await this.ensureMetadata(this.subqueryState.dbSchema);
+
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
         this.poiService.init(this.subqueryState.dbSchema),
         this.mmrService.init(this.subqueryState.dbSchema),
       ]);
     }
+
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {
@@ -181,17 +185,53 @@ export class IndexerManager {
 
   private async ensureMetadata(schema: string) {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
-    //block offset should only been create once, never update.
-    //if change offset will require re-index and re-sync poi
-    const blockOffset = await metadataRepo.findOne({
-      where: { key: 'blockOffset' },
+    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+
+    this.eventEmitter.emit(
+      IndexerEvent.NetworkMetadata,
+      this.apiService.networkMeta,
+    );
+
+    const keys = [
+      'blockOffset',
+      'indexerNodeVersion',
+      'chain',
+      'specName',
+      'genesisHash',
+    ] as const;
+
+    const entries = await metadataRepo.findAll({
+      where: {
+        key: keys,
+      },
     });
-    if (!blockOffset) {
+
+    const keyValue = entries.reduce((arr, curr) => {
+      arr[curr.key] = curr.value;
+      return arr;
+    }, {} as { [key in typeof keys[number]]: string | boolean | number });
+
+    //blockOffset and genesisHash should only been create once, never update
+    //if blockOffset is changed, will require re-index and re-sync poi.
+    if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await metadataRepo.create({
-        key: 'blockOffset',
-        value: offsetValue,
-      });
+      await this.storeService.setMetadata('blockOffset', offsetValue);
+    }
+
+    if (!keyValue.genesisHash) {
+      await this.storeService.setMetadata('genesisHash', genesisHash);
+    }
+
+    if (keyValue.chain !== chain) {
+      await this.storeService.setMetadata('chain', chain);
+    }
+
+    if (keyValue.specName !== specName) {
+      await this.storeService.setMetadata('specName', specName);
+    }
+
+    if (keyValue.indexerNodeVersion !== packageVersion) {
+      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
     }
   }
 
@@ -238,8 +278,8 @@ export class IndexerManager {
           // remove schema from project table
           await this.sequelize.query(
             ` DELETE
-          FROM public.subqueries
-          where db_schema = :subquerySchema`,
+              FROM public.subqueries
+              where db_schema = :subquerySchema`,
             {
               replacements: { subquerySchema: project.dbSchema },
               type: QueryTypes.DELETE,

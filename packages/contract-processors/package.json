@@ -1,6 +1,6 @@
 {
   "name": "@subql/contract-processors",
-  "version": "0.3.0",
+  "version": "0.3.2",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "@subql/types": "workspace:*",
-    "class-transformer": "^0.4.0",
+    "class-transformer": "0.4.0",
     "class-validator": "^0.13.1",
     "ethers": "^5.5.1"
   },

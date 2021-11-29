@@ -34,6 +34,11 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Force clean the database, dropping project schemas and tables',
     },
+    unsafe: {
+      type: 'boolean',
+      demandOption: false,
+      describe: 'Allows usage of any built-in module within the sandbox',
+    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',
@@ -84,7 +89,7 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
       type: 'boolean',
-      default: true,
+      default: false,
     },
     'network-dictionary': {
       alias: 'd',

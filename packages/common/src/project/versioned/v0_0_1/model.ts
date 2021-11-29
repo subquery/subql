@@ -3,7 +3,7 @@
 
 import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
 import {ProjectNetworkConfig} from '../../types';
 import {ProjectManifestBaseImpl} from '../base';
@@ -38,4 +38,16 @@ export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implement
   @ValidateNested()
   @Type(() => RuntimeDataSourceV0_0_1Impl)
   dataSources: RuntimeDataSourceV0_0_1[];
+  toDeployment(): string {
+    throw new Error('Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above');
+  }
+
+  validate(): void {
+    const errors = validateSync(this, {whitelist: true, forbidNonWhitelisted: true});
+    if (errors?.length) {
+      // TODO: print error details
+      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
+    }
+  }
 }

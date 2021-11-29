@@ -56,7 +56,7 @@
 </div>
 <section class="faqSection main">
   <div>
-    <h2 class="title">FAQ</h2>
+    <h2 class="title">SSS</h2>
     <ul class="faqList">
       <li>
         <div class="title">SubQuery nedir?</div>
@@ -101,7 +101,7 @@
         <h5>Özel Zinciriniz ile entegre misiniz?</h5>
         <p>İster Substrate'de yeni bir parachain ister tamamen yeni bir blok zinciri oluşturuyor olun - SubQuery zincirinizin verilerini dizine almanıza ve sorun gidermenize yardımcı olabilir. SubQuery, özel bir Substrat tabanlı zincirle kolayca entegre olacak şekilde tasarlanmıştır.</p>
         <span class="more">
-          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">LEARN HOW TO INTEGRATE WITH YOUR CHAIN</router-link>
+          <router-link :to="{path: '/create/mapping/#custom-substrate-chains'}">ZİNCİRİNİZLE NASIL ENTEGRE OLACAĞINIZI ÖĞRENİN</router-link>
         </span>
     </div>
     <div class="lastIntroduce lastIntroduce_2">

@@ -4,7 +4,7 @@
 import { ProjectManifestVersioned } from '@subql/common';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
-import { DictionaryService } from './dictionary.service';
+import { DictionaryQueryEntry, DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject(
@@ -25,6 +25,37 @@ function testSubqueryProject(): SubqueryProject {
   return project;
 }
 
+const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
+  {
+    entity: 'events',
+    conditions: [
+      { field: 'module', value: 'staking' },
+      { field: 'event', value: 'Bonded' },
+    ],
+  },
+  {
+    entity: 'events',
+    conditions: [
+      { field: 'module', value: 'balances' },
+      { field: 'event', value: 'Reward' },
+    ],
+  },
+  {
+    entity: 'events',
+    conditions: [
+      { field: 'module', value: 'balances' },
+      { field: 'event', value: 'Slash' },
+    ],
+  },
+  {
+    entity: 'extrinsics',
+    conditions: [
+      { field: 'module', value: 'staking' },
+      { field: 'call', value: 'bond' },
+    ],
+  },
+];
+
 describe('DictionaryService', () => {
   it('return dictionary query result', async () => {
     const project = testSubqueryProject();
@@ -33,19 +64,11 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const indexFilters = {
-      eventFilters: [
-        { module: 'staking', method: 'Bonded' },
-        { module: 'balances', method: 'Reward' },
-        { module: 'balances', method: 'Slash' },
-      ],
-      extrinsicFilters: [{ module: 'staking', method: 'bond' }],
-    };
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
       batchSize,
-      indexFilters,
+      HAPPY_PATH_CONDITIONS,
     );
 
     expect(dic.batchBlocks.length).toBeGreaterThan(1);
@@ -59,19 +82,11 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const indexFilters = {
-      eventFilters: [
-        { module: 'staking', method: 'Bonded' },
-        { module: 'balances', method: 'Reward' },
-        { module: 'balances', method: 'Slash' },
-      ],
-      extrinsicFilters: [{ module: 'staking', method: 'bond' }],
-    };
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
       batchSize,
-      indexFilters,
+      HAPPY_PATH_CONDITIONS,
     );
     expect(dic).toBeUndefined();
   }, 500000);
@@ -82,19 +97,11 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 400000000;
     const endBlock = 400010000;
-    const indexFilters = {
-      eventFilters: [
-        { module: 'staking', method: 'Bonded' },
-        { module: 'balances', method: 'Reward' },
-        { module: 'balances', method: 'Slash' },
-      ],
-      extrinsicFilters: [{ module: 'staking', method: 'bond' }],
-    };
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
       batchSize,
-      indexFilters,
+      HAPPY_PATH_CONDITIONS,
     );
     expect(dic._metadata).toBeDefined();
   }, 500000);
@@ -106,18 +113,19 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const indexFilters = {
-      existBlockHandler: false,
-      existEventHandler: true,
-      existExtrinsicHandler: true,
-      eventFilters: [],
-      extrinsicFilters: [{ module: 'timestamp', method: 'set' }],
-    };
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
       batchSize,
-      indexFilters,
+      [
+        {
+          entity: 'extrinsics',
+          conditions: [
+            { field: 'module', value: 'timestamp' },
+            { field: 'call', value: 'set' },
+          ],
+        },
+      ],
     );
     expect(dic.batchBlocks).toEqual(range(startBlock, startBlock + batchSize));
   }, 500000);
@@ -128,24 +136,49 @@ describe('DictionaryService', () => {
     const batchSize = 50;
     const startBlock = 333300;
     const endBlock = 340000;
-    const indexFilters = {
-      //last event at block 333524
-      eventFilters: [
-        { module: 'session', method: 'NewSession' },
-        { module: 'staking', method: 'EraPayout' },
-        { module: 'staking', method: 'Reward' },
-      ],
-      //last extrinsic at block 339186
-      extrinsicFilters: [
-        { module: 'staking', method: 'payoutStakers' },
-        { module: 'utility', method: 'batch' },
-      ],
-    };
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
       batchSize,
-      indexFilters,
+      [
+        {
+          //last event at block 333524
+          entity: 'events',
+          conditions: [
+            { field: 'module', value: 'session' },
+            { field: 'event', value: 'NewSession' },
+          ],
+        },
+        {
+          entity: 'events',
+          conditions: [
+            { field: 'module', value: 'staking' },
+            { field: 'event', value: 'EraPayout' },
+          ],
+        },
+        {
+          entity: 'events',
+          conditions: [
+            { field: 'module', value: 'staking' },
+            { field: 'event', value: 'Reward' },
+          ],
+        },
+        {
+          //last extrinsic at block 339186
+          entity: 'extrinsics',
+          conditions: [
+            { field: 'module', value: 'staking' },
+            { field: 'call', value: 'payoutStakers' },
+          ],
+        },
+        {
+          entity: 'extrinsics',
+          conditions: [
+            { field: 'module', value: 'utility' },
+            { field: 'call', value: 'batch' },
+          ],
+        },
+      ],
     );
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);

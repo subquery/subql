@@ -16,7 +16,6 @@ describe('sandbox for subql-node', () => {
     vm = new IndexerSandbox(
       {
         store: undefined,
-        api: undefined,
         root: path.resolve(__dirname, '../../test/sandbox'),
         entry: './main.js',
       },

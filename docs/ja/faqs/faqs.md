@@ -1,45 +1,53 @@
-# Frequently Asked Questions
+# よくある質問
 
-## What is SubQuery?
+## SubQueryとは?
 
-SubQuery is an open source project that allows developers to index, transform, and query Substrate chain data to power their applications.
+SubQueryは開発者がSubstrateチェーンのデータにインデックスを付け、変換し、クエリを実行して、アプリケーションを強化するためのオープンソースプロジェクトです。
 
-SubQuery also provides free, production grade hosting of projects for developers removing the responsiblity of manging infrastructure, and letting developers do what they do best - build.
+また、SubQueryは開発者向けにプロジェクトの高品質のホスティングを無料で提供しているため、インフラ管理の責任を負うことなく、開発者はビルドに最善を尽くす事ができます。
 
-## What is the best way to get started with SubQuery?
+## SubQueryを始めるための最良の方法は何ですか?
 
-The best way to get started with SubQuery is to try out our [Hello World tutorial](../quickstart/helloworld-localhost.md). This is a simple 5 min walk through of downloading the starter template, building the project, and then using Docker to run a node on your localhost and running a simple query.
+SubQueryを始める最良の方法は、 [Hello Worldチュートリアル](../quickstart/helloworld-localhost.md) を試してみることです。 これはスターターテンプレートをダウンロードし、プロジェクトを構築するための簡単な5分です。 次にDocker を使用して、localhost上でノードを実行し、単純なクエリを実行します。
 
-## How can I contribute or give feedback to SubQuery?
+## SubQueryに貢献したりフィードバックを与えたりするにはどうすればいいですか?
 
-We love contributions and feedback from the community. To contribute code, fork the repository of interest and make your changes. Then submit a PR or Pull Request. Oh, don't forget to test as well! Also check out our contributions guide lines (TBA).
+私たちはコミュニティからの貢献とフィードバックが大好きです。 コードに貢献するためには、関心のあるリポジトリをフォークして変更を加えます。 次にPRまたはPullリクエストを送信します。 ああ、テストすることを忘れないでください! 私たちの貢献ガイドラインもチェックしてください(近日公開)。
 
-To give feedback, contact us at hello@subquery.network or jump onto our [discord channel](https://discord.com/invite/78zg8aBSMG)
+フィードバックをいただくには、hello@subquery.network までお問い合わせいただくか、 [discordチャンネル](https://discord.com/invite/78zg8aBSMG)に参加してください。
 
-## How much does it cost to host my project in SubQuery Projects?
+## 自分のプロジェクトをSubQuery Projectsで公開するにはどのくらいの費用がかかりますか？
 
-Hosting your project in SubQuery Projects is absolutely free - it's is our way of giving back to the community. To learn how to host your project with us, please check out the [Hello World (SubQuery hosted)](../quickstart/helloworld-hosted.md) tutorial.
+SubQuery Projectsであなたのプロジェクトを公開することは完全に無料です - それはコミュニティに還元する私たちの方法です。 プロジェクトを公開する方法については、 [Hello World (SubQuery Hosted)](../quickstart/helloworld-hosted.md) チュートリアルをご覧ください。
 
-## What are deployment slots?
+## デプロイスロットとは何ですか？
 
-Deployment slots are a feature in [SubQuery Projects](https://project.subquery.network) that is the equivalent of a development environment. For example, in any software organisation there is normally a development environment and a production environment as a minimum (ignoring localhost that is). Typically additional environments such as staging and pre-prod or even QA are included depending on the needs of the organisation and their development set up.
+デプロイスロットは、 [SubQuery Projects](https://project.subquery.network) の開発環境と同等の機能です。 例えば、ソフトウェアを扱う組織では、最低でも通常、開発環境と本番環境が存在します（localhostは無視します）。 一般的には、組織のニーズや開発体制に応じて、ステージング環境やプリプロ環境、さらには本番前環境などの追加環境が含まれます。
 
-SubQuery currently has two slots available. A staging slot and a production slot. This allows developers to deploy their SubQuery to the staging environment and all going well, "promote to production" at the click of a button.
+SubQuery には現在 2 つのスロットがあります。 ステージングスロットと本番環境スロット。 これにより、開発者はSubQueryをステージング環境にデプロイし、ボタンをクリックするだけで「本番環境への反映」を行うことができます。
 
-## What is the advantage of a staging slot?
+## ステージングスロットの利点は何ですか?
 
-The main benefit of using a staging slot is that it allows you to prepare a new release of your SubQuery project without exposing it publicly. You can wait for the staging slot to reindex all data without affecting your production applications.
+ステージングスロットを使用する主な利点は、公開せずに SubQuery プロジェクトの新しいリリースを準備できることです。 本番アプリケーションに影響を与えることなく、ステージングスロットがすべてのデータに対してインデックス再作成するのを待つことができます。
 
-The staging slot is not shown to the public in the [Explorer](https://explorer.subquery.network/) and has a unique URL that is visible only to you. And of course, the separate environment allows you to test your new code without affecting production.
+[エクスプローラ](https://explorer.subquery.network/) では、ステージングスロットは一般には表示されず、あなただけに表示される固有のURLを持っています。 もちろん、個別の環境では、プロダクションに影響を与えずに新しいコードをテストすることができます。
 
-## What are extrinsics?
+## 外部関数とは何ですか?
 
-If you are already familiar with blockchain concepts, you can think of extrinsics as comparable to transactions. More formally though, an extrinsic is a piece of information that comes from outside the chain and is included in a block. There are three categories of extrinsics. They are inherents, signed transactions, and unsigned transactions.
+すでにブロックチェーンの概念に慣れている人は、外部関数をトランザクションに匹敵するものと考えることができます。 より正式には、外部関数とはチェーンの外から来て、ブロックに含まれる情報のことです。 外部関数には3つのカテゴリーがあります。 これらは継承、署名されたトランザクション、および署名されていないトランザクションです。
 
-Inherent extrinsics are pieces of information that are not signed and only inserted into a block by the block author.
+固有の外部関数とは、署名されておらず、ブロック作成者によってのみブロックに挿入される情報のことです。
 
-Signed transaction extrinsics are transactions that contain a signature of the account that issued the transaction. They stands to pay a fee to have the transaction included on chain.
+署名されたトランザクションの外部関数は、トランザクションを発行したアカウントの署名を含むトランザクションです。 それらは、取引がチェーンに含まれるための手数料を支払うことになります。
 
-Unsigned transactions extrinsics are transactions that do not contain a signature of the account that issued the transaction. Unsigned transactions extrinsics should be used with care because there is nobody paying a fee, becaused it is signed. Because of this, the transaction queue lacks economic logic to prevent spam.
+署名されてないトランザクションの外部関数 とは、トランザクションを発行したアカウントの署名を含まないトランザクションです。 署名されていないトランザクションの外部関数は、署名されているがゆえに、誰も手数料を支払っていないので、注意して使用する必要があります。 このため、トランザクションキューはスパムを防ぐための経済的ロジックを欠いています。
 
-For more information, click [here](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics).
+詳細については、 [ここ](https://substrate.dev/docs/en/knowledgebase/learn-substrate/extrinsics) をクリックしてください。
+
+## Kusamaネットワークのエンドポイントとは何ですか?
+
+Kusama ネットワークのエンドポイントは `wss://kusama.api.onfinality.io/public-ws` です。
+
+## Polkadot メインネット のエンドポイントとは何ですか?
+
+Polkadotネットワークのエンドポイントは `wss://polkadot.api.onfinality.io/public-ws` です。

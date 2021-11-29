@@ -60,7 +60,7 @@ export async function handleCall(extrinsic: SubstrateExtrinsic): Promise<void> {
 [SubstrateExtrinsic](https://github.com/OnFinality-io/subql/blob/a5ab06526dcffe5912206973583669c7f5b9fdc9/packages/types/src/interfaces.ts#L21) memperluas [GenericExtrinsic](https://github.com/polkadot-js/api/blob/a9c9fb5769dec7ada8612d6068cf69de04aa15ed/packages/types/src/extrinsic/Extrinsic.ts#L170). Ini diberi `id` (blok tempat ekstrinsik ini berada) dan menyediakan properti ekstrinsik yang memperluas kejadian di antara blok ini. Selain itu, ia mencatat status keberhasilan ekstrinsik ini.
 
 ## Keadaan Kueri
-Our goal is to cover all data sources for users for mapping handlers (more than just the three interface event types above). Oleh karena itu, kami telah mengekspos beberapa antarmuka @polkadot/api untuk meningkatkan kemampuan.
+Tujuan kami adalah mencakup semua sumber data bagi pengguna untuk pengendali pemetaan (lebih dari tiga jenis peristiwa antarmuka di atas). Oleh karena itu, kami telah mengekspos beberapa antarmuka @polkadot/api untuk meningkatkan kemampuan.
 
 Ini adalah antarmuka yang saat ini kami dukung:
 - [api.query.&lt;module&gt;.&lt;method&gt;()](https://polkadot.js.org/docs/api/start/api.query) akan mengkueri balok <strong>current</strong>.

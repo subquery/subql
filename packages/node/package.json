@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "0.24.1-4",
+  "version": "0.25.1",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.1.2",
     "@nestjs/schedule": "^1.0.1",
-    "@polkadot/api": "6.6.1",
+    "@polkadot/api": "6.9.2",
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",

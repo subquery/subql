@@ -19,6 +19,8 @@ describe('substrate utils', () => {
     api = await ApiPromise.create({ provider });
   });
 
+  afterAll(() => api?.disconnect());
+
   it('query range of blocks', async () => {
     const blockHash = await api.rpc.chain.getBlockHash(100000);
     await prefetchMetadata(api, blockHash);

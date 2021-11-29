@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { u8aToHex } from '@polkadot/util';
+import { u8aToHex, numberToU8a } from '@polkadot/util';
 import { GraphQLJsonFieldType } from '@subql/common/graphql/types';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
@@ -56,6 +56,8 @@ const testOperations = [
       field6: { meat: 0, fruit: { apple: 'Apple' } },
       createdAt: new Date('2021-08-18T02:36:06.549Z'),
       updatedAt: new Date('2021-08-18T02:36:06.549Z'),
+      field7: parseFloat('3.14'),
+      field8: 'Foo',
     },
   },
   {
@@ -78,6 +80,7 @@ const falseOperation = {
     field6: { meat: 0, fruit: { apple: 'Apple' } },
     createdAt: new Date('2021-08-18T02:36:06.549Z'),
     updatedAt: new Date('2021-08-18T02:36:06.549Z'),
+    field7: parseFloat('3.14'),
   },
 };
 const apple: GraphQLJsonFieldType = {
@@ -152,6 +155,21 @@ const models = [
         isArray: false,
         nullable: true,
         isEnum: false,
+      },
+      {
+        name: 'field7',
+        type: 'Float',
+        isArray: false,
+        nullable: true,
+        isEnum: false,
+      },
+      {
+        type: 'TestEnum',
+        description: 'Field description',
+        isEnum: true,
+        isArray: false,
+        nullable: false,
+        name: 'field8',
       },
     ],
     indexes: [],

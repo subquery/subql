@@ -3,6 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import {
   BestBlockPayload,
   EventPayload,
@@ -11,6 +12,9 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../indexer/events';
+import { StoreService } from '../indexer/store.service';
+
+const UPDATE_HEIGHT_INTERVAL = 60000;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
@@ -29,6 +33,8 @@ export class MetaService {
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
 
+  constructor(private storeService: StoreService) {}
+
   getMeta() {
     return {
       currentProcessingHeight: this.currentProcessingHeight,
@@ -45,6 +51,21 @@ export class MetaService {
       usingDictionary: this.usingDictionary,
       ...this.networkMeta,
     };
+  }
+
+  @Interval(UPDATE_HEIGHT_INTERVAL)
+  async checkHeight() {
+    await Promise.all([
+      this.storeService.setMetadata(
+        'lastProcessedHeight',
+        this.lastProcessedHeight,
+      ),
+      this.storeService.setMetadata(
+        'lastProcessedTimestamp',
+        this.lastProcessedTimestamp,
+      ),
+      this.storeService.setMetadata('targetHeight', this.targetHeight),
+    ]);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
@@ -75,17 +96,17 @@ export class MetaService {
   }
 
   @OnEvent(IndexerEvent.ApiConnected)
-  handleApiConnected({ value }: EventPayload<number>) {
+  handleApiConnected({ value }: EventPayload<number>): void {
     this.apiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.InjectedApiConnected)
-  handleInjectedApiConnected({ value }: EventPayload<number>) {
+  handleInjectedApiConnected({ value }: EventPayload<number>): void {
     this.injectedApiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)
-  handleUsingDictionary({ value }: EventPayload<number>) {
+  handleUsingDictionary({ value }: EventPayload<number>): void {
     this.usingDictionary = !!value;
   }
 }
