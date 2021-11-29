@@ -306,8 +306,8 @@ export class FetchService implements OnApplicationShutdown {
       this.latestProcessedHeight = initBlockHeight - 1;
     }
 
-    this.setLatestBufferedHeight(initBlockHeight);
-    await this.fetchMeta(initBlockHeight);
+    this.setLatestBufferedHeight(this.latestProcessedHeight);
+    await this.fetchMeta(this.latestProcessedHeight);
 
     let isFetchingBlocks = false;
 
