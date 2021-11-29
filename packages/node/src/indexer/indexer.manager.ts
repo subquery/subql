@@ -34,7 +34,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
@@ -43,6 +43,20 @@ import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
+
+type MetaData = {
+  name: string;
+  schema: string;
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: number;
+  targetHeight: number;
+  chain: string;
+  specName: string;
+  genesisHash: string;
+  indexerHealthy: boolean;
+  indexerNodeVersion: string;
+  queryNodeVersion: string;
+};
 
 const { version: packageVersion } = require('../../package.json');
 
@@ -57,6 +71,7 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
+  private metadataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -142,7 +157,7 @@ export class IndexerManager {
     this.api = this.apiService.getApi();
     this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
     await this.initDbSchema();
-    await this.ensureMetadata(this.subqueryState.dbSchema);
+    // await this.ensureMetadata(this.subqueryState.dbSchema);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
@@ -183,57 +198,57 @@ export class IndexerManager {
     }
   }
 
-  private async ensureMetadata(schema: string) {
-    const metadataRepo = MetadataFactory(this.sequelize, schema);
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+  // private async ensureMetadata(schema: string) {
+  //   const metadataRepo = MetadataFactory(this.sequelize, schema);
+  //   const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    this.eventEmitter.emit(
-      IndexerEvent.NetworkMetadata,
-      this.apiService.networkMeta,
-    );
+  //   this.eventEmitter.emit(
+  //     IndexerEvent.NetworkMetadata,
+  //     this.apiService.networkMeta,
+  //   );
 
-    const keys = [
-      'blockOffset',
-      'indexerNodeVersion',
-      'chain',
-      'specName',
-      'genesisHash',
-    ] as const;
+  //   const keys = [
+  //     'blockOffset',
+  //     'indexerNodeVersion',
+  //     'chain',
+  //     'specName',
+  //     'genesisHash',
+  //   ] as const;
 
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-    });
+  //   const entries = await metadataRepo.findAll({
+  //     where: {
+  //       key: keys,
+  //     },
+  //   });
 
-    const keyValue = entries.reduce((arr, curr) => {
-      arr[curr.key] = curr.value;
-      return arr;
-    }, {} as { [key in typeof keys[number]]: string | boolean | number });
+  //   const keyValue = entries.reduce((arr, curr) => {
+  //     arr[curr.key] = curr.value;
+  //     return arr;
+  //   }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    //blockOffset and genesisHash should only been create once, never update
-    //if blockOffset is changed, will require re-index and re-sync poi.
-    if (!keyValue.blockOffset) {
-      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await this.storeService.setMetadata('blockOffset', offsetValue);
-    }
+  //   //blockOffset and genesisHash should only been create once, never update
+  //   //if blockOffset is changed, will require re-index and re-sync poi.
+  //   if (!keyValue.blockOffset) {
+  //     const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+  //     await this.storeService.setMetadata('blockOffset', offsetValue);
+  //   }
 
-    if (!keyValue.genesisHash) {
-      await this.storeService.setMetadata('genesisHash', genesisHash);
-    }
+  //   if (!keyValue.genesisHash) {
+  //     await this.storeService.setMetadata('genesisHash', genesisHash);
+  //   }
 
-    if (keyValue.chain !== chain) {
-      await this.storeService.setMetadata('chain', chain);
-    }
+  //   if (keyValue.chain !== chain) {
+  //     await this.storeService.setMetadata('chain', chain);
+  //   }
 
-    if (keyValue.specName !== specName) {
-      await this.storeService.setMetadata('specName', specName);
-    }
+  //   if (keyValue.specName !== specName) {
+  //     await this.storeService.setMetadata('specName', specName);
+  //   }
 
-    if (keyValue.indexerNodeVersion !== packageVersion) {
-      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
-    }
-  }
+  //   if (keyValue.indexerNodeVersion !== packageVersion) {
+  //     await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+  //   }
+  // }
 
   private async createProjectSchema(name: string): Promise<SubqueryModel> {
     let projectSchema: string;
@@ -260,7 +275,8 @@ export class IndexerManager {
     });
   }
 
-  private async getProjectSchema(): Promise<string> {
+  // TODO: Turn this into getProjectMetadata
+  private async getProjectMetadataRepo(): Promise<MetadataRepo> {
     let schema = argv.schema;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;
@@ -276,7 +292,7 @@ export class IndexerManager {
           type: QueryTypes.SELECT,
         },
       );
-      if (!result.length) {
+      if (result.length === 0) {
         schema = undefined;
       } else {
         schema = (result[0] as any).db_schema;
@@ -285,19 +301,40 @@ export class IndexerManager {
     return schema;
   }
 
+  // Convert a project from using subqueries table to metadata table
+  private async convertProject(name: string): Promise<MetadataRepo>{
+    // Find the project from the subqueries table
+    let project = await this.subqueryRepo.findOne({
+      where: { name: name },
+    });
+
+    // If found project convert the subqueries entry to a metadata entry
+    if (project) {
+      const metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
+      let metadata = await this.getMetadata(metadataRepo);
+      metadata.name = project.name;
+      metadata.schema = project.dbSchema;
+      metadata.genesisHash = project.networkGenesis;
+      metadata.chain = project.network;
+      metadata.lastProcessedHeight = project.nextBlockHeight;
+      await this.setMetadata(metadataRepo, metadata);
+
+      return metadataRepo;
+    } else {
+      logger.log('Could not find existing project in subqueries table');
+      process.exit(1);
+    }
+  }
+
   private async ensureProject(name: string): Promise<SubqueryModel> {
     const schema = await this.getProjectSchema();
-    // XXX: how do I recreate this to be independent of the subqueryRepo (which is dependent on the subqueries table) I don't know how to fetch a metadataRepo as an object in the same manner
-    // let project = await this.subqueryRepo.findOne({
-    //   where: { name: this.nodeConfig.subqueryName },
-    // });
     if (!schema) {
       project = await this.createProjectSchema(name);
     } else {
       if (argv['force-clean']) {
         try {
           // drop existing project schema
-          this.sequelize.dropSchema(project.dbSchema, {
+          this.sequelize.dropSchema(schema, {
             logging: false,
             benchmark: false,
           });
@@ -490,5 +527,40 @@ export class IndexerManager {
         await processData(processor, handler, filteredEvents);
       }
     }
+  }
+
+  // Fetch a metadata object from a metadataRepo
+  private async getMetadata(metadataRepo: MetadataRepo) {
+    const keys = [
+      'name',
+      'schema',
+      'lastProcessedHeight',
+      'indexerNodeVersion',
+      'chain',
+      'specName',
+      'genesisHash',
+    ] as const;
+
+    const entries = await metadataRepo.findAll({
+      where: {
+        key: keys,
+      },
+    });
+
+    const kv = entries.reduce((arr, curr) => {
+      arr[curr.key] = curr.value;
+      return arr;
+    }, {} as { [key in typeof keys[number]]: string | boolean | number });
+
+    return kv 
+  }
+
+  // Upsert to a metadataRepo from a metadata object
+  private async setMetadata(metadataRepo: MetadataRepo, metadata: any) {
+    let changes = [];
+    for (const [k, v] of Object.entries(metadata)) {
+      changes.push(metadataRepo.upsert({key: k, value: v as any}))
+    } 
+    await Promise.all(changes);
   }
 }
