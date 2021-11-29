@@ -42,6 +42,8 @@ import { BlockContent } from './types';
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
+const CHECK_MEMORY_INTERVAL = 30000;
+
 const { argv } = getYargsOption();
 
 const fetchBlocksBatches = argv.profiler
@@ -215,29 +217,11 @@ export class FetchService implements OnApplicationShutdown {
     await this.getBestBlockHead();
   }
 
-  @Interval(BLOCK_TIME_VARIANCE * 10000)
+  @Interval(CHECK_MEMORY_INTERVAL)
   getMemoryUsage() {
-    const formatMemoryUsage = (data) =>
-      `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
-
     const highThreshold = 0.95;
     const lowThreshold = 0.85;
     const memoryData = process.memoryUsage();
-
-    const memoryUsage = {
-      rss: `${formatMemoryUsage(
-        memoryData.rss,
-      )} -> Resident Set Size - total memory allocated for the process execution`,
-      heapTotal: `${formatMemoryUsage(
-        memoryData.heapTotal,
-      )} -> total size of the allocated heap`,
-      heapUsed: `${formatMemoryUsage(
-        memoryData.heapUsed,
-      )} -> actual memory used during the execution`,
-      external: `${formatMemoryUsage(
-        memoryData.external,
-      )} -> V8 external memory`,
-    };
 
     const ratio = memoryData.heapUsed / memoryData.heapTotal;
 
@@ -255,8 +239,27 @@ export class FetchService implements OnApplicationShutdown {
       }
     }
 
-    console.log(memoryUsage);
+    // const formatMemoryUsage = (data) =>
+    // `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
+
+    // const memoryUsage = {
+    //   rss: `${formatMemoryUsage(
+    //     memoryData.rss,
+    //   )} -> Resident Set Size - total memory allocated for the process execution`,
+    //   heapTotal: `${formatMemoryUsage(
+    //     memoryData.heapTotal,
+    //   )} -> total size of the allocated heap`,
+    //   heapUsed: `${formatMemoryUsage(
+    //     memoryData.heapUsed,
+    //   )} -> actual memory used during the execution`,
+    //   external: `${formatMemoryUsage(
+    //     memoryData.external,
+    //   )} -> V8 external memory`,
+    // };
+
+    // console.log(memoryUsage);
     console.log(ratio);
+    console.log(Math.round(this.batchSizeScale * this.nodeConfig.batchSize));
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
