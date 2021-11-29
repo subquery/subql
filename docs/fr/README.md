@@ -92,7 +92,7 @@
         </div>
       </li>
     </ul><br>
-    Pour plus de questions fréquemment posées, veuillez consulter notre <router-link :to="{path: '/faqs/faqs/'}">page de</router-link> FAQ.    
+    Pour plus de questions fréquemment posées, veuillez consulter notre <router-link :to="{path: '/faqs/faqs/'}">FAQs</router-link> page.    
   </div>
 </section>
 <section class="main">
