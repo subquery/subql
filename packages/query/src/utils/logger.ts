@@ -8,9 +8,9 @@ import {argv} from '../yargs';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const logLevel = argv('log-level') as string | undefined;
-const logFile = argv('log-file') as string | undefined;
+const logDir = argv('log-dir') as string | undefined;
 
-const logger = new Logger({level: logLevel, outputFormat: outputFmt, logFileDir: logFile});
+const logger = new Logger({level: logLevel, logDirectory: logDir, outputFormat: outputFmt});
 
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);

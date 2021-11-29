@@ -1,22 +1,25 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
 import {colorizeLevel, ctx} from './colors';
+
+const rotator = require('file-stream-rotator');
 
 export interface LoggerOption {
   outputFormat?: 'json' | 'colored';
   level?: string;
   nestedKey?: string;
-  logFileDir?: string;
+  logDirectory?: string;
 }
 
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel = 'info', logFileDir, nestedKey, outputFormat}: LoggerOption) {
+  constructor({level: logLevel = 'info', logDirectory, nestedKey, outputFormat}: LoggerOption) {
     const options = {
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -75,8 +78,20 @@ export class Logger {
       },
     } as Pino.LoggerOptions;
 
-    if (logFileDir) {
-      this.pino = Pino(options, Pino.destination(logFileDir));
+    if (logDirectory) {
+      if (!fs.existsSync(logDirectory)) {
+        fs.mkdirSync(logDirectory);
+      }
+      this.pino = Pino(
+        options,
+        rotator.getStream({
+          filename: `${logDirectory}/%DATE%.log`,
+          frequency: 'daily',
+          max_logs: '7d',
+          size: '1G',
+          verbose: false,
+        })
+      );
     } else {
       this.pino = Pino(options);
     }

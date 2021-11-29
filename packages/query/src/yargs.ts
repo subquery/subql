@@ -19,8 +19,8 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
     },
-    'log-file': {
-      describe: 'Specify new file to log to instead of stdout, e.g ./logger.log',
+    'log-dir': {
+      describe: 'Specify directory to log, instead of stdout e.g ./logs',
       type: 'string',
       demandOption: false,
     },
