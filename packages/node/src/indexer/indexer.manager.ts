@@ -27,7 +27,7 @@ import {
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
-import { SubqueryModel, SubqueryRepo } from '../entities';
+import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
@@ -285,6 +285,13 @@ export class IndexerManager {
           value: project.nextBlockHeight,
         }),
       ]);
+      // Move the schema to the project name instead of the generated subquery_{suffix} name
+      this.sequelize.query(`ALTER SCHEMA :oldname RENAME TO :newname `, {
+        replacements: [
+          { oldname: project.dbSchema },
+          { newname: this.nodeConfig.subqueryName },
+        ],
+      });
       // Finally, destroy the entry in the subqueries table
       project.destroy();
     }
