@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ApiPromise, WsProvider} from '@polkadot/api';
+import {getLogger} from '@subql/node/src/utils/logger';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
 import {SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
 import {typesBundle} from 'moonbeam-types-bundle';
@@ -131,13 +132,17 @@ describe('MoonbeamDs', () => {
   let api: ApiPromise;
 
   beforeAll(async () => {
+    (global as any).logger = getLogger('MoonbeamTests');
     api = await ApiPromise.create({
       provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
       typesBundle: typesBundle as any,
     });
   });
 
-  afterAll(async () => api?.disconnect(), 30000);
+  afterAll(() => {
+    delete (global as any).logger;
+    return api?.disconnect();
+  }, 30000);
 
   describe('FilterValidator', () => {
     const processor = MoonbeamDatasourcePlugin.handlerProcessors['substrate/MoonbeamEvent'];
