@@ -10,7 +10,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.14.1] - 2021-11-30
 ### Fixed
-- Remove auto generated enum types (#680)
+- Remove auto generated enum types for codegen (#680)
+- Remove auto generated enum types in entities and relations (#682)
 
 ## [0.14.0] - 2021-11-19
 ### Added
