@@ -128,6 +128,9 @@ export class SandboxService {
       this.processorCache[entry] = processor;
     }
     processor.freeze(api, 'api');
+    if (argv.unsafe) {
+      processor.freeze(this.apiService.getApi(), 'unsafeApi');
+    }
     return processor;
   }
 
