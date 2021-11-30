@@ -14,6 +14,9 @@ export type MetadataRepo = typeof Model & {
   new (values?: unknown, options?: BuildOptions): MetadataModel;
 };
 
+// XXX: In the future do not implement a key value store like this, give each key its own column.
+// Sequelize does not support this as a repo/model if you want to fetch the entire store.
+// This is a serious antipattern
 export function MetadataFactory(
   sequelize: Sequelize,
   schema: string,

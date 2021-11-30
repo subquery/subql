@@ -44,20 +44,6 @@ import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
-type MetaData = {
-  name: string;
-  schema: string;
-  lastProcessedHeight: number;
-  lastProcessedTimestamp: number;
-  targetHeight: number;
-  chain: string;
-  specName: string;
-  genesisHash: string;
-  indexerHealthy: boolean;
-  indexerNodeVersion: string;
-  queryNodeVersion: string;
-};
-
 const { version: packageVersion } = require('../../package.json');
 
 const DEFAULT_DB_SCHEMA = 'public';
@@ -71,6 +57,7 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
+  protected metadataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -118,9 +105,10 @@ export class IndexerManager {
           await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
       }
-      this.subqueryState.nextBlockHeight =
-        block.block.header.number.toNumber() + 1;
-      await this.subqueryState.save({ transaction: tx });
+      await this.metadataRepo.upsert({
+        key: 'lastProcessedHeight',
+        value: block.block.header.number.toNumber() + 1,
+      });
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
         const poiBlock = PoiBlock.create(
@@ -154,9 +142,9 @@ export class IndexerManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    let schema = await this.ensureProject();
+    const schema = await this.ensureProject();
     await this.initDbSchema(schema);
-    await this.ensureMetadata(schema);
+    this.metadataRepo = await this.ensureMetadata(schema);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
@@ -165,14 +153,17 @@ export class IndexerManager {
       ]);
     }
 
+    const lastProcessedHeight = (
+      await this.metadataRepo.findOne({ where: { key: 'lastProcessedHeight' } })
+    ).value;
     void this.fetchService
-      .startLoop(this.subqueryState.nextBlockHeight)
+      .startLoop(lastProcessedHeight as number)
       .catch((err) => {
         logger.error(err, 'failed to fetch block');
         // FIXME: retry before exit
         process.exit(1);
       });
-    this.filteredDataSources = this.filterDataSources();
+    this.filteredDataSources = await this.filterDataSources();
     this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
@@ -267,27 +258,32 @@ export class IndexerManager {
     await this.storeService.init(modelsRelations, schema);
   }
 
-  private async ensureMetadata(schema: string) {
+  private async ensureMetadata(schema: string): Promise<MetadataRepo> {
+    const metadataRepo = MetadataFactory(this.sequelize, schema);
+
     const project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
 
-    let metadataRepo;
-
+    // Convert and destroy subqueries to _metadata
     if (project) {
-      metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
       await Promise.all([
-        metadataRepo.upsert({ key: 'name', value: this.nodeConfig.subqueryName }),
-        metadataRepo.upsert({ key: 'schema', value: project.dbSchema}),
-        metadataRepo.upsert({ key: 'chain', value: project.network}),
-        metadataRepo.upsert({ key: 'genesisHash', value: project.networkGenesis}),
-        metadataRepo.upsert({ key: 'lastProcessedHeight', value: project.nextBlockHeight }),
+        metadataRepo.upsert({
+          key: 'name',
+          value: this.nodeConfig.subqueryName,
+        }),
+        metadataRepo.upsert({ key: 'schema', value: schema }),
+        metadataRepo.upsert({ key: 'chain', value: project.network }),
+        metadataRepo.upsert({
+          key: 'genesisHash',
+          value: project.networkGenesis,
+        }),
+        metadataRepo.upsert({
+          key: 'lastProcessedHeight',
+          value: project.nextBlockHeight,
+        }),
       ]);
       project.destroy();
-    } 
-    
-    if(!metadataRepo) {
-      metadataRepo = MetadataFactory(this.sequelize, schema);
     }
 
     this.eventEmitter.emit(
@@ -298,6 +294,7 @@ export class IndexerManager {
     const keys = [
       'name',
       'schema',
+      'lastProcessedHeight',
       'blockOffset',
       'indexerNodeVersion',
       'chain',
@@ -317,29 +314,37 @@ export class IndexerManager {
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
+
     //blockOffset and genesisHash should only been create once, never update
     //if blockOffset is changed, will require re-index and re-sync poi.
+    if (!keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 1 });
+    }
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await this.storeService.setMetadata('blockOffset', offsetValue);
+      await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
     if (!keyValue.genesisHash) {
-      await this.storeService.setMetadata('genesisHash', genesisHash);
+      await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
     }
 
     if (keyValue.chain !== chain) {
-      await this.storeService.setMetadata('chain', chain);
+      await metadataRepo.upsert({ key: 'chain', value: chain });
     }
 
     if (keyValue.specName !== specName) {
-      await this.storeService.setMetadata('specName', specName);
+      await metadataRepo.upsert({ key: 'specName', value: specName });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
-      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+      await metadataRepo.upsert({
+        key: 'indexerNodeVersion',
+        value: packageVersion,
+      });
     }
 
+    return metadataRepo;
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
@@ -367,7 +372,7 @@ export class IndexerManager {
     return Number(nextval);
   }
 
-  private filterDataSources(): SubqlDatasource[] {
+  private async filterDataSources(): Promise<SubqlDatasource[]> {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
@@ -375,8 +380,11 @@ export class IndexerManager {
       );
       process.exit(1);
     }
+    const lastProcessedHeight = (
+      await this.metadataRepo.findOne({ where: { key: 'lastProcessedHeight' } })
+    ).value;
     filteredDs = filteredDs.filter(
-      (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
+      (ds) => ds.startBlock <= lastProcessedHeight,
     );
     if (filteredDs.length === 0) {
       logger.error(
