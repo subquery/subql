@@ -44,8 +44,8 @@ export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjec
 export function getAllEnums(_schema: GraphQLSchema | string) {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   return Object.values(schema.getTypeMap())
-    .filter(isEnumType)
-    .map((node) => node);
+    .filter((r) => r.astNode !== undefined)
+    .filter(isEnumType);
 }
 
 // eslint-disable-next-line complexity
