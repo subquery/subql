@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.16.1] - 2021-11-30
+### Fixed
+- Remove auto generated enum types and interfaces (#680)
+
 ## [0.16.0] - 2021-11-19
 ### Fixed
 - Fix migrate datasource entry path (#641)
@@ -114,7 +118,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.16.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.16.1...HEAD
+[0.16.1]: https://github.com/subquery/subql/compare/cli/0.16.0...cli/0.16.1
 [0.16.0]: https://github.com/subquery/subql/compare/cli/0.15.0...cli/0.16.0
 [0.15.0]: https://github.com/subquery/subql/compare/cli/0.14.0...cli/0.15.0
 [0.14.0]: https://github.com/subquery/subql/compare/cli/0.13.0...cli/0.14.0
