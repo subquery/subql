@@ -8,9 +8,10 @@ import {argv} from '../yargs';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const logLevel = argv('log-level') as string | undefined;
-const logDir = argv('log-dir') as string | undefined;
+const logPath = argv('log-path') as string | undefined;
+const logRotate = argv('log-rotate') as boolean | undefined;
 
-const logger = new Logger({level: logLevel, logDirectory: logDir, outputFormat: outputFmt});
+const logger = new Logger({level: logLevel, filepath: logPath, rotate: logRotate, outputFormat: outputFmt});
 
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);

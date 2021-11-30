@@ -2,22 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import path from 'path';
 import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
 import {createStream} from 'rotating-file-stream';
 import {colorizeLevel, ctx} from './colors';
 export interface LoggerOption {
-  outputFormat?: 'json' | 'colored';
   level?: string;
+  filepath?: string;
+  rotate?: boolean;
   nestedKey?: string;
-  logDirectory?: string;
+  outputFormat?: 'json' | 'colored';
 }
 
 export class Logger {
   private pino: Pino.Logger;
   private childLoggers: {[category: string]: Pino.Logger} = {};
 
-  constructor({level: logLevel = 'info', logDirectory, nestedKey, outputFormat}: LoggerOption) {
+  constructor({filepath, level: logLevel = 'info', nestedKey, outputFormat, rotate}: LoggerOption) {
     const options = {
       messageKey: 'message',
       timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
@@ -76,20 +78,21 @@ export class Logger {
       },
     } as Pino.LoggerOptions;
 
-    if (logDirectory) {
-      if (!fs.existsSync(logDirectory)) {
-        fs.mkdirSync(logDirectory);
+    if (filepath) {
+      const baseName = path.basename(filepath);
+      const dirName = path.dirname(path.resolve(filepath));
+
+      const rotateOptions = {
+        interval: '1d',
+        maxFiles: 7,
+        maxSize: '1G',
+      };
+
+      if (rotate) {
+        this.pino = Pino(options, createStream(baseName, {path: dirName, ...rotateOptions}));
+      } else {
+        this.pino = Pino(options, createStream(baseName, {path: dirName}));
       }
-      // will add concatenate timestamp to 'file.log'
-      this.pino = Pino(
-        options,
-        createStream('file.log', {
-          interval: '1d',
-          maxFiles: 7,
-          maxSize: '1G',
-          path: `${logDirectory}`,
-        })
-      );
     } else {
       this.pino = Pino(options);
     }
