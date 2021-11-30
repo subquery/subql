@@ -261,7 +261,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
       exportTypes.models = true;
     } catch (e) {
       const err = new Error(`When render index in models having problems: ${e}`);
-      cli.action.cli.error(err);
+      cli.error(err);
     }
     cli.action.stop();
   }
