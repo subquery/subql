@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export type MetaData = {
-  name: string;
-  schema: string;
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;

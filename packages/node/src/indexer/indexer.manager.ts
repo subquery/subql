@@ -108,7 +108,7 @@ export class IndexerManager {
       await this.metadataRepo.upsert(
         {
           key: 'lastProcessedHeight',
-          value: block.block.header.number.toNumber() + 1,
+          value: block.block.header.number.toNumber(),
         },
         { transaction: tx },
       );
@@ -159,15 +159,13 @@ export class IndexerManager {
 
     const lastProcessedHeight = (
       await this.metadataRepo.findOne({ where: { key: 'lastProcessedHeight' } })
-    ).value;
-    void this.fetchService
-      .startLoop(lastProcessedHeight as number)
-      .catch((err) => {
-        logger.error(err, 'failed to fetch block');
-        // FIXME: retry before exit
-        process.exit(1);
-      });
-    this.filteredDataSources = await this.filterDataSources();
+    ).value as number;
+    void this.fetchService.startLoop(lastProcessedHeight + 1).catch((err) => {
+      logger.error(err, 'failed to fetch block');
+      // FIXME: retry before exit
+      process.exit(1);
+    });
+    this.filteredDataSources = this.filterDataSources(lastProcessedHeight);
     this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
@@ -212,8 +210,9 @@ export class IndexerManager {
     return schema;
   }
 
+  // Get existing project schema, undefined when doesn't exist
   private async getProjectSchema(): Promise<string> {
-    let schema = argv.schema;
+    let schema = argv.schema as string;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;
     }
@@ -243,11 +242,10 @@ export class IndexerManager {
       // create tables in default schema if local mode is enabled
       schema = DEFAULT_DB_SCHEMA;
     } else {
-      const suffix = await this.nextSubquerySchemaSuffix();
-      schema = `subquery_${suffix}`;
+      schema = this.nodeConfig.subqueryName;
       const schemas = await this.sequelize.showAllSchemas(undefined);
       if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(schema, undefined);
+        await this.sequelize.createSchema(`"${schema}"`, undefined);
       }
     }
 
@@ -297,8 +295,6 @@ export class IndexerManager {
     );
 
     const keys = [
-      'name',
-      'schema',
       'lastProcessedHeight',
       'blockOffset',
       'indexerNodeVersion',
@@ -320,18 +316,8 @@ export class IndexerManager {
 
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    // blockOffset genesisHash, schema and name should only have been created once, never updated.
+    // blockOffset and genesisHash should only have been created once, never updated.
     // If blockOffset is changed, will require re-index and re-sync poi.
-    if (!keyValue.name) {
-      await metadataRepo.upsert({
-        key: 'name',
-        value: this.nodeConfig.subqueryName,
-      });
-    }
-
-    if (!keyValue.schema) {
-      await metadataRepo.upsert({ key: 'schema', value: schema });
-    }
 
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
@@ -339,7 +325,7 @@ export class IndexerManager {
     }
 
     if (!keyValue.lastProcessedHeight) {
-      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 1 });
+      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 0 });
     }
 
     if (!keyValue.genesisHash) {
@@ -389,7 +375,7 @@ export class IndexerManager {
     return Number(nextval);
   }
 
-  private async filterDataSources(): Promise<SubqlDatasource[]> {
+  private filterDataSources(lastProcessedHeight: number): SubqlDatasource[] {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
@@ -397,11 +383,8 @@ export class IndexerManager {
       );
       process.exit(1);
     }
-    const lastProcessedHeight = (
-      await this.metadataRepo.findOne({ where: { key: 'lastProcessedHeight' } })
-    ).value;
     filteredDs = filteredDs.filter(
-      (ds) => ds.startBlock <= lastProcessedHeight,
+      (ds) => ds.startBlock <= lastProcessedHeight + 1,
     );
     if (filteredDs.length === 0) {
       logger.error(
