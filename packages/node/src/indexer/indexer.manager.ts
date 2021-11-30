@@ -71,7 +71,6 @@ export class IndexerManager {
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
-  private metadataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -155,14 +154,14 @@ export class IndexerManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
-    await this.initDbSchema();
-    // await this.ensureMetadata(this.subqueryState.dbSchema);
+    let schema = await this.ensureProject();
+    await this.initDbSchema(schema);
+    await this.ensureMetadata(schema);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
-        this.poiService.init(this.subqueryState.dbSchema),
-        this.mmrService.init(this.subqueryState.dbSchema),
+        this.poiService.init(schema),
+        this.mmrService.init(schema),
       ]);
     }
 
@@ -184,100 +183,41 @@ export class IndexerManager {
     }
   }
 
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
-      );
-      process.exit(1);
+  private async ensureProject(): Promise<string> {
+    let schema = await this.getProjectSchema();
+    if (!schema) {
+      schema = await this.createProjectSchema();
     } else {
-      return Math.min(...startBlocksList);
-    }
-  }
+      if (argv['force-clean']) {
+        try {
+          // drop existing project schema and metadata table
+          this.sequelize.dropSchema(schema, {
+            logging: false,
+            benchmark: false,
+          });
 
-  // private async ensureMetadata(schema: string) {
-  //   const metadataRepo = MetadataFactory(this.sequelize, schema);
-  //   const { chain, genesisHash, specName } = this.apiService.networkMeta;
+          // remove schema from subquery table (might not exist)
+          await this.sequelize.query(
+            ` DELETE
+              FROM public.subqueries
+              where db_schema = :subquerySchema`,
+            {
+              replacements: { subquerySchema: schema },
+              type: QueryTypes.DELETE,
+            },
+          );
 
-  //   this.eventEmitter.emit(
-  //     IndexerEvent.NetworkMetadata,
-  //     this.apiService.networkMeta,
-  //   );
-
-  //   const keys = [
-  //     'blockOffset',
-  //     'indexerNodeVersion',
-  //     'chain',
-  //     'specName',
-  //     'genesisHash',
-  //   ] as const;
-
-  //   const entries = await metadataRepo.findAll({
-  //     where: {
-  //       key: keys,
-  //     },
-  //   });
-
-  //   const keyValue = entries.reduce((arr, curr) => {
-  //     arr[curr.key] = curr.value;
-  //     return arr;
-  //   }, {} as { [key in typeof keys[number]]: string | boolean | number });
-
-  //   //blockOffset and genesisHash should only been create once, never update
-  //   //if blockOffset is changed, will require re-index and re-sync poi.
-  //   if (!keyValue.blockOffset) {
-  //     const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-  //     await this.storeService.setMetadata('blockOffset', offsetValue);
-  //   }
-
-  //   if (!keyValue.genesisHash) {
-  //     await this.storeService.setMetadata('genesisHash', genesisHash);
-  //   }
-
-  //   if (keyValue.chain !== chain) {
-  //     await this.storeService.setMetadata('chain', chain);
-  //   }
-
-  //   if (keyValue.specName !== specName) {
-  //     await this.storeService.setMetadata('specName', specName);
-  //   }
-
-  //   if (keyValue.indexerNodeVersion !== packageVersion) {
-  //     await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
-  //   }
-  // }
-
-  private async createProjectSchema(name: string): Promise<SubqueryModel> {
-    let projectSchema: string;
-    const { chain, genesisHash } = this.apiService.networkMeta;
-    if (this.nodeConfig.localMode) {
-      // create tables in default schema if local mode is enabled
-      projectSchema = DEFAULT_DB_SCHEMA;
-    } else {
-      const suffix = await this.nextSubquerySchemaSuffix();
-      projectSchema = `subquery_${suffix}`;
-      const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(projectSchema)) {
-        await this.sequelize.createSchema(projectSchema, undefined);
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        schema = await this.createProjectSchema();
       }
     }
-
-    let metadataRepo = MetadataFactory(this.sequelize, projectSchema);
-    await Promise.all([
-      metadataRepo.upsert({ key: 'name', value: name}),
-      metadataRepo.upsert({ key: 'schema', value: projectSchema}),
-      metadataRepo.upsert({ key: 'chain', value: chain}),
-      metadataRepo.upsert({ key: 'genesisHash', value: genesisHash}),
-      metadataRepo.upsert({ key: 'lastProcessedHeight', value: this.getStartBlockFromDataSources() }),
-    ]);
-    return metadataRepo
+    return schema;
   }
 
-  // TODO: Turn this into getProjectMetadata
-  private async getProjectMetadataRepo(): Promise<MetadataRepo> {
+  private async getProjectSchema(): Promise<string> {
     let schema = argv.schema;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;
@@ -302,82 +242,104 @@ export class IndexerManager {
     return schema;
   }
 
-  // Convert a project from using subqueries table to metadata table
-  private async convertProject(name: string): Promise<MetadataRepo>{
-    // Find the project from the subqueries table
-    let project = await this.subqueryRepo.findOne({
-      where: { name: name },
-    });
-
-    // If found project convert the subqueries entry to a metadata entry
-    if (project) {
-      let metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
-      await Promise.all([
-        metadataRepo.upsert({ key: 'name', value: name}),
-        metadataRepo.upsert({ key: 'schema', value: project.dbSchema}),
-        metadataRepo.upsert({ key: 'chain', value: project.network}),
-        metadataRepo.upsert({ key: 'genesisHash', value: project.networkGenesis}),
-        metadataRepo.upsert({ key: 'lastProcessedHeight', value: project.nextBlockHeight }),
-      ]);
-      return metadataRepo;
+  private async createProjectSchema(): Promise<string> {
+    let schema: string;
+    if (this.nodeConfig.localMode) {
+      // create tables in default schema if local mode is enabled
+      schema = DEFAULT_DB_SCHEMA;
     } else {
-      logger.log('Could not find existing project in subqueries table');
-      process.exit(1);
-    }
-  }
-
-  private async ensureProject(name: string): Promise<SubqueryModel> {
-    const schema = await this.getProjectSchema();
-    if (!schema) {
-      project = await this.createProjectSchema(name);
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema
-          this.sequelize.dropSchema(schema, {
-            logging: false,
-            benchmark: false,
-          });
-
-          // remove schema from project table
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              where db_schema = :subquerySchema`,
-            {
-              replacements: { subquerySchema: project.dbSchema },
-              type: QueryTypes.DELETE,
-            },
-          );
-
-          logger.info('force cleaned schema and tables');
-        } catch (err) {
-          logger.error(err, 'failed to force clean schema and tables');
-        }
-        project = await this.createProjectSchema(name);
-      }
-      if (!project.networkGenesis || !project.network) {
-        const { chain, genesisHash } = this.apiService.networkMeta;
-        project.network = chain;
-        project.networkGenesis = genesisHash;
-        await project.save();
-      } else if (project.networkGenesis !== genesisHash) {
-        logger.error(
-          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
-        );
-        process.exit(1);
+      const suffix = await this.nextSubquerySchemaSuffix();
+      schema = `subquery_${suffix}`;
+      const schemas = await this.sequelize.showAllSchemas(undefined);
+      if (!(schemas as unknown as string[]).includes(schema)) {
+        await this.sequelize.createSchema(schema, undefined);
       }
     }
-    return project;
+
+    return schema;
   }
 
-  private async initDbSchema(): Promise<void> {
-    const schema = this.subqueryState.dbSchema;
+  private async initDbSchema(schema: string): Promise<void> {
     const graphqlSchema = buildSchema(
       path.join(this.project.path, this.project.schema),
     );
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
+  }
+
+  private async ensureMetadata(schema: string) {
+    const project = await this.subqueryRepo.findOne({
+      where: { name: this.nodeConfig.subqueryName },
+    });
+
+    let metadataRepo;
+
+    if (project) {
+      metadataRepo = MetadataFactory(this.sequelize, project.dbSchema);
+      await Promise.all([
+        metadataRepo.upsert({ key: 'name', value: this.nodeConfig.subqueryName }),
+        metadataRepo.upsert({ key: 'schema', value: project.dbSchema}),
+        metadataRepo.upsert({ key: 'chain', value: project.network}),
+        metadataRepo.upsert({ key: 'genesisHash', value: project.networkGenesis}),
+        metadataRepo.upsert({ key: 'lastProcessedHeight', value: project.nextBlockHeight }),
+      ]);
+      project.destroy();
+    } 
+    
+    if(!metadataRepo) {
+      metadataRepo = MetadataFactory(this.sequelize, schema);
+    }
+
+    this.eventEmitter.emit(
+      IndexerEvent.NetworkMetadata,
+      this.apiService.networkMeta,
+    );
+
+    const keys = [
+      'name',
+      'schema',
+      'blockOffset',
+      'indexerNodeVersion',
+      'chain',
+      'specName',
+      'genesisHash',
+    ] as const;
+
+    const entries = await metadataRepo.findAll({
+      where: {
+        key: keys,
+      },
+    });
+
+    const keyValue = entries.reduce((arr, curr) => {
+      arr[curr.key] = curr.value;
+      return arr;
+    }, {} as { [key in typeof keys[number]]: string | boolean | number });
+
+    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+    //blockOffset and genesisHash should only been create once, never update
+    //if blockOffset is changed, will require re-index and re-sync poi.
+    if (!keyValue.blockOffset) {
+      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+      await this.storeService.setMetadata('blockOffset', offsetValue);
+    }
+
+    if (!keyValue.genesisHash) {
+      await this.storeService.setMetadata('genesisHash', genesisHash);
+    }
+
+    if (keyValue.chain !== chain) {
+      await this.storeService.setMetadata('chain', chain);
+    }
+
+    if (keyValue.specName !== specName) {
+      await this.storeService.setMetadata('specName', specName);
+    }
+
+    if (keyValue.indexerNodeVersion !== packageVersion) {
+      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+    }
+
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
@@ -438,6 +400,20 @@ export class IndexerManager {
       process.exit(1);
     }
     return filteredDs;
+  }
+
+  private getStartBlockFromDataSources() {
+    const startBlocksList = this.getDataSourcesForSpecName().map(
+      (item) => item.startBlock ?? 1,
+    );
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
+      process.exit(1);
+    } else {
+      return Math.min(...startBlocksList);
+    }
   }
 
   private getDataSourcesForSpecName(): SubqlDatasource[] {
