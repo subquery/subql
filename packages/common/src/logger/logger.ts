@@ -87,7 +87,7 @@ export class Logger {
           interval: '1d',
           maxFiles: 7,
           maxSize: '1G',
-          path: `${logDirectory}`,
+          path: logDirectory,
         })
       );
     } else {
