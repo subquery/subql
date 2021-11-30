@@ -105,10 +105,15 @@ export class IndexerManager {
           await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
       }
-      await this.metadataRepo.upsert({
-        key: 'lastProcessedHeight',
-        value: block.block.header.number.toNumber() + 1,
-      });
+
+      await this.metadataRepo.upsert(
+        {
+          key: 'lastProcessedHeight',
+          value: block.block.header.number.toNumber() + 1,
+        },
+        { transaction: tx },
+      );
+
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
         const poiBlock = PoiBlock.create(
@@ -283,6 +288,7 @@ export class IndexerManager {
           value: project.nextBlockHeight,
         }),
       ]);
+      // Finally, destroy the entry in the subqueries table
       project.destroy();
     }
 
@@ -315,14 +321,26 @@ export class IndexerManager {
 
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    //blockOffset and genesisHash should only been create once, never update
-    //if blockOffset is changed, will require re-index and re-sync poi.
-    if (!keyValue.lastProcessedHeight) {
-      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 1 });
+    // blockOffset genesisHash, schema and name should only have been created once, never updated.
+    // If blockOffset is changed, will require re-index and re-sync poi.
+    if (!keyValue.name) {
+      await metadataRepo.upsert({
+        key: 'name',
+        value: this.nodeConfig.subqueryName,
+      });
     }
+
+    if (!keyValue.schema) {
+      await metadataRepo.upsert({ key: 'schema', value: schema });
+    }
+
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
+    }
+
+    if (!keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 1 });
     }
 
     if (!keyValue.genesisHash) {
