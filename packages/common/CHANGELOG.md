@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.14.1] - 2021-11-30
+### Fixed
+- Remove auto generated enum types for codegen (#680)
+- Remove auto generated enum types in entities and relations (#682)
+
 ## [0.14.0] - 2021-11-19
 ### Added
 - Add TypeClass, supported types mapping , support float type(#532)
@@ -106,7 +111,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/0.14.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/0.14.1...HEAD
+[0.14.1]: https://github.com/subquery/subql/compare/common/0.14.0...common/0.14.1
 [0.14.0]: https://github.com/subquery/subql/compare/common/0.13.0...common/0.14.0
 [0.13.0]: https://github.com/subquery/subql/compare/common/0.12.0...common/0.13.0
 [0.8.2]: https://github.com/subquery/subql/compare/v0.8.0...v0.8.2
