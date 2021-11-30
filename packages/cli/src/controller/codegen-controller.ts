@@ -15,6 +15,7 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/common';
+import {cli} from 'cli-ux';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
@@ -182,6 +183,7 @@ async function prepareDirPath(path: string, recreate: boolean) {
 
 //1. Prepare models directory and load schema
 export async function codegen(projectPath: string): Promise<void> {
+  cli.action.start('Generate types index');
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
@@ -198,9 +200,10 @@ export async function codegen(projectPath: string): Promise<void> {
         },
       });
     } catch (e) {
-      throw new Error(`When render index in types having problems.`);
+      const err = new Error(`When render index in types having problems: ${e}`);
+      cli.error(err);
     }
-    console.log(`* Types index generated !`);
+    cli.action.stop();
   }
 }
 
@@ -210,6 +213,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
   for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
     const className = upperFirst(entity.name);
+    cli.action.start(`Generating schema ${className}`);
     const entityName = entity.name;
     const fields = processFields('entity', className, entity.fields, entity.indexes);
     const importJsonInterfaces = fields.filter((field) => field.isJsonInterface).map((f) => f.type);
@@ -236,12 +240,14 @@ export async function generateModels(projectPath: string, schema: string): Promi
         modelTemplate
       );
     } catch (e) {
-      console.error(e);
-      throw new Error(`When render entity ${className} to schema having problems.`);
+      const err = new Error(`When render entity ${className} to schema having problems: ${e}`);
+      cli.error(err);
     }
-    console.log(`* Schema ${className} generated !`);
+    cli.action.stop();
   }
   const classNames = extractEntities.models.map((entity) => entity.name);
+
+  cli.action.start(`Generating models index`);
   if (classNames.length !== 0) {
     try {
       await renderTemplate(MODELS_INDEX_TEMPLATE_PATH, path.join(projectPath, MODEL_ROOT_DIR, `index.ts`), {
@@ -254,8 +260,9 @@ export async function generateModels(projectPath: string, schema: string): Promi
       });
       exportTypes.models = true;
     } catch (e) {
-      throw new Error(`When render index in models having problems.`);
+      const err = new Error(`When render index in models having problems: ${e}`);
+      cli.action.cli.error(err);
     }
-    console.log(`* Models index generated !`);
+    cli.action.stop();
   }
 }

@@ -16,10 +16,6 @@ export default class Codegen extends Command {
 
   async run(): Promise<void> {
     const {flags} = this.parse(Codegen);
-    this.log('===============================');
-    this.log('---------Subql Codegen---------');
-    this.log('===============================');
-
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
     try {
       await codegen(location);

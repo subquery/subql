@@ -60,7 +60,6 @@ export default class Init extends Command {
       cli.action.stop();
     }
 
-    this.log('Prompting remaining details');
     project.author = await cli.prompt('Authors', {required: true});
     project.description = await cli.prompt('Description', {required: false});
     project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});
