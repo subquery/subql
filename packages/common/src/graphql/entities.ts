@@ -7,6 +7,7 @@ import {
   assertListType,
   getDirectiveValues,
   getNullableType,
+  GraphQLEnumType,
   GraphQLField,
   GraphQLNamedType,
   GraphQLObjectType,
@@ -41,11 +42,11 @@ export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjec
     .filter(isObjectType);
 }
 
-export function getAllEnums(_schema: GraphQLSchema | string) {
+export function getAllEnums(_schema: GraphQLSchema | string): GraphQLEnumType[] {
   const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
   return Object.values(schema.getTypeMap())
-    .filter(isEnumType)
-    .map((node) => node);
+    .filter((r) => r.astNode !== undefined)
+    .filter(isEnumType);
 }
 
 // eslint-disable-next-line complexity
