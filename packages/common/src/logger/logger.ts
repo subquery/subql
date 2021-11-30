@@ -4,10 +4,8 @@
 import fs from 'fs';
 import {stringify} from 'flatted';
 import Pino, {LevelWithSilent} from 'pino';
+import {createStream} from 'rotating-file-stream';
 import {colorizeLevel, ctx} from './colors';
-
-const rotator = require('file-stream-rotator');
-
 export interface LoggerOption {
   outputFormat?: 'json' | 'colored';
   level?: string;
@@ -82,14 +80,14 @@ export class Logger {
       if (!fs.existsSync(logDirectory)) {
         fs.mkdirSync(logDirectory);
       }
+      // will add concatenate timestamp to 'file.log'
       this.pino = Pino(
         options,
-        rotator.getStream({
-          filename: `${logDirectory}/%DATE%.log`,
-          frequency: 'daily',
-          max_logs: '7d',
-          size: '1G',
-          verbose: false,
+        createStream('file.log', {
+          interval: '1d',
+          maxFiles: 7,
+          maxSize: '1G',
+          path: `${logDirectory}`,
         })
       );
     } else {

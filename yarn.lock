@@ -5355,13 +5355,13 @@ __metadata:
     bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.1
-    file-stream-rotator: ^0.5.7
     flatted: ^3.2.2
     graphql: ^15.7.2
     graphql-tag: ^2.12.5
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    rotating-file-stream: ^3.0.2
     sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
@@ -13562,15 +13562,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"file-stream-rotator@npm:^0.5.7":
-  version: 0.5.7
-  resolution: "file-stream-rotator@npm:0.5.7"
-  dependencies:
-    moment: ^2.11.2
-  checksum: 4d33a90ee5f187450d38daeb8a3f73da38729ae5245585624552ea62d162e8c99699b16c187241f7ff230f661665aefb8254581c92854f2e25f184107c9eb923
-  languageName: node
-  linkType: hard
-
 "file-uri-to-path@npm:1.0.0":
   version: 1.0.0
   resolution: "file-uri-to-path@npm:1.0.0"
@@ -18651,7 +18642,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"moment@npm:>= 2.9.0, moment@npm:^2.11.2, moment@npm:^2.26.0":
+"moment@npm:>= 2.9.0, moment@npm:^2.26.0":
   version: 2.29.1
   resolution: "moment@npm:2.29.1"
   checksum: 86729013febf7160de5b93da69273dd304d674b0224f9544b3abd09a87671ddd2cdd57598261ce57588910d63747ffd5590965e83c790d8bf327083c0e0a06e0
@@ -21894,6 +21885,13 @@ fsevents@~2.3.1:
   bin:
     rollup: dist/bin/rollup
   checksum: 459ac36f8d325385a6b66522bf60ea4ae1400b405de30d7c64c483cc875dbf11c4f6c352d796b2ec634a567a6db1ff1c48fe29d434354c1330c88bb187c539b4
+  languageName: node
+  linkType: hard
+
+"rotating-file-stream@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "rotating-file-stream@npm:3.0.2"
+  checksum: b5bcf77fcf347dd7f37a685a377c662ea8d871a3a4353eef4cd9729a6aa3fa7d876e73423ce6d4789b70a5570e33652e197b58ebc483d0620b76d4c452f858da
   languageName: node
   linkType: hard
 
