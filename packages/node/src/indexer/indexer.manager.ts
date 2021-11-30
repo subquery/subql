@@ -388,7 +388,7 @@ export class IndexerManager {
     );
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${lastProcessedHeight} or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
