@@ -3,6 +3,7 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
+import {DictionaryQueryEntry} from '@subql/node/dist/indexer/dictionary.service';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
 export enum SubqlDatasourceKind {
@@ -170,5 +171,5 @@ export interface SecondLayerHandlerProcessor<
   transformer: HandlerInputTransformer<K, E, DS>;
   filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
-  // dictionaryQuery: (filter: F) => DictionaryQuery;
+  dictionaryQuery: (filter: F) => DictionaryQueryEntry;
 }

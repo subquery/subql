@@ -129,11 +129,25 @@ export class FetchService implements OnApplicationShutdown {
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
+      const plugin = isCustomDs(ds)
+        ? this.dsProcessorService.getDsProcessor(ds)
+        : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        const filterList = isRuntimeDs(ds)
-          ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
-          : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
+        let filterList: SubqlHandlerFilter[];
+        if (isCustomDs(ds)) {
+          const processor = plugin.handlerProcessors[handler.kind];
+          if (processor.dictionaryQuery) {
+            queryEntries.push(processor.dictionaryQuery(handler.filter));
+            continue;
+          }
+          filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
+            ds,
+            handler.kind,
+          );
+        } else {
+          filterList = [handler.filter];
+        }
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:
