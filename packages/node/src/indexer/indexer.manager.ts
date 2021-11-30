@@ -54,7 +54,6 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: ApiPromise;
-  private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
   protected metadataRepo: MetadataRepo;
