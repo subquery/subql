@@ -82,8 +82,8 @@ function mockApiService(): ApiService {
 
 const mockDictionaryRet: Dictionary = {
   _metadata: {
-    name: "name1",
-    schema: "schema1",
+    name: 'name1',
+    schema: 'schema1',
     lastProcessedHeight: 998,
     lastProcessedTimestamp: 123124151,
     targetHeight: 998,
@@ -100,8 +100,8 @@ const mockDictionaryRet: Dictionary = {
 
 const mockDictionaryNoBatches: Dictionary = {
   _metadata: {
-    name: "name1",
-    schema: "schema1",
+    name: 'name1',
+    schema: 'schema1',
     lastProcessedHeight: 15000,
     lastProcessedTimestamp: 123124151,
     targetHeight: 16000,
@@ -117,8 +117,8 @@ const mockDictionaryNoBatches: Dictionary = {
 
 const mockDictionaryBatches: Dictionary = {
   _metadata: {
-    name: "name1",
-    schema: "schema1",
+    name: 'name1',
+    schema: 'schema1',
     lastProcessedHeight: 15000,
     lastProcessedTimestamp: 123124151,
     targetHeight: 16000,
