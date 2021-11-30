@@ -35,23 +35,19 @@ import {
 } from './types';
 
 export function getAllJsonObjects(_schema: GraphQLSchema | string): GraphQLObjectType[] {
-  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
-  return Object.values(schema.getTypeMap())
+  return Object.values(getSchema(_schema).getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.JsonField))
     .map((node) => node)
     .filter(isObjectType);
 }
 
 export function getAllEnums(_schema: GraphQLSchema | string): GraphQLEnumType[] {
-  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
-  return Object.values(schema.getTypeMap())
-    .filter((r) => r.astNode !== undefined)
-    .filter(isEnumType);
+  return getEnumsFromSchema(getSchema(_schema));
 }
 
 // eslint-disable-next-line complexity
 export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQLModelsRelationsEnums {
-  const schema = typeof _schema === 'string' ? buildSchema(_schema) : _schema;
+  const schema = getSchema(_schema);
   const entities = Object.values(schema.getTypeMap())
     .filter((node) => node.astNode?.directives?.find(({name: {value}}) => value === DirectiveName.Entity))
     .filter(isObjectType);
@@ -61,12 +57,10 @@ export function getAllEntitiesRelations(_schema: GraphQLSchema | string): GraphQ
   const entityNameSet = entities.map((entity) => entity.name);
 
   const enums = new Map(
-    Object.values(schema.getTypeMap())
-      .filter(isEnumType)
-      .map((node) => [
-        node.name,
-        {name: node.name, description: node.description, values: node.getValues().map((v) => v.value)},
-      ])
+    getEnumsFromSchema(schema).map((node) => [
+      node.name,
+      {name: node.name, description: node.description, values: node.getValues().map((v) => v.value)},
+    ])
   );
 
   const modelRelations = {models: [], relations: [], enums: [...enums.values()]} as GraphQLModelsRelationsEnums;
@@ -224,6 +218,16 @@ export function setJsonObjectType(
     } as GraphQLJsonFieldType);
   }
   return graphQLJsonObject;
+}
+
+function getSchema(_schema: GraphQLSchema | string): GraphQLSchema {
+  return typeof _schema === 'string' ? buildSchema(_schema) : _schema;
+}
+
+function getEnumsFromSchema(schema: GraphQLSchema): GraphQLEnumType[] {
+  return Object.values(schema.getTypeMap())
+    .filter((r) => r.astNode !== undefined)
+    .filter(isEnumType);
 }
 
 //Get the type, ready to be convert to string
