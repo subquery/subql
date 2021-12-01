@@ -56,7 +56,14 @@ export class ConfigureModule {
     } else {
       if (!argv.subquery) {
         logger.error(
-          'subquery path is missing neither in cli options nor in config file',
+          'Subquery path is missing neither in cli options nor in config file',
+        );
+        yargsOptions.showHelp();
+        process.exit(1);
+      }
+      if (argv.subquery && argv.schema) {
+        logger.error(
+          'Conflicting flags for specifying subquery schema and path',
         );
         yargsOptions.showHelp();
         process.exit(1);

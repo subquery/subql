@@ -228,7 +228,12 @@ export class IndexerManager {
         },
       );
       if (result.length === 0) {
-        schema = undefined;
+        if (argv.schema) {
+          logger.error(`Was not able to find argument schema ${argv.schema}`);
+          process.exit(1);
+        } else {
+          schema = undefined;
+        }
       } else {
         schema = (result[0] as any).db_schema;
       }
