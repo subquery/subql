@@ -177,7 +177,7 @@ export class IndexerManager {
   }
 
   private async ensureProject(): Promise<string> {
-    let schema = await this.getProjectSchema();
+    let schema = await this.getExistingProjectSchema();
     if (!schema) {
       schema = await this.createProjectSchema();
     } else {
@@ -211,7 +211,7 @@ export class IndexerManager {
   }
 
   // Get existing project schema, undefined when doesn't exist
-  private async getProjectSchema(): Promise<string> {
+  private async getExistingProjectSchema(): Promise<string> {
     let schema = argv.schema as string;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;

@@ -12,7 +12,7 @@ export class ProjectService {
   async getProjectSchema(name: string): Promise<string> {
     // After subqueries table has been deprecated, project may not be present in subqueries table
     const result: [string] = await this.pool
-      .query(`SELECT schema_name FROM  information_schema.schemata`)
+      .query(`SELECT schema_name FROM information_schema.schemata`)
       .then((obj) => obj.rows.map((x) => x.schema_name))
       .catch((e) => {
         throw new Error(`Unable to fetch all database schemas: ${e}`);
@@ -22,9 +22,9 @@ export class ProjectService {
     } else {
       // fallback to subqueries table
       const {rows} = await this.pool.query(
-        `select *
-        from public.subqueries
-        where name = $1`,
+        `SELECT *
+        FROM public.subqueries
+        WHERE name = $1`,
         [name]
       );
       if (rows.length === 0) {
