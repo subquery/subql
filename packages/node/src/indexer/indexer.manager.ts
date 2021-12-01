@@ -220,22 +220,19 @@ export class IndexerManager {
       undefined,
     )) as unknown as string[];
     if (!schemas.includes(schema)) {
-      const result = await this.sequelize.query(
-        `select db_schema from public.subqueries where name = :name`,
-        {
-          replacements: { name: schema },
-          type: QueryTypes.SELECT,
-        },
-      );
-      if (result.length === 0) {
+      // fallback to subqueries table
+      const subqueryModel = await this.subqueryRepo.findOne({
+        where: { name: this.nodeConfig.subqueryName },
+      });
+      if (subqueryModel) {
+        schema = subqueryModel.dbSchema;
+      } else {
         if (argv.schema) {
           logger.error(`Was not able to find argument schema ${argv.schema}`);
           process.exit(1);
         } else {
           schema = undefined;
         }
-      } else {
-        schema = (result[0] as any).db_schema;
       }
     }
     return schema;
