@@ -27,7 +27,3 @@ export function functionToSighash(input: string): string {
 
   return hexDataSlice(id(FunctionFragment.fromString(input).format()), 0, 4);
 }
-
-export function inputToFunctionSighash(input: string): string {
-  return hexDataSlice(input, 0, 4);
-}

@@ -29,7 +29,7 @@ import {
   IsEthereumAddress,
   IsString,
 } from 'class-validator';
-import {eventToTopic, functionToSighash, hexStringEq, inputToFunctionSighash, stringNormalizedEq} from './utils';
+import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from './utils';
 
 type TopicFilter = string | string[] | null | undefined;
 
@@ -337,9 +337,6 @@ const CallProcessor: SecondLayerHandlerProcessor<
       gasLimit: BigNumber.from(rawTx.gasLimit),
       gasPrice: BigNumber.from(rawTx.gasPrice),
       data: rawTx.input,
-      function: contractInterfaces[ds.processor?.options?.abi]
-        ?.getFunction(inputToFunctionSighash(rawTx.input))
-        ?.format('sighash'),
       value: BigNumber.from(rawTx.value),
       chainId: undefined, // TODO
       ...rawTx.signature,
@@ -403,7 +400,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
   },
   dictionaryQuery(filter: MoonbeamCallFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
     const queryEntry: DictionaryQueryEntry = {
-      entity: 'evmLogs',
+      entity: 'evmTransactions',
       conditions: [],
     };
     if (ds.processor?.options?.address) {
