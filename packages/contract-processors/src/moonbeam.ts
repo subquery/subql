@@ -7,6 +7,7 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
 import {EthTransaction, EvmLog, ExitReason} from '@polkadot/types/interfaces';
+import {DictionaryQueryEntry} from '@subql/node/dist/indexer/dictionary.service';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -28,7 +29,7 @@ import {
   IsEthereumAddress,
   IsString,
 } from 'class-validator';
-import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from './utils';
+import {eventToTopic, functionToSighash, hexStringEq, inputToFunctionSighash, stringNormalizedEq} from './utils';
 
 type TopicFilter = string | string[] | null | undefined;
 
@@ -51,6 +52,7 @@ export interface MoonbeamCallFilter {
 export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
 export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
+  function?: string;
   success: boolean;
 };
 
@@ -271,6 +273,33 @@ const EventProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Moonbeam event filter.\n${errorMsgs}`);
     }
   },
+  dictionaryQuery(filter: MoonbeamEventFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+    const queryEntry: DictionaryQueryEntry = {
+      entity: 'evmLogs',
+      conditions: [],
+    };
+    if (ds.processor?.options?.address) {
+      queryEntry.conditions.push({field: 'address', value: ds.processor?.options?.address});
+    } else {
+      return;
+    }
+
+    // Follows bloom filters https://docs.ethers.io/v5/concepts/events/#events--filters
+    if (filter?.topics) {
+      for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
+        const topic = filter.topics[i];
+        if (!topic) {
+          continue;
+        }
+        const field = `topics${i}`;
+        const topicArr = typeof topic === 'string' ? [topic] : topic;
+        for (const singleTopic of topicArr) {
+          queryEntry.conditions.push({field, value: eventToTopic(singleTopic)});
+        }
+      }
+    }
+    return queryEntry;
+  },
 };
 
 const CallProcessor: SecondLayerHandlerProcessor<
@@ -308,6 +337,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
       gasLimit: BigNumber.from(rawTx.gasLimit),
       gasPrice: BigNumber.from(rawTx.gasPrice),
       data: rawTx.input,
+      function: contractInterfaces[ds.processor?.options?.abi]
+        ?.getFunction(inputToFunctionSighash(rawTx.input))
+        ?.format('sighash'),
       value: BigNumber.from(rawTx.value),
       chainId: undefined, // TODO
       ...rawTx.signature,
@@ -368,6 +400,23 @@ const CallProcessor: SecondLayerHandlerProcessor<
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
       throw new Error(`Invalid Moonbeam call filter.\n${errorMsgs}`);
     }
+  },
+  dictionaryQuery(filter: MoonbeamCallFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+    const queryEntry: DictionaryQueryEntry = {
+      entity: 'evmLogs',
+      conditions: [],
+    };
+    if (ds.processor?.options?.address) {
+      queryEntry.conditions.push({field: 'to', value: ds.processor?.options?.address});
+    }
+    if (filter?.from) {
+      queryEntry.conditions.push({field: 'from', value: filter?.from});
+    }
+
+    if (filter?.function) {
+      queryEntry.conditions.push({field: 'function', value: functionToSighash(filter.function)});
+    }
+    return queryEntry;
   },
 };
 

@@ -138,8 +138,11 @@ export class FetchService implements OnApplicationShutdown {
         if (isCustomDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
-            queryEntries.push(processor.dictionaryQuery(handler.filter));
-            continue;
+            const queryEntry = processor.dictionaryQuery(handler.filter, ds);
+            if (queryEntry) {
+              queryEntries.push(queryEntry);
+              continue;
+            }
           }
           filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
             ds,

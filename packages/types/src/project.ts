@@ -171,5 +171,5 @@ export interface SecondLayerHandlerProcessor<
   transformer: HandlerInputTransformer<K, E, DS>;
   filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
-  dictionaryQuery: (filter: F) => DictionaryQueryEntry;
+  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry;
 }
