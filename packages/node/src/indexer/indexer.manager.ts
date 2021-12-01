@@ -177,10 +177,24 @@ export class IndexerManager {
   }
 
   private async ensureProject(): Promise<string> {
-    let schema = await this.getProjectSchema();
+    const schemaResult = await this.getProjectSchema();
+    let schema = schemaResult[0];
+    const isSubqueries = schemaResult[1];
     if (!schema) {
       schema = await this.createProjectSchema();
     } else {
+      if (isSubqueries) {
+        await this.sequelize.query(
+          `ALTER SCHEMA :oldname RENAME TO :newname `,
+          {
+            replacements: {
+              oldname: schema,
+              newname: `"${this.nodeConfig.subqueryName}"`,
+            },
+          },
+        );
+        schema = this.nodeConfig.subqueryName;
+      }
       if (argv['force-clean']) {
         try {
           // drop existing project schema and metadata table
@@ -193,9 +207,9 @@ export class IndexerManager {
           await this.sequelize.query(
             ` DELETE
               FROM public.subqueries
-              where db_schema = :subquerySchema`,
+              where name = :name`,
             {
-              replacements: { subquerySchema: schema },
+              replacements: { name: this.nodeConfig.subqueryName },
               type: QueryTypes.DELETE,
             },
           );
@@ -211,8 +225,9 @@ export class IndexerManager {
   }
 
   // Get existing project schema, undefined when doesn't exist
-  private async getProjectSchema(): Promise<string> {
+  private async getProjectSchema(): Promise<[string, boolean]> {
     let schema = argv.schema as string;
+    let isSubqueries = false;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;
     }
@@ -231,9 +246,10 @@ export class IndexerManager {
         schema = undefined;
       } else {
         schema = (result[0] as any).db_schema;
+        isSubqueries = true;
       }
     }
-    return schema;
+    return [schema, isSubqueries];
   }
 
   private async createProjectSchema(): Promise<string> {
@@ -285,13 +301,6 @@ export class IndexerManager {
           value: project.nextBlockHeight,
         }),
       ]);
-      // Move the schema to the project name instead of the generated subquery_{suffix} name
-      this.sequelize.query(`ALTER SCHEMA :oldname RENAME TO :newname `, {
-        replacements: [
-          { oldname: project.dbSchema },
-          { newname: this.nodeConfig.subqueryName },
-        ],
-      });
       // Finally, destroy the entry in the subqueries table
       project.destroy();
     }
@@ -355,31 +364,6 @@ export class IndexerManager {
     }
 
     return metadataRepo;
-  }
-
-  private async nextSubquerySchemaSuffix(): Promise<number> {
-    const seqExists = await this.sequelize.query(
-      `SELECT 1
-       FROM information_schema.sequences
-       where sequence_schema = 'public'
-         and sequence_name = 'subquery_schema_seq'`,
-      {
-        type: QueryTypes.SELECT,
-      },
-    );
-    if (!seqExists.length) {
-      await this.sequelize.query(
-        `CREATE SEQUENCE subquery_schema_seq as integer START 1;`,
-        { type: QueryTypes.RAW },
-      );
-    }
-    const [{ nextval }] = await this.sequelize.query(
-      `SELECT nextval('subquery_schema_seq')`,
-      {
-        type: QueryTypes.SELECT,
-      },
-    );
-    return Number(nextval);
   }
 
   private filterDataSources(lastProcessedHeight: number): SubqlDatasource[] {
