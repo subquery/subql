@@ -183,15 +183,12 @@ export class IndexerManager {
     if (!schema) {
       schema = await this.createProjectSchema();
     } else {
+      console.log(schema);
+      console.log(`old name: ${schema}`);
+      console.log(`new name: ${this.nodeConfig.subqueryName}`);
       if (isSubqueries) {
         await this.sequelize.query(
-          `ALTER SCHEMA :oldname RENAME TO :newname `,
-          {
-            replacements: {
-              oldname: schema,
-              newname: `"${this.nodeConfig.subqueryName}"`,
-            },
-          },
+          `ALTER SCHEMA "${schema}" RENAME TO "${this.nodeConfig.subqueryName}"`,
         );
         schema = this.nodeConfig.subqueryName;
       }
@@ -207,7 +204,7 @@ export class IndexerManager {
           await this.sequelize.query(
             ` DELETE
               FROM public.subqueries
-              where name = :name`,
+              WHERE name = :name`,
             {
               replacements: { name: this.nodeConfig.subqueryName },
               type: QueryTypes.DELETE,
