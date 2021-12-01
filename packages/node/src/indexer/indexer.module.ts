@@ -6,6 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubqueryProject } from '../configure/project.model';
 import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
+import { ApiSolanaService } from './apisolana.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -22,11 +23,13 @@ import { StoreService } from './store.service';
     IndexerManager,
     StoreService,
     {
-      provide: ApiService,
+      //provide: ApiService,
+      provide: ApiSolanaService,
       useFactory: async (
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
       ) => {
+        //const apiService = new ApiService(project, eventEmitter);
         const apiService = new ApiService(project, eventEmitter);
         await apiService.init();
         return apiService;

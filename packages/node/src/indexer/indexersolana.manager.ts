@@ -5,6 +5,7 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
+import { Connection } from '@solana/web3.js';
 import {
   buildSchema,
   getAllEntitiesRelations,
@@ -32,7 +33,7 @@ import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
+//import { ApiService } from './api.service';
 import { ApiSolanaService } from './apisolana.service';
 import { DsProcessorService } from './ds-processor.service';
 import { MetadataFactory } from './entities/Metadata.entity';
@@ -41,7 +42,11 @@ import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
-import { IndexerSandbox, SandboxService } from './sandbox.service';
+import {
+  IndexerSandbox,
+  SandboxService,
+  SolanaSandboxService,
+} from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
@@ -54,21 +59,21 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
-  private api: ApiPromise;
+  private api: Connection;
   private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
 
   constructor(
     private storeService: StoreService,
-    private apiService: ApiService,
+    private apiService: ApiSolanaService,
     private fetchService: FetchService,
     private poiService: PoiService,
     protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
-    private sandboxService: SandboxService,
+    private sandboxService: SolanaSandboxService,
     private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
@@ -89,12 +94,12 @@ export class IndexerManager {
     try {
       const isUpgraded = block.specVersion !== this.prevSpecVersion;
       // if parentBlockHash injected, which means we need to check runtime upgrade
-      const apiAt = await this.apiService.getPatchedApi(
-        block.block.hash,
-        isUpgraded ? block.block.header.parentHash : undefined,
-      );
+      //const apiAt = await this.apiService.getPatchedApi(
+      //  block.block.hash,
+      //  isUpgraded ? block.block.header.parentHash : undefined,
+      //);
       for (const ds of this.filteredDataSources) {
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+        const vm = this.sandboxService.getDsProcessor(ds);
         if (isRuntimeDs(ds)) {
           await this.indexBlockForRuntimeDs(
             vm,
