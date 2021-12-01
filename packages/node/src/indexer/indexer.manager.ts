@@ -177,21 +177,10 @@ export class IndexerManager {
   }
 
   private async ensureProject(): Promise<string> {
-    const schemaResult = await this.getProjectSchema();
-    let schema = schemaResult[0];
-    const isSubqueries = schemaResult[1];
+    let schema = await this.getProjectSchema();
     if (!schema) {
       schema = await this.createProjectSchema();
     } else {
-      console.log(schema);
-      console.log(`old name: ${schema}`);
-      console.log(`new name: ${this.nodeConfig.subqueryName}`);
-      if (isSubqueries) {
-        await this.sequelize.query(
-          `ALTER SCHEMA "${schema}" RENAME TO "${this.nodeConfig.subqueryName}"`,
-        );
-        schema = this.nodeConfig.subqueryName;
-      }
       if (argv['force-clean']) {
         try {
           // drop existing project schema and metadata table
@@ -222,9 +211,8 @@ export class IndexerManager {
   }
 
   // Get existing project schema, undefined when doesn't exist
-  private async getProjectSchema(): Promise<[string, boolean]> {
+  private async getProjectSchema(): Promise<string> {
     let schema = argv.schema as string;
-    let isSubqueries = false;
     if (!schema) {
       schema = this.nodeConfig.subqueryName;
     }
@@ -243,10 +231,9 @@ export class IndexerManager {
         schema = undefined;
       } else {
         schema = (result[0] as any).db_schema;
-        isSubqueries = true;
       }
     }
-    return [schema, isSubqueries];
+    return schema;
   }
 
   private async createProjectSchema(): Promise<string> {
@@ -280,28 +267,6 @@ export class IndexerManager {
       where: { name: this.nodeConfig.subqueryName },
     });
 
-    // Convert and destroy subqueries to _metadata
-    if (project) {
-      await Promise.all([
-        metadataRepo.upsert({
-          key: 'name',
-          value: this.nodeConfig.subqueryName,
-        }),
-        metadataRepo.upsert({ key: 'schema', value: schema }),
-        metadataRepo.upsert({ key: 'chain', value: project.network }),
-        metadataRepo.upsert({
-          key: 'genesisHash',
-          value: project.networkGenesis,
-        }),
-        metadataRepo.upsert({
-          key: 'lastProcessedHeight',
-          value: project.nextBlockHeight,
-        }),
-      ]);
-      // Finally, destroy the entry in the subqueries table
-      project.destroy();
-    }
-
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
       this.apiService.networkMeta,
@@ -331,18 +296,31 @@ export class IndexerManager {
 
     // blockOffset and genesisHash should only have been created once, never updated.
     // If blockOffset is changed, will require re-index and re-sync poi.
-
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
     if (!keyValue.lastProcessedHeight) {
-      await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 0 });
+      if (project) {
+        metadataRepo.upsert({
+          key: 'lastProcessedHeight',
+          value: project.nextBlockHeight,
+        });
+      } else {
+        await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 0 });
+      }
     }
 
     if (!keyValue.genesisHash) {
-      await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
+      if (project) {
+        await metadataRepo.upsert({
+          key: 'genesisHash',
+          value: project.networkGenesis,
+        });
+      } else {
+        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
+      }
     }
 
     if (keyValue.chain !== chain) {
