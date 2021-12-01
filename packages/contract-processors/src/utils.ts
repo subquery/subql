@@ -4,7 +4,6 @@
 import {EventFragment, FunctionFragment} from '@ethersproject/abi';
 import {isHexString, hexStripZeros, hexDataSlice} from '@ethersproject/bytes';
 import {id} from '@ethersproject/hash';
-import {utils} from 'ethers';
 
 export function stringNormalizedEq(a: string, b: string): boolean {
   return a?.toLowerCase() === b?.toLowerCase();
@@ -30,6 +29,5 @@ export function functionToSighash(input: string): string {
 }
 
 export function inputToFunctionSighash(input: string): string {
-  const bytes = utils.arrayify(input);
-  return utils.hexlify(bytes.slice(0, 4));
+  return hexDataSlice(input, 0, 4);
 }
