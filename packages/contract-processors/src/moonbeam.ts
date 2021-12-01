@@ -411,7 +411,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
     }
 
     if (filter?.function) {
-      queryEntry.conditions.push({field: 'function', value: functionToSighash(filter.function)});
+      queryEntry.conditions.push({field: 'func', value: functionToSighash(filter.function)});
     }
     return queryEntry;
   },
