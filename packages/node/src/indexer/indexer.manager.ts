@@ -303,7 +303,7 @@ export class IndexerManager {
 
     if (!keyValue.lastProcessedHeight) {
       if (project) {
-        metadataRepo.upsert({
+        await metadataRepo.upsert({
           key: 'lastProcessedHeight',
           value: project.nextBlockHeight,
         });
@@ -354,7 +354,9 @@ export class IndexerManager {
     );
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${lastProcessedHeight} or delete your database and start again from the currently specified startBlock`,
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${
+          lastProcessedHeight + 1
+        } or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
