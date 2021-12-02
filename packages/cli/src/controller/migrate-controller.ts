@@ -63,7 +63,10 @@ export async function prepare(
   for (const dataSource of manifest.asV0_2_0.dataSources) {
     dataSource.mapping.file = await cli.prompt(
       `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
-      {default: jsonProjectData.main, required: true}
+      {
+        default: jsonProjectData.main.toString().startsWith('./') ? jsonProjectData.main : `./${jsonProjectData.main}`,
+        required: true,
+      }
     );
     delete dataSource.name;
     const handlers = dataSource.mapping.handlers;

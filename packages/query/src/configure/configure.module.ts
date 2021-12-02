@@ -16,6 +16,7 @@ export class ConfigureModule {
     const config = new Config({
       name: opts.name,
       playground: opts.playground ?? false,
+      unsafe: opts.unsafe ?? false,
     });
 
     const pgPool = new Pool({

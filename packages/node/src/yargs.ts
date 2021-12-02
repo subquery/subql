@@ -89,7 +89,7 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
       type: 'boolean',
-      default: true,
+      default: false,
     },
     'network-dictionary': {
       alias: 'd',

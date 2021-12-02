@@ -106,7 +106,7 @@
     </div>
     <div class="lastIntroduce lastIntroduce_2">
         <h5>Soporte y contribución</h5>
-        <p>Have a question or interested to know more or how you can contribute? We’d love to hear from you. ¡Queremos saber tu opinión! Por favor contáctenos a través de correo electrónico o redes sociales desde los siguientes enlaces. ¿Necesita conocimientos técnicos? Únete a nuestra comunidad de Discord y recibe apoyo de nuestros apasionados miembros de la comunidad. </p>
+        <p>¿Tienes alguna pregunta o te interesa saber más o cómo puedes contribuir? Nos encantaría saber de usted ¡Queremos saber tu opinión! Por favor contáctenos a través de correo electrónico o redes sociales desde los siguientes enlaces. ¿Necesita conocimientos técnicos? Únete a nuestra comunidad de Discord y recibe apoyo de nuestros apasionados miembros de la comunidad. </p>
         <a class="more" target="_blank" href="https://discord.com/invite/78zg8aBSMG">ÚNETE A LA CONVERSACIÓN EN DISCORD</a>
     </div>
     </div>

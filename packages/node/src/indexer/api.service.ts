@@ -8,12 +8,15 @@ import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/project.model';
+import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { ApiAt } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
 };
+
+const logger = getLogger('api');
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
@@ -68,9 +71,11 @@ export class ApiService implements OnApplicationShutdown {
       network.genesisHash &&
       network.genesisHash !== this.networkMeta.genesisHash
     ) {
-      throw new Error(
+      const err = new Error(
         `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
       );
+      logger.error(err, err.message);
+      throw err;
     }
 
     return this;

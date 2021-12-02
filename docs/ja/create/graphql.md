@@ -1,15 +1,15 @@
-# Learn more about GraphQL
+# GraphQL Schema
 
-## エンティティの定義
+## Defining Entities
 
-`schema.graphql` ファイルは、様々なGraphQLスキーマを定義します。 GraphQL クエリ言語の機能により、スキーマファイルは基本的に SubQuery からデータの型を決定します。 There are libraries to help you implement GraphQL in [many different languages](https://graphql.org/code/)
+The `schema.graphql` file defines the various GraphQL schemas. Due to the way that the GraphQL query language works, the schema file essentially dictates the shape of your data from SubQuery. To learn more about how to write in GraphQL schema language, we recommend checking out [Schemas and Types](https://graphql.org/learn/schema/#type-language).
 
-**重要: スキーマファイルに変更を加えた場合、コマンド `yarn codegen` を使用してtypesディレクトリを再生成してください**
+**Important: When you make any changes to the schema file, please ensure that you regenerate your types directory with the following command `yarn codegen`**
 
-### エンティティ
-各エンティティは必要なフィールド `id` を `ID!` の型で定義する必要があります。 これは、主キーとして使用され、同じ型のすべてのエンティティの間でユニークです。
+### Entities
+Each entity must define its required fields `id` with the type of `ID!`. It is used as the primary key and unique among all entities of the same type.
 
-エンティティの null ではないフィールドは `!` で示されます。 以下の例をご覧ください。
+Non-nullable fields in the entity are indicated by `!`. Please see the example below:
 
 ```graphql
 type Example @entity {
@@ -19,25 +19,27 @@ type Example @entity {
 }
 ```
 
-### サポートされているスカラー型
+### Supported scalars and types
 
-現在、次のスカラー型をサポートしています：
+We currently supporting flowing scalars types:
 - `ID`
 - `Int`
 - `String`
 - `BigInt`
+- `Float`
 - `Date`
 - `Boolean`
-- `<EntityName>` をネストされたリレーションエンティティには、定義されたエンティティの名前をフィールドの1つとして使用することができます。 [エンティティの関係](#entity-relationships) を参照してください。
-- `JSON` は構造化されたデータを格納することができます。 [JSON type](#json-type) を参照してください。
+- `<EntityName>` for nested relationship entities, you might use the defined entity's name as one of the fields. Please see in [Entity Relationships](#entity-relationships).
+- `JSON` can alternatively store structured data, please see [JSON type](#json-type)
+- `Enum` types are a special kind of scalar that is restricted to a particular set of allowed values. Please see [Graphql Enum](https://graphql.org/learn/schema/#enumeration-types)
 
-## 非プライマリキーフィールドによるインデックス
+## Indexing by non-primary-key field
 
-クエリのパフォーマンスを向上させるために、主キーでないフィールドに `@index` アノテーションを実装するだけで、エンティティフィールドにインデックスを付けます。
+To improve query performance, index an entity field simply by implementing the `@index` annotation on a non-primary-key field.
 
-ただし、 `JSON` オブジェクトに [@index](#json-type) アノテーションを追加することはできません。 デフォルトでは、インデックスは外部キーとデータベース内の JSON フィールドに自動的に追加されますが、クエリーサービスのパフォーマンスを向上させるためにのみ追加されます。
+However, we don't allow users to add `@index` annotation on any [JSON](#json-type) object. By default, indexes are automatically added to foreign keys and for JSON fields in the database, but only to enhance query service performance.
 
-次に例を示します。
+Here is an example.
 
 ```graphql
 type User @entity {
@@ -51,9 +53,9 @@ type Title @entity {
   name: String! @index(unique:true)
 }
 ```
-このユーザーの名前を知っていたとしても、正確な id がわかりません。 すべてのユーザーを抽出し、名前でフィルタリングするのではなく、 `@index` を名前フィールドの後ろに追加することができます。 これによりクエリの処理がより速くなり、さらに`unique: true`を渡す事で一意性を確保します。
+Assuming we knew this user's name, but we don't know the exact id value, rather than extract all users and then filtering by name we can add `@index` behind the name field. This makes querying much faster and we can additionally pass the `unique: true` to  ensure uniqueness.
 
-**フィールドが一意でない場合、最大結果セットサイズは100です**
+**If a field is not unique, the maximum result set size is 100**
 
 When code generation is run, this will automatically create a `getByName` under the `User` model, and the foreign key field `title` will create a `getByTitleId` method, which both can directly be accessed in the mapping function.
 
@@ -74,17 +76,17 @@ const captainTitle = await Title.getByName('Captain');
 const pirateLords = await User.getByTitleId(captainTitle.id); // List of all Captains
 ```
 
-## エンティティリレーションシップ
+## Entity Relationships
 
-エンティティは、多くの場合、他のエンティティとネストされたリレーションシップを持ちます。 フィールド値を別のエンティティ名に設定すると、デフォルトでこれら2つのエンティティ間の1対1のリレーションシップが定義されます。
+An entity often has nested relationships with other entities. Setting the field value to another entity name will define a one-to-one relationship between these two entities by default.
 
-異なるエンティティリレーションシップ(1対1、1対多、および多対多)は、以下の例を使用して構成できます。
+Different entity relationships (one-to-one, one-to-many, and many-to-many) can be configured using the examples below.
 
-### 1対1のリレーションシップ
+### One-to-One Relationships
 
-1対1のリレーションは、単一のエンティティのみが別のエンティティにマップされる場合のデフォルトです。
+One-to-one relationships are the default when only a single entity is mapped to another.
 
-例: パスポートは1人のみに属し、1つのパスポートしか持っていません(この例では、パスポートは1つだけです):
+Example: A passport will only belong to one person and a person only has one passport (in this example):
 
 ```graphql
 type Person @entity {
@@ -97,7 +99,7 @@ type Passport @entity {
 }
 ```
 
-または
+or
 
 ```graphql
 type Person @entity {
@@ -111,11 +113,11 @@ type Passport @entity {
 }
 ```
 
-### 1対多のリレーションシップ
+### One-to-Many relationships
 
-フィールドタイプに複数のエンティティが含まれていることを示すために、角括弧を使用することができます。
+You can use square brackets to indicate that a field type includes multiple entities.
 
-例: 人は複数のアカウントを持つことができます。
+Example: A person can have multiple accounts.
 
 ```graphql
 type Person @entity {
@@ -129,10 +131,10 @@ type Account @entity {
 }
 ```
 
-### 多対多のリレーションシップ
-他の2つのエンティティを接続するマッピングエンティティを実装することで、多対多のリレーションを実現することができます。
+### Many-to-Many relationships
+A many-to-many relationship can be achieved by implementing a mapping entity to connect the other two entities.
 
-例: 各人は複数のグループ (PersonGroup) の一部であり、グループは複数の異なる人 (PersonGroup) がいます。
+Example: Each person is a part of multiple groups (PersonGroup) and groups have multiple different people (PersonGroup).
 
 ```graphql
 type Person @entity {
@@ -154,11 +156,11 @@ type Group @entity {
 }
 ```
 
-また、中間エンティティの複数のフィールドに同じエンティティの接続を作成することもできます。
+Also, it is possible to create a connection of the same entity in multiple fields of the middle entity.
 
-たとえば、1つの口座には複数の転送が可能で、それぞれの転送には転送元と宛先の口座があります。
+For example, an account can have multiple transfers, and each transfer has a source and destination account.
 
-これにより、転送テーブルを介して2つのアカウント間の双方向の関係が確立されます。
+This will establish a bi-directional relationship between two Accounts (from and to) through Transfer table.
 
 ```graphql
 type Account @entity {
@@ -174,13 +176,13 @@ type Transfer @entity {
 }
 ```
 
-### 逆引き参照
+### Reverse Lookups
 
-リレーションに対するエンティティの逆ルックアップを有効にするには、 `@derivedFrom` をフィールドに添付し、別のエンティティの逆参照フィールドを指します。
+To enable a reverse lookup on an entity to a relation, attach `@derivedFrom` to the field and point to its reverse lookup field of another entity.
 
-クエリ可能なエンティティ上に仮想フィールドが作成されます。
+This creates a virtual field on the entity that can be queried.
 
-アカウントからの転送は、sentTransferまたはreceivedTransferを、それぞれのフィールドから取得した値として設定することで、アカウントエンティティからアクセスできます。
+The Transfer "from" an Account is accessible from the Account entity by setting the sentTransfer or receivedTransfer as having their value derived from the respective from or to fields.
 
 ```graphql
 type Account @entity {
@@ -198,19 +200,19 @@ type Transfer @entity {
 }
 ```
 
-## JSON タイプ
+## JSON type
 
-構造化されたデータを格納するための迅速な方法であるJSON型としてデータの保存をサポートしています。 このデータを照会するために対応する JSON インターフェイスを自動的に生成し、エンティティの定義と管理にかかる時間を節約します。
+We are supporting saving data as a JSON type, which is a fast way to store structured data. We'll automatically generate corresponding JSON interfaces for querying this data and save you time defining and managing entities.
 
-次のシナリオでは、ユーザーが JSON 型を使用することを推奨します。
-- 構造化されたデータを1つのフィールドに格納する場合、複数の個別のエンティティを作成するよりも管理が可能です。
-- 任意のキー/値のユーザー設定の保存（値がbool値、テキスト、数値のいずれかであり、異なるデータタイプのために別々の列を持ちたくない場合）。
-- スキーマは不安定で頻繁に変更されます
+We recommend users use the JSON type in the following scenarios:
+- When storing structured data in a single field is more manageable than creating multiple separate entities.
+- Saving arbitrary key/value user preferences (where the value can be boolean, textual, or numeric, and you don't want to have separate columns for different data types)
+- The schema is volatile and changes frequently
 
-### JSON ディレクティブを定義
-`jsonField` アノテーションをエンティティに追加することで、プロパティを JSON 型として定義します。 これにより、プロジェクト内のすべてのJSONオブジェクトのインターフェイスが`types/interfaces.ts`に自動的に生成され、マッピング関数でそれらにアクセスできるようになります。
+### Define JSON directive
+Define the property as a JSON type by adding the `jsonField` annotation in the entity. This will automatically generate interfaces for all JSON objects in your project under `types/interfaces.ts`, and you can access them in your mapping function.
 
-エンティティとは異なり、jsonFieldディレクティブオブジェクトは`id`フィールドを必須としません。 JSON オブジェクトは他の JSON オブジェクトとともにネストすることもできます。
+Unlike the entity, the jsonField directive object does not require any `id` field. A JSON object is also able to nest with other JSON objects.
 
 ````graphql
 type AddressDetail @jsonField {
@@ -229,11 +231,11 @@ type User @entity {
 }
 ````
 
-### JSON フィールドのクエリ
+### Querying JSON fields
 
-JSON型を使用することの欠点は、テキスト検索を行うたびにエンティティ全体を対象としているため、フィルタリング時のクエリ効率に若干の影響があることです。
+The drawback of using JSON types is a slight impact on query efficiency when filtering, as each time it performs a text search, it is on the entire entity.
 
-しかし、その影響はクエリサービスではまだ許容範囲内です。 ここでは、JSONフィールドのGraphQLクエリで`contains`演算子を使用して、”0064”を含む電話番号を所有する最初の5人のユーザーを検索する例を紹介します。
+However, the impact is still acceptable in our query service. Here is an example of how to use the `contains` operator in the GraphQL query on a JSON field to find the first 5 users who own a phone number that contains '0064'.
 
 ```graphql
 #To find the the first 5 users own phone numbers contains '0064'.
