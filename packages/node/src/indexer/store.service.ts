@@ -4,6 +4,7 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
@@ -72,11 +73,10 @@ export class StoreService {
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
 
-    let i = 0;
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `${schema}_custom_enum_${i}`;
+      const enumTypeName = `${schema}_enum_${this.enumNameToHash(e.name)}`;
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
@@ -121,8 +121,6 @@ export class StoreService {
         replacements: [comment],
       });
       enumTypeMap.set(e.name, enumTypeName);
-
-      i++;
     }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
@@ -212,6 +210,10 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+  }
+
+  enumNameToHash(enumName: string): string {
+    return blake2AsHex(enumName).substr(2, 10);
   }
 
   setTransaction(tx: Transaction) {
