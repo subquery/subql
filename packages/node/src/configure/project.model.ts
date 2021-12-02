@@ -41,9 +41,9 @@ export class SubqueryProject {
     this._path = path;
 
     manifest.dataSources?.forEach(function (dataSource) {
-      if (!dataSource.startBlock || dataSource.startBlock < 1) {
-        if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
-        dataSource.startBlock = 1;
+      if (!dataSource.startBlock || dataSource.startBlock < 0) {
+        logger.warn('start block changed to #0');
+        dataSource.startBlock = 0;
       }
     });
   }

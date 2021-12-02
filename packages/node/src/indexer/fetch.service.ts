@@ -258,7 +258,8 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
       if (
         this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
-        startBlockHeight > this.latestFinalizedHeight
+        startBlockHeight > this.latestFinalizedHeight ||
+        this.latestFinalizedHeight === 0
       ) {
         await delay(1);
         continue;

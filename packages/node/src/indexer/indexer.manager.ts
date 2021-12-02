@@ -71,10 +71,21 @@ export class IndexerManager {
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block, events, extrinsics } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
+
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
       timestamp: Date.now(),
     });
+
+    if (blockHeight === 0) {
+      this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
+        height: blockHeight,
+        timestamp: Date.now(),
+      });
+
+      return;
+    }
+
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
 
