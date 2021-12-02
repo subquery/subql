@@ -14,6 +14,7 @@ export function getYargsOption() {
       type: 'string',
     },
     'subquery-name': {
+      deprecated: true,
       demandOption: false,
       describe: 'Name of the subquery project',
       type: 'string',

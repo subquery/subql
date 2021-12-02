@@ -227,24 +227,23 @@ export class IndexerManager {
       if (subqueryModel) {
         schema = subqueryModel.dbSchema;
       } else {
-        if (argv.schema) {
-          logger.error(`Was not able to find argument schema ${argv.schema}`);
-          process.exit(1);
-        } else {
-          schema = undefined;
-        }
+        schema = undefined;
       }
     }
     return schema;
   }
 
   private async createProjectSchema(): Promise<string> {
-    let schema: string;
+    let schema;
     if (this.nodeConfig.localMode) {
       // create tables in default schema if local mode is enabled
       schema = DEFAULT_DB_SCHEMA;
     } else {
-      schema = this.nodeConfig.subqueryName;
+      if (argv.schema) {
+        schema = argv.schema;
+      } else {
+        schema = this.nodeConfig.subqueryName;
+      }
       const schemas = await this.sequelize.showAllSchemas(undefined);
       if (!(schemas as unknown as string[]).includes(schema)) {
         await this.sequelize.createSchema(`"${schema}"`, undefined);

@@ -61,12 +61,10 @@ export class ConfigureModule {
         yargsOptions.showHelp();
         process.exit(1);
       }
-      if (argv.subquery && argv.schema) {
-        logger.error(
-          'Conflicting flags for specifying subquery schema and path',
+      if (argv['subquery-name']) {
+        logger.info(
+          'Note that argument --subquery-name has been deprecated in favour of --schema',
         );
-        yargsOptions.showHelp();
-        process.exit(1);
       }
       assert(argv.subquery, 'subquery path is missing');
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
