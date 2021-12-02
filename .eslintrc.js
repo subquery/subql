@@ -80,16 +80,7 @@ module.exports = {
         },
       },
     ],
-    'header/header': [
-      2,
-      'line',
-      [
-        //Copyright 2020-2021 OnFinality Limited authors & contributors
-        {pattern: ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors'},
-        ' SPDX-License-Identifier: Apache-2.0',
-      ],
-      2,
-    ],
+    
     'sort-destructure-keys/sort-destructure-keys': [
       2,
       {
