@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "@solana/web3.js": "^1.31.0",
+    "@terra-money/terra.js": "^3.0.1",
     "vuepress-theme-hope": "^1.21.0"
   },
   "lint-staged": {

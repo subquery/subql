@@ -14,7 +14,6 @@ import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { ApiSolanaService } from './apisolana.service';
 import { StoreService } from './store.service';
 import { ApiAt } from './types';
 
@@ -132,49 +131,6 @@ export class SandboxService {
     if (argv.unsafe) {
       processor.freeze(this.apiService.getApi(), 'unsafeApi');
     }
-    return processor;
-  }
-
-  private getDataSourceEntry(ds: SubqlDatasource): string {
-    if (isRuntimeDataSourceV0_2_0(ds)) {
-      return ds.mapping.file;
-    } else {
-      return getProjectEntry(this.project.path);
-    }
-  }
-}
-
-@Injectable()
-export class SolanaSandboxService {
-  private processorCache: Record<string, IndexerSandbox> = {};
-
-  constructor(
-    private readonly apiService: ApiSolanaService,
-    private readonly storeService: StoreService,
-    private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryProject,
-  ) {}
-
-  getDsProcessor(ds: SubqlDatasource): IndexerSandbox {
-    const entry = this.getDataSourceEntry(ds);
-    let processor = this.processorCache[entry];
-    if (!processor) {
-      processor = new IndexerSandbox(
-        {
-          // api: await this.apiService.getPatchedApi(),
-          entry,
-          root: this.project.path,
-          store: this.storeService.getStore(),
-        },
-        this.nodeConfig,
-      );
-      this.processorCache[entry] = processor;
-    }
-    //processor.freeze(api, 'api');
-    //if (argv.unsafe) {
-    //processor.freeze(this.apiService.getApi(), 'unsafeApi');
-    //}
-    processor.freeze(this.apiService.getApi());
     return processor;
   }
 

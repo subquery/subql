@@ -36,6 +36,9 @@ export class ProjectNetworkV0_2_0 extends ProjectNetworkDeploymentV0_2_0 {
   @IsString()
   @IsOptional()
   dictionary?: string;
+  @IsString()
+  @IsOptional()
+  çhainId?: string;
 }
 
 export class ProjectMappingV0_2_0 extends Mapping {
