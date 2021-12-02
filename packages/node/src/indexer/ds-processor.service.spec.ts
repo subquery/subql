@@ -22,7 +22,7 @@ function getTestProject(extraDataSources?: SubqlCustomDatasource[]) {
         {
           kind: 'substrate/Jsonfy',
           processor: { file: 'contract-processors/dist/jsonfy.js' },
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             handlers: [
               { handler: 'testSandbox', kind: 'substrate/JsonfyEvent' },

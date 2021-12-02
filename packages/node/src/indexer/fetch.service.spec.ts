@@ -189,7 +189,7 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
           processor: {
             file: 'contract-processors/dist/jsonfy.js',
           },
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             handlers: [
               {
@@ -303,7 +303,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -366,7 +366,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -427,7 +427,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -482,7 +482,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {

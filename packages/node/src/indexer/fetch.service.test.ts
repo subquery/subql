@@ -25,7 +25,7 @@ function testSubqueryProject(): SubqueryProject {
         {
           name: 'runtime',
           kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             handlers: [{ handler: 'handleTest', kind: SubqlHandlerKind.Event }],
           },
@@ -116,7 +116,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -193,7 +193,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -237,7 +237,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {
@@ -292,7 +292,7 @@ describe('FetchService', () => {
       {
         name: 'runtime',
         kind: SubqlDatasourceKind.Runtime,
-        startBlock: 1,
+        startBlock: 0,
         mapping: {
           handlers: [
             {

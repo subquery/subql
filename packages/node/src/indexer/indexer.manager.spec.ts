@@ -65,7 +65,7 @@ function testSubqueryProjectV0_0_1(): SubqueryProject {
         {
           name: 'runtime0',
           kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             handlers: [
               { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
@@ -75,7 +75,7 @@ function testSubqueryProjectV0_0_1(): SubqueryProject {
         {
           name: 'runtime1',
           kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             handlers: [
               { handler: 'testSandbox', kind: SubqlHandlerKind.Event },
@@ -102,7 +102,7 @@ function testSubqueryProject(): SubqueryProject {
         {
           name: 'runtime0',
           kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             file: './main.js',
             handlers: [
@@ -113,7 +113,7 @@ function testSubqueryProject(): SubqueryProject {
         {
           name: 'runtime1',
           kind: SubqlDatasourceKind.Runtime,
-          startBlock: 1,
+          startBlock: 0,
           mapping: {
             file: './main.js',
             handlers: [
