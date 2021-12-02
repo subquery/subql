@@ -42,7 +42,7 @@ import { BlockContent } from './types';
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
-const CHECK_MEMORY_INTERVAL = 30000;
+const CHECK_MEMORY_INTERVAL = 40000;
 
 const { argv } = getYargsOption();
 
@@ -80,6 +80,30 @@ function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
       },
     ],
   };
+}
+
+function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
+  const highThreshold = 0.95;
+  const lowThreshold = 0.8;
+  const minimumBatchSize = 10;
+
+  const memoryData = process.memoryUsage();
+  const ratio = memoryData.heapUsed / memoryData.heapTotal;
+  let scale = batchSizeScale;
+
+  if (ratio > highThreshold) {
+    if (scale >= 0.2 && (scale - 0.1) * batchSize > minimumBatchSize) {
+      scale -= 0.1;
+    }
+  }
+
+  if (ratio < lowThreshold) {
+    if (scale <= 0.9) {
+      scale += 0.1;
+    }
+  }
+
+  return scale;
 }
 
 @Injectable()
@@ -218,48 +242,18 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  getMemoryUsage() {
-    const highThreshold = 0.95;
-    const lowThreshold = 0.85;
-    const memoryData = process.memoryUsage();
+  checkBatchScale() {
+    console.log('Checking batch scale');
+    if (argv['scale-batch-size']) {
+      const scale = checkMemoryUsage(
+        this.nodeConfig.batchSize,
+        this.batchSizeScale,
+      );
 
-    const ratio = memoryData.heapUsed / memoryData.heapTotal;
-
-    if (ratio > highThreshold) {
-      if (this.batchSizeScale >= 0.1) {
-        this.batchSizeScale -= 0.05;
-        console.log('Scale batchSize down');
+      if (this.batchSizeScale !== scale) {
+        this.batchSizeScale = scale;
       }
     }
-
-    if (ratio < lowThreshold) {
-      if (this.batchSizeScale <= 0.95) {
-        this.batchSizeScale += 0.05;
-        console.log('Scale batchSize up');
-      }
-    }
-
-    // const formatMemoryUsage = (data) =>
-    // `${Math.round((data / 1024 / 1024) * 100) / 100} MB`;
-
-    // const memoryUsage = {
-    //   rss: `${formatMemoryUsage(
-    //     memoryData.rss,
-    //   )} -> Resident Set Size - total memory allocated for the process execution`,
-    //   heapTotal: `${formatMemoryUsage(
-    //     memoryData.heapTotal,
-    //   )} -> total size of the allocated heap`,
-    //   heapUsed: `${formatMemoryUsage(
-    //     memoryData.heapUsed,
-    //   )} -> actual memory used during the execution`,
-    //   external: `${formatMemoryUsage(
-    //     memoryData.external,
-    //   )} -> V8 external memory`,
-    // };
-
-    // console.log(memoryUsage);
-    console.log(ratio);
-    console.log(Math.round(this.batchSizeScale * this.nodeConfig.batchSize));
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
