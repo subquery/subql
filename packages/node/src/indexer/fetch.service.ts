@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
@@ -43,6 +44,9 @@ const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
+const HIGH_THRESHOLD = 0.85;
+const LOW_THRESHOLD = 0.6;
+const MINIMUM_BATCH_SIZE = 5;
 
 const { argv } = getYargsOption();
 
@@ -83,24 +87,24 @@ function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
 }
 
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
-  const highThreshold = 0.9;
-  const lowThreshold = 0.6;
-  const minimumBatchSize = 5;
-
-  const memoryData = process.memoryUsage();
-  const ratio = memoryData.heapUsed / memoryData.heapTotal;
+  const memoryData = getHeapStatistics();
+  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
+  if (argv.profiler) {
+    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
+    logger.info(`Heap Usage: ${ratio}`);
+  }
   let scale = batchSizeScale;
 
-  if (ratio > highThreshold) {
-    if (scale >= 0.2 && (scale - 0.1) * batchSize > minimumBatchSize) {
-      scale -= 0.1;
+  if (ratio > HIGH_THRESHOLD) {
+    if (scale > 0) {
+      scale = Math.max(scale - 0.1, 0);
       logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
     }
   }
 
-  if (ratio < lowThreshold) {
-    if (scale <= 0.9) {
-      scale += 0.1;
+  if (ratio < LOW_THRESHOLD) {
+    if (scale < 1) {
+      scale = Math.min(scale + 0.1, 1);
       logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
     }
   }
@@ -323,8 +327,9 @@ export class FetchService implements OnApplicationShutdown {
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
 
-      scaledBatchSize = Math.round(
-        this.batchSizeScale * this.nodeConfig.batchSize,
+      scaledBatchSize = Math.max(
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+        MINIMUM_BATCH_SIZE,
       );
 
       if (
