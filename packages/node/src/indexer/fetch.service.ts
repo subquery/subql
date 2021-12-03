@@ -94,25 +94,16 @@ function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
   if (ratio > highThreshold) {
     if (scale >= 0.2 && (scale - 0.1) * batchSize > minimumBatchSize) {
       scale -= 0.1;
-      logger.debug(
-        `Heap usage at ${`${(ratio * 100).toFixed(
-          2,
-        )}%`}, decreasing batch size by 10%`,
-      );
+      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
     }
   }
 
   if (ratio < lowThreshold) {
     if (scale <= 0.9) {
       scale += 0.1;
-      logger.debug(
-        `Heap usage at ${`${(ratio * 100).toFixed(
-          2,
-        )}%`}, increasing batch size by 10%`,
-      );
+      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
     }
   }
-
   return scale;
 }
 
