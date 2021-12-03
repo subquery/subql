@@ -18,36 +18,36 @@ Redes soportadas:
 2. Añadir una fuente de datos personalizada como se describe a continuación
 3. Añadir manejadores para la fuente de datos personalizada a tu código
 
-## Data Source Spec
+## Spec de origen de datos
 
-| Field             | Type                                                           | Required | Description                                |
-| ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
-| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Yes      | File reference to the data processor code  |
-| processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
-| assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
+| Campo             | Tipo                                                           | Requerido | Descripción                                             |
+| ----------------- | -------------------------------------------------------------- | --------- | ------------------------------------------------------- |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Si        | Referencia de archivo al código del procesador de datos |
+| processor.options | [ProcessorOptions](#processor-options)                         | No        | Opciones específicas del procesador de Moonbeam         |
+| activos           | `{ [key: String]: { file: String }}`                           | No        | Un objeto de archivos de activos externos               |
 
-### Processor Options
+### Opciones de procesador
 
-| Field   | Type             | Required | Description                                                                                                |
-| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
-| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+| Campo     | Tipo             | Requerido | Descripción                                                                                                                             |
+| --------- | ---------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| abi       | String           | No        | El ABI que es usado por el procesador para analizar argumentos. DEBE ser una clave de `activos`                                         |
+| dirección | String or `null` | No        | Una dirección de contrato a la que se hace el evento o a la que se hace una llamada. `null` capturará llamadas de creación de contratos |
 
 ## MoonbeamCall
 
-Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler) except with a different handler argument and minor filtering changes.
+Funciona de la misma manera que [substrate/CallHandler](../create/mapping/#call-handler) excepto con un argumento de manejador diferente y cambios menores de filtrado.
 
-| Field  | Type                         | Required | Description                                 |
-| ------ | ---------------------------- | -------- | ------------------------------------------- |
-| kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
-| filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
+| Campo  | Tipo                                | Requerido | Descripción                                         |
+| ------ | ----------------------------------- | --------- | --------------------------------------------------- |
+| clase  | 'substrate/MoonbeamCall'            | Si        | Especifica que este es un manejador de tipo llamada |
+| filtro | [Filtro de llamadas](#call-filters) | No        | Filtrar la fuente de datos para ejecutar            |
 
-### Call Filters
+### Filtro de llamadas
 
-| Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
-| -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | Una dirección de Ethereum que envió la transacción                                                                                                                               |
+| Campo   | Tipo   | Ejemplo(s)                                    | Descripción                                                                                                                                                           |
+| ------- | ------ | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| función | String | 0x095ea7b3, approve(address to,uint256 value) | [Firma de función](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) cadenas o la función `sighash` para filtrar la función llamada en el contrato |
+| de      | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | Una dirección de Ethereum que envió la transacción                                                                                                                    |
 
 ### Manejadores
 
@@ -61,32 +61,32 @@ Cambios del tipo `TransactionResponse`:
 
 ## MoonbeamEvent
 
-Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
+Funciona de la misma manera que [substrate/EventHandler](../create/mapping/#event-handler) excepto con un argumento de manejador diferente y cambios menores de filtrados.
 
-| Field  | Type                           | Required | Description                                  |
-| ------ | ------------------------------ | -------- | -------------------------------------------- |
-| kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
-| filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
+| Campo  | Tipo                                | Requerido | Descripción                                           |
+| ------ | ----------------------------------- | --------- | ----------------------------------------------------- |
+| clase  | 'substrate/MoonbeamEvent'           | Si        | Especifica que este es un manejador de tipo de evento |
+| filtro | [Filtro de eventos](#event-filters) | No        | Filtrar la fuente de datos para ejecutar              |
 
-### Event Filters
+### Filtros de eventos
 
-| Field  | Type         | Ejemplo(s)                                                      | Description                                                                                                                                      |
-| ------ | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
+| Campo | Tipo                  | Ejemplo(s)                                                                | Descripción                                                                                                                                                     |
+| ----- | --------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| temas | Arreglo de secuencias | Transferencia (índice de dirección de,dirección indexada a,valor uint256) | El filtro de temas sigue los filtros de registro JSON-PRC de Ethereum, se puede encontrar más documentación [aquí](https://docs.ethers.io/v5/concepts/events/). |
 
-<b>Note on topics:</b>
-There are a couple of improvements from basic log filters:
+<b>Nota sobre temas:</b>
+Hay un par de mejoras en los filtros básicos de registro:
 
-- Topics don't need to be 0 padded
-- [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
+- Los temas no necesitan ser acolchados 0
+- [Se pueden proporcionar fragmentos de eventos](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) y convertir automáticamente a su id
 
-### Handlers
+### Manejadores
 
-Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
+A diferencia de un manejador normal, no obtendrá un `SubstrateEvent` como parámetro, en su lugar obtendrás un `MoonbeamEvent` que se basa en Ethers [tipo Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log).
 
-Changes from the `Log` type:
+Cambios de tipo `Log`:
 
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- `args` se añade si se proporciona el campo `abi` y los argumentos pueden ser analizados con éxito
 
 ## Ejemplo de fuente de datos
 
