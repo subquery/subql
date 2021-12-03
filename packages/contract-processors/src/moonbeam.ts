@@ -7,7 +7,6 @@ import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
 import {EthTransaction, EvmLog, ExitReason} from '@polkadot/types/interfaces';
-import {DictionaryQueryEntry} from '@subql/node/dist/indexer/dictionary.service';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -18,6 +17,7 @@ import {
   SubstrateExtrinsic,
   SubqlCustomHandler,
   SubqlMapping,
+  DictionaryQueryEntry,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
 import {

@@ -3,7 +3,6 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
-import {DictionaryQueryEntry} from '@subql/node/dist/indexer/dictionary.service';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
 export enum SubqlDatasourceKind {
@@ -154,10 +153,15 @@ export interface SubqlDatasourceProcessor<
   handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown, DS>};
 }
 
-// interface DictionaryQuery {
-//   entity: string;
-//   conditions: {field: string; value: string}[];
-// }
+export interface DictionaryQueryCondition {
+  field: string;
+  value: string;
+}
+
+export interface DictionaryQueryEntry {
+  entity: string;
+  conditions: DictionaryQueryCondition[];
+}
 
 // only allow one custom handler for each baseHandler kind
 export interface SecondLayerHandlerProcessor<

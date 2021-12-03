@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ProjectManifestVersioned } from '@subql/common';
+import { DictionaryQueryEntry } from '@subql/types';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
-import { DictionaryQueryEntry, DictionaryService } from './dictionary.service';
+import { DictionaryService } from './dictionary.service';
 
 function testSubqueryProject(): SubqueryProject {
   const project = new SubqueryProject(
