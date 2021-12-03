@@ -43,7 +43,7 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
       describe: 'scale batch size based on memory usage',
-      default: true,
+      default: false,
     },
     timeout: {
       demandOption: false,

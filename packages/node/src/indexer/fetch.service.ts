@@ -42,7 +42,7 @@ import { BlockContent } from './types';
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
-const CHECK_MEMORY_INTERVAL = 40000;
+const CHECK_MEMORY_INTERVAL = 60000;
 
 const { argv } = getYargsOption();
 
@@ -83,9 +83,9 @@ function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
 }
 
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
-  const highThreshold = 0.95;
-  const lowThreshold = 0.8;
-  const minimumBatchSize = 10;
+  const highThreshold = 0.9;
+  const lowThreshold = 0.6;
+  const minimumBatchSize = 5;
 
   const memoryData = process.memoryUsage();
   const ratio = memoryData.heapUsed / memoryData.heapTotal;
@@ -243,7 +243,6 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale() {
-    console.log('Checking batch scale');
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
