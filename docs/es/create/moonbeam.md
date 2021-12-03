@@ -1,22 +1,22 @@
-# Moonbeam EVM Support
+# Soporte para EVM de Moonbeam
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+Proveemos un procesador de fuentes de datos personalizadas para EVM de Moonbeam y Moonriver. Esto ofrece una manera sencilla de filtrar e indexar tanto la actividad EVM como Substrate en las redes de Moonbeam dentro de un único proyecto SubQuery.
 
-Supported networks:
+Redes soportadas:
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
-| -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
-| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
-| Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
-| Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
+| Nombre de la red | Websocket Endpoint                                 | Endpoint del Diccionario                                             |
+| ---------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
+| Moonbeam         | _Próximamente_                                     | _Próximamente_                                                       |
+| Moonriver        | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
+| Moonbase Alpha   | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
+**También puede referirse al [proyecto básico de ejemplo EVM Moonriver](https://github.com/subquery/tutorials-moonriver-evm-starter) con un controlador de eventos y llamadas.** Este proyecto también está alojado en vivo en SubQuery Explorer [aquí](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
 
-## Getting started
+## Primeros pasos
 
-1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
-2. Add a custom data source as described below
-3. Add handlers for the custom data source to your code
+1. Añadir la fuente de datos personalizada como una dependencia `yarn add @subql/contract-processors`
+2. Añadir una fuente de datos personalizada como se describe a continuación
+3. Añadir manejadores para la fuente de datos personalizada a tu código
 
 ## Data Source Spec
 
@@ -47,17 +47,17 @@ Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler
 | Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
 | -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
+| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | Una dirección de Ethereum que envió la transacción                                                                                                                               |
 
-### Handlers
+### Manejadores
 
-Unlike a normal handler you will not get a `SubstrateExtrinsic` as the parameter, instead you will get a `MoonbeamCall` which is based on Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type.
+A diferencia de un manejador normal, no obtendrás un `SubstrateExtrinsic` como el parámetro, en su lugar obtendrás una `MoonbeamCall` que se basa en Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) tipo.
 
-Changes from the `TransactionResponse` type:
+Cambios del tipo `TransactionResponse`:
 
-- It doesn't have `wait` and `confirmations` properties
-- A `success` property is added to know if the transaction was a success
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+- No tiene propiedades de `esperar` y `confirmar`
+- Se añade una propiedad de `éxito` para saber si la transacción fue un éxito
+- `args` se añade si se proporciona el campo `abi` y los argumentos pueden ser analizados con éxito
 
 ## MoonbeamEvent
 
@@ -70,7 +70,7 @@ Works in the same way as [substrate/EventHandler](../create/mapping/#event-handl
 
 ### Event Filters
 
-| Field  | Type         | Example(s)                                                      | Description                                                                                                                                      |
+| Field  | Type         | Ejemplo(s)                                                      | Description                                                                                                                                      |
 | ------ | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
 
@@ -88,9 +88,9 @@ Changes from the `Log` type:
 
 - `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
-## Data Source Example
+## Ejemplo de fuente de datos
 
-This is an extract from the `project.yaml` manifest file.
+Este es un extracto del archivo de manifiesto `project.yaml`.
 
 ```yaml
 dataSources:
@@ -125,8 +125,8 @@ dataSources:
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
 
-## Known Limitations
+## Limitantes conocidas
 
-- There is currently no way to query EVM state within a handler
-- There is no way to get the transaction receipts with call handlers
-- `blockHash` properties are currently left undefined, the `blockNumber` property can be used instead
+- Actualmente no hay forma de consultar el estado EVM dentro de un manejador
+- No hay forma de obtener los recibos de transacción con los manejadores de llamadas
+- `blockHash` propiedades están actualmente sin definir, la propiedad `blockNumber` puede ser usada en su lugar
