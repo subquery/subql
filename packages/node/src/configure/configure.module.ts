@@ -11,6 +11,8 @@ import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './project.model';
 
+const logger = getLogger('configure');
+
 const YargsNameMapping = {
   local: 'localMode',
 };
@@ -42,7 +44,33 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   } as MinConfig;
 }
 
-const logger = getLogger('configure');
+// Check if a subquery name is a valid schema name
+function validDbSchemaName(name: string): boolean {
+  if (name.length === 0) {
+    return false;
+  } else {
+    const regexp = new RegExp('[a-zA-Z_]');
+    const flag0 = !name.startsWith('pg_'); // Reserved identifier
+    const flag1 = regexp.test(name.charAt(0)); // Prefix clamp
+    const flag2 = Buffer.byteLength(name, 'utf-8') <= 63; // 63 byte limit
+    if (!flag0) {
+      logger.error(
+        `Invalid schema name '${name}', schema name must not be prefixed with 'pg_'`,
+      );
+    }
+    if (!flag1) {
+      logger.error(
+        `Invalid schema name '${name}', schema name must start with a letter or underscore`,
+      );
+    }
+    if (!flag2) {
+      logger.error(
+        `Invalid schema name '${name}', schema name length must be less than 63 bytes`,
+      );
+    }
+    return flag0 && flag1 && flag2;
+  }
+}
 
 @Global()
 @Module({})
@@ -66,8 +94,13 @@ export class ConfigureModule {
           'Note that argument --subquery-name has been deprecated in favour of --schema',
         );
       }
+
       assert(argv.subquery, 'subquery path is missing');
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
+    }
+
+    if (!validDbSchemaName(config.dbSchema)) {
+      process.exit(1);
     }
 
     if (config.debug) {
