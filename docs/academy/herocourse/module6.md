@@ -196,8 +196,7 @@ args: [ 'AccountId32', 'u128' ]
 kind of data at some point before the operation is actually performed. This may be at compile
 time or at run time.
 
-In Polkadot, [everything has a type](https://polkadot.js.org/docs/api/start/types.basics/#everything-is-a-type). This means that any variable created needs to have a
-type cast. For example:
+In Polkadot, [everything has a type](https://polkadot.js.org/docs/api/start/types.basics/#everything-is-a-type). This means that any variable created needs to have a type cast. For example:
 
 ```
 record.blockNumber = event.block.block.header.number.toBigInt();
