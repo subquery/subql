@@ -275,7 +275,7 @@ describe('MoonbeamDs', () => {
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor({topics: [['Transfer(address, address, uint256)']]}, log, {} as MoonbeamDatasource)
+          processor.filterProcessor({topics: ['Transfer(address, address, uint256)']}, log, {} as MoonbeamDatasource)
         ).toBeTruthy();
       });
 
