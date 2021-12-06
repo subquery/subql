@@ -1,19 +1,19 @@
-# How to delete a SubQuery project?
+# Comment supprimer un projet SubQuery ?
 
 ## Introduction
 
-It is important to keep your projects in SubQuery Project relevant and up to date. For any projects that uploaded to SubQuery Project for testing purposes, it is recommended to delete them afterwards to conserve resources and save cost.
+Il est important de maintenir vos projets dans SubQuery Project pertinents et à jour. Pour tous les projets qui ont été téléchargés sur SubQuery Project à des fins de test, il est recommandé de les supprimer par la suite pour économiser les ressources et économiser les coûts.
 
-Running an indexer node is another option outside of using Docker or having a project hosted for you at [SubQuery Projects](https://project.subquery.network/). It requires more time and effort but will enhance your understanding of how SubQuery works under the covers.
+Exécuter un nœud d'indexation est une autre option en dehors de l'utilisation de Docker ou d'avoir un projet hébergé pour vous sur [SubQuery Projects](https://project.subquery.network/). Cela demande plus de temps et d'efforts, mais vous permettra de mieux comprendre comment SubQuery fonctionne sous les couvertures.
 
-## Deleting a project from the staging slot
+## Suppression d'un projet de l'emplacement de pré-production
 
-To delete a project from the staging slot, click on the 3 dots in the staging slot section within the deployment details on your project detail dashboard page and select delete.
+Pour supprimer un projet de l'emplacement de pré-production, cliquez sur les 3 points de la section slot de staging dans les détails du déploiement sur la page du tableau de bord détaillé de votre projet et sélectionnez Supprimer.
 
-![Deleting a project from the staging slot](/assets/img/delete_staging.png)
+![Suppression d'un projet de l'emplacement de pré-production](/assets/img/delete_staging.png)
 
-## Deleting a project from the production slot
+## Suppression d'un projet de l'emplacement de production
 
-To delete a project from the production slot, you'll have to delete the entire project instead. Navigate to the top right corner and click on the 3 dots which is the settings for the entire project. Then select "Delete Project".
+Pour supprimer un projet de l'emplacement de production, vous devrez supprimer l'ensemble du projet. Naviguez vers le coin supérieur droit et cliquez sur les 3 points qui sont les paramètres du projet entier. Ensuite, sélectionnez "Supprimer le projet".
 
-![Deleting a project from the production slot](/assets/img/delete_production.png)
+![Suppression d'un projet de l'emplacement de production](/assets/img/delete_production.png)
