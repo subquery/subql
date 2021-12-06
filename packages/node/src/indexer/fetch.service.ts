@@ -148,6 +148,7 @@ export class FetchService implements OnApplicationShutdown {
         } else {
           filterList = [handler.filter];
         }
+        filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:
