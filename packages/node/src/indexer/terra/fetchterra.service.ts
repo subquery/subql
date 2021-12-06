@@ -1,5 +1,6 @@
 import { OnApplicationShutdown } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
+import { SubqlDatasource, SubqlHandler, SubqlHandlerKind } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { EventEmitter2 } from 'eventemitter2';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
@@ -7,6 +8,7 @@ import { NodeConfig } from '../../configure/NodeConfig';
 import { SubqueryProject } from '../../configure/project.model';
 import { getLogger } from '../../utils/logger';
 import { delay } from '../../utils/promise';
+import { fetchTerraBlocksBatches } from '../../utils/terra-helper';
 import { BlockedQueue } from '../BlockedQueue';
 import { DictionaryQueryEntry, DictionaryService } from '../dictionary.service';
 import { DsProcessorService } from '../ds-processor.service';
@@ -148,6 +150,32 @@ export class FetchTerraService implements OnApplicationShutdown {
     });
   }
 
-  //TODO: implement block fetching functions in ../../utils. Ref: utils/substrate.ts
-  //TODO: implement fillBlockBuffer
+  async fillBlockBuffer(): Promise<void> {
+    while (!this.isShutdown) {
+      const takeCount = Math.min(
+        this.blockBuffer.freeSize,
+        this.nodeConfig.batchSize,
+      );
+
+      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
+        await delay(1);
+        continue;
+      }
+
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+      const blocks = await fetchTerraBlocksBatches(this.api, bufferBlocks);
+      logger.info(
+        `fetch block [${bufferBlocks[0]},${
+          bufferBlocks[bufferBlocks.length - 1]
+        }], total ${bufferBlocks.length} blocks`,
+      );
+      this.blockBuffer.putAll(blocks);
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+        value: this.blockBuffer.size,
+      });
+    }
+  }
+
+  // implement getBaseHandlerKind
+  // implement getBaseHandlerFilters
 }

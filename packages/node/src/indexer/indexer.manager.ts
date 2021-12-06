@@ -33,7 +33,7 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { ApiSolanaService } from './apisolana.service';
+//import { ApiSolanaService } from './apisolana.service';
 import { DsProcessorService } from './ds-processor.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
