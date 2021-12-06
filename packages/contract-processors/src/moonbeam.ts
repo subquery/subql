@@ -52,7 +52,6 @@ export interface MoonbeamCallFilter {
 export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
 export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
-  function?: string;
   success: boolean;
 };
 
