@@ -35,9 +35,9 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Force clean the database, dropping project schemas and tables',
     },
-    schema: {
+    'db-schema': {
       demandOption: false,
-      describe: 'Schema name of the project',
+      describe: 'Db schema name of the project',
       type: 'string',
     },
     unsafe: {

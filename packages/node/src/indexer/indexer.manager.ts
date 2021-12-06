@@ -212,10 +212,7 @@ export class IndexerManager {
 
   // Get existing project schema, undefined when doesn't exist
   private async getExistingProjectSchema(): Promise<string> {
-    let schema = argv.schema as string;
-    if (!schema) {
-      schema = this.nodeConfig.subqueryName;
-    }
+    let schema = this.nodeConfig.dbSchema;
     const schemas = (await this.sequelize.showAllSchemas(
       undefined,
     )) as unknown as string[];
@@ -239,11 +236,7 @@ export class IndexerManager {
       // create tables in default schema if local mode is enabled
       schema = DEFAULT_DB_SCHEMA;
     } else {
-      if (argv.schema) {
-        schema = argv.schema;
-      } else {
-        schema = this.nodeConfig.subqueryName;
-      }
+      schema = this.nodeConfig.dbSchema;
       const schemas = await this.sequelize.showAllSchemas(undefined);
       if (!(schemas as unknown as string[]).includes(schema)) {
         await this.sequelize.createSchema(`"${schema}"`, undefined);
