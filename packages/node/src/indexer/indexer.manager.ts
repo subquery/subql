@@ -304,7 +304,7 @@ export class IndexerManager {
       if (project) {
         await metadataRepo.upsert({
           key: 'lastProcessedHeight',
-          value: project.nextBlockHeight,
+          value: project.nextBlockHeight - 1,
         });
       } else {
         await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 0 });
