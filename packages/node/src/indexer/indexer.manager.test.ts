@@ -98,22 +98,27 @@ const TEST_PROJECT = 'test-user/TEST_PROJECT';
 describe('IndexerManager Integration Tests', () => {
   let indexerManager: IndexerManager;
   let subqueryRepo: SubqueryRepo;
+
   async function createSchema(name: string): Promise<void> {
     await subqueryRepo.sequelize.createSchema(`"${name}"`, undefined);
   }
+
   async function checkSchemaExist(schema: string): Promise<boolean> {
     const schemas = await subqueryRepo.sequelize.showAllSchemas(undefined);
     return (schemas as unknown as string[]).includes(schema);
   }
+
   beforeAll(async () => {
     indexerManager = await prepare();
     subqueryRepo = (indexerManager as any).subqueryRepo;
   });
+
   beforeEach(async () => {
     delete (indexerManager as any).nodeConfig;
     await subqueryRepo.destroy({ where: { name: TEST_PROJECT } });
     await subqueryRepo.sequelize.dropSchema(`"${TEST_PROJECT}"`, undefined);
   });
+
   it("read existing project's schema from subqueries table", async () => {
     const schemaName = 'subql_99999';
     (indexerManager as any).nodeConfig = new NodeConfig({

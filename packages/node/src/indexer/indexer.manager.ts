@@ -239,6 +239,7 @@ export class IndexerManager {
     let schema = this.nodeConfig.localMode
       ? DEFAULT_DB_SCHEMA
       : this.nodeConfig.dbSchema;
+
     // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
     const schemas = (await this.sequelize
       .query(`SELECT schema_name FROM information_schema.schemata`, {
@@ -249,6 +250,7 @@ export class IndexerManager {
         logger.error(`Unable to fetch all schemas: ${err}`);
         process.exit(1);
       })) as [string];
+
     if (!schemas.includes(schema)) {
       // fallback to subqueries table
       const subqueryModel = await this.subqueryRepo.findOne({
