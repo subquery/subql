@@ -168,7 +168,7 @@ export class IndexerManager {
       where: { key: 'lastProcessedHeight' },
     });
     if (lastProcessedHeight !== null) {
-      startHeight = (lastProcessedHeight.value as number) + 1;
+      startHeight = Number(lastProcessedHeight.value) + 1;
     } else {
       const nextBlockHeight = (
         await this.subqueryRepo.findOne({

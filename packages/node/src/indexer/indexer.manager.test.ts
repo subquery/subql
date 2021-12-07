@@ -165,28 +165,4 @@ describe('IndexerManager Integration Tests', () => {
     );
     await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);
   });
-
-  it('create project schema - special characters', async () => {
-    const schemaName = '!-#$%^&*';
-    (indexerManager as any).nodeConfig = new NodeConfig({
-      subquery: '/test/dir/test-query-project',
-      subqueryName: schemaName,
-    });
-    await expect((indexerManager as any).createProjectSchema()).resolves.toBe(
-      schemaName,
-    );
-    await expect(checkSchemaExist(schemaName)).resolves.toBe(true);
-  });
-
-  it('create project schema - long names', async () => {
-    const schemaName = repeat('a', 64);
-    (indexerManager as any).nodeConfig = new NodeConfig({
-      subquery: '/test/dir/test-query-project',
-      subqueryName: schemaName,
-    });
-    await expect(
-      (indexerManager as any).createProjectSchema(),
-    ).rejects.toThrow();
-    await expect(checkSchemaExist(schemaName)).resolves.toBe(false);
-  });
 });

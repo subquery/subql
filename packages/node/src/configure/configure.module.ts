@@ -45,7 +45,7 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
 }
 
 // Check if a subquery name is a valid schema name
-function validDbSchemaName(name: string): boolean {
+export function validDbSchemaName(name: string): boolean {
   if (name.length === 0) {
     return false;
   } else {
