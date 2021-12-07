@@ -17,6 +17,7 @@ import {
   SubstrateExtrinsic,
   SubqlCustomHandler,
   SubqlMapping,
+  DictionaryQueryEntry,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
 import {
@@ -30,7 +31,7 @@ import {
 } from 'class-validator';
 import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from './utils';
 
-type TopicFilter = string | string[] | null | undefined;
+type TopicFilter = string | null | undefined;
 
 export type MoonbeamDatasource = SubqlCustomDatasource<
   'substrate/Moonbeam',
@@ -58,14 +59,7 @@ export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 
 export class TopicFilterValidator implements ValidatorConstraintInterface {
   validate(value: TopicFilter): boolean {
     try {
-      return (
-        !value ||
-        (typeof value === 'string'
-          ? !!eventToTopic(value)
-          : Array.isArray(value)
-          ? !!value.map((v) => !eventToTopic(v))
-          : false)
-      );
+      return !value || (typeof value === 'string' ? !!eventToTopic(value) : false);
     } catch (e) {
       return false;
     }
@@ -252,8 +246,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
           continue;
         }
 
-        const topicArr = typeof topic === 'string' ? [topic] : topic;
-        if (!topicArr.find((singleTopic) => hexStringEq(eventToTopic(singleTopic), rawEvent.topics[i].toHex()))) {
+        if (!hexStringEq(eventToTopic(topic), rawEvent.topics[i].toHex())) {
           return false;
         }
       }
@@ -270,6 +263,30 @@ const EventProcessor: SecondLayerHandlerProcessor<
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
       throw new Error(`Invalid Moonbeam event filter.\n${errorMsgs}`);
     }
+  },
+  dictionaryQuery(filter: MoonbeamEventFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+    const queryEntry: DictionaryQueryEntry = {
+      entity: 'evmLogs',
+      conditions: [],
+    };
+    if (ds.processor?.options?.address) {
+      queryEntry.conditions.push({field: 'address', value: ds.processor?.options?.address});
+    } else {
+      return;
+    }
+
+    // Follows bloom filters https://docs.ethers.io/v5/concepts/events/#events--filters
+    if (filter?.topics) {
+      for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
+        const topic = filter.topics[i];
+        if (!topic) {
+          continue;
+        }
+        const field = `topics${i}`;
+        queryEntry.conditions.push({field, value: eventToTopic(topic)});
+      }
+    }
+    return queryEntry;
   },
 };
 
@@ -368,6 +385,23 @@ const CallProcessor: SecondLayerHandlerProcessor<
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
       throw new Error(`Invalid Moonbeam call filter.\n${errorMsgs}`);
     }
+  },
+  dictionaryQuery(filter: MoonbeamCallFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+    const queryEntry: DictionaryQueryEntry = {
+      entity: 'evmTransactions',
+      conditions: [],
+    };
+    if (ds.processor?.options?.address) {
+      queryEntry.conditions.push({field: 'to', value: ds.processor?.options?.address});
+    }
+    if (filter?.from) {
+      queryEntry.conditions.push({field: 'from', value: filter?.from});
+    }
+
+    if (filter?.function) {
+      queryEntry.conditions.push({field: 'func', value: functionToSighash(filter.function)});
+    }
+    return queryEntry;
   },
 };
 

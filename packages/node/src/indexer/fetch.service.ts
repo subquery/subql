@@ -18,6 +18,7 @@ import {
   SubqlHandler,
   SubqlDatasource,
   SubqlHandlerFilter,
+  DictionaryQueryEntry,
 } from '@subql/types';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -30,11 +31,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryQueryEntry,
-  DictionaryService,
-} from './dictionary.service';
+import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent } from './types';
@@ -129,11 +126,29 @@ export class FetchService implements OnApplicationShutdown {
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
+      const plugin = isCustomDs(ds)
+        ? this.dsProcessorService.getDsProcessor(ds)
+        : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        const filterList = isRuntimeDs(ds)
-          ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
-          : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
+        let filterList: SubqlHandlerFilter[];
+        if (isCustomDs(ds)) {
+          const processor = plugin.handlerProcessors[handler.kind];
+          if (processor.dictionaryQuery) {
+            const queryEntry = processor.dictionaryQuery(handler.filter, ds);
+            if (queryEntry) {
+              queryEntries.push(queryEntry);
+              continue;
+            }
+          }
+          filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
+            ds,
+            handler.kind,
+          );
+        } else {
+          filterList = [handler.filter];
+        }
+        filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:

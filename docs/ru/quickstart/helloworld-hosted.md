@@ -160,7 +160,7 @@ To https://github.com/seandotau/subqlHelloWorld.git
 
 Это перенесет вас на знакомую «Playground», где вы можете нажать кнопку воспроизведения и просмотреть результаты запроса.
 
-![Площадка Subquery](assets/img/subquery_playground.png)
+![Площадка Subquery](/assets/img/subquery_playground.png)
 
 ## 7. Шаг 7: Бонусный шаг
 

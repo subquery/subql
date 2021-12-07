@@ -5,6 +5,7 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
+import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   buildSchema,
   getAllEntitiesRelations,
@@ -47,6 +48,7 @@ import { BlockContent } from './types';
 const { version: packageVersion } = require('../../package.json');
 
 const DEFAULT_DB_SCHEMA = 'public';
+const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
 const { argv } = getYargsOption();
@@ -115,15 +117,18 @@ export class IndexerManager {
 
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
-        const poiBlock = PoiBlock.create(
-          blockHeight,
-          block.block.header.hash.toHex(),
-          operationHash,
-          await this.poiService.getLatestPoiBlockHash(),
-          this.project.path, //projectId // TODO, define projectId
-        );
-        poiBlockHash = poiBlock.hash;
-        await this.storeService.setPoi(tx, poiBlock);
+        //check if operation is null, then poi will not be insert
+        if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
+          const poiBlock = PoiBlock.create(
+            blockHeight,
+            block.block.header.hash.toHex(),
+            operationHash,
+            await this.poiService.getLatestPoiBlockHash(),
+            this.project.path, //projectId // TODO, define projectId
+          );
+          poiBlockHash = poiBlock.hash;
+          await this.storeService.setPoi(tx, poiBlock);
+        }
       }
     } catch (e) {
       await tx.rollback();
