@@ -24,6 +24,7 @@
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
+    "rotating-file-stream": "^3.0.2",
     "sequelize": "^6.6.2"
   },
   "devDependencies": {

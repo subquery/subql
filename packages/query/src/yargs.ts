@@ -9,15 +9,15 @@ import yargs from 'yargs/yargs';
 export function getYargsOption() {
   return yargs(hideBin(process.argv)).options({
     name: {
+      demandOption: true,
       alias: 'n',
       describe: 'Project name',
       type: 'string',
-      demandOption: true,
     },
     playground: {
+      demandOption: false,
       describe: 'Enable graphql playground',
       type: 'boolean',
-      demandOption: false,
     },
     'output-fmt': {
       demandOption: false,
@@ -32,6 +32,17 @@ export function getYargsOption() {
       type: 'string',
       default: 'info',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
+    },
+    'log-path': {
+      demandOption: false,
+      describe: 'Path to create log file e.g ./src/name.log',
+      type: 'string',
+    },
+    'log-rotate': {
+      demandOption: false,
+      describe: 'Rotate log files in directory specified by log-path',
+      type: 'boolean',
+      default: false,
     },
     indexer: {
       demandOption: false,
