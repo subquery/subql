@@ -270,7 +270,7 @@ describe('FetchService', () => {
       batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    const end = (fetchService as any).nextEndBlockHeight(100);
+    const end = (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
   });
 
@@ -563,6 +563,6 @@ describe('FetchService', () => {
     await loopPromise;
 
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
-    expect(getDsProcessor).toHaveBeenCalledTimes(2);
+    expect(getDsProcessor).toHaveBeenCalledTimes(3);
   }, 50000);
 });
