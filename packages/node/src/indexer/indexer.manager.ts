@@ -236,7 +236,9 @@ export class IndexerManager {
 
   // Get existing project schema, undefined when doesn't exist
   private async getExistingProjectSchema(): Promise<string> {
-    let schema = this.nodeConfig.dbSchema;
+    let schema = this.nodeConfig.localMode
+      ? DEFAULT_DB_SCHEMA
+      : this.nodeConfig.dbSchema;
     const schemas = (await this.sequelize.showAllSchemas(
       undefined,
     )) as unknown as string[];
