@@ -25,13 +25,13 @@ import {
   SubqlRuntimeHandler,
 } from '@subql/types';
 import { QueryTypes, Sequelize } from 'sequelize';
+import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
-import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 //import { ApiSolanaService } from './apisolana.service';
 import { DsProcessorService } from './ds-processor.service';

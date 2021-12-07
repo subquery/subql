@@ -7,14 +7,15 @@ import { isRuntimeDataSourceV0_2_0, levelFilter } from '@subql/common';
 import { Store, SubqlDatasource } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
-import { NodeConfig } from '../../configure/NodeConfig';
-import { SubqueryProject } from '../../configure/project.model';
-import { getLogger } from '../../utils/logger';
-import { getProjectEntry } from '../../utils/project';
-import { timeout } from '../../utils/promise';
 import { getYargsOption } from '../../yargs';
-import { StoreService } from '../store.service';
+import { NodeConfig } from '../configure/NodeConfig';
+import { SubqueryTerraProject } from '../configure/terraproject.model';
+import { getLogger } from '../utils/logger';
+import { getProjectEntry } from '../utils/project';
+import { timeout } from '../utils/promise';
 import { ApiTerraService } from './apiterra.service';
+import { StoreService } from './store.service';
+import { SubqlTerraDatasource } from './terraproject';
 
 const { argv } = getYargsOption();
 
@@ -108,10 +109,10 @@ export class SandboxTerraService {
     private readonly apiService: ApiTerraService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryProject,
+    private readonly project: SubqueryTerraProject,
   ) {}
 
-  getDsProcessor(ds: SubqlDatasource): IndexerSandbox {
+  getDsProcessor(ds: SubqlTerraDatasource): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
@@ -133,11 +134,7 @@ export class SandboxTerraService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubqlDatasource): string {
-    if (isRuntimeDataSourceV0_2_0(ds)) {
-      return ds.mapping.file;
-    } else {
-      return getProjectEntry(this.project.path);
-    }
+  private getDataSourceEntry(ds: SubqlTerraDatasource): string {
+    return ds.mapping.file;
   }
 }
