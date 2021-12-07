@@ -10,6 +10,7 @@ import {
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/common';
+import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
@@ -24,16 +25,6 @@ export type Dictionary = {
 };
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
-
-interface DictionaryQueryCondition {
-  field: string;
-  value: string;
-}
-
-export interface DictionaryQueryEntry {
-  entity: string;
-  conditions: DictionaryQueryCondition[];
-}
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {

@@ -8,7 +8,7 @@ describe('Validator', () => {
   let v: Validator;
 
   beforeAll(() => {
-    const url = 'https://github.com/subquery/subql-starter';
+    const url = 'https://github.com/subquery/tutorials-block-timestamp';
     v = new Validator(url);
     v.addRule(...commonRules);
   });
