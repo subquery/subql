@@ -32,10 +32,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { AutoQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryService,
-} from './dictionary.service';
+import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent } from './types';
@@ -293,10 +290,11 @@ export class FetchService implements OnApplicationShutdown {
     this.latestProcessedHeight = height;
   }
 
-  private getScaledBatchSize = () => Math.max(
-    Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-    MINIMUM_BATCH_SIZE,
-  );
+  private getScaledBatchSize = () =>
+    Math.max(
+      Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+      MINIMUM_BATCH_SIZE,
+    );
 
   async startLoop(
     initBlockHeight: number,
@@ -461,7 +459,10 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  private nextEndBlockHeight(startBlockHeight: number, scaledBatchSize: number): number {
+  private nextEndBlockHeight(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+  ): number {
     const endBlockHeight = startBlockHeight + scaledBatchSize - 1;
     return Math.min(endBlockHeight, this.latestFinalizedHeight);
   }
