@@ -49,10 +49,10 @@ function validDbSchemaName(name: string): boolean {
   if (name.length === 0) {
     return false;
   } else {
-    const regexp = new RegExp('[a-zA-Z_]');
+    name = name.toLowerCase();
+    const regexp = new RegExp('^[a-zA-Z_][a-zA-Z0-9_\\-\\/]{0,62}$');
     const flag0 = !name.startsWith('pg_'); // Reserved identifier
-    const flag1 = regexp.test(name.charAt(0)); // Prefix clamp
-    const flag2 = Buffer.byteLength(name, 'utf-8') <= 63; // 63 byte limit
+    const flag1 = regexp.test(name); // <= Valid characters, less than 63 bytes
     if (!flag0) {
       logger.error(
         `Invalid schema name '${name}', schema name must not be prefixed with 'pg_'`,
@@ -60,15 +60,11 @@ function validDbSchemaName(name: string): boolean {
     }
     if (!flag1) {
       logger.error(
-        `Invalid schema name '${name}', schema name must start with a letter or underscore`,
+        `Invalid schema name '${name}', schema name must start with a letter or underscore, 
+         be less than 63 bytes and must contain only valid alphanumeric characters (can include characters '_-/')`,
       );
     }
-    if (!flag2) {
-      logger.error(
-        `Invalid schema name '${name}', schema name length must be less than 63 bytes`,
-      );
-    }
-    return flag0 && flag1 && flag2;
+    return flag0 && flag1;
   }
 }
 

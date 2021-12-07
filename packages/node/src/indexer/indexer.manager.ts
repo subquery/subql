@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -162,15 +163,33 @@ export class IndexerManager {
       ]);
     }
 
-    const lastProcessedHeight = (
-      await this.metadataRepo.findOne({ where: { key: 'lastProcessedHeight' } })
-    ).value as number;
-    void this.fetchService.startLoop(lastProcessedHeight + 1).catch((err) => {
+    let startHeight;
+    const lastProcessedHeight = await this.metadataRepo.findOne({
+      where: { key: 'lastProcessedHeight' },
+    });
+    if (lastProcessedHeight !== null) {
+      startHeight = (lastProcessedHeight.value as number) + 1;
+    } else {
+      const nextBlockHeight = (
+        await this.subqueryRepo.findOne({
+          where: { name: this.nodeConfig.subqueryName },
+        })
+      ).nextBlockHeight;
+      assert(
+        nextBlockHeight !== null,
+        new Error(
+          'Invalid project state, unable to find block height to begin indexing at',
+        ),
+      );
+      startHeight = nextBlockHeight;
+    }
+
+    void this.fetchService.startLoop(startHeight).catch((err) => {
       logger.error(err, 'failed to fetch block');
       // FIXME: retry before exit
       process.exit(1);
     });
-    this.filteredDataSources = this.filterDataSources(lastProcessedHeight);
+    this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
@@ -300,17 +319,6 @@ export class IndexerManager {
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
-    if (!keyValue.lastProcessedHeight) {
-      if (project) {
-        await metadataRepo.upsert({
-          key: 'lastProcessedHeight',
-          value: project.nextBlockHeight - 1,
-        });
-      } else {
-        await metadataRepo.upsert({ key: 'lastProcessedHeight', value: 0 });
-      }
-    }
-
     if (!keyValue.genesisHash) {
       if (project) {
         await metadataRepo.upsert({
@@ -340,7 +348,7 @@ export class IndexerManager {
     return metadataRepo;
   }
 
-  private filterDataSources(lastProcessedHeight: number): SubqlDatasource[] {
+  private filterDataSources(processedHeight: number): SubqlDatasource[] {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
@@ -348,14 +356,11 @@ export class IndexerManager {
       );
       process.exit(1);
     }
-    filteredDs = filteredDs.filter(
-      (ds) => ds.startBlock <= lastProcessedHeight + 1,
-    );
+    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${
-          lastProcessedHeight + 1
-        } or delete your database and start again from the currently specified startBlock`,
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
+         or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
