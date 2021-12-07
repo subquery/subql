@@ -133,6 +133,7 @@ describe('IndexerManager Integration Tests', () => {
       subquery: '/test/dir/test-query-project',
       subqueryName: TEST_PROJECT,
     });
+
     await createSchema(TEST_PROJECT);
     await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
