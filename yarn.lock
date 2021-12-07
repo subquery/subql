@@ -5361,6 +5361,7 @@ __metadata:
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
+    rotating-file-stream: ^3.0.2
     sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
@@ -21884,6 +21885,13 @@ fsevents@~2.3.1:
   bin:
     rollup: dist/bin/rollup
   checksum: 459ac36f8d325385a6b66522bf60ea4ae1400b405de30d7c64c483cc875dbf11c4f6c352d796b2ec634a567a6db1ff1c48fe29d434354c1330c88bb187c539b4
+  languageName: node
+  linkType: hard
+
+"rotating-file-stream@npm:^3.0.2":
+  version: 3.0.2
+  resolution: "rotating-file-stream@npm:3.0.2"
+  checksum: b5bcf77fcf347dd7f37a685a377c662ea8d871a3a4353eef4cd9729a6aa3fa7d876e73423ce6d4789b70a5570e33652e197b58ebc483d0620b76d4c452f858da
   languageName: node
   linkType: hard
 
