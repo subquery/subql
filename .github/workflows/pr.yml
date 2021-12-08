@@ -10,9 +10,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js environment
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16
     - run: yarn
     - name: build
       run: yarn build
