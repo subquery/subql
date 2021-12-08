@@ -269,7 +269,7 @@ describe('FetchService', () => {
       batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    const end = (fetchService as any).nextEndBlockHeight(100);
+    const end = (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
   });
 
