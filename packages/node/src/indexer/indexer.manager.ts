@@ -173,13 +173,11 @@ export class IndexerManager {
       const project = await this.subqueryRepo.findOne({
         where: { name: this.nodeConfig.subqueryName },
       });
-      assert(
-        project !== null,
-        new Error(
-          'Invalid project state, unable to find block height to begin indexing at',
-        ),
-      );
-      startHeight = project.nextBlockHeight;
+      if (project !== null) {
+        startHeight = project.nextBlockHeight;
+      } else {
+        startHeight = this.getStartBlockFromDataSources();
+      }
     }
 
     void this.fetchService.startLoop(startHeight).catch((err) => {
@@ -323,15 +321,6 @@ export class IndexerManager {
 
     // blockOffset and genesisHash should only have been created once, never updated.
     // If blockOffset is changed, will require re-index and re-sync poi.
-
-    // Project is new and requries a starting block
-    if (!project && !keyValue.lastProcessedHeight) {
-      await metadataRepo.upsert({
-        key: 'lastProcessedHeight',
-        value: (this.getStartBlockFromDataSources() - 1).toString(),
-      });
-    }
-
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
