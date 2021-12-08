@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -28,14 +29,14 @@ import {
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';
-import { SubqueryModel, SubqueryRepo } from '../entities';
+import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
@@ -56,9 +57,9 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: ApiPromise;
-  private subqueryState: SubqueryModel;
   private prevSpecVersion?: number;
   private filteredDataSources: SubqlDatasource[];
+  protected metadataRepo: MetadataRepo;
 
   constructor(
     private storeService: StoreService,
@@ -106,9 +107,15 @@ export class IndexerManager {
           await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
       }
-      this.subqueryState.nextBlockHeight =
-        block.block.header.number.toNumber() + 1;
-      await this.subqueryState.save({ transaction: tx });
+
+      await this.metadataRepo.upsert(
+        {
+          key: 'lastProcessedHeight',
+          value: block.block.header.number.toNumber(),
+        },
+        { transaction: tx },
+      );
+
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
         //check if operation is null, then poi will not be insert
@@ -145,25 +152,44 @@ export class IndexerManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
-    await this.initDbSchema();
-    await this.ensureMetadata(this.subqueryState.dbSchema);
+    const schema = await this.ensureProject();
+    await this.initDbSchema(schema);
+    this.metadataRepo = await this.ensureMetadata(schema);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
-        this.poiService.init(this.subqueryState.dbSchema),
-        this.mmrService.init(this.subqueryState.dbSchema),
+        this.poiService.init(schema),
+        this.mmrService.init(schema),
       ]);
     }
 
-    void this.fetchService
-      .startLoop(this.subqueryState.nextBlockHeight)
-      .catch((err) => {
-        logger.error(err, 'failed to fetch block');
-        // FIXME: retry before exit
-        process.exit(1);
-      });
-    this.filteredDataSources = this.filterDataSources();
+    let startHeight;
+    const lastProcessedHeight = await this.metadataRepo.findOne({
+      where: { key: 'lastProcessedHeight' },
+    });
+    if (lastProcessedHeight !== null) {
+      startHeight = Number(lastProcessedHeight.value) + 1;
+    } else {
+      const nextBlockHeight = (
+        await this.subqueryRepo.findOne({
+          where: { name: this.nodeConfig.subqueryName },
+        })
+      ).nextBlockHeight;
+      assert(
+        nextBlockHeight !== null,
+        new Error(
+          'Invalid project state, unable to find block height to begin indexing at',
+        ),
+      );
+      startHeight = nextBlockHeight;
+    }
+
+    void this.fetchService.startLoop(startHeight).catch((err) => {
+      logger.error(err, 'failed to fetch block');
+      // FIXME: retry before exit
+      process.exit(1);
+    });
+    this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
@@ -174,23 +200,101 @@ export class IndexerManager {
     }
   }
 
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
-      );
-      process.exit(1);
+  private async ensureProject(): Promise<string> {
+    let schema = await this.getExistingProjectSchema();
+    if (!schema) {
+      schema = await this.createProjectSchema();
     } else {
-      return Math.min(...startBlocksList);
+      if (argv['force-clean']) {
+        try {
+          // drop existing project schema and metadata table
+          this.sequelize.dropSchema(schema, {
+            logging: false,
+            benchmark: false,
+          });
+
+          // remove schema from subquery table (might not exist)
+          await this.sequelize.query(
+            ` DELETE
+              FROM public.subqueries
+              WHERE name = :name`,
+            {
+              replacements: { name: this.nodeConfig.subqueryName },
+              type: QueryTypes.DELETE,
+            },
+          );
+
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        schema = await this.createProjectSchema();
+      }
     }
+    return schema;
   }
 
-  private async ensureMetadata(schema: string) {
+  // Get existing project schema, undefined when doesn't exist
+  private async getExistingProjectSchema(): Promise<string> {
+    let schema = this.nodeConfig.localMode
+      ? DEFAULT_DB_SCHEMA
+      : this.nodeConfig.dbSchema;
+
+    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
+    const schemas = (await this.sequelize
+      .query(`SELECT schema_name FROM information_schema.schemata`, {
+        type: QueryTypes.SELECT,
+      })
+      .then((xs) => xs.map((x: any) => x.schema_name))
+      .catch((err) => {
+        logger.error(`Unable to fetch all schemas: ${err}`);
+        process.exit(1);
+      })) as [string];
+
+    if (!schemas.includes(schema)) {
+      // fallback to subqueries table
+      const subqueryModel = await this.subqueryRepo.findOne({
+        where: { name: this.nodeConfig.subqueryName },
+      });
+      if (subqueryModel) {
+        schema = subqueryModel.dbSchema;
+      } else {
+        schema = undefined;
+      }
+    }
+    return schema;
+  }
+
+  private async createProjectSchema(): Promise<string> {
+    let schema;
+    if (this.nodeConfig.localMode) {
+      // create tables in default schema if local mode is enabled
+      schema = DEFAULT_DB_SCHEMA;
+    } else {
+      schema = this.nodeConfig.dbSchema;
+      const schemas = await this.sequelize.showAllSchemas(undefined);
+      if (!(schemas as unknown as string[]).includes(schema)) {
+        await this.sequelize.createSchema(`"${schema}"`, undefined);
+      }
+    }
+
+    return schema;
+  }
+
+  private async initDbSchema(schema: string): Promise<void> {
+    const graphqlSchema = buildSchema(
+      path.join(this.project.path, this.project.schema),
+    );
+    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
+    await this.storeService.init(modelsRelations, schema);
+  }
+
+  private async ensureMetadata(schema: string): Promise<MetadataRepo> {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+
+    const project = await this.subqueryRepo.findOne({
+      where: { name: this.nodeConfig.subqueryName },
+    });
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
@@ -198,6 +302,7 @@ export class IndexerManager {
     );
 
     const keys = [
+      'lastProcessedHeight',
       'blockOffset',
       'indexerNodeVersion',
       'chain',
@@ -216,136 +321,45 @@ export class IndexerManager {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    //blockOffset and genesisHash should only been create once, never update
-    //if blockOffset is changed, will require re-index and re-sync poi.
+    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+
+    // blockOffset and genesisHash should only have been created once, never updated.
+    // If blockOffset is changed, will require re-index and re-sync poi.
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await this.storeService.setMetadata('blockOffset', offsetValue);
+      await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
     if (!keyValue.genesisHash) {
-      await this.storeService.setMetadata('genesisHash', genesisHash);
+      if (project) {
+        await metadataRepo.upsert({
+          key: 'genesisHash',
+          value: project.networkGenesis,
+        });
+      } else {
+        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
+      }
     }
 
     if (keyValue.chain !== chain) {
-      await this.storeService.setMetadata('chain', chain);
+      await metadataRepo.upsert({ key: 'chain', value: chain });
     }
 
     if (keyValue.specName !== specName) {
-      await this.storeService.setMetadata('specName', specName);
+      await metadataRepo.upsert({ key: 'specName', value: specName });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
-      await this.storeService.setMetadata('indexerNodeVersion', packageVersion);
+      await metadataRepo.upsert({
+        key: 'indexerNodeVersion',
+        value: packageVersion,
+      });
     }
+
+    return metadataRepo;
   }
 
-  private async createProjectSchema(name: string): Promise<SubqueryModel> {
-    let projectSchema: string;
-    const { chain, genesisHash } = this.apiService.networkMeta;
-    if (this.nodeConfig.localMode) {
-      // create tables in default schema if local mode is enabled
-      projectSchema = DEFAULT_DB_SCHEMA;
-    } else {
-      const suffix = await this.nextSubquerySchemaSuffix();
-      projectSchema = `subquery_${suffix}`;
-      const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(projectSchema)) {
-        await this.sequelize.createSchema(projectSchema, undefined);
-      }
-    }
-    return this.subqueryRepo.create({
-      name,
-      dbSchema: projectSchema,
-      hash: '0x',
-      nextBlockHeight: this.getStartBlockFromDataSources(),
-      network: chain,
-      networkGenesis: genesisHash,
-    });
-  }
-
-  private async ensureProject(name: string): Promise<SubqueryModel> {
-    let project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-    const { chain, genesisHash } = this.apiService.networkMeta;
-    if (!project) {
-      project = await this.createProjectSchema(name);
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema
-          this.sequelize.dropSchema(project.dbSchema, {
-            logging: false,
-            benchmark: false,
-          });
-
-          // remove schema from project table
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              where db_schema = :subquerySchema`,
-            {
-              replacements: { subquerySchema: project.dbSchema },
-              type: QueryTypes.DELETE,
-            },
-          );
-
-          logger.info('force cleaned schema and tables');
-        } catch (err) {
-          logger.error(err, 'failed to force clean schema and tables');
-        }
-        project = await this.createProjectSchema(name);
-      }
-      if (!project.networkGenesis || !project.network) {
-        project.network = chain;
-        project.networkGenesis = genesisHash;
-        await project.save();
-      } else if (project.networkGenesis !== genesisHash) {
-        logger.error(
-          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
-        );
-        process.exit(1);
-      }
-    }
-    return project;
-  }
-
-  private async initDbSchema(): Promise<void> {
-    const schema = this.subqueryState.dbSchema;
-    const graphqlSchema = buildSchema(
-      path.join(this.project.path, this.project.schema),
-    );
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, schema);
-  }
-
-  private async nextSubquerySchemaSuffix(): Promise<number> {
-    const seqExists = await this.sequelize.query(
-      `SELECT 1
-       FROM information_schema.sequences
-       where sequence_schema = 'public'
-         and sequence_name = 'subquery_schema_seq'`,
-      {
-        type: QueryTypes.SELECT,
-      },
-    );
-    if (!seqExists.length) {
-      await this.sequelize.query(
-        `CREATE SEQUENCE subquery_schema_seq as integer START 1;`,
-        { type: QueryTypes.RAW },
-      );
-    }
-    const [{ nextval }] = await this.sequelize.query(
-      `SELECT nextval('subquery_schema_seq')`,
-      {
-        type: QueryTypes.SELECT,
-      },
-    );
-    return Number(nextval);
-  }
-
-  private filterDataSources(): SubqlDatasource[] {
+  private filterDataSources(processedHeight: number): SubqlDatasource[] {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
@@ -353,12 +367,11 @@ export class IndexerManager {
       );
       process.exit(1);
     }
-    filteredDs = filteredDs.filter(
-      (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
-    );
+    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
+         or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
@@ -378,6 +391,20 @@ export class IndexerManager {
       process.exit(1);
     }
     return filteredDs;
+  }
+
+  private getStartBlockFromDataSources() {
+    const startBlocksList = this.getDataSourcesForSpecName().map(
+      (item) => item.startBlock ?? 1,
+    );
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
+      process.exit(1);
+    } else {
+      return Math.min(...startBlocksList);
+    }
   }
 
   private getDataSourcesForSpecName(): SubqlDatasource[] {

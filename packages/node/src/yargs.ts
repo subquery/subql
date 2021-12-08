@@ -14,6 +14,7 @@ export function getYargsOption() {
       type: 'string',
     },
     'subquery-name': {
+      deprecated: true,
       demandOption: false,
       describe: 'Name of the subquery project',
       type: 'string',
@@ -33,6 +34,11 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
       describe: 'Force clean the database, dropping project schemas and tables',
+    },
+    'db-schema': {
+      demandOption: false,
+      describe: 'Db schema name of the project',
+      type: 'string',
     },
     unsafe: {
       type: 'boolean',
