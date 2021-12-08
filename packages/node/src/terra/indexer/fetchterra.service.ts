@@ -4,17 +4,24 @@ import { SubqlDatasource, SubqlHandler, SubqlHandlerKind } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { EventEmitter2 } from 'eventemitter2';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
-import { NodeConfig } from '../../configure/NodeConfig';
-import { SubqueryProject } from '../../configure/project.model';
-import { getLogger } from '../../utils/logger';
-import { delay } from '../../utils/promise';
-import { fetchTerraBlocksBatches } from '../../utils/terra-helper';
-import { BlockedQueue } from '../BlockedQueue';
-import { DictionaryQueryEntry, DictionaryService } from '../dictionary.service';
-import { DsProcessorService } from '../ds-processor.service';
-import { IndexerEvent } from '../events';
+import { NodeConfig } from '../configure/NodeConfig';
+import { SubqueryTerraProject } from '../configure/terraproject.model';
+import { getLogger } from '../utils/logger';
+import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
+import { delay } from '../utils/promise';
+import { fetchTerraBlocksBatches } from '../utils/terra-helper';
 import { ApiTerraService } from './apiterra.service';
+import { BlockedQueue } from './BlockedQueue';
+//import { DictionaryQueryEntry, DictionaryService } from './dictionary.service';
+import { IndexerEvent } from './events';
+import { TerraDsProcessorService } from './terrads-processor.service';
+import {
+  SubqlTerraDatasource,
+  SubqlTerraHandler,
+  SubqlTerraHandlerKind,
+} from './terraproject';
 import { TerraBlockContent } from './types';
+import { isCustomTerraDs, isRuntimeTerraDs } from './utils';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
@@ -29,14 +36,14 @@ export class FetchTerraService implements OnApplicationShutdown {
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
-  private dictionaryQueryEntries?: DictionaryQueryEntry[];
+  //private dictionaryQueryEntries?: DictionaryQueryEntry[];
 
   constructor(
     private apiService: ApiTerraService,
     private nodeConfig: NodeConfig,
-    private project: SubqueryProject,
-    private dictionaryService: DictionaryService,
-    private dsProcessorService: DsProcessorService,
+    private project: SubqueryTerraProject,
+    //private dictionaryService: DictionaryService,
+    private dsProcessorService: TerraDsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
     this.blockBuffer = new BlockedQueue<TerraBlockContent>(
@@ -84,7 +91,14 @@ export class FetchTerraService implements OnApplicationShutdown {
     return () => (stopper = true);
   }
 
-  //todo: implement init()
+  async init(): Promise<void> {
+    this.useDictionary = false;
+    //TODO: implement dictionary
+    this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+      value: Number(this.useDictionary),
+    });
+    await this.getLatestBlockHead();
+  }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getLatestBlockHead() {
@@ -112,7 +126,15 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.latestProcessedHeight = height;
   }
 
-  //TODO: implement startLoop()
+  async startLoop(initBlockHeight: number): Promise<void> {
+    if (isUndefined(this.latestProcessedHeight)) {
+      this.latestProcessedHeight = initBlockHeight;
+    }
+    await Promise.all([
+      this.fillNextBlockBuffer(initBlockHeight),
+      this.fillBlockBuffer(),
+    ]);
+  }
 
   async fillNextBlockBuffer(initBlockHeight: number) {
     let startBlockHeight: number;
@@ -176,6 +198,24 @@ export class FetchTerraService implements OnApplicationShutdown {
     }
   }
 
-  // implement getBaseHandlerKind
+  private getBaseHandlerKind(
+    ds: SubqlTerraDatasource,
+    handler: SubqlTerraHandler,
+  ): SubqlTerraHandlerKind {
+    if (isRuntimeTerraDs(ds) && isBaseTerraHandler(handler)) {
+      return handler.kind;
+    } else if (isCustomTerraDs(ds) && isCustomTerraHandler(handler)) {
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
+      const baseHandler =
+        plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
+      if (!baseHandler) {
+        throw new Error(
+          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
+        );
+      }
+      return baseHandler;
+    }
+  }
+
   // implement getBaseHandlerFilters
 }

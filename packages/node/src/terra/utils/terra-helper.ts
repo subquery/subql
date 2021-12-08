@@ -1,4 +1,3 @@
-import { ApiPromise } from '@polkadot/api';
 import {
   BlockInfo,
   EventsByType,
@@ -6,7 +5,7 @@ import {
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
-import { TerraBlockContent } from '../indexer/terra/types';
+import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');

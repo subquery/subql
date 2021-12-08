@@ -1,10 +1,9 @@
+import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
-import { isCustomDs, isRuntimeDs } from '@subql/common';
-import { RuntimeHandlerInputMap } from '@subql/types';
+import { buildSchema, getAllEntitiesRelations } from '@subql/common';
 import { LCDClient } from '@terra-money/terra.js';
 import { EventEmitter2 } from 'eventemitter2';
-import { QueryTypes } from 'sequelize';
-import { Sequelize } from 'sequelize/types';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
@@ -12,6 +11,7 @@ import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { ApiTerraService } from './apiterra.service';
+import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchTerraService } from './fetchterra.service';
 import { IndexerSandbox } from './sandboxterra.service';
@@ -21,7 +21,6 @@ import { TerraDsProcessorService } from './terrads-processor.service';
 import {
   SubqlTerraCustomDatasource,
   SubqlTerraHandlerKind,
-  SubqlTerraMapping,
   SubqlTerraRuntimeHandler,
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomHandler,
@@ -36,7 +35,7 @@ import {
 } from './utils';
 import { isEventHandlerProcessor } from './utils';
 
-const { version: packageVersion } = require('../../package.json');
+//const { version: packageVersion } = require('../../package.json');
 
 const DEFAULT_DB_SCHEMA = 'public';
 
@@ -83,7 +82,7 @@ export class IndexerTerraManager {
             ds.mapping.handlers,
             blockContent,
           );
-        } else if (isCustomDs(ds)) {
+        } else if (isCustomTerraDs(ds)) {
           await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
       }
@@ -102,11 +101,116 @@ export class IndexerTerraManager {
     });
   }
 
-  //TODO: implement getStartBLock
-  //TODO: implement createProjectSchema
-  //TODO: implement ensureProject
-  //TODO: implement initDbSchema
-  //TODO: implement ensureMetadata
+  async start(): Promise<void> {
+    await this.dsProcessorService.validateCustomDs();
+    await this.fetchService.init();
+    this.api = this.apiService.getApi();
+    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
+    await this.initDbSchema();
+    await this.ensureMetadata(this.subqueryState.dbSchema);
+    //TODO: implement POI
+
+    void this.fetchService
+      .startLoop(this.subqueryState.nextBlockHeight)
+      .catch((err) => {
+        logger.error(err, 'failed to fetch block');
+        // FIXME: retry before exit
+        process.exit(1);
+      });
+    this.filteredDataSources = this.filterDataSources();
+    this.fetchService.register((block) => this.indexBlock(block));
+    //TODO: implement POI
+  }
+
+  private async ensureProject(name: string): Promise<SubqueryModel> {
+    let project = await this.subqueryRepo.findOne({
+      where: { name: this.nodeConfig.subqueryName },
+    });
+    const { chain, genesisHash } = this.apiService.networkMeta;
+    if (!project) {
+      project = await this.createProjectSchema(name);
+    } else {
+      if (argv['force-clean']) {
+        try {
+          this.sequelize.dropSchema(project.dbSchema, {
+            logging: false,
+            benchmark: false,
+          });
+
+          await this.sequelize.query(
+            ` DELETE
+              FROM public.subqueries
+              where db_schema = :subquerySchema`,
+            {
+              replacements: { subquerySchema: project.dbSchema },
+              type: QueryTypes.DELETE,
+            },
+          );
+          logger.info('force cleaned schema and tables');
+        } catch (err) {
+          logger.error(err, 'failed to force clean schema and tables');
+        }
+        project = await this.createProjectSchema(name);
+      }
+      if (!project.networkGenesis || !project.network) {
+        project.network = chain;
+        project.networkGenesis = genesisHash;
+        await project.save();
+      } else if (project.networkGenesis !== genesisHash) {
+        logger.error(
+          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
+        );
+        process.exit(1);
+      }
+    }
+    return project;
+  }
+
+  private async initDbSchema(): Promise<void> {
+    const schema = this.subqueryState.dbSchema;
+    const graphqlSchema = buildSchema(
+      path.join(this.project.path, this.project.schema),
+    );
+    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
+    await this.storeService.init(modelsRelations, schema);
+    //TODO: ensure store service is terra compliant
+  }
+
+  private async ensureMetadata(schema: string) {
+    const metadataRepo = MetadataFactory(this.sequelize, schema);
+    const { chain, genesisHash } = this.apiService.networkMeta;
+
+    this.eventEmitter.emit(
+      IndexerEvent.NetworkMetadata,
+      this.apiService.networkMeta,
+    );
+
+    const keys = ['blockOffset', 'chain', 'genesisHash'] as const;
+
+    const entries = await metadataRepo.findAll({
+      where: {
+        key: keys,
+      },
+    });
+
+    const keyValue = entries.reduce((arr, curr) => {
+      arr[curr.key] = curr.value;
+      return arr;
+    }, {} as { [key in typeof keys[number]]: string });
+
+    if (!keyValue.blockOffset) {
+      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
+      await this.storeService.setMetadata('blockOffset', offsetValue);
+    }
+
+    if (!keyValue.genesisHash) {
+      await this.storeService.setMetadata('genesisHash', genesisHash);
+    }
+
+    if (keyValue.chain !== chain) {
+      await this.storeService.setMetadata('chain', chain);
+    }
+  }
 
   private getStartBlockFromDataSources() {
     const startBlocksList = this.project.dataSources.map(

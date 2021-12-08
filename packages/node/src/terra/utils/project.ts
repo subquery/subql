@@ -11,6 +11,12 @@ import {
   SubqlHandlerKind,
 } from '@subql/types';
 import tar from 'tar';
+import {
+  SubqlTerraCustomHandler,
+  SubqlTerraHandler,
+  SubqlTerraHandlerKind,
+  SubqlTerraRuntimeHandler,
+} from '../indexer/terraproject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -51,14 +57,14 @@ export function getProjectEntry(root: string): string {
   }
 }
 
-export function isBaseHandler(
-  handler: SubqlHandler,
-): handler is SubqlRuntimeHandler {
-  return Object.values<string>(SubqlHandlerKind).includes(handler.kind);
+export function isBaseTerraHandler(
+  handler: SubqlTerraHandler,
+): handler is SubqlTerraRuntimeHandler {
+  return Object.values<string>(SubqlTerraHandlerKind).includes(handler.kind);
 }
 
-export function isCustomHandler<K extends string, F>(
-  handler: SubqlHandler,
-): handler is SubqlCustomHandler<K, F> {
-  return !isBaseHandler(handler);
+export function isCustomTerraHandler<K extends string>(
+  handler: SubqlTerraHandler,
+): handler is SubqlTerraCustomHandler<K> {
+  return !isBaseTerraHandler(handler);
 }

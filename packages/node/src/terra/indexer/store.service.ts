@@ -19,9 +19,9 @@ import {
   smartTags,
 } from '../utils/sync-helper';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-import { PoiService } from './poi.service';
-import { StoreOperations } from './StoreOperations';
+//import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
+//import { PoiService } from './poi.service';
+//import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -39,14 +39,13 @@ export class StoreService {
   private modelIndexedFields: IndexField[];
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
-  private poiRepo: PoiRepo;
+  //private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
-  private operationStack: StoreOperations;
+  //private operationStack: StoreOperations;
 
   constructor(
     private sequelize: Sequelize,
-    private config: NodeConfig,
-    private poiService: PoiService,
+    private config: NodeConfig, //private poiService: PoiService,
   ) {}
 
   async init(
@@ -203,9 +202,9 @@ export class StoreService {
           throw new Error('Relation type is not supported');
       }
     }
-    if (this.config.proofOfIndex) {
-      this.poiRepo = PoiFactory(this.sequelize, schema);
-    }
+    //if (this.config.proofOfIndex) {
+    //  this.poiRepo = PoiFactory(this.sequelize, schema);
+    //}
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
     await this.sequelize.sync();
@@ -217,9 +216,9 @@ export class StoreService {
   setTransaction(tx: Transaction) {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
-    if (this.config.proofOfIndex) {
-      this.operationStack = new StoreOperations(this.modelsRelations.models);
-    }
+    //if (this.config.proofOfIndex) {
+    //  this.operationStack = new StoreOperations(this.modelsRelations.models);
+    //}
   }
 
   async setMetadata(
@@ -229,7 +228,7 @@ export class StoreService {
     assert(this.metaDataRepo, `model _metadata does not exist`);
     await this.metaDataRepo.upsert({ key, value });
   }
-
+  /*
   async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
     assert(this.poiRepo, `model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
@@ -246,7 +245,7 @@ export class StoreService {
     }
     return merkelRoot;
   }
-
+  */
   private async getAllIndexFields(schema: string) {
     const fields: IndexField[][] = [];
     for (const entity of this.modelsRelations.models) {
@@ -361,17 +360,17 @@ group by
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.upsert(data, { transaction: this.tx });
-        if (this.config.proofOfIndex) {
-          this.operationStack.put(OperationType.Set, entity, data);
-        }
+        //if (this.config.proofOfIndex) {
+        //  this.operationStack.put(OperationType.Set, entity, data);
+        //}
       },
       remove: async (entity: string, id: string): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.destroy({ where: { id }, transaction: this.tx });
-        if (this.config.proofOfIndex) {
-          this.operationStack.put(OperationType.Remove, entity, id);
-        }
+        //if (this.config.proofOfIndex) {
+        //  this.operationStack.put(OperationType.Remove, entity, id);
+        //}
       },
     };
   }

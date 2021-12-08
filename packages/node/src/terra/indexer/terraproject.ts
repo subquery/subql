@@ -23,13 +23,15 @@ export interface TerraProjectManifest {
 
   schema: string;
 
-  network: {
-    genesisHash: string;
-    endpoint: string;
-    chainId: string;
-  };
+  network: TerraNetwork;
 
   dataSources: SubqlTerraDatasource[];
+}
+
+export interface TerraNetwork {
+  genesisHash: string;
+  endpoint: string;
+  chainId: string;
 }
 
 export interface SubqlTerraBlockHandler {

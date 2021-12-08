@@ -17,8 +17,10 @@ import { StoreService } from '../indexer/store.service';
 const UPDATE_HEIGHT_INTERVAL = 60000;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
-const { version: packageVersion } = require('../../package.json');
+const {
+  version: terraSdkVersion,
+} = require('@terra-money/terra.js/package.json');
+const { version: packageVersion } = require('../../../package.json');
 
 @Injectable()
 export class MetaService {
@@ -45,7 +47,7 @@ export class MetaService {
       lastProcessedHeight: this.lastProcessedHeight,
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
-      polkadotSdkVersion,
+      terraSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
       usingDictionary: this.usingDictionary,

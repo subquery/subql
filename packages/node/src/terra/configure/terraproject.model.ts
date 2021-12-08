@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { RegisteredTypes } from '@polkadot/types/types';
-import { pick } from 'lodash';
+
 import {
   SubqlTerraDatasource,
   TerraProjectManifest,
+  TerraNetwork,
 } from '../indexer/terraproject';
 import { loadTerraProjectManifest } from '../indexer/utils';
 import { getLogger } from '../utils/logger';
@@ -41,7 +41,7 @@ export class SubqueryTerraProject {
   }
 
   //TODO: do manifest versioning. Define network type
-  get network(): unknown {
+  get network(): TerraNetwork {
     const network = this._projectManifest.network;
 
     if (!network.endpoint) {

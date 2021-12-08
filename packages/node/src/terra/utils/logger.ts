@@ -4,7 +4,7 @@
 import { LoggerService } from '@nestjs/common';
 import { Logger } from '@subql/common';
 import Pino from 'pino';
-import { argv } from '../yargs';
+import { argv } from '../../yargs';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const debug = argv('debug');

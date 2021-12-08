@@ -3,8 +3,9 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { IndexerManager } from './indexer/indexer.manager';
-import { getLogger, NestLogger } from './utils/logger';
+//import { IndexerManager } from './indexer/indexer.manager';
+import { IndexerTerraManager } from './terra/indexer/indexerterra.manager';
+import { getLogger, NestLogger } from './terra/utils/logger';
 import { argv } from './yargs';
 
 const logger = getLogger('subql-node');
@@ -24,7 +25,7 @@ async function bootstrap() {
     });
     await app.init();
 
-    const indexerManager = app.get(IndexerManager);
+    const indexerManager = app.get(IndexerTerraManager);
     await indexerManager.start();
     await app.listen(port);
 

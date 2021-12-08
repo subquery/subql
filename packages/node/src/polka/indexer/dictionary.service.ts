@@ -11,10 +11,10 @@ import {
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/common';
 import fetch from 'node-fetch';
+import { getYargsOption } from '../../yargs';
 import { SubqueryProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { getYargsOption } from '../yargs';
 
 export type Dictionary = {
   _metadata: MetaData;

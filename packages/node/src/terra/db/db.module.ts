@@ -4,10 +4,10 @@
 import { DynamicModule, Global } from '@nestjs/common';
 import { Sequelize } from 'sequelize';
 import { Options as SequelizeOption } from 'sequelize/types';
+import { getYargsOption } from '../../yargs';
 import * as entities from '../entities';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
-import { getYargsOption } from '../yargs';
 
 export interface DbOption {
   host: string;

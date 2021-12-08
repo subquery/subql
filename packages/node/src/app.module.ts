@@ -4,10 +4,10 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigureModule } from './configure/configure.module';
-import { DbModule } from './db/db.module';
-import { IndexerModule } from './indexer/indexer.module';
-import { MetaModule } from './meta/meta.module';
+import { ConfigureModule } from './terra/configure/configure.module';
+import { DbModule } from './terra/db/db.module';
+import { IndexerModule } from './terra/indexer/indexer.module';
+import { MetaModule } from './terra/meta/meta.module';
 
 export class NodeOption {}
 

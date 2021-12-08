@@ -3,46 +3,39 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { DbModule } from '../db/db.module';
-import { ApiService } from './api.service';
-import { ApiSolanaService } from './apisolana.service';
+import { ApiTerraService } from './apiterra.service';
 import { BenchmarkService } from './benchmark.service';
-import { DictionaryService } from './dictionary.service';
-import { DsProcessorService } from './ds-processor.service';
-import { FetchService } from './fetch.service';
-import { IndexerManager } from './indexer.manager';
-import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
-import { SandboxService } from './sandbox.service';
+import { FetchTerraService } from './fetchterra.service';
+import { IndexerTerraManager } from './indexerterra.manager';
+import { SandboxTerraService } from './sandboxterra.service';
 import { StoreService } from './store.service';
+import { TerraDsProcessorService } from './terrads-processor.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
-    IndexerManager,
+    IndexerTerraManager,
     StoreService,
     {
       //provide: ApiService,
-      provide: ApiSolanaService,
+      provide: ApiTerraService,
       useFactory: async (
-        project: SubqueryProject,
+        project: SubqueryTerraProject,
         eventEmitter: EventEmitter2,
       ) => {
         //const apiService = new ApiService(project, eventEmitter);
-        const apiService = new ApiService(project, eventEmitter);
+        const apiService = new ApiTerraService(project, eventEmitter);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject, EventEmitter2],
+      inject: [SubqueryTerraProject, EventEmitter2],
     },
-    FetchService,
+    FetchTerraService,
     BenchmarkService,
-    DictionaryService,
-    SandboxService,
-    DsProcessorService,
-    PoiService,
-    MmrService,
+    SandboxTerraService,
+    TerraDsProcessorService,
   ],
   exports: [StoreService],
 })

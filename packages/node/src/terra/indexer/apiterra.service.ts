@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { LCDClient, LCDClientConfig } from '@terra-money/terra.js';
 import { EventEmitter2 } from 'eventemitter2';
-import { SubqueryProject } from '../../configure/project.model';
-import { getLogger } from '../../utils/logger';
-import { NetworkMetadataPayload } from '../events';
+import { SubqueryTerraProject } from '../configure/terraproject.model';
+import { getLogger } from '../utils/logger';
+import { NetworkMetadataPayload } from './events';
 
 const logger = getLogger('api');
 
@@ -15,7 +15,7 @@ export class ApiTerraService {
   networkMeta: NetworkMetadataPayload;
 
   constructor(
-    protected project: SubqueryProject,
+    protected project: SubqueryTerraProject,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -27,11 +27,10 @@ export class ApiTerraService {
     };
     this.api = new LCDClient(this.clientConfig);
 
-    const node_info = await this.api.tendermint.nodeInfo();
     const genesisBlock = await this.api.tendermint.blockInfo(0);
 
     this.networkMeta = {
-      chain: node_info.node_info.network,
+      chain: network.chainId,
       genesisHash: genesisBlock.block.header.data_hash,
     };
 
