@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.3] - 2021-12-02
+Priority: High. Any project use enum should re-index with latest node ASAP.
+### Fixed:
+- Skip insert poi when db transaction is null (#687)
+- Replace enum index with unique hash value, in order resolve schema type name conflict issue.(#688)
+
+
 ## [0.25.2] - 2021-11-30
 Priority: high for projects indexed with 0.25.x or above
 ### Fixed:
@@ -354,7 +361,8 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.25.2...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.25.3...HEAD
+[0.25.3]: https://github.com/subquery/subql/compare/node/0.25.2...node/0.25.3
 [0.25.2]: https://github.com/subquery/subql/compare/node/0.25.1...node/0.25.2
 [0.25.1]: https://github.com/subquery/subql/compare/node/0.25.0...node/0.25.1
 [0.25.0]: https://github.com/subquery/subql/compare/node/0.24.0...node/0.25.0

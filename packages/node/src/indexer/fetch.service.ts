@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
@@ -18,6 +19,7 @@ import {
   SubqlHandler,
   SubqlDatasource,
   SubqlHandlerFilter,
+  DictionaryQueryEntry,
 } from '@subql/types';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -30,11 +32,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryQueryEntry,
-  DictionaryService,
-} from './dictionary.service';
+import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
 import { BlockContent } from './types';
@@ -42,6 +40,11 @@ import { BlockContent } from './types';
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
+const CHECK_MEMORY_INTERVAL = 60000;
+const HIGH_THRESHOLD = 0.85;
+const LOW_THRESHOLD = 0.6;
+const MINIMUM_BATCH_SIZE = 5;
+
 const { argv } = getYargsOption();
 
 const fetchBlocksBatches = argv.profiler
@@ -80,6 +83,31 @@ function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
   };
 }
 
+function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
+  const memoryData = getHeapStatistics();
+  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
+  if (argv.profiler) {
+    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
+    logger.info(`Heap Usage: ${ratio}`);
+  }
+  let scale = batchSizeScale;
+
+  if (ratio > HIGH_THRESHOLD) {
+    if (scale > 0) {
+      scale = Math.max(scale - 0.1, 0);
+      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
+    }
+  }
+
+  if (ratio < LOW_THRESHOLD) {
+    if (scale < 1) {
+      scale = Math.min(scale + 0.1, 1);
+      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
+    }
+  }
+  return scale;
+}
+
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
@@ -92,6 +120,7 @@ export class FetchService implements OnApplicationShutdown {
   private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
+  private batchSizeScale: number;
 
   constructor(
     private apiService: ApiService,
@@ -107,6 +136,7 @@ export class FetchService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
+    this.batchSizeScale = 1;
   }
 
   onApplicationShutdown(): void {
@@ -129,11 +159,29 @@ export class FetchService implements OnApplicationShutdown {
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {
+      const plugin = isCustomDs(ds)
+        ? this.dsProcessorService.getDsProcessor(ds)
+        : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        const filterList = isRuntimeDs(ds)
-          ? [handler.filter as SubqlHandlerFilter].filter(Boolean)
-          : this.getBaseHandlerFilters<SubqlHandlerFilter>(ds, handler.kind);
+        let filterList: SubqlHandlerFilter[];
+        if (isCustomDs(ds)) {
+          const processor = plugin.handlerProcessors[handler.kind];
+          if (processor.dictionaryQuery) {
+            const queryEntry = processor.dictionaryQuery(handler.filter, ds);
+            if (queryEntry) {
+              queryEntries.push(queryEntry);
+              continue;
+            }
+          }
+          filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
+            ds,
+            handler.kind,
+          );
+        } else {
+          filterList = [handler.filter];
+        }
+        filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlHandlerKind.Block:
@@ -213,6 +261,20 @@ export class FetchService implements OnApplicationShutdown {
     await this.getBestBlockHead();
   }
 
+  @Interval(CHECK_MEMORY_INTERVAL)
+  checkBatchScale() {
+    if (argv['scale-batch-size']) {
+      const scale = checkMemoryUsage(
+        this.nodeConfig.batchSize,
+        this.batchSizeScale,
+      );
+
+      if (this.batchSizeScale !== scale) {
+        this.batchSizeScale = scale;
+      }
+    }
+  }
+
   @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead() {
     if (!this.api) {
@@ -273,13 +335,20 @@ export class FetchService implements OnApplicationShutdown {
     await this.fetchMeta(initBlockHeight);
 
     let startBlockHeight: number;
+    let scaledBatchSize: number;
 
     while (!this.isShutdown) {
       startBlockHeight = this.latestBufferedHeight
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
+
+      scaledBatchSize = Math.max(
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+        MINIMUM_BATCH_SIZE,
+      );
+
       if (
-        this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
+        this.blockNumberBuffer.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
       ) {
         await delay(1);
@@ -291,7 +360,7 @@ export class FetchService implements OnApplicationShutdown {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
             queryEndBlock,
-            this.nodeConfig.batchSize,
+            scaledBatchSize,
             this.dictionaryQueryEntries,
           );
           //TODO
@@ -324,7 +393,10 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
       // the original method: fill next batch size of blocks
-      const endHeight = this.nextEndBlockHeight(startBlockHeight);
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
     }
@@ -334,7 +406,7 @@ export class FetchService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       const takeCount = Math.min(
         this.blockBuffer.freeSize,
-        this.nodeConfig.batchSize,
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
       );
 
       if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
@@ -381,8 +453,12 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  private nextEndBlockHeight(startBlockHeight: number): number {
-    let endBlockHeight = startBlockHeight + this.nodeConfig.batchSize - 1;
+  private nextEndBlockHeight(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+  ): number {
+    let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
+
     if (endBlockHeight > this.latestFinalizedHeight) {
       endBlockHeight = this.latestFinalizedHeight;
     }

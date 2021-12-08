@@ -11,7 +11,8 @@ import { assign } from '../utils/object';
 export interface IConfig {
   readonly configDir?: string;
   readonly subquery: string;
-  readonly subqueryName: string;
+  readonly subqueryName?: string;
+  readonly dbSchema?: string;
   readonly localMode: boolean;
   readonly batchSize: number;
   readonly timeout: number;
@@ -28,8 +29,8 @@ export interface IConfig {
   readonly mmrPath?: string;
 }
 
-export type MinConfig = Partial<Omit<IConfig, 'subqueryName' | 'subquery'>> &
-  Pick<IConfig, 'subqueryName' | 'subquery'>;
+export type MinConfig = Partial<Omit<IConfig, 'subquery'>> &
+  Pick<IConfig, 'subquery'>;
 
 const DEFAULT_CONFIG = {
   localMode: false,
@@ -129,6 +130,10 @@ export class NodeConfig implements IConfig {
 
   get mmrPath(): string {
     return this._config.mmrPath ?? `.mmr/${this.subqueryName}.mmr`;
+  }
+
+  get dbSchema(): string {
+    return this._config.dbSchema ?? this.subqueryName;
   }
 
   merge(config: Partial<IConfig>): this {

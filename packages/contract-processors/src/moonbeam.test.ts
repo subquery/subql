@@ -164,7 +164,7 @@ describe('MoonbeamDs', () => {
         ).not.toThrow();
       });
 
-      it('validates topics with OR option', () => {
+      it.skip('validates topics with OR option', () => {
         expect(() =>
           processor.filterValidator({
             topics: [
@@ -185,7 +185,7 @@ describe('MoonbeamDs', () => {
         expect(() => processor.filterValidator({topics: ['Hello World']})).toThrow();
       });
 
-      it('checks OR topics are valid hex strings', () => {
+      it.skip('checks OR topics are valid hex strings', () => {
         expect(() => processor.filterValidator({topics: [['Hello', 'World']]})).toThrow();
       });
     });
@@ -254,7 +254,7 @@ describe('MoonbeamDs', () => {
         ).toBeTruthy();
       });
 
-      it('filters topics matching 4', () => {
+      it.skip('filters topics matching 4', () => {
         expect(
           processor.filterProcessor(
             {topics: [['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', '0x00']]},
@@ -267,7 +267,7 @@ describe('MoonbeamDs', () => {
       it('filters topics matching with event', () => {
         expect(
           processor.filterProcessor(
-            {topics: [['Transfer(address indexed from, address indexed to, uint256 value)']]},
+            {topics: ['Transfer(address indexed from, address indexed to, uint256 value)']},
             log,
             {} as MoonbeamDatasource
           )
@@ -275,14 +275,14 @@ describe('MoonbeamDs', () => {
 
         expect(
           processor.filterProcessor(
-            {topics: [['Transfer(address from, address to, uint256 value)']]},
+            {topics: ['Transfer(address from, address to, uint256 value)']},
             log,
             {} as MoonbeamDatasource
           )
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor({topics: [['Transfer(address, address, uint256)']]}, log, {} as MoonbeamDatasource)
+          processor.filterProcessor({topics: ['Transfer(address, address, uint256)']}, log, {} as MoonbeamDatasource)
         ).toBeTruthy();
       });
 

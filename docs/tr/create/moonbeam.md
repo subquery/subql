@@ -1,96 +1,123 @@
-# Moonbeam EVM Support
+# Moonbeam EVM Desteği
 
-We provide a custom data source processor for Moonbeam's and Moonriver's EVM. This offers a simple way to filter and index both EVM and Substrate activity on Moonbeam's networks within a single SubQuery project.
+Moonbeam'in ve Moonriver'ın EVM'si için özel bir veri kaynağı işlemcisi sağlıyoruz. Bu, tek bir SubQuery projesi içinde Moonbeam ağlarındaki hem EVM hem de Substrat etkinliğini filtrelemek ve indekslemek için basit bir yol sunar.
 
-Supported networks:
+Desteklenen ağlar:
 
-| Network Name   | Websocket Endpoint                                 | Dictionary Endpoint                                                  |
+| Ağ Adı         | Websocket Bitim Noktası                            | Sözlük Bitim Noktası                                                 |
 | -------------- | -------------------------------------------------- | -------------------------------------------------------------------- |
-| Moonbeam       | _Coming soon_                                      | _Coming soon_                                                        |
+| Moonbeam       | _Çok yakında_                                      | _Çok yakında_                                                        |
 | Moonriver      | `wss://moonriver.api.onfinality.io/public-ws`      | `https://api.subquery.network/sq/subquery/moonriver-dictionary`      |
 | Moonbase Alpha | `wss://moonbeam-alpha.api.onfinality.io/public-ws` | `https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary` |
 
-**You can also refer to the [basic Moonriver EVM example project](https://github.com/subquery/tutorials-moonriver-evm-starter) with an event and call handler.** This project is also hosted live in the SubQuery Explorer [here](https://explorer.subquery.network/subquery/subquery/moonriver-evm-starter-project).
+**Ayrıca bir olay ve çağrı işleyici ile
+temel Moonriver EVM örnek projesine de başvurabilirsiniz. Bu proje ayrıca burada SubQuery Gezgini'nde canlı olarak barındırılmaktadır.</p> 
 
-## Getting started
 
-1. Add the custom data source as a dependency `yarn add @subql/contract-processors`
-2. Add a custom data source as described below
-3. Add handlers for the custom data source to your code
 
-## Data Source Spec
+## Başlarken
 
-| Field             | Type                                                           | Required | Description                                |
-| ----------------- | -------------------------------------------------------------- | -------- | ------------------------------------------ |
-| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Yes      | File reference to the data processor code  |
-| processor.options | [ProcessorOptions](#processor-options)                         | No       | Options specific to the Moonbeam Processor |
-| assets            | `{ [key: String]: { file: String }}`                           | No       | An object of external asset files          |
+1. Özel veri kaynağını bir bağımlılık olarak ekleyin `yarn @subql/contract-processors` ekleyin
+2. Aşağıda açıklandığı gibi özel bir veri kaynağı ekleyin
+3. Kodunuza özel veri kaynağı için işleyiciler ekleyin
 
-### Processor Options
 
-| Field   | Type             | Required | Description                                                                                                |
-| ------- | ---------------- | -------- | ---------------------------------------------------------------------------------------------------------- |
-| abi     | String           | No       | The ABI that is used by the processor to parse arguments. MUST be a key of `assets`                        |
-| address | String or `null` | No       | A contract address where the event is from or call is made to. `null` will capture contract creation calls |
+
+## Veri Kaynağı Spesifikasyonu
+
+| Alan              | Tip                                                            | Gerekli | Açıklama                               |
+| ----------------- | -------------------------------------------------------------- | ------- | -------------------------------------- |
+| processor.file    | `'./node_modules/@subql/contract-processors/dist/moonbeam.js'` | Evet    | Veri işlemci koduna dosya referansı    |
+| processor.options | [ProcessorOptions](#processor-options)                         | Hayır   | Moonbeam İşlemciye özel seçenekler     |
+| varlıklar         | `{ [key: String]: { file: String }}`                           | Hayır   | Harici varlık dosyalarının bir nesnesi |
+
+
+
+
+### İşlemci Seçenekleri
+
+| Alan  | Tip              | Gerekli | Açıklama                                                                                                          |
+| ----- | ---------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
+| abi   | String           | Hayır   | İşlemci tarafından argümanları ayrıştırmak için kullanılan ABI. `varlıkların` anahtarı OLMALIDIR                  |
+| adres | String or `null` | Hayır   | Etkinliğin geldiği veya aramanın yapıldığı bir sözleşme adresi. `null` sözleşme oluşturma çağrılarını yakalayacak |
+
+
+
 
 ## MoonbeamCall
 
-Works in the same way as [substrate/CallHandler](../create/mapping/#call-handler) except with a different handler argument and minor filtering changes.
+Farklı bir işleyici argümanı ve küçük filtreleme değişiklikleri dışında [substrate/CallHandler](../create/mapping/#call-handler) ile aynı şekilde çalışır.
 
-| Field  | Type                         | Required | Description                                 |
-| ------ | ---------------------------- | -------- | ------------------------------------------- |
-| kind   | 'substrate/MoonbeamCall'     | Yes      | Specifies that this is an Call type handler |
-| filter | [Call Filter](#call-filters) | No       | Filter the data source to execute           |
+| Alan   | Tip                             | Gerekli | Tarif                                             |
+| ------ | ------------------------------- | ------- | ------------------------------------------------- |
+| tür    | 'substrate/MoonbeamCall'        | Evet    | Bunun bir Çağrı türü işleyicisi olduğunu belirtir |
+| filtre | [Çağrı Filtresi](#call-filters) | Hayır   | Yürütülecek veri kaynağını filtreleyin            |
 
-### Call Filters
 
-| Field    | Type   | Example(s)                                    | Description                                                                                                                                                                      |
-| -------- | ------ | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| function | String | 0x095ea7b3, approve(address to,uint256 value) | Either [Function Signature](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) strings or the function `sighash` to filter the function called on the contract |
-| from     | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b    | An Ethereum address that sent the transaction                                                                                                                                    |
 
-### Handlers
 
-Unlike a normal handler you will not get a `SubstrateExtrinsic` as the parameter, instead you will get a `MoonbeamCall` which is based on Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type.
+### Çağrı Filtresi
 
-Changes from the `TransactionResponse` type:
+| Alan      | Tip    | Örnekler                                                | Açıklama                                                                                                                                                           |
+| --------- | ------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| fonksiyon | String | 0x095ea7b30x095ea7b3, approve(address to,uint256 value) | Sözleşmede çağrılan işlevi filtrelemek için [Fonksiyon İmzası](https://docs.ethers.io/v5/api/utils/abi/fragments/#FunctionFragment) dizeleri veya `sighash` işlevi |
+| gönderici | String | 0x6bd193ee6d2104f14f94e2ca6efefae561a4334b              | İşlemi gönderen bir Ethereum adresi                                                                                                                                |
 
-- It doesn't have `wait` and `confirmations` properties
-- A `success` property is added to know if the transaction was a success
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
+
+
+
+### İşleyiciler
+
+Normal bir işleyiciden farklı olarak, parametre olarak bir `SubstrateExtrinsic` almazsınız, bunun yerine Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) türüne dayalı bir `MoonbeamCall` alırsınız.
+
+`TransactionResponse` türünden değişiklikler:
+
+- `bekle` ve `onaylar `özelliklerine sahip değil
+- İşlemin başarılı olup olmadığını öğrenmek için bir `success` özelliği eklendi
+- `abi` alanı sağlanmışsa ve bağımsız değişkenler başarıyla ayrıştırılabiliyorsa `args` eklenir
+
+
 
 ## MoonbeamEvent
 
-Works in the same way as [substrate/EventHandler](../create/mapping/#event-handler) except with a different handler argument and minor filtering changes.
+Farklı bir işleyici argümanı ve küçük filtreleme değişiklikleri dışında [substrate/CallHandler](../create/mapping/#event-handler) ile aynı şekilde çalışır.
 
-| Field  | Type                           | Required | Description                                  |
-| ------ | ------------------------------ | -------- | -------------------------------------------- |
-| kind   | 'substrate/MoonbeamEvent'      | Yes      | Specifies that this is an Event type handler |
-| filter | [Event Filter](#event-filters) | No       | Filter the data source to execute            |
+| Alan   | Tip                                 | Gerekli | Tarif                                             |
+| ------ | ----------------------------------- | ------- | ------------------------------------------------- |
+| tür    | 'substrate/MoonbeamCall'            | Evet    | Bunun bir Çağrı türü işleyicisi olduğunu belirtir |
+| filtre | [Etkinlik Filtresi](#event-filters) | Hayır   | Yürütülecek veri kaynağını filtreleyin            |
 
-### Event Filters
 
-| Field  | Type         | Example(s)                                                      | Description                                                                                                                                      |
-| ------ | ------------ | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| topics | String array | Transfer(address indexed from,address indexed to,uint256 value) | The topics filter follows the Ethereum JSON-PRC log filters, more documentation can be found [here](https://docs.ethers.io/v5/concepts/events/). |
 
-<b>Note on topics:</b>
-There are a couple of improvements from basic log filters:
 
-- Topics don't need to be 0 padded
-- [Event Fragment](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) strings can be provided and automatically converted to their id
+### Etkinlik filtreleri
 
-### Handlers
+| Alan | Tip          | Örnekler                                                       | Tarif                                                                                                                                                  |
+| ---- | ------------ | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| konu | Dizge dizisi | Transfer(adres indekslendi, adres indekslendi, uint256 değeri) | Konular filtresi, Ethereum JSON-PRC günlük filtrelerini takip eder, daha fazla belge [burada](https://docs.ethers.io/v5/concepts/events/) bulunabilir. |
 
-Unlike a normal handler you will not get a `SubstrateEvent` as the parameter, instead you will get a `MoonbeamEvent` which is based on Ethers [Log](https://docs.ethers.io/v5/api/providers/types/#providers-Log) type.
+<b>Konularla ilgili not</b>: Temel günlük filtrelerinde birkaç iyileştirme var:
 
-Changes from the `Log` type:
+- Konuların 0 dolgulu olması gerekmez
+- [Etkinlik Parçası](https://docs.ethers.io/v5/api/utils/abi/fragments/#EventFragment) dizeleri sağlanabilir ve otomatik olarak kimliklerine dönüştürülebilir
 
-- `args` is added if the `abi` field is provided and the arguments can be successfully parsed
 
-## Data Source Example
 
-This is an extract from the `project.yaml` manifest file.
+### İşleyiciler
+
+Normal bir işleyiciden farklı olarak, parametre olarak bir `SubstrateExtrinsic` almazsınız, bunun yerine Ethers [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-Log) türüne dayalı bir `MoonbeamCall` alırsınız.
+
+`Günlük türünden` değişiklikler:
+
+- `abi` alanı sağlanmışsa ve bağımsız değişkenler başarıyla ayrıştırılabiliyorsa `args` eklenir
+
+
+
+## Veri Kaynağı Örneği
+
+Bu, `project.yaml` bildirim dosyasından bir alıntıdır.
+
+
 
 ```yaml
 dataSources:
@@ -125,8 +152,11 @@ dataSources:
             from: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
 ```
 
-## Known Limitations
 
-- There is currently no way to query EVM state within a handler
-- There is no way to get the transaction receipts with call handlers
-- `blockHash` properties are currently left undefined, the `blockNumber` property can be used instead
+
+
+## Bilinen sınırlamalar
+
+- Şu anda bir işleyici içinde EVM durumunu sorgulamanın bir yolu yok
+- Çağrı işleyicilerle işlem makbuzlarını almanın bir yolu yok
+- `blockHash` özellikleri şu anda tanımsız bırakılmıştır, bunun yerine `blockNumber` özelliği kullanılabilir
