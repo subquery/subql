@@ -40,7 +40,7 @@
   "scripts": {
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs",
-    "build": "yarn workspaces foreach -pt run build",
+    "build": "yarn workspaces foreach -ptA run build",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
     "test:all": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
