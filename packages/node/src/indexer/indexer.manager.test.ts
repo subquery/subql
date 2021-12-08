@@ -3,7 +3,6 @@
 
 import { Test } from '@nestjs/testing';
 import { ProjectManifestVersioned } from '@subql/common';
-import { repeat } from 'lodash';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';

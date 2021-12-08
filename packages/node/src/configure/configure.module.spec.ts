@@ -19,4 +19,7 @@ describe('Configure', () => {
   it('validDbSchemaName - invalid tokens', () => {
     expect(validDbSchemaName('he$$*')).toBeFalsy();
   });
+  it('validDbSchemaName - empty', () => {
+    expect(validDbSchemaName('')).toBeFalsy();
+  });
 });
