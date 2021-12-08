@@ -170,18 +170,14 @@ export class IndexerManager {
     if (lastProcessedHeight !== null) {
       startHeight = Number(lastProcessedHeight.value) + 1;
     } else {
-      const nextBlockHeight = (
-        await this.subqueryRepo.findOne({
-          where: { name: this.nodeConfig.subqueryName },
-        })
-      ).nextBlockHeight;
-      assert(
-        nextBlockHeight !== null,
-        new Error(
-          'Invalid project state, unable to find block height to begin indexing at',
-        ),
-      );
-      startHeight = nextBlockHeight;
+      const project = await this.subqueryRepo.findOne({
+        where: { name: this.nodeConfig.subqueryName },
+      });
+      if (project !== null) {
+        startHeight = project.nextBlockHeight;
+      } else {
+        startHeight = this.getStartBlockFromDataSources();
+      }
     }
 
     void this.fetchService.startLoop(startHeight).catch((err) => {
