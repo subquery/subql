@@ -129,6 +129,8 @@ const erc20MiniAbi = `[
 ]`;
 
 describe('MoonbeamDs', () => {
+  jest.setTimeout(10000);
+
   let api: ApiPromise;
 
   beforeAll(async () => {
