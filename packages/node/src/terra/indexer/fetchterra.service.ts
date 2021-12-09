@@ -1,6 +1,5 @@
-import { OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
-import { SubqlDatasource, SubqlHandler, SubqlHandlerKind } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { EventEmitter2 } from 'eventemitter2';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
@@ -27,6 +26,7 @@ const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 
+@Injectable()
 export class FetchTerraService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;

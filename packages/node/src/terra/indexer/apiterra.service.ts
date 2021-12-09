@@ -26,12 +26,12 @@ export class ApiTerraService {
       chainID: network.chainId,
     };
     this.api = new LCDClient(this.clientConfig);
-
-    const genesisBlock = await this.api.tendermint.blockInfo(0);
-
+    //logger.info('api inititare')
+    const genesisBlock = await this.api.tendermint.blockInfo(4724001);
+    //logger.info('')
     this.networkMeta = {
       chain: network.chainId,
-      genesisHash: genesisBlock.block.header.data_hash,
+      genesisHash: genesisBlock.block_id.hash,
     };
 
     if (

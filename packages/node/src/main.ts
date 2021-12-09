@@ -4,10 +4,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 //import { IndexerManager } from './indexer/indexer.manager';
+import { codegen } from './terra/codegen';
 import { IndexerTerraManager } from './terra/indexer/indexerterra.manager';
 import { getLogger, NestLogger } from './terra/utils/logger';
 import { argv } from './yargs';
-
 const logger = getLogger('subql-node');
 
 async function bootstrap() {
@@ -19,9 +19,13 @@ async function bootstrap() {
     );
   }
 
+  if (argv('chain') === 'terra') {
+    await codegen(`${argv('subquery')}`);
+  }
   try {
     const app = await NestFactory.create(AppModule, {
-      logger: debug ? new NestLogger() : false,
+      //logger: debug ? new NestLogger() : false,
+      logger: debug ? ['verbose'] : false,
     });
     await app.init();
 

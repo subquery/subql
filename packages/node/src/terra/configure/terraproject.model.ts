@@ -66,6 +66,6 @@ export class SubqueryTerraProject {
     return this._projectManifest.dataSources;
   }
   get schema(): string {
-    return this._projectManifest.schema;
+    return this._projectManifest.schema.file;
   }
 }

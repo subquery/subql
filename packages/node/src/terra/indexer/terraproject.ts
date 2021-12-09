@@ -21,7 +21,9 @@ export interface TerraProjectManifest {
   description: string;
   repository: string;
 
-  schema: string;
+  schema: {
+    file: string;
+  };
 
   network: TerraNetwork;
 

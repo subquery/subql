@@ -3,11 +3,11 @@
 
 import assert from 'assert';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
+import { loadFromJsonOrYaml, Logger } from '@subql/common';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
+import { getLogger } from '../utils/logger';
 import { assign } from '../utils/object';
-
 export interface IConfig {
   readonly configDir?: string;
   readonly subquery: string;
@@ -43,6 +43,8 @@ const DEFAULT_CONFIG = {
   proofOfIndex: false,
 };
 
+const logger = getLogger('configure');
+
 export class NodeConfig implements IConfig {
   private readonly _config: IConfig;
 
@@ -60,6 +62,7 @@ export class NodeConfig implements IConfig {
 
   constructor(config: MinConfig) {
     this._config = assign({}, DEFAULT_CONFIG, config);
+    logger.info('reading batchsize');
   }
 
   get subquery(): string {

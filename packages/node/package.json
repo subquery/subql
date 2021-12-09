@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "rm -rf dist && tsc -b",
+    "build": "rm -rf dist && tsc -b && cp -r ./src/terra/template ./dist/terra/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nodemon",

@@ -5427,6 +5427,7 @@ __metadata:
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
+    "@terra-money/amino-js": ^3.2.0
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.0.2
@@ -5562,6 +5563,13 @@ __metadata:
   dependencies:
     defer-to-connect: ^1.0.1
   checksum: a46ec854231194dd1ab924a5ea0d8f0afa2b7133754a3def099cc5749e34802d8668a7d7ee3583327048354b9dc621113843d8546387e06ff57e6763cbb558d9
+  languageName: node
+  linkType: hard
+
+"@terra-money/amino-js@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "@terra-money/amino-js@npm:3.2.0"
+  checksum: e27cf6ea2fdd18c980fc6480f8fac87704e389a3eaada3a0e7d0e67a7d7ee885ab5abb5c0f999b9e4408ba3fbfa21ef2603b4ee7c72dc76840640a319ae96711
   languageName: node
   linkType: hard
 

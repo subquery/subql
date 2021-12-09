@@ -109,7 +109,7 @@ export class IndexerTerraManager {
     await this.initDbSchema();
     await this.ensureMetadata(this.subqueryState.dbSchema);
     //TODO: implement POI
-
+    logger.info(`${this.subqueryState.nextBlockHeight}`);
     void this.fetchService
       .startLoop(this.subqueryState.nextBlockHeight)
       .catch((err) => {

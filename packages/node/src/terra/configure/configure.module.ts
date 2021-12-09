@@ -61,6 +61,7 @@ export class ConfigureModule {
         process.exit(1);
       }
       assert(argv.subquery, 'subquery path is missing');
+      //logger.info('here');
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 

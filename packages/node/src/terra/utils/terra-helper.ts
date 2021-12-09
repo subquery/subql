@@ -1,6 +1,7 @@
 import {
   BlockInfo,
   EventsByType,
+  hashToHex,
   LCDClient,
   TxInfo,
   TxLog,
@@ -30,7 +31,12 @@ export async function getTxInfobyHashes(
   api: LCDClient,
   txHashes: string[],
 ): Promise<TxInfo[]> {
-  return Promise.all(txHashes.map(async (hash) => api.tx.txInfo(hash)));
+  return Promise.all(
+    txHashes.map(async (hash) => {
+      //console.log(hashToHex(hash))
+      return api.tx.txInfo(hashToHex(hash));
+    }),
+  );
 }
 
 export async function getEventsByTypeFromBlock(
@@ -38,7 +44,11 @@ export async function getEventsByTypeFromBlock(
   blockInfo: BlockInfo,
 ): Promise<EventsByType[]> {
   const txHashes = blockInfo.block.data.txs;
+  if (txHashes.length === 0) {
+    return [];
+  }
   const txInfos = await getTxInfobyHashes(api, txHashes);
+
   const txLogs = txInfos.map((txInfo) => txInfo.logs);
   const txLogsFlat = ([] as TxLog[]).concat(...txLogs);
   const events = txLogsFlat.map((txLog) => txLog.eventsByType);
