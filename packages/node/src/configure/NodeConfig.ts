@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
+import { loadFromFile } from '@subql/common';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';
@@ -53,7 +53,7 @@ export class NodeConfig implements IConfig {
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
 
-    const config = assign(loadFromJsonOrYaml(filePath), configFromArgs, {
+    const config = assign(loadFromFile(filePath), configFromArgs, {
       configDir: fileInfo.dir,
     }) as IConfig;
     return new NodeConfig(config);

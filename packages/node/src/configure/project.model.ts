@@ -10,7 +10,7 @@ import {
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
-  loadFromJsonOrYaml,
+  loadFromFile,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import { pick } from 'lodash';
@@ -110,11 +110,11 @@ export class SubqueryProject {
         return;
       }
 
-      const rawChainTypes = loadFromJsonOrYaml(
+      const rawChainTypes = loadFromFile(
         path.join(this._path, impl.network.chaintypes.file),
       );
-      const chainTypes = parseChainTypes(rawChainTypes);
-      return chainTypes;
+
+      return parseChainTypes(rawChainTypes);
     }
   }
 }
