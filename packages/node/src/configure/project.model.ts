@@ -1,7 +1,6 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import path from 'path';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
@@ -14,19 +13,11 @@ import {
   loadFromJsonOrYaml,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 
 const logger = getLogger('configure');
-
-const LOAD_JS_OPTIONS: NodeVMOptions = {
-  require: {
-    external: true,
-    context: 'sandbox',
-  },
-};
 
 export class SubqueryProject {
   private _path: string;
@@ -103,7 +94,6 @@ export class SubqueryProject {
 
   get chainTypes(): RegisteredTypes | undefined {
     const impl = this._projectManifest.asImpl;
-    const vm = new NodeVM(LOAD_JS_OPTIONS);
 
     if (manifestIsV0_0_1(impl)) {
       return pick<RegisteredTypes>(impl.network, [
@@ -120,22 +110,9 @@ export class SubqueryProject {
         return;
       }
 
-      const filePath = path.join(this._path, impl.network.chaintypes.file);
-      const { ext } = path.parse(filePath);
-
-      let rawChainTypes: unknown;
-
-      if (ext === '.js') {
-        // load from file using sandbox
-        const script = new VMScript(
-          `module.exports = require('${impl.network.chaintypes.file}');`,
-          filePath,
-        );
-        rawChainTypes = vm.run(script);
-      } else {
-        rawChainTypes = loadFromJsonOrYaml(filePath);
-      }
-
+      const rawChainTypes = loadFromJsonOrYaml(
+        path.join(this._path, impl.network.chaintypes.file),
+      );
       const chainTypes = parseChainTypes(rawChainTypes);
       return chainTypes;
     }
