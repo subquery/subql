@@ -1,7 +1,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { LCDClient } from '@terra-money/terra.js';
-import { EventEmitter2 } from 'eventemitter2';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';

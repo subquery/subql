@@ -32,6 +32,7 @@
     "@willsoto/nestjs-prometheus": "^4.2.0",
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.7",
+    "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
     "merkle-tools": "^1.4.1",
     "parse-json": "^5.2.0",

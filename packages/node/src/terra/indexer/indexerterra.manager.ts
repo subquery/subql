@@ -1,8 +1,8 @@
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { buildSchema, getAllEntitiesRelations } from '@subql/common';
 import { LCDClient } from '@terra-money/terra.js';
-import { EventEmitter2 } from 'eventemitter2';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -320,7 +320,7 @@ export class IndexerTerraManager {
           {
             //TODO: filter events
             for (const e of events) {
-              await vm.securedExec(handler.handler, [e]);
+              await vm.securedExec(handler.handler, [e, block.block_id]);
             }
           }
           break;

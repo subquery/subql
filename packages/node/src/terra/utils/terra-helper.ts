@@ -8,6 +8,7 @@ import {
 } from '@terra-money/terra.js';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
+import { delay } from './promise';
 
 const logger = getLogger('fetch');
 
@@ -33,7 +34,6 @@ export async function getTxInfobyHashes(
 ): Promise<TxInfo[]> {
   return Promise.all(
     txHashes.map(async (hash) => {
-      //console.log(hashToHex(hash))
       return api.tx.txInfo(hashToHex(hash));
     }),
   );

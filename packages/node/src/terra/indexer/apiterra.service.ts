@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LCDClient, LCDClientConfig } from '@terra-money/terra.js';
-import { EventEmitter2 } from 'eventemitter2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { NetworkMetadataPayload } from './events';

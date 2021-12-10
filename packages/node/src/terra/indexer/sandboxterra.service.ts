@@ -30,9 +30,7 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wasm: argv.unsafe,
   sandbox: {},
   require: {
-    builtin: argv.unsafe
-      ? ['*']
-      : ['assert', 'buffer', 'crypto', 'util', 'path'],
+    builtin: ['*'],
     external: true,
     context: 'sandbox',
   },
