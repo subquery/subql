@@ -10,8 +10,8 @@ import yaml from 'js-yaml';
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromFile(file: string): unknown {
-  const {base, ext} = path.parse(file);
+export function loadFromFile(filePath: string): unknown {
+  const {base, ext} = path.parse(filePath);
 
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js') {
     throw new Error(`Extension ${ext} not supported`);
@@ -25,11 +25,11 @@ export function loadFromFile(file: string): unknown {
       },
     });
 
-    const script = new VMScript(`module.exports = require('./${base}');`, file);
+    const script = new VMScript(`module.exports = require('./${base}');`, filePath);
 
     return vm.run(script) as unknown;
   } else {
-    const rawContent = fs.readFileSync(file, 'utf-8');
+    const rawContent = fs.readFileSync(filePath, 'utf-8');
     return yaml.load(rawContent);
   }
 }
