@@ -5,7 +5,6 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { isRuntimeDataSourceV0_2_0, levelFilter } from '@subql/common';
 import { Store, SubqlDatasource } from '@subql/types';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -13,9 +12,12 @@ import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
+import { NodeVM, NodeVMOptions, VMScript } from '../x-vm2';
 import { ApiTerraService } from './apiterra.service';
 import { StoreService } from './store.service';
 import { SubqlTerraDatasource } from './terraproject';
+
+//const vm = require('../x-vm2');
 
 const { argv } = getYargsOption();
 
@@ -75,6 +77,7 @@ export class IndexerSandbox extends Sandbox {
   }
 
   async securedExec(funcName: string, args: unknown[]): Promise<void> {
+    //logger.info(JSON.stringify(args));
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     try {

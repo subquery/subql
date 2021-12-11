@@ -23618,6 +23618,7 @@ fsevents@~2.3.1:
     "@babel/preset-env": ^7.16.0
     "@octokit/request": ^5.6.2
     "@solana/web3.js": ^1.31.0
+    "@subql/x-vm2": ^3.9.3-0.1.0
     "@terra-money/terra.js": ^3.0.1
     "@types/node": ^14.17.32
     "@typescript-eslint/eslint-plugin": ^5.3.0
