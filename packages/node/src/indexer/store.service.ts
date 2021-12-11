@@ -80,7 +80,7 @@ export class StoreService {
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
-         from pg_type t 
+         from pg_type t
          join pg_enum e on t.oid = e.enumtypid
          where t.typname = ?;`,
         { replacements: [enumTypeName] },
@@ -365,6 +365,16 @@ group by
         await model.upsert(data, { transaction: this.tx });
         if (this.config.proofOfIndex) {
           this.operationStack.put(OperationType.Set, entity, data);
+        }
+      },
+      bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
+        const model = this.sequelize.model(entity);
+        assert(model, `model ${entity} not exists`);
+        await model.bulkCreate(data, { transaction: this.tx });
+        if (this.config.proofOfIndex) {
+          for (const item of data) {
+            this.operationStack.put(OperationType.Set, entity, item);
+          }
         }
       },
       remove: async (entity: string, id: string): Promise<void> => {
