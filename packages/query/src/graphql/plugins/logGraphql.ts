@@ -33,7 +33,11 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
   ): Promise<GraphQLRequestListener<MyApolloContext>> {
     const start = performance.now();
 
-    //IntrospectionQuery clutters logs and isn't useful
+    if (requestContext.request.operationName) {
+      logger.debug(`operation: ${requestContext.request.operationName}`);
+    }
+
+    //IntrospectionQuery payload clutters logs and isn't useful
     if (requestContext.request.operationName !== 'IntrospectionQuery') {
       logger.debug('graphql payload: \n' + requestContext.request.query);
     }
