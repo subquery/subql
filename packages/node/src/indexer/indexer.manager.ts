@@ -204,7 +204,7 @@ export class IndexerManager {
       if (argv['force-clean']) {
         try {
           // drop existing project schema and metadata table
-          this.sequelize.dropSchema(schema, {
+          await this.sequelize.dropSchema(`"${schema}"`, {
             logging: false,
             benchmark: false,
           });

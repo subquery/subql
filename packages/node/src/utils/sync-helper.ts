@@ -24,7 +24,7 @@ export function commentConstraintQuery(
   constraint: string,
   comment: string,
 ): string {
-  return `comment on constraint ${constraint} on ${table} is E'${comment}'`;
+  return `COMMENT ON CONSTRAINT ${constraint} ON ${table} IS E'${comment}'`;
 }
 
 export function createUniqueIndexQuery(
@@ -32,8 +32,8 @@ export function createUniqueIndexQuery(
   table: string,
   field: string,
 ): string {
-  return `create unique index if not exists ${getUniqConstraint(
+  return `create unique index if not exists '${getUniqConstraint(
     table,
     field,
-  )} on ${schema}.${table} (${underscored(field)})`;
+  )}' on '${schema}.${table}' (${underscored(field)})`;
 }
