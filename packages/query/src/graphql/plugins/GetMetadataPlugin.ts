@@ -57,7 +57,7 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  const {rows} = await pgClient.query(`select key, value from ${schemaName}._metadata WHERE key = ANY ($1)`, [keys]);
+  const {rows} = await pgClient.query(`select key, value from "${schemaName}"._metadata WHERE key = ANY ($1)`, [keys]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
     array[curr.key] = curr.value;
