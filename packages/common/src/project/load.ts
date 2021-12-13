@@ -19,10 +19,15 @@ export function loadFromFile(filePath: string): unknown {
 
   if (ext === '.js') {
     const vm = new NodeVM({
+      console: 'inherit',
+      wasm: false,
+      sandbox: {},
       require: {
         external: true,
         context: 'sandbox',
       },
+      wrapper: 'commonjs',
+      sourceExtensions: ['js', 'cjs'],
     });
 
     const script = new VMScript(`module.exports = require('./${base}');`, filePath);
