@@ -30,7 +30,7 @@ export function loadFromFile(filePath: string): unknown {
       sourceExtensions: ['js', 'cjs'],
     });
 
-    const script = new VMScript(`module.exports = require('./${base}');`, filePath);
+    const script = new VMScript(`module.exports.default = require('./${base}').default;`, filePath);
 
     return vm.run(script) as unknown;
   } else {
