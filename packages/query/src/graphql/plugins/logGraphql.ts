@@ -10,14 +10,9 @@ import {getLogger} from '../../utils/logger';
 const logger = getLogger('graphql');
 
 const getSizeInBytes = (obj: Record<string, unknown>) => {
-  let str: string;
-  if (typeof obj === 'string') {
-    str = obj;
-  } else {
-    str = JSON.stringify(obj);
-  }
-  const bytes = new TextEncoder().encode(str).length;
-  return bytes;
+  console.log(obj);
+  const str = JSON.stringify(obj);
+  return new TextEncoder().encode(str).length;
 };
 
 const logSizeInKilobytes = (description: string, obj: Record<string, unknown>) => {
@@ -39,7 +34,7 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
 
     //IntrospectionQuery payload clutters logs and isn't useful
     if (requestContext.request.operationName !== 'IntrospectionQuery') {
-      logger.debug('graphql payload: \n' + requestContext.request.query);
+      logger.info('graphql payload: \n' + requestContext.request.query);
     }
 
     return {
@@ -57,8 +52,8 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
       },
       async willSendResponse({response}) {
         if (!response.errors) {
-          logger.debug(logSizeInKilobytes('response size:', response.data));
-          logger.debug(`response time: ${Math.round(performance.now() - start)}ms`);
+          logger.info(logSizeInKilobytes('response size:', response.data));
+          logger.info(`response time: ${Math.round(performance.now() - start)}ms`);
         }
       },
       async didEncounterErrors(requestContext) {
