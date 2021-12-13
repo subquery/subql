@@ -88,11 +88,9 @@ export class StoreService {
 
       if (results.length === 0) {
         await this.sequelize.query(
-          `CREATE TYPE ${enumTypeName} as ENUM (${e.values
-            .map(() => '?')
-            .join(',')});`,
+          `CREATE TYPE E? as ENUM (${e.values.map(() => '?').join(',')});`,
           {
-            replacements: e.values,
+            replacements: [enumTypeName, ...e.values],
           },
         );
       } else {
@@ -117,10 +115,10 @@ export class StoreService {
         e.description ? `\\n ${e.description}` : ''
       }`;
 
-      await this.sequelize.query(`COMMENT ON TYPE ${enumTypeName} IS E?`, {
+      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E?`, {
         replacements: [comment],
       });
-      enumTypeMap.set(e.name, enumTypeName);
+      enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
@@ -164,7 +162,7 @@ export class StoreService {
           });
           extraQueries.push(
             commentConstraintQuery(
-              `${schema}.${rel.target.tableName}`,
+              `"${schema}"."${rel.target.tableName}"`,
               fkConstraint,
               tags,
             ),
@@ -189,7 +187,7 @@ export class StoreService {
           });
           extraQueries.push(
             commentConstraintQuery(
-              `${schema}.${rel.target.tableName}`,
+              `"${schema}"."${rel.target.tableName}"`,
               fkConstraint,
               tags,
             ),
