@@ -69,6 +69,5 @@
     "version": "oclif-dev readme && git add README.md",
     "format": "prettier --write \"src/**/*.ts\""
   },
-  "types": "lib/index.d.ts",
-  "stableVersion": "0.16.1"
+  "types": "lib/index.d.ts"
 }
