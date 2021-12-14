@@ -5339,6 +5339,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql-terra/x-vm2@https://github.com/DeveloperInProgress/subql-terra-x-vm2#main":
+  version: 3.9.3-0.1.0
+  resolution: "@subql-terra/x-vm2@https://github.com/DeveloperInProgress/subql-terra-x-vm2.git#commit=d227d3382855defabfd858a5ac4b1c5df43418dc"
+  bin:
+    vm2: ./bin/vm2
+  checksum: 83f645b417f74b64da5ca438cb77f5a0131b1478edd5ed7403d905b5112a4041b81a94cb93acb00e218db812460ca4cd51676e0394a3e32e0709d9af238c11e6
+  languageName: node
+  linkType: hard
+
 "@subql/cli@workspace:packages/cli":
   version: 0.0.0-use.local
   resolution: "@subql/cli@workspace:packages/cli"
@@ -5423,6 +5432,7 @@ __metadata:
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
     "@polkadot/api": 6.9.2
+    "@subql-terra/x-vm2": "https://github.com/DeveloperInProgress/subql-terra-x-vm2#main"
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1

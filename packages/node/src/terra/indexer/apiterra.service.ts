@@ -19,21 +19,23 @@ export class ApiTerraService {
     private eventEmitter: EventEmitter2,
   ) {}
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async init(): Promise<ApiTerraService> {
     const { network } = this.project;
     this.clientConfig = {
       URL: network.endpoint,
       chainID: network.chainId,
     };
+    logger.info(JSON.stringify(this.clientConfig));
     this.api = new LCDClient(this.clientConfig);
     //logger.info('api inititare')
-    const genesisBlock = await this.api.tendermint.blockInfo(4724001);
+    //const genesisBlock = await this.api.tendermint.blockInfo(4724001);
     //logger.info('')
     this.networkMeta = {
       chain: network.chainId,
-      genesisHash: genesisBlock.block_id.hash,
+      genesisHash: network.genesisHash,
     };
-
+    /*
     if (
       network.genesisHash &&
       network.genesisHash !== this.networkMeta.genesisHash
@@ -44,7 +46,7 @@ export class ApiTerraService {
       logger.error(err, err.message);
       throw err;
     }
-
+    */
     return this;
   }
 

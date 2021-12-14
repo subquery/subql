@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { NodeVM, NodeVMOptions, VMScript } from '@subql-terra/x-vm2';
 import { isRuntimeDataSourceV0_2_0, levelFilter } from '@subql/common';
 import { Store, SubqlDatasource } from '@subql/types';
 import { merge } from 'lodash';
@@ -12,7 +13,6 @@ import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
-import { NodeVM, NodeVMOptions, VMScript } from '../x-vm2';
 import { ApiTerraService } from './apiterra.service';
 import { StoreService } from './store.service';
 import { SubqlTerraDatasource } from './terraproject';

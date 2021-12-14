@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "prebuild": "rimraf dist",
-    "build": "rm -rf dist && tsc -b && cp -r ./src/terra/template ./dist/terra/",
+    "build": "tsc -b && cp -r ./src/terra/template ./dist/terra/",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nodemon",
@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "^8.1.2",
     "@nestjs/schedule": "^1.0.1",
     "@polkadot/api": "6.9.2",
+    "@subql-terra/x-vm2": "https://github.com/DeveloperInProgress/subql-terra-x-vm2#main",
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
