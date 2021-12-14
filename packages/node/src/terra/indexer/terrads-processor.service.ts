@@ -1,14 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { SubqlCustomDatasource } from '@subql/types';
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandboxterra.service';
 import {
   SubqlTerraCustomDatasource,
-  SubqlTerraDatasource,
   SubqlTerraDatasourceProcessor,
 } from './terraproject';
 import { isCustomTerraDs } from './utils';

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { hexToU8a, u8aToBuffer } from '@polkadot/util';
+import { hexToU8a } from '@polkadot/util';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
@@ -22,7 +22,6 @@ import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 //import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 //import { PoiService } from './poi.service';
 //import { StoreOperations } from './StoreOperations';
-import { OperationType } from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
