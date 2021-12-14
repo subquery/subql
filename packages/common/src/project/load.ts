@@ -7,31 +7,34 @@ import {NodeVM, VMScript} from '@subql/x-vm2';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import yaml from 'js-yaml';
+import ts from 'typescript';
+
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromFile(filePath: string): unknown {
-  const {base, ext} = path.parse(filePath);
+export function loadFromFile(filePath: string) {
+  const {ext} = path.parse(filePath);
 
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js') {
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.ts') {
     throw new Error(`Extension ${ext} not supported`);
   }
 
-  if (ext === '.js') {
+  if (ext === '.js' || ext === '.ts') {
     const vm = new NodeVM({
       console: 'inherit',
       wasm: false,
       sandbox: {},
       require: {
         external: true,
+        builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
         context: 'sandbox',
       },
       wrapper: 'commonjs',
-      sourceExtensions: ['js', 'cjs'],
+      compiler: (code: string, filename: string) => ts.transpile(code, {}, filename),
+      sourceExtensions: ['js', 'cjs', 'ts'],
     });
 
-    const script = new VMScript(`module.exports.default = require('./${base}').default;`, filePath);
-
+    const script = new VMScript(`module.exports = require(${filePath});`);
     return vm.run(script) as unknown;
   } else {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
