@@ -321,7 +321,7 @@ export class IndexerTerraManager {
             //TODO: filter events
             for (const e of events) {
               if ('transfer' in e) {
-                await vm.securedExec(handler.handler, [e, block.block_id]);
+                await vm.securedExec(handler.handler, [e, block]);
               }
             }
           }
