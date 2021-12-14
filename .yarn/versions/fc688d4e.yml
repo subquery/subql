@@ -1,0 +1,4 @@
+undecided:
+  - "@subql/cli"
+  - "@subql/contract-processors"
+  - "@subql/node"
