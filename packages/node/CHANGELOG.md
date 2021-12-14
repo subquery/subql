@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [0.25.3] - 2021-12-02
 Priority: High. Any project use enum should re-index with latest node ASAP.
 ### Fixed:
