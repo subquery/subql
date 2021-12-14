@@ -29,26 +29,18 @@
     "ts-loader": "^9.2.6",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.11.0",
-    "typescript": "^4.4.4",
-    "vuepress": "1.8.2",
-    "vuepress-plugin-fulltext-search": "^2.2.1",
-    "vuepress-plugin-right-anchor": "^0.5.5"
+    "typescript": "^4.4.4"
   },
   "resolutions": {
     "@polkadot/api": "6.9.2"
   },
   "scripts": {
-    "docs:dev": "vuepress dev docs",
-    "docs:build": "vuepress build docs",
     "build": "yarn workspaces foreach -pt run build",
     "lint": "eslint packages --ext .ts",
     "test": "jest --coverage",
     "test:all": "node --expose-gc ./node_modules/.bin/jest --logHeapUsage --testRegex='.*\\.(spec|test)\\.ts$' --forceExit --ci -w=2 --clearMocks",
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
-  },
-  "dependencies": {
-    "vuepress-theme-hope": "^1.21.0"
   },
   "lint-staged": {
     "*.ts": [
