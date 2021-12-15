@@ -11,7 +11,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.9.0] - 2021-12-16
 ### Changed
 - Limit query record size to 100, by using `unsafe` remove this limit. (#644)
-- Update `getProjectSchema` to handle when subqueries table has been deprecated
+- Update `getProjectSchema` to handle when subqueries table has been deprecated (#683)
+- Update `Dockerfile` to use `node:16-alpine` (#640)
 ### Added
 - Add query log to file (#667)
 ### Fixed
