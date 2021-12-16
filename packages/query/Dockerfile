@@ -1,12 +1,13 @@
 # production images
+FROM node:16 as builder
+ARG RELEASE_VERSION
+RUN npm i -g --unsafe-perm @subql/query@${RELEASE_VERSION}
+
 FROM node:16-alpine
 ENV TZ utc
 
-ARG RELEASE_VERSION
 RUN apk add --no-cache tini
-ENTRYPOINT ["/sbin/tini", "--", "subql-query"]
+COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
 
-RUN npm i -g @subql/query@${RELEASE_VERSION}
-WORKDIR /workdir
-
+ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/query/bin/run"]
 CMD ["-f","/app"]
