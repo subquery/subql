@@ -13,11 +13,11 @@ import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 export function loadFromFile(filePath: string) {
   const {ext} = path.parse(filePath);
 
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js') {
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
     throw new Error(`Extension ${ext} not supported`);
   }
 
-  if (ext === '.js') {
+  if (ext === '.js' || ext === '.cjs') {
     const vm = new NodeVM({
       console: 'inherit',
       wasm: false,
@@ -31,9 +31,16 @@ export function loadFromFile(filePath: string) {
       sourceExtensions: ['js', 'cjs'],
     });
 
-    const script = new VMScript(`module.exports = require('${filePath}');`, filePath);
-
-    return vm.run(script) as unknown;
+    try {
+      const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
+      const rawContent = vm.run(script) as unknown;
+      if (rawContent === undefined) {
+        throw new Error(`failed to load chain types module. check module exports`);
+      }
+      return rawContent;
+    } catch (err) {
+      throw new Error(`failed to load chain types.\n${err}`);
+    }
   } else {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
     return yaml.load(rawContent);
