@@ -1,49 +1,36 @@
-# Welcome to SubQuery!
-![open grant logo](https://raw.githubusercontent.com/w3f/General-Grants-Program/master/src/badge_black.svg)
+# Welcome to SubQuery - Extended to index Terra!
 
-**SubQuery enables better dApps by making decentralised data more accessible**
+This fork extends the node package of official subql implementation to index Terra. 
 
-SubQuery allows every Substrate/Polkadot team to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help Polkadot/Substrate projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract Polkadot network data in only minutes and at no cost.
+##Quick Start
 
-SubQuery aims to support all Substrate-compatible networks.
+Warning: This project has only been tested on Linux
 
-## Get Started
-#### Installation
-```shell
-# Yarn
-yarn global add @subql/cli @subql/node @subql/query
+###setup
 
-# NPM
-npm install -g @subql/cli @subql/node @subql/query
+Follow this demo video for setup
+
+1. Clone this repository
+
+`git clone https://github.com/DeveloperInProgress/subql.git`
+
+2. Install dependencies for subql
+
+`yarn install`
+
+3. Build subql/node package
+
+```
+cd packages/node
+yarn build
 ```
 
-#### Create a SubQuery project
-You can follow our [Quick Start Guide](https://doc.subquery.network/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
+4. Run the node module. On the first run, codegen function will be called on subql Terra project. But will thrown an error later because the subql Terra project must have not been built yet. Build the Subql Terra project as given here[readme link here] and run this command again
 
-You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nodejs.org/en/).
+WARNING: The following must be executed twice. Read the instruction above.
 
-#### Publish your SubQuery Project to our Managed Service
-Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
+`sudo node bin/run -f <path_to_project> --chain terra --force-clean --debug --port 3001`
 
-#### Run your own Indexer and Query Service
-[Follow our guide](https://doc.subquery.network/run/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
+Note: You may choose any port except the default value, 3000. Because @subql/query will use this port later on.
 
-You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 
-You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
-
-#### Components
-* [`@subql/cli`](packages/cli)
-* [`@subql/node`](packages/node)
-* [`@subql/query`](packages/query)
-* [`@subql/contract-processors`](packages/contract-processors)
-* [`@subql/common`](packages/common)
-* [`@subql/types`](packages/types)
-* [`@subql/validator`](packages/validator)
-
-## More Documentation
-For more documentation, visit [doc.subquery.network](https://doc.subquery.network/)
-
-## Copyright
-SubQuery is a project built with love from the team at [OnFinality](https://onfinality.io)
-Copyright © 2021 [OnFinality Limited](https://onfinality.io) authors & contributors
