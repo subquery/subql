@@ -88,9 +88,11 @@ export class StoreService {
 
       if (results.length === 0) {
         await this.sequelize.query(
-          `CREATE TYPE E? as ENUM (${e.values.map(() => '?').join(',')});`,
+          `CREATE TYPE "${enumTypeName}" as ENUM (${e.values
+            .map(() => '?')
+            .join(',')});`,
           {
-            replacements: [enumTypeName, ...e.values],
+            replacements: e.values,
           },
         );
       } else {
