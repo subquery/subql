@@ -167,7 +167,7 @@ export class IndexerManager {
     const lastProcessedHeight = await this.metadataRepo.findOne({
       where: { key: 'lastProcessedHeight' },
     });
-    if (lastProcessedHeight !== null) {
+    if (lastProcessedHeight !== null && lastProcessedHeight.value !== null) {
       startHeight = Number(lastProcessedHeight.value) + 1;
     } else {
       const project = await this.subqueryRepo.findOne({
