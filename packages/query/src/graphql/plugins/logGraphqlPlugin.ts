@@ -10,15 +10,14 @@ import {getLogger} from '../../utils/logger';
 const logger = getLogger('graphql');
 
 const getSizeInBytes = (obj: Record<string, unknown>) => {
-  console.log(obj);
   const str = JSON.stringify(obj);
   return new TextEncoder().encode(str).length;
 };
 
-const logSizeInKilobytes = (description: string, obj: Record<string, unknown>) => {
+const getSizeInKilobytes = (obj: Record<string, unknown>) => {
   const bytes = getSizeInBytes(obj);
   const kb = (bytes / 1000).toFixed(2);
-  return `${description} approximately ${kb} kB`;
+  return `${kb}kB`;
 };
 
 /* eslint-disable */
@@ -52,8 +51,10 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
       },
       async willSendResponse({response}) {
         if (!response.errors) {
-          logger.info(logSizeInKilobytes('response size:', response.data));
-          logger.info(`response time: ${Math.round(performance.now() - start)}ms`);
+          const responseData = {};
+          responseData['reponseTime'] = `${Math.round(performance.now() - start)}ms`;
+          responseData['approximateResponseSize'] = getSizeInKilobytes(response.data);
+          logger.info(`response: ` + JSON.stringify(responseData));
         }
       },
       async didEncounterErrors(requestContext) {

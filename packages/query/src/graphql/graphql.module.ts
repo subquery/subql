@@ -15,7 +15,7 @@ import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
-import {LogGraphqlPlugin} from './plugins/logGraphql';
+import {LogGraphqlPlugin} from './plugins/logGraphqlPlugin';
 import {ProjectService} from './project.service';
 
 @Module({
