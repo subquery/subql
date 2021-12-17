@@ -2,6 +2,8 @@
 
 This fork extends the node package of official subql implementation to index Terra. 
 
+Note: Find the starter project for indexing terra here : https://github.com/DeveloperInProgress/subqlstarter-terra
+
 ## Quick Start
 
 Warning: This project has only been tested on Linux
