@@ -8,6 +8,8 @@ Note: Find the starter project for indexing terra here : https://github.com/Deve
 
 Warning: This project has only been tested on Linux
 
+Demo video: https://youtu.be/K_pjh5OC95A
+
 ### setup
 
 Follow this demo video for setup
