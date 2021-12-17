@@ -28,7 +28,7 @@ cd packages/node
 yarn build
 ```
 
-4. Run the node module. On the first run, codegen function will be called on subql Terra project. But will thrown an error later because the subql Terra project must have not been built yet. Build the Subql Terra project as given here[readme link here] and run this command again
+4. Run the node module. On the first run, codegen function will be called on subql Terra project. But will thrown an error later because the subql Terra project must have not been built yet. Build the Subql Terra project as given here[https://github.com/DeveloperInProgress/subqlstarter-terra/blob/main/README.md#setup] and run this command again
 
 WARNING: The following must be executed twice. Read the instruction above.
 
@@ -43,9 +43,9 @@ Note: You may choose any port except the default value, 3000. Because @subql/que
 
 Now you may query the indexed data from http://localhost:3000
 
-##Project Manifest
+## Project Manifest
 
-###Network Configuration
+### Network Configuration
 
 The network configuration for subql terra projects has been modified to include "chainId" parameter. 
 
