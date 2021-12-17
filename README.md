@@ -2,11 +2,11 @@
 
 This fork extends the node package of official subql implementation to index Terra. 
 
-##Quick Start
+## Quick Start
 
 Warning: This project has only been tested on Linux
 
-###setup
+### setup
 
 Follow this demo video for setup
 
@@ -16,7 +16,10 @@ Follow this demo video for setup
 
 2. Install dependencies for subql
 
-`yarn install`
+```
+cd subql
+yarn install
+```
 
 3. Build subql/node package
 
@@ -57,7 +60,7 @@ network:
 
 The chainId parameter is required to create a Terra LCDClient
 
-###Datasources
+### Datasources
 
 Terra supports two kinds of datasources: terra/Runtime and terra/Custom. They are equivalent to substarte/Runtime and substrate/Custom in polkadot counterpart respectively
 
@@ -66,7 +69,7 @@ There are two types of datasource mapping handlers:
 1. terra/BlockHandler : handler for Terra Blocks
 2. terra/EventHandler : handler for Terra Events
 
-##Future Works
+## Future Works
 
 The following will be implemented in the modified node module:
 
