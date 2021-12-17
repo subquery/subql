@@ -34,3 +34,35 @@ WARNING: The following must be executed twice. Read the instruction above.
 Note: You may choose any port except the default value, 3000. Because @subql/query will use this port later on.
 
 
+5. Run @subql/query module
+
+`subql-query --name <project_name> --playground`
+
+Now you may query the indexed data from http://localhost:3000
+
+##Project Manifest
+
+###Network Configuration
+
+The network configuration for subql terra projects has been modified to include "chainId" parameter. 
+
+Example:
+
+```
+network:
+  genesisHash: 'q4PIUU/W6KSxGM9wyowkSW+Ij8HuODDeM4USpA2ucWc='
+  endpoint: https://bombay-lcd.terra.dev
+  chainId: bombay-12
+```
+
+The chainId parameter is required to create a Terra LCDClient
+
+###Datasources
+
+Terra supports two kinds of datasources: terra/Runtime and terra/Custom. They are equivalent to substarte/Runtime and substrate/Custom in polkadot counterpart respectively
+
+There are two types of datasource mapping handlers:
+
+1. terra/BlockHandler : handler for Terra Blocks
+2. terra/EventHandler : handler for Terra Events
+
