@@ -66,3 +66,10 @@ There are two types of datasource mapping handlers:
 1. terra/BlockHandler : handler for Terra Blocks
 2. terra/EventHandler : handler for Terra Events
 
+##Future Works
+
+The following will be implemented in the modified node module:
+
+1. Event Filters
+2. Proof of Index
+3. Dictionary Service
