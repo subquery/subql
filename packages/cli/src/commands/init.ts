@@ -4,19 +4,34 @@
 import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
+import {templates, Template} from '@subql/templates';
+import chalk from 'chalk';
 import cli from 'cli-ux';
-import {createProject, installDependencies} from '../controller/init-controller';
+import fuzzy from 'fuzzy';
+import * as inquirer from 'inquirer';
+import {createProjectFromGit, createProjectFromTemplate, installDependencies} from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
+
+// Helper function for fuzzy search
+function filterInput(arr: string[]) {
+  return (_: any, input: string) => {
+    input = input || '';
+    return new Promise((resolve) => {
+      resolve(
+        fuzzy.filter(input, arr).map((el) => {
+          return el.original;
+        })
+      );
+    });
+  };
+}
 
 export default class Init extends Command {
   static description = 'Initialize a scaffold subquery project';
 
   static flags = {
     force: flags.boolean({char: 'f'}),
-    starter: flags.boolean({
-      default: true,
-    }),
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
@@ -47,48 +62,121 @@ export default class Init extends Command {
     if (fs.existsSync(path.join(location, `${project.name}`))) {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
-    project.repository = await cli.prompt('Git repository', {required: false});
 
-    project.endpoint = await cli.prompt('RPC endpoint', {
-      default: 'wss://polkadot.api.onfinality.io/public-ws',
+    let skipFlag = false;
+    let gitRemote: string;
+    let template: Template;
+
+    const networks = templates
+      .map(({network}) => network)
+      .filter((n, i, self) => {
+        return i === self.indexOf(n);
+      });
+    networks.push('Other');
+
+    // Network
+    inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
+    const networkResponse: string = await inquirer
+      .prompt([
+        {
+          name: 'network',
+          message: 'Select a network',
+          type: 'autocomplete',
+          searchText: '',
+          emptyText: 'Network not found',
+          source: filterInput(networks),
+        },
+      ])
+      .then(({network}) => {
+        if (network === 'Other') {
+          skipFlag = true;
+        }
+        return network;
+      });
+
+    if (!skipFlag) {
+      // Description margin padding
+      const candidateTemplates = templates.filter(({network}) => network === networkResponse);
+      const padding = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+      const templateDisplays = candidateTemplates.map(
+        ({description, name}) => `${name.padEnd(padding, ' ')}${chalk.gray(description)}`
+      );
+      templateDisplays.push(`${'Other'.padEnd(padding, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+
+      await inquirer
+        .prompt([
+          {
+            name: 'templateDisplay',
+            message: 'Select a template project',
+            type: 'autocomplete',
+            searchText: '',
+            emptyText: 'Template not found',
+            source: filterInput(templateDisplays),
+          },
+        ])
+        .then(({templateDisplay}) => {
+          const templateName = (templateDisplay as string).split(' ')[0];
+          if (templateName === 'Other') {
+            skipFlag = true;
+          } else {
+            template = templates.find(({name}) => name === templateName);
+            flags.specVersion = template.specVersion;
+          }
+        });
+
+      if (skipFlag) {
+        gitRemote = await cli.prompt('Custom template git remote', {
+          required: true,
+        });
+      }
+    } else {
+      gitRemote = await cli.prompt('Custom template git remote', {
+        required: true,
+      });
+    }
+
+    // Endpoint
+    project.endpoint = await cli.prompt('RPC endpoint:', {
+      default: template?.endpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
       required: true,
     });
 
+    // Package json repsitory
+    project.repository = await cli.prompt('Git repository', {required: false});
+
     if (flags.specVersion === '0.2.0') {
-      cli.action.start('Getting network genesis hash');
+      cli.action.start('Fetching network genesis hash');
       (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
       cli.action.stop();
     }
 
-    this.log('Prompting remaining details');
-    project.author = await cli.prompt('Authors', {required: true});
+    project.author = await cli.prompt('Author', {required: true});
     project.description = await cli.prompt('Description', {required: false});
-    project.version = await cli.prompt('Version:', {default: '1.0.0', required: true});
-    project.license = await cli.prompt('License:', {default: 'MIT', required: true});
+    project.version = await cli.prompt('Version', {default: '1.0.0', required: true});
+    project.license = await cli.prompt('License', {default: 'MIT', required: true});
 
-    if (flags.starter && project.name) {
-      try {
-        cli.action.start('Init the starter package');
-        const projectPath = await createProject(location, project);
-        cli.action.stop();
-
-        if (flags['install-dependencies']) {
-          cli.action.start('Installing dependencies');
-          installDependencies(projectPath, flags.npm);
-          cli.action.stop();
-        }
-
-        this.log(`${project.name} is ready`);
-
-        /*
-         * Explicitly exit because getGenesisHash creates a polkadot api instance that keeps running
-         * Disconnecting the api causes undesired logging that cannot be disabled
-         */
-        process.exit(0);
-      } catch (e) {
-        /* handle all errors here */
-        this.error(e.message);
+    cli.action.start('Initializing the template project');
+    let projectPath;
+    try {
+      if (template) {
+        projectPath = await createProjectFromTemplate(location, project, template);
+      } else if (gitRemote) {
+        projectPath = await createProjectFromGit(location, project, gitRemote);
+      } else {
+        throw new Error('Invalid initalization state, must select either a template project or provide a git remote');
       }
+      cli.action.stop();
+    } catch (e) {
+      cli.action.stop();
+      this.error(e);
     }
+    if (flags['install-dependencies']) {
+      cli.action.start('Installing dependencies');
+      installDependencies(projectPath, flags.npm);
+      cli.action.stop();
+    }
+
+    this.log(`${project.name} is ready`);
+    process.exit(0);
   }
 }

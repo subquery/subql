@@ -6,25 +6,40 @@ import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
 import {ProjectManifestV0_0_1, ProjectManifestV0_2_0} from '@subql/common';
+import {Template} from '@subql/templates';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
 import {isProjectSpecV0_2_0, ProjectSpecBase} from '../types';
 
-const STARTER_PATH = 'https://github.com/subquery/subql-starter';
-
-export async function createProject(localPath: string, project: ProjectSpecBase): Promise<string> {
+export async function createProjectFromTemplate(
+  localPath: string,
+  project: ProjectSpecBase,
+  template: Template
+): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-
-  const cloneArgs = isProjectSpecV0_2_0(project)
-    ? ['-b', 'v0.2.0', '--single-branch']
-    : ['-b', 'v0.0.1', '--single-branch'];
-
+  console.log(template);
   try {
-    await simpleGit().clone(STARTER_PATH, projectPath, cloneArgs);
+    simpleGit().clone(template.remote, ['-b', template.branch, '--single-branch', project.name]);
+    await prepare(projectPath, project);
   } catch (e) {
-    throw new Error('Failed to clone starter template from git');
+    console.log(e);
   }
+  return projectPath;
+}
+
+export async function createProjectFromGit(
+  localPath: string,
+  project: ProjectSpecBase,
+  projectRemote: string
+): Promise<string> {
+  const projectPath = path.join(localPath, project.name);
+  simpleGit().clone(projectRemote, ['--single-branch', project.name]);
+  await prepare(projectPath, project);
+  return projectPath;
+}
+
+async function prepare(projectPath: string, project: ProjectSpecBase) {
   try {
     await prepareManifest(projectPath, project);
   } catch (e) {
@@ -38,12 +53,9 @@ export async function createProject(localPath: string, project: ProjectSpecBase)
   try {
     await promisify(rimraf)(`${projectPath}/.git`);
   } catch (e) {
-    throw new Error('Failed to remove .git from starter project');
+    throw new Error('Failed to remove .git from template project');
   }
-
-  return projectPath;
 }
-
 async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
   //load and write package.json
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
