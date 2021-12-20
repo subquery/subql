@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
 import git from 'simple-git';
-import {createProject} from './init-controller';
+import {createProjectFromGit} from './init-controller';
 
 jest.mock('simple-git', () => {
   const mGit = {
@@ -36,6 +36,8 @@ describe('Cli can create project (mocked)', () => {
   it('throw error when git clone failed', async () => {
     const tempPath = await makeTempDir();
     (git().clone as jest.Mock).mockImplementationOnce((path, cb) => cb(new Error()));
-    await expect(createProject(tempPath, projectSpec)).rejects.toThrow(/Failed to clone starter template from git/);
+    await expect(createProjectFromGit(tempPath, projectSpec, '')).rejects.toThrow(
+      /Failed to clone starter template from git/
+    );
   });
 });

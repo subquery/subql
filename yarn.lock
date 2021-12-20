@@ -5475,11 +5475,11 @@ __metadata:
 
 "@subql/templates@file:/home/wqsz7xn/Desktop/templates::locator=%40subql%2Fcli%40workspace%3Apackages%2Fcli":
   version: 0.0.0
-  resolution: "@subql/templates@file:/home/wqsz7xn/Desktop/templates#/home/wqsz7xn/Desktop/templates::hash=a293fe&locator=%40subql%2Fcli%40workspace%3Apackages%2Fcli"
+  resolution: "@subql/templates@file:/home/wqsz7xn/Desktop/templates#/home/wqsz7xn/Desktop/templates::hash=f26497&locator=%40subql%2Fcli%40workspace%3Apackages%2Fcli"
   dependencies:
-    simple-git: ^2.48.0
+    axios: ^0.24.0
     typescript: ^4.4.4
-  checksum: 30c715776ad2048be0f24404b1d3677c8fc0daf67d873e87e50f810f7e97ad5c9cb9b1060b4546a7fbd7b8f5f956340f44ba374b382867d08e011c22adb8a1d1
+  checksum: 2a16dc89823e93674398532928311fcca1ae990d3e8aa6d1ae474d08d9a911bfe6cd4135c8cede12d9d0a94f19dd1d84de7c3717384118c34c5b3364a12e5022
   languageName: node
   linkType: hard
 
@@ -22506,17 +22506,6 @@ fsevents@~2.3.1:
     "@kwsites/promise-deferred": ^1.1.1
     debug: ^4.3.2
   checksum: 0fefd12a2aaec9b27bcd13e713991769cab3eb185fcf0ad3e1afff17d34c63a7dbb80c4acd3220b2d9522dd9d171f84b237e6dedb4e17545c8bb7aadf746efb9
-  languageName: node
-  linkType: hard
-
-"simple-git@npm:^2.48.0":
-  version: 2.48.0
-  resolution: "simple-git@npm:2.48.0"
-  dependencies:
-    "@kwsites/file-exists": ^1.1.1
-    "@kwsites/promise-deferred": ^1.1.1
-    debug: ^4.3.2
-  checksum: ba84b942ad5cebb9d43df2f147e414e348584f40023121896959f22d05e260ae71b862a93db5c473413f8d218f2122f2964d22f6b7bd77cc12dabc7e73b066be
   languageName: node
   linkType: hard
 

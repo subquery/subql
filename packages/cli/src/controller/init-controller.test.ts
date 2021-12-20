@@ -4,7 +4,8 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {createProject} from './init-controller';
+import {fetchTemplates} from '@subql/templates';
+import {createProjectFromGit, createProjectFromTemplate} from './init-controller';
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {
@@ -34,15 +35,23 @@ const projectSpec = {
 };
 
 describe('Cli can create project', () => {
-  it('should resolves when starter project successful created', async () => {
+  it('should resolve when starter project created via template', async () => {
     const tempPath = await makeTempDir();
-    await createProject(tempPath, projectSpec);
+    const templates = await fetchTemplates();
+    await createProjectFromTemplate(tempPath, projectSpec, templates[0]);
+    await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
+  });
+
+  it('should resolve when starter project created via git', async () => {
+    const tempPath = await makeTempDir();
+    await createProjectFromGit(tempPath, projectSpec, 'https://github.com/subquery/moonbeam-dictionary');
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
   });
 
   it('throw error if .git exists in starter project', async () => {
     const tempPath = await makeTempDir();
-    await createProject(tempPath, projectSpec);
+    const templates = await fetchTemplates();
+    await createProjectFromTemplate(tempPath, projectSpec, templates[0]);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}/.git`))).rejects.toThrow();
   });
 });

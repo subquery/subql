@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
 import {Command, flags} from '@oclif/command';
-import {templates, Template} from '@subql/templates';
+import {fetchTemplates, Template} from '@subql/templates';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
@@ -84,7 +84,14 @@ export default class Init extends Command {
 
     let skipFlag = false;
     let gitRemote: string;
+    let templates: Template[];
     let template: Template;
+
+    try {
+      templates = await fetchTemplates();
+    } catch (e) {
+      this.error(e);
+    }
 
     const networks = templates
       .map(({network}) => network)

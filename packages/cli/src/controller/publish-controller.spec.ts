@@ -7,12 +7,13 @@ import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
 import {loadProjectManifest} from '@subql/common';
+import {fetchTemplates} from '@subql/templates';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Validate from '../commands/validate';
 import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
-import {createProject} from './init-controller';
+import {createProjectFromTemplate} from './init-controller';
 import {uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -42,9 +43,10 @@ jest.setTimeout(120000);
 
 async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
+  const template = (await fetchTemplates())[0];
   const projectDir = path.join(tmpdir, projectSpec.name);
 
-  await createProject(tmpdir, projectSpec);
+  await createProjectFromTemplate(tmpdir, projectSpec, template);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});
