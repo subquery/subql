@@ -110,15 +110,14 @@ export class SubqueryProject {
         return;
       }
 
-      const rawChainTypes = loadFromFile(
-        path.join(this._path, impl.network.chaintypes.file),
-      );
-
-      if (!rawChainTypes) {
-        logger.error('failed to load chaintypes file');
-        throw new Error();
+      let rawChainTypes: unknown;
+      try {
+        rawChainTypes = loadFromFile(
+          path.join(this._path, impl.network.chaintypes.file),
+        );
+      } catch (e) {
+        logger.error(`failed to load chaintypes file, ${e}`);
       }
-
       return parseChainTypes(rawChainTypes);
     }
   }

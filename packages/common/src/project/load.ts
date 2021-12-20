@@ -31,16 +31,17 @@ export function loadFromFile(filePath: string) {
       sourceExtensions: ['js', 'cjs'],
     });
 
+    let rawContent: unknown;
     try {
       const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
-      const rawContent = vm.run(script) as unknown;
-      if (rawContent === undefined) {
-        console.error(`There was no default export found from imported ${base} file`);
-      }
-      return rawContent;
+      rawContent = vm.run(script) as unknown;
     } catch (err) {
-      console.error(`NodeVM error when loading js file: \n${err}`);
+      throw new Error(`\n NodeVM error: ${err}`);
     }
+    if (rawContent === undefined) {
+      throw new Error(`There was no default export found from required ${base} file`);
+    }
+    return rawContent;
   } else {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
     return yaml.load(rawContent);
