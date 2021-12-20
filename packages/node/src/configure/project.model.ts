@@ -114,6 +114,11 @@ export class SubqueryProject {
         path.join(this._path, impl.network.chaintypes.file),
       );
 
+      if (!rawChainTypes) {
+        logger.error('failed to load chaintypes file');
+        throw new Error();
+      }
+
       return parseChainTypes(rawChainTypes);
     }
   }

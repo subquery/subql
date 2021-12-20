@@ -11,7 +11,7 @@ import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 export function loadFromFile(filePath: string) {
-  const {ext} = path.parse(filePath);
+  const {base, ext} = path.parse(filePath);
 
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
     throw new Error(`Extension ${ext} not supported`);
@@ -35,11 +35,11 @@ export function loadFromFile(filePath: string) {
       const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
       const rawContent = vm.run(script) as unknown;
       if (rawContent === undefined) {
-        throw new Error(`failed to load chain types module. check module exports`);
+        console.error(`There was no default export found from required ${base} file`);
       }
       return rawContent;
     } catch (err) {
-      throw new Error(`failed to load chain types.\n${err}`);
+      console.error(`NodeVM error: \n${err}`);
     }
   } else {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
@@ -58,6 +58,7 @@ function loadFromProjectFile(file: string): unknown {
 
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
   const doc = loadFromProjectFile(file);
+
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;

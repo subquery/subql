@@ -95,9 +95,7 @@ describe('SubqueryProject', () => {
         '../../test/projectFixture/v0.2.0/js/test3',
       );
       project = await SubqueryProject.create(projectDir);
-      expect(() => project.chainTypes).toThrow(
-        'failed to load chain types module. check module exports',
-      );
+      expect(() => project.chainTypes).toThrow();
     });
 
     it('It will throw error if containing property not in whitelist', async () => {
