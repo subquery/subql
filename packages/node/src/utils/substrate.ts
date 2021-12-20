@@ -212,14 +212,7 @@ export async function fetchBlocks(
       ? overallSpecVer
       : runtimeVersions[idx].specVersion.toNumber();
 
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
+    return new LazyBlockContent(block, events, parentSpecVersion);
   });
 }
 
@@ -244,18 +237,11 @@ export async function fetchBlocksViaRangeQuery(
     lastEvents = events;
     lastRuntimeUpgrade = runtimeUpgrade;
 
-    const wrappedBlock = wrapBlock(
+    return new LazyBlockContent(
       block,
       events,
       runtimeUpgrade.unwrap()?.specVersion.toNumber(),
     );
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
   });
 }
 
@@ -342,13 +328,48 @@ export async function fetchBlocksBatches(
     const parentSpecVersion = overallSpecVer
       ? overallSpecVer
       : runtimeVersions[idx].specVersion.toNumber();
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
+
+    return new LazyBlockContent(block, events, parentSpecVersion);
   });
+}
+
+class LazyBlockContent implements BlockContent {
+  private _wrappedBlock: SubstrateBlock;
+  private _wrappedExtrinsics: SubstrateExtrinsic[];
+  private _wrappedEvents: SubstrateEvent[];
+
+  constructor(
+    private _block: SignedBlock,
+    private _events: Vec<EventRecord>,
+    private _specVersion?: number,
+  ) {}
+
+  get block() {
+    if (!this._wrappedBlock) {
+      this._wrappedBlock = wrapBlock(
+        this._block,
+        this._events.toArray(),
+        this._specVersion,
+      );
+    }
+    return this._wrappedBlock;
+  }
+
+  get extrinsics() {
+    if (!this._wrappedExtrinsics) {
+      this._wrappedExtrinsics = wrapExtrinsics(this.block, this._events);
+    }
+    return this._wrappedExtrinsics;
+  }
+
+  get events() {
+    if (!this._wrappedEvents) {
+      this._wrappedEvents = wrapEvents(
+        this.extrinsics,
+        this._events,
+        this.block,
+      );
+    }
+    return this._wrappedEvents;
+  }
 }
