@@ -18,13 +18,8 @@ export async function createProjectFromTemplate(
   template: Template
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  console.log(template);
-  try {
-    simpleGit().clone(template.remote, ['-b', template.branch, '--single-branch', project.name]);
-    await prepare(projectPath, project);
-  } catch (e) {
-    console.log(e);
-  }
+  await simpleGit().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
+  await prepare(projectPath, project);
   return projectPath;
 }
 
@@ -34,7 +29,7 @@ export async function createProjectFromGit(
   projectRemote: string
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  simpleGit().clone(projectRemote, ['--single-branch', project.name]);
+  await simpleGit().clone(projectRemote, projectPath, ['--single-branch']);
   await prepare(projectPath, project);
   return projectPath;
 }

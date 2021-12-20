@@ -3,6 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import {URL} from 'url';
 import {Command, flags} from '@oclif/command';
 import {templates, Template} from '@subql/templates';
 import chalk from 'chalk';
@@ -25,6 +26,24 @@ function filterInput(arr: string[]) {
       );
     });
   };
+}
+
+async function promptForValidURL(): Promise<string> {
+  let isValid = false;
+  let remote: string;
+  while (!isValid) {
+    try {
+      remote = await cli.prompt('Custom template git remote', {
+        required: true,
+      });
+      new URL(remote);
+      isValid = true;
+    } catch (_) {
+      console.log(`Not a valid git remote URL: '${remote}', try again`);
+      continue;
+    }
+  }
+  return remote;
 }
 
 export default class Init extends Command {
@@ -95,13 +114,13 @@ export default class Init extends Command {
       });
 
     if (!skipFlag) {
-      // Description margin padding
       const candidateTemplates = templates.filter(({network}) => network === networkResponse);
-      const padding = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+      const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+
       const templateDisplays = candidateTemplates.map(
-        ({description, name}) => `${name.padEnd(padding, ' ')}${chalk.gray(description)}`
+        ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
       );
-      templateDisplays.push(`${'Other'.padEnd(padding, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+      templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
 
       await inquirer
         .prompt([
@@ -125,14 +144,10 @@ export default class Init extends Command {
         });
 
       if (skipFlag) {
-        gitRemote = await cli.prompt('Custom template git remote', {
-          required: true,
-        });
+        gitRemote = await promptForValidURL();
       }
     } else {
-      gitRemote = await cli.prompt('Custom template git remote', {
-        required: true,
-      });
+      gitRemote = await promptForValidURL();
     }
 
     // Endpoint
