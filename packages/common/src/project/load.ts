@@ -35,11 +35,11 @@ export function loadFromFile(filePath: string) {
       const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
       const rawContent = vm.run(script) as unknown;
       if (rawContent === undefined) {
-        console.error(`There was no default export found from required ${base} file`);
+        console.error(`There was no default export found from imported ${base} file`);
       }
       return rawContent;
     } catch (err) {
-      console.error(`NodeVM error: \n${err}`);
+      console.error(`NodeVM error when loading js file: \n${err}`);
     }
   } else {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
