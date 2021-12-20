@@ -4,8 +4,7 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {fetchTemplates} from '@subql/templates';
-import {createProjectFromGit, createProjectFromTemplate} from './init-controller';
+import {fetchTemplates, createProjectFromGit, createProjectFromTemplate} from './init-controller';
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {

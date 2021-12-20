@@ -12,7 +12,6 @@
     "@oclif/config": "^1.17.0",
     "@oclif/plugin-help": "^3.2.3",
     "@subql/common": "workspace:*",
-    "@subql/templates": "/home/wqsz7xn/Desktop/templates",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.1.0",
     "@types/inquirer": "^8.1.3",

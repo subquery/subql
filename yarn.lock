@@ -5317,10 +5317,10 @@ __metadata:
     "@oclif/dev-cli": ^1.26.0
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/templates": /home/wqsz7xn/Desktop/templates
     "@subql/validator": "workspace:*"
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.1.3
+    "@types/jest": ^27.0.2
     "@types/node": ^14.17.32
     "@types/rimraf": ^3.0.2
     "@types/websocket": ^1
@@ -5472,16 +5472,6 @@ __metadata:
     subql-query: ./bin/run
   languageName: unknown
   linkType: soft
-
-"@subql/templates@file:/home/wqsz7xn/Desktop/templates::locator=%40subql%2Fcli%40workspace%3Apackages%2Fcli":
-  version: 0.0.0
-  resolution: "@subql/templates@file:/home/wqsz7xn/Desktop/templates#/home/wqsz7xn/Desktop/templates::hash=f26497&locator=%40subql%2Fcli%40workspace%3Apackages%2Fcli"
-  dependencies:
-    axios: ^0.24.0
-    typescript: ^4.4.4
-  checksum: 2a16dc89823e93674398532928311fcca1ae990d3e8aa6d1ae474d08d9a911bfe6cd4135c8cede12d9d0a94f19dd1d84de7c3717384118c34c5b3364a12e5022
-  languageName: node
-  linkType: hard
 
 "@subql/types@workspace:*, @subql/types@workspace:packages/types":
   version: 0.0.0-use.local

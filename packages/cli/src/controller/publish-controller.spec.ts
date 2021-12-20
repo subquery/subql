@@ -7,13 +7,12 @@ import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
 import {loadProjectManifest} from '@subql/common';
-import {fetchTemplates} from '@subql/templates';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Validate from '../commands/validate';
 import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
-import {createProjectFromTemplate} from './init-controller';
+import {createProjectFromTemplate, fetchTemplates} from './init-controller';
 import {uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {

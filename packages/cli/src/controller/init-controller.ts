@@ -6,12 +6,33 @@ import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
 import {ProjectManifestV0_0_1, ProjectManifestV0_2_0} from '@subql/common';
-import {Template} from '@subql/templates';
+import axios from 'axios';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import simpleGit from 'simple-git';
 import {isProjectSpecV0_2_0, ProjectSpecBase} from '../types';
 
+const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
+
+export interface Template {
+  name: string;
+  description: string;
+  remote: string;
+  branch: string;
+  network: string;
+  endpoint: string;
+  specVersion: string;
+}
+
+export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise<Template[]> {
+  return axios
+    .create()
+    .get(remote)
+    .then(({data}) => data as Template[])
+    .catch((err) => {
+      throw new Error(`Unable to reach endpoint '${remote}', ${err}`);
+    });
+}
 export async function createProjectFromTemplate(
   localPath: string,
   project: ProjectSpecBase,

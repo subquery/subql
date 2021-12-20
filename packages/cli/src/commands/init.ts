@@ -5,16 +5,21 @@ import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
 import {Command, flags} from '@oclif/command';
-import {fetchTemplates, Template} from '@subql/templates';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
-import {createProjectFromGit, createProjectFromTemplate, installDependencies} from '../controller/init-controller';
+import {
+  fetchTemplates,
+  Template,
+  createProjectFromGit,
+  createProjectFromTemplate,
+  installDependencies,
+} from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
 
-// Helper function for fuzzy search
+// Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
   return (_: any, input: string) => {
     input = input || '';
@@ -163,7 +168,7 @@ export default class Init extends Command {
       required: true,
     });
 
-    // Package json repsitory
+    // Package json repository
     project.repository = await cli.prompt('Git repository', {required: false});
 
     if (flags.specVersion === '0.2.0') {
