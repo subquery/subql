@@ -35,8 +35,8 @@ const projectSpec = {
 describe('Cli can create project (mocked)', () => {
   it('throw error when git clone failed', async () => {
     const tempPath = await makeTempDir();
-    (git().clone as jest.Mock).mockImplementationOnce((path, cb) => cb(new Error()));
-    await expect(createProjectFromGit(tempPath, projectSpec, '')).rejects.toThrow(
+    (git().clone as jest.Mock).mockImplementationOnce((cb) => cb(new Error()));
+    await expect(await createProjectFromGit(tempPath, projectSpec, '')).rejects.toThrow(
       /Failed to clone starter template from git/
     );
   });

@@ -9,7 +9,7 @@ import {ProjectManifestV0_0_1, ProjectManifestV0_2_0} from '@subql/common';
 import axios from 'axios';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
-import simpleGit from 'simple-git';
+import git from 'simple-git';
 import {isProjectSpecV0_2_0, ProjectSpecBase} from '../types';
 
 const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
@@ -39,7 +39,7 @@ export async function createProjectFromTemplate(
   template: Template
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  await simpleGit().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
+  await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
   await prepare(projectPath, project);
   return projectPath;
 }
@@ -50,7 +50,7 @@ export async function createProjectFromGit(
   projectRemote: string
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  await simpleGit().clone(projectRemote, projectPath, ['--single-branch']);
+  await git().clone(projectRemote, projectPath, ['--single-branch']);
   await prepare(projectPath, project);
   return projectPath;
 }
