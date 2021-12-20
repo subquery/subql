@@ -39,7 +39,11 @@ export async function createProjectFromTemplate(
   template: Template
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
+  try {
+    await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
+  } catch (e) {
+    throw new Error('Failed to clone template from git');
+  }
   await prepare(projectPath, project);
   return projectPath;
 }
@@ -50,12 +54,16 @@ export async function createProjectFromGit(
   projectRemote: string
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
-  await git().clone(projectRemote, projectPath, ['--single-branch']);
+  try {
+    await git().clone(projectRemote, projectPath, ['--single-branch']);
+  } catch (e) {
+    throw new Error('Failed to clone template from git');
+  }
   await prepare(projectPath, project);
   return projectPath;
 }
 
-async function prepare(projectPath: string, project: ProjectSpecBase) {
+async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
   try {
     await prepareManifest(projectPath, project);
   } catch (e) {
