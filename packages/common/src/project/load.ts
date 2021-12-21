@@ -12,7 +12,7 @@ import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
 export function loadFromFile(filePath: string) {
   const {base, ext} = path.parse(filePath);
-
+  const projectRoot = path.dirname(filePath);
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
     throw new Error(`Extension ${ext} not supported`);
   }
@@ -25,7 +25,10 @@ export function loadFromFile(filePath: string) {
       require: {
         external: true,
         builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
-        context: 'sandbox',
+        root: projectRoot,
+        resolve: (moduleName: string) => {
+          return require.resolve(moduleName, {paths: [projectRoot]});
+        },
       },
       wrapper: 'commonjs',
       sourceExtensions: ['js', 'cjs'],
