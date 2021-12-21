@@ -61,6 +61,7 @@ export class NodeConfig implements IConfig {
       configFromFile = loadFromFile(filePath);
     } catch (e) {
       logger.error(`failed to load config file, ${e}`);
+      throw e;
     }
 
     const config = assign(configFromFile, configFromArgs, {
