@@ -33,22 +33,27 @@ function filterInput(arr: string[]) {
   };
 }
 
-async function promptForValidURL(): Promise<string> {
+async function promptValidRemoteAndBranch(): Promise<string[]> {
   let isValid = false;
   let remote: string;
   while (!isValid) {
     try {
       remote = await cli.prompt('Custom template git remote', {
         required: true,
+        default: 'https://github.com/subquery/subql-starter',
       });
       new URL(remote);
       isValid = true;
-    } catch (_) {
+    } catch (e) {
       console.log(`Not a valid git remote URL: '${remote}', try again`);
       continue;
     }
   }
-  return remote;
+  const branch = await cli.prompt('Custom template git branch', {
+    required: true,
+    default: 'v0.2.0',
+  });
+  return [remote, branch];
 }
 
 export default class Init extends Command {
@@ -89,6 +94,7 @@ export default class Init extends Command {
 
     let skipFlag = false;
     let gitRemote: string;
+    let branch: string;
     let templates: Template[];
     let template: Template;
 
@@ -156,10 +162,10 @@ export default class Init extends Command {
         });
 
       if (skipFlag) {
-        gitRemote = await promptForValidURL();
+        [gitRemote, branch] = await promptValidRemoteAndBranch();
       }
     } else {
-      gitRemote = await promptForValidURL();
+      [gitRemote, branch] = await promptValidRemoteAndBranch();
     }
 
     // Endpoint
@@ -188,7 +194,7 @@ export default class Init extends Command {
       if (template) {
         projectPath = await createProjectFromTemplate(location, project, template);
       } else if (gitRemote) {
-        projectPath = await createProjectFromGit(location, project, gitRemote);
+        projectPath = await createProjectFromGit(location, project, gitRemote, branch);
       } else {
         throw new Error('Invalid initalization state, must select either a template project or provide a git remote');
       }

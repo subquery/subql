@@ -51,11 +51,12 @@ export async function createProjectFromTemplate(
 export async function createProjectFromGit(
   localPath: string,
   project: ProjectSpecBase,
-  projectRemote: string
+  projectRemote: string,
+  branch: string
 ): Promise<string> {
   const projectPath = path.join(localPath, project.name);
   try {
-    await git().clone(projectRemote, projectPath, ['--single-branch']);
+    await git().clone(projectRemote, projectPath, ['-b', branch, '--single-branch']);
   } catch (e) {
     throw new Error('Failed to clone template from git');
   }

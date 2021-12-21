@@ -43,7 +43,7 @@ describe('Cli can create project', () => {
 
   it('should resolve when starter project created via git', async () => {
     const tempPath = await makeTempDir();
-    await createProjectFromGit(tempPath, projectSpec, 'https://github.com/subquery/moonbeam-dictionary');
+    await createProjectFromGit(tempPath, projectSpec, 'https://github.com/subquery/subql-starter', 'v0.2.0');
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
   });
 

@@ -11,8 +11,8 @@ import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Validate from '../commands/validate';
-import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
-import {createProjectFromTemplate, fetchTemplates} from './init-controller';
+import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
+import {createProjectFromGit} from './init-controller';
 import {uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -42,10 +42,10 @@ jest.setTimeout(120000);
 
 async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
-  const template = (await fetchTemplates())[0];
   const projectDir = path.join(tmpdir, projectSpec.name);
 
-  await createProjectFromTemplate(tmpdir, projectSpec, template);
+  const branch = isProjectSpecV0_0_1(projectSpec) ? 'v0.0.1' : 'v0.2.0';
+  await createProjectFromGit(tmpdir, projectSpec, 'https://github.com/subquery/subql-starter', branch);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});
