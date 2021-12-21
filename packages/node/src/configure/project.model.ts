@@ -10,7 +10,7 @@ import {
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
-  loadFromJsonOrYaml,
+  loadFromFile,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import { pick } from 'lodash';
@@ -94,6 +94,7 @@ export class SubqueryProject {
 
   get chainTypes(): RegisteredTypes | undefined {
     const impl = this._projectManifest.asImpl;
+
     if (manifestIsV0_0_1(impl)) {
       return pick<RegisteredTypes>(impl.network, [
         'types',
@@ -109,10 +110,14 @@ export class SubqueryProject {
         return;
       }
 
-      const rawChainTypes = loadFromJsonOrYaml(
-        path.join(this._path, impl.network.chaintypes.file),
-      );
-
+      let rawChainTypes: unknown;
+      try {
+        rawChainTypes = loadFromFile(
+          path.join(this._path, impl.network.chaintypes.file),
+        );
+      } catch (e) {
+        logger.error(`failed to load chaintypes file, ${e}`);
+      }
       return parseChainTypes(rawChainTypes);
     }
   }

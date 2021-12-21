@@ -5468,6 +5468,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^8
     "@subql/types": "workspace:*"
+    "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
