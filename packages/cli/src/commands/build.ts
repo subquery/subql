@@ -36,7 +36,12 @@ export default class Build extends Command {
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
 
-    const buildPath = typeof pjson.exports === 'string' ? pjson.exports : 'src/index.ts';
+    let buildPath = 'src/index.ts';
+
+    if (pjson.exports && typeof pjson.exports === 'string') {
+      buildPath = pjson.exports;
+    }
+
     const outputPath = path.resolve(directory, pjson.main || 'dist/index.js');
 
     cli.action.start('Building and packing code');
