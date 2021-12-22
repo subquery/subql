@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automatic adjust fetched block batch size based on memory usage (#668)
 - Depreciate subqueries table (#683)
 - Add `bulkCreate()` to `store`  (#699)
+- Add support for loading chaintypes from js (#698)
 ### Fixed
 - Fix name escaping with db queries (#702)
 - Fix `lastProcessedHeight` value representation (#711)

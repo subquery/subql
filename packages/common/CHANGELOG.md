@@ -11,6 +11,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.15.0] - 2021-12-16
 ### Added 
 - Support provide `filePath` and `rotate` option with logger. (#667)
+- Add support for loading chaintypes from js (#698)
+### Fixed
+- Fixed load js file in sandbox (#717)
 
 ## [0.14.1] - 2021-11-30
 ### Fixed
