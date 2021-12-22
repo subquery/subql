@@ -114,6 +114,7 @@ export class SubqueryProject {
       try {
         rawChainTypes = loadFromFile(
           path.join(this._path, impl.network.chaintypes.file),
+          this.path,
         );
       } catch (e) {
         logger.error(`failed to load chaintypes file, ${e}`);

@@ -10,24 +10,25 @@ import yaml from 'js-yaml';
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromFile(filePath: string) {
+export function loadFromFile(filePath: string, projectRoot?: string) {
   const {base, ext} = path.parse(filePath);
-  const fileRoot = path.dirname(filePath);
+  const root = projectRoot ?? path.dirname(filePath);
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
     throw new Error(`Extension ${ext} not supported`);
   }
 
   if (ext === '.js' || ext === '.cjs') {
     const vm = new NodeVM({
-      console: 'inherit',
+      console: 'redirect',
       wasm: false,
       sandbox: {},
       require: {
+        context: 'sandbox',
         external: true,
-        builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
-        root: fileRoot,
+        builtin: ['path'],
+        root: root,
         resolve: (moduleName: string) => {
-          return require.resolve(moduleName, {paths: [fileRoot]});
+          return require.resolve(moduleName, {paths: [root]});
         },
       },
       wrapper: 'commonjs',
@@ -36,7 +37,10 @@ export function loadFromFile(filePath: string) {
 
     let rawContent: unknown;
     try {
-      const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
+      const script = new VMScript(
+        `module.exports = require('${filePath}').default;`,
+        path.join(root, 'sandbox')
+      ).compile();
       rawContent = vm.run(script) as unknown;
     } catch (err) {
       throw new Error(`\n NodeVM error: ${err}`);
@@ -57,7 +61,7 @@ function loadFromProjectFile(file: string): unknown {
     filePath = path.join(file, 'project.yaml');
   }
 
-  return loadFromFile(filePath);
+  return loadFromFile(filePath, file);
 }
 
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
