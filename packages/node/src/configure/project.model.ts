@@ -10,7 +10,7 @@ import {
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
-  loadFromFile,
+  loadChainTypes,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import { pick } from 'lodash';
@@ -112,8 +112,9 @@ export class SubqueryProject {
 
       let rawChainTypes: unknown;
       try {
-        rawChainTypes = loadFromFile(
+        rawChainTypes = loadChainTypes(
           path.join(this._path, impl.network.chaintypes.file),
+          this.path,
         );
       } catch (e) {
         logger.error(`failed to load chaintypes file, ${e}`);

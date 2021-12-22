@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { loadFromFile } from '@subql/common';
+import { loadFromJsonOrYaml } from '@subql/common';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { getLogger } from '../utils/logger';
@@ -58,7 +58,7 @@ export class NodeConfig implements IConfig {
 
     let configFromFile: unknown;
     try {
-      configFromFile = loadFromFile(filePath);
+      configFromFile = loadFromJsonOrYaml(filePath);
     } catch (e) {
       logger.error(`failed to load config file, ${e}`);
       throw e;

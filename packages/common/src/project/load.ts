@@ -10,56 +10,39 @@ import yaml from 'js-yaml';
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromFile(filePath: string) {
-  const {base, ext} = path.parse(filePath);
-
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
+export function loadFromJsonOrYaml(file: string): unknown {
+  const {ext} = path.parse(file);
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
     throw new Error(`Extension ${ext} not supported`);
   }
-
-  if (ext === '.js' || ext === '.cjs') {
-    const vm = new NodeVM({
-      console: 'inherit',
-      wasm: false,
-      sandbox: {},
-      require: {
-        external: true,
-        builtin: ['assert', 'buffer', 'crypto', 'util', 'path'],
-        context: 'sandbox',
-      },
-      wrapper: 'commonjs',
-      sourceExtensions: ['js', 'cjs'],
-    });
-
-    let rawContent: unknown;
-    try {
-      const script = new VMScript(`module.exports = require('${filePath}').default;`, filePath).compile();
-      rawContent = vm.run(script) as unknown;
-    } catch (err) {
-      throw new Error(`\n NodeVM error: ${err}`);
-    }
-    if (rawContent === undefined) {
-      throw new Error(`There was no default export found from required ${base} file`);
-    }
-    return rawContent;
-  } else {
-    const rawContent = fs.readFileSync(filePath, 'utf-8');
-    return yaml.load(rawContent);
-  }
+  const rawContent = fs.readFileSync(file, 'utf-8');
+  return yaml.load(rawContent);
 }
 
-function loadFromProjectFile(file: string): unknown {
-  let filePath = file;
-  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
-    filePath = path.join(file, 'project.yaml');
+export function loadChainTypes(file: string, projectRoot: string) {
+  const {ext} = path.parse(file);
+  if (ext === '.js' || ext === '.cjs') {
+    return loadChainTypesFromJs(file, projectRoot);
+  } else {
+    return loadFromJsonOrYaml(file);
   }
-
-  return loadFromFile(filePath);
 }
 
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
-  const doc = loadFromProjectFile(file);
+  let manifestPath = file;
+  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
+    const yamlFilePath = path.join(file, 'project.yaml');
+    const jsonFilePath = path.join(file, 'project.json');
+    if (fs.existsSync(yamlFilePath)) {
+      manifestPath = yamlFilePath;
+    } else if (fs.existsSync(jsonFilePath)) {
+      manifestPath = jsonFilePath;
+    } else {
+      throw new Error(`Could not find project manifest under dir ${file}`);
+    }
+  }
 
+  const doc = loadFromJsonOrYaml(manifestPath);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
@@ -75,4 +58,44 @@ export function parseChainTypes(raw: unknown): ChainTypes {
   }
 
   return chainTypes;
+}
+
+function loadChainTypesFromJs(filePath: string, requireRoot?: string) {
+  const {base, ext} = path.parse(filePath);
+  const root = requireRoot ?? path.dirname(filePath);
+  if (ext === '.js' || ext === '.cjs') {
+    const vm = new NodeVM({
+      console: 'redirect',
+      wasm: false,
+      sandbox: {},
+      require: {
+        context: 'sandbox',
+        external: true,
+        builtin: ['path'],
+        root: root,
+        resolve: (moduleName: string) => {
+          return require.resolve(moduleName, {paths: [root]});
+        },
+      },
+      wrapper: 'commonjs',
+      sourceExtensions: ['js', 'cjs'],
+    });
+
+    let rawContent: unknown;
+    try {
+      const script = new VMScript(
+        `module.exports = require('${filePath}').default;`,
+        path.join(root, 'sandbox')
+      ).compile();
+      rawContent = vm.run(script) as unknown;
+    } catch (err) {
+      throw new Error(`\n NodeVM error: ${err}`);
+    }
+    if (rawContent === undefined) {
+      throw new Error(`There was no default export found from required ${base} file`);
+    }
+    return rawContent;
+  } else {
+    throw new Error(`Extension ${ext} not supported`);
+  }
 }
