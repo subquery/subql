@@ -62,7 +62,7 @@ export function loadChainTypes(file: string, projectRoot: string) {
 }
 
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
-  let manifestPath: string;
+  let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
     const jsonFilePath = path.join(file, 'project.json');
