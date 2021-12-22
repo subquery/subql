@@ -21,7 +21,11 @@ export function loadFromJsonOrYaml(file: string): unknown {
 
 export function loadChainTypes(file: string, projectRoot: string) {
   const {ext} = path.parse(file);
-  if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
+  if (ext === '.js' || ext === '.cjs') {
+  return loadChainTypesFromJs(file, projectRoot);
+  } else {
+      return loadFromJsonOrYaml(file);
+  }
     return loadFromJsonOrYaml(file);
   } else if (ext === '.js' || ext === '.cjs') {
     return loadChainTypesFromJs(file, projectRoot);
