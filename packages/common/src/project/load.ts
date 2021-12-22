@@ -23,7 +23,7 @@ export function loadChainTypes(file: string, projectRoot: string) {
   const {ext} = path.parse(file);
   if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
     return loadFromJsonOrYaml(file);
-  } else if (ext === '.js') {
+  } else if (ext === '.js' || ext === '.cjs') {
     return loadChainTypesFromJs(file, projectRoot);
   } else {
     throw new Error(`Chain types not support extension ${ext}`);
@@ -43,6 +43,7 @@ export function loadProjectManifest(file: string): ProjectManifestVersioned {
       throw new Error(`Could not find project manifest under dir ${file}`);
     }
   }
+
   const doc = loadFromJsonOrYaml(manifestPath);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
