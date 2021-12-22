@@ -38,8 +38,12 @@ export default class Build extends Command {
 
     let buildPath = 'src/index.ts';
 
-    if (pjson.exports && typeof pjson.exports === 'string') {
-      buildPath = pjson.exports;
+    if (pjson.exports) {
+      if (typeof pjson.exports === 'string') {
+        buildPath = pjson.exports;
+      } else {
+        this.warn('The `exports` field in package.json is not a string. Using src/index.ts instead.');
+      }
     }
 
     const outputPath = path.resolve(directory, pjson.main || 'dist/index.js');
