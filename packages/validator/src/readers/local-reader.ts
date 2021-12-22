@@ -3,7 +3,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {loadFromFile} from '@subql/common';
+import {loadFromJsonOrYaml} from '@subql/common';
 import {IPackageJson} from 'package-json-type';
 import {Reader} from './reader';
 
@@ -23,9 +23,8 @@ export class LocalReader implements Reader {
     if (!fs.existsSync(file)) {
       return Promise.resolve(undefined);
     }
-
     try {
-      return loadFromFile(file);
+      return loadFromJsonOrYaml(file);
     } catch (e) {
       return undefined;
     }
