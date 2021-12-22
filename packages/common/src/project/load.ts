@@ -10,13 +10,9 @@ import yaml from 'js-yaml';
 import {ChainTypes} from './models';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromFile(filePath: string, projectRoot?: string) {
+export function loadFromFile(filePath: string, requireRoot?: string) {
   const {base, ext} = path.parse(filePath);
-  const root = projectRoot ?? path.dirname(filePath);
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js' && ext !== '.cjs') {
-    throw new Error(`Extension ${ext} not supported`);
-  }
-
+  const root = requireRoot ?? path.dirname(filePath);
   if (ext === '.js' || ext === '.cjs') {
     const vm = new NodeVM({
       console: 'redirect',
@@ -49,24 +45,36 @@ export function loadFromFile(filePath: string, projectRoot?: string) {
       throw new Error(`There was no default export found from required ${base} file`);
     }
     return rawContent;
-  } else {
+  } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
     const rawContent = fs.readFileSync(filePath, 'utf-8');
     return yaml.load(rawContent);
+  } else {
+    throw new Error(`Extension ${ext} not supported`);
   }
 }
 
-function loadFromProjectFile(file: string): unknown {
-  let filePath = file;
-  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
-    filePath = path.join(file, 'project.yaml');
+export function loadChainTypes(file: string, projectRoot: string) {
+  const {ext} = path.parse(file);
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json' && ext !== '.js') {
+    throw new Error(`Chain types not support extension ${ext}`);
   }
-
-  return loadFromFile(filePath, file);
+  return loadFromFile(file, projectRoot);
 }
 
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
-  const doc = loadFromProjectFile(file);
-
+  let manifestPath: string;
+  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
+    const yamlFilePath = path.join(file, 'project.yaml');
+    const jsonFilePath = path.join(file, 'project.json');
+    if (fs.existsSync(yamlFilePath)) {
+      manifestPath = yamlFilePath;
+    } else if (fs.existsSync(jsonFilePath)) {
+      manifestPath = jsonFilePath;
+    } else {
+      throw new Error(`Could not find project manifest under dir ${file}`);
+    }
+  }
+  const doc = loadFromFile(manifestPath);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
