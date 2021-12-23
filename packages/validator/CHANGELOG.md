@@ -11,7 +11,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.4.1] - 2021-12-16
 ### Fixed 
-- Flyby fix, update test (#686)
+- Fix chain types checking when load from js (#720)
 
 ## [0.4.0] - 2021-11-19
 ### Added
