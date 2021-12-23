@@ -1,0 +1,25 @@
+# Composite action needed to access github context
+
+# This is to compensate for yarn 3 issue https://github.com/yarnpkg/berry/issues/3868
+name: 'Remove Stable Versions'
+description: 'This will remove stableVersion from packages so prerelease can occur'
+inputs:
+  package-path:
+    description: 'package path to run action e.g. package/common'
+    required: true
+  npm-token:
+    description: 'token to push to npm registry'
+    required: true
+  
+runs:
+  using: "composite"
+  steps:
+    - working-directory: ${{ github.workspace }}
+      run: node ${{ github.action_path }}/remove-stable-version.js ${{ github.workspace }}/${{ inputs.package-path }}
+      shell: bash
+
+    - working-directory: ${{ inputs.package-path }}
+      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn version prerelease && yarn npm publish --access public --tag dev      
+      env:
+        NPM_TOKEN: ${{ inputs.npm-token }}
+      shell: bash
