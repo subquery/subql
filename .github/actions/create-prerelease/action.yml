@@ -2,7 +2,7 @@
 
 # This is to compensate for yarn 3 issue https://github.com/yarnpkg/berry/issues/3868
 name: 'Remove Stable Versions'
-description: 'This will remove stableVersion from packages so prerelease can occur'
+description: 'This will remove stableVersion from packages for prerelease'
 inputs:
   package-path:
     description: 'package path to run action e.g. package/common'
