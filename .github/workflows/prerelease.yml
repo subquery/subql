@@ -91,7 +91,7 @@ jobs:
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump contract-processors & deploy
-        if: steps.changed-contract-processors.outputs.changed == 'true'   
+        if: steps.changed-contract-processors.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/contract-processors
