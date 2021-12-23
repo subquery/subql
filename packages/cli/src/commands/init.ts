@@ -96,7 +96,8 @@ export default class Init extends Command {
     let gitRemote: string;
     let branch: string;
     let templates: Template[];
-    let template: Template;
+    let selectedTemplate: Template;
+    let selectedNetwork: string;
 
     try {
       templates = await fetchTemplates();
@@ -113,10 +114,10 @@ export default class Init extends Command {
 
     // Network
     inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-    const networkResponse: string = await inquirer
+    await inquirer
       .prompt([
         {
-          name: 'network',
+          name: 'networkResponse',
           message: 'Select a network',
           type: 'autocomplete',
           searchText: '',
@@ -124,15 +125,16 @@ export default class Init extends Command {
           source: filterInput(networks),
         },
       ])
-      .then(({network}) => {
-        if (network === 'Other') {
+      .then(({networkResponse}) => {
+        if (networkResponse === 'Other') {
           skipFlag = true;
+        } else {
+          selectedNetwork = networkResponse;
         }
-        return network;
       });
 
     if (!skipFlag) {
-      const candidateTemplates = templates.filter(({network}) => network === networkResponse);
+      const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
       const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
 
       const templateDisplays = candidateTemplates.map(
@@ -156,8 +158,8 @@ export default class Init extends Command {
           if (templateName === 'Other') {
             skipFlag = true;
           } else {
-            template = templates.find(({name}) => name === templateName);
-            flags.specVersion = template.specVersion;
+            selectedTemplate = templates.find(({name}) => name === templateName);
+            flags.specVersion = selectedTemplate.specVersion;
           }
         });
 
@@ -168,11 +170,39 @@ export default class Init extends Command {
       [gitRemote, branch] = await promptValidRemoteAndBranch();
     }
 
-    // Endpoint
-    project.endpoint = await cli.prompt('RPC endpoint:', {
-      default: template?.endpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
-      required: true,
-    });
+    if (selectedNetwork && !selectedTemplate) {
+      const candidateEndpoints = templates
+        .filter(({network}) => network === selectedNetwork)
+        .map(({endpoint}) => endpoint);
+      candidateEndpoints.push('Other');
+
+      project.endpoint = await inquirer
+        .prompt([
+          {
+            name: 'endpointResponse',
+            message: 'Select a network endpoint',
+            type: 'autocomplete',
+            searchText: '',
+            emptyText: 'Endpoint not found',
+            source: filterInput(candidateEndpoints),
+          },
+        ])
+        .then(async ({endpointResponse}) => {
+          if (endpointResponse === 'Other') {
+            return cli.prompt('RPC endpoint:', {
+              default: 'wss://polkadot.api.onfinality.io/public-ws',
+              required: true,
+            });
+          } else {
+            return endpointResponse;
+          }
+        });
+    } else {
+      project.endpoint = await cli.prompt('RPC endpoint:', {
+        default: selectedTemplate?.endpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
+        required: true,
+      });
+    }
 
     // Package json repository
     project.repository = await cli.prompt('Git repository', {required: false});
@@ -191,8 +221,8 @@ export default class Init extends Command {
     cli.action.start('Initializing the template project');
     let projectPath;
     try {
-      if (template) {
-        projectPath = await createProjectFromTemplate(location, project, template);
+      if (selectedTemplate) {
+        projectPath = await createProjectFromTemplate(location, project, selectedTemplate);
       } else if (gitRemote) {
         projectPath = await createProjectFromGit(location, project, gitRemote, branch);
       } else {
