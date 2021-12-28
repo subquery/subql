@@ -5,6 +5,7 @@ import {performance} from 'perf_hooks';
 import {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {GraphQLRequestListener} from 'apollo-server-plugin-base/src/index';
 import {GraphQLRequestContext} from 'apollo-server-types';
+import gql from 'graphql-tag';
 import {getLogger} from '../../utils/logger';
 
 const logger = getLogger('graphql');
@@ -17,50 +18,49 @@ const getSizeInBytes = (obj: Record<string, unknown>) => {
 const getSizeInKilobytes = (obj: Record<string, unknown>) => {
   const bytes = getSizeInBytes(obj);
   const kb = (bytes / 1000).toFixed(2);
-  return `${kb}kB`;
+  return kb;
 };
+
+//TODO: log type of request
 
 /* eslint-disable */
 export const LogGraphqlPlugin: ApolloServerPlugin = {
   async requestDidStart<MyApolloContext>(
     requestContext: GraphQLRequestContext<MyApolloContext>
   ): Promise<GraphQLRequestListener<MyApolloContext>> {
+    const graphqlData = {} as Record<string, unknown>;
+    const payload = {} as Record<string, unknown>;
     const start = performance.now();
 
-    if (requestContext.request.operationName) {
-      logger.debug(`operation: ${requestContext.request.operationName}`);
+    //IntrospectionQuery payload clutters logs and isn't useful
+    if (requestContext.request.operationName === 'IntrospectionQuery') {
+      return;
     }
 
-    //IntrospectionQuery payload clutters logs and isn't useful
-    if (requestContext.request.operationName !== 'IntrospectionQuery') {
-      logger.info('graphql payload: \n' + requestContext.request.query);
-    }
+    payload['message'] = JSON.stringify(
+      gql`
+        ${requestContext.request.query}
+      `
+    );
+    payload['originIP'] = requestContext.context['httpHeaders']['x-forwarded-for'] ?? '127.0.0.1';
 
     return {
-      async executionDidStart(_executionRequestContext) {
-        return {
-          willResolveField({info}) {
-            return (_error, result) => {
-              if (!result && info.parentType.name === '_Metadata') {
-                //Warn as no metadata field should be null
-                logger.warn(`${info.parentType.name}.${info.fieldName} returned null`);
-              }
-            };
-          },
-        };
-      },
       async willSendResponse({response}) {
+        payload['responseTime'] = `${Math.round(performance.now() - start)}`;
+        payload['responsePayloadSize'] = getSizeInKilobytes(response.data);
+
         if (!response.errors) {
-          const responseData = {};
-          responseData['reponseTime'] = `${Math.round(performance.now() - start)}ms`;
-          responseData['approximateResponseSize'] = getSizeInKilobytes(response.data);
-          logger.info(`response: ` + JSON.stringify(responseData));
+          payload['responseSuccess'] = 'true';
+        } else {
+          payload['responseSuccess'] = 'false';
         }
+
+        graphqlData['payload'] = payload;
+        logger.info(JSON.stringify(graphqlData));
       },
       async didEncounterErrors(requestContext) {
-        requestContext.errors.forEach((error) => {
-          logger.error(error);
-        });
+        const errors = requestContext.errors;
+        graphqlData['errors'] = errors;
       },
     };
   },

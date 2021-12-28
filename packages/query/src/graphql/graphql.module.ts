@@ -9,13 +9,11 @@ import {
   ApolloServerPluginLandingPageGraphQLPlayground,
 } from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
-import ExpressPinoLogger from 'express-pino-logger';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
-import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
-import {LogGraphqlPlugin} from './plugins/logGraphqlPlugin';
+import {LogGraphqlPlugin} from './plugins/LogGraphqlPlugin';
 import {ProjectService} from './project.service';
 
 @Module({
@@ -44,7 +42,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
   private async createServer() {
     const app = this.httpAdapterHost.httpAdapter.getInstance();
-    const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
     const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
@@ -56,8 +53,11 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const schema = builder.buildSchema();
     const server = new ApolloServer({
       schema,
-      context: {
-        pgClient: this.pgPool,
+      context: ({req}) => {
+        return {
+          pgClient: this.pgPool,
+          httpHeaders: req.headers,
+        };
       },
       plugins: [
         ApolloServerPluginCacheControl({
@@ -71,14 +71,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
     });
-    app.use(
-      ExpressPinoLogger({
-        logger: getLogger('express'),
-        autoLogging: {
-          ignorePaths: ['/.well-known/apollo/server-health'],
-        },
-      })
-    );
+
     await server.start();
     server.applyMiddleware({
       app,
