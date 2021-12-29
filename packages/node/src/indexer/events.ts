@@ -13,6 +13,7 @@ export enum IndexerEvent {
   NetworkMetadata = 'network_metadata',
   UsingDictionary = 'using_dictionary',
   SkipDictionary = 'skip_dictionary',
+  Ready = 'ready',
 }
 
 export interface ProcessBlockPayload {
