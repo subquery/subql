@@ -7,18 +7,18 @@ import { EventPayload, IndexerEvent } from '../indexer/events';
 
 @Injectable()
 export class ReadyService {
-  private ready: boolean;
+  private _ready: boolean;
 
   constructor() {
-    this.ready = false;
+    this._ready = false;
   }
 
   @OnEvent(IndexerEvent.Ready)
   handleReady({ value }: EventPayload<boolean>): void {
-    this.ready = value;
+    this._ready = value;
   }
 
-  get getReady() {
-    return this.ready;
+  get ready() {
+    return this._ready;
   }
 }

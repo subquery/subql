@@ -13,6 +13,6 @@ export class ReadyController {
 
   @Get()
   getReady() {
-    return { ready: this.readyService.getReady };
+    return { ready: this.readyService.ready };
   }
 }
