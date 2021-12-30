@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
+import chalk from 'chalk';
 import cli from 'cli-ux';
 import {createProject, installDependencies} from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
@@ -37,8 +38,16 @@ export default class Init extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = this.parse(Init);
-    const project = {} as ProjectSpecBase;
 
+    if (flags.specVersion === '0.0.1') {
+      this.log(
+        `${chalk.yellow(
+          'WARNING'
+        )} Using specVersion v0.0.1 is deprecated and will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion v0.2.0`
+      );
+    }
+
+    const project = {} as ProjectSpecBase;
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
 
     project.name = args.projectName
