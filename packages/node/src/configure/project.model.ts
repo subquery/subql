@@ -43,7 +43,7 @@ export class SubqueryProject {
 
     if (manifestIsV0_0_1(manifest)) {
       logger.warn(
-        `Running project with deprecated specVersion v0.0.1, this project will be denied from being uploaded to the subquery hosted service. Consider migrating your project by running ${chalk.blue(
+        `Running project with deprecated specVersion v0.0.1, in the future this project will be denied from being uploaded to the subquery hosted service. Consider migrating your project by running ${chalk.blue(
           'subql migrate',
         )}`,
       );

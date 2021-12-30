@@ -43,7 +43,7 @@ export default class Init extends Command {
       this.log(
         `${chalk.yellow(
           'WARNING'
-        )} Using specVersion v0.0.1 is deprecated and will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion v0.2.0`
+        )} Using specVersion v0.0.1 is deprecated and in the future will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion v0.2.0`
       );
     }
 
