@@ -13,6 +13,7 @@ import {
   loadChainTypes,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
+import chalk from 'chalk';
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
@@ -40,9 +41,17 @@ export class SubqueryProject {
     this._projectManifest = manifest;
     this._path = path;
 
+    if (manifestIsV0_0_1(manifest)) {
+      logger.warn(
+        `Running project with deprecated specVersion v0.0.1, in the future this project will be denied from being uploaded to the subquery hosted service. Consider migrating your project by running ${chalk.blue(
+          'subql migrate',
+        )}`,
+      );
+    }
+
     manifest.dataSources?.forEach(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
-        if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
+        if (dataSource.startBlock < 1) logger.warn('Start block changed to #1');
         dataSource.startBlock = 1;
       }
     });

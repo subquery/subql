@@ -3,7 +3,6 @@
 
 import {SubqlDatasource} from '@subql/types';
 import {plainToClass} from 'class-transformer';
-import {validateSync} from 'class-validator';
 import {IProjectManifest} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
 import {ProjectManifestV0_2_0Impl} from './v0_2_0';
