@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import path from 'path';
 import {parseChainTypes} from '@subql/common';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
@@ -17,6 +18,10 @@ export default class RequireValidChainTypes implements Rule {
 
     // No chain types to validate
     if (!schema.network.chaintypes?.file) return true;
+
+    //TODO, skip validate if chaintype is js format for now
+    const {ext} = path.parse(schema.network.chaintypes.file);
+    if (ext === '.js' || ext === '.cjs') return true;
 
     try {
       const rawChainTypes = await ctx.reader.getFile(schema.network.chaintypes.file);

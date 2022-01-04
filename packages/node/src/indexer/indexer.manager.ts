@@ -227,6 +227,11 @@ export class IndexerManager {
         schema = await this.createProjectSchema();
       }
     }
+
+    this.eventEmitter.emit(IndexerEvent.Ready, {
+      value: true,
+    });
+
     return schema;
   }
 

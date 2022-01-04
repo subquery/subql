@@ -103,7 +103,7 @@ jobs:
         with:
           package-path: packages/cli
           npm-token: ${{ secrets.NPM_TOKEN }}
-
+          
       - name: Bump node & deploy
         if: steps.changed-node.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
