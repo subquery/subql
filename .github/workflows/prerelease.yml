@@ -97,13 +97,6 @@ jobs:
           package-path: packages/contract-processors
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump cli & deploy
-        if: steps.changed-cli.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/cli
-          npm-token: ${{ secrets.NPM_TOKEN }}
-          
       - name: Bump node & deploy
         if: steps.changed-node.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
@@ -123,6 +116,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/validator
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump cli & deploy
+        if: steps.changed-cli.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/cli
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes
