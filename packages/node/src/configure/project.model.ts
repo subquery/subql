@@ -11,6 +11,7 @@ import {
   manifestIsV0_0_1,
   manifestIsV0_2_0,
   loadChainTypes,
+  ChainTypes,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import chalk from 'chalk';
@@ -120,15 +121,18 @@ export class SubqueryProject {
       }
 
       let rawChainTypes: unknown;
+      let parsedChainTypes: ChainTypes;
       try {
         rawChainTypes = loadChainTypes(
           path.join(this._path, impl.network.chaintypes.file),
           this.path,
         );
+        parsedChainTypes = parseChainTypes(rawChainTypes);
       } catch (e) {
-        logger.error(`failed to load chaintypes file, ${e}`);
+        logger.error(`Failed to load chaintypes file, ${e}`);
+        process.exit(1);
       }
-      return parseChainTypes(rawChainTypes);
+      return parsedChainTypes;
     }
   }
 }
