@@ -342,27 +342,17 @@ export class IndexerManager {
       }
     } else {
       assert(
-        this.project.network === keyValue.genesisHash,
+        this.project.network.genesisHash === keyValue.genesisHash,
         'Specified project manifest genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
 
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
-    } else {
-      assert(
-        chain === keyValue.chain,
-        'Specified project manifest chain does not match database stored chain, consider cleaning project schema using --force-clean',
-      );
     }
 
     if (keyValue.specName !== specName) {
       await metadataRepo.upsert({ key: 'specName', value: specName });
-    } else {
-      assert(
-        specName === keyValue.chain,
-        'Specified project manifest specName does not match database stored specName, consider cleaning project schema using --force-clean',
-      );
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
