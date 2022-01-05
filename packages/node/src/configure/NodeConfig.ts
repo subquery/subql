@@ -6,7 +6,10 @@ import path from 'path';
 import { loadFromJsonOrYaml } from '@subql/common';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
+import { getLogger } from '../utils/logger';
 import { assign } from '../utils/object';
+
+const logger = getLogger('configure');
 
 export interface IConfig {
   readonly configDir?: string;
@@ -53,7 +56,15 @@ export class NodeConfig implements IConfig {
   ): NodeConfig {
     const fileInfo = path.parse(filePath);
 
-    const config = assign(loadFromJsonOrYaml(filePath), configFromArgs, {
+    let configFromFile: unknown;
+    try {
+      configFromFile = loadFromJsonOrYaml(filePath);
+    } catch (e) {
+      logger.error(`failed to load config file, ${e}`);
+      throw e;
+    }
+
+    const config = assign(configFromFile, configFromArgs, {
       configDir: fileInfo.dir,
     }) as IConfig;
     return new NodeConfig(config);

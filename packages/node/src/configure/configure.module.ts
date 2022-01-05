@@ -68,6 +68,19 @@ export function validDbSchemaName(name: string): boolean {
   }
 }
 
+function warnDeprecations() {
+  const yargsOptions = getYargsOption();
+  const { argv } = yargsOptions;
+  if (argv['subquery-name']) {
+    logger.warn(
+      'Note that argument --subquery-name has been deprecated in favour of --db-schema',
+    );
+  }
+  if (argv.local) {
+    logger.warn('Note that argument --local has been deprecated');
+  }
+}
+
 @Global()
 @Module({})
 export class ConfigureModule {
@@ -85,12 +98,8 @@ export class ConfigureModule {
         yargsOptions.showHelp();
         process.exit(1);
       }
-      if (argv['subquery-name']) {
-        logger.info(
-          'Note that argument --subquery-name has been deprecated in favour of --schema',
-        );
-      }
 
+      warnDeprecations();
       assert(argv.subquery, 'subquery path is missing');
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }

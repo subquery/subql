@@ -10,9 +10,11 @@ import {
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
-  loadFromJsonOrYaml,
+  loadChainTypes,
+  ChainTypes,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
+import chalk from 'chalk';
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
@@ -40,9 +42,17 @@ export class SubqueryProject {
     this._projectManifest = manifest;
     this._path = path;
 
+    if (manifestIsV0_0_1(manifest)) {
+      logger.warn(
+        `Running project with deprecated specVersion v0.0.1, in the future this project will be denied from being uploaded to the subquery hosted service. Consider migrating your project by running ${chalk.blue(
+          'subql migrate',
+        )}`,
+      );
+    }
+
     manifest.dataSources?.forEach(function (dataSource) {
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
-        if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
+        if (dataSource.startBlock < 1) logger.warn('Start block changed to #1');
         dataSource.startBlock = 1;
       }
     });
@@ -94,6 +104,7 @@ export class SubqueryProject {
 
   get chainTypes(): RegisteredTypes | undefined {
     const impl = this._projectManifest.asImpl;
+
     if (manifestIsV0_0_1(impl)) {
       return pick<RegisteredTypes>(impl.network, [
         'types',
@@ -109,11 +120,19 @@ export class SubqueryProject {
         return;
       }
 
-      const rawChainTypes = loadFromJsonOrYaml(
-        path.join(this._path, impl.network.chaintypes.file),
-      );
-
-      return parseChainTypes(rawChainTypes);
+      let rawChainTypes: unknown;
+      let parsedChainTypes: ChainTypes;
+      try {
+        rawChainTypes = loadChainTypes(
+          path.join(this._path, impl.network.chaintypes.file),
+          this.path,
+        );
+        parsedChainTypes = parseChainTypes(rawChainTypes);
+      } catch (e) {
+        logger.error(`Failed to load chaintypes file, ${e}`);
+        process.exit(1);
+      }
+      return parsedChainTypes;
     }
   }
 }

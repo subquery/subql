@@ -23,7 +23,6 @@ export class LocalReader implements Reader {
     if (!fs.existsSync(file)) {
       return Promise.resolve(undefined);
     }
-
     try {
       return loadFromJsonOrYaml(file);
     } catch (e) {

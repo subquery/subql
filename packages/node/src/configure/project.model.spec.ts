@@ -51,21 +51,60 @@ describe('SubqueryProject', () => {
   });
 
   describe('Manifest v0.2.0', () => {
-    beforeEach(async () => {
+    it('can get the chain types', async () => {
       const projectDir = path.resolve(
         __dirname,
-        '../../test/projectFixture/v0.2.0',
+        '../../test/projectFixture/v0.2.0/yaml',
       );
       project = await SubqueryProject.create(projectDir);
-    });
 
-    it('can get the chain types', () => {
       expect(project.chainTypes).toMatchObject(chainTypes);
     });
 
-    it('should throw if manifest endpoint or networkEndpoint is not provided', () => {
+    it('should throw if manifest endpoint or networkEndpoint is not provided', async () => {
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.2.0/yaml',
+      );
+      project = await SubqueryProject.create(projectDir);
       project.projectManifest.asV0_2_0.network.endpoint = undefined;
       expect(() => project.network).toThrow();
+    });
+
+    it('can fetch chain types from js file', async () => {
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.2.0/js/test1',
+      );
+      project = await SubqueryProject.create(projectDir);
+      expect(project.chainTypes).toMatchObject(chainTypes);
+    });
+
+    it('It wont allow sandbox to use unpermitted modules', async () => {
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.2.0/js/test2',
+      );
+      project = await SubqueryProject.create(projectDir);
+      expect(() => project.chainTypes).toThrow();
+    });
+
+    it('It will ignore non-default exports', async () => {
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.2.0/js/test3',
+      );
+      project = await SubqueryProject.create(projectDir);
+      expect(() => project.chainTypes).toThrow();
+    });
+
+    it('It will throw error if containing property not in whitelist', async () => {
+      const projectDir = path.resolve(
+        __dirname,
+        '../../test/projectFixture/v0.2.0/js/test4',
+      );
+      project = await SubqueryProject.create(projectDir);
+      expect(() => project.chainTypes).toThrow();
     });
   });
 });

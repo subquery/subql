@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.15.0] - 2021-12-16
+### Added 
+- Support provide `filePath` and `rotate` option with logger. (#667)
+- Add support for loading chaintypes from js (#698)
+### Fixed
+- Fixed load js file in sandbox (#717)
+
 ## [0.14.1] - 2021-11-30
 ### Fixed
 - Remove auto generated enum types for codegen (#680)
@@ -111,7 +118,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/0.14.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/0.15.0...HEAD
+[0.15.0]: https://github.com/subquery/subql/compare/common/0.14.1...common/0.15.0
 [0.14.1]: https://github.com/subquery/subql/compare/common/0.14.0...common/0.14.1
 [0.14.0]: https://github.com/subquery/subql/compare/common/0.13.0...common/0.14.0
 [0.13.0]: https://github.com/subquery/subql/compare/common/0.12.0...common/0.13.0

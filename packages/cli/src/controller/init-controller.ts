@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import childProcess from 'child_process';
+import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
@@ -58,7 +58,13 @@ export async function createProjectFromGit(
   try {
     await git().clone(projectRemote, projectPath, ['-b', branch, '--single-branch']);
   } catch (e) {
-    throw new Error('Failed to clone template from git');
+    let err = 'Failed to clone starter template from git';
+    try {
+      execSync('git --version');
+    } catch (_) {
+      err += ', please install git and ensure that it is available from command line';
+    }
+    throw new Error(err);
   }
   await prepare(projectPath, project);
   return projectPath;
