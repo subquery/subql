@@ -21,9 +21,8 @@ const getSizeInKilobytes = (obj: Record<string, unknown>) => {
   return kb;
 };
 
-//TODO: log type of request
+/* eslint-disable @typescript-eslint/require-await */
 
-/* eslint-disable */
 export const LogGraphqlPlugin: ApolloServerPlugin = {
   async requestDidStart<MyApolloContext>(
     requestContext: GraphQLRequestContext<MyApolloContext>
@@ -37,30 +36,37 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
       return;
     }
 
-    payload['message'] = JSON.stringify(
+    payload.message = JSON.stringify(
       gql`
         ${requestContext.request.query}
       `
     );
-    payload['originIP'] = requestContext.context['httpHeaders']['x-forwarded-for'] ?? '127.0.0.1';
+
+    const httpHeaders = requestContext.context.httpHeaders;
+
+    if (httpHeaders) {
+      payload['x-forwarded-for'] = httpHeaders['x-forwarded-for'] ?? '127.0.0.1';
+      payload['user-agent'] = httpHeaders['user-agent'] ?? 'unknown';
+      payload.referer = httpHeaders.referer ?? 'unknown';
+    }
 
     return {
       async willSendResponse({response}) {
-        payload['responseTime'] = `${Math.round(performance.now() - start)}`;
-        payload['responsePayloadSize'] = getSizeInKilobytes(response.data);
+        payload['response-time'] = `${Math.round(performance.now() - start)}`;
+        payload['response-payload-size'] = getSizeInKilobytes(response.data);
 
         if (!response.errors) {
-          payload['responseSuccess'] = 'true';
+          payload['query-success'] = 'true';
         } else {
-          payload['responseSuccess'] = 'false';
+          payload['query-success'] = 'false';
         }
 
-        graphqlData['payload'] = payload;
+        graphqlData.payload = payload;
         logger.info(JSON.stringify(graphqlData));
       },
       async didEncounterErrors(requestContext) {
         const errors = requestContext.errors;
-        graphqlData['errors'] = errors;
+        graphqlData.errors = errors;
       },
     };
   },

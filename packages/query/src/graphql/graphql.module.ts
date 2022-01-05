@@ -53,12 +53,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const schema = builder.buildSchema();
     const server = new ApolloServer({
       schema,
-      context: ({req}) => {
-        return {
-          pgClient: this.pgPool,
-          httpHeaders: req.headers,
-        };
-      },
+      context: ({req}) => ({
+        pgClient: this.pgPool,
+        httpHeaders: req.headers,
+      }),
       plugins: [
         ApolloServerPluginCacheControl({
           defaultMaxAge: 5,
