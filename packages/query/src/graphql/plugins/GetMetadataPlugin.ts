@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {URL} from 'url';
-import {MetaData} from '@subql/common';
+import {MetaData, TableEstimate} from '@subql/common';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
@@ -73,7 +73,7 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
 
   metadata.queryNodeVersion = packageVersion;
 
-  const xs = await pgClient
+  const tableEstimates: [TableEstimate] = await pgClient
     .query(
       `select relname, reltuples::bigint as estimate from pg_class where relname in (select table_name from information_schema.tables where table_schema = '${schemaName}')`
     )
@@ -81,8 +81,8 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
     .catch((e) => {
       throw new Error(`Unable to estimate table row count: ${e}`);
     });
-  console.log(xs);
-  metadata.rowCountEstimate = JSON.stringify(xs);
+
+  metadata.rowCountEstimate = tableEstimates;
 
   return metadata;
 }
@@ -105,6 +105,11 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
 
   return {
     typeDefs: gql`
+      type TableEstimate {
+        table: String
+        estimate: Int
+      }
+
       type _Metadata {
         lastProcessedHeight: Int
         lastProcessedTimestamp: Date
@@ -115,7 +120,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         indexerHealthy: Boolean
         indexerNodeVersion: String
         queryNodeVersion: String
-        rowCountEstimate: String
+        rowCountEstimate: [TableEstimate]
       }
       extend type Query {
         _metadata: _Metadata
