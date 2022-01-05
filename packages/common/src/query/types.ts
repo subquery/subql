@@ -11,4 +11,5 @@ export type MetaData = {
   indexerHealthy: boolean;
   indexerNodeVersion: string;
   queryNodeVersion: string;
+  rowCountEstimate: string;
 };

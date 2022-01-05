@@ -54,6 +54,7 @@ async function fetchFromApi(): Promise<void> {
 }
 
 async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaData> {
+  console.log('We have hit fetchFromTable');
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
@@ -71,6 +72,17 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
   }
 
   metadata.queryNodeVersion = packageVersion;
+
+  const xs = await pgClient
+    .query(
+      `select relname, reltuples::bigint as estimate from pg_class where relname in (select table_name from information_schema.tables where table_schema = '${schemaName}')`
+    )
+    .then(({rows}) => rows.map(({estimate, relname}) => ({table: relname, estimate: estimate})))
+    .catch((e) => {
+      throw new Error(`Unable to estimate table row count: ${e}`);
+    });
+  console.log(xs);
+  metadata.rowCountEstimate = JSON.stringify(xs);
 
   return metadata;
 }
@@ -103,6 +115,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         indexerHealthy: Boolean
         indexerNodeVersion: String
         queryNodeVersion: String
+        rowCountEstimate: String
       }
       extend type Query {
         _metadata: _Metadata
