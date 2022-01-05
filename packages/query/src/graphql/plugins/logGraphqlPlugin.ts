@@ -6,26 +6,26 @@ import {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {GraphQLRequestListener} from 'apollo-server-plugin-base/src/index';
 import {GraphQLRequestContext} from 'apollo-server-types';
 import gql from 'graphql-tag';
+import {Pool} from 'pg';
 import {getLogger} from '../../utils/logger';
+
+interface ServerContext {
+  pgClient: Pool;
+  httpHeaders: Record<string, string>;
+}
 
 const logger = getLogger('graphql');
 
-const getSizeInBytes = (obj: Record<string, unknown>) => {
-  const str = JSON.stringify(obj);
-  return new TextEncoder().encode(str).length;
-};
-
 const getSizeInKilobytes = (obj: Record<string, unknown>) => {
-  const bytes = getSizeInBytes(obj);
-  const kb = (bytes / 1000).toFixed(2);
-  return kb;
+  const str = JSON.stringify(obj);
+  const sizeInBytes = new TextEncoder().encode(str).length;
+  return (sizeInBytes / 1000).toFixed(2);
 };
 
 /* eslint-disable @typescript-eslint/require-await */
-
 export const LogGraphqlPlugin: ApolloServerPlugin = {
   async requestDidStart<MyApolloContext>(
-    requestContext: GraphQLRequestContext<MyApolloContext>
+    requestContext: GraphQLRequestContext<ServerContext>
   ): Promise<GraphQLRequestListener<MyApolloContext>> {
     const graphqlData = {} as Record<string, unknown>;
     const payload = {} as Record<string, unknown>;
