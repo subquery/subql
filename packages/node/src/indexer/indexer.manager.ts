@@ -340,6 +340,11 @@ export class IndexerManager {
       } else {
         await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
       }
+    } else {
+      assert(
+        this.project.network.genesisHash === keyValue.genesisHash,
+        'Specified project manifest genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
+      );
     }
 
     if (keyValue.chain !== chain) {
