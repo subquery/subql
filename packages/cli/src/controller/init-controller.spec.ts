@@ -39,7 +39,7 @@ describe('Cli can create project (mocked)', () => {
       cb(new Error());
     });
     await expect(cloneProjectGit(tempPath, projectSpec.name, 'invalid_url', 'invalid_branch')).rejects.toThrow(
-      /Failed to clone template from git/
+      /Failed to clone starter template from git/
     );
   });
 });
