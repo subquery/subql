@@ -36,11 +36,11 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
       return;
     }
 
-    payload.message = JSON.stringify(
-      gql`
-        ${requestContext.request.query}
-      `
-    );
+    graphqlData.category = 'query';
+
+    payload.message = JSON.stringify(gql`
+      ${requestContext.request.query}
+    `);
 
     const httpHeaders = requestContext.context.httpHeaders;
 
@@ -57,16 +57,17 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
 
         if (!response.errors) {
           payload['query-success'] = 'true';
+          graphqlData.message = 'Graphql request completed successfully';
         } else {
           payload['query-success'] = 'false';
+          graphqlData.message = 'Encountered errors during parsing, validating, or executing the GraphQL query';
         }
 
-        graphqlData.payload = payload;
+        graphqlData.payload = JSON.stringify(payload);
         logger.info(JSON.stringify(graphqlData));
       },
       async didEncounterErrors(requestContext) {
-        const errors = requestContext.errors;
-        graphqlData.errors = errors;
+        payload.stack = JSON.stringify(requestContext.errors);
       },
     };
   },
