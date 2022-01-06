@@ -36,7 +36,15 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   async init(): Promise<ApiService> {
-    const { chainTypes, network } = this.project;
+    let chainTypes, network;
+    try {
+      chainTypes = this.project.chainTypes;
+      network = this.project.network;
+    } catch (e) {
+      logger.error(e);
+      process.exit(1);
+    }
+
     let provider: WsProvider | HttpProvider;
     let throwOnConnect = false;
     if (network.endpoint.startsWith('ws')) {
