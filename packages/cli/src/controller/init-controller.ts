@@ -33,28 +33,14 @@ export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise
       throw new Error(`Unable to reach endpoint '${remote}', ${err}`);
     });
 }
-export async function createProjectFromTemplate(
-  localPath: string,
-  project: ProjectSpecBase,
-  template: Template
-): Promise<string> {
-  const projectPath = path.join(localPath, project.name);
-  try {
-    await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
-  } catch (e) {
-    throw new Error('Failed to clone template from git');
-  }
-  await prepare(projectPath, project);
-  return projectPath;
-}
 
-export async function createProjectFromGit(
+export async function cloneProjectGit(
   localPath: string,
-  project: ProjectSpecBase,
+  projectName: string,
   projectRemote: string,
   branch: string
 ): Promise<string> {
-  const projectPath = path.join(localPath, project.name);
+  const projectPath = path.join(localPath, projectName);
   try {
     await git().clone(projectRemote, projectPath, ['-b', branch, '--single-branch']);
   } catch (e) {
@@ -66,11 +52,47 @@ export async function createProjectFromGit(
     }
     throw new Error(err);
   }
-  await prepare(projectPath, project);
   return projectPath;
 }
 
-async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
+export async function cloneProjectTemplate(
+  localPath: string,
+  projectName: string,
+  template: Template
+): Promise<string> {
+  const projectPath = path.join(localPath, projectName);
+  try {
+    await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
+  } catch (e) {
+    let err = 'Failed to clone starter template from git';
+    try {
+      execSync('git --version');
+    } catch (_) {
+      err += ', please install git and ensure that it is available from command line';
+    }
+    throw new Error(err);
+  }
+  return projectPath;
+}
+
+export async function readDefaults(projectPath: string): Promise<[string, string, string, string, string, string]> {
+  const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
+  const currentPackage = JSON.parse(packageData.toString());
+
+  const yamlPath = path.join(`${projectPath}`, `project.yaml`);
+  const manifest = await fs.promises.readFile(yamlPath, 'utf8');
+  const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
+  return [
+    currentProject.repository,
+    currentProject.network.endpoint,
+    currentPackage.author,
+    currentPackage.version,
+    currentPackage.description,
+    currentPackage.license,
+  ];
+}
+
+export async function prepare(projectPath: string, project: ProjectSpecBase): Promise<void> {
   try {
     await prepareManifest(projectPath, project);
   } catch (e) {
@@ -87,6 +109,7 @@ async function prepare(projectPath: string, project: ProjectSpecBase): Promise<v
     throw new Error('Failed to remove .git from template project');
   }
 }
+
 async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
   //load and write package.json
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);

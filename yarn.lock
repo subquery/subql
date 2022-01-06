@@ -4090,29 +4090,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/hash-sum@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@types/hash-sum@npm:1.0.0"
-  checksum: 8eb446a86ed7a80c6a04f3083396bbbb7b34430ed553be161ff4e8e51d06d6f2755e6d2ffd059ad5ee8e059fbdadc6f838367781a893cc966811fde8f2c5aa47
-  languageName: node
-  linkType: hard
-
-"@types/highlight.js@npm:^9.7.0":
-  version: 9.12.4
-  resolution: "@types/highlight.js@npm:9.12.4"
-  checksum: 1a491cc59b58c906b4e1c7263c839b8741f4ef3af395f7e0c90350792d89a832f4c4c39010df577f9c9dd447544c854a45a7c999a7901dc16dc20faedf73e7b5
-  languageName: node
-  linkType: hard
-
-"@types/http-proxy@npm:^1.17.5":
-  version: 1.17.7
-  resolution: "@types/http-proxy@npm:1.17.7"
-  dependencies:
-    "@types/node": "*"
-  checksum: 88f9c75ca65378d0287d8d0b1dbeed372c8267f4841fe2f6f2d759522494382d3943bc6cc774bef7dd125464a266bafeda813d3658b17a2d1e74acc4efb6e21c
-  languageName: node
-  linkType: hard
-
 "@types/inquirer@npm:^8.1.3":
   version: 8.1.3
   resolution: "@types/inquirer@npm:8.1.3"
@@ -4472,22 +4449,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: 9578470db0b527c26e246a1220ae9bffc6bf47f20f89c54aac467c083ab1f7e16c00d9a7b4bb6cb4e2dfae465027270827e5908a6236063f6214625e50585d78
-  languageName: node
-  linkType: hard
-
-"@types/trusted-types@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "@types/trusted-types@npm:2.0.2"
-  checksum: 3371eef5f1c50e1c3c07a127c1207b262ba65b83dd167a1c460fc1b135a3fb0c97b9f508efebd383f239cc5dd5b7169093686a692a501fde9c3f7208657d9b0d
-  languageName: node
-  linkType: hard
-
-"@types/uglify-js@npm:*":
-  version: 3.11.1
-  resolution: "@types/uglify-js@npm:3.11.1"
-  dependencies:
-    source-map: ^0.6.1
-  checksum: 9a68a7fb134d5ac24209d6a695d9c78292cfc2039f48fbc577f7c648a08670f43f7c5788fb02e2d73dd95441688654edfe3e4539ce1f35c4f222e79169e8b758
   languageName: node
   linkType: hard
 
@@ -5177,21 +5138,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ansi-escapes@npm:^4.1.0, ansi-escapes@npm:^4.3.1":
-  version: 4.3.2
-  resolution: "ansi-escapes@npm:4.3.2"
-  dependencies:
-    type-fest: ^0.21.3
-  checksum: 93111c42189c0a6bed9cdb4d7f2829548e943827ee8479c74d6e0b22ee127b2a21d3f8b5ca57723b8ef78ce011fbfc2784350eb2bde3ccfccf2f575fa8489815
-  languageName: node
-  linkType: hard
-
 "ansi-escapes@npm:^4.2.1, ansi-escapes@npm:^4.3.0":
   version: 4.3.1
   resolution: "ansi-escapes@npm:4.3.1"
   dependencies:
     type-fest: ^0.11.0
   checksum: c4962c1791cc4e29efb9976680bad7b23f322ca039e588406680fffc8b6bc6e223721193eb481dab076309d9a7371bbfc4e835efe5fe267e3395ffa047da239d
+  languageName: node
+  linkType: hard
+
+"ansi-escapes@npm:^4.3.1":
+  version: 4.3.2
+  resolution: "ansi-escapes@npm:4.3.2"
+  dependencies:
+    type-fest: ^0.21.3
+  checksum: 93111c42189c0a6bed9cdb4d7f2829548e943827ee8479c74d6e0b22ee127b2a21d3f8b5ca57723b8ef78ce011fbfc2784350eb2bde3ccfccf2f575fa8489815
   languageName: node
   linkType: hard
 
@@ -8352,23 +8313,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"feed@npm:2.0.4":
-  version: 2.0.4
-  resolution: "feed@npm:2.0.4"
-  dependencies:
-    luxon: ^1.3.3
-    xml: ^1.0.1
-  checksum: 9ee12880752ff11374265cefb6c2a6eeb11e176723be9ea618c3526dafcd9a8f4771d78dbeabd6188c50ea84c415614e023959898651d7b953f7ad34a01e2e8b
-  languageName: node
-  linkType: hard
-
-"figgy-pudding@npm:^3.5.1":
-  version: 3.5.2
-  resolution: "figgy-pudding@npm:3.5.2"
-  checksum: 4090bd66193693dcda605e44d6b8715d8fb5c92a67acd57826e55cf816a342f550d57e5638f822b39366e1b2fdb244e99b3068a37213aa1d6c1bf602b8fde5ae
-  languageName: node
-  linkType: hard
-
 "figures@npm:^3.0.0, figures@npm:^3.2.0":
   version: 3.2.0
   resolution: "figures@npm:3.2.0"
@@ -9563,16 +9507,6 @@ fsevents@~2.3.1:
     strip-ansi: ^6.0.0
     through: ^2.3.6
   checksum: 861d1a9324ae933b49126b3541d94e4d6a2f2a25411b3f3cc00c34bf1bdab34146362d702cf289efe6d8034900dc5905bcf2ea716092a02b6fc390e5986dd236
-  languageName: node
-  linkType: hard
-
-"insane@npm:^2.6.2":
-  version: 2.6.2
-  resolution: "insane@npm:2.6.2"
-  dependencies:
-    assignment: 2.0.0
-    he: 0.5.0
-  checksum: 36db602e97e4ad652e5d759e1e43eca36c6066b71e43cfe8351c4befd026de995e556f35a58acdb82b6cffb60e45d9d3ede65426e5d4fbe9ac5fb6f7b2b864f6
   languageName: node
   linkType: hard
 
@@ -12455,13 +12389,6 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"optjs@npm:~3.2.2":
-  version: 3.2.2
-  resolution: "optjs@npm:3.2.2"
-  checksum: 0909e160e3ea218982e506750567bc7b6344d223bfb1a850c755ffb54f90f77cf746d94a8956eae614315034ae84ee03322ea00d95a8ac2ec426f4b875e27d86
-  languageName: node
-  linkType: hard
-
 "ora@npm:5.4.1, ora@npm:^5.3.0, ora@npm:^5.4.1":
   version: 5.4.1
   resolution: "ora@npm:5.4.1"
@@ -13804,22 +13731,6 @@ fsevents@~2.3.1:
   version: 1.1.10
   resolution: "run-parallel@npm:1.1.10"
   checksum: 360996d8b7abe586320a01a42093df2edf41699bbb0d493a4191ec52dda4354d0b25954e0608162d3bb304faa5f73a194f85d6d0d4c016154b2a8132f757fa98
-  languageName: node
-  linkType: hard
-
-"run-queue@npm:^1.0.0, run-queue@npm:^1.0.3":
-  version: 1.0.3
-  resolution: "run-queue@npm:1.0.3"
-  dependencies:
-    aproba: ^1.1.1
-  checksum: c4541e18b5e056af60f398f2f1b3d89aae5c093d1524bf817c5ee68bcfa4851ad9976f457a9aea135b1d0d72ee9a91c386e3d136bcd95b699c367cd09c70be53
-  languageName: node
-  linkType: hard
-
-"rw@npm:1":
-  version: 1.3.3
-  resolution: "rw@npm:1.3.3"
-  checksum: c20d82421f5a71c86a13f76121b751553a99cd4a70ea27db86f9b23f33db941f3f06019c30f60d50c356d0bd674c8e74764ac146ea55e217c091bde6fba82aa3
   languageName: node
   linkType: hard
 
@@ -15245,6 +15156,13 @@ fsevents@~2.3.1:
   version: 0.20.2
   resolution: "type-fest@npm:0.20.2"
   checksum: 4fb3272df21ad1c552486f8a2f8e115c09a521ad7a8db3d56d53718d0c907b62c6e9141ba5f584af3f6830d0872c521357e512381f24f7c44acae583ad517d73
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^0.21.3":
+  version: 0.21.3
+  resolution: "type-fest@npm:0.21.3"
+  checksum: e6b32a3b3877f04339bae01c193b273c62ba7bfc9e325b8703c4ee1b32dc8fe4ef5dfa54bf78265e069f7667d058e360ae0f37be5af9f153b22382cd55a9afe0
   languageName: node
   linkType: hard
 

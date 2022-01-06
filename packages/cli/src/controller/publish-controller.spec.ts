@@ -12,7 +12,7 @@ import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Validate from '../commands/validate';
 import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
-import {createProjectFromGit} from './init-controller';
+import {cloneProjectGit, prepare} from './init-controller';
 import {uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -45,7 +45,13 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
   const projectDir = path.join(tmpdir, projectSpec.name);
 
   const branch = isProjectSpecV0_0_1(projectSpec) ? 'v0.0.1' : 'v0.2.0';
-  await createProjectFromGit(tmpdir, projectSpec, 'https://github.com/subquery/subql-starter', branch);
+  const projectPath = await cloneProjectGit(
+    tmpdir,
+    projectSpec.name,
+    'https://github.com/subquery/subql-starter',
+    branch
+  );
+  await prepare(projectPath, projectSpec);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});

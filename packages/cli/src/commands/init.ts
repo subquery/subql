@@ -12,9 +12,11 @@ import * as inquirer from 'inquirer';
 import {
   fetchTemplates,
   Template,
-  createProjectFromGit,
-  createProjectFromTemplate,
   installDependencies,
+  cloneProjectTemplate,
+  cloneProjectGit,
+  readDefaults,
+  prepare,
 } from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
@@ -102,7 +104,7 @@ export default class Init extends Command {
 
     let skipFlag = false;
     let gitRemote: string;
-    let branch: string;
+    let gitBranch: string;
     let templates: Template[];
     let selectedTemplate: Template;
     let selectedNetwork: string;
@@ -172,67 +174,19 @@ export default class Init extends Command {
         });
 
       if (skipFlag) {
-        [gitRemote, branch] = await promptValidRemoteAndBranch();
+        [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       }
     } else {
-      [gitRemote, branch] = await promptValidRemoteAndBranch();
+      [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
     }
 
-    if (selectedNetwork && !selectedTemplate) {
-      const candidateEndpoints = templates
-        .filter(({network}) => network === selectedNetwork)
-        .map(({endpoint}) => endpoint);
-      candidateEndpoints.push('Other');
-
-      project.endpoint = await inquirer
-        .prompt([
-          {
-            name: 'endpointResponse',
-            message: 'Select a network endpoint',
-            type: 'autocomplete',
-            searchText: '',
-            emptyText: 'Endpoint not found',
-            source: filterInput(candidateEndpoints),
-          },
-        ])
-        .then(async ({endpointResponse}) => {
-          if (endpointResponse === 'Other') {
-            return cli.prompt('RPC endpoint:', {
-              default: 'wss://polkadot.api.onfinality.io/public-ws',
-              required: true,
-            });
-          } else {
-            return endpointResponse;
-          }
-        });
-    } else {
-      project.endpoint = await cli.prompt('RPC endpoint:', {
-        default: selectedTemplate?.endpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
-        required: true,
-      });
-    }
-
-    // Package json repository
-    project.repository = await cli.prompt('Git repository', {required: false});
-
-    if (flags.specVersion === '0.2.0') {
-      cli.action.start('Fetching network genesis hash');
-      (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
-      cli.action.stop();
-    }
-
-    project.author = await cli.prompt('Author', {required: true});
-    project.description = await cli.prompt('Description', {required: false});
-    project.version = await cli.prompt('Version', {default: '1.0.0', required: true});
-    project.license = await cli.prompt('License', {default: 'MIT', required: true});
-
-    cli.action.start('Initializing the template project');
     let projectPath;
+    cli.action.start('Cloning project');
     try {
       if (selectedTemplate) {
-        projectPath = await createProjectFromTemplate(location, project, selectedTemplate);
-      } else if (gitRemote) {
-        projectPath = await createProjectFromGit(location, project, gitRemote, branch);
+        projectPath = await cloneProjectTemplate(location, project.name, selectedTemplate);
+      } else if (skipFlag) {
+        projectPath = await cloneProjectGit(location, project.name, gitRemote, gitBranch);
       } else {
         throw new Error('Invalid initalization state, must select either a template project or provide a git remote');
       }
@@ -241,6 +195,34 @@ export default class Init extends Command {
       cli.action.stop();
       this.error(e);
     }
+
+    const [defaultRepository, defaultEndpoint, defaultAuthor, defaultVersion, defaultDescription, defaultLicense] =
+      await readDefaults(projectPath);
+
+    project.endpoint = await cli.prompt('RPC endpoint:', {
+      default: defaultEndpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
+      required: true,
+    });
+
+    project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
+
+    if (flags.specVersion === '0.2.0') {
+      cli.action.start('Fetching network genesis hash');
+      (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
+      cli.action.stop();
+    }
+
+    project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
+    project.description = await cli.prompt('Description', {
+      required: false,
+      default: defaultDescription.substring(0, 40).concat('...'),
+    });
+    project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
+    project.license = await cli.prompt('License', {required: true, default: defaultLicense});
+
+    cli.action.start('Preparing project');
+    await prepare(projectPath, project);
+    cli.action.stop();
     if (flags['install-dependencies']) {
       cli.action.start('Installing dependencies');
       installDependencies(projectPath, flags.npm);
