@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {URL} from 'url';
 import {MetaData, TableEstimate} from '@subql/common';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
@@ -54,7 +55,6 @@ async function fetchFromApi(): Promise<void> {
 }
 
 async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaData> {
-  console.log('We have hit fetchFromTable');
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
@@ -73,22 +73,27 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
 
   metadata.queryNodeVersion = packageVersion;
 
-  const tableEstimates: [TableEstimate] = await pgClient
+  const tableEstimates = await pgClient
     .query(
-      `select relname, reltuples::bigint as estimate from pg_class where relname in (select table_name from information_schema.tables where table_schema = '${schemaName}')`
+      `select relname as table , reltuples::bigint as estimate from pg_class
+      where relnamespace in
+            (select oid from pg_namespace where nspname = $1)
+      and relname in
+          (select table_name from information_schema.tables
+           where table_schema = $1)`,
+      [schemaName]
     )
-    .then(({rows}) => rows.map(({estimate, relname}) => ({table: relname, estimate: estimate})))
     .catch((e) => {
       throw new Error(`Unable to estimate table row count: ${e}`);
     });
 
-  metadata.rowCountEstimate = tableEstimates;
+  metadata.rowCountEstimate = tableEstimates.rows;
 
   return metadata;
 }
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
-  const schemaName = options.pgSchemas;
+  const [schemaName] = options.pgSchemas;
   let metadataTableExists = false;
 
   const tableSearch = build.pgIntrospectionResultsByKind.attribute.find(
