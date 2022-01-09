@@ -17,6 +17,8 @@ import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
 import {ProjectService} from './project.service';
 
+const logger = getLogger('express');
+
 @Module({
   providers: [ProjectService],
 })
@@ -71,7 +73,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
     app.use(
       ExpressPinoLogger({
-        logger: getLogger('express'),
+        logger: logger,
         autoLogging: {
           ignorePaths: ['/.well-known/apollo/server-health'],
         },
@@ -83,6 +85,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       path: '/',
       cors: true,
     });
+
+    if (this.config.get('playground')) {
+      logger.info('Started playground at http://localhost:3000');
+    }
 
     return server;
   }
