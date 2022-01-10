@@ -108,12 +108,12 @@ export class IndexerManager {
         }
       }
 
-      this.storeService.setMetadata('lastProcessedHeight', blockHeight, {
-        transaction: tx,
-      });
-      this.storeService.setMetadata('lastProcessedTimestamp', Date.now(), {
-        transaction: tx,
-      });
+      const metadata: Record<string, string | number | boolean> = {
+        lastProcessedHeight: blockHeight,
+        lastProcessedTimestamp: Date.now(),
+      };
+
+      await this.storeService.setMetadataBatch(metadata, { transaction: tx });
 
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();

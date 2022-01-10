@@ -64,12 +64,6 @@ export class MetaService {
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }
 
-  @OnEvent(IndexerEvent.BlockLastProcessed)
-  handleLastProcessedBlock(blockPayload: ProcessBlockPayload): void {
-    this.lastProcessedHeight = blockPayload.height;
-    this.lastProcessedTimestamp = blockPayload.timestamp;
-  }
-
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
     this.targetHeight = blockPayload.height;

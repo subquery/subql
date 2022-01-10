@@ -234,6 +234,17 @@ export class StoreService {
     }
   }
 
+  async setMetadataBatch(
+    metadata: Record<string, string | number | boolean>,
+    options?: UpsertOptions<Metadata>,
+  ): Promise<void> {
+    const xs = [];
+    for (const [key, value] of Object.entries(metadata)) {
+      xs.push(this.setMetadata(key, value, options));
+    }
+    await Promise.all(xs);
+  }
+
   async setMetadata(
     key: string,
     value: string | number | boolean,
