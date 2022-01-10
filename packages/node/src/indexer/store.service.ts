@@ -243,12 +243,15 @@ export class StoreService {
     await this.metaDataRepo.upsert({ key, value }, options);
   }
 
-  async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
+  async setPoi(
+    blockPoi: ProofOfIndex,
+    options?: UpsertOptions<ProofOfIndex>,
+  ): Promise<void> {
     assert(this.poiRepo, `Model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await this.poiRepo.upsert(blockPoi, { transaction: tx });
+    await this.poiRepo.upsert(blockPoi, options);
   }
 
   getOperationMerkleRoot(): Uint8Array {

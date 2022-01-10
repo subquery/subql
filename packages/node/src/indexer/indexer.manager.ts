@@ -108,11 +108,9 @@ export class IndexerManager {
         }
       }
 
-      this.storeService.setMetadata(
-        'lastProcessedHeight',
-        block.block.header.number.toNumber(),
-        { transaction: tx },
-      );
+      this.storeService.setMetadata('lastProcessedHeight', blockHeight, {
+        transaction: tx,
+      });
       this.storeService.setMetadata('lastProcessedTimestamp', Date.now(), {
         transaction: tx,
       });
@@ -129,7 +127,7 @@ export class IndexerManager {
             this.project.path, //projectId // TODO, define projectId
           );
           poiBlockHash = poiBlock.hash;
-          await this.storeService.setPoi(tx, poiBlock);
+          await this.storeService.setPoi(poiBlock, { transaction: tx });
         }
       }
     } catch (e) {
