@@ -12,5 +12,5 @@ void (async () => {
   const app = await NestFactory.create(AppModule, {
     logger: new NestLogger(),
   });
-  await app.listen(process.env.PORT ?? argv.port);
+  await app.listen(process.env.PORT ?? argv.port ?? 3000);
 })();
