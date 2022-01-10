@@ -54,18 +54,8 @@ export class MetaService {
   }
 
   @Interval(UPDATE_HEIGHT_INTERVAL)
-  async checkHeight() {
-    await Promise.all([
-      this.storeService.setMetadata(
-        'lastProcessedHeight',
-        this.lastProcessedHeight,
-      ),
-      this.storeService.setMetadata(
-        'lastProcessedTimestamp',
-        this.lastProcessedTimestamp,
-      ),
-      this.storeService.setMetadata('targetHeight', this.targetHeight),
-    ]);
+  async getTargetHeight(): Promise<void> {
+    await this.storeService.setMetadata('targetHeight', this.targetHeight);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)

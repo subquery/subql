@@ -108,13 +108,14 @@ export class IndexerManager {
         }
       }
 
-      await this.metadataRepo.upsert(
-        {
-          key: 'lastProcessedHeight',
-          value: block.block.header.number.toNumber(),
-        },
+      this.storeService.setMetadata(
+        'lastProcessedHeight',
+        block.block.header.number.toNumber(),
         { transaction: tx },
       );
+      this.storeService.setMetadata('lastProcessedTimestamp', Date.now(), {
+        transaction: tx,
+      });
 
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
@@ -141,11 +142,6 @@ export class IndexerManager {
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
-
-    this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
-      height: blockHeight,
-      timestamp: Date.now(),
-    });
   }
 
   async start(): Promise<void> {
