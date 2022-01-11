@@ -12,17 +12,17 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
     requestContext: GraphQLRequestContext<MyApolloContext>
   ): Promise<GraphQLRequestListener<MyApolloContext>> {
     //IntrospectionQuery payload clutters logs and isn't useful
-    if (requestContext.request.operationName === 'IntrospectionQuery') {
-      requestContext.response.http.headers.set('message', 'Graphql IntrospectionQuery complete');
-      return;
-    }
 
     return {
       async willSendResponse({response}) {
         let message = '';
 
         if (!response.errors) {
-          message = 'Graphql request completed successfully';
+          if (requestContext.request.operationName === 'IntrospectionQuery') {
+            message = 'Graphql IntrospectionQuery completed successfully';
+          } else {
+            message = 'Graphql Query completed successfully';
+          }
         } else {
           message = 'Encountered errors during parsing, validating, or executing the GraphQL query';
         }

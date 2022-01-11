@@ -43,7 +43,7 @@ export const PinoConfig = {
   serializers: {
     req(req) {
       const body = req.raw.body;
-      if (body.operationName && body.query) {
+      if ('operationName' in body && body.query) {
         if (body.operationName !== 'IntrospectionQuery') {
           req.payload = stringify(
             gql`
