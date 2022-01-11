@@ -41,11 +41,13 @@ export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {
-    const _port = await detectPort(port).catch(() => {
+    try {
+      const _port = await detectPort(port);
+      if (_port === port) {
+        return port;
+      }
+    } catch (e) {
       return null;
-    });
-    if (_port === port) {
-      return port;
     }
   }
 
