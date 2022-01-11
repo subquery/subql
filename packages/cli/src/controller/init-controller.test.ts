@@ -4,7 +4,7 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {createProject} from './init-controller';
+import {fetchTemplates, cloneProjectGit, cloneProjectTemplate, prepare, readDefaults} from './init-controller';
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {
@@ -34,15 +34,45 @@ const projectSpec = {
 };
 
 describe('Cli can create project', () => {
-  it('should resolves when starter project successful created', async () => {
+  it('should resolve when starter project created via template', async () => {
     const tempPath = await makeTempDir();
-    await createProject(tempPath, projectSpec);
+    const templates = await fetchTemplates();
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    await prepare(projectPath, projectSpec);
+    await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
+  });
+
+  it('should resolve when starter project created via git', async () => {
+    const tempPath = await makeTempDir();
+    const projectPath = await cloneProjectGit(
+      tempPath,
+      projectSpec.name,
+      'https://github.com/subquery/subql-starter',
+      'v0.2.0'
+    );
+    await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
   });
 
   it('throw error if .git exists in starter project', async () => {
     const tempPath = await makeTempDir();
-    await createProject(tempPath, projectSpec);
+    const templates = await fetchTemplates();
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}/.git`))).rejects.toThrow();
+  });
+
+  it('prepare correctly applies project details', async () => {
+    const tempPath = await makeTempDir();
+    const templates = await fetchTemplates();
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    await prepare(projectPath, projectSpec);
+    const [repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
+    expect(projectSpec.repository).toEqual(repository);
+    expect(projectSpec.endpoint).toEqual(endpoint);
+    expect(projectSpec.author).toEqual(author);
+    expect(projectSpec.version).toEqual(version);
+    expect(projectSpec.description).toEqual(description);
+    expect(projectSpec.license).toEqual(license);
   });
 });
