@@ -11,8 +11,7 @@ export const LogGraphqlPlugin: ApolloServerPlugin = {
   async requestDidStart<MyApolloContext>(
     requestContext: GraphQLRequestContext<MyApolloContext>
   ): Promise<GraphQLRequestListener<MyApolloContext>> {
-    //IntrospectionQuery payload clutters logs and isn't useful
-
+    
     return {
       async willSendResponse({response}) {
         let message = '';
