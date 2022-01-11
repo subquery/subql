@@ -62,10 +62,6 @@ export class MetricEventListener {
   handleProcessingBlock(blockPayload: ProcessBlockPayload) {
     this.processingBlockHeight.set(blockPayload.height);
   }
-  @OnEvent(IndexerEvent.BlockLastProcessed)
-  handleProcessedBlock(blockPayload: ProcessBlockPayload) {
-    this.processedBlockHeight.set(blockPayload.height);
-  }
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload) {

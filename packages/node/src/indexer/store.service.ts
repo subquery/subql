@@ -8,7 +8,13 @@ import { blake2AsHex } from '@polkadot/util-crypto';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
-import { QueryTypes, Sequelize, Transaction, Utils } from 'sequelize';
+import {
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  UpsertOptions,
+  Utils,
+} from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
@@ -19,7 +25,11 @@ import {
   getFkConstraint,
   smartTags,
 } from '../utils/sync-helper';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
+import {
+  Metadata,
+  MetadataFactory,
+  MetadataRepo,
+} from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
@@ -224,20 +234,32 @@ export class StoreService {
     }
   }
 
+  async setMetadataBatch(
+    metadata: Metadata[],
+    options?: UpsertOptions<Metadata>,
+  ): Promise<void> {
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.bulkCreate(metadata, options);
+  }
+
   async setMetadata(
     key: string,
     value: string | number | boolean,
+    options?: UpsertOptions<Metadata>,
   ): Promise<void> {
-    assert(this.metaDataRepo, `model _metadata does not exist`);
-    await this.metaDataRepo.upsert({ key, value });
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value }, options);
   }
 
-  async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
-    assert(this.poiRepo, `model _poi does not exist`);
+  async setPoi(
+    blockPoi: ProofOfIndex,
+    options?: UpsertOptions<ProofOfIndex>,
+  ): Promise<void> {
+    assert(this.poiRepo, `Model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await this.poiRepo.upsert(blockPoi, { transaction: tx });
+    await this.poiRepo.upsert(blockPoi, options);
   }
 
   getOperationMerkleRoot(): Uint8Array {
