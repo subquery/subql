@@ -15,7 +15,12 @@ void (async () => {
     logger: new NestLogger(),
   });
 
-  const port = parseInt(process.env.PORT) ?? argv.port ?? (await findAvailablePort(DEFAULT_PORT));
+  const validate = (x: any) => {
+    const p = parseInt(x);
+    return isNaN(p) ? null : p;
+  };
+
+  const port = validate(process.env.PORT) ?? validate(argv.port) ?? (await findAvailablePort(DEFAULT_PORT));
   if (!port) {
     getLogger('subql-query').error(
       `Unable to find available port (tried ports in range (${DEFAULT_PORT}..${
@@ -23,6 +28,10 @@ void (async () => {
       })). Try setting a free port manually by setting the PORT environment variable or by setting the --port flag`
     );
     process.exit(1);
+  }
+
+  if (argv.playground) {
+    getLogger('subql-query').info(`Started playground at http://localhost:${port}`);
   }
 
   await app.listen(port);

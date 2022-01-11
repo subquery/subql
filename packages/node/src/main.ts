@@ -14,8 +14,13 @@ const { argv } = getYargsOption();
 
 async function bootstrap() {
   const debug = argv.debug;
-  const port = (argv.port as number) ?? (await findAvailablePort(DEFAULT_PORT));
 
+  const validate = (x: any) => {
+    const p = parseInt(x);
+    return isNaN(p) ? null : p;
+  };
+
+  const port = validate(argv.port) ?? (await findAvailablePort(DEFAULT_PORT));
   if (!port) {
     logger.error(
       `Unable to find available port (tried ports in range (${port}..${

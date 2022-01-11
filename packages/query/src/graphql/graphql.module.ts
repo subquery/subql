@@ -86,10 +86,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       cors: true,
     });
 
-    if (this.config.get('playground')) {
-      logger.info('Started playground at http://localhost:3000');
-    }
-
     return server;
   }
 }
