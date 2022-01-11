@@ -13,8 +13,9 @@ import ExpressPinoLogger from 'express-pino-logger';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
-import {getLogger} from '../utils/logger';
+import {PinoConfig} from '../utils/logger';
 import {plugins} from './plugins';
+import {LogGraphqlPlugin} from './plugins/logGraphqlPlugin';
 import {ProjectService} from './project.service';
 
 @Module({
@@ -66,17 +67,13 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         this.config.get('playground')
           ? ApolloServerPluginLandingPageGraphQLPlayground()
           : ApolloServerPluginLandingPageDisabled(),
+        LogGraphqlPlugin,
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
     });
-    app.use(
-      ExpressPinoLogger({
-        logger: getLogger('express'),
-        autoLogging: {
-          ignorePaths: ['/.well-known/apollo/server-health'],
-        },
-      })
-    );
+
+    app.use(ExpressPinoLogger(PinoConfig));
+
     await server.start();
     server.applyMiddleware({
       app,

@@ -3,6 +3,8 @@
 
 import {LoggerService} from '@nestjs/common';
 import {Logger} from '@subql/common';
+import {stringify} from 'flatted';
+import gql from 'graphql-tag';
 import Pino from 'pino';
 import {argv} from '../yargs';
 
@@ -16,7 +18,6 @@ const logger = new Logger({level: logLevel, filepath: logPath, rotate: logRotate
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);
 }
-
 export class NestLogger implements LoggerService {
   private logger = logger.getLogger('nestjs');
 
@@ -36,3 +37,43 @@ export class NestLogger implements LoggerService {
     this.logger.warn(message);
   }
 }
+
+export const PinoConfig = {
+  logger: getLogger('express'),
+  serializers: {
+    req(req) {
+      const body = req.raw.body;
+      if (body.operationName && body.query) {
+        if (body.operationName !== 'IntrospectionQuery') {
+          req.payload = stringify(
+            gql`
+              ${body.query}
+            `
+          );
+        }
+      }
+      return req;
+    },
+    res(res) {
+      if (res.headers.stack) {
+        res.stack = res.headers.stack;
+        delete res.headers.stack;
+      }
+      if (res.headers.message) {
+        delete res.headers.message;
+      }
+      return res;
+    },
+  },
+  // will override message in any case, pino v7 has a better property for this.
+  customSuccessMessage: (res) => {
+    if (res.getHeader('message')) {
+      return `${res.getHeader('message')}`;
+    } else {
+      return 'request completed';
+    }
+  },
+  autoLogging: {
+    ignorePaths: ['/.well-known/apollo/server-health'],
+  },
+};
