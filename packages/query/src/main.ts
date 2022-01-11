@@ -7,20 +7,19 @@ import {AppModule} from './app.module';
 import {getLogger, NestLogger} from './utils/logger';
 import {getYargsOption} from './yargs';
 
+const DEFAULT_PORT = 3000;
 const {argv} = getYargsOption();
 
 void (async () => {
   const app = await NestFactory.create(AppModule, {
     logger: new NestLogger(),
   });
-  const candidatePort = parseInt(process.env.PORT) ?? argv.port;
-  const port = await findAvailablePort(candidatePort);
 
+  const port = parseInt(process.env.PORT) ?? argv.port ?? (await findAvailablePort(DEFAULT_PORT));
   if (!port) {
-    const logger = getLogger('configure');
-    logger.error(
-      `Unable to find available port (tried ports in range (${candidatePort}..${
-        candidatePort + 10
+    getLogger('subql-query').error(
+      `Unable to find available port (tried ports in range (${DEFAULT_PORT}..${
+        DEFAULT_PORT + 10
       })). Try setting a free port manually by setting the PORT environment variable or by setting the --port flag`
     );
     process.exit(1);

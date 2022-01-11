@@ -6,25 +6,26 @@ import { findAvailablePort } from '@subql/common';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';
 import { getLogger, NestLogger } from './utils/logger';
-import { argv } from './yargs';
+import { getYargsOption } from './yargs';
 
+const DEFAULT_PORT = 3001;
 const logger = getLogger('subql-node');
+const { argv } = getYargsOption();
 
 async function bootstrap() {
-  const debug = argv('debug');
-  const candidatePort = argv('port') as number;
-  const port = await findAvailablePort(candidatePort);
+  const debug = argv.debug;
+  const port = (argv.port as number) ?? (await findAvailablePort(DEFAULT_PORT));
 
   if (!port) {
     logger.error(
-      `Unable to find available port (tried ports in range (${candidatePort}..${
-        candidatePort + 10
+      `Unable to find available port (tried ports in range (${port}..${
+        port + 10
       })). Try setting a free port manually by setting the --port flag`,
     );
     process.exit(1);
   }
 
-  if (argv('unsafe')) {
+  if (argv.unsafe) {
     logger.warn(
       'UNSAFE MODE IS ENABLED. This is not recommended for most projects and will not be supported by our hosted service',
     );
@@ -40,9 +41,9 @@ async function bootstrap() {
     await indexerManager.start();
     await app.listen(port);
 
-    logger.info(`node started on port: ${port}`);
+    logger.info(`Node started on port: ${port}`);
   } catch (e) {
-    logger.error(e, 'node failed to start');
+    logger.error(e, 'Node failed to start');
     process.exit(1);
   }
 }

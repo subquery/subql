@@ -59,7 +59,6 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'The port the service will bind to',
       type: 'number',
-      default: 3000,
     },
   });
 }
