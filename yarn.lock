@@ -3635,11 +3635,13 @@ __metadata:
     "@subql/types": "workspace:*"
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/bn.js": 4.11.6
+    "@types/detect-port": ^1
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
     bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.1
+    detect-port: ^1.3.0
     flatted: ^3.2.2
     graphql: ^15.7.2
     graphql-tag: ^2.12.5
@@ -3980,6 +3982,13 @@ __metadata:
   version: 2.8.12
   resolution: "@types/cors@npm:2.8.12"
   checksum: 8c45f112c7d1d2d831b4b266f2e6ed33a1887a35dcbfe2a18b28370751fababb7cd045e745ef84a523c33a25932678097bf79afaa367c6cb3fa0daa7a6438257
+  languageName: node
+  linkType: hard
+
+"@types/detect-port@npm:^1":
+  version: 1.3.2
+  resolution: "@types/detect-port@npm:1.3.2"
+  checksum: e4678244fbe8801014798b3efb967c886e6fc0fe94fb771a1be9558b35c68910b23bd30984df4a276b927820ce436b244506fb0972116d1b18506ac96bfd1a50
   languageName: node
   linkType: hard
 
@@ -5004,6 +5013,13 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 2e4c1dbed3da327684863debf31d341bf8882c6893c506653872c00977eee45675feb9129255d6c74c88424d2b20d889ca6de5b39776e5e3cccfc756b3ca1da8
+  languageName: node
+  linkType: hard
+
+"address@npm:^1.0.1":
+  version: 1.1.2
+  resolution: "address@npm:1.1.2"
+  checksum: d966deee6ab9a0f96ed1d25dc73e91a248f64479c91f9daeb15237b8e3c39a02faac4e6afe8987ef9e5aea60a1593cef5882b7456ab2e6196fc0229a93ec39c2
   languageName: node
   linkType: hard
 
@@ -6903,7 +6919,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:2.6.9, debug@npm:^2.2.0, debug@npm:^2.6.9":
+"debug@npm:2.6.9, debug@npm:^2.2.0, debug@npm:^2.6.0, debug@npm:^2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:
@@ -7058,6 +7074,19 @@ __metadata:
   version: 3.1.0
   resolution: "detect-newline@npm:3.1.0"
   checksum: ae6cd429c41ad01b164c59ea36f264a2c479598e61cba7c99da24175a7ab80ddf066420f2bec9a1c57a6bead411b4655ff15ad7d281c000a89791f48cbe939e7
+  languageName: node
+  linkType: hard
+
+"detect-port@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "detect-port@npm:1.3.0"
+  dependencies:
+    address: ^1.0.1
+    debug: ^2.6.0
+  bin:
+    detect: ./bin/detect-port
+    detect-port: ./bin/detect-port
+  checksum: 93c40febe714f56711d1fedc2b7a9cc4cbaa0fcddec0509876c46b9dd6099ed6bfd6662a4f35e5fa0301660f48ed516829253ab0fc90b9e79b823dd77786b379
   languageName: node
   linkType: hard
 
