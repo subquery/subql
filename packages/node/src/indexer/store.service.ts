@@ -235,14 +235,11 @@ export class StoreService {
   }
 
   async setMetadataBatch(
-    metadata: Record<string, string | number | boolean>,
+    metadata: Metadata[],
     options?: UpsertOptions<Metadata>,
   ): Promise<void> {
-    const xs = [];
-    for (const [key, value] of Object.entries(metadata)) {
-      xs.push(this.setMetadata(key, value, options));
-    }
-    await Promise.all(xs);
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.bulkCreate(metadata, options);
   }
 
   async setMetadata(
