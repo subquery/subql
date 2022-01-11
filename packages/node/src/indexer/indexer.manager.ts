@@ -108,11 +108,11 @@ export class IndexerManager {
         }
       }
 
-      await this.metadataRepo.upsert(
-        {
-          key: 'lastProcessedHeight',
-          value: block.block.header.number.toNumber(),
-        },
+      await this.storeService.setMetadataBatch(
+        [
+          { key: 'lastProcessedHeight', value: blockHeight },
+          { key: 'lastProcessedTimestamp', value: Date.now() },
+        ],
         { transaction: tx },
       );
 
@@ -128,7 +128,7 @@ export class IndexerManager {
             this.project.path, //projectId // TODO, define projectId
           );
           poiBlockHash = poiBlock.hash;
-          await this.storeService.setPoi(tx, poiBlock);
+          await this.storeService.setPoi(poiBlock, { transaction: tx });
         }
       }
     } catch (e) {
@@ -141,11 +141,6 @@ export class IndexerManager {
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
-
-    this.eventEmitter.emit(IndexerEvent.BlockLastProcessed, {
-      height: blockHeight,
-      timestamp: Date.now(),
-    });
   }
 
   async start(): Promise<void> {
