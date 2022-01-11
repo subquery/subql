@@ -45,6 +45,7 @@ export const PinoConfig = {
     req(req) {
       const body = req.raw.body;
       if ('operationName' in body && body.query) {
+        // Logging IntrospectionQuery payload clutters logs and isn't useful
         if (body.operationName !== 'IntrospectionQuery') {
           req.payload = stringify(
             gql`
