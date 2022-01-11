@@ -42,7 +42,6 @@ async function promptValidRemoteAndBranch(): Promise<string[]> {
     try {
       remote = await cli.prompt('Custom template git remote', {
         required: true,
-        default: 'https://github.com/subquery/subql-starter',
       });
       new URL(remote);
       isValid = true;
@@ -53,7 +52,6 @@ async function promptValidRemoteAndBranch(): Promise<string[]> {
   }
   const branch = await cli.prompt('Custom template git branch', {
     required: true,
-    default: 'v0.2.0',
   });
   return [remote, branch];
 }
