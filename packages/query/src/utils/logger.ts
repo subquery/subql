@@ -18,6 +18,7 @@ const logger = new Logger({level: logLevel, filepath: logPath, rotate: logRotate
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);
 }
+
 export class NestLogger implements LoggerService {
   private logger = logger.getLogger('nestjs');
 
