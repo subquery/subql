@@ -17,6 +17,8 @@ import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
 import {ProjectService} from './project.service';
 
+const logger = getLogger('express');
+
 @Module({
   providers: [ProjectService],
 })
@@ -71,7 +73,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     });
     app.use(
       ExpressPinoLogger({
-        logger: getLogger('express'),
+        logger: logger,
         autoLogging: {
           ignorePaths: ['/.well-known/apollo/server-health'],
         },

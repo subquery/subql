@@ -54,6 +54,12 @@ export function getYargsOption() {
       describe: 'Disable limits on query depth and allowable number returned query records',
       type: 'boolean',
     },
+    port: {
+      alias: 'p',
+      demandOption: false,
+      describe: 'The port the service will bind to',
+      type: 'number',
+    },
   });
 }
 
