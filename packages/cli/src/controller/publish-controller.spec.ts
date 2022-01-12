@@ -11,8 +11,8 @@ import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
 import Validate from '../commands/validate';
-import {ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
-import {createProject} from './init-controller';
+import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
+import {cloneProjectGit, prepare} from './init-controller';
 import {uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -44,7 +44,14 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
 
-  await createProject(tmpdir, projectSpec);
+  const branch = isProjectSpecV0_0_1(projectSpec) ? 'v0.0.1' : 'v0.2.0';
+  const projectPath = await cloneProjectGit(
+    tmpdir,
+    projectSpec.name,
+    'https://github.com/subquery/subql-starter',
+    branch
+  );
+  await prepare(projectPath, projectSpec);
 
   // Install dependencies
   childProcess.execSync(`npm i`, {cwd: projectDir});

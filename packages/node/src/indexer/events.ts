@@ -7,7 +7,6 @@ export enum IndexerEvent {
   BlockTarget = 'block_target_height',
   BlockBest = 'block_best_height',
   BlockProcessing = 'block_processing_height',
-  BlockLastProcessed = 'block_processed_height',
   BlockQueueSize = 'block_queue_size',
   BlocknumberQueueSize = 'blocknumber_queue_size',
   NetworkMetadata = 'network_metadata',
