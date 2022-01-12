@@ -46,12 +46,10 @@ export const PinoConfig = {
       const body = req.raw.body;
       if ('operationName' in body && body.query) {
         // Logging IntrospectionQuery payload clutters logs and isn't useful
-        if (body.operationName !== 'IntrospectionQuery') {
-          req.payload = stringify(
-            gql`
-              ${body.query}
-            `
-          );
+        if (body.operationName === 'IntrospectionQuery') {
+          req.introspection = true;
+        } else {
+          req.payload = body.query;
         }
       }
       return req;
@@ -61,18 +59,15 @@ export const PinoConfig = {
         res.stack = res.headers.stack;
         delete res.headers.stack;
       }
-      if (res.headers.message) {
-        delete res.headers.message;
-      }
       return res;
     },
   },
   // will override message in any case, pino v7 has a better property for this.
   customSuccessMessage: (res) => {
-    if (res.getHeader('message')) {
-      return `${res.getHeader('message')}`;
+    if (res.getHeader('stack')) {
+      return 'Encountered errors during parsing, validating, or executing the GraphQL query';
     } else {
-      return 'request completed';
+      return 'Graphql request completed';
     }
   },
   autoLogging: {
