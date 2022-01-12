@@ -9,6 +9,7 @@ import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
+  BulkCreateOptions,
   QueryTypes,
   Sequelize,
   Transaction,
@@ -238,8 +239,9 @@ export class StoreService {
     metadata: Metadata[],
     options?: UpsertOptions<Metadata>,
   ): Promise<void> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.bulkCreate(metadata, options);
+    await Promise.all(
+      metadata.map(({ key, value }) => this.setMetadata(key, value, options)),
+    );
   }
 
   async setMetadata(
