@@ -9,7 +9,6 @@ import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
-  BulkCreateOptions,
   QueryTypes,
   Sequelize,
   Transaction,
