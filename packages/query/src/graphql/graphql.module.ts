@@ -18,8 +18,6 @@ import {plugins} from './plugins';
 import {LogGraphqlPlugin} from './plugins/logGraphqlPlugin';
 import {ProjectService} from './project.service';
 
-const logger = getLogger('express');
-
 @Module({
   providers: [ProjectService],
 })
@@ -73,7 +71,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
     });
-    
+
     app.use(ExpressPinoLogger(PinoConfig));
 
     await server.start();
