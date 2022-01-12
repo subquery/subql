@@ -3,8 +3,6 @@
 
 import {LoggerService} from '@nestjs/common';
 import {Logger} from '@subql/common';
-import {stringify} from 'flatted';
-import gql from 'graphql-tag';
 import Pino from 'pino';
 import {argv} from '../yargs';
 
@@ -54,21 +52,6 @@ export const PinoConfig = {
       }
       return req;
     },
-    res(res) {
-      if (res.headers.stack) {
-        res.stack = res.headers.stack;
-        delete res.headers.stack;
-      }
-      return res;
-    },
-  },
-  // will override message in any case, pino v7 has a better property for this.
-  customSuccessMessage: (res) => {
-    if (res.getHeader('stack')) {
-      return 'Encountered errors during parsing, validating, or executing the GraphQL query';
-    } else {
-      return 'Graphql request completed';
-    }
   },
   autoLogging: {
     ignorePaths: ['/.well-known/apollo/server-health'],

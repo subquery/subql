@@ -15,7 +15,6 @@ import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {PinoConfig} from '../utils/logger';
 import {plugins} from './plugins';
-import {LogGraphqlPlugin} from './plugins/logGraphqlPlugin';
 import {ProjectService} from './project.service';
 
 @Module({
@@ -67,7 +66,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         this.config.get('playground')
           ? ApolloServerPluginLandingPageGraphQLPlayground()
           : ApolloServerPluginLandingPageDisabled(),
-        LogGraphqlPlugin,
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
     });
