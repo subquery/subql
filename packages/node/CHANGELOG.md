@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update Polkadot/api to 7.3.1 (#745)
 ### Added 
 - Add ready status of indexer to endpoint (#728)
-- Add `--port` option for subql/node (#739)
+- Add `--port` option, auto find available port when the default one is occupied. (#739)ss
 ### Fixed
 - Fix handle chainTypes error (#732)
 - Try catch on init api with chainTypes (#738)
