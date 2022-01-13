@@ -3718,7 +3718,6 @@ __metadata:
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
     "@polkadot/api": 7.3.1
-    "@polkadot/util-crypto": ^8.3.1
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
