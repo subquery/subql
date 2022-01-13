@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.15.1-1",
+  "version": "0.16.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -34,6 +34,5 @@
     "@types/detect-port": "^1",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  },
-  "stableVersion": "0.15.1-0"
+  }
 }

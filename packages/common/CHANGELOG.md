@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.16.0] - 2021-01-13
+### Added 
+- Add rowCountEstimate to Metadata (#736)
+- Add method `findAvailablePort` (#739)
 
 ## [0.15.0] - 2021-12-16
 ### Added 
@@ -119,7 +123,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/0.15.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/0.16.0...HEAD
+[0.16.0]: https://github.com/subquery/subql/compare/common/0.15.0...common/0.16.0
 [0.15.0]: https://github.com/subquery/subql/compare/common/0.14.1...common/0.15.0
 [0.14.1]: https://github.com/subquery/subql/compare/common/0.14.0...common/0.14.1
 [0.14.0]: https://github.com/subquery/subql/compare/common/0.13.0...common/0.14.0
