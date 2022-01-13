@@ -8,7 +8,7 @@ import { IndexerManager } from './indexer/indexer.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { getYargsOption } from './yargs';
 
-const DEFAULT_PORT = 3001;
+const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 const { argv } = getYargsOption();
 

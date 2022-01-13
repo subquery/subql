@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/0.16.3-1 linux-x64 node-v16.13.1
+@subql/cli/0.16.3-2 linux-x64 node-v16.13.2
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -57,7 +57,7 @@ OPTIONS
   --mode=(production|prod|development|dev)  [default: production]
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -73,7 +73,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/codegen.js)_
 
 ## `subql help [COMMAND]`
 
@@ -111,7 +111,7 @@ OPTIONS
   --specVersion=0.0.1|0.2.0  [default: 0.2.0] The spec version to be used by the project
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/init.js)_
 
 ## `subql migrate`
 
@@ -127,7 +127,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/migrate.js)_
 
 ## `subql publish`
 
@@ -142,7 +142,7 @@ OPTIONS
   --ipfs=ipfs              [default: http://localhost:5001/api/v0] IPFS gateway endpoint
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -161,6 +161,6 @@ OPTIONS
   --silent
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.16.3-1/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v0.16.3-2/lib/commands/validate.js)_
 
 <!-- commandsstop -->
