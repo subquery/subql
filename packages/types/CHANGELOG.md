@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.13.0] - 2022-01-13
+### Changed
+- Update Polkadot/api to 7.3.1 (#745)
+
 ## [0.12.0] - 2021-12-16
 ### Added 
 - Add `bulkCreate` in `Store` interface (#699)
