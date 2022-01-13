@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { getLogger } from '../utils/logger';
 import { ReadyService } from './ready.service';
 
@@ -13,6 +13,14 @@ export class ReadyController {
 
   @Get()
   getReady() {
-    return { ready: this.readyService.ready };
+    if (!this.readyService.ready) {
+      throw new HttpException(
+        {
+          status: HttpStatus.SERVICE_UNAVAILABLE,
+          error: 'Database schema is not created or ready',
+        },
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
   }
 }
