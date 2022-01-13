@@ -9,6 +9,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 
+
 ## [0.9.0] - 2021-12-16
 ### Changed
 - Limit query record size to 100, though by using `--unsafe` can remove this limit. (#644)

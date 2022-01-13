@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [0.16.2] - 2021-12-16
 ### Changed
 - Update subql/validator dependencies (#720)
