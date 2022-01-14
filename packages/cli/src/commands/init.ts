@@ -113,65 +113,75 @@ export default class Init extends Command {
       this.error(e);
     }
 
-    const networks = templates
-      .map(({network}) => network)
-      .filter((n, i, self) => {
-        return i === self.indexOf(n);
-      });
-    networks.push('Other');
-
-    // Network
-    inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-    await inquirer
-      .prompt([
-        {
-          name: 'networkResponse',
-          message: 'Select a network',
-          type: 'autocomplete',
-          searchText: '',
-          emptyText: 'Network not found',
-          source: filterInput(networks),
-        },
-      ])
-      .then(({networkResponse}) => {
-        if (networkResponse === 'Other') {
-          skipFlag = true;
-        } else {
-          selectedNetwork = networkResponse;
-        }
-      });
+    // Filter for specVersion and skip if needed
+    templates = templates.filter(({specVersion}) => specVersion === flags.specVersion);
+    if (templates.length === 0) {
+      skipFlag = true;
+    }
 
     if (!skipFlag) {
-      const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
-      const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+      const networks = templates
+        .map(({network}) => network)
+        .filter((n, i, self) => {
+          return i === self.indexOf(n);
+        });
+      networks.push('Other');
 
-      const templateDisplays = candidateTemplates.map(
-        ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
-      );
-      templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
-
+      // Network
+      inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
       await inquirer
         .prompt([
           {
-            name: 'templateDisplay',
-            message: 'Select a template project',
+            name: 'networkResponse',
+            message: 'Select a network',
             type: 'autocomplete',
             searchText: '',
-            emptyText: 'Template not found',
-            source: filterInput(templateDisplays),
+            emptyText: 'Network not found',
+            source: filterInput(networks),
           },
         ])
-        .then(({templateDisplay}) => {
-          const templateName = (templateDisplay as string).split(' ')[0];
-          if (templateName === 'Other') {
+        .then(({networkResponse}) => {
+          if (networkResponse === 'Other') {
             skipFlag = true;
           } else {
-            selectedTemplate = templates.find(({name}) => name === templateName);
-            flags.specVersion = selectedTemplate.specVersion;
+            selectedNetwork = networkResponse;
           }
         });
 
-      if (skipFlag) {
+      if (!skipFlag) {
+        const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
+        const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+
+        const templateDisplays = candidateTemplates.map(
+          ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
+        );
+        templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+
+        await inquirer
+          .prompt([
+            {
+              name: 'templateDisplay',
+              message: 'Select a template project',
+              type: 'autocomplete',
+              searchText: '',
+              emptyText: 'Template not found',
+              source: filterInput(templateDisplays),
+            },
+          ])
+          .then(({templateDisplay}) => {
+            const templateName = (templateDisplay as string).split(' ')[0];
+            if (templateName === 'Other') {
+              skipFlag = true;
+            } else {
+              selectedTemplate = templates.find(({name}) => name === templateName);
+              flags.specVersion = selectedTemplate.specVersion;
+            }
+          });
+
+        if (skipFlag) {
+          [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+        }
+      } else {
         [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       }
     } else {
