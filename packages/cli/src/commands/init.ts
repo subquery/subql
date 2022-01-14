@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
+import {uniq} from 'lodash';
 import {
   fetchTemplates,
   Template,
@@ -20,6 +21,8 @@ import {
 } from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
+
+inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
@@ -120,15 +123,10 @@ export default class Init extends Command {
     }
 
     if (!skipFlag) {
-      const networks = templates
-        .map(({network}) => network)
-        .filter((n, i, self) => {
-          return i === self.indexOf(n);
-        });
+      const networks = uniq(templates.map(({network}) => network));
       networks.push('Other');
 
       // Network
-      inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
       await inquirer
         .prompt([
           {
