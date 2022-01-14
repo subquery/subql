@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
@@ -66,6 +67,7 @@ export default class Init extends Command {
     force: flags.boolean({char: 'f'}),
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
+    starter: flags.boolean({required: false, default: false, description: 'Select subql-starter as template'}),
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: flags.string({
       required: false,
@@ -116,74 +118,83 @@ export default class Init extends Command {
       this.error(e);
     }
 
-    // Filter for specVersion and skip if needed
     templates = templates.filter(({specVersion}) => specVersion === flags.specVersion);
+
+    if (flags.starter) {
+      const starter = templates.find(({name}) => name === 'subql-starter');
+      assert(starter !== undefined, 'Unable to find starter project');
+      selectedTemplate = starter;
+    }
+
     if (templates.length === 0) {
       skipFlag = true;
     }
 
-    if (!skipFlag) {
-      const networks = uniq(templates.map(({network}) => network));
-      networks.push('Other');
-
-      // Network
-      await inquirer
-        .prompt([
-          {
-            name: 'networkResponse',
-            message: 'Select a network',
-            type: 'autocomplete',
-            searchText: '',
-            emptyText: 'Network not found',
-            source: filterInput(networks),
-          },
-        ])
-        .then(({networkResponse}) => {
-          if (networkResponse === 'Other') {
-            skipFlag = true;
-          } else {
-            selectedNetwork = networkResponse;
-          }
-        });
-
+    if (!selectedTemplate) {
       if (!skipFlag) {
-        const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
-        const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+        const networks = uniq(templates.map(({network}) => network));
+        networks.push('Other');
 
-        const templateDisplays = candidateTemplates.map(
-          ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
-        );
-        templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
-
+        // Network
         await inquirer
           .prompt([
             {
-              name: 'templateDisplay',
-              message: 'Select a template project',
+              name: 'networkResponse',
+              message: 'Select a network',
               type: 'autocomplete',
               searchText: '',
-              emptyText: 'Template not found',
-              source: filterInput(templateDisplays),
+              emptyText: 'Network not found',
+              source: filterInput(networks),
             },
           ])
-          .then(({templateDisplay}) => {
-            const templateName = (templateDisplay as string).split(' ')[0];
-            if (templateName === 'Other') {
+          .then(({networkResponse}) => {
+            if (networkResponse === 'Other') {
               skipFlag = true;
             } else {
-              selectedTemplate = templates.find(({name}) => name === templateName);
-              flags.specVersion = selectedTemplate.specVersion;
+              selectedNetwork = networkResponse;
             }
           });
 
-        if (skipFlag) {
+        if (!skipFlag) {
+          const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
+          const paddingWidth =
+            candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+
+          const templateDisplays = candidateTemplates.map(
+            ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
+          );
+          templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+
+          await inquirer
+            .prompt([
+              {
+                name: 'templateDisplay',
+                message: 'Select a template project',
+                type: 'autocomplete',
+                searchText: '',
+                emptyText: 'Template not found',
+                source: filterInput(templateDisplays),
+              },
+            ])
+            .then(({templateDisplay}) => {
+              const templateName = (templateDisplay as string).split(' ')[0];
+              if (templateName === 'Other') {
+                skipFlag = true;
+              } else {
+                selectedTemplate = templates.find(({name}) => name === templateName);
+                flags.specVersion = selectedTemplate.specVersion;
+              }
+            });
+
+          if (skipFlag) {
+            [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+          }
+        } else {
           [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
         }
       } else {
         [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       }
-    } else {
-      [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
     }
 
     let projectPath;
