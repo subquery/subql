@@ -63,7 +63,9 @@ export class TerraDsProcessorService {
       ds.mapping.handlers.map(
         (handler) =>
           //filter here
-          processor.handlerProcessors[handler.kind],
+          processor.handlerProcessors[handler.kind].filterValidator(
+            handler.filter
+          ),
       );
 
       /* Additional processor specific validation */

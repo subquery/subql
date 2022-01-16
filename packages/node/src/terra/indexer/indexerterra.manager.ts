@@ -34,6 +34,7 @@ import {
   isRuntimeTerraDs,
 } from './utils';
 import { isEventHandlerProcessor } from './utils';
+import { filterEvents } from '../utils/terra-helper';
 
 //const { version: packageVersion } = require('../../package.json');
 
@@ -313,16 +314,16 @@ export class IndexerTerraManager {
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Block:
-          //TODO: filter blocks
           await vm.securedExec(handler.handler, [block]);
           break;
         case SubqlTerraHandlerKind.Event:
           {
-            //TODO: filter events
-            for (const e of events) {
-              if ('transfer' in e) {
-                await vm.securedExec(handler.handler, [e, block]);
-              }
+            const filteredEvents = filterEvents(
+              events,
+              handler.filter
+            )
+            for (const e of filteredEvents) {
+              await vm.securedExec(handler.handler, [e, block]);
             }
           }
           break;
@@ -340,12 +341,14 @@ export class IndexerTerraManager {
     const assets = await this.dsProcessorService.getAssets(ds);
 
     const processData = async <K extends SubqlTerraHandlerKind>(
-      processor: SecondLayerTerraHandlerProcessor<K, unknown>,
+      processor: SecondLayerTerraHandlerProcessor<K, unknown, unknown>,
       handler: SubqlTerraCustomHandler<string>,
       filteredData: TerraRuntimeHandlerInputMap[K][],
     ): Promise<void> => {
       const transformedData = await Promise.all(
-        filteredData.map((data) =>
+        filteredData
+        .filter((data) => processor.filterProcessor(handler.filter, data, ds))
+        .map((data) =>
           processor.transformer(data, ds, this.api, assets),
         ),
       );
@@ -360,7 +363,10 @@ export class IndexerTerraManager {
       if (isBlockHandlerProcessor(processor)) {
         await processData(processor, handler, [block]);
       } else if (isEventHandlerProcessor(processor)) {
-        //TODO: filter events
+        const filteredEvents = filterEvents(
+          events,
+          processor.baseFilter
+        )
         await processData(processor, handler, events);
       }
     }

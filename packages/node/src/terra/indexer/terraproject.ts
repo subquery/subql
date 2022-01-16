@@ -14,7 +14,10 @@ export type TerraRuntimeHandlerInputMap = {
   [SubqlTerraHandlerKind.Event]: EventsByType;
 };
 
-//TODO: implement filters
+type TerraRuntimeFilterMap = {
+  [SubqlTerraHandlerKind.Block]: {};
+  [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
+}
 
 export interface TerraProjectManifest {
   specVersion: string;
@@ -36,30 +39,36 @@ export interface TerraNetwork {
   chainId: string;
 }
 
+export interface SubqlTerraEventFilter {
+  type?: string;
+}
+
+export type SubqlTerraHandlerFilter = SubqlTerraEventFilter
+
 export interface SubqlTerraBlockHandler {
   handler: string;
   kind: SubqlTerraHandlerKind.Block;
-  //TODO: implement filter
 }
 
 export interface SubqlTerraEventHandler {
   handler: string;
   kind: SubqlTerraHandlerKind.Event;
-  //TODO: implement filter
+  filter?: SubqlTerraEventFilter
 }
 
-export interface SubqlTerraCustomHandler<K extends string = string> {
+export interface SubqlTerraCustomHandler<
+  K extends string = string,
+  F = Record<string, unknown>  
+> {
   handler: string;
   kind: K;
-  //TODO: implement filter
+  filter?: F
 }
 
-export type SubqlTerraRuntimeHandler =
-  | SubqlTerraBlockHandler
+export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler
   | SubqlTerraEventHandler;
 
-export type SubqlTerraHandler =
-  | SubqlTerraRuntimeHandler
+export type SubqlTerraHandler = SubqlTerraRuntimeHandler
   | SubqlTerraCustomHandler;
 
 export interface SubqlTerraMapping<
@@ -69,7 +78,9 @@ export interface SubqlTerraMapping<
   handlers: T[];
 }
 
-interface ISubqlTerraDatasource<M extends SubqlTerraMapping> {
+interface ISubqlTerraDatasource<
+  M extends SubqlTerraMapping
+> {
   name?: string;
   kind: string;
   startBlock?: number;
@@ -78,13 +89,12 @@ interface ISubqlTerraDatasource<M extends SubqlTerraMapping> {
 
 export interface SubqlTerraRuntimeDatasource<
   M extends SubqlTerraMapping<SubqlTerraRuntimeHandler> = SubqlTerraMapping<SubqlTerraRuntimeHandler>,
+
 > extends ISubqlTerraDatasource<M> {
   kind: SubqlTerraDatasourceKind.Runtime;
 }
 
-export type SubqlTerraDatasource =
-  | SubqlTerraRuntimeDatasource
-  | SubqlTerraCustomDatasource;
+export type SubqlTerraDatasource = SubqlTerraRuntimeDatasource | SubqlTerraCustomDatasource;
 
 export interface FileReference {
   file: string;
@@ -135,14 +145,14 @@ export interface SubqlTerraDatasourceProcessor<
 
 export interface SecondLayerTerraHandlerProcessor<
   K extends SubqlTerraHandlerKind,
-  //F,
+  F,
   E,
   DS extends SubqlTerraCustomDatasource = SubqlTerraCustomDatasource,
 > {
   baseHandlerKind: K;
-  //baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
+  baseFilter: TerraRuntimeFilterMap[K] | TerraRuntimeFilterMap[K][];
   transformer: TerraHandlerInputTransformer<K, E, DS>;
-  //filterProcessor: (filter: F | undefined, input: TerraRuntimeHandlerInputMap[K], ds: DS) => boolean;
-  //filterValidator: (filter: F) => void;
+  filterProcessor: (filter: F | undefined, input: TerraRuntimeHandlerInputMap[K], ds: DS) => boolean;
+  filterValidator: (filter: F) => void;
   // dictionaryQuery: (filter: F) => DictionaryQuery;
 }

@@ -17,6 +17,7 @@ import { TerraDsProcessorService } from './terrads-processor.service';
 import {
   SubqlTerraDatasource,
   SubqlTerraHandler,
+  SubqlTerraHandlerFilter,
   SubqlTerraHandlerKind,
 } from './terraproject';
 import { TerraBlockContent } from './types';
@@ -217,5 +218,18 @@ export class FetchTerraService implements OnApplicationShutdown {
     }
   }
 
-  // implement getBaseHandlerFilters
+  private getBaseHandlerFilters<T extends SubqlTerraHandlerFilter>(
+    ds: SubqlTerraDatasource,
+    handlerKind: string
+  ): T[] {
+    if(isCustomTerraDs(ds)) {
+      const plugin = this.dsProcessorService.getDsProcessor(ds);
+      const processor = plugin.handlerProcessors[handlerKind];
+      return processor.baseFilter instanceof Array
+        ? (processor.baseFilter as T[])
+        : ([processor.baseFilter] as T[])
+    } else {
+      throw new Error(`expect custom datasource here`)
+    }
+  }
 }

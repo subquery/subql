@@ -6,11 +6,32 @@ import {
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
+import { SubqlTerraEventFilter } from '../indexer/terraproject';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 import { delay } from './promise';
 
 const logger = getLogger('fetch');
+
+export function filterEvents(
+  events: EventsByType,
+  filterOrFilters?: SubqlTerraEventFilter | SubqlTerraEventFilter[] | undefined
+): EventsByType[] {
+  if(
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return events;
+  }
+
+  const filters = filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+  return events.filter((event) => 
+    filters.find(
+      (filter) => 
+        (filter.type ? event.type === filter.type : true)
+    )
+  )
+}
 
 async function getBlockByHeight(api: LCDClient, height: number) {
   return api.tendermint.blockInfo(height).catch((e) => {

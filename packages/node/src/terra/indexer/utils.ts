@@ -42,13 +42,13 @@ export function loadTerraProjectManifest(file: string): TerraProjectManifest {
 }
 
 export function isBlockHandlerProcessor<E>(
-  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Block, E> {
+  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
+): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Block, unknown, E> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Block;
 }
 
 export function isEventHandlerProcessor<E>(
-  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, E> {
+  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
+): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, unknown, E> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Event;
 }
