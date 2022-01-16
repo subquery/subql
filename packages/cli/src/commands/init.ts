@@ -67,7 +67,6 @@ export default class Init extends Command {
     force: flags.boolean({char: 'f'}),
     location: flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
-    starter: flags.boolean({required: false, default: false, description: 'Select subql-starter as template'}),
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: flags.string({
       required: false,
@@ -105,7 +104,7 @@ export default class Init extends Command {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
 
-    let skipFlag = false;
+    let useCustomTemplate = false;
     let gitRemote: string;
     let gitBranch: string;
     let templates: Template[];
@@ -119,82 +118,73 @@ export default class Init extends Command {
     }
 
     templates = templates.filter(({specVersion}) => specVersion === flags.specVersion);
-
-    if (flags.starter) {
-      const starter = templates.find(({name}) => name === 'subql-starter');
-      assert(starter !== undefined, 'Unable to find starter project');
-      selectedTemplate = starter;
-    }
-
     if (templates.length === 0) {
-      skipFlag = true;
+      useCustomTemplate = true;
     }
 
-    if (!selectedTemplate) {
-      if (!skipFlag) {
-        const networks = uniq(templates.map(({network}) => network));
-        networks.push('Other');
+    if (!useCustomTemplate) {
+      const networks = uniq(templates.map(({network}) => network));
+      networks.push('Other');
 
-        // Network
+      // Network selection
+      await inquirer
+        .prompt([
+          {
+            name: 'networkResponse',
+            message: 'Select a network',
+            type: 'autocomplete',
+            searchText: '',
+            emptyText: 'Network not found',
+            source: filterInput(networks),
+          },
+        ])
+        .then(({networkResponse}) => {
+          if (networkResponse === 'Other') {
+            useCustomTemplate = true;
+          } else {
+            selectedNetwork = networkResponse;
+          }
+        });
+
+      if (!useCustomTemplate) {
+        const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
+        const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+
+        const templateDisplays = candidateTemplates.map(
+          ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
+        );
+        templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+
+        // Network selection
         await inquirer
           .prompt([
             {
-              name: 'networkResponse',
-              message: 'Select a network',
+              name: 'templateDisplay',
+              message: 'Select a template project',
               type: 'autocomplete',
               searchText: '',
-              emptyText: 'Network not found',
-              source: filterInput(networks),
+              emptyText: 'Template not found',
+              source: filterInput(templateDisplays),
             },
           ])
-          .then(({networkResponse}) => {
-            if (networkResponse === 'Other') {
-              skipFlag = true;
+          .then(({templateDisplay}) => {
+            const templateName = (templateDisplay as string).split(' ')[0];
+            if (templateName === 'Other') {
+              useCustomTemplate = true;
             } else {
-              selectedNetwork = networkResponse;
+              selectedTemplate = templates.find(({name}) => name === templateName);
+              flags.specVersion = selectedTemplate.specVersion;
             }
           });
 
-        if (!skipFlag) {
-          const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
-          const paddingWidth =
-            candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
-
-          const templateDisplays = candidateTemplates.map(
-            ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
-          );
-          templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
-
-          await inquirer
-            .prompt([
-              {
-                name: 'templateDisplay',
-                message: 'Select a template project',
-                type: 'autocomplete',
-                searchText: '',
-                emptyText: 'Template not found',
-                source: filterInput(templateDisplays),
-              },
-            ])
-            .then(({templateDisplay}) => {
-              const templateName = (templateDisplay as string).split(' ')[0];
-              if (templateName === 'Other') {
-                skipFlag = true;
-              } else {
-                selectedTemplate = templates.find(({name}) => name === templateName);
-                flags.specVersion = selectedTemplate.specVersion;
-              }
-            });
-
-          if (skipFlag) {
-            [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-          }
-        } else {
+        if (useCustomTemplate) {
           [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
         }
       } else {
         [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       }
+    } else {
+      [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
     }
 
     let projectPath;
@@ -202,7 +192,7 @@ export default class Init extends Command {
     try {
       if (selectedTemplate) {
         projectPath = await cloneProjectTemplate(location, project.name, selectedTemplate);
-      } else if (skipFlag) {
+      } else if (useCustomTemplate) {
         projectPath = await cloneProjectGit(location, project.name, gitRemote, gitBranch);
       } else {
         throw new Error('Invalid initalization state, must select either a template project or provide a git remote');
@@ -213,8 +203,20 @@ export default class Init extends Command {
       this.error(e);
     }
 
-    const [defaultRepository, defaultEndpoint, defaultAuthor, defaultVersion, defaultDescription, defaultLicense] =
-      await readDefaults(projectPath);
+    const [
+      defaultSpecVersion,
+      defaultRepository,
+      defaultEndpoint,
+      defaultAuthor,
+      defaultVersion,
+      defaultDescription,
+      defaultLicense,
+    ] = await readDefaults(projectPath);
+
+    // Update specVersion to template specVersion
+    if (useCustomTemplate) {
+      flags.specVersion = defaultSpecVersion;
+    }
 
     project.endpoint = await cli.prompt('RPC endpoint:', {
       default: defaultEndpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',
