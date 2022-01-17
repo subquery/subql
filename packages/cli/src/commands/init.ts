@@ -117,6 +117,8 @@ export default class Init extends Command {
     }
 
     templates = templates.filter(({specVersion}) => specVersion === flags.specVersion);
+
+    // Fallback to custom prompt if templates remote is empty
     if (templates.length === 0) {
       useCustomTemplate = true;
     }
@@ -212,7 +214,7 @@ export default class Init extends Command {
       defaultLicense,
     ] = await readDefaults(projectPath);
 
-    // Update specVersion to template specVersion
+    // Update specVersion to template specVersion on custom template
     if (useCustomTemplate) {
       flags.specVersion = defaultSpecVersion;
     }
