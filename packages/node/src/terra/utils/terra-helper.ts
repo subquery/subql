@@ -6,6 +6,7 @@ import {
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
+import { filter } from 'lodash';
 import { SubqlTerraEventFilter } from '../indexer/terraproject';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -14,23 +15,29 @@ import { delay } from './promise';
 const logger = getLogger('fetch');
 
 export function filterEvents(
-  events: EventsByType,
-  filterOrFilters?: SubqlTerraEventFilter | SubqlTerraEventFilter[] | undefined
+  events: EventsByType[],
+  filterOrFilters?: SubqlTerraEventFilter | SubqlTerraEventFilter[] | undefined,
 ): EventsByType[] {
-  if(
+  if (
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
   ) {
     return events;
   }
 
-  const filters = filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  return events.filter((event) => 
-    filters.find(
-      (filter) => 
-        (filter.type ? event.type === filter.type : true)
-    )
-  )
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+  const filteredEvents = [];
+  events.forEach((event) => {
+    const fe = {};
+    filters.forEach((filter) => {
+      if (filter.type in event) {
+        fe[filter.type] = event[filter.type];
+      }
+    });
+    filteredEvents.push(fe);
+  });
+  return filteredEvents;
 }
 
 async function getBlockByHeight(api: LCDClient, height: number) {
