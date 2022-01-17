@@ -55,7 +55,7 @@ export default class Build extends Command {
     }
 
     cli.action.start('Building and packing code');
-    await runWebpack(buildEntries, directory, isDev, true);
+    await runWebpack(buildEntries, directory, 'dist', isDev, true);
     cli.action.stop();
   }
 }

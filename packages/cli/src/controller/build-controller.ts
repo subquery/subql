@@ -6,12 +6,13 @@ import {merge} from 'webpack-merge';
 
 const getBaseConfig = (
   buildEntries: Configuration['entry'],
-  entryDir: string,
+  projectDir: string,
+  outputDir: string,
   development?: boolean
 ): webpack.Configuration => ({
   target: 'node',
   mode: development ? 'development' : 'production',
-  context: entryDir,
+  context: projectDir,
   entry: buildEntries,
   devtool: development && 'inline-source-map',
   module: {
@@ -38,7 +39,7 @@ const getBaseConfig = (
   },
 
   output: {
-    path: `${entryDir}/dist`,
+    path: `${projectDir}/${outputDir}`,
     filename: '[name].js',
     libraryTarget: 'commonjs',
   },
@@ -46,12 +47,13 @@ const getBaseConfig = (
 
 export async function runWebpack(
   buildEntries: Configuration['entry'],
-  entryDir: string,
+  projectDir: string,
+  outputDir: string,
   isDev = false,
   clean = false
 ): Promise<void> {
   const config = merge(
-    getBaseConfig(buildEntries, entryDir, isDev),
+    getBaseConfig(buildEntries, projectDir, outputDir, isDev),
     {output: {clean}}
     // Can allow projects to override webpack config here
   );

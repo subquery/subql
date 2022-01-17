@@ -98,10 +98,10 @@ const processorCache: Record<string, string> = {};
 
 async function packProcessor(projectDir: string, processorEntry: string): Promise<string> {
   if (!processorCache[processorEntry]) {
-    const output = path.resolve(projectDir, `./dist/processors/${path.basename(processorEntry)}`);
-    await runWebpack(projectDir, `processors/${path.basename(processorEntry)}`, false);
+    const outputDir = `./dist/processors/${path.basename(processorEntry)}`;
+    await runWebpack(processorEntry, projectDir, outputDir, false);
 
-    processorCache[processorEntry] = output;
+    processorCache[processorEntry] = path.resolve(projectDir, outputDir);
   }
 
   return processorCache[processorEntry];
