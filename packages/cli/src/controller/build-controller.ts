@@ -12,7 +12,7 @@ const getBaseConfig = (
   target: 'node',
   mode: development ? 'development' : 'production',
   context: entryDir,
-  entry: buildEntries, //TODO: typescript of this is wrong
+  entry: buildEntries,
   devtool: development && 'inline-source-map',
   module: {
     rules: [
