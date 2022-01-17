@@ -35,9 +35,9 @@ export default class Build extends Command {
 
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
+    const defaultEntry = path.join(directory, 'src/index.ts');
 
     let buildEntries;
-    const defaultEntry = path.join(directory, 'src/index.ts');
 
     if (pjson.exports) {
       buildEntries = pjson.exports;
@@ -49,7 +49,7 @@ export default class Build extends Command {
 
     for (const i in buildEntries) {
       if (typeof buildEntries[i] !== 'string') {
-        this.warn(`ignoring nested field ${i} from build`);
+        this.warn(`Ignoring entry ${i} from build.`);
         delete buildEntries[i];
       }
     }
