@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.18.0] - 2022-01-18
+### Added
+- Filter project templates by selected specVersion (#751)
+
 ## [0.17.0] - 2022-01-13
 ### Added
 - Warning and advice for use manifest specVersion v0.0.1 (#730)
@@ -128,7 +132,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.17.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.18.0...HEAD
+[0.18.0]: https://github.com/subquery/subql/compare/cli/0.17.0...cli/0.18.0
 [0.17.0]: https://github.com/subquery/subql/compare/cli/0.16.2...cli/0.17.0
 [0.16.2]: https://github.com/subquery/subql/compare/cli/0.16.1...cli/0.16.2
 [0.16.1]: https://github.com/subquery/subql/compare/cli/0.16.0...cli/0.16.1
