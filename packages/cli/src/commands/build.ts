@@ -35,10 +35,29 @@ export default class Build extends Command {
 
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
-    const outputPath = path.resolve(directory, pjson.main || 'dist/index.js');
+
+    let buildEntries;
+    const defaultEntry = path.join(directory, 'src/index.ts');
+
+    if (pjson.exports) {
+      buildEntries = pjson.exports;
+      const name = path.basename(defaultEntry, '.js');
+      buildEntries[name] = defaultEntry;
+    } else {
+      buildEntries = defaultEntry;
+    }
+
+    for (const i in buildEntries) {
+      if (typeof buildEntries[i] !== 'string') {
+        this.warn(`ignoring nested field ${i} from build`);
+        delete buildEntries[i];
+      }
+    }
+
+    const outputDir = path.resolve(directory);
 
     cli.action.start('Building and packing code');
-    await runWebpack(path.join(directory, 'src/index.ts'), outputPath, isDev, true);
+    await runWebpack(buildEntries, outputDir, isDev, true);
     cli.action.stop();
   }
 }
