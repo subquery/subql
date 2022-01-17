@@ -54,10 +54,8 @@ export default class Build extends Command {
       }
     }
 
-    const outputDir = path.resolve(directory);
-
     cli.action.start('Building and packing code');
-    await runWebpack(buildEntries, outputDir, isDev, true);
+    await runWebpack(buildEntries, directory, isDev, true);
     cli.action.stop();
   }
 }
