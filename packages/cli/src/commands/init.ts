@@ -9,6 +9,7 @@ import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
+import {uniq} from 'lodash';
 import {
   fetchTemplates,
   Template,
@@ -20,6 +21,8 @@ import {
 } from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
+
+inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
@@ -100,7 +103,7 @@ export default class Init extends Command {
       throw new Error(`Directory ${project.name} exists, try another project name`);
     }
 
-    let skipFlag = false;
+    let useCustomTemplate = false;
     let gitRemote: string;
     let gitBranch: string;
     let templates: Template[];
@@ -113,65 +116,72 @@ export default class Init extends Command {
       this.error(e);
     }
 
-    const networks = templates
-      .map(({network}) => network)
-      .filter((n, i, self) => {
-        return i === self.indexOf(n);
-      });
-    networks.push('Other');
+    templates = templates.filter(({specVersion}) => specVersion === flags.specVersion);
 
-    // Network
-    inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
-    await inquirer
-      .prompt([
-        {
-          name: 'networkResponse',
-          message: 'Select a network',
-          type: 'autocomplete',
-          searchText: '',
-          emptyText: 'Network not found',
-          source: filterInput(networks),
-        },
-      ])
-      .then(({networkResponse}) => {
-        if (networkResponse === 'Other') {
-          skipFlag = true;
-        } else {
-          selectedNetwork = networkResponse;
-        }
-      });
+    // Fallback to custom prompt if templates remote is empty
+    if (templates.length === 0) {
+      useCustomTemplate = true;
+    }
 
-    if (!skipFlag) {
-      const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
-      const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+    if (!useCustomTemplate) {
+      const networks = uniq(templates.map(({network}) => network));
+      networks.push('Other');
 
-      const templateDisplays = candidateTemplates.map(
-        ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
-      );
-      templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
-
+      // Network selection
       await inquirer
         .prompt([
           {
-            name: 'templateDisplay',
-            message: 'Select a template project',
+            name: 'networkResponse',
+            message: 'Select a network',
             type: 'autocomplete',
             searchText: '',
-            emptyText: 'Template not found',
-            source: filterInput(templateDisplays),
+            emptyText: 'Network not found',
+            source: filterInput(networks),
           },
         ])
-        .then(({templateDisplay}) => {
-          const templateName = (templateDisplay as string).split(' ')[0];
-          if (templateName === 'Other') {
-            skipFlag = true;
+        .then(({networkResponse}) => {
+          if (networkResponse === 'Other') {
+            useCustomTemplate = true;
           } else {
-            selectedTemplate = templates.find(({name}) => name === templateName);
-            flags.specVersion = selectedTemplate.specVersion;
+            selectedNetwork = networkResponse;
           }
         });
 
-      if (skipFlag) {
+      if (!useCustomTemplate) {
+        const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
+        const paddingWidth = candidateTemplates.map(({name}) => name.length).reduce((acc, xs) => Math.max(acc, xs)) + 5;
+
+        const templateDisplays = candidateTemplates.map(
+          ({description, name}) => `${name.padEnd(paddingWidth, ' ')}${chalk.gray(description)}`
+        );
+        templateDisplays.push(`${'Other'.padEnd(paddingWidth, ' ')}${chalk.gray('Enter a custom git endpoint')}`);
+
+        // Network selection
+        await inquirer
+          .prompt([
+            {
+              name: 'templateDisplay',
+              message: 'Select a template project',
+              type: 'autocomplete',
+              searchText: '',
+              emptyText: 'Template not found',
+              source: filterInput(templateDisplays),
+            },
+          ])
+          .then(({templateDisplay}) => {
+            const templateName = (templateDisplay as string).split(' ')[0];
+            if (templateName === 'Other') {
+              useCustomTemplate = true;
+            } else {
+              selectedTemplate = templates.find(({name}) => name === templateName);
+              flags.specVersion = selectedTemplate.specVersion;
+            }
+          });
+
+        if (useCustomTemplate) {
+          [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+        }
+      } else {
         [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       }
     } else {
@@ -183,7 +193,7 @@ export default class Init extends Command {
     try {
       if (selectedTemplate) {
         projectPath = await cloneProjectTemplate(location, project.name, selectedTemplate);
-      } else if (skipFlag) {
+      } else if (useCustomTemplate) {
         projectPath = await cloneProjectGit(location, project.name, gitRemote, gitBranch);
       } else {
         throw new Error('Invalid initalization state, must select either a template project or provide a git remote');
@@ -194,8 +204,20 @@ export default class Init extends Command {
       this.error(e);
     }
 
-    const [defaultRepository, defaultEndpoint, defaultAuthor, defaultVersion, defaultDescription, defaultLicense] =
-      await readDefaults(projectPath);
+    const [
+      defaultSpecVersion,
+      defaultRepository,
+      defaultEndpoint,
+      defaultAuthor,
+      defaultVersion,
+      defaultDescription,
+      defaultLicense,
+    ] = await readDefaults(projectPath);
+
+    // Update specVersion to template specVersion on custom template
+    if (useCustomTemplate) {
+      flags.specVersion = defaultSpecVersion;
+    }
 
     project.endpoint = await cli.prompt('RPC endpoint:', {
       default: defaultEndpoint ?? 'wss://polkadot.api.onfinality.io/public-ws',

@@ -75,7 +75,7 @@ export async function cloneProjectTemplate(
   return projectPath;
 }
 
-export async function readDefaults(projectPath: string): Promise<[string, string, string, string, string, string]> {
+export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);
   const currentPackage = JSON.parse(packageData.toString());
 
@@ -83,6 +83,7 @@ export async function readDefaults(projectPath: string): Promise<[string, string
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
   const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
   return [
+    currentProject.specVersion,
     currentProject.repository,
     currentProject.network.endpoint,
     currentPackage.author,

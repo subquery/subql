@@ -27,6 +27,7 @@ const projectSpec = {
   name: 'mocked_starter',
   repository: '',
   endpoint: 'wss://rpc.polkadot.io/public-ws',
+  specVersion: '0.2.0',
   author: 'jay',
   description: 'this is test for init controller',
   version: '',
@@ -65,9 +66,11 @@ describe('Cli can create project', () => {
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
     const templates = await fetchTemplates();
-    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    const template = templates.find(({name, specVersion}) => name === 'subql-starter' && specVersion === '0.2.0');
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
     await prepare(projectPath, projectSpec);
-    const [repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
+    const [specVersion, repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
+    expect(projectSpec.specVersion).toEqual(specVersion);
     expect(projectSpec.repository).toEqual(repository);
     expect(projectSpec.endpoint).toEqual(endpoint);
     expect(projectSpec.author).toEqual(author);
