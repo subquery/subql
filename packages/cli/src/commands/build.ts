@@ -13,7 +13,7 @@ export default class Build extends Command {
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
-    buildDir: flags.string({char: 'o', description: 'build folder from local folder i.e dist'}),
+    output: flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
     mode: flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
   };
 
@@ -38,7 +38,7 @@ export default class Build extends Command {
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
 
     const defaultEntry = path.join(directory, 'src/index.ts');
-    const outputDir = path.resolve(directory, flags.buildDir ?? 'dist');
+    const outputDir = path.resolve(directory, flags.output ?? 'dist');
 
     let buildEntries: {[key: string]: string} = {};
     buildEntries.index = defaultEntry;
