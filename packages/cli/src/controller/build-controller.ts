@@ -1,14 +1,19 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
-import webpack from 'webpack';
+import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 
-const getBaseConfig = (entryPath: string, outputPath: string, development?: boolean): webpack.Configuration => ({
+const getBaseConfig = (
+  buildEntries: Configuration['entry'],
+  projectDir: string,
+  outputDir: string,
+  development?: boolean
+): webpack.Configuration => ({
   target: 'node',
   mode: development ? 'development' : 'production',
-  entry: entryPath,
+  context: projectDir,
+  entry: buildEntries,
   devtool: development && 'inline-source-map',
   module: {
     rules: [
@@ -34,15 +39,21 @@ const getBaseConfig = (entryPath: string, outputPath: string, development?: bool
   },
 
   output: {
-    path: path.dirname(outputPath),
-    filename: path.basename(outputPath),
+    path: outputDir,
+    filename: '[name].js',
     libraryTarget: 'commonjs',
   },
 });
 
-export async function runWebpack(entryPath: string, outputPath: string, isDev = false, clean = false): Promise<void> {
+export async function runWebpack(
+  buildEntries: Configuration['entry'],
+  projectDir: string,
+  outputDir: string,
+  isDev = false,
+  clean = false
+): Promise<void> {
   const config = merge(
-    getBaseConfig(entryPath, outputPath, isDev),
+    getBaseConfig(buildEntries, projectDir, outputDir, isDev),
     {output: {clean}}
     // Can allow projects to override webpack config here
   );
