@@ -39,7 +39,7 @@ const getBaseConfig = (
   },
 
   output: {
-    path: `${projectDir}/${outputDir}`,
+    path: outputDir,
     filename: '[name].js',
     libraryTarget: 'commonjs',
   },

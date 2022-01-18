@@ -30,12 +30,6 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
     throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');
   }
 
-  for (const ds of manifest.dataSources) {
-    if (isCustomDs(ds)) {
-      ds.processor.file = await packProcessor(projectDir, ds.processor.file);
-    }
-  }
-
   const deployment = await replaceFileReferences(ipfs, projectDir, manifest);
 
   // Upload schema
@@ -92,17 +86,4 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
 
 function isFileReference(value: any): value is FileReference {
   return value.file && typeof value.file === 'string';
-}
-
-const processorCache: Record<string, string> = {};
-
-async function packProcessor(projectDir: string, processorEntry: string): Promise<string> {
-  if (!processorCache[processorEntry]) {
-    const outputDir = `./dist/processors/${path.basename(processorEntry)}`;
-    await runWebpack(processorEntry, projectDir, outputDir, false);
-
-    processorCache[processorEntry] = path.resolve(projectDir, outputDir);
-  }
-
-  return processorCache[processorEntry];
 }

@@ -13,6 +13,7 @@ export default class Build extends Command {
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
+    buildDir: flags.string({char: 'o', description: 'build folder from local folder i.e dist'}),
     mode: flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
   };
 
@@ -35,16 +36,15 @@ export default class Build extends Command {
 
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
+
     const defaultEntry = path.join(directory, 'src/index.ts');
+    const outputDir = path.resolve(directory, flags.buildDir ?? 'dist');
 
-    let buildEntries;
+    let buildEntries: {[key: string]: string} = {};
+    buildEntries.index = defaultEntry;
 
-    if (pjson.exports) {
-      buildEntries = pjson.exports;
-      const name = path.basename(defaultEntry, '.js');
-      buildEntries[name] = defaultEntry;
-    } else {
-      buildEntries = defaultEntry;
+    if (pjson.exports && typeof pjson.exports !== 'string') {
+      buildEntries = {...buildEntries, ...pjson.exports};
     }
 
     for (const i in buildEntries) {
@@ -55,7 +55,7 @@ export default class Build extends Command {
     }
 
     cli.action.start('Building and packing code');
-    await runWebpack(buildEntries, directory, 'dist', isDev, true);
+    await runWebpack(buildEntries, directory, outputDir, isDev, true);
     cli.action.stop();
   }
 }
