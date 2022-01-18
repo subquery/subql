@@ -10,12 +10,12 @@ import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { filterEvents } from '../utils/terra-helper';
 import { ApiTerraService } from './apiterra.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchTerraService } from './fetchterra.service';
-import { IndexerSandbox } from './sandboxterra.service';
-import { SandboxTerraService } from './sandboxterra.service';
+import { IndexerSandbox, SandboxTerraService } from './sandboxterra.service';
 import { StoreService } from './store.service';
 import { TerraDsProcessorService } from './terrads-processor.service';
 import {
@@ -32,9 +32,8 @@ import {
   isBlockHandlerProcessor,
   isCustomTerraDs,
   isRuntimeTerraDs,
+  isEventHandlerProcessor,
 } from './utils';
-import { isEventHandlerProcessor } from './utils';
-import { filterEvents } from '../utils/terra-helper';
 
 //const { version: packageVersion } = require('../../package.json');
 
@@ -133,7 +132,7 @@ export class IndexerTerraManager {
     } else {
       if (argv['force-clean']) {
         try {
-          this.sequelize.dropSchema(project.dbSchema, {
+          await this.sequelize.dropSchema(project.dbSchema, {
             logging: false,
             benchmark: false,
           });
@@ -275,7 +274,7 @@ export class IndexerTerraManager {
 
   private filterDataSources(): SubqlTerraDatasource[] {
     const ds = this.project.dataSources;
-    if (ds.length == 0) {
+    if (ds.length === 0) {
       logger.error(`Did not find any datasource`);
       process.exit(1);
     }
@@ -316,17 +315,13 @@ export class IndexerTerraManager {
         case SubqlTerraHandlerKind.Block:
           await vm.securedExec(handler.handler, [block]);
           break;
-        case SubqlTerraHandlerKind.Event:
-          {
-            const filteredEvents = filterEvents(
-              events,
-              handler.filter
-            )
-            for (const e of filteredEvents) {
-              await vm.securedExec(handler.handler, [e, block]);
-            }
+        case SubqlTerraHandlerKind.Event: {
+          const filteredEvents = filterEvents(events, handler.filter);
+          for (const e of filteredEvents) {
+            await vm.securedExec(handler.handler, [e, block]);
           }
           break;
+        }
         default:
       }
     }
@@ -347,10 +342,8 @@ export class IndexerTerraManager {
     ): Promise<void> => {
       const transformedData = await Promise.all(
         filteredData
-        .filter((data) => processor.filterProcessor(handler.filter, data, ds))
-        .map((data) =>
-          processor.transformer(data, ds, this.api, assets),
-        ),
+          .filter((data) => processor.filterProcessor(handler.filter, data, ds))
+          .map((data) => processor.transformer(data, ds, this.api, assets)),
       );
 
       for (const data of transformedData) {
@@ -363,11 +356,8 @@ export class IndexerTerraManager {
       if (isBlockHandlerProcessor(processor)) {
         await processData(processor, handler, [block]);
       } else if (isEventHandlerProcessor(processor)) {
-        const filteredEvents = filterEvents(
-          events,
-          processor.baseFilter
-        )
-        await processData(processor, handler, events);
+        const filteredEvents = filterEvents(events, processor.baseFilter);
+        await processData(processor, handler, filteredEvents);
       }
     }
   }

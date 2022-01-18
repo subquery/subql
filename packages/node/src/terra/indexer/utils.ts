@@ -36,19 +36,26 @@ function loadFromFile(file: string): unknown {
 }
 
 export function loadTerraProjectManifest(file: string): TerraProjectManifest {
-  const doc = loadFromFile(file);
-  //perform validation
-  return doc as TerraProjectManifest;
+  const doc = loadFromFile(file) as TerraProjectManifest;
+  return doc;
 }
 
 export function isBlockHandlerProcessor<E>(
   hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Block, unknown, E> {
+): hp is SecondLayerTerraHandlerProcessor<
+  SubqlTerraHandlerKind.Block,
+  unknown,
+  E
+> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Block;
 }
 
 export function isEventHandlerProcessor<E>(
   hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, unknown, E> {
+): hp is SecondLayerTerraHandlerProcessor<
+  SubqlTerraHandlerKind.Event,
+  unknown,
+  E
+> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Event;
 }

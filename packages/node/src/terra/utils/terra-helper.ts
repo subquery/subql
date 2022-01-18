@@ -35,8 +35,11 @@ export function filterEvents(
         fe[filter.type] = event[filter.type];
       }
     });
-    filteredEvents.push(fe);
+    if (Object.keys(fe).length !== 0) {
+      filteredEvents.push(fe);
+    }
   });
+  console.log(filteredEvents);
   return filteredEvents;
 }
 
@@ -76,7 +79,6 @@ export async function getEventsByTypeFromBlock(
     return [];
   }
   const txInfos = await getTxInfobyHashes(api, txHashes);
-
   const txLogs = txInfos.map((txInfo) => txInfo.logs);
   const txLogsFlat = ([] as TxLog[]).concat(...txLogs);
   const events = txLogsFlat.map((txLog) => txLog.eventsByType);
