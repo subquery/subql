@@ -31,6 +31,7 @@
   "dependencies": {
     "@graphile-contrib/pg-many-to-many": "^1.0.1",
     "@graphile-contrib/pg-simplify-inflector": "^6.1.0",
+    "@graphile/pg-aggregates": "^0.1.0",
     "@nestjs/common": "^8.1.2",
     "@nestjs/core": "^8.1.2",
     "@nestjs/platform-express": "^8.1.2",
