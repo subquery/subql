@@ -336,8 +336,11 @@ export class IndexerManager {
         await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
       }
     } else {
+      // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
-        this.project.network.genesisHash === keyValue.genesisHash,
+        // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
+        (this.project.network.genesisHash ?? genesisHash) ===
+          keyValue.genesisHash,
         'Specified project manifest genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
