@@ -50,6 +50,7 @@ import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
 import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
+import PgAggregationPlugin from './PgAggregationPlugin';
 
 import {argv} from '../../yargs';
 
@@ -108,6 +109,7 @@ const plugins = [
   ConnectionFilterPlugin,
   smartTagsPlugin,
   GetMetadataPlugin,
+  PgAggregationPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
