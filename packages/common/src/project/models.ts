@@ -17,6 +17,15 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
+  SubqlTerraEventFilter,
+  SubqlTerraHandlerKind,
+  SubqlTerraCustomHandler,
+  SubqlTerraMapping,
+  SubqlTerraHandler,
+  SubqlTerraRuntimeHandler,
+  SubqlTerraRuntimeDatasource,
+  SubqlTerraDatasourceKind,
+  SubqlTerraCustomDatasource,
 } from '@subql/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
@@ -46,6 +55,11 @@ export class EventFilter extends BlockFilter implements SubqlEventFilter {
   @IsOptional()
   @IsString()
   method?: string;
+}
+
+export class TerraEventFilter implements SubqlTerraEventFilter {
+  @IsString()
+  type: string;
 }
 
 export class ChainTypes implements RegisteredTypes {
@@ -83,6 +97,13 @@ export class BlockHandler {
   handler: string;
 }
 
+export class TerraBlockHandler {
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlHandlerKind.Block]})
+  kind: SubqlTerraHandlerKind.Block;
+  @IsString()
+  handler: string;
+}
+
 export class CallHandler {
   @IsOptional()
   @ValidateNested()
@@ -105,7 +126,28 @@ export class EventHandler {
   handler: string;
 }
 
+export class TerraEventHandler {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TerraEventFilter)
+  filter?: SubqlTerraEventFilter;
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Event]})
+  kind: SubqlTerraHandlerKind.Event;
+  @IsString()
+  handler: string;
+}
+
 export class CustomHandler implements SubqlCustomHandler {
+  @IsString()
+  kind: string;
+  @IsString()
+  handler: string;
+  @IsObject()
+  @IsOptional()
+  filter?: Record<string, unknown>;
+}
+
+export class TerraCustomHandler implements SubqlTerraCustomHandler {
   @IsString()
   kind: string;
   @IsString()
@@ -136,11 +178,41 @@ export class Mapping implements SubqlMapping {
   handlers: SubqlHandler[];
 }
 
+export class TerraMapping implements SubqlTerraMapping {
+  @Transform((params) => {
+    const handlers: SubqlTerraHandler[] = params.value;
+    return handlers.map((handler) => {
+      switch (handler.kind) {
+        case SubqlTerraHandlerKind.Event:
+          return plainToClass(EventHandler, handler);
+        case SubqlTerraHandlerKind.Block:
+          return plainToClass(BlockHandler, handler);
+        default:
+          throw new Error(`handler ${(handler as any).kind} not supported`);
+      }
+    });
+  })
+  @IsArray()
+  @ValidateNested()
+  handlers: SubqlTerraHandler[];
+  @IsString()
+  file: string;
+}
+
 export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
   handlers: CustomHandler[];
+  @IsString()
+  file: string;
+}
+
+export class TerraCustomMapping implements SubqlTerraMapping<SubqlTerraCustomHandler> {
+  @IsArray()
+  @Type(() => TerraCustomHandler)
+  @ValidateNested()
+  handlers: TerraCustomHandler[];
   @IsString()
   file: string;
 }
@@ -164,6 +236,18 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
   @ValidateNested()
   @Type(() => SubqlNetworkFilterImpl)
   filter?: SubqlNetworkFilter;
+}
+
+export class TerraRuntimeDataSourceBase<M extends SubqlTerraMapping<SubqlTerraRuntimeHandler>>
+  implements SubqlTerraRuntimeDatasource<M>
+{
+  @IsEnum(SubqlDatasourceKind, {groups: [SubqlDatasourceKind.Runtime]})
+  kind: SubqlTerraDatasourceKind.Runtime;
+  @Type(() => Mapping)
+  @ValidateNested()
+  mapping: M;
+  @IsInt()
+  startBlock: number;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -201,4 +285,26 @@ export class CustomDataSourceBase<
   @IsOptional()
   @IsObject()
   filter?: T;
+}
+
+export class TerraCustomDataSourceBase<
+  K extends string,
+  M extends SubqlTerraMapping = SubqlTerraMapping<SubqlTerraCustomHandler>,
+  O = any
+> implements SubqlTerraCustomDatasource<K, M, O>
+{
+  @IsString()
+  kind: K;
+  @Type(() => TerraCustomMapping)
+  @ValidateNested()
+  mapping: M;
+  @IsOptional()
+  @IsInt()
+  startBlock?: number;
+  @Type(() => FileReferenceImpl)
+  @ValidateNested({each: true})
+  assets: Map<string, CustomDataSourceAsset>;
+  @Type(() => FileReferenceImpl)
+  @IsObject()
+  processor: FileReference;
 }

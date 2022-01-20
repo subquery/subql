@@ -19,9 +19,9 @@ async function bootstrap() {
     );
   }
 
-  if (argv('chain') === 'terra') {
-    await codegen(`${argv('subquery')}`);
-  }
+  //if (argv('chain') === 'terra') {
+  //  await codegen(`${argv('subquery')}`);
+  //}
   try {
     const app = await NestFactory.create(AppModule, {
       //logger: debug ? new NestLogger() : false,
