@@ -70,7 +70,7 @@ interface AggregateSpec {
 }
 
 // overwrite the official plugin: https://github.com/graphile/pg-aggregates/blob/main/src/AggregateSpecsPlugin.ts
-// Removes all aggregation functions for when not using --unsafe flag.
+// Removes all aggregation functions when not using --unsafe flag.
 
 const AggregateSpecsPluginSafe: Plugin = (builder) => {
   builder.hook('build', (build) => {
