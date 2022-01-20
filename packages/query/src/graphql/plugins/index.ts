@@ -42,7 +42,6 @@ import PgConnectionTotalCount from 'graphile-build-pg/node8plus/plugins/PgConnec
 import PgSimplifyInflectorPlugin from '@graphile-contrib/pg-simplify-inflector';
 import PgManyToManyPlugin from '@graphile-contrib/pg-many-to-many';
 import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
-import PgAggregatesPlugin from '@graphile/pg-aggregates';
 
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
@@ -51,10 +50,6 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
-
-import {argv} from '../../yargs';
-
-const unsafe = argv('unsafe') as boolean;
 
 /* eslint-enable */
 
@@ -130,9 +125,5 @@ const plugins = [
     };
   }, true),
 ];
-
-if (unsafe) {
-  plugins.push(PgAggregatesPlugin);
-}
 
 export {plugins};
