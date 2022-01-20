@@ -74,7 +74,6 @@ interface AggregateSpec {
 
 const AggregateSpecsPluginSafe: Plugin = (builder) => {
   builder.hook('build', (build) => {
-    // It needs to read these properties or else it will fail
     const pgAggregateSpecs: AggregateSpec[] = [];
     const pgAggregateGroupBySpecs: AggregateGroupBySpec[] = [];
 
