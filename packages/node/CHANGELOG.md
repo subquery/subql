@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2021-01-23
+### Changed
+- Update Polkadot/api to 7.4.1 (#757)
+### Fixed
+- Fix genesis hash validation for manifest v0.0.1 (#762)
+
 ## [0.27.1] - 2021-01-18
 ### Changed
 - Ready endpoint return code (#750)
@@ -391,7 +397,8 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.27.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.28.0...HEAD
+[0.28.0]: https://github.com/subquery/subql/compare/node/0.27.1...node/0.28.0
 [0.27.1]: https://github.com/subquery/subql/compare/node/0.27.0...node/0.27.1
 [0.27.0]: https://github.com/subquery/subql/compare/node/0.26.0...node/0.27.0
 [0.26.0]: https://github.com/subquery/subql/compare/node/0.25.3...node/0.26.0

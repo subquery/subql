@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.19.0] - 2022-01-21
+### Added
+- Allow use `subql build` self contained script from `exports` fields under`package.json` (#753)
+###Changed
+- Remove .github directory from new projects (#763)
+
 ## [0.18.0] - 2022-01-18
 ### Added
 - Filter project templates by selected specVersion (#751)
@@ -132,7 +138,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.18.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.19.0...HEAD
+[0.19.0]: https://github.com/subquery/subql/compare/cli/0.18.0...cli/0.19.0
 [0.18.0]: https://github.com/subquery/subql/compare/cli/0.17.0...cli/0.18.0
 [0.17.0]: https://github.com/subquery/subql/compare/cli/0.16.2...cli/0.17.0
 [0.16.2]: https://github.com/subquery/subql/compare/cli/0.16.1...cli/0.16.2

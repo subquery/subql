@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.11.0] - 2022-01-21
+### Added 
+- Add Aggregates plugin and groupBy (#765)
+
 ## [0.10.0] - 2022-01-13
 ### Added 
 - Add rowCountEstimate to Metadata (#736)
@@ -92,7 +96,8 @@ Upgrade priority: High. This fix the entities name conflict issue, for users who
 - overwrite plugin to fix one to one unique key check
 - update query publish and docker build process
 
-[Unreleased]: https://github.com/subquery/subql/compare/query/0.10.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/query/0.11.0...HEAD
+[0.11.0]: https://github.com/subquery/subql/compare/query/0.10.0...query/0.11.0
 [0.10.0]: https://github.com/subquery/subql/compare/query/0.9.0...query/0.10.0
 [0.9.0]: https://github.com/subquery/subql/compare/query/0.8.0...query/0.9.0
 [0.8.0]: https://github.com/subquery/subql/compare/query/0.7.4...query/0.8.0
