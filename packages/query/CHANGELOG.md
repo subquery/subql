@@ -10,7 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.11.0] - 2022-01-21
 ### Added 
-- Add Aggregates plugin and groupBy (#765)
+- Enable full aggregates support when `--unsafe`, and group-by only when `--unsafe=false` (#765)
 
 ## [0.10.0] - 2022-01-13
 ### Added 

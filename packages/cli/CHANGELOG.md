@@ -10,8 +10,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [0.19.0] - 2022-01-21
 ### Added
-- Allow use `subql build` self contained script from `exports` fields under`package.json` (#753)
-###Changed
+Allow use `subql build` self contained js as instructed by `exports` fields under`package.json` (#753)
+### Changed
 - Remove .github directory from new projects (#763)
 
 ## [0.18.0] - 2022-01-18
