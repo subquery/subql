@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
+import { SubqlTerraEventFilter } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -11,7 +12,11 @@ import { delay } from '../utils/promise';
 import { fetchTerraBlocksBatches } from '../utils/terra-helper';
 import { ApiTerraService } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
-//import { DictionaryQueryEntry, DictionaryService } from './dictionary.service';
+import {
+  TerraDictionary,
+  DictionaryQueryEntry,
+  TerraDictionaryService,
+} from './dictionaryterra.service';
 import { IndexerEvent } from './events';
 import { TerraDsProcessorService } from './terrads-processor.service';
 import {
@@ -27,6 +32,20 @@ const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 
+function eventFilterToQueryEntry(
+  filter: SubqlTerraEventFilter,
+): DictionaryQueryEntry {
+  return {
+    entity: 'events',
+    conditions: [
+      {
+        field: 'type',
+        value: filter.type,
+      },
+    ],
+  };
+}
+
 @Injectable()
 export class FetchTerraService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
@@ -37,13 +56,13 @@ export class FetchTerraService implements OnApplicationShutdown {
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
-  //private dictionaryQueryEntries?: DictionaryQueryEntry[];
+  private dictionaryQueryEntries?: DictionaryQueryEntry[];
 
   constructor(
     private apiService: ApiTerraService,
     private nodeConfig: NodeConfig,
     private project: SubqueryTerraProject,
-    //private dictionaryService: DictionaryService,
+    private dictionaryService: TerraDictionaryService,
     private dsProcessorService: TerraDsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
@@ -63,7 +82,10 @@ export class FetchTerraService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  //todo: implement getDictionaryQueryEntries
+  getDictionaryQueryEntries() {
+    //TODO: implement
+  }
+
   register(next: (value: TerraBlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
@@ -220,16 +242,16 @@ export class FetchTerraService implements OnApplicationShutdown {
 
   private getBaseHandlerFilters<T extends SubqlTerraHandlerFilter>(
     ds: SubqlTerraDatasource,
-    handlerKind: string
+    handlerKind: string,
   ): T[] {
-    if(isCustomTerraDs(ds)) {
+    if (isCustomTerraDs(ds)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const processor = plugin.handlerProcessors[handlerKind];
       return processor.baseFilter instanceof Array
         ? (processor.baseFilter as T[])
-        : ([processor.baseFilter] as T[])
+        : ([processor.baseFilter] as T[]);
     } else {
-      throw new Error(`expect custom datasource here`)
+      throw new Error(`expect custom datasource here`);
     }
   }
 }

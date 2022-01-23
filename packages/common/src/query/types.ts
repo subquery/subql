@@ -12,3 +12,13 @@ export type MetaData = {
   indexerNodeVersion: string;
   queryNodeVersion: string;
 };
+
+export type TerraMetaData = {
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: number;
+  targetHeight: number;
+  chainId: string;
+  indexerHealthy: boolean;
+  indexerNodeVersion: string;
+  queryNodeVersion: string;
+};

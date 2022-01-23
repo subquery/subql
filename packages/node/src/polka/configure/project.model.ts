@@ -86,7 +86,7 @@ export class SubqueryProject {
     return this._path;
   }
   get dataSources(): SubqlDatasource[] {
-    return this._projectManifest.dataSources;
+    return this._projectManifest.dataSources as SubqlDatasource[];
   }
   get schema(): string {
     return this._projectManifest.schema;

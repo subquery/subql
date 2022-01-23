@@ -7,6 +7,7 @@ import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { DbModule } from '../db/db.module';
 import { ApiTerraService } from './apiterra.service';
 import { BenchmarkService } from './benchmark.service';
+import { TerraDictionaryService } from './dictionaryterra.service';
 import { FetchTerraService } from './fetchterra.service';
 import { IndexerTerraManager } from './indexerterra.manager';
 import { SandboxTerraService } from './sandboxterra.service';
@@ -34,6 +35,7 @@ import { TerraDsProcessorService } from './terrads-processor.service';
     },
     FetchTerraService,
     BenchmarkService,
+    TerraDictionaryService,
     SandboxTerraService,
     TerraDsProcessorService,
   ],

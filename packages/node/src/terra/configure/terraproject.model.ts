@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+  loadProjectManifest,
+  ProjectManifestVersioned,
+  TerraProjectNetworkConfig,
+} from '@subql/common';
+import { ProjectNetworkV0_3_0 } from '@subql/common/project/versioned/v0_3_0';
+import {
   SubqlTerraDatasource,
   TerraProjectManifest,
   TerraNetwork,
@@ -14,15 +20,15 @@ const logger = getLogger('configure');
 
 export class SubqueryTerraProject {
   private _path: string;
-  private _projectManifest: TerraProjectManifest;
+  private _projectManifest: ProjectManifestVersioned;
 
   static async create(path: string): Promise<SubqueryTerraProject> {
     const projectPath = await prepareProjectDir(path);
-    const projectManifest = loadTerraProjectManifest(projectPath);
+    const projectManifest = loadProjectManifest(projectPath);
     return new SubqueryTerraProject(projectManifest, projectPath);
   }
 
-  constructor(manifest: TerraProjectManifest, path: string) {
+  constructor(manifest: ProjectManifestVersioned, path: string) {
     this._projectManifest = manifest;
     this._path = path;
 
@@ -34,23 +40,20 @@ export class SubqueryTerraProject {
     });
   }
 
-  get projectManifest(): TerraProjectManifest {
+  get projectManifest(): ProjectManifestVersioned {
     return this._projectManifest;
   }
 
   //TODO: do manifest versioning. Define network type
-  get network(): TerraNetwork {
-    const network = this._projectManifest.network;
+  get network(): TerraProjectNetworkConfig {
+    const impl = this._projectManifest.asImpl;
+    const network = {
+      ...(impl.network as ProjectNetworkV0_3_0),
+    };
 
     if (!network.endpoint) {
       throw new Error(
-        `Network endpoint must be provided for network. genesisHash="${network.genesisHash}"`,
-      );
-    }
-
-    if (!network.chainId) {
-      throw new Error(
-        `Network chain ID must be provided for networl. genesisHas="${network.genesisHash}"`,
+        `Network endpoint must be provided for network. chainId="${network.chainId}"`,
       );
     }
 
@@ -61,9 +64,9 @@ export class SubqueryTerraProject {
     return this._path;
   }
   get dataSources(): SubqlTerraDatasource[] {
-    return this._projectManifest.dataSources;
+    return this._projectManifest.dataSources as SubqlTerraDatasource[];
   }
   get schema(): string {
-    return this._projectManifest.schema.file;
+    return this._projectManifest.schema;
   }
 }

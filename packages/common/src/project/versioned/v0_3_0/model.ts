@@ -30,6 +30,9 @@ export class ProjectNetworkV0_3_0 extends ProjectNetworkDeploymentV0_3_0 {
   @IsString()
   @IsOptional()
   dictionary?: string;
+  @IsString()
+  @IsOptional()
+  genesisHash?: string;
 }
 
 export class ProjectMappingV0_3_0 extends Mapping {
