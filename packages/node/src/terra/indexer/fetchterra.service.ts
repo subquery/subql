@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
+import { isRuntimeDataSourceV0_3_0 } from '@subql/common/project/versioned/v0_3_0';
 import { SubqlTerraEventFilter } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
@@ -83,7 +84,17 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   getDictionaryQueryEntries() {
-    //TODO: implement
+    const queryEntries: DictionaryQueryEntry[] = [];
+
+    const dataSources = this.project.dataSources.filter((ds) =>
+      isRuntimeDataSourceV0_3_0(ds),
+    );
+    for (const ds of dataSources) {
+      for (const handler of ds.mapping.handlers) {
+        const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
+        //TODO: implement
+      }
+    }
   }
 
   register(next: (value: TerraBlockContent) => Promise<void>): () => void {

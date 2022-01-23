@@ -36,6 +36,6 @@ export interface ProjectManifestV0_3_0 extends IProjectManifest {
   dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
 }
 
-export function isRuntimeDataSourceV0_2_0(dataSource: SubqlTerraDatasource): dataSource is RuntimeDataSourceV0_3_0 {
+export function isRuntimeDataSourceV0_3_0(dataSource: SubqlTerraDatasource): dataSource is RuntimeDataSourceV0_3_0 {
   return dataSource.kind === SubqlTerraDatasourceKind.Runtime && !!(dataSource as RuntimeDataSourceV0_3_0).mapping.file;
 }
