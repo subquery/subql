@@ -14,12 +14,14 @@
     "/dist"
   ],
   "dependencies": {
+    "@acala-network/eth-providers": "^2.4.7",
     "@subql/types": "workspace:*",
     "class-transformer": "0.5.1",
     "class-validator": "^0.13.2",
     "ethers": "^5.5.4"
   },
   "devDependencies": {
+    "@acala-network/types": "^4.1.1",
     "moonbeam-types-bundle": "^2.0.4"
   },
   "peerDependencies": {
