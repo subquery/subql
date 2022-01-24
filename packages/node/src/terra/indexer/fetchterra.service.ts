@@ -2,7 +2,14 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { isRuntimeDataSourceV0_3_0 } from '@subql/common/project/versioned/v0_3_0';
-import { SubqlTerraEventFilter } from '@subql/types';
+import {
+  SubqlTerraDatasource,
+  SubqlTerraHandler,
+  SubqlTerraHandlerFilter,
+  SubqlTerraHandlerKind,
+  SubqlTerraEventHandler,
+  SubqlTerraEventFilter,
+} from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -20,12 +27,6 @@ import {
 } from './dictionaryterra.service';
 import { IndexerEvent } from './events';
 import { TerraDsProcessorService } from './terrads-processor.service';
-import {
-  SubqlTerraDatasource,
-  SubqlTerraHandler,
-  SubqlTerraHandlerFilter,
-  SubqlTerraHandlerKind,
-} from './terraproject';
 import { TerraBlockContent } from './types';
 import { isCustomTerraDs, isRuntimeTerraDs } from './utils';
 
@@ -83,7 +84,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  getDictionaryQueryEntries() {
+  getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter((ds) =>
@@ -92,9 +93,43 @@ export class FetchTerraService implements OnApplicationShutdown {
     for (const ds of dataSources) {
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        //TODO: implement
+        const filterList =
+          isRuntimeTerraDs(ds) &&
+          baseHandlerKind === SubqlTerraHandlerKind.Event
+            ? [
+                (handler as SubqlTerraEventHandler)
+                  .filter as SubqlTerraHandlerFilter,
+              ].filter(Boolean)
+            : this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
+                ds,
+                handler.kind,
+              );
+        if (!filterList.length) return [];
+        switch (baseHandlerKind) {
+          case SubqlTerraHandlerKind.Block:
+            return [];
+          case SubqlTerraHandlerKind.Event: {
+            for (const filter of filterList as SubqlTerraEventFilter[]) {
+              if (filter.type !== undefined) {
+                queryEntries.push(eventFilterToQueryEntry(filter));
+              } else {
+                return [];
+              }
+            }
+            break;
+          }
+          default:
+        }
       }
     }
+
+    return uniqBy(
+      queryEntries,
+      (item) =>
+        `${item.entity}|${JSON.stringify(
+          sortBy(item.conditions, (c) => c.field),
+        )}`,
+    );
   }
 
   register(next: (value: TerraBlockContent) => Promise<void>): () => void {
@@ -126,8 +161,11 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   async init(): Promise<void> {
-    this.useDictionary = false;
-    //TODO: implement dictionary
+    this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
+    this.useDictionary =
+      !!this.dictionaryQueryEntries?.length &&
+      !!this.project.network.dictionary;
+
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
@@ -184,7 +222,42 @@ export class FetchTerraService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
-      //TODO: implement useDictionary
+      if (this.useDictionary) {
+        const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
+        try {
+          const dictionary = await this.dictionaryService.getDictionary(
+            startBlockHeight,
+            queryEndBlock,
+            this.nodeConfig.batchSize,
+            this.dictionaryQueryEntries,
+          );
+          if (
+            dictionary &&
+            (await this.dictionaryValidation(dictionary, startBlockHeight))
+          ) {
+            const { batchBlocks } = dictionary;
+            if (batchBlocks.length === 0) {
+              this.setLatestBufferedHeight(
+                Math.min(
+                  queryEndBlock - 1,
+                  dictionary._metadata.lastProcessedHeight,
+                ),
+              );
+            } else {
+              this.blockNumberBuffer.putAll(batchBlocks);
+              this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
+            }
+            this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
+              value: this.blockNumberBuffer.size,
+            });
+            continue; // skip nextBlockRange() way
+          }
+          // else use this.nextBlockRange()
+        } catch (e) {
+          logger.debug(`Fetch dictionary stopped: ${e.message}`);
+          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+        }
+      }
       const endHeight = this.nextEndBlockHeight(startBlockHeight);
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
@@ -197,6 +270,30 @@ export class FetchTerraService implements OnApplicationShutdown {
       endBlockHeight = this.latestFinalizedHeight;
     }
     return endBlockHeight;
+  }
+
+  private async dictionaryValidation(
+    { _metadata: metaData }: TerraDictionary,
+    startBlockHeight: number,
+  ): Promise<boolean> {
+    const nodeInfo = await this.api.tendermint.nodeInfo();
+    if (metaData.chainId !== nodeInfo.default_node_info.network) {
+      logger.warn(`Dictionary is disabled since now`);
+      this.useDictionary = false;
+      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+        value: Number(this.useDictionary),
+      });
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+      return false;
+    }
+    if (metaData.lastProcessedHeight < startBlockHeight) {
+      logger.warn(
+        `Dictionary indexed block is behind current indexing block height`,
+      );
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+      return false;
+    }
+    return true;
   }
 
   private setLatestBufferedHeight(height: number): void {

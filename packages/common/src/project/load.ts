@@ -32,6 +32,7 @@ function loadFromFile(file: string): unknown {
 export function loadProjectManifest(file: string): ProjectManifestVersioned {
   const doc = loadFromFile(file);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
+  console.log('here');
   projectManifest.validate();
   return projectManifest;
 }

@@ -32,8 +32,7 @@ export class ApiTerraService {
     //const genesisBlock = await this.api.tendermint.blockInfo(4724001);
     //logger.info('')
     this.networkMeta = {
-      chain: network.chainId,
-      genesisHash: network.genesisHash,
+      chainId: network.chainId,
     };
     /*
     if (

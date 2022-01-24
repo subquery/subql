@@ -9,7 +9,7 @@ import {
   SubqlTerraHandlerKind,
   SubqlTerraRuntimeDatasource,
   TerraProjectManifest,
-} from './terraproject';
+} from '@subql/types';
 
 export function isCustomTerraDs(
   ds: SubqlTerraDatasource,

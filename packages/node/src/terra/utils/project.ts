@@ -5,18 +5,12 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {
-  SubqlRuntimeHandler,
-  SubqlCustomHandler,
-  SubqlHandler,
-  SubqlHandlerKind,
-} from '@subql/types';
-import tar from 'tar';
-import {
   SubqlTerraCustomHandler,
   SubqlTerraHandler,
   SubqlTerraHandlerKind,
   SubqlTerraRuntimeHandler,
-} from '../indexer/terraproject';
+} from '@subql/types';
+import tar from 'tar';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);

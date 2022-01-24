@@ -98,7 +98,7 @@ export class BlockHandler {
 }
 
 export class TerraBlockHandler {
-  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlHandlerKind.Block]})
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Block]})
   kind: SubqlTerraHandlerKind.Block;
   @IsString()
   handler: string;
@@ -184,9 +184,9 @@ export class TerraMapping implements SubqlTerraMapping {
     return handlers.map((handler) => {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Event:
-          return plainToClass(EventHandler, handler);
+          return plainToClass(TerraEventHandler, handler);
         case SubqlTerraHandlerKind.Block:
-          return plainToClass(BlockHandler, handler);
+          return plainToClass(TerraBlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
       }
@@ -241,7 +241,7 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
 export class TerraRuntimeDataSourceBase<M extends SubqlTerraMapping<SubqlTerraRuntimeHandler>>
   implements SubqlTerraRuntimeDatasource<M>
 {
-  @IsEnum(SubqlDatasourceKind, {groups: [SubqlDatasourceKind.Runtime]})
+  @IsEnum(SubqlTerraDatasourceKind, {groups: [SubqlTerraDatasourceKind.Runtime]})
   kind: SubqlTerraDatasourceKind.Runtime;
   @Type(() => Mapping)
   @ValidateNested()

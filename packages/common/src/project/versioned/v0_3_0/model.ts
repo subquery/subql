@@ -10,7 +10,7 @@ import {
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
-import {TerraCustomDataSourceBase, Mapping, TerraRuntimeDataSourceBase} from '../../models';
+import {TerraCustomDataSourceBase, TerraRuntimeDataSourceBase, TerraMapping} from '../../models';
 import {ProjectManifestBaseImpl} from '../base';
 import {CustomDatasourceV0_3_0, ProjectManifestV0_3_0, RuntimeDataSourceV0_3_0, SubqlMappingV0_3_0} from './types';
 
@@ -35,7 +35,7 @@ export class ProjectNetworkV0_3_0 extends ProjectNetworkDeploymentV0_3_0 {
   genesisHash?: string;
 }
 
-export class ProjectMappingV0_3_0 extends Mapping {
+export class ProjectMappingV0_3_0 extends TerraMapping {
   @IsString()
   file: string;
 }

@@ -1,14 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import {
+  SubqlTerraCustomDatasource,
+  SubqlTerraDatasourceProcessor,
+} from '@subql/types';
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandboxterra.service';
-import {
-  SubqlTerraCustomDatasource,
-  SubqlTerraDatasourceProcessor,
-} from './terraproject';
 import { isCustomTerraDs } from './utils';
 
 export interface DsPluginSandboxOption {
@@ -60,12 +60,11 @@ export class TerraDsProcessorService {
         }
       }
 
-      ds.mapping.handlers.map(
-        (handler) =>
-          //filter here
-          processor.handlerProcessors[handler.kind].filterValidator(
-            handler.filter
-          ),
+      ds.mapping.handlers.map((handler) =>
+        //filter here
+        processor.handlerProcessors[handler.kind].filterValidator(
+          handler.filter,
+        ),
       );
 
       /* Additional processor specific validation */

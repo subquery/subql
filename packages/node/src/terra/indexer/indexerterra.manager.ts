@@ -2,6 +2,17 @@ import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { buildSchema, getAllEntitiesRelations } from '@subql/common';
+import {
+  SubqlTerraCustomDatasource,
+  SubqlTerraHandlerKind,
+  SubqlTerraRuntimeHandler,
+  SecondLayerTerraHandlerProcessor,
+  SubqlTerraCustomHandler,
+  TerraRuntimeHandlerInputMap,
+  SubqlTerraDatasource,
+  TerraBlock,
+  TerraEvent,
+} from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { getYargsOption } from '../../yargs';
@@ -18,15 +29,6 @@ import { FetchTerraService } from './fetchterra.service';
 import { IndexerSandbox, SandboxTerraService } from './sandboxterra.service';
 import { StoreService } from './store.service';
 import { TerraDsProcessorService } from './terrads-processor.service';
-import {
-  SubqlTerraCustomDatasource,
-  SubqlTerraHandlerKind,
-  SubqlTerraRuntimeHandler,
-  SecondLayerTerraHandlerProcessor,
-  SubqlTerraCustomHandler,
-  TerraRuntimeHandlerInputMap,
-  SubqlTerraDatasource,
-} from './terraproject';
 import { TerraBlockContent } from './types';
 import {
   isBlockHandlerProcessor,
@@ -88,6 +90,7 @@ export class IndexerTerraManager {
       }
       this.subqueryState.nextBlockHeight = +block.block.header.height + 1;
       await this.subqueryState.save({ transaction: tx });
+
       //TODO: implement POI
     } catch (e) {
       await tx.rollback();
@@ -126,7 +129,7 @@ export class IndexerTerraManager {
     let project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },
     });
-    const { chain, genesisHash } = this.apiService.networkMeta;
+    const { chainId } = this.apiService.networkMeta;
     if (!project) {
       project = await this.createProjectSchema(name);
     } else {
@@ -152,15 +155,9 @@ export class IndexerTerraManager {
         }
         project = await this.createProjectSchema(name);
       }
-      if (!project.networkGenesis || !project.network) {
-        project.network = chain;
-        project.networkGenesis = genesisHash;
+      if (!project.network) {
+        project.network = chainId;
         await project.save();
-      } else if (project.networkGenesis !== genesisHash) {
-        logger.error(
-          `Not same network: genesisHash different. expected="${project.networkGenesis}"" actual="${genesisHash}"`,
-        );
-        process.exit(1);
       }
     }
     return project;
@@ -178,7 +175,7 @@ export class IndexerTerraManager {
 
   private async ensureMetadata(schema: string) {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
-    const { chain, genesisHash } = this.apiService.networkMeta;
+    const { chainId } = this.apiService.networkMeta;
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
@@ -203,12 +200,8 @@ export class IndexerTerraManager {
       await this.storeService.setMetadata('blockOffset', offsetValue);
     }
 
-    if (!keyValue.genesisHash) {
-      await this.storeService.setMetadata('genesisHash', genesisHash);
-    }
-
-    if (keyValue.chain !== chain) {
-      await this.storeService.setMetadata('chain', chain);
+    if (keyValue.chain !== chainId) {
+      await this.storeService.setMetadata('chain', chainId);
     }
   }
 
@@ -226,7 +219,7 @@ export class IndexerTerraManager {
 
   private async createProjectSchema(name: string): Promise<SubqueryModel> {
     let projectSchema: string;
-    const { chain, genesisHash } = this.apiService.networkMeta;
+    const { chainId } = this.apiService.networkMeta;
     if (this.nodeConfig.localMode) {
       projectSchema = DEFAULT_DB_SCHEMA;
     } else {
@@ -242,8 +235,7 @@ export class IndexerTerraManager {
       dbSchema: projectSchema,
       hash: '0x',
       nextBlockHeight: this.getStartBlockFromDataSources(),
-      network: chain,
-      networkGenesis: genesisHash,
+      network: chainId,
     });
   }
 
@@ -310,6 +302,10 @@ export class IndexerTerraManager {
     handlers: SubqlTerraRuntimeHandler[],
     { block, events }: TerraBlockContent,
   ): Promise<void> {
+    const terraBlock: TerraBlock = {
+      block: block,
+    };
+
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Block:
@@ -318,7 +314,11 @@ export class IndexerTerraManager {
         case SubqlTerraHandlerKind.Event: {
           const filteredEvents = filterEvents(events, handler.filter);
           for (const e of filteredEvents) {
-            await vm.securedExec(handler.handler, [e, block]);
+            const terraEvent: TerraEvent = {
+              event: e,
+              block: block,
+            };
+            await vm.securedExec(handler.handler, [terraEvent]);
           }
           break;
         }

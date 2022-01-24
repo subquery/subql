@@ -1,3 +1,4 @@
+import { SubqlTerraEventFilter } from '@subql/types';
 import {
   BlockInfo,
   EventsByType,
@@ -7,7 +8,6 @@ import {
   TxLog,
 } from '@terra-money/terra.js';
 import { filter } from 'lodash';
-import { SubqlTerraEventFilter } from '../indexer/terraproject';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 import { delay } from './promise';
