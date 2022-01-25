@@ -14,7 +14,7 @@ import {TerraCustomDataSourceBase, TerraRuntimeDataSourceBase, TerraMapping} fro
 import {ProjectManifestBaseImpl} from '../base';
 import {CustomDatasourceV0_3_0, ProjectManifestV0_3_0, RuntimeDataSourceV0_3_0, SubqlMappingV0_3_0} from './types';
 
-export class FileType {
+export class TerraFileType {
   @IsString()
   file: string;
 }
@@ -61,8 +61,8 @@ export class DeploymentV0_3_0 {
   @IsString()
   specVersion: string;
   @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
+  @Type(() => TerraFileType)
+  schema: TerraFileType;
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDataSourceV0_3_0Impl, {
@@ -90,8 +90,8 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
   @Type(() => ProjectNetworkV0_3_0)
   network: ProjectNetworkV0_3_0;
   @ValidateNested()
-  @Type(() => FileType)
-  schema: FileType;
+  @Type(() => TerraFileType)
+  schema: TerraFileType;
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDataSourceV0_3_0Impl, {
