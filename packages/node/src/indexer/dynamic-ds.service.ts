@@ -6,13 +6,13 @@ import {
   CustomDataSourceV0_2_0Impl,
   isCustomDs,
   isRuntimeDs,
-  manifestIsV0_2_1,
   RuntimeDataSourceV0_2_0Impl,
 } from '@subql/common';
 import { SubqlDatasource, SubqlDatasourceKind } from '@subql/types';
 import { plainToClass } from 'class-transformer';
 import yaml from 'js-yaml';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { Transaction } from 'sequelize/types';
 import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
 import { StoreService } from './store.service';
@@ -46,6 +46,7 @@ export class DynamicDsService {
     templateName: string,
     args: Record<string, unknown>,
     currentBlock: number,
+    tx: Transaction,
   ): Promise<void> {
 
     const template = this.project.templates.find(
@@ -77,7 +78,7 @@ export class DynamicDsService {
       process.exit(1);
     }
 
-    await this.saveDynamicDatasource(ds);
+    await this.saveDynamicDatasource(ds, tx);
   }
 
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
@@ -102,7 +103,10 @@ export class DynamicDsService {
     });
   }
 
-  private async saveDynamicDatasource(ds: SubqlDatasource): Promise<void> {
+  private async saveDynamicDatasource(
+    ds: SubqlDatasource,
+    tx: Transaction,
+  ): Promise<void> {
     const existing = await this.getDynamicDatasources();
 
     // Need to convert Map objects to records
@@ -111,6 +115,7 @@ export class DynamicDsService {
     await this.storeService.setMetadata(
       METADATA_KEY,
       yaml.dump([...existing, dsObj]),
+      { transaction: tx },
     );
   }
 }

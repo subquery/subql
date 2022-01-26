@@ -286,11 +286,13 @@ export class StoreService {
     return flatten(fields);
   }
 
-  async getMetadata(key: string): Promise<object | null> {
+  async getMetadata(
+    key: string,
+  ): Promise<string | number | boolean | undefined> {
     assert(this.metaDataRepo, `Model _metadata does not exist`);
     const record = await this.metaDataRepo.findOne({ where: { key } });
 
-    return (record?.toJSON() as any)?.value;
+    return record?.value;
   }
 
   private async packEntityFields(
