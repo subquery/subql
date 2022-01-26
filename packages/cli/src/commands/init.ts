@@ -232,11 +232,18 @@ export default class Init extends Command {
       cli.action.stop();
     }
 
+    // Cut description to appropriate size
+    const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
-    project.description = await cli.prompt('Description', {
-      required: false,
-      default: defaultDescription.substring(0, 40).concat('...'),
-    });
+    project.description = await cli
+      .prompt('Description', {
+        required: false,
+        default: descriptionHint,
+      })
+      .then((description) => {
+        return description === descriptionHint ? defaultDescription : description;
+      });
+
     project.version = await cli.prompt('Version', {required: true, default: defaultVersion});
     project.license = await cli.prompt('License', {required: true, default: defaultLicense});
 
