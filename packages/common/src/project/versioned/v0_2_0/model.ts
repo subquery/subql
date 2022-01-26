@@ -50,12 +50,21 @@ export class RuntimeDataSourceV0_2_0Impl
   @Type(() => ProjectMappingV0_2_0)
   @ValidateNested()
   mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
+
+  validate(): void {
+    const errors = validateSync(this, {whitelist: true, forbidNonWhitelisted: true});
+    if (errors?.length) {
+      // TODO: print error details
+      const errorMsgs = errors.map((e) => e.toString()).join('\n');
+      throw new Error(`failed to validate runtime datasource.\n${errorMsgs}`);
+    }
+  }
 }
 
 export class CustomDataSourceV0_2_0Impl<
     K extends string = string,
     T extends SubqlNetworkFilter = SubqlNetworkFilter,
-    M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>
+    M extends SubqlMapping = SubqlMappingV0_2_0<SubqlCustomHandler>
   >
   extends CustomDataSourceBase<K, T, M>
   implements SubqlCustomDatasource<K, T, M> {}
@@ -106,7 +115,7 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
     keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
-  private _deployment: DeploymentV0_2_0;
+  protected _deployment: DeploymentV0_2_0;
 
   toDeployment(): string {
     return yaml.dump(this._deployment, {

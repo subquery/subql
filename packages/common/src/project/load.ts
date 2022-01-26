@@ -25,7 +25,7 @@ export function parseProjectManifest(raw: unknown): ProjectManifestVersioned {
   return projectManifest;
 }
 
-export function loadChainTypes(file: string, projectRoot: string) {
+export function loadChainTypes(file: string, projectRoot: string): unknown {
   const {ext} = path.parse(file);
   const filePath = path.resolve(projectRoot, file);
   if (fs.existsSync(filePath)) {

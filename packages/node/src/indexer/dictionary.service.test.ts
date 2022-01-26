@@ -16,6 +16,7 @@ function testSubqueryProject(): SubqueryProject {
     id: 'test',
     root: './',
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 

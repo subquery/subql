@@ -226,7 +226,7 @@ export class StoreService {
     return blake2AsHex(enumName).substr(2, 10);
   }
 
-  setTransaction(tx: Transaction) {
+  setTransaction(tx: Transaction): void {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
     if (this.config.proofOfIndex) {
@@ -284,6 +284,13 @@ export class StoreService {
       fields.push(tableFields);
     }
     return flatten(fields);
+  }
+
+  async getMetadata(key: string): Promise<object | null> {
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    const record = await this.metaDataRepo.findOne({ where: { key } });
+
+    return (record?.toJSON() as any)?.value;
   }
 
   private async packEntityFields(

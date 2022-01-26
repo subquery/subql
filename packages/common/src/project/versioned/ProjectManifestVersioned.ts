@@ -6,12 +6,14 @@ import {plainToClass} from 'class-transformer';
 import {IProjectManifest} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
 import {ProjectManifestV0_2_0Impl} from './v0_2_0';
+import {ProjectManifestV0_2_1Impl} from './v0_2_1';
 
 export type VersionedProjectManifest = {specVersion: string};
 
 const SUPPORTED_VERSIONS = {
   '0.0.1': ProjectManifestV0_0_1Impl,
   '0.2.0': ProjectManifestV0_2_0Impl,
+  '0.2.1': ProjectManifestV0_2_1Impl,
 };
 
 type Versions = keyof typeof SUPPORTED_VERSIONS;
@@ -24,6 +26,10 @@ export function manifestIsV0_0_1(manifest: IProjectManifest): manifest is Projec
 
 export function manifestIsV0_2_0(manifest: IProjectManifest): manifest is ProjectManifestV0_2_0Impl {
   return manifest.specVersion === '0.2.0';
+}
+
+export function manifestIsV0_2_1(manifest: IProjectManifest): manifest is ProjectManifestV0_2_1Impl {
+  return manifest.specVersion === '0.2.1';
 }
 
 export class ProjectManifestVersioned implements IProjectManifest {
@@ -53,8 +59,16 @@ export class ProjectManifestVersioned implements IProjectManifest {
     return this.specVersion === '0.2.0';
   }
 
+  get isV0_2_1(): boolean {
+    return this.specVersion === '0.2.1';
+  }
+
   get asV0_2_0(): ProjectManifestV0_2_0Impl {
     return this._impl as ProjectManifestV0_2_0Impl;
+  }
+
+  get asV0_2_1(): ProjectManifestV0_2_1Impl {
+    return this._impl as ProjectManifestV0_2_1Impl;
   }
 
   toDeployment(): string | undefined {

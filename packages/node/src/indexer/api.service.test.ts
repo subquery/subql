@@ -32,6 +32,7 @@ function testSubqueryProject(endpoint: string): SubqueryProject {
       },
     },
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 

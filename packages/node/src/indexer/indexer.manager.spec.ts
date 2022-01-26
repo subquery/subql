@@ -11,6 +11,7 @@ import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
@@ -80,6 +81,7 @@ function testSubqueryProject_1(): SubqueryProject {
     id: 'test',
     root: './',
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 
@@ -105,6 +107,7 @@ function testSubqueryProject_2(): SubqueryProject {
     id: 'test',
     root: './',
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 
@@ -134,6 +137,11 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     nodeConfig,
     project,
   );
+  const dynamicDsService = new DynamicDsService(
+    storeService,
+    dsPluginService,
+    project,
+  );
 
   return new IndexerManager(
     storeService,
@@ -146,6 +154,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     nodeConfig,
     sandboxService,
     dsPluginService,
+    dynamicDsService,
     subqueryRepo,
     eventEmitter,
   );

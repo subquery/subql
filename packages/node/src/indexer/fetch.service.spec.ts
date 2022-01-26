@@ -178,6 +178,7 @@ function testSubqueryProject(): SubqueryProject {
     id: 'test',
     root: './',
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 
@@ -208,6 +209,7 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
     id: 'test',
     schema: new GraphQLSchema({}),
     root: path.resolve(__dirname, '../../../'),
+    templates: [],
   };
 }
 
