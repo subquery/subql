@@ -111,7 +111,9 @@ export default class Init extends Command {
     let selectedNetwork: string;
 
     try {
-      templates = await fetchTemplates();
+      templates = await fetchTemplates(
+        'https://raw.githubusercontent.com/subquery/templates/additional-networks/templates.json'
+      );
     } catch (e) {
       this.error(e);
     }
@@ -124,9 +126,7 @@ export default class Init extends Command {
     }
 
     if (!useCustomTemplate) {
-      const networks = uniq(templates.map(({network}) => network));
-      networks.push('Other');
-
+      const networks = uniq(templates.map(({network}) => network)).sort();
       // Network selection
       await inquirer
         .prompt([
@@ -136,6 +136,7 @@ export default class Init extends Command {
             type: 'autocomplete',
             searchText: '',
             emptyText: 'Network not found',
+            pageSize: 20,
             source: filterInput(networks),
           },
         ])
