@@ -93,21 +93,20 @@ export class FetchTerraService implements OnApplicationShutdown {
     for (const ds of dataSources) {
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        const filterList =
-          isRuntimeTerraDs(ds) &&
-          baseHandlerKind === SubqlTerraHandlerKind.Event
-            ? [
-                (handler as SubqlTerraEventHandler)
-                  .filter as SubqlTerraHandlerFilter,
-              ].filter(Boolean)
-            : this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
-                ds,
-                handler.kind,
-              );
+        if (baseHandlerKind === SubqlTerraHandlerKind.Block) {
+          return [];
+        }
+        const filterList = isRuntimeTerraDs(ds)
+          ? [
+              (handler as SubqlTerraEventHandler)
+                .filter as SubqlTerraHandlerFilter,
+            ].filter(Boolean)
+          : this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
+              ds,
+              handler.kind,
+            );
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubqlTerraHandlerKind.Block:
-            return [];
           case SubqlTerraHandlerKind.Event: {
             for (const filter of filterList as SubqlTerraEventFilter[]) {
               if (filter.type !== undefined) {

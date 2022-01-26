@@ -3,9 +3,9 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql-terra/x-vm2';
 import { levelFilter } from '@subql/common';
 import { SubqlTerraDatasource, Store } from '@subql/types';
+import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -30,6 +30,25 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wasm: argv.unsafe,
   sandbox: {},
   require: {
+    builtin: argv.unsafe
+      ? ['*']
+      : ['assert', 'buffer', 'crypto', 'util', 'path'], // No events here without unsafe
+    external: true,
+    context: 'sandbox',
+    mock: {
+      events: undefined, // Remove events, I think this will cause @terra-money/terra.js to use a js implementation rather than native one
+    },
+  },
+  wrapper: 'commonjs',
+  sourceExtensions: ['js', 'cjs'],
+};
+
+/**
+const DEFAULT_OPTION: NodeVMOptions = {
+  console: 'redirect',
+  wasm: argv.unsafe,
+  sandbox: {},
+  require: {
     builtin: ['*'],
     external: true,
     context: 'sandbox',
@@ -37,6 +56,7 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wrapper: 'commonjs',
   sourceExtensions: ['js', 'cjs'],
 };
+**/
 
 const logger = getLogger('sandbox');
 

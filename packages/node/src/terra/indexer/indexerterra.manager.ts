@@ -15,6 +15,7 @@ import {
 } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize } from 'sequelize';
+import { createJsxClosingElement } from 'typescript';
 import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
@@ -74,7 +75,6 @@ export class IndexerTerraManager {
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
-
     try {
       for (const ds of this.filteredDataSources) {
         const vm = this.sandboxService.getDsProcessor(ds);
@@ -309,7 +309,7 @@ export class IndexerTerraManager {
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Block:
-          await vm.securedExec(handler.handler, [block]);
+          await vm.securedExec(handler.handler, [terraBlock]);
           break;
         case SubqlTerraHandlerKind.Event: {
           const filteredEvents = filterEvents(events, handler.filter);
