@@ -111,9 +111,7 @@ export default class Init extends Command {
     let selectedNetwork: string;
 
     try {
-      templates = await fetchTemplates(
-        'https://raw.githubusercontent.com/subquery/templates/additional-networks/templates.json'
-      );
+      templates = await fetchTemplates();
     } catch (e) {
       this.error(e);
     }
@@ -233,7 +231,6 @@ export default class Init extends Command {
       cli.action.stop();
     }
 
-    // Cut description to appropriate size
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});
     project.description = await cli
