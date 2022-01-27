@@ -137,11 +137,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     nodeConfig,
     project,
   );
-  const dynamicDsService = new DynamicDsService(
-    storeService,
-    dsPluginService,
-    project,
-  );
+  const dynamicDsService = new DynamicDsService(dsPluginService, project);
 
   return new IndexerManager(
     storeService,

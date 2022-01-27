@@ -134,7 +134,7 @@ export class IndexerManager {
       }
 
       // Run dynamic data sources, must be after predefined datasources
-      // FIXME if any new dynamic datasources are created here they wont be run in the current block
+      // FIXME if any new dynamic datasources are created here they wont be run for the current block
       for (const ds of await this.dynamicDsService.getDynamicDatasources()) {
         await this.indexBlockForDs(ds, blockContent, apiAt, blockHeight, tx);
       }
@@ -180,6 +180,7 @@ export class IndexerManager {
     const schema = await this.ensureProject();
     await this.initDbSchema(schema);
     this.metadataRepo = await this.ensureMetadata(schema);
+    this.dynamicDsService.init(this.metadataRepo);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([

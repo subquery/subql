@@ -286,15 +286,6 @@ export class StoreService {
     return flatten(fields);
   }
 
-  async getMetadata(
-    key: string,
-  ): Promise<string | number | boolean | undefined> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    const record = await this.metaDataRepo.findOne({ where: { key } });
-
-    return record?.value;
-  }
-
   private async packEntityFields(
     schema: string,
     entity: string,

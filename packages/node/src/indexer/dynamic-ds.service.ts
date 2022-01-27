@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import {
     CustomDataSourceV0_2_0Impl,
@@ -8,13 +9,12 @@ import {
   isRuntimeDs,
   RuntimeDataSourceV0_2_0Impl,
 } from '@subql/common';
-import { SubqlDatasource } from '@subql/types';
 import { plainToClass } from 'class-transformer';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
-import { StoreService } from './store.service';
+import { MetadataRepo } from './entities/Metadata.entity';
 
 const logger = getLogger('dynamic-ds');
 
@@ -28,11 +28,16 @@ interface DatasourceParams {
 
 @Injectable()
 export class DynamicDsService {
+  private metaDataRepo: MetadataRepo;
+
   constructor(
-    private readonly storeService: StoreService,
     private readonly dsProcessorService: DsProcessorService,
     private readonly project: SubqueryProject,
   ) {}
+
+  init(metaDataRepo: MetadataRepo): void {
+    this.metaDataRepo = metaDataRepo;
+  }
 
   private _datasources: SubqlProjectDs[];
 
@@ -44,6 +49,10 @@ export class DynamicDsService {
       const ds = await this.getDatasource(params);
 
       await this.saveDynamicDatasourceParams(params, tx);
+
+      logger.info(
+        `Created new dynamic datasource from template: "${params.templateName}"`,
+      );
 
       if (!this._datasources) this._datasources = [];
       this._datasources.push(ds);
@@ -71,7 +80,9 @@ export class DynamicDsService {
   }
 
   private async getDynamicDatasourceParams(): Promise<DatasourceParams[]> {
-    const results = await this.storeService.getMetadata(METADATA_KEY);
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    const record = await this.metaDataRepo.findByPk(METADATA_KEY);
+    const results = record?.value;
 
     if (!results || typeof results !== 'string') {
       return [];
@@ -86,9 +97,9 @@ export class DynamicDsService {
   ): Promise<void> {
     const existing = await this.getDynamicDatasourceParams();
 
-    await this.storeService.setMetadata(
-      METADATA_KEY,
-      JSON.stringify([...existing, dsParams]),
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert(
+      { key: METADATA_KEY, value: JSON.stringify([...existing, dsParams]) },
       { transaction: tx },
     );
   }
@@ -107,7 +118,7 @@ export class DynamicDsService {
     }
 
     logger.info(
-      `Creating new datasource from template: "${params.templateName}"`,
+      `Initialised dynamic datasource from template: "${params.templateName}"`,
     );
 
     const dsObj = {
