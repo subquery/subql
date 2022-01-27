@@ -3759,7 +3759,6 @@ __metadata:
     nodemon: ^2.0.14
     parse-json: ^5.2.0
     pg: ^8.7.1
-    pino: ^6.11.3
     prom-client: ^14.0.0
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
@@ -12974,7 +12973,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pino@npm:^6.11.3, pino@npm:^6.13.3":
+"pino@npm:^6.13.3":
   version: 6.13.3
   resolution: "pino@npm:6.13.3"
   dependencies:
