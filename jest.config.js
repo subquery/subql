@@ -195,7 +195,7 @@ module.exports = {
   // ],
 
   "transformIgnorePatterns": [
-    "node_modules/(?!(@polkadot|@babel/runtime/helpers/esm)/)"
+    "node_modules/(?!(@polkadot|@babel/runtime/helpers/esm|@nftstorage/ipfs-cluster)/)"
   ],
 
   // An array of regexp pattern strings that are matched against all modules before the module loader will automatically return a mock for them

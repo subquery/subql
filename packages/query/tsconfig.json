@@ -1,18 +1,13 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2020",
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "./dist",
-    "lib": [
-      "dom"
-    ]
+    "lib": ["dom"]
   },
-  "references": [
-    {"path": "../common"},
-    {"path": "../types"}
-  ],
+  "references": [{"path": "../common"}, {"path": "../types"}],
   "include": ["src/**/*"]
 }
