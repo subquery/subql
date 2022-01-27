@@ -3,16 +3,15 @@
 
 import { Injectable } from '@nestjs/common';
 import {
-  CustomDataSourceV0_2_0Impl,
+    CustomDataSourceV0_2_0Impl,
   isCustomDs,
   isRuntimeDs,
   RuntimeDataSourceV0_2_0Impl,
 } from '@subql/common';
-import { SubqlDatasource, SubqlDatasourceKind } from '@subql/types';
+import { SubqlDatasource } from '@subql/types';
 import { plainToClass } from 'class-transformer';
-import yaml from 'js-yaml';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { Transaction } from 'sequelize/types';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
 import { StoreService } from './store.service';
@@ -21,17 +20,10 @@ const logger = getLogger('dynamic-ds');
 
 const METADATA_KEY = 'dynamicDatasources';
 
-function replacer(key: string, value: any): any {
-  if (value instanceof Map) {
-    const obj: Record<string, unknown> = {};
-    for (const key of value.keys()) {
-      obj[key] = value.get(key);
-    }
-
-    return obj;
-  } else {
-    return value;
-  }
+interface DatasourceParams {
+  templateName: string;
+  args?: Record<string, unknown>;
+  startBlock: number;
 }
 
 @Injectable()
@@ -42,80 +34,110 @@ export class DynamicDsService {
     private readonly project: SubqueryProject,
   ) {}
 
+  private _datasources: SubqlProjectDs[];
+
   async createDynamicDatasource(
-    templateName: string,
-    args: Record<string, unknown>,
-    currentBlock: number,
+    params: DatasourceParams,
     tx: Transaction,
   ): Promise<void> {
-
-    const template = this.project.templates.find(
-      (t) => t.name === templateName,
-    );
-
-    if (!template) {
-      logger.error(
-        `Unable to find matching template in project for name: "${templateName}"`,
-      );
-      process.exit(1);
-    }
-
-    logger.info(`Creating new datasource from template: "${templateName}"`);
-
-    const ds: SubqlDatasource = { ...template, startBlock: currentBlock };
     try {
-      if (isCustomDs(ds)) {
-        ds.processor.options = { ...ds.processor.options, ...args };
-        await this.dsProcessorService.validateCustomDs([ds]);
-      } else if (isRuntimeDs(ds)) {
-        // XXX add any modifications to the ds here
+      const ds = await this.getDatasource(params);
 
-        const runtimeDs = plainToClass(RuntimeDataSourceV0_2_0Impl, ds);
-        runtimeDs.validate();
-      }
+      await this.saveDynamicDatasourceParams(params, tx);
+
+      if (!this._datasources) this._datasources = [];
+      this._datasources.push(ds);
     } catch (e) {
-      logger.error(`Unable to create dynamic datasource.\n ${e.message}`);
+      logger.error(e.message);
       process.exit(1);
     }
-
-    await this.saveDynamicDatasource(ds, tx);
   }
 
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
+    if (!this._datasources) {
+      try {
+        const params = await this.getDynamicDatasourceParams();
+
+        this._datasources = await Promise.all(
+          params.map((params) => this.getDatasource(params)),
+        );
+      } catch (e) {
+        logger.error(`Unable to get dynamic datasources:\n${e.message}`);
+        process.exit(1);
+      }
+    }
+
+    return this._datasources;
+  }
+
+  private async getDynamicDatasourceParams(): Promise<DatasourceParams[]> {
     const results = await this.storeService.getMetadata(METADATA_KEY);
 
-    if (!results) {
+    if (!results || typeof results !== 'string') {
       return [];
     }
 
-    const jsonDs = yaml.load(results as unknown as string) as any[];
-
-    // Convert from objects to classes, this is needed for Map type in custom ds assets
-    return jsonDs.map((ds) => {
-      if (isRuntimeDs(ds)) {
-        return plainToClass(RuntimeDataSourceV0_2_0Impl, ds);
-      } else if (ds.kind !== SubqlDatasourceKind.Runtime) {
-        return plainToClass(CustomDataSourceV0_2_0Impl, ds);
-      }
-
-      logger.warn(`Unknown datasource kind (${ds.kind}), using plain object`);
-      return ds;
-    });
+    return JSON.parse(results);
   }
 
-  private async saveDynamicDatasource(
-    ds: SubqlDatasource,
+  private async saveDynamicDatasourceParams(
+    dsParams: DatasourceParams,
     tx: Transaction,
   ): Promise<void> {
-    const existing = await this.getDynamicDatasources();
-
-    // Need to convert Map objects to records
-    const dsObj = JSON.parse(JSON.stringify(ds, replacer));
+    const existing = await this.getDynamicDatasourceParams();
 
     await this.storeService.setMetadata(
       METADATA_KEY,
-      yaml.dump([...existing, dsObj]),
+      JSON.stringify([...existing, dsParams]),
       { transaction: tx },
     );
+  }
+
+  private async getDatasource(
+    params: DatasourceParams,
+  ): Promise<SubqlProjectDs> {
+    const template = this.project.templates.find(
+      (t) => t.name === params.templateName,
+    );
+
+    if (!template) {
+      throw new Error(
+        `Unable to find matching template in project for name: "${params.templateName}"`,
+      );
+    }
+
+    logger.info(
+      `Creating new datasource from template: "${params.templateName}"`,
+    );
+
+    const dsObj = {
+      ...template,
+      startBlock: params.startBlock,
+    } as SubqlProjectDs;
+    delete dsObj.name;
+    try {
+      if (isCustomDs(dsObj)) {
+        dsObj.processor.options = {
+          ...dsObj.processor.options,
+          ...params.args,
+        };
+        await this.dsProcessorService.validateCustomDs([dsObj]);
+
+        const customDs: CustomDataSourceV0_2_0Impl = plainToClass(
+          CustomDataSourceV0_2_0Impl,
+          dsObj,
+        );
+        customDs.validate();
+      } else if (isRuntimeDs(dsObj)) {
+        // XXX add any modifications to the ds here
+
+        const runtimeDs = plainToClass(RuntimeDataSourceV0_2_0Impl, dsObj);
+        runtimeDs.validate();
+      }
+
+      return dsObj;
+    } catch (e) {
+      throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);
+    }
   }
 }

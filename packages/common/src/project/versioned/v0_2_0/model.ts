@@ -43,6 +43,15 @@ export class ProjectMappingV0_2_0 extends Mapping {
   file: string;
 }
 
+function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
+  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
+  if (errors?.length) {
+    // TODO: print error details
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`${errorMessage}\n${errorMsgs}`);
+  }
+}
+
 export class RuntimeDataSourceV0_2_0Impl
   extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
   implements RuntimeDataSourceV0_2_0
@@ -52,12 +61,7 @@ export class RuntimeDataSourceV0_2_0Impl
   mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
 
   validate(): void {
-    const errors = validateSync(this, {whitelist: true, forbidNonWhitelisted: true});
-    if (errors?.length) {
-      // TODO: print error details
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`failed to validate runtime datasource.\n${errorMsgs}`);
-    }
+    return validateObject(this, 'failed to validate runtime datasource.');
   }
 }
 
@@ -67,7 +71,12 @@ export class CustomDataSourceV0_2_0Impl<
     M extends SubqlMapping = SubqlMappingV0_2_0<SubqlCustomHandler>
   >
   extends CustomDataSourceBase<K, T, M>
-  implements SubqlCustomDatasource<K, T, M> {}
+  implements SubqlCustomDatasource<K, T, M>
+{
+  validate(): void {
+    return validateObject(this, 'failed to validate custom datasource.');
+  }
+}
 
 export class DeploymentV0_2_0 {
   @Equals('0.2.0')
@@ -133,11 +142,6 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
   }
 
   validate(): void {
-    const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
-    if (errors?.length) {
-      // TODO: print error details
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
-    }
+    return validateObject(this.deployment, 'failed to validate project.');
   }
 }

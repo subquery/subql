@@ -12,8 +12,6 @@ import {
   buildSchemaFromString,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
-  RuntimeDatasourceTemplate,
-  CustomDatasourceTemplate,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -29,13 +27,15 @@ export type SubqlProjectDs = SubqlDatasource & {
   mapping: SubqlDatasource['mapping'] & { entryScript: string };
 };
 
+export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & { name: string; };
+
 export class SubqueryProject {
   id: string;
   root: string;
   network: Partial<ProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
-  templates: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
+  templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
 
   static async create(
@@ -157,6 +157,7 @@ async function loadProjectFromManifest0_2_1(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
+  const root = await getProjectRoot(reader, path);
   const project = await loadProjectFromManifest0_2_0(
     projectManifest,
     reader,
@@ -164,7 +165,11 @@ async function loadProjectFromManifest0_2_1(
     networkOverrides
   );
 
-  project.templates = projectManifest.templates;
+  project.templates = (await updateDataSourcesV0_2_0(
+    projectManifest.templates,
+    reader,
+    root,
+  )).map((ds, index) => ({ ...ds, name: projectManifest.templates[index].name}));
 
   return project;
 }

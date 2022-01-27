@@ -87,11 +87,13 @@ export class IndexerManager {
 
     // Inject function to create ds into vm
     vm.freeze(
-      (name: string, args?: Record<string, unknown>) =>
+      (templateName: string, args?: Record<string, unknown>) =>
         this.dynamicDsService.createDynamicDatasource(
-          name,
-          args,
-          blockHeight,
+          {
+            templateName,
+            args,
+            startBlock: blockHeight,
+          },
           tx,
         ),
       'createDynamicDatasource',
@@ -132,6 +134,7 @@ export class IndexerManager {
       }
 
       // Run dynamic data sources, must be after predefined datasources
+      // FIXME if any new dynamic datasources are created here they wont be run in the current block
       for (const ds of await this.dynamicDsService.getDynamicDatasources()) {
         await this.indexBlockForDs(ds, blockContent, apiAt, blockHeight, tx);
       }
@@ -289,7 +292,7 @@ export class IndexerManager {
   }
 
   private async createProjectSchema(): Promise<string> {
-    let schema;
+    let schema: string;
     if (this.nodeConfig.localMode) {
       // create tables in default schema if local mode is enabled
       schema = DEFAULT_DB_SCHEMA;
