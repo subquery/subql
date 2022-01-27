@@ -1,0 +1,8 @@
+// SPDX-License-Identifier: Apache-2.0
+
+// Auto-generated , DO NOT EDIT
+<% props.forEach(function(e){ %>
+export function create<%= e.name %>Datasource(<% if (e.args) { %>args: <%- e.args %><% } %>): Promise<void> {
+  return global.createDynamicDatasource('<%= e.name %>'<% if (e.args) { %>, args<% } %>);
+}
+<% }); %>

@@ -13,9 +13,9 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
-  ReaderFactory,
-  parseProjectManifest,
   loadProjectManifest,
+  ProjectManifestVersioned,
+  isCustomDs,
 } from '@subql/common';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
@@ -26,12 +26,14 @@ const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-i
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
 const ENUM_TEMPLATE_PATH = path.resolve(__dirname, '../template/enum.ts.ejs');
+const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/datasource-templates.ts.ejs');
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
 const exportTypes = {
   models: false,
   interfaces: false,
   enums: false,
+  datasources: false,
 };
 
 // 4. Render entity data in ejs template and write it
@@ -194,7 +196,8 @@ export async function codegen(projectPath: string): Promise<void> {
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   await generateEnums(projectPath, path.join(projectPath, manifest.schema));
-  if (exportTypes.interfaces || exportTypes.models || exportTypes.enums) {
+  await generateDatasourceTemplates(projectPath, manifest);
+  if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
       await renderTemplate(TYPES_INDEX_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `index.ts`), {
         props: {
@@ -262,4 +265,31 @@ export async function generateModels(projectPath: string, schema: string): Promi
     }
     console.log(`* Models index generated !`);
   }
+}
+
+export async function generateDatasourceTemplates(
+  projectPath: string,
+  projectManifest: ProjectManifestVersioned
+): Promise<void> {
+  if (!projectManifest.isV0_2_1) return;
+
+  const manifest = projectManifest.asV0_2_1;
+
+  if (!manifest.templates?.length) return;
+
+  try {
+    const props = manifest.templates.map((t) => ({
+      name: t.name,
+      args: isCustomDs(t) ? 'Record<string, unknown>' : undefined,
+    }));
+    await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
+      props,
+    });
+
+    exportTypes.datasources = true;
+  } catch (e) {
+    console.error(e);
+    throw new Error(`Unable to generate datasource template constructors`);
+  }
+  console.log(`* Datasource template constructors generated !`);
 }
