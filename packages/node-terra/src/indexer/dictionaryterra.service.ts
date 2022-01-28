@@ -14,10 +14,10 @@ import {
   TerraMetaData,
 } from '@subql/common';
 import fetch from 'node-fetch';
-import { getYargsOption } from '../../yargs';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { getYargsOption } from '../yargs';
 
 export type TerraDictionary = {
   _metadata: TerraMetaData;

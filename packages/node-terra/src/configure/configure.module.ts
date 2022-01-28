@@ -5,8 +5,8 @@ import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { camelCase, last } from 'lodash';
-import { getYargsOption } from '../../yargs';
 import { getLogger, setLevel } from '../utils/logger';
+import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryTerraProject } from './terraproject.model';
 

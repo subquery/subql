@@ -20,7 +20,7 @@ const UPDATE_HEIGHT_INTERVAL = 60000;
 const {
   version: terraSdkVersion,
 } = require('@terra-money/terra.js/package.json');
-const { version: packageVersion } = require('../../../package.json');
+const { version: packageVersion } = require('../../package.json');
 
 @Injectable()
 export class MetaService {

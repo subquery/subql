@@ -15,14 +15,13 @@ import {
 } from '@subql/types';
 import { LCDClient } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { createJsxClosingElement } from 'typescript';
-import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { filterEvents } from '../utils/terra-helper';
+import { getYargsOption } from '../yargs';
 import { ApiTerraService } from './apiterra.service';
 import { MetadataFactory } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';

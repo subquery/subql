@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {isCustomDs} from '@subql/common';
-import {SubqlDatasourceProcessor, SubqlNetworkFilter} from '@subql/types';
+import {SubqlDatasource, SubqlDatasourceProcessor, SubqlNetworkFilter} from '@subql/types';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
 
@@ -16,7 +16,8 @@ export class RequireCustomDsValidation implements Rule {
     const schema = ctx.data.schema;
 
     if (schema.isV0_2_0) {
-      for (const customDs of schema.dataSources.filter(isCustomDs)) {
+      const dataSources = schema.dataSources as SubqlDatasource[];
+      for (const customDs of dataSources.filter(isCustomDs)) {
         const processor: SubqlDatasourceProcessor<string, SubqlNetworkFilter> = require(path.resolve(
           ctx.data.projectPath,
           customDs.processor.file

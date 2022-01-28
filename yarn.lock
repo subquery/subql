@@ -5388,6 +5388,54 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/node-terra@workspace:packages/node-terra":
+  version: 0.0.0-use.local
+  resolution: "@subql/node-terra@workspace:packages/node-terra"
+  dependencies:
+    "@apollo/client": 3.4.16
+    "@nestjs/common": ^8.1.2
+    "@nestjs/core": ^8.1.2
+    "@nestjs/event-emitter": ^1.0.0
+    "@nestjs/platform-express": ^8.1.2
+    "@nestjs/schedule": ^1.0.1
+    "@nestjs/schematics": ^8.0.4
+    "@nestjs/testing": ^8.1.2
+    "@subql/common": "workspace:*"
+    "@subql/types": "workspace:*"
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
+    "@subql/x-vm2": ^3.9.3-0.1.0
+    "@types/app-module-path": ^2.2.0
+    "@types/express": ^4.17.13
+    "@types/jest": ^27.0.2
+    "@types/lodash": ^4.14.176
+    "@types/sequelize": ^4.28.10
+    "@types/supertest": ^2.0.11
+    "@types/tar": ^6.1.0
+    "@types/yargs": ^16.0.4
+    "@willsoto/nestjs-prometheus": ^4.2.0
+    app-module-path: ^2.2.0
+    dayjs: ^1.10.7
+    dotenv: ^10.0.0
+    eventemitter2: ^6.4.5
+    lodash: ^4.17.21
+    merkle-tools: ^1.4.1
+    nodemon: ^2.0.14
+    parse-json: ^5.2.0
+    pg: ^8.7.1
+    prom-client: ^14.0.0
+    reflect-metadata: ^0.1.13
+    rimraf: ^3.0.2
+    rxjs: ^7.4.0
+    sequelize: ^6.9.0
+    supertest: ^6.1.6
+    tar: ^6.1.11
+    typescript: ^4.4.4
+    yargs: ^16.2.0
+  bin:
+    subql-node-terra: ./bin/run
+  languageName: unknown
+  linkType: soft
+
 "@subql/node@workspace:packages/node":
   version: 0.0.0-use.local
   resolution: "@subql/node@workspace:packages/node"

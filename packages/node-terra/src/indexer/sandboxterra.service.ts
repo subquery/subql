@@ -7,11 +7,11 @@ import { levelFilter } from '@subql/common';
 import { SubqlTerraDatasource, Store } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
-import { getYargsOption } from '../../yargs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { timeout } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 import { ApiTerraService } from './apiterra.service';
 import { StoreService } from './store.service';
 

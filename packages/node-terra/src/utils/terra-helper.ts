@@ -7,10 +7,8 @@ import {
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
-import { filter } from 'lodash';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
-import { delay } from './promise';
 
 const logger = getLogger('fetch');
 
