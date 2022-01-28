@@ -21,7 +21,7 @@ describe('substrate utils', () => {
 
   afterAll(() => api?.disconnect());
 
-  it.skip('query range of blocks', async () => {
+  it('query range of blocks', async () => {
     const blockHash = await api.rpc.chain.getBlockHash(100000);
     await prefetchMetadata(api, blockHash);
     const blocks = await fetchBlocks(api, 100000, 100019);

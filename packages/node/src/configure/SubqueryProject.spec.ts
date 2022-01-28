@@ -37,6 +37,9 @@ describe('SubqueryProject', () => {
       const project = await SubqueryProject.create(projectDirV0_2_0, {
         endpoint: 'wss://rpc.polkadot.io/public-ws',
       });
+      expect((project.dataSources[1] as any).processor.file).toMatch(
+        /moonbeam.js/,
+      );
     }, 5000000);
 
     it.skip('convert 0.2.0 ipfs deployment to project object', async () => {

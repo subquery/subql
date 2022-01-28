@@ -4,21 +4,16 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { RegisteredTypes } from '@polkadot/types/types';
-import { blake2AsHex } from '@polkadot/util-crypto';
 import {
-  buildSchemaFromString,
   ChainTypes,
   CustomDatasourceV0_2_0,
   GithubReader,
   IPFSReader,
+  isCustomDs,
   loadChainTypes,
   loadChainTypesFromJs,
   LocalReader,
   parseChainTypes,
-  ProjectManifestV0_0_1Impl,
-  ProjectManifestV0_2_0Impl,
-  ProjectNetworkConfig,
   Reader,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
@@ -28,12 +23,10 @@ import {
   SubqlCustomHandler,
   SubqlHandler,
   SubqlHandlerKind,
-  SubqlDatasource,
 } from '@subql/types';
 import yaml from 'js-yaml';
-import { pick } from 'lodash';
 import tar from 'tar';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -86,64 +79,73 @@ export function isCustomHandler<K extends string, F>(
   return !isBaseHandler(handler);
 }
 
-async function syncRemoteFileToLocal(
+export async function updateDataSourcesV0_0_1(
+  _dataSources: RuntimeDataSourceV0_0_1[],
   reader: Reader,
-  root: string,
-  inputFile: string,
-  ext?: string,
-  content?: string,
-): Promise<string> {
-  const res = content ?? (await reader.getFile(inputFile));
-  const name = blake2AsHex(inputFile).substr(2, 10);
-  const fileName = ext ? `${name}${ext}` : name;
-  const outputPath = path.resolve(root, fileName);
-  await fs.promises.writeFile(outputPath, res as string);
-  return outputPath;
+): Promise<SubqlProjectDs[]> {
+  // force convert to updated ds
+  const dataSources = _dataSources as SubqlProjectDs[];
+  await Promise.all(
+    dataSources.map(async (ds) => {
+      ds.mapping.entryScript = await loadDataSourceScript(reader);
+    }),
+  );
+  return dataSources;
 }
 
-export async function updateDataSources(
-  _dataSources:
-    | RuntimeDataSourceV0_0_1[]
-    | (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[],
+export async function updateDataSourcesV0_2_0(
+  _dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[],
   reader: Reader,
   root: string,
 ): Promise<SubqlProjectDs[]> {
   // force convert to updated ds
-  await Promise.all(
-    _dataSources.map(async (ds) => {
-      if (ds.mapping.file) {
-        ds.mapping.entryScript = await loadDataSourceScript(
-          reader,
-          ds.mapping.file,
-        );
-        ds.mapping.file = await updateDataSourcesEntry(
-          reader,
-          ds.mapping.file,
-          root,
-          ds.mapping.entryScript,
-        );
-      } else {
-        ds.mapping.entryScript = await loadDataSourceScript(reader);
-      }
-      if (ds.processor) {
-        ds.processor.file = await updateProcessor(
-          reader,
-          root,
-          ds.processor.file,
-        );
-      }
-      if (ds.assets) {
-        for (const [, asset] of ds.assets) {
-          if (reader instanceof LocalReader) {
-            asset.file = path.resolve(root, asset.file);
-          } else {
-            asset.file = await syncRemoteFileToLocal(reader, root, asset.file);
+  return Promise.all(
+    _dataSources.map(async (dataSource) => {
+      const entryScript = await loadDataSourceScript(
+        reader,
+        dataSource.mapping.file,
+      );
+      const file = await updateDataSourcesEntry(
+        reader,
+        dataSource.mapping.file,
+        root,
+        entryScript,
+      );
+      if (isCustomDs(dataSource)) {
+        if (dataSource.processor) {
+          dataSource.processor.file = await updateProcessor(
+            reader,
+            root,
+            dataSource.processor.file,
+          );
+        }
+        if (dataSource.assets) {
+          for (const [, asset] of dataSource.assets) {
+            if (reader instanceof LocalReader) {
+              asset.file = path.resolve(root, asset.file);
+            } else {
+              const res = await reader.getFile(asset.file);
+              const outputPath = path.resolve(
+                root,
+                asset.file.replace('ipfs://', ''),
+              );
+              await fs.promises.writeFile(outputPath, res as string);
+              asset.file = outputPath;
+            }
           }
         }
+        return {
+          ...dataSource,
+          mapping: { ...dataSource.mapping, entryScript, file },
+        };
+      } else {
+        return {
+          ...dataSource,
+          mapping: { ...dataSource.mapping, entryScript, file },
+        };
       }
     }),
   );
-  return _dataSources as SubqlProjectDs[];
 }
 
 async function updateDataSourcesEntry(
@@ -154,7 +156,9 @@ async function updateDataSourcesEntry(
 ): Promise<string> {
   if (reader instanceof LocalReader) return file;
   else if (reader instanceof IPFSReader || reader instanceof GithubReader) {
-    return syncRemoteFileToLocal(reader, root, file, '.js', script);
+    const outputPath = `${path.resolve(root, file.replace('ipfs://', ''))}.js`;
+    await fs.promises.writeFile(outputPath, script);
+    return outputPath;
   }
 }
 
@@ -164,9 +168,12 @@ async function updateProcessor(
   file: string,
 ): Promise<string> {
   if (reader instanceof LocalReader) {
-    return file;
+    return path.resolve(root, file);
   } else {
-    return syncRemoteFileToLocal(reader, root, file, '.js');
+    const res = await reader.getFile(file);
+    const outputPath = `${path.resolve(root, file.replace('ipfs://', ''))}.js`;
+    await fs.promises.writeFile(outputPath, res);
+    return outputPath;
   }
 }
 
@@ -183,20 +190,18 @@ export async function getChainTypes(
     // Because ipfs not provide extension of the file, it is difficult to determine its format
     // We will use yaml.load to try to load the script and parse them to supported chain types
     // if it failed, we will give it another another attempt, and assume the script written in js
-    // we will use syncRemoteFileToLocal method to download it to a temp folder, and load them within sandbox
+    // we will download it to a temp folder, and load them within sandbox
     const res = await reader.getFile(file);
     let raw: unknown;
     try {
       raw = yaml.load(res);
       return parseChainTypes(raw);
     } catch (e) {
-      const chainTypesPath = await syncRemoteFileToLocal(
-        reader,
+      const chainTypesPath = `${path.resolve(
         root,
-        file,
-        '.js',
-        res,
-      );
+        file.replace('ipfs://', ''),
+      )}.js`;
+      await fs.promises.writeFile(chainTypesPath, res);
       raw = loadChainTypesFromJs(chainTypesPath); //root not required, as it been packed in single js
       return parseChainTypes(raw);
     }

@@ -18,7 +18,8 @@ import { pick } from 'lodash';
 import {
   getChainTypes,
   getProjectRoot,
-  updateDataSources,
+  updateDataSourcesV0_0_1,
+  updateDataSourcesV0_2_0,
 } from '../utils/project';
 
 export type SubqlProjectDs = SubqlDatasource & {
@@ -75,10 +76,9 @@ async function loadProjectFromManifest0_0_1(
       ...projectManifest.network,
       ...networkOverrides,
     },
-    dataSources: await updateDataSources(
+    dataSources: await updateDataSourcesV0_0_1(
       projectManifest.dataSources,
       reader,
-      path,
     ),
     schema: buildSchemaFromString(await reader.getFile(projectManifest.schema)),
     chainTypes: pick<RegisteredTypes>(projectManifest.network, [
@@ -123,7 +123,7 @@ async function loadProjectFromManifest0_2_0(
     ? await getChainTypes(reader, root, projectManifest.network.chaintypes.file)
     : undefined;
 
-  const dataSources = await updateDataSources(
+  const dataSources = await updateDataSourcesV0_2_0(
     projectManifest.dataSources,
     reader,
     root,
