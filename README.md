@@ -1,82 +1,49 @@
-# Welcome to SubQuery - Extended to index Terra!
+# Welcome to SubQuery!
+![open grant logo](https://raw.githubusercontent.com/w3f/General-Grants-Program/master/src/badge_black.svg)
 
-This fork extends the node package of official subql implementation to index Terra. 
+**SubQuery enables better dApps by making decentralised data more accessible**
 
-Note: Find the starter project for indexing terra here : https://github.com/DeveloperInProgress/subqlstarter-terra
+SubQuery allows every Substrate/Polkadot team to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help Polkadot/Substrate projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract Polkadot network data in only minutes and at no cost.
 
-## Quick Start
+SubQuery aims to support all Substrate-compatible networks.
 
-Warning: This project has only been tested on Linux
+## Get Started
+#### Installation
+```shell
+# Yarn
+yarn global add @subql/cli @subql/node @subql/query
 
-Demo video: https://youtu.be/K_pjh5OC95A
-
-### setup
-
-Follow this demo video for setup
-
-1. Clone this repository
-
-`git clone https://github.com/DeveloperInProgress/subql.git`
-
-2. Install dependencies for subql
-
-```
-cd subql
-yarn install
+# NPM
+npm install -g @subql/cli @subql/node @subql/query
 ```
 
-3. Build subql/node package
+#### Create a SubQuery project
+You can follow our [Quick Start Guide](https://doc.subquery.network/quickstart/quickstart.html) to learn how to create, initialize, build, and publish a new SubQuery Project using the `@subql/cli` tool.
 
-```
-cd packages/node
-yarn build
-```
+You'll need [Typescript](https://www.typescriptlang.org/) and [Node](https://nodejs.org/en/).
 
-4. Run the node module. On the first run, codegen function will be called on subql Terra project. But it will ask for the missing build folder later because the subql Terra project must have not been built yet. Build the Subql Terra project as given here[https://github.com/DeveloperInProgress/subqlstarter-terra/blob/main/README.md#setup] and run this command again
+#### Publish your SubQuery Project to our Managed Service
+Don't want to worry about running your own SubQuery nodes? SubQuery provides a [managed hosted service](https://explorer.subquery.network) to the community for free. Follow our publishing guide to see how you can upload your project to [SubQuery Projects](https://project.subquery.network).
 
-WARNING: The following must be executed twice. Read the instruction above.
+#### Run your own Indexer and Query Service
+[Follow our guide](https://doc.subquery.network/run/run.html) to run your own SubQuery local node that you can use to debug, test, and run you own GraphQL server
 
-`sudo node bin/run -f <path_to_project> --chain terra --force-clean --debug --port 3001`
+You're going to need to a Postgres database, a node to extract chain data, and a moderately powerful computer to run the indexer in the background.
 
-Note: You may choose any port except the default value, 3000. Because @subql/query will use this port later on.
+You'll also use our custom-built GraphQL query service [`@subql/query`](https://www.npmjs.com/package/@subql/query) to interact with your SubQuery project.
 
+#### Components
+* [`@subql/cli`](packages/cli)
+* [`@subql/node`](packages/node)
+* [`@subql/query`](packages/query)
+* [`@subql/contract-processors`](packages/contract-processors)
+* [`@subql/common`](packages/common)
+* [`@subql/types`](packages/types)
+* [`@subql/validator`](packages/validator)
 
-5. Run @subql/query module
+## More Documentation
+For more documentation, visit [doc.subquery.network](https://doc.subquery.network/)
 
-`subql-query --name <project_name> --playground`
-
-Now you may query the indexed data from http://localhost:3000
-
-## Project Manifest
-
-### Network Configuration
-
-The network configuration for subql terra projects has been modified to include "chainId" parameter. 
-
-Example:
-
-```
-network:
-  genesisHash: 'q4PIUU/W6KSxGM9wyowkSW+Ij8HuODDeM4USpA2ucWc='
-  endpoint: https://bombay-lcd.terra.dev
-  chainId: bombay-12
-```
-
-The chainId parameter is required to create a Terra LCDClient
-
-### Datasources
-
-Terra supports two kinds of datasources: terra/Runtime and terra/Custom. They are equivalent to substarte/Runtime and substrate/Custom in polkadot counterpart respectively
-
-There are two types of datasource mapping handlers:
-
-1. terra/BlockHandler : handler for Terra Blocks
-2. terra/EventHandler : handler for Terra Events
-
-## Future Works
-
-The following will be implemented in the modified node module:
-
-1. Event Filters
-2. Proof of Index
-3. Dictionary Service
+## Copyright
+SubQuery is a project built with love from the team at [OnFinality](https://onfinality.io)
+Copyright © 2021 [OnFinality Limited](https://onfinality.io) authors & contributors
