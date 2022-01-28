@@ -35,7 +35,8 @@
     "vuepress-plugin-right-anchor": "^0.5.5"
   },
   "resolutions": {
-    "@polkadot/api": "6.9.2",
+    "@polkadot/api": "7.4.1",
+    "@polkadot/util": "8.3.2",
     "@terra-money/terra.js": "^3.0.1"
   },
   "scripts": {
