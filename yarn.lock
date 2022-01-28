@@ -5449,7 +5449,6 @@ __metadata:
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
     "@polkadot/api": 6.9.2
-    "@subql-terra/x-vm2": "https://github.com/DeveloperInProgress/subql-terra-x-vm2#main"
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1

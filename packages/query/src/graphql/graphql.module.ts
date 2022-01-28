@@ -17,8 +17,6 @@ import {getLogger} from '../utils/logger';
 import {plugins} from './plugins';
 import {ProjectService} from './project.service';
 
-const logger = getLogger('debug');
-
 @Module({
   providers: [ProjectService],
 })
@@ -48,7 +46,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
-    logger.info(dbSchema);
     const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
       replaceAllPlugins: plugins,
       subscriptions: true,
@@ -86,7 +83,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       path: '/',
       cors: true,
     });
-    logger.info('server ready');
     return server;
   }
 }

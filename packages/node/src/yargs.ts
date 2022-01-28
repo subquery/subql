@@ -116,12 +116,6 @@ export function getYargsOption() {
       type: 'number',
       default: 3000,
     },
-    chain: {
-      demainOption: true,
-      describe: 'Blockchain to index',
-      type: 'string',
-      choices: ['terra', 'polkadot'],
-    },
   });
 }
 

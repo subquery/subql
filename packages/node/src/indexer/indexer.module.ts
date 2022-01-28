@@ -22,13 +22,11 @@ import { StoreService } from './store.service';
     IndexerManager,
     StoreService,
     {
-      //provide: ApiService,
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
       ) => {
-        //const apiService = new ApiService(project, eventEmitter);
         const apiService = new ApiService(project, eventEmitter);
         await apiService.init();
         return apiService;

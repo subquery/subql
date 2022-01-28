@@ -4,7 +4,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';
-import { getLogger } from './utils/logger';
+import { getLogger, NestLogger } from './utils/logger';
 import { argv } from './yargs';
 const logger = getLogger('subql-node');
 
@@ -17,13 +17,9 @@ async function bootstrap() {
     );
   }
 
-  //if (argv('chain') === 'terra') {
-  //  await codegen(`${argv('subquery')}`);
-  //}
   try {
     const app = await NestFactory.create(AppModule, {
-      //logger: debug ? new NestLogger() : false,
-      logger: debug ? ['verbose'] : false,
+      logger: debug ? new NestLogger() : false,
     });
     await app.init();
 
