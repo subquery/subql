@@ -17,6 +17,9 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
+} from '@subql/types';
+
+import {
   SubqlTerraEventFilter,
   SubqlTerraHandlerKind,
   SubqlTerraCustomHandler,
@@ -26,7 +29,8 @@ import {
   SubqlTerraRuntimeDatasource,
   SubqlTerraDatasourceKind,
   SubqlTerraCustomDatasource,
-} from '@subql/types';
+} from '@subql/types-terra';
+
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,

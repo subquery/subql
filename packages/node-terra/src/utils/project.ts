@@ -9,7 +9,7 @@ import {
   SubqlTerraHandler,
   SubqlTerraHandlerKind,
   SubqlTerraRuntimeHandler,
-} from '@subql/types';
+} from '@subql/types-terra';
 import tar from 'tar';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {

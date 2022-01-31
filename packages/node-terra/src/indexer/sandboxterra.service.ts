@@ -4,7 +4,7 @@
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { levelFilter } from '@subql/common';
-import { SubqlTerraDatasource, Store } from '@subql/types';
+import { SubqlTerraDatasource, Store } from '@subql/types-terra';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';

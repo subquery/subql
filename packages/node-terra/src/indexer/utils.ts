@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import path from 'path';
 import { loadFromJsonOrYaml } from '@subql/common';
@@ -9,7 +12,7 @@ import {
   SubqlTerraHandlerKind,
   SubqlTerraRuntimeDatasource,
   TerraProjectManifest,
-} from '@subql/types';
+} from '@subql/types-terra';
 
 export function isCustomTerraDs(
   ds: SubqlTerraDatasource,

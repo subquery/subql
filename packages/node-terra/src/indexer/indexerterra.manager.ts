@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -12,7 +15,7 @@ import {
   SubqlTerraDatasource,
   TerraBlock,
   TerraEvent,
-} from '@subql/types';
+} from '@subql/types-terra';
 import { LCDClient } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';

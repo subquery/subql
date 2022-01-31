@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Extrinsic, EventRecord, SignedBlock} from '@polkadot/types/interfaces';
-import {BlockInfo, EventsByType} from '@terra-money/terra.js';
 
 export interface Entity {
   id: string;
@@ -41,13 +40,4 @@ export interface SubstrateEvent extends EventRecord {
   idx: number;
   extrinsic?: SubstrateExtrinsic;
   block: SubstrateBlock;
-}
-
-export interface TerraBlock {
-  block: BlockInfo;
-}
-
-export interface TerraEvent {
-  event: EventsByType;
-  block: BlockInfo;
 }

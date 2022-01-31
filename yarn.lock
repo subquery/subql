@@ -5449,6 +5449,7 @@ __metadata:
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
     "@polkadot/api": 6.9.2
+    "@subql-terra/x-vm2": "https://github.com/DeveloperInProgress/subql-terra-x-vm2#main"
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
@@ -5522,6 +5523,17 @@ __metadata:
     yargs: ^16.2.0
   bin:
     subql-query: ./bin/run
+  languageName: unknown
+  linkType: soft
+
+"@subql/types-terra@workspace:packages/types-terra":
+  version: 0.0.0-use.local
+  resolution: "@subql/types-terra@workspace:packages/types-terra"
+  dependencies:
+    "@terra-money/terra.js": ^3.0.1
+    "@types/app-module-path": ^2.2.0
+  peerDependencies:
+    "@terra-money/terra.js": ^3.0.1
   languageName: unknown
   linkType: soft
 

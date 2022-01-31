@@ -10,7 +10,7 @@ import {
   SubqlTerraMapping,
   SubqlTerraRuntimeDatasource,
   SubqlTerraRuntimeHandler,
-} from '@subql/types';
+} from '@subql/types-terra';
 import {IProjectManifest} from '../../types';
 
 export interface SubqlMappingV0_3_0<T extends SubqlTerraHandler> extends SubqlTerraMapping<T> {

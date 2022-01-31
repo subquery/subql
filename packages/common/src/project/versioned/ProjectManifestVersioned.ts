@@ -1,7 +1,8 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlDatasource, SubqlTerraDatasource} from '@subql/types';
+import {SubqlDatasource} from '@subql/types';
+import {SubqlTerraDatasource} from '@subql/types-terra';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {IProjectManifest} from '../types';

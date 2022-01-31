@@ -7,8 +7,7 @@ import {
   TerraProjectNetworkConfig,
 } from '@subql/common';
 import { ProjectNetworkV0_3_0 } from '@subql/common/project/versioned/v0_3_0';
-import { SubqlTerraDatasource } from '@subql/types';
-import { loadTerraProjectManifest } from '../indexer/utils';
+import { SubqlTerraDatasource } from '@subql/types-terra';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 

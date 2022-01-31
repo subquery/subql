@@ -3,7 +3,6 @@
 
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-//import { IndexerManager } from './indexer/indexer.manager';
 import { IndexerTerraManager } from './indexer/indexerterra.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { argv } from './yargs';
@@ -20,8 +19,7 @@ async function bootstrap() {
 
   try {
     const app = await NestFactory.create(AppModule, {
-      //logger: debug ? new NestLogger() : false,
-      logger: debug ? ['verbose'] : false,
+      logger: debug ? new NestLogger() : false,
     });
     await app.init();
 

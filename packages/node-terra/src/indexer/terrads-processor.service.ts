@@ -1,10 +1,13 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
   SubqlTerraCustomDatasource,
   SubqlTerraDatasourceProcessor,
-} from '@subql/types';
+} from '@subql/types-terra';
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';

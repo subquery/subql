@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
@@ -9,7 +12,7 @@ import {
   SubqlTerraHandlerKind,
   SubqlTerraEventHandler,
   SubqlTerraEventFilter,
-} from '@subql/types';
+} from '@subql/types-terra';
 import { LCDClient } from '@terra-money/terra.js';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -56,7 +59,6 @@ export class FetchTerraService implements OnApplicationShutdown {
   private blockBuffer: BlockedQueue<TerraBlockContent>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
-  private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
 
