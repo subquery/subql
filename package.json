@@ -35,7 +35,9 @@
     "vuepress-plugin-right-anchor": "^0.5.5"
   },
   "resolutions": {
-    "@polkadot/api": "6.9.2"
+    "@polkadot/api": "7.4.1",
+    "@polkadot/util": "8.3.2",
+    "@terra-money/terra.js": "^3.0.1"
   },
   "scripts": {
     "docs:dev": "vuepress dev docs",
@@ -47,11 +49,7 @@
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
   },
-  "dependencies": {
-    "@subql/x-vm2": "^3.9.3-0.1.0",
-    "@terra-money/terra.js": "^3.0.1",
-    "vuepress-theme-hope": "^1.21.0"
-  },
+
   "lint-staged": {
     "*.ts": [
       "eslint --cache --fix",
