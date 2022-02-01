@@ -8,7 +8,7 @@ import { Store, SubqlDatasource } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
@@ -21,6 +21,7 @@ const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
+  script: string;
   root: string;
   entry: string;
 }
@@ -66,8 +67,7 @@ export class IndexerSandbox extends Sandbox {
     super(
       option,
       new VMScript(
-        `
-      const mappingFunctions = require('${option.entry}');
+        `const mappingFunctions = require('${option.entry}');
       module.exports = mappingFunctions[funcName](...args);
     `,
         path.join(option.root, 'sandbox'),
@@ -112,16 +112,17 @@ export class SandboxService {
     private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlDatasource, api: ApiAt): IndexerSandbox {
+  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
           // api: await this.apiService.getPatchedApi(),
-          entry,
-          root: this.project.path,
           store: this.storeService.getStore(),
+          root: this.project.root,
+          script: ds.mapping.entryScript,
+          entry,
         },
         this.nodeConfig,
       );
@@ -138,7 +139,7 @@ export class SandboxService {
     if (isRuntimeDataSourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {
-      return getProjectEntry(this.project.path);
+      return getProjectEntry(this.project.root);
     }
   }
 }

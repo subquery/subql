@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, flags} from '@oclif/command';
-import {commonRules, Validator} from '@subql/validator';
+import {Validator, commonRules} from '@subql/validator';
 import chalk from 'chalk';
 
 export default class Validate extends Command {
@@ -19,7 +19,7 @@ export default class Validate extends Command {
 
   async run(): Promise<void> {
     const {flags} = this.parse(Validate);
-    const v = new Validator(flags.location ?? process.cwd(), {ipfs: flags.ipfs});
+    const v = await Validator.create(flags.location ?? process.cwd(), {ipfs: flags.ipfs});
     v.addRule(...commonRules);
 
     const reports = await v.getValidateReports();

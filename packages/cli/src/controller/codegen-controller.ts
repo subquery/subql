@@ -6,7 +6,6 @@ import path from 'path';
 import {promisify} from 'util';
 import {
   getAllEntitiesRelations,
-  loadProjectManifest,
   getAllJsonObjects,
   setJsonObjectType,
   getTypeByScalarName,
@@ -14,6 +13,9 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
+  ReaderFactory,
+  parseProjectManifest,
+  loadProjectManifest,
 } from '@subql/common';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
@@ -186,7 +188,9 @@ export async function codegen(projectPath: string): Promise<void> {
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
+
   const manifest = loadProjectManifest(projectPath);
+
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   await generateEnums(projectPath, path.join(projectPath, manifest.schema));

@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import * as path from 'path';
 import { NodeConfig } from '../configure/NodeConfig';
 import { IndexerSandbox } from './sandbox.service';
@@ -13,11 +14,14 @@ describe('sandbox for subql-node', () => {
   });
 
   it('wait until promise resolved', async () => {
+    const root = path.resolve(__dirname, '../../test/sandbox');
+    const entry = './main.js';
     vm = new IndexerSandbox(
       {
         store: undefined,
-        root: path.resolve(__dirname, '../../test/sandbox'),
-        entry: './main.js',
+        root,
+        entry,
+        script: fs.readFileSync(path.join(root, entry)).toString(),
       },
       new NodeConfig({ subquery: '', subqueryName: '' }),
     );

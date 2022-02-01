@@ -4,11 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import {
-  loadProjectManifest,
   ProjectManifestV0_2_0,
   ProjectManifestVersioned,
   ProjectNetworkV0_0_1,
   ChainTypes,
+  loadProjectManifest,
 } from '@subql/common';
 import {cli} from 'cli-ux';
 import yaml from 'js-yaml';

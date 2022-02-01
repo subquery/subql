@@ -6,7 +6,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
 import { ProjectManifestVersioned } from '@subql/common';
-import { SubqueryProject } from '../configure/project.model';
+import { GraphQLSchema } from 'graphql';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { delay } from '../utils/promise';
 import { ApiService } from './api.service';
 
@@ -17,20 +18,21 @@ const TEST_BLOCKHASH =
   '0x70070f6c1ad5b9ce3d0a09e94086e22b8d4f08a18491183de96614706bf59600'; // kusama #6721189
 
 function testSubqueryProject(endpoint: string): SubqueryProject {
-  const project = new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.0.1',
-      network: {
-        endpoint,
-        types: {
-          TestType: 'u32',
-        },
+  return {
+    network: {
+      endpoint,
+      dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
+    },
+    dataSources: [],
+    id: 'test',
+    root: './',
+    chainTypes: {
+      types: {
+        TestType: 'u32',
       },
-      dataSources: [],
-    } as any),
-    '',
-  );
-  return project;
+    },
+    schema: new GraphQLSchema({}),
+  };
 }
 
 jest.setTimeout(90000);
@@ -65,6 +67,9 @@ describe('ApiService', () => {
   it('can instantiate api', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
+
+    const apiAt = await api.at(TEST_BLOCKHASH);
+    apiAt.registry;
     expect(api.registry.getDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.

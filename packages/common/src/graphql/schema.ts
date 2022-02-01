@@ -11,8 +11,12 @@ function loadBaseSchema(): GraphQLSchema {
   return extendSchema(schema, directives);
 }
 
-export function buildSchema(path: string): GraphQLSchema {
-  const src = new Source(fs.readFileSync(path).toString());
+export function buildSchemaFromFile(path: string): GraphQLSchema {
+  return buildSchemaFromString(fs.readFileSync(path).toString());
+}
+
+export function buildSchemaFromString(raw: string): GraphQLSchema {
+  const src = new Source(raw);
   const doc = parse(src);
   return buildSchemaFromDocumentNode(doc);
 }

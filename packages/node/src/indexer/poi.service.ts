@@ -5,7 +5,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { hexToU8a } from '@polkadot/util';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');

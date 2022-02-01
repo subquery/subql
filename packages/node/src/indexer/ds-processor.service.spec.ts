@@ -2,37 +2,36 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { ProjectManifestVersioned, isCustomDs } from '@subql/common';
+import { isCustomDs } from '@subql/common';
 import { SubqlCustomDatasource } from '@subql/types';
-import { SubqueryProject } from '../configure/project.model';
+import { GraphQLSchema } from 'graphql';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
-function getTestProject(extraDataSources?: SubqlCustomDatasource[]) {
-  return new SubqueryProject(
-    new ProjectManifestVersioned({
-      specVersion: '0.2.0',
-      version: '0.0.0',
-      network: {
-        genesisHash: '0x',
-        endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
-      },
-      schema: './schema.graphql',
-      dataSources: [
-        {
-          kind: 'substrate/Jsonfy',
-          processor: { file: 'contract-processors/dist/jsonfy.js' },
-          startBlock: 1,
-          mapping: {
-            handlers: [
-              { handler: 'testSandbox', kind: 'substrate/JsonfyEvent' },
-            ],
-          },
+function getTestProject(
+  extraDataSources?: SubqlCustomDatasource[],
+): SubqueryProject {
+  return {
+    network: {
+      genesisHash: '0x',
+      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+    },
+    dataSources: [
+      {
+        kind: 'substrate/Jsonfy',
+        processor: { file: 'contract-processors/dist/jsonfy.js' },
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          handlers: [{ handler: 'testSandbox', kind: 'substrate/JsonfyEvent' }],
         },
-        ...extraDataSources,
-      ],
-    } as any),
-    path.resolve(__dirname, '../../../'),
-  );
+      },
+      ...extraDataSources,
+    ] as any,
+    id: 'test',
+    root: path.resolve(__dirname, '../../../'),
+    schema: new GraphQLSchema({}),
+  };
 }
 
 describe('DsProcessorService', () => {

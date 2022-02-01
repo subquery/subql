@@ -9,7 +9,7 @@ describe('LocalReader', () => {
   let reader: Reader;
 
   beforeAll(() => {
-    const loc = path.join(__dirname, '../../fixtures');
+    const loc = path.join(__dirname, '../../../fixtures');
     reader = new LocalReader(loc);
   });
 

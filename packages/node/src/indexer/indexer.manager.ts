@@ -2,13 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
-  buildSchema,
   getAllEntitiesRelations,
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -21,14 +19,13 @@ import {
   SecondLayerHandlerProcessor,
   SubqlCustomDatasource,
   SubqlCustomHandler,
-  SubqlDatasource,
   SubqlHandlerKind,
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
 } from '@subql/types';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
@@ -58,8 +55,8 @@ const { argv } = getYargsOption();
 export class IndexerManager {
   private api: ApiPromise;
   private prevSpecVersion?: number;
-  private filteredDataSources: SubqlDatasource[];
   protected metadataRepo: MetadataRepo;
+  private filteredDataSources: SubqlProjectDs[];
 
   constructor(
     private storeService: StoreService,
@@ -115,7 +112,6 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
-
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
         //check if operation is null, then poi will not be insert
@@ -125,7 +121,7 @@ export class IndexerManager {
             block.block.header.hash.toHex(),
             operationHash,
             await this.poiService.getLatestPoiBlockHash(),
-            this.project.path, //projectId // TODO, define projectId
+            this.project.id,
           );
           poiBlockHash = poiBlock.hash;
           await this.storeService.setPoi(poiBlock, { transaction: tx });
@@ -278,9 +274,7 @@ export class IndexerManager {
   }
 
   private async initDbSchema(schema: string): Promise<void> {
-    const graphqlSchema = buildSchema(
-      path.join(this.project.path, this.project.schema),
-    );
+    const graphqlSchema = this.project.schema;
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
   }
@@ -363,7 +357,7 @@ export class IndexerManager {
     return metadataRepo;
   }
 
-  private filterDataSources(processedHeight: number): SubqlDatasource[] {
+  private filterDataSources(processedHeight: number): SubqlProjectDs[] {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
@@ -411,7 +405,7 @@ export class IndexerManager {
     }
   }
 
-  private getDataSourcesForSpecName(): SubqlDatasource[] {
+  private getDataSourcesForSpecName(): SubqlProjectDs[] {
     return this.project.dataSources.filter(
       (ds) =>
         !ds.filter?.specName ||

@@ -34,7 +34,7 @@ describe('NodeConfig', () => {
       NodeConfig.fromFile(path.join(__dirname, '../../test/config.toml')),
     ).toThrow();
     expect(() =>
-      NodeConfig.fromFile(path.join(__dirname, '../../test/notexist')),
-    ).toThrow();
+      NodeConfig.fromFile(path.join(__dirname, '../../test/con.toml')),
+    ).toThrow(/Load config from file/);
   });
 });

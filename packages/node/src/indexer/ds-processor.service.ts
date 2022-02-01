@@ -7,17 +7,19 @@ import { Injectable } from '@nestjs/common';
 import { isCustomDs } from '@subql/common';
 import {
   SubqlCustomDatasource,
+  SubqlDatasource,
   SubqlDatasourceProcessor,
   SubqlNetworkFilter,
 } from '@subql/types';
 import { VMScript } from '@subql/x-vm2';
-import { SubqueryProject } from '../configure/project.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {
   root: string;
   entry: string;
+  script: string;
 }
 
 const logger = getLogger('ds-sandbox');
@@ -50,7 +52,9 @@ export class DsProcessorService {
   constructor(private project: SubqueryProject) {}
 
   async validateCustomDs(): Promise<void> {
-    for (const ds of this.project.dataSources.filter(isCustomDs)) {
+    for (const ds of (this.project.dataSources as SubqlDatasource[]).filter(
+      isCustomDs,
+    )) {
       const processor = this.getDsProcessor(ds);
       /* Standard validation applicable to all custom ds and processors */
       if (ds.kind !== processor.kind) {
@@ -88,8 +92,9 @@ export class DsProcessorService {
     }
     if (!this.processorCache[ds.processor.file]) {
       const sandbox = new DsPluginSandbox({
-        root: this.project.path,
+        root: this.project.root,
         entry: ds.processor.file,
+        script: null /* TODO get working with Readers, same as with sandbox */,
       });
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
@@ -118,7 +123,7 @@ export class DsProcessorService {
     for (const [name, { file }] of ds.assets) {
       // TODO update with https://github.com/subquery/subql/pull/511
       try {
-        res[name] = fs.readFileSync(path.join(this.project.path, file), {
+        res[name] = fs.readFileSync(file, {
           encoding: 'utf8',
         });
       } catch (e) {
