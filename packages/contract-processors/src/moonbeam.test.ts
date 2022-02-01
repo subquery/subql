@@ -5,7 +5,7 @@ import {ApiPromise, WsProvider} from '@polkadot/api';
 import {getLogger} from '@subql/node/src/utils/logger';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
 import {SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
-import {typesBundle} from 'moonbeam-types-bundle';
+import {typesBundleDeprecated} from 'moonbeam-types-bundle';
 import MoonbeamDatasourcePlugin, {MoonbeamCall, MoonbeamDatasource, MoonbeamEvent} from './moonbeam';
 
 const erc20MiniAbi = `[
@@ -137,7 +137,7 @@ describe('MoonbeamDs', () => {
     (global as any).logger = getLogger('MoonbeamTests');
     api = await ApiPromise.create({
       provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
-      typesBundle: typesBundle as any,
+      typesBundle: typesBundleDeprecated as any,
     });
   });
 
@@ -575,7 +575,7 @@ describe('MoonbeamDs', () => {
 
         api = await ApiPromise.create({
           provider: new WsProvider('wss://moonbeam-alpha.api.onfinality.io/public-ws'),
-          typesBundle: typesBundle as any,
+          typesBundle: typesBundleDeprecated as any,
         });
 
         const blockNumber = 131451;
