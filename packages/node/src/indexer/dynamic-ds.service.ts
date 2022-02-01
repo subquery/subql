@@ -3,13 +3,7 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import {
-    CustomDataSourceV0_2_0Impl,
-  isCustomDs,
-  isRuntimeDs,
-  RuntimeDataSourceV0_2_0Impl,
-} from '@subql/common';
-import { plainToClass } from 'class-transformer';
+import { isCustomDs, isRuntimeDs } from '@subql/common';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
@@ -133,17 +127,8 @@ export class DynamicDsService {
           ...params.args,
         };
         await this.dsProcessorService.validateCustomDs([dsObj]);
-
-        const customDs: CustomDataSourceV0_2_0Impl = plainToClass(
-          CustomDataSourceV0_2_0Impl,
-          dsObj,
-        );
-        customDs.validate();
       } else if (isRuntimeDs(dsObj)) {
         // XXX add any modifications to the ds here
-
-        const runtimeDs = plainToClass(RuntimeDataSourceV0_2_0Impl, dsObj);
-        runtimeDs.validate();
       }
 
       return dsObj;
