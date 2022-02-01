@@ -1,6 +1,6 @@
 {
   "name": "@subql/validator",
-  "version": "0.4.3-0",
+  "version": "0.4.3-1",
   "description": "to validate subquery project",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -25,5 +25,5 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.4"
   },
-  "stableVersion": "0.4.2"
+  "stableVersion": "0.4.3-0"
 }
