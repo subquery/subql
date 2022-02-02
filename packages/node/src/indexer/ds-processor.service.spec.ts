@@ -31,6 +31,7 @@ function getTestProject(
     id: 'test',
     root: path.resolve(__dirname, '../../../'),
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 
@@ -44,8 +45,9 @@ describe('DsProcessorService', () => {
   });
 
   it('can validate custom ds', async () => {
-    await service.validateCustomDs();
-    await expect(service.validateCustomDs()).resolves.not.toThrow();
+    await expect(
+      service.validateProjectCustomDatasources(),
+    ).resolves.not.toThrow();
   });
 
   it('can catch an invalid datasource kind', async () => {
@@ -61,7 +63,7 @@ describe('DsProcessorService', () => {
     project = getTestProject([badDs]);
     service = new DsProcessorService(project);
 
-    await expect(service.validateCustomDs()).rejects.toThrow();
+    await expect(service.validateProjectCustomDatasources()).rejects.toThrow();
   });
 
   it('can run a custom ds processor', () => {

@@ -226,7 +226,7 @@ export class StoreService {
     return blake2AsHex(enumName).substr(2, 10);
   }
 
-  setTransaction(tx: Transaction) {
+  setTransaction(tx: Transaction): void {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
     if (this.config.proofOfIndex) {

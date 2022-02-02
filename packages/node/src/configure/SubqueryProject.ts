@@ -11,6 +11,7 @@ import {
   Reader,
   buildSchemaFromString,
   ProjectManifestV0_2_0Impl,
+  ProjectManifestV0_2_1Impl,
 } from '@subql/common';
 import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -26,12 +27,15 @@ export type SubqlProjectDs = SubqlDatasource & {
   mapping: SubqlDatasource['mapping'] & { entryScript: string };
 };
 
+export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & { name: string; };
+
 export class SubqueryProject {
   id: string;
   root: string;
   network: Partial<ProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
+  templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
 
   static async create(
@@ -58,6 +62,13 @@ export class SubqueryProject {
         reader,
         path,
         networkOverrides,
+      );
+    } else if (manifest.isV0_2_1) {
+      return loadProjectFromManifest0_2_1(
+        manifest.asV0_2_1,
+        reader,
+        path,
+        networkOverrides
       );
     }
   }
@@ -88,6 +99,7 @@ async function loadProjectFromManifest0_0_1(
       'typesChain',
       'typesSpec',
     ]),
+    templates: []
   };
 }
 
@@ -135,5 +147,29 @@ async function loadProjectFromManifest0_2_0(
     dataSources,
     schema,
     chainTypes,
+    templates: [],
   };
+}
+
+async function loadProjectFromManifest0_2_1(
+  projectManifest: ProjectManifestV0_2_1Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<ProjectNetworkConfig>,
+): Promise<SubqueryProject> {
+  const root = await getProjectRoot(reader, path);
+  const project = await loadProjectFromManifest0_2_0(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides
+  );
+
+  project.templates = (await updateDataSourcesV0_2_0(
+    projectManifest.templates,
+    reader,
+    root,
+  )).map((ds, index) => ({ ...ds, name: projectManifest.templates[index].name}));
+
+  return project;
 }

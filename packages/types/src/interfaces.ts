@@ -42,3 +42,5 @@ export interface SubstrateEvent extends EventRecord {
   extrinsic?: SubstrateExtrinsic;
   block: SubstrateBlock;
 }
+
+export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;

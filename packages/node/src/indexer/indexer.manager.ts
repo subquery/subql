@@ -23,7 +23,7 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import { QueryTypes, Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
@@ -33,6 +33,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
@@ -41,8 +42,9 @@ import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
-import { BlockContent } from './types';
+import { ApiAt, BlockContent } from './types';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
 const DEFAULT_DB_SCHEMA = 'public';
@@ -69,9 +71,42 @@ export class IndexerManager {
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
+    private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
+
+  async indexBlockForDs(
+    ds: SubqlProjectDs,
+    blockContent: BlockContent,
+    apiAt: ApiAt,
+    blockHeight: number,
+    tx: Transaction,
+  ): Promise<void> {
+    const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+
+    // Inject function to create ds into vm
+    vm.freeze(
+      (templateName: string, args?: Record<string, unknown>) =>
+        this.dynamicDsService.createDynamicDatasource(
+          {
+            templateName,
+            args,
+            startBlock: blockHeight,
+          },
+          tx,
+        ),
+      'createDynamicDatasource',
+    );
+
+    if (isRuntimeDs(ds)) {
+      await this.indexBlockForRuntimeDs(vm, ds.mapping.handlers, blockContent);
+    } else if (isCustomDs(ds)) {
+      await this.indexBlockForCustomDs(ds, vm, blockContent);
+    }
+
+    // TODO should we remove createDynamicDatasource from vm here?
+  }
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
@@ -92,17 +127,16 @@ export class IndexerManager {
         block.block.hash,
         isUpgraded ? block.block.header.parentHash : undefined,
       );
+
+      // Run predefined data sources
       for (const ds of this.filteredDataSources) {
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
-        if (isRuntimeDs(ds)) {
-          await this.indexBlockForRuntimeDs(
-            vm,
-            ds.mapping.handlers,
-            blockContent,
-          );
-        } else if (isCustomDs(ds)) {
-          await this.indexBlockForCustomDs(ds, vm, blockContent);
-        }
+        await this.indexBlockForDs(ds, blockContent, apiAt, blockHeight, tx);
+      }
+
+      // Run dynamic data sources, must be after predefined datasources
+      // FIXME if any new dynamic datasources are created here they wont be run for the current block
+      for (const ds of await this.dynamicDsService.getDynamicDatasources()) {
+        await this.indexBlockForDs(ds, blockContent, apiAt, blockHeight, tx);
       }
 
       await this.storeService.setMetadataBatch(
@@ -140,12 +174,13 @@ export class IndexerManager {
   }
 
   async start(): Promise<void> {
-    await this.dsProcessorService.validateCustomDs();
+    await this.dsProcessorService.validateProjectCustomDatasources();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
     const schema = await this.ensureProject();
     await this.initDbSchema(schema);
     this.metadataRepo = await this.ensureMetadata(schema);
+    this.dynamicDsService.init(this.metadataRepo);
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
@@ -154,7 +189,7 @@ export class IndexerManager {
       ]);
     }
 
-    let startHeight;
+    let startHeight: number;
     const lastProcessedHeight = await this.metadataRepo.findOne({
       where: { key: 'lastProcessedHeight' },
     });
@@ -258,7 +293,7 @@ export class IndexerManager {
   }
 
   private async createProjectSchema(): Promise<string> {
-    let schema;
+    let schema: string;
     if (this.nodeConfig.localMode) {
       // create tables in default schema if local mode is enabled
       schema = DEFAULT_DB_SCHEMA;

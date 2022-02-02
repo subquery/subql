@@ -3,17 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import {
-  manifestIsV0_2_0,
-  parseProjectManifest,
-  ProjectManifestV0_2_0Impl,
-  ReaderFactory,
-  isCustomDs,
-} from '@subql/common';
+import { parseProjectManifest, manifestIsV0_2_0, ReaderFactory } from '@subql/common';
 import {FileReference} from '@subql/types';
 import IPFS from 'ipfs-http-client';
-import yaml from 'js-yaml';
-import {runWebpack} from './build-controller';
 
 // https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#filecontent
 type FileContent = Uint8Array | string | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
@@ -71,13 +63,6 @@ async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: s
 async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileContent): Promise<string> {
   const result = await ipfs.add(content, {pin: true, cidVersion: 0});
   return result.cid.toString();
-}
-
-function toMinifiedYaml(manifest: ProjectManifestV0_2_0Impl): string {
-  return yaml.dump(manifest, {
-    sortKeys: true,
-    condenseFlow: true,
-  });
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {

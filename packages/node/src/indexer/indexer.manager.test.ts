@@ -20,6 +20,7 @@ function testSubqueryProject(): SubqueryProject {
     id: 'test',
     root: './',
     schema: new GraphQLSchema({}),
+    templates: [],
   };
 }
 
@@ -45,6 +46,7 @@ const prepare = async (): Promise<IndexerManager> => {
             undefined,
             sequelize,
             project,
+            undefined,
             undefined,
             undefined,
             undefined,
