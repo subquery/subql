@@ -6,11 +6,14 @@ import {
   CustomDataSourceAsset,
   FileReference,
   SubqlBlockFilter,
+  SubqlBlockHandler,
   SubqlCallFilter,
+  SubqlCallHandler,
   SubqlCustomDatasource,
   SubqlCustomHandler,
   SubqlDatasourceKind,
   SubqlEventFilter,
+  SubqlEventHandler,
   SubqlHandler,
   SubqlHandlerKind,
   SubqlMapping,
@@ -71,7 +74,7 @@ export class CallFilter extends EventFilter implements SubqlCallFilter {
   success?: boolean;
 }
 
-export class BlockHandler {
+export class BlockHandler implements SubqlBlockHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => BlockFilter)
@@ -82,7 +85,7 @@ export class BlockHandler {
   handler: string;
 }
 
-export class CallHandler {
+export class CallHandler implements SubqlCallHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => CallFilter)
@@ -93,7 +96,7 @@ export class CallHandler {
   handler: string;
 }
 
-export class EventHandler {
+export class EventHandler implements SubqlEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)
