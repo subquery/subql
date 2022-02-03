@@ -13,6 +13,8 @@ import {<% props.importEnums.forEach(function(e){ %>
 <% }); %>} from '../enums'
 <% } %>
 
+type <%= props.className %>Props = Omit<<%=props.className %>, NonNullable<FunctionPropertyNames<<%=props.className %>>>>;
+
 export class <%= props.className %> implements Entity {
 
     constructor(id: string) {
@@ -37,7 +39,7 @@ export class <%= props.className %> implements Entity {
         assert((id !== null && id !== undefined), "Cannot get <%=props.className %> entity without an ID");
         const record = await store.get('<%=props.entityName %>', id.toString());
         if (record){
-            return <%=props.className %>.create(record);
+            return <%=props.className %>.create(record as <%= props.className %>Props);
         }else{
             return;
         }
@@ -48,18 +50,18 @@ export class <%= props.className %> implements Entity {
       <% if (field.unique) {%>
       const record = await store.getOneByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
       if (record){
-          return <%=props.className %>.create(record);
+          return <%=props.className %>.create(record as <%= props.className %>Props);
       }else{
           return;
       }
       <% } else { %>
       const records = await store.getByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
-      return records.map(record => <%=props.className %>.create(record));
+      return records.map(record => <%=props.className %>.create(record as <%= props.className %>Props));
       <% }%>
     }
 <% }); %>
 
-    static create(record: Partial<Omit<<%=props.className %>, FunctionPropertyNames<<%=props.className %>>>> & Entity): <%=props.className %> {
+    static create(record: <%= props.className %>Props): <%=props.className %> {
         assert(typeof record.id === 'string', "id must be provided");
         let entity = new <%=props.className %>(record.id);
         Object.assign(entity,record);
