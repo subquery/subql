@@ -27,13 +27,6 @@ export default class Build extends Command {
       this.error('Argument `location` is not a valid directory');
     }
 
-    // Check that we're in a valid project
-    try {
-      await Validate.run(['--silent', '--location', directory]);
-    } catch (e) {
-      this.error('Directory is not a valid project');
-    }
-
     // Get the output location from the project package.json main field
     const pjson = JSON.parse(readFileSync(path.join(directory, 'package.json')).toString());
 
