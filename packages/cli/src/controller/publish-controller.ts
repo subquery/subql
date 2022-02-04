@@ -3,8 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { parseProjectManifest, ReaderFactory,manifestIsV0_2_0 } from '@subql/common';
 import {Cluster} from '@nftstorage/ipfs-cluster';
+import {parseProjectManifest, ReaderFactory, manifestIsV0_2_0} from '@subql/common';
 import {FileReference} from '@subql/types';
 import fetch from '@web-std/fetch';
 import {File, Blob} from '@web-std/file';

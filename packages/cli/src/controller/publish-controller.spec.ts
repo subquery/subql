@@ -6,9 +6,8 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {parseProjectManifest, ReaderFactory} from '@subql/common';
 import {Cluster} from '@nftstorage/ipfs-cluster';
-import {loadProjectManifest} from '@subql/common';
+import {parseProjectManifest, ReaderFactory} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
@@ -79,7 +78,6 @@ describe('Cli publish', () => {
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
-
     await expect(uploadToIpfs('', ipfsEndpoint, projectDir)).rejects.toBeDefined();
   });
 
@@ -99,14 +97,13 @@ describe('Cli publish', () => {
     console.log(`upload file cid: ${cid2}`);
   });
 
-  it('should upload appropriate files to IPFS', async () => {
+  it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
     const cid = await uploadToIpfs(projectDir, testAuth, ipfsEndpoint);
-
     expect(cid).toBeDefined();
-    await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
+    // validation no longer required, as it is deployment object been published
+    // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
   });
-
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);

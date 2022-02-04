@@ -6,7 +6,6 @@ import path from 'path';
 import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
 import {runWebpack} from '../controller/build-controller';
-import Validate from './validate';
 
 export default class Build extends Command {
   static description = 'Build this SubQuery project code';
