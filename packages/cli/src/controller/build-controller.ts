@@ -68,8 +68,7 @@ export async function runWebpack(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors[0]);
-        this.log(info.errors[0].details);
+        reject(info.errors[0].details);
         return;
       }
 
