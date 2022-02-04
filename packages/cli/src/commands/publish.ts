@@ -45,7 +45,7 @@ export default class Publish extends Command {
       authToken = flags.secret;
     } else {
       try {
-        authToken = (yaml.load(readFileSync(path.join(directory, 'auth.yaml'), 'utf8')) as AuthorizationSpec).secret;
+        authToken = (yaml.load(readFileSync(path.resolve(directory, 'auth.yaml'), 'utf8')) as AuthorizationSpec).secret;
       } catch (e) {
         this.error(`Failed to read authToken from "auth.yaml": ${e}`);
       }

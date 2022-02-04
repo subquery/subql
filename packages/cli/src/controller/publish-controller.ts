@@ -77,7 +77,7 @@ export async function uploadFile(
 ): Promise<string> {
   const clientPromise = ipfs
     ? ipfs.add(content, {pin: true, cidVersion: 0})
-    : Promise.reject(new Error('Ipfs server not provided'));
+    : Promise.reject(new Error('IPFS gateway not provided'));
   let contentBuffer: Uint8Array;
   if (determineStringOrFsStream(content)) {
     contentBuffer = new Blob([fs.readFileSync(content.path)]);
@@ -86,6 +86,10 @@ export async function uploadFile(
   }
   const clusterPromise = cluster.add(contentBuffer, {cidVersion: 0, rawLeaves: false});
   const results = await Promise.allSettled([clientPromise, clusterPromise]);
+
+  if (ipfs && results[0].status === 'rejected') {
+    console.warn('Upload to provided IPFS gateway failed');
+  }
   const filledResult = results.find((r) => r.status === 'fulfilled') as PromiseFulfilledResult<any>;
 
   if (!filledResult) {
@@ -95,10 +99,7 @@ export async function uploadFile(
 }
 
 function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {
-  if ((toBeDetermined as fs.ReadStream).path) {
-    return true;
-  }
-  return false;
+  return !!(toBeDetermined as fs.ReadStream).path;
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
