@@ -123,27 +123,19 @@ export class ApiService implements OnApplicationShutdown {
         ({ isHistoric }) => isHistoric,
       );
       if (hashIndex > -1) {
-        return this.replaceRPCMethodParam(
-          original,
-          hashIndex,
-          this.currentBlockHash,
-          methodName,
-        );
-      }
+        const isBlockNumber =
+          original.meta.params[hashIndex].type === 'BlockNumber';
 
-      // For chains that support Frontier allow RPC methods that can specify the block number
-      if (methodName.includes('.eth.')) {
-        const blockNumIndex = original.meta.params.findIndex(
-          ({ name, type }) => type === 'BlockNumber' && name === 'number',
-        );
-        if (blockNumIndex > -1) {
-          return this.replaceRPCMethodParam(
-            original,
-            blockNumIndex,
-            this.currentBlockNumber,
-            methodName,
-          );
-        }
+        const ret = ((...args: any[]) => {
+          const argsClone = [...args];
+          argsClone[hashIndex] = isBlockNumber
+            ? this.currentBlockNumber
+            : this.currentBlockHash;
+          return original(...argsClone);
+        }) as RpcMethodResult<T, AnyFunction>;
+        ret.raw = NOT_SUPPORT(`${methodName}.raw`);
+        ret.meta = original.meta;
+        return ret;
       }
     }
 
@@ -175,21 +167,5 @@ export class ApiService implements OnApplicationShutdown {
     const ext = original.meta as unknown as DefinitionRpcExt;
 
     return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
-  }
-
-  private replaceRPCMethodParam<T extends 'promise' | 'rxjs'>(
-    original: RpcMethodResult<T, AnyFunction>,
-    index: number,
-    value: unknown,
-    methodName: string,
-  ) {
-    const ret = ((...args: any[]) => {
-      const argsClone = [...args];
-      argsClone[index] = value;
-      return original(...argsClone);
-    }) as RpcMethodResult<T, AnyFunction>;
-    ret.raw = NOT_SUPPORT(`${methodName}.raw`);
-    ret.meta = original.meta;
-    return ret;
   }
 }
