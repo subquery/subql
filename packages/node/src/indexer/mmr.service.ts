@@ -33,6 +33,7 @@ export class MmrService implements OnApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
+  // This is the next block height that suppose to calculate its mmr value
   private nextMmrBlockHeight: number;
 
   constructor(
@@ -48,26 +49,43 @@ export class MmrService implements OnApplicationShutdown {
   async init(schema: string): Promise<void> {
     this.metadataRepo = MetadataFactory(this.sequelize, schema);
     this.poiRepo = PoiFactory(this.sequelize, schema);
+    // Due to mmr height always start from 1, offset value usually equal to indexing start block height - 1.
+    // For example, start indexing from block 5, the offset is 4.
+    // Which means, the 1st leaf of mmr present 5th indexing block data
     this.blockOffset = await this.fetchBlockOffsetFromDb();
     this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    // The file based database current leaf length
     const fileBasedMmrLeafLength = await this.fileBasedMmr.getLeafLength();
-    // if mmr start from 0
-    // ensure next mmr block height min is 1.
+    // However, when initialization we pick the previous block for file db and poi mmr validation
+    // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this.nextMmrBlockHeight = fileBasedMmrLeafLength + this.blockOffset + 1;
-
+    // The first Poi in database with null mmr value.
     const poiWithoutMmr = await this.getFirstPoiWithoutMmr();
-    // Found the first Poi with null mmr .
+    // The latest poi record in database with mmr value
     const latestPoiWithMmr = await this.getLatestPoiWithMmr();
+    // If can not find the latest record with mmr, then start from the poi without mmr
+    // See discussion (https://github.com/subquery/subql/pull/600)
+    // This can be undefined as poi table is not ready
 
-    const poiStartHeight = latestPoiWithMmr?.id
+    let poiStartHeight: number;
+
+    poiStartHeight = latestPoiWithMmr?.id
       ? latestPoiWithMmr?.id
-      : poiWithoutMmr.id;
+      : poiWithoutMmr?.id;
 
+    if (latestPoiWithMmr && poiWithoutMmr) {
+      // Handle if a missing mmr in a record
+      if (poiWithoutMmr.id < latestPoiWithMmr.id) {
+        poiStartHeight = poiWithoutMmr.id;
+      }
+    }
+    // Compare and reset values
     if (poiStartHeight && poiStartHeight < this.nextMmrBlockHeight) {
+      // Reset file based mmr according to poi table start block height
       await this.resetFileBasedMmr(poiStartHeight);
     } else if (!poiStartHeight && fileBasedMmrLeafLength > 0) {
-      // Poi is not ready, but file based db have mmr already, reset file based db.
-      await this.resetFileBasedMmr(1);
+      // If poi table is not ready, but file based db have mmr already, reset file based db.
+      await this.resetFileBasedMmr();
     }
     logger.info(
       `file based database MMR start with block height ${this.nextMmrBlockHeight}`,
@@ -92,14 +110,29 @@ export class MmrService implements OnApplicationShutdown {
         `Append Mmr failed, input data length should be ${DEFAULT_WORD_SIZE}`,
       );
     }
-    const blockHeight = poiBlock.id - this.blockOffset;
+    // The estimate mmr leaf index from provided poi block height
+    const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
+    // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
+    const nextLeafIndex = await this.fileBasedMmr.getLeafLength();
 
-    if (blockHeight === this.nextMmrBlockHeight) {
-      await this.fileBasedMmr.append(newLeaf, blockHeight - 1);
-      mmrRoot = await this.fileBasedMmr.getRoot(blockHeight - 1);
-    } else if (blockHeight < this.nextMmrBlockHeight) {
-      //when FileBased Mmr height is ahead of Poi table, fetch mmr from fd and compare to poi
-      mmrRoot = await this.fileBasedMmr.getRoot(blockHeight - 1);
+    // For example, current provided poi block id is 8, offset is 0, and current mmr have 7 blocks mmr stored in file based mmr
+    // In addition, the last block 7 is at mmr index position 6.
+    // estLeafIndexByBlockHeight is 7, means we expect block 8 mmr data to be stored in mmr at index position 7.
+    // nextLeafIndex is 7, where we calculated from current mmr length.
+
+    // If estLeafIndexByBlockHeight match with nextLeafIndex,
+    // means file based db mmr is not head or behind the poi table
+    // we are good to add new leaf the estimate mmr index position
+    if (estLeafIndexByBlockHeight === nextLeafIndex) {
+      // new leaf will be append at mmr index 7
+      await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
+      mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
+    }
+    // When FileBased Mmr index is ahead of Poi table, for example nextLeafIndex is 8
+    // which means leaf index 7 already appended in file based db
+    // fetch mmr from fd and compare to poi
+    else if (estLeafIndexByBlockHeight < nextLeafIndex) {
+      mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
     }
     await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
     this.nextMmrBlockHeight = poiBlock.id + 1;
@@ -130,10 +163,7 @@ export class MmrService implements OnApplicationShutdown {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
-              await this.fileBasedMmr.append(
-                DEFAULT_LEAF,
-                this.nextMmrBlockHeight - 1,
-              );
+              await this.fileBasedMmr.append(DEFAULT_LEAF);
               this.nextMmrBlockHeight = i + 1;
             }
           }
@@ -169,12 +199,13 @@ export class MmrService implements OnApplicationShutdown {
     this.fileBasedMmr = new MMR(keccak256FlyHash, fileBasedDb);
   }
 
-  async resetFileBasedMmr(blockHeight: number): Promise<void> {
+  async resetFileBasedMmr(blockHeight?: number): Promise<void> {
+    await this.fileBasedMmr.delete(
+      blockHeight ? blockHeight - this.blockOffset - 1 : 0,
+    );
     this.nextMmrBlockHeight = Math.max(blockHeight, 1);
-    await this.fileBasedMmr.delete(this.nextMmrBlockHeight - 1); //For example, reset file based mmr block 7 with leaf index 6
-    logger.info(`Reset mmr start from block height ${blockHeight}`);
+    logger.info(`Reset mmr start from block height ${this.nextMmrBlockHeight}`);
   }
-
   async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
     const poiBlock = await this.poiRepo.findOne({
       order: [['id', 'DESC']],
@@ -190,5 +221,4 @@ export class MmrService implements OnApplicationShutdown {
     });
     return poiBlock;
   }
-  ss;
 }
