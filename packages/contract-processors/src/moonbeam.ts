@@ -170,7 +170,17 @@ function buildInterface(ds: MoonbeamDatasource, assets: Record<string, string>):
   if (!contractInterfaces[abi]) {
     // Constructing the interface validates the ABI
     try {
-      contractInterfaces[abi] = new Interface(assets[abi]);
+      let abiObj = JSON.parse(assets[abi]);
+
+      /*
+       * Allows parsing JSON artifacts as well as ABIs
+       * https://trufflesuite.github.io/artifact-updates/background.html#what-are-artifacts
+       */
+      if (!Array.isArray(abiObj) && abiObj.abi) {
+        abiObj = abiObj.abi;
+      }
+
+      contractInterfaces[abi] = new Interface(abiObj);
     } catch (e) {
       (global as any).logger.error(`Unable to parse ABI: ${e.message}`);
       throw new Error('ABI is invalid');
