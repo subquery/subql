@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
@@ -247,8 +248,13 @@ export class IndexerManager {
           );
 
           logger.info('force cleaned schema and tables');
+
+          if (fs.existsSync(this.nodeConfig.mmrPath)) {
+            await fs.promises.unlink(this.nodeConfig.mmrPath);
+            logger.info('force cleaned file based mmr');
+          }
         } catch (err) {
-          logger.error(err, 'failed to force clean schema and tables');
+          logger.error(err, 'failed to force clean');
         }
         schema = await this.createProjectSchema();
       }
