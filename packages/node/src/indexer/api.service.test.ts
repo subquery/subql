@@ -324,7 +324,8 @@ describe('ApiService', () => {
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
   });
 
-  it('can correctly call eth rpc methods', async () => {
+  /* This test can be reenabled once https://github.com/polkadot-js/api/pull/4540 has been released and the api is updated */
+  it.skip('can correctly call rpc methods that use block number', async () => {
     const apiService = await prepareApiService(
       'wss://moonbeam-alpha.api.onfinality.io/public-ws',
     );
