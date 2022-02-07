@@ -93,7 +93,7 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
   return metadata;
 }
 
-export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
+const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
   const [schemaName] = options.pgSchemas;
   let metadataTableExists = false;
 
@@ -154,3 +154,5 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
     },
   };
 });
+
+export default GetMetadataPlugin;

@@ -46,10 +46,11 @@ import ConnectionFilterPlugin from 'postgraphile-plugin-connection-filter';
 // custom plugins
 import PgConnectionArgFirstLastBeforeAfter from './PgConnectionArgFirstLastBeforeAfter';
 import PgBackwardRelationPlugin from './PgBackwardRelationPlugin';
-import {GetMetadataPlugin} from './GetMetadataPlugin';
+import GetMetadataPlugin from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
+import PgDictionaryPlugin from './PgDictionaryPlugin';
 
 /* eslint-enable */
 
@@ -101,6 +102,7 @@ const plugins = [
   ...pgDefaultPlugins,
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
+  PgDictionaryPlugin,
   ConnectionFilterPlugin,
   smartTagsPlugin,
   GetMetadataPlugin,

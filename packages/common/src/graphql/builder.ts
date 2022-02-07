@@ -48,6 +48,7 @@ function buildArgs(args: Record<string, unknown>): string {
 }
 
 const bindProjections = (node: GqlNode): string => {
+  console.log(node);
   return `${node.entity} ${node.args ? `(${buildArgs(node.args)})` : ``}${
     node.project
       ? `{${node.project
@@ -61,6 +62,27 @@ const bindProjections = (node: GqlNode): string => {
       : ``
   }`;
 };
+
+// const bindProjections = (node: GqlNode): string => {
+//   console.log(node)
+
+//   if (node.entity === 'events' || node.entity === 'extrinsics'){
+//     return `${node.entity} ${node.args ? `(${buildArgs(node.args)})` : ``}{groupedAggregates(groupBy: [BLOCK_HEIGHT], having: []) { keys }}`
+//   } else {
+//     return `${node.entity} ${node.args ? `(${buildArgs(node.args)})` : ``}${
+//       node.project
+//         ? `{${node.project
+//             .map((el: GqlNode | string) => {
+//               if (typeof el === 'string') {
+//                 return `${el} `;
+//               }
+//               return `${bindProjections(el)} `;
+//             })
+//             .join('')}} `
+//         : ``
+//     }`;
+//   }
+// };
 
 const toVarDefs = (vars: GqlVar[]): string => {
   return vars && vars.length ? `(${vars.map((item) => `$${item.name}:${item.gqlType}`)})` : ``;

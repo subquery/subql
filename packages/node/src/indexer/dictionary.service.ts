@@ -73,6 +73,7 @@ function buildDictQueryFragment(
   batchSize: number,
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
+
   const node: GqlNode = {
     entity,
     project: [
@@ -93,6 +94,7 @@ function buildDictQueryFragment(
       first: batchSize.toString(),
     },
   };
+
   return [gqlVars, node];
 }
 
@@ -142,11 +144,14 @@ export class DictionaryService implements OnApplicationShutdown {
       conditions,
     );
 
+    logger.info(query);
+
     try {
       const resp = await this.client.query({
         query: gql(query),
         variables,
       });
+
       const blockHeightSet = new Set<number>();
       const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
