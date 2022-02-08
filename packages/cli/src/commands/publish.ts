@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {lstatSync, readFileSync} from 'fs';
+import * as fs from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import yaml from 'js-yaml';
@@ -14,7 +15,7 @@ class AuthorizationSpec {
   secret: string;
 }
 
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.SUBQL_ACCESS_TOKEN');
+const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
@@ -22,7 +23,6 @@ export default class Publish extends Command {
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
     ipfs: flags.string({description: 'IPFS gateway endpoint', required: false}),
-    'access-token': flags.string({description: 'Secret authorization token', required: false}),
   };
 
   async run(): Promise<void> {
@@ -43,19 +43,23 @@ export default class Publish extends Command {
     }
 
     let authToken: string;
-    if (flags['access-token']) {
-      authToken = flags['access-token'];
-    } else {
+
+    if (process.env.SUBQL_ACCESS_TOKEN) {
+      authToken = process.env.SUBQL_ACCESS_TOKEN;
+    } else if (fs.existsSync(ACCESS_TOKEN_PATH)) {
       try {
         authToken =
           process.env.SUBQL_ACCESS_TOKEN ??
-          (yaml.load(readFileSync(ACCESS_TOKEN_PATH, 'utf8')) as AuthorizationSpec).secret;
+          (yaml.load(fs.readFileSync(ACCESS_TOKEN_PATH, 'utf8')) as AuthorizationSpec).secret;
       } catch (e) {
-        this.error(`Failed to read SUBQL_ACCESS_TOKEN: ${e}`);
+        this.error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
       }
+    } else {
+      this.error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
+
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(directory, flags.ipfs, authToken).catch((e) => this.error(e));
+    const cid = await uploadToIpfs(directory, authToken, flags.ipfs).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

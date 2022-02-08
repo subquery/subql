@@ -3,14 +3,11 @@
 
 import fs from 'fs';
 import path from 'path';
-import {Cluster} from '@nftstorage/ipfs-cluster';
 import {parseProjectManifest, ReaderFactory, manifestIsV0_2_0} from '@subql/common';
 import {FileReference} from '@subql/types';
-import fetch from '@web-std/fetch';
-import {File, Blob} from '@web-std/file';
-import {FormData} from '@web-std/form-data';
+import axios from 'axios';
+import FormData from 'form-data';
 import IPFS, {IPFSHTTPClient} from 'ipfs-http-client';
-Object.assign(global, {fetch, File, Blob, FormData});
 
 const IPFS_DEV = 'https://interipfs.thechaindata.com';
 const IPFS_PROD = 'https://ipfs.subquery.network';
@@ -27,42 +24,35 @@ export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEn
   if (ipfsEndpoint) {
     ipfs = IPFS.create({url: ipfsEndpoint});
   }
-  const cluster = new Cluster(IPFS_CLUSTER_ENDPOINT, {
-    // optional custom headers for e.g. auth
-    headers: {Authorization: `Bearer ${authToken}`},
-  });
-  const deployment = await replaceFileReferences(projectDir, manifest, cluster, ipfs);
-
+  const deployment = await replaceFileReferences(projectDir, manifest, authToken, ipfs);
   // Upload schema
-  return uploadFile(deployment.toDeployment(), cluster, ipfs);
+  return uploadFile(deployment.toDeployment(), authToken, ipfs);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
 async function replaceFileReferences<T>(
   projectDir: string,
   input: T,
-  cluster: Cluster,
+  authToken: string,
   ipfs?: IPFS.IPFSHTTPClient
 ): Promise<T> {
   if (Array.isArray(input)) {
     return (await Promise.all(
-      input.map((val) => replaceFileReferences(projectDir, val, cluster, ipfs))
+      input.map((val) => replaceFileReferences(projectDir, val, authToken, ipfs))
     )) as unknown as T;
   } else if (typeof input === 'object') {
     if (input instanceof Map) {
       input = mapToObject(input) as T;
     }
-
     if (isFileReference(input)) {
-      input.file = await uploadFile(fs.createReadStream(path.resolve(projectDir, input.file)), cluster, ipfs).then(
+      input.file = await uploadFile(fs.createReadStream(path.resolve(projectDir, input.file)), authToken, ipfs).then(
         (cid) => `ipfs://${cid}`
       );
     }
-
     const keys = Object.keys(input) as unknown as (keyof T)[];
     await Promise.all(
       keys.map(async (key) => {
-        input[key] = await replaceFileReferences(projectDir, input[key], cluster, ipfs);
+        input[key] = await replaceFileReferences(projectDir, input[key], authToken, ipfs);
       })
     );
   }
@@ -72,7 +62,7 @@ async function replaceFileReferences<T>(
 
 export async function uploadFile(
   content: string | fs.ReadStream,
-  cluster: Cluster,
+  authToken: string,
   ipfs?: IPFS.IPFSHTTPClient
 ): Promise<string> {
   let ipfsClientCid: string;
@@ -84,17 +74,12 @@ export async function uploadFile(
       throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
     }
   }
-  // convert content to blob
-  let contentBuffer: Uint8Array;
-  if (determineStringOrFsStream(content)) {
-    contentBuffer = new Blob([fs.readFileSync(content.path)]);
-  } else {
-    contentBuffer = new Blob([content]);
-  }
-  // upload to subquery ipfs cluster
   let ipfsClusterCid: string;
   try {
-    ipfsClusterCid = (await cluster.add(contentBuffer, {cidVersion: 0, rawLeaves: false})).cid;
+    ipfsClusterCid = await UploadFileByCluster(
+      determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
+      authToken
+    );
   } catch (e) {
     throw new Error(`Publish project to default cluster failed, ${e}`);
   }
@@ -110,16 +95,43 @@ function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is f
   return !!(toBeDetermined as fs.ReadStream).path;
 }
 
+async function UploadFileByCluster(content: string, authToken: string): Promise<string> {
+  const bodyFormData = new FormData();
+  bodyFormData.append('data', content);
+  const result = (
+    await axios({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'Content-Type': 'multipart/form-data',
+        ...bodyFormData.getHeaders(),
+      },
+      method: 'post',
+      url: IPFS_CLUSTER_ENDPOINT,
+      data: bodyFormData,
+    })
+  ).data as ClusterResponseData;
+  return result.cid['/'];
+}
+
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
   // XXX can use Object.entries with newer versions of node.js
   const assetsObj: Record<string, unknown> = {};
   for (const key of map.keys()) {
     assetsObj[key] = map.get(key);
   }
-
   return assetsObj;
 }
 
 function isFileReference(value: any): value is FileReference {
   return value.file && typeof value.file === 'string';
+}
+
+interface ClusterResponseData {
+  name: string;
+  cid: cidSpec;
+  size: number;
+}
+// cluster response cid stored as {'/': 'QmVq2bqunmkmEmMCY3x9U9kDcgoRBGRbuBm5j7XKZDvSYt'}
+interface cidSpec {
+  '/': string;
 }

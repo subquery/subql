@@ -6,13 +6,11 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {Cluster} from '@nftstorage/ipfs-cluster';
 import {parseProjectManifest, ReaderFactory} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
-import Validate from '../commands/validate';
 import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
 import {cloneProjectGit, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
@@ -39,6 +37,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
 };
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
+//Replace your access token before test
 const testAuth = 'MTA0MzE2NTc=JIwMq1cCzGIWddlskYRE';
 
 jest.setTimeout(120000);
@@ -82,18 +81,15 @@ describe('Cli publish', () => {
   });
 
   it(`upload file to ipfs`, async () => {
-    const IPFS_CLUSTER_ENDPOINT = 'https://interipfs.thechaindata.com/cluster/add';
-    const cluster = new Cluster(IPFS_CLUSTER_ENDPOINT, {
-      headers: {Authorization: `Bearer ${testAuth}`},
-    });
+    // only enable when test locally
     const ipfs = IPFS.create({url: ipfsEndpoint});
     //test string
-    const cid = await uploadFile('Test for upload string to ipfs', cluster);
+    const cid = await uploadFile('Test for upload string to ipfs', testAuth);
     console.log(`upload file cid: ${cid}`);
     // test fs stream (project)
     projectDir = await createTestProject(projectSpecV0_2_0);
     const fsStream = fs.createReadStream(path.resolve(projectDir, 'project.yaml'));
-    const cid2 = await uploadFile(fsStream, cluster);
+    const cid2 = await uploadFile(fsStream, testAuth);
     console.log(`upload file cid: ${cid2}`);
   });
 
