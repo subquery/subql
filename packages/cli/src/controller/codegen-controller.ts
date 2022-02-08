@@ -6,7 +6,6 @@ import path from 'path';
 import {promisify} from 'util';
 import {
   getAllEntitiesRelations,
-  loadProjectManifest,
   getAllJsonObjects,
   setJsonObjectType,
   getTypeByScalarName,
@@ -15,6 +14,8 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/common';
+import {loadSubstrateProjectManifest} from '@subql/common-substrate';
+import {loadTerraProjectManifest} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst} from 'lodash';
 import rimraf from 'rimraf';
@@ -186,7 +187,12 @@ export async function codegen(projectPath: string): Promise<void> {
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
-  const manifest = loadProjectManifest(projectPath);
+  let manifest;
+  try {
+    manifest = loadSubstrateProjectManifest(projectPath);
+  } catch (e) {
+    manifest = loadTerraProjectManifest(projectPath);
+  }
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   await generateEnums(projectPath, path.join(projectPath, manifest.schema));

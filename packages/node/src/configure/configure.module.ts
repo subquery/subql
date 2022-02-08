@@ -4,7 +4,7 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { ProjectNetworkConfig } from '@subql/common';
+import { ProjectNetworkConfig } from '@subql/common-substrate';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';

@@ -10,7 +10,7 @@ import {
   RuntimeDataSourceV0_0_1,
   isCustomDs,
   isRuntimeDs,
-} from '@subql/common';
+} from '@subql/common-substrate';
 import {
   SubqlCallFilter,
   SubqlEventFilter,

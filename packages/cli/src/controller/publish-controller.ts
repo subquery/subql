@@ -3,7 +3,12 @@
 
 import fs from 'fs';
 import path from 'path';
-import {loadProjectManifest, manifestIsV0_2_0, ProjectManifestV0_2_0Impl, isCustomDs} from '@subql/common';
+import {
+  loadSubstrateProjectManifest,
+  manifestIsV0_2_0,
+  ProjectManifestV0_2_0Impl,
+  isCustomDs,
+} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
@@ -24,7 +29,7 @@ export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Pr
   const ipfs = IPFS.create({url: ipfsEndpoint});
 
   const projectManifestPath = path.resolve(projectDir, 'project.yaml');
-  const manifest = loadProjectManifest(projectManifestPath).asImpl;
+  const manifest = loadSubstrateProjectManifest(projectManifestPath).asImpl;
 
   if (!manifestIsV0_2_0(manifest)) {
     throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');

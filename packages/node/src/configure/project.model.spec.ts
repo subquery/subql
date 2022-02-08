@@ -3,7 +3,7 @@
 
 import path from 'path';
 import { RegisteredTypes } from '@polkadot/types/types';
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common-substrate';
 import { SubqueryProject } from './project.model';
 
 const chainTypes: RegisteredTypes = {

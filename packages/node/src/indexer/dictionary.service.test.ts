@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common-substrate';
 import { range } from 'lodash';
 import { SubqueryProject } from '../configure/project.model';
 import { DictionaryQueryEntry, DictionaryService } from './dictionary.service';

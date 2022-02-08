@@ -49,7 +49,6 @@
     "test:docker": "docker-compose -f test/docker-compose.yaml up --remove-orphans --abort-on-container-exit --build test",
     "postinstall": "husky install"
   },
-
   "lint-staged": {
     "*.ts": [
       "eslint --cache --fix",

@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common-substrate';
 import { SubqueryProject } from '../configure/project.model';
 import { delay } from '../utils/promise';
 import { ApiService } from './api.service';

@@ -6,7 +6,7 @@ import { AppModule } from './app.module';
 import { IndexerTerraManager } from './indexer/indexerterra.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { argv } from './yargs';
-const logger = getLogger('subql-node');
+const logger = getLogger('subql-node-terra');
 
 async function bootstrap() {
   const debug = argv('debug');

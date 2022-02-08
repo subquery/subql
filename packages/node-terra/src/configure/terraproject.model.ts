@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  loadProjectManifest,
-  ProjectManifestVersioned,
+  loadTerraProjectManifest,
   TerraProjectNetworkConfig,
-} from '@subql/common';
-import { ProjectNetworkV0_3_0 } from '@subql/common/project/versioned/v0_3_0';
-import { SubqlTerraDatasource } from '@subql/types-terra';
+} from '@subql/common-terra';
+import { ProjectManifestVersioned } from '@subql/common-terra/project/versioned';
+import { TerraProjectNetworkV0_3_0 } from '@subql/common-terra/project/versioned/v0_3_0';
+import {
+  SubqlTerraDatasourceKind,
+  SubqlTerraDatasource,
+} from '@subql/types-terra';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 
@@ -19,7 +22,7 @@ export class SubqueryTerraProject {
 
   static async create(path: string): Promise<SubqueryTerraProject> {
     const projectPath = await prepareProjectDir(path);
-    const projectManifest = loadProjectManifest(projectPath);
+    const projectManifest = loadTerraProjectManifest(projectPath);
     return new SubqueryTerraProject(projectManifest, projectPath);
   }
 
@@ -28,6 +31,9 @@ export class SubqueryTerraProject {
     this._path = path;
 
     manifest.dataSources?.forEach(function (dataSource) {
+      if (!(dataSource.kind in SubqlTerraDatasourceKind)) {
+        throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
+      }
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
         if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
         dataSource.startBlock = 1;
@@ -39,11 +45,10 @@ export class SubqueryTerraProject {
     return this._projectManifest;
   }
 
-  //TODO: do manifest versioning. Define network type
   get network(): TerraProjectNetworkConfig {
     const impl = this._projectManifest.asImpl;
     const network = {
-      ...(impl.network as ProjectNetworkV0_3_0),
+      ...(impl.network as TerraProjectNetworkV0_3_0),
     };
 
     if (!network.endpoint) {

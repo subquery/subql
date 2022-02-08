@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
+import { loadFromJsonOrYaml } from '@subql/common-substrate';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { assign } from '../utils/object';

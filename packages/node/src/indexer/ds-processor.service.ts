@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs } from '@subql/common';
+import { isCustomDs } from '@subql/common-substrate';
 import {
   SubqlCustomDatasource,
   SubqlDatasourceProcessor,

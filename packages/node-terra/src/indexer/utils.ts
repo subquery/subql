@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
+import { loadFromJsonOrYaml } from '@subql/common-terra';
 import {
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomDatasource,

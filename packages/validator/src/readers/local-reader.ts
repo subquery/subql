@@ -3,7 +3,7 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {loadFromJsonOrYaml} from '@subql/common-substrate';
 import {IPackageJson} from 'package-json-type';
 import {Reader} from './reader';
 

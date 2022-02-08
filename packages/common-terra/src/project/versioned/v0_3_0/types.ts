@@ -20,7 +20,7 @@ export interface SubqlMappingV0_3_0<T extends SubqlTerraHandler> extends SubqlTe
 export type RuntimeDataSourceV0_3_0 = SubqlTerraRuntimeDatasource<SubqlMappingV0_3_0<SubqlTerraRuntimeHandler>>;
 export type CustomDatasourceV0_3_0 = SubqlTerraCustomDatasource<string, SubqlMappingV0_3_0<SubqlTerraCustomHandler>>;
 
-export interface ProjectManifestV0_3_0 extends IProjectManifest {
+export interface TerraProjectManifestV0_3_0 extends IProjectManifest {
   name: string;
   version: string;
   schema: {

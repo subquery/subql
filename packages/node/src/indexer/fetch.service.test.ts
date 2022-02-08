@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ProjectManifestVersioned } from '@subql/common';
+import { ProjectManifestVersioned } from '@subql/common-substrate';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/project.model';

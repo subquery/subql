@@ -1,3 +1,6 @@
+// Copyright 2020-2021 OnFinality Limited authors & contributors
+// SPDX-License-Identifier: Apache-2.0
+
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LCDClient, LCDClientConfig } from '@terra-money/terra.js';
@@ -26,26 +29,23 @@ export class ApiTerraService {
       URL: network.endpoint,
       chainID: network.chainId,
     };
-    logger.info(JSON.stringify(this.clientConfig));
+
     this.api = new LCDClient(this.clientConfig);
-    //logger.info('api inititare')
-    //const genesisBlock = await this.api.tendermint.blockInfo(4724001);
-    //logger.info('')
+
     this.networkMeta = {
       chainId: network.chainId,
     };
-    /*
-    if (
-      network.genesisHash &&
-      network.genesisHash !== this.networkMeta.genesisHash
-    ) {
+
+    const nodeInfo = await this.api.tendermint.nodeInfo();
+
+    if (network.chainId !== nodeInfo.default_node_info.network) {
       const err = new Error(
-        `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
+        `The given chainId does not match with client: "${network.chainId}"`,
       );
       logger.error(err, err.message);
       throw err;
     }
-    */
+
     return this;
   }
 

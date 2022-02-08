@@ -4,12 +4,12 @@
 import fs from 'fs';
 import path from 'path';
 import {
-  loadProjectManifest,
+  loadSubstrateProjectManifest,
   ProjectManifestV0_2_0,
   ProjectManifestVersioned,
   ProjectNetworkV0_0_1,
   ChainTypes,
-} from '@subql/common';
+} from '@subql/common-substrate';
 import {cli} from 'cli-ux';
 import yaml from 'js-yaml';
 import {getGenesisHash} from '../jsonrpc';
@@ -112,7 +112,7 @@ export async function migrate(
   }
   //validate before backup and conversion
   try {
-    loadProjectManifest(manifestV0_2_0).isV0_2_0;
+    loadSubstrateProjectManifest(manifestV0_2_0).isV0_2_0;
   } catch (e) {
     console.error(`${manifestV0_2_0} failed validation for manifest spec 0.2.0, \n ${e}`);
     const keep = await cli.confirm(`However, do you want keep ${manifestV0_2_0} for inspection before retry? [Y/N]`);

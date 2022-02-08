@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {parseChainTypes} from '@subql/common';
+import {parseChainTypes} from '@subql/common-substrate';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
 

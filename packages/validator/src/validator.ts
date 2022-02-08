@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common';
+import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common-substrate';
 import {Context} from './context';
 import {Reader, ReaderFactory, ReaderOptions} from './readers';
 import {Rule, RuleType} from './rules';

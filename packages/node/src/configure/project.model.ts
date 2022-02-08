@@ -4,14 +4,14 @@
 import path from 'path';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
-  loadProjectManifest,
+  loadSubstrateProjectManifest,
   parseChainTypes,
   ProjectNetworkConfig,
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
   loadFromJsonOrYaml,
-} from '@subql/common';
+} from '@subql/common-substrate';
 import { SubqlDatasource } from '@subql/types';
 import { pick } from 'lodash';
 import { getLogger } from '../utils/logger';
@@ -28,7 +28,7 @@ export class SubqueryProject {
     networkOverrides?: Partial<ProjectNetworkConfig>,
   ): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
-    const projectManifest = loadProjectManifest(projectPath);
+    const projectManifest = loadSubstrateProjectManifest(projectPath);
     return new SubqueryProject(projectManifest, projectPath, networkOverrides);
   }
 
