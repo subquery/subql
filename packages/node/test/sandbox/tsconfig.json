@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2020",
+    "target": "es2017",
     "noImplicitAny": false,
     "moduleResolution": "node",
     "baseUrl": ".",
@@ -9,7 +9,7 @@
     "experimentalDecorators": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "lib": ["ES2020"],
+    "lib": ["ES2017"],
     "emitDecoratorMetadata": true,
     "sourceMap": false,
     "rootDir": ".",
