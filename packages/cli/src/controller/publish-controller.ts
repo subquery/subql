@@ -75,27 +75,35 @@ export async function uploadFile(
   cluster: Cluster,
   ipfs?: IPFS.IPFSHTTPClient
 ): Promise<string> {
-  const clientPromise = ipfs
-    ? ipfs.add(content, {pin: true, cidVersion: 0})
-    : Promise.reject(new Error('IPFS gateway not provided'));
+  let ipfsClientCid: string;
+  // if user provide ipfs, we will try to upload it to this gateway
+  if (ipfs) {
+    try {
+      ipfsClientCid = (await ipfs.add(content, {pin: true, cidVersion: 0})).cid.toString();
+    } catch (e) {
+      throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
+    }
+  }
+  // convert content to blob
   let contentBuffer: Uint8Array;
   if (determineStringOrFsStream(content)) {
     contentBuffer = new Blob([fs.readFileSync(content.path)]);
   } else {
     contentBuffer = new Blob([content]);
   }
-  const clusterPromise = cluster.add(contentBuffer, {cidVersion: 0, rawLeaves: false});
-  const results = await Promise.allSettled([clientPromise, clusterPromise]);
-
-  if (ipfs && results[0].status === 'rejected') {
-    console.warn('Upload to provided IPFS gateway failed');
+  // upload to subquery ipfs cluster
+  let ipfsClusterCid: string;
+  try {
+    ipfsClusterCid = (await cluster.add(contentBuffer, {cidVersion: 0, rawLeaves: false})).cid;
+  } catch (e) {
+    throw new Error(`Publish project to default cluster failed, ${e}`);
   }
-  const filledResult = results.find((r) => r.status === 'fulfilled') as PromiseFulfilledResult<any>;
-
-  if (!filledResult) {
-    throw new Error('Could not publish project to ipfs');
+  // Validate IPFS cid
+  if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
+    throw new Error(`Published and received IPFS cid not identical \n, 
+    IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
   }
-  return filledResult.value.cid.toString();
+  return ipfsClusterCid;
 }
 
 function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {

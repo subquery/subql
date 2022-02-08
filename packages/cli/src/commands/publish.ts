@@ -14,13 +14,15 @@ class AuthorizationSpec {
   secret: string;
 }
 
+const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, 'SUBQL_ACCESS_TOKEN');
+
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
     ipfs: flags.string({description: 'IPFS gateway endpoint', required: false}),
-    secret: flags.string({description: 'Secret authorization token', required: false}),
+    'access-token': flags.string({description: 'Secret authorization token', required: false}),
   };
 
   async run(): Promise<void> {
@@ -41,16 +43,17 @@ export default class Publish extends Command {
     }
 
     let authToken: string;
-    if (flags.secret) {
-      authToken = flags.secret;
+    if (flags['access-token']) {
+      authToken = flags['access-token'];
     } else {
       try {
-        authToken = (yaml.load(readFileSync(path.resolve(directory, 'auth.yaml'), 'utf8')) as AuthorizationSpec).secret;
+        authToken =
+          process.env.SUBQL_ACCESS_TOKEN ??
+          (yaml.load(readFileSync(ACCESS_TOKEN_PATH, 'utf8')) as AuthorizationSpec).secret;
       } catch (e) {
-        this.error(`Failed to read authToken from "auth.yaml": ${e}`);
+        this.error(`Failed to read SUBQL_ACCESS_TOKEN: ${e}`);
       }
     }
-
     this.log('Uploading SupQuery project to IPFS');
     const cid = await uploadToIpfs(directory, flags.ipfs, authToken).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
