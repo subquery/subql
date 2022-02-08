@@ -99,7 +99,7 @@ describe('Cli publish', () => {
 
   it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const cid = await uploadToIpfs(projectDir, testAuth, ipfsEndpoint);
+    const cid = await uploadToIpfs(projectDir, testAuth);
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
