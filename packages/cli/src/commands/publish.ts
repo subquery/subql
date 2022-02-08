@@ -14,7 +14,7 @@ class AuthorizationSpec {
   secret: string;
 }
 
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, 'SUBQL_ACCESS_TOKEN');
+const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.SUBQL_ACCESS_TOKEN');
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
