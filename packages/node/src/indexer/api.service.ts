@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
-import { AnyFunction } from '@polkadot/types/types';
+import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -22,6 +22,7 @@ const logger = getLogger('api');
 export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise;
   private currentBlockHash: string;
+  private currentBlockNumber: number;
   private currentRuntimeVersion: RuntimeVersion;
   private apiOption: ApiOptions;
   networkMeta: NetworkMetadataPayload;
@@ -95,9 +96,11 @@ export class ApiService implements OnApplicationShutdown {
 
   async getPatchedApi(
     blockHash: string | BlockHash,
+    blockNumber: number,
     parentBlockHash?: string | BlockHash,
   ): Promise<ApiAt> {
     this.currentBlockHash = blockHash.toString();
+    this.currentBlockNumber = blockNumber;
     if (parentBlockHash) {
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         parentBlockHash,
@@ -114,26 +117,33 @@ export class ApiService implements OnApplicationShutdown {
   private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
     original: RpcMethodResult<T, AnyFunction>,
   ): RpcMethodResult<T, AnyFunction> {
+    const methodName = this.getRPCFunctionName(original);
     if (original.meta.params) {
       const hashIndex = original.meta.params.findIndex(
-        ({ isHistoric, name }) => isHistoric,
+        ({ isHistoric }) => isHistoric,
       );
       if (hashIndex > -1) {
+        const isBlockNumber =
+          original.meta.params[hashIndex].type === 'BlockNumber';
+
         const ret = ((...args: any[]) => {
           const argsClone = [...args];
-          argsClone[hashIndex] = this.currentBlockHash;
+          argsClone[hashIndex] = isBlockNumber
+            ? this.currentBlockNumber
+            : this.currentBlockHash;
           return original(...argsClone);
         }) as RpcMethodResult<T, AnyFunction>;
-        ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
+        ret.raw = NOT_SUPPORT(`${methodName}.raw`);
         ret.meta = original.meta;
         return ret;
       }
     }
-    const ret = NOT_SUPPORT('api.rpc.*.*') as unknown as RpcMethodResult<
+
+    const ret = NOT_SUPPORT(methodName) as unknown as RpcMethodResult<
       T,
       AnyFunction
     >;
-    ret.raw = NOT_SUPPORT('api.rpc.*.*.raw');
+    ret.raw = NOT_SUPPORT(`${methodName}.raw`);
     ret.meta = original.meta;
     return ret;
   }
@@ -149,5 +159,13 @@ export class ApiService implements OnApplicationShutdown {
       );
       return acc;
     }, {} as ApiPromise['rpc']);
+  }
+
+  private getRPCFunctionName<T extends 'promise' | 'rxjs'>(
+    original: RpcMethodResult<T, AnyFunction>,
+  ): string {
+    const ext = original.meta as unknown as DefinitionRpcExt;
+
+    return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
   }
 }

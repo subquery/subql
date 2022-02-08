@@ -126,6 +126,7 @@ export class IndexerManager {
       // if parentBlockHash injected, which means we need to check runtime upgrade
       const apiAt = await this.apiService.getPatchedApi(
         block.block.hash,
+        block.block.header.number.unwrap().toNumber(),
         isUpgraded ? block.block.header.parentHash : undefined,
       );
 
