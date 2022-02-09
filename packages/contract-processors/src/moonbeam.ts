@@ -281,7 +281,10 @@ const EventProcessor: SecondLayerHandlerProcessor<
       conditions: [],
     };
     if (ds.processor?.options?.address) {
-      queryEntry.conditions.push({field: 'address', value: ds.processor?.options?.address});
+      queryEntry.conditions.push({
+        field: 'address',
+        value: ds.processor.options.address.toLowerCase(),
+      });
     } else {
       return;
     }
@@ -403,10 +406,10 @@ const CallProcessor: SecondLayerHandlerProcessor<
       conditions: [],
     };
     if (ds.processor?.options?.address) {
-      queryEntry.conditions.push({field: 'to', value: ds.processor?.options?.address});
+      queryEntry.conditions.push({field: 'to', value: ds.processor.options.address.toLowerCase()});
     }
     if (filter?.from) {
-      queryEntry.conditions.push({field: 'from', value: filter?.from});
+      queryEntry.conditions.push({field: 'from', value: filter.from.toLowerCase()});
     }
 
     if (filter?.function) {
