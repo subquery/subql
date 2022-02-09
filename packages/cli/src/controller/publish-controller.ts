@@ -3,56 +3,53 @@
 
 import fs from 'fs';
 import path from 'path';
-import { parseProjectManifest, manifestIsV0_2_0, ReaderFactory } from '@subql/common';
+import {parseProjectManifest, ReaderFactory, manifestIsV0_2_0} from '@subql/common';
 import {FileReference} from '@subql/types';
-import IPFS from 'ipfs-http-client';
+import axios from 'axios';
+import FormData from 'form-data';
+import IPFS, {IPFSHTTPClient} from 'ipfs-http-client';
+import {IPFS_CLUSTER_ENDPOINT} from '../constants';
 
-// https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#filecontent
-type FileContent = Uint8Array | string | Iterable<Uint8Array> | Iterable<number> | AsyncIterable<Uint8Array>;
-
-// https://github.com/ipfs/js-ipfs/blob/master/docs/core-api/FILES.md#fileobject
-type FileObject = {
-  path?: string;
-  content?: FileContent;
-  mode?: number | string;
-  mtime?: Date | number[] | {secs: number; nsecs?: number};
-};
-
-export async function uploadToIpfs(ipfsEndpoint: string, projectDir: string): Promise<string> {
-  const ipfs = IPFS.create({url: ipfsEndpoint});
-
+export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
   const reader = await ReaderFactory.create(projectDir);
   const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
 
   if (!manifestIsV0_2_0(manifest)) {
     throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');
   }
-
-  const deployment = await replaceFileReferences(ipfs, projectDir, manifest);
-
+  let ipfs: IPFSHTTPClient;
+  if (ipfsEndpoint) {
+    ipfs = IPFS.create({url: ipfsEndpoint});
+  }
+  const deployment = await replaceFileReferences(projectDir, manifest, authToken, ipfs);
   // Upload schema
-  return uploadFile(ipfs, deployment.toDeployment());
+  return uploadFile(deployment.toDeployment(), authToken, ipfs);
 }
 
 /* Recursively finds all FileReferences in an object and replaces the files with IPFS references */
-async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: string, input: T): Promise<T> {
+async function replaceFileReferences<T>(
+  projectDir: string,
+  input: T,
+  authToken: string,
+  ipfs?: IPFS.IPFSHTTPClient
+): Promise<T> {
   if (Array.isArray(input)) {
-    return (await Promise.all(input.map((val) => replaceFileReferences(ipfs, projectDir, val)))) as unknown as T;
+    return (await Promise.all(
+      input.map((val) => replaceFileReferences(projectDir, val, authToken, ipfs))
+    )) as unknown as T;
   } else if (typeof input === 'object') {
     if (input instanceof Map) {
       input = mapToObject(input) as T;
     }
-
     if (isFileReference(input)) {
-      input.file = await uploadFile(ipfs, fs.createReadStream(path.resolve(projectDir, input.file))).then(
+      input.file = await uploadFile(fs.createReadStream(path.resolve(projectDir, input.file)), authToken, ipfs).then(
         (cid) => `ipfs://${cid}`
       );
     }
-
     const keys = Object.keys(input) as unknown as (keyof T)[];
     await Promise.all(
       keys.map(async (key) => {
-        input[key] = await replaceFileReferences(ipfs, projectDir, input[key]);
+        input[key] = await replaceFileReferences(projectDir, input[key], authToken, ipfs);
       })
     );
   }
@@ -60,9 +57,57 @@ async function replaceFileReferences<T>(ipfs: IPFS.IPFSHTTPClient, projectDir: s
   return input;
 }
 
-async function uploadFile(ipfs: IPFS.IPFSHTTPClient, content: FileObject | FileContent): Promise<string> {
-  const result = await ipfs.add(content, {pin: true, cidVersion: 0});
-  return result.cid.toString();
+export async function uploadFile(
+  content: string | fs.ReadStream,
+  authToken: string,
+  ipfs?: IPFS.IPFSHTTPClient
+): Promise<string> {
+  let ipfsClientCid: string;
+  // if user provide ipfs, we will try to upload it to this gateway
+  if (ipfs) {
+    try {
+      ipfsClientCid = (await ipfs.add(content, {pin: true, cidVersion: 0})).cid.toString();
+    } catch (e) {
+      throw new Error(`Publish project to provided IPFS gateway failed, ${e}`);
+    }
+  }
+  let ipfsClusterCid: string;
+  try {
+    ipfsClusterCid = await UploadFileByCluster(
+      determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
+      authToken
+    );
+  } catch (e) {
+    throw new Error(`Publish project to default cluster failed, ${e}`);
+  }
+  // Validate IPFS cid
+  if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
+    throw new Error(`Published and received IPFS cid not identical \n, 
+    IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
+  }
+  return ipfsClusterCid;
+}
+
+function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {
+  return !!(toBeDetermined as fs.ReadStream).path;
+}
+
+async function UploadFileByCluster(content: string, authToken: string): Promise<string> {
+  const bodyFormData = new FormData();
+  bodyFormData.append('data', content);
+  const result = (
+    await axios({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+        'Content-Type': 'multipart/form-data',
+        ...bodyFormData.getHeaders(),
+      },
+      method: 'post',
+      url: IPFS_CLUSTER_ENDPOINT,
+      data: bodyFormData,
+    })
+  ).data as ClusterResponseData;
+  return result.cid?.['/'];
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
@@ -71,10 +116,19 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
   for (const key of map.keys()) {
     assetsObj[key] = map.get(key);
   }
-
   return assetsObj;
 }
 
 function isFileReference(value: any): value is FileReference {
   return value.file && typeof value.file === 'string';
+}
+
+interface ClusterResponseData {
+  name: string;
+  cid: cidSpec;
+  size: number;
+}
+// cluster response cid stored as {'/': 'QmVq2bqunmkmEmMCY3x9U9kDcgoRBGRbuBm5j7XKZDvSYt'}
+interface cidSpec {
+  '/': string;
 }

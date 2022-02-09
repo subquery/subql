@@ -1,18 +1,20 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {lstatSync} from 'fs';
+import {lstatSync, readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import {uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
+
+const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
     location: flags.string({char: 'l', description: 'local folder'}),
-    ipfs: flags.string({description: 'IPFS gateway endpoint', default: 'http://localhost:5001/api/v0'}),
+    ipfs: flags.string({description: 'IPFS gateway endpoint', required: false}),
   };
 
   async run(): Promise<void> {
@@ -32,9 +34,22 @@ export default class Publish extends Command {
       this.error('Failed to build project');
     }
 
-    this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(flags.ipfs, directory);
+    let authToken: string;
 
+    if (process.env.SUBQL_ACCESS_TOKEN) {
+      authToken = process.env.SUBQL_ACCESS_TOKEN;
+    } else if (existsSync(ACCESS_TOKEN_PATH)) {
+      try {
+        authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
+      } catch (e) {
+        this.error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
+      }
+    } else {
+      this.error('Please provide SUBQL_ACCESS_TOKEN before publish');
+    }
+
+    this.log('Uploading SupQuery project to IPFS');
+    const cid = await uploadToIpfs(directory, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

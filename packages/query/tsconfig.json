@@ -6,13 +6,8 @@
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
     "outDir": "./dist",
-    "lib": [
-      "dom"
-    ]
+    "lib": ["dom"]
   },
-  "references": [
-    {"path": "../common"},
-    {"path": "../types"}
-  ],
+  "references": [{"path": "../common"}, {"path": "../types"}],
   "include": ["src/**/*"]
 }
