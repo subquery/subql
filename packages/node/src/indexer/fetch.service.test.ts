@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ApiOptions } from '@polkadot/api/types';
 import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -74,12 +75,10 @@ describe('FetchService', () => {
 
     fetchService = await createFetchService(project, batchSize);
 
-    const api = fetchService.api;
-    const getMetaSpy = jest.spyOn(
-      (api as any)._rpcCore.state.getMetadata,
-      'raw',
-    );
-
+    const apiService = (fetchService as any).apiService as ApiService;
+    const apiOptions = (apiService as any).apiOption as ApiOptions;
+    const provider = apiOptions.provider;
+    const getSendSpy = jest.spyOn(provider, 'send');
     await fetchService.init();
     const loopPromise = fetchService.startLoop(1);
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -89,7 +88,10 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(getMetaSpy).toBeCalledTimes(1);
+    const getMetadataCalls = getSendSpy.mock.calls.filter(
+      (call) => call[0] === 'state_getMetadata',
+    );
+    expect(getMetadataCalls.length).toBe(1);
   });
 
   it('fetch metadata two times when spec version changed in range', async () => {
@@ -98,11 +100,10 @@ describe('FetchService', () => {
 
     fetchService = await createFetchService(project, batchSize);
 
-    const api = fetchService.api;
-    const getMetaSpy = jest.spyOn(
-      (api as any)._rpcCore.state.getMetadata,
-      'raw',
-    );
+    const apiService = (fetchService as any).apiService as ApiService;
+    const apiOptions = (apiService as any).apiOption as ApiOptions;
+    const provider = apiOptions.provider;
+    const getSendSpy = jest.spyOn(provider, 'send');
 
     await fetchService.init();
     //29150
@@ -115,7 +116,10 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(getMetaSpy).toBeCalledTimes(2);
+    const getMetadataCalls = getSendSpy.mock.calls.filter(
+      (call) => call[0] === 'state_getMetadata',
+    );
+    expect(getMetadataCalls.length).toBe(2);
   }, 100000);
 
   it('not use dictionary if dictionary is not defined in project config', async () => {
