@@ -1,8 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {lstatSync, readFileSync} from 'fs';
-import * as fs from 'fs';
+import {lstatSync, readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, flags} from '@oclif/command';
 import {uploadToIpfs} from '../controller/publish-controller';
@@ -39,9 +38,9 @@ export default class Publish extends Command {
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
-    } else if (fs.existsSync(ACCESS_TOKEN_PATH)) {
+    } else if (existsSync(ACCESS_TOKEN_PATH)) {
       try {
-        authToken = process.env.SUBQL_ACCESS_TOKEN ?? fs.readFileSync(ACCESS_TOKEN_PATH, 'utf8');
+        authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
       } catch (e) {
         this.error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
       }

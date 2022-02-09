@@ -4,10 +4,7 @@
 import {Command, flags} from '@oclif/command';
 import {commonRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
-
-const IPFS_DEV = 'https://interipfs.thechaindata.com';
-const IPFS_PROD = 'https://ipfs.subquery.network';
-const IPFS_CLIENT_ENDPOINT = `${IPFS_DEV}/api/v0`;
+import {IPFS_CLIENT_ENDPOINT} from '../constants';
 
 export default class Validate extends Command {
   static description = 'Check a folder or github repo is a validate subquery project';

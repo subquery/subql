@@ -8,10 +8,7 @@ import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
 import IPFS, {IPFSHTTPClient} from 'ipfs-http-client';
-
-const IPFS_DEV = 'https://interipfs.thechaindata.com';
-const IPFS_PROD = 'https://ipfs.subquery.network';
-const IPFS_CLUSTER_ENDPOINT = `${IPFS_DEV}/cluster/add`;
+import {IPFS_CLUSTER_ENDPOINT} from '../constants';
 
 export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
   const reader = await ReaderFactory.create(projectDir);
@@ -110,7 +107,7 @@ async function UploadFileByCluster(content: string, authToken: string): Promise<
       data: bodyFormData,
     })
   ).data as ClusterResponseData;
-  return result.cid['/'];
+  return result.cid?.['/'];
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
