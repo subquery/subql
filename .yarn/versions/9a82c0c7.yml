@@ -1,7 +1,0 @@
-undecided:
-  - "@subql/common"
-  - "@subql/contract-processors"
-  - "@subql/node"
-  - "@subql/query"
-  - "@subql/types"
-  - "@subql/validator"

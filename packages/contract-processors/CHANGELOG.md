@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2022-02-09
+### Added
+- Add support for ethereum json artifacts instead of abi (#790)
+### Changed
+- Update `moonbeam-types-bundle` and `polkadot/api` (#773) 
+
 ## [0.4.1] - 2022-01-13
 ### Changed
 - Version bump with subql/types 
@@ -40,7 +46,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Basic implementation for moonbeam evm processor (#547)
 
-[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.4.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.4.2...HEAD
+[0.4.2]: https://github.com/subquery/subql/compare/contract-processors/0.4.1...contract-processors/0.4.2
 [0.4.1]: https://github.com/subquery/subql/compare/contract-processors/0.4.0...contract-processors/0.4.1
 [0.4.0]: https://github.com/subquery/subql/compare/contract-processors/0.3.1...contract-processors/0.4.0
 [0.3.1]: https://github.com/subquery/subql/compare/contract-processors/0.3.0...contract-processors/0.3.1

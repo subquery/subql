@@ -8,9 +8,17 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.20.0] - 2022-02-09
+### Added
+- Add support for dynamic data sources (#773)
+- Add authentication for publish command, access token will read from `SUBQL_ACCESS_TOKEN` in environment or under `$HOME/.subql/SUBQL_ACCESS_TOKEN` (#778)
+### Fixed
+- Fix codegen importing jsonType interface multiple times (#784)
+- Fix cli build command issues (#789)
+
 ## [0.19.0] - 2022-01-21
 ### Added
-Allow use `subql build` self contained js as instructed by `exports` fields under`package.json` (#753)
+- Allow use `subql build` self contained js as instructed by `exports` fields under`package.json` (#753)
 ### Changed
 - Remove .github directory from new projects (#763)
 
@@ -138,7 +146,8 @@ Allow use `subql build` self contained js as instructed by `exports` fields unde
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.19.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.20.0...HEAD
+[0.20.0]: https://github.com/subquery/subql/compare/cli/0.19.0...cli/0.20.0
 [0.19.0]: https://github.com/subquery/subql/compare/cli/0.18.0...cli/0.19.0
 [0.18.0]: https://github.com/subquery/subql/compare/cli/0.17.0...cli/0.18.0
 [0.17.0]: https://github.com/subquery/subql/compare/cli/0.16.2...cli/0.17.0

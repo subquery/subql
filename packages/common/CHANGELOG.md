@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.17.0] - 2021-02-09
+### Added
+- Add manifest v0.2.1 to support dynamic data source
+### Changed 
+- Move readers from validator to common and use them for loading projects in the node (#511)
+### Fixed
+- Add missing interfaces to common classes (#782)
+
 ## [0.16.0] - 2021-01-13
 ### Added 
 - Add rowCountEstimate to Metadata (#736)
@@ -123,7 +131,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common/0.16.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common/0.17.0...HEAD
+[0.17.0]: https://github.com/subquery/subql/compare/common/0.16.0...common/0.17.0
 [0.16.0]: https://github.com/subquery/subql/compare/common/0.15.0...common/0.16.0
 [0.15.0]: https://github.com/subquery/subql/compare/common/0.14.1...common/0.15.0
 [0.14.1]: https://github.com/subquery/subql/compare/common/0.14.0...common/0.14.1
