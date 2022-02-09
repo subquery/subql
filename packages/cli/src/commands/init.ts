@@ -7,7 +7,7 @@ import {Command, flags} from '@oclif/command';
 import cli from 'cli-ux';
 import {createProject, installDependencies} from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
-import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
+import {ProjectSpecBase, ProjectSpecV0_2_0, TerraProjectSpecV0_3_0} from '../types';
 
 export default class Init extends Command {
   static description = 'Initialize a scaffold subquery project';
@@ -22,9 +22,15 @@ export default class Init extends Command {
     npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: flags.string({
       required: false,
-      options: ['0.0.1', '0.2.0'],
+      options: ['0.0.1', '0.2.0', '0.3.0'],
       default: '0.2.0',
       description: 'The spec version to be used by the project',
+    }),
+    chain: flags.string({
+      required: false,
+      options: ['terra', 'substrate'],
+      default: 'substrate',
+      description: 'The chain to be used by the project',
     }),
   };
 
@@ -54,7 +60,11 @@ export default class Init extends Command {
       required: true,
     });
 
-    if (flags.specVersion === '0.2.0') {
+    if (flags.specVersion === '0.3.0' && flags.chain === 'terra') {
+      (project as TerraProjectSpecV0_3_0).chainId = await cli.prompt('Terra chain id', {required: true});
+    }
+
+    if (flags.specVersion === '0.2.0' || (flags.specVersion === '0.3.0' && flags.chain === 'substrate')) {
       cli.action.start('Getting network genesis hash');
       (project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(project.endpoint);
       cli.action.stop();
