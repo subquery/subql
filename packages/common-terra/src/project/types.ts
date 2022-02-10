@@ -1,19 +1,11 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
 import {SubqlTerraDatasource} from '@subql/types-terra';
 
-export interface IProjectManifest {
-  specVersion: string;
-  description: string;
-  repository: string;
-  dataSources: SubqlTerraDatasource[];
-  toDeployment(): string;
-  validate(): void;
-}
+export type ITerraProjectManifest = IProjectManifest<SubqlTerraDatasource>;
 
-export interface TerraProjectNetworkConfig {
-  endpoint: string;
-  chainId: string;
-  dictionary?: string;
+export interface TerraProjectNetworkConfig extends ProjectNetworkConfig {
+  chainId?: string;
 }

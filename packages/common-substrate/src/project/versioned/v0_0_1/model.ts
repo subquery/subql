@@ -6,10 +6,10 @@ import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
-import {ProjectNetworkConfig} from '../../types';
+import {SubstrateProjectNetworkConfig} from '../../types';
 import {ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
-export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkConfig {
+export class ProjectNetworkV0_0_1 extends ChainTypes implements SubstrateProjectNetworkConfig {
   @IsString()
   endpoint: string;
   @IsString()

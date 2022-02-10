@@ -3,7 +3,7 @@
 
 import {SubqlTerraDatasource} from '@subql/types-terra';
 import {plainToClass} from 'class-transformer';
-import {IProjectManifest} from '../types';
+import {ITerraProjectManifest} from '../types';
 import {ProjectManifestV0_3_0Impl} from './v0_3_0';
 
 export type VersionedProjectManifest = {specVersion: string};
@@ -16,11 +16,11 @@ type Versions = keyof typeof SUPPORTED_VERSIONS;
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
-export function manifestIsV0_3_0(manifest: IProjectManifest): manifest is ProjectManifestV0_3_0Impl {
+export function manifestIsV0_3_0(manifest: ITerraProjectManifest): manifest is ProjectManifestV0_3_0Impl {
   return manifest.specVersion === '0.3.0';
 }
 
-export class ProjectManifestVersioned implements IProjectManifest {
+export class ProjectManifestVersioned implements ITerraProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {

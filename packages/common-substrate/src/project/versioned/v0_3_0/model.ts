@@ -10,51 +10,27 @@ import {
   SubqlRuntimeHandler,
 } from '@subql/types';
 import {plainToClass, Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import {Equals, IsArray, IsObject, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
-import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {
-  CustomDatasourceV0_3_0,
-  SubstrateProjectManifestV0_3_0,
-  RuntimeDataSourceV0_3_0,
-  SubqlMappingV0_3_0,
-} from './types';
-
-export class FileTypeV0_3_0 {
-  @IsString()
-  file: string;
-}
-
-export class ProjectNetworkDeploymentV0_3_0 {
-  @IsString()
-  genesisHash: string;
-  @ValidateNested()
-  @Type(() => FileTypeV0_3_0)
-  @IsOptional()
-  chaintypes?: FileTypeV0_3_0;
-}
-
-export class ProjectNetworkV0_3_0 extends ProjectNetworkDeploymentV0_3_0 {
-  @IsString()
-  @IsOptional()
-  endpoint?: string;
-  @IsString()
-  @IsOptional()
-  dictionary?: string;
-}
-
-export class ProjectMappingV0_3_0 extends Mapping {
-  @IsString()
-  file: string;
-}
+  FileType,
+  ProjectNetworkV0_2_0,
+  ProjectNetworkDeploymentV0_2_0,
+  ProjectMappingV0_2_0,
+  CustomDatasourceV0_2_0,
+  RuntimeDataSourceV0_2_0,
+  SubqlMappingV0_2_0,
+} from '../v0_2_0';
+import {SubstrateProjectManifestV0_3_0} from './types';
 
 export class RuntimeDataSourceV0_3_0Impl
-  extends RuntimeDataSourceBase<SubqlMappingV0_3_0<SubqlRuntimeHandler>>
-  implements RuntimeDataSourceV0_3_0
+  extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
+  implements RuntimeDataSourceV0_2_0
 {
-  @Type(() => ProjectMappingV0_3_0)
+  @Type(() => ProjectMappingV0_2_0)
   @ValidateNested()
-  mapping: SubqlMappingV0_3_0<SubqlRuntimeHandler>;
+  mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
 }
 
 export class CustomDataSourceV0_3_0Impl<
@@ -70,8 +46,8 @@ export class DeploymentV0_3_0 {
   @IsString()
   specVersion: string;
   @ValidateNested()
-  @Type(() => FileTypeV0_3_0)
-  schema: FileTypeV0_3_0;
+  @Type(() => FileType)
+  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDataSourceV0_3_0Impl, {
@@ -81,10 +57,10 @@ export class DeploymentV0_3_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
+  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
   @ValidateNested()
-  @Type(() => ProjectNetworkDeploymentV0_3_0)
-  network: ProjectNetworkDeploymentV0_3_0;
+  @Type(() => ProjectNetworkDeploymentV0_2_0)
+  network: ProjectNetworkDeploymentV0_2_0;
 }
 
 export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implements SubstrateProjectManifestV0_3_0 {
@@ -96,11 +72,11 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
   version: string;
   @IsObject()
   @ValidateNested()
-  @Type(() => ProjectNetworkV0_3_0)
-  network: ProjectNetworkV0_3_0;
+  @Type(() => ProjectNetworkV0_2_0)
+  network: ProjectNetworkV0_2_0;
   @ValidateNested()
-  @Type(() => FileTypeV0_3_0)
-  schema: FileTypeV0_3_0;
+  @Type(() => FileType)
+  schema: FileType;
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDataSourceV0_3_0Impl, {
@@ -110,7 +86,7 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
+  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
   private _deployment: DeploymentV0_3_0;
 
   toDeployment(): string {

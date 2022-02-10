@@ -4780,13 +4780,13 @@ __metadata:
   dependencies:
     "@polkadot/util": ^7.9.2
     "@subql/types": "workspace:*"
-    "@subql/types-terra": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
     bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.1
+    detect-port: ^1.3.0
     flatted: ^3.2.2
     graphql: ^15.7.2
     graphql-tag: ^2.12.5
@@ -4977,6 +4977,7 @@ __metadata:
   resolution: "@subql/validator@workspace:packages/validator"
   dependencies:
     "@subql/common": "workspace:*"
+    "@subql/common-substrate": "workspace:*"
     "@types/js-yaml": ^4.0.4
     axios: ^0.24.0
     ipfs-http-client: ^52.0.5
@@ -6802,6 +6803,13 @@ __metadata:
   bin:
     acorn: bin/acorn
   checksum: 989ff8bf4b1f37d3c719c1dce785524344d2e3859ac9d851e25a0af9f4f8cddfb15f6b83560bf57508daebe76faaf2ee2a089ecb984ad4ac6236b594bc41abbb
+  languageName: node
+  linkType: hard
+
+"address@npm:^1.0.1":
+  version: 1.1.2
+  resolution: "address@npm:1.1.2"
+  checksum: e0fe385945097112e7819a29e1ac362d3c55c35352483c1a8418fbf9f2c4ad90ab6db9d904aaf4814c1c7174359b4cb39072819259df36a2b9dbf0c64a5e2fa3
   languageName: node
   linkType: hard
 
@@ -9919,7 +9927,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:2.6.9, debug@npm:^2.2.0, debug@npm:^2.3.3, debug@npm:^2.6.9":
+"debug@npm:2.6.9, debug@npm:^2.2.0, debug@npm:^2.3.3, debug@npm:^2.6.0, debug@npm:^2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
   dependencies:
@@ -10195,6 +10203,19 @@ __metadata:
   version: 2.0.4
   resolution: "detect-node@npm:2.0.4"
   checksum: e7648a5a91dd5e91838d14f0e9631f2adf0117cc271ea86d8ce394a8fbe8fc7545755c8261faaf4b1e196795a10da99e5d5f1013163ba0f6260a57b0ba29cc60
+  languageName: node
+  linkType: hard
+
+"detect-port@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "detect-port@npm:1.3.0"
+  dependencies:
+    address: ^1.0.1
+    debug: ^2.6.0
+  bin:
+    detect: ./bin/detect-port
+    detect-port: ./bin/detect-port
+  checksum: 4ebfc40948cd3dc20c5bbef95018ead433d522b6ef0e2efae2d20943632a815db80435a78212525f05b492331b05e66af51d260e42f8bfe6145f66e2a223f054
   languageName: node
   linkType: hard
 

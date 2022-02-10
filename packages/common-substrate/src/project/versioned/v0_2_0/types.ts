@@ -12,7 +12,7 @@ import {
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import {IProjectManifest} from '../../types';
+import {ISubstrateProjectManifest} from '../../types';
 
 export interface SubqlMappingV0_2_0<T extends SubqlHandler> extends SubqlMapping<T> {
   file: string;
@@ -25,7 +25,7 @@ export type CustomDatasourceV0_2_0 = SubqlCustomDatasource<
   SubqlMappingV0_2_0<SubqlCustomHandler>
 >;
 
-export interface ProjectManifestV0_2_0 extends IProjectManifest {
+export interface ProjectManifestV0_2_0 extends ISubstrateProjectManifest {
   name: string;
   version: string;
   schema: {

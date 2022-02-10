@@ -3,7 +3,7 @@
 
 import {SubqlDatasource} from '@subql/types';
 import {plainToClass} from 'class-transformer';
-import {IProjectManifest} from '../types';
+import {ISubstrateProjectManifest} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
 import {ProjectManifestV0_2_0Impl} from './v0_2_0';
 import {ProjectManifestV0_3_0Impl} from './v0_3_0';
@@ -20,19 +20,19 @@ type Versions = keyof typeof SUPPORTED_VERSIONS;
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
-export function manifestIsV0_0_1(manifest: IProjectManifest): manifest is ProjectManifestV0_0_1Impl {
+export function manifestIsV0_0_1(manifest: ISubstrateProjectManifest): manifest is ProjectManifestV0_0_1Impl {
   return manifest.specVersion === '0.0.1';
 }
 
-export function manifestIsV0_2_0(manifest: IProjectManifest): manifest is ProjectManifestV0_2_0Impl {
+export function manifestIsV0_2_0(manifest: ISubstrateProjectManifest): manifest is ProjectManifestV0_2_0Impl {
   return manifest.specVersion === '0.2.0';
 }
 
-export function manifestIsV0_3_0(manifest: IProjectManifest): manifest is ProjectManifestV0_3_0Impl {
+export function manifestIsV0_3_0(manifest: ISubstrateProjectManifest): manifest is ProjectManifestV0_3_0Impl {
   return manifest.specVersion === '0.3.0';
 }
 
-export class ProjectManifestVersioned implements IProjectManifest {
+export class ProjectManifestVersioned implements ISubstrateProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {

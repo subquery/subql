@@ -6,7 +6,7 @@ import { RegisteredTypes } from '@polkadot/types/types';
 import {
   loadSubstrateProjectManifest,
   parseChainTypes,
-  ProjectNetworkConfig,
+  SubstrateProjectNetworkConfig,
   ProjectManifestVersioned,
   manifestIsV0_0_1,
   manifestIsV0_2_0,
@@ -25,7 +25,7 @@ export class SubqueryProject {
 
   static async create(
     path: string,
-    networkOverrides?: Partial<ProjectNetworkConfig>,
+    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
   ): Promise<SubqueryProject> {
     const projectPath = await prepareProjectDir(path);
     const projectManifest = loadSubstrateProjectManifest(projectPath);
@@ -35,7 +35,7 @@ export class SubqueryProject {
   constructor(
     manifest: ProjectManifestVersioned,
     path: string,
-    private networkOverrides?: Partial<ProjectNetworkConfig>,
+    private networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
   ) {
     this._projectManifest = manifest;
     this._path = path;
@@ -52,7 +52,7 @@ export class SubqueryProject {
     return this._projectManifest;
   }
 
-  get network(): Partial<ProjectNetworkConfig> {
+  get network(): Partial<SubstrateProjectNetworkConfig> {
     const impl = this._projectManifest.asImpl;
 
     if (manifestIsV0_0_1(impl)) {
