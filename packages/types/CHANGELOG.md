@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.14.0] - 2022-02-09
+### Added 
+- inject `createDynamicDatasource` in global (#773)
+
 ## [0.13.0] - 2022-01-13
 ### Changed
 - Update Polkadot/api to 7.3.1 (#745)
@@ -91,7 +95,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - support block handler
 
-[Unreleased]: https://github.com/subquery/subql/compare/types/0.10.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/types/0.14.0...HEAD
+[0.14.0]: https://github.com/subquery/subql/compare/types/0.13.0...types/0.14.0
+[0.13.0]: https://github.com/subquery/subql/compare/types/0.12.0...types/0.13.0
+[0.12.0]: https://github.com/subquery/subql/compare/types/0.11.0...types/0.12.0
 [0.11.0]: https://github.com/subquery/subql/compare/types/0.10.0...types/0.11.0
 [0.10.1]: https://github.com/subquery/subql/compare/types/0.10.0...types/0.10.1
 [0.10.0]: https://github.com/subquery/subql/compare/types/0.9.0...types/0.10.0

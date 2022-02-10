@@ -1,4 +1,0 @@
-undecided:
-  - "@subql/common"
-  - "@subql/node"
-  - "@subql/validator"
