@@ -3,7 +3,7 @@
 
 import {lstatSync, readFileSync, existsSync} from 'fs';
 import path from 'path';
-import {Command, flags} from '@oclif/command';
+import {Command, Flags} from '@oclif/core';
 import {uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
@@ -13,12 +13,12 @@ export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
-    location: flags.string({char: 'l', description: 'local folder'}),
-    ipfs: flags.string({description: 'IPFS gateway endpoint', required: false}),
+    location: Flags.string({char: 'l', description: 'local folder'}),
+    ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
   };
 
   async run(): Promise<void> {
-    const {flags} = this.parse(Publish);
+    const {flags} = await this.parse(Publish);
 
     const directory = flags.location ? path.resolve(flags.location) : process.cwd();
 

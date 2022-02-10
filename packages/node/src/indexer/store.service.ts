@@ -9,6 +9,8 @@ import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
+  CreationAttributes,
+  Model,
   QueryTypes,
   Sequelize,
   Transaction,
@@ -385,7 +387,9 @@ group by
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        await model.upsert(data, { transaction: this.tx });
+        await model.upsert(data as unknown as CreationAttributes<Model>, {
+          transaction: this.tx,
+        });
         if (this.config.proofOfIndex) {
           this.operationStack.put(OperationType.Set, entity, data);
         }
@@ -393,7 +397,9 @@ group by
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        await model.bulkCreate(data, { transaction: this.tx });
+        await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
+          transaction: this.tx,
+        });
         if (this.config.proofOfIndex) {
           for (const item of data) {
             this.operationStack.put(OperationType.Set, entity, item);

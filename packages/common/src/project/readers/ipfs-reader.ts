@@ -43,6 +43,7 @@ export class IPFSReader implements Reader {
       }
       return Buffer.from(u8aConcat(...scriptBufferArray)).toString('utf8');
     } catch (e) {
+      console.error(`Reader get file failed`, e);
       return undefined;
     }
   }

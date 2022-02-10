@@ -7,7 +7,7 @@ import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
 import {parseProjectManifest, ReaderFactory} from '@subql/common';
-import IPFS from 'ipfs-http-client';
+import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
@@ -82,7 +82,7 @@ describe('Cli publish', () => {
 
   it(`upload file to ipfs`, async () => {
     // only enable when test locally
-    const ipfs = IPFS.create({url: ipfsEndpoint});
+    const ipfs = create({url: ipfsEndpoint});
     //test string
     const cid = await uploadFile('Test for upload string to ipfs', testAuth);
     console.log(`upload file cid: ${cid}`);

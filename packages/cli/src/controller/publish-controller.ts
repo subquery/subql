@@ -7,7 +7,7 @@ import {parseProjectManifest, ReaderFactory, manifestIsV0_2_0} from '@subql/comm
 import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
-import IPFS, {IPFSHTTPClient} from 'ipfs-http-client';
+import {IPFSHTTPClient, create} from 'ipfs-http-client';
 import {IPFS_CLUSTER_ENDPOINT} from '../constants';
 
 export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
@@ -19,7 +19,7 @@ export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEn
   }
   let ipfs: IPFSHTTPClient;
   if (ipfsEndpoint) {
-    ipfs = IPFS.create({url: ipfsEndpoint});
+    ipfs = create({url: ipfsEndpoint});
   }
   const deployment = await replaceFileReferences(projectDir, manifest, authToken, ipfs);
   // Upload schema
@@ -31,7 +31,7 @@ async function replaceFileReferences<T>(
   projectDir: string,
   input: T,
   authToken: string,
-  ipfs?: IPFS.IPFSHTTPClient
+  ipfs?: IPFSHTTPClient
 ): Promise<T> {
   if (Array.isArray(input)) {
     return (await Promise.all(
@@ -60,7 +60,7 @@ async function replaceFileReferences<T>(
 export async function uploadFile(
   content: string | fs.ReadStream,
   authToken: string,
-  ipfs?: IPFS.IPFSHTTPClient
+  ipfs?: IPFSHTTPClient
 ): Promise<string> {
   let ipfsClientCid: string;
   // if user provide ipfs, we will try to upload it to this gateway
