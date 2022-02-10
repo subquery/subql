@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.19.1-9",
+  "version": "0.20.0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
