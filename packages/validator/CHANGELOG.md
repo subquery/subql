@@ -9,7 +9,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
 ## [0.4.3] - 2022-02-09
 ### Changed
 - Move readers from validator to common (#551)

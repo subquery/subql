@@ -8,7 +8,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
 ## [0.20.0] - 2022-02-09
 ### Added
 - Add support for dynamic data sources (#773)
