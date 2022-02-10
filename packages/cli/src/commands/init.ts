@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
-import {Command, flags} from '@oclif/command';
+import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
@@ -63,11 +63,11 @@ export default class Init extends Command {
   static description = 'Initialize a scaffold subquery project';
 
   static flags = {
-    force: flags.boolean({char: 'f'}),
-    location: flags.string({char: 'l', description: 'local folder to create the project in'}),
-    'install-dependencies': flags.boolean({description: 'Install dependencies as well', default: false}),
-    npm: flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
-    specVersion: flags.string({
+    force: Flags.boolean({char: 'f'}),
+    location: Flags.string({char: 'l', description: 'local folder to create the project in'}),
+    'install-dependencies': Flags.boolean({description: 'Install dependencies as well', default: false}),
+    npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
+    specVersion: Flags.string({
       required: false,
       options: ['0.0.1', '0.2.0'],
       default: '0.2.0',
@@ -83,7 +83,7 @@ export default class Init extends Command {
   ];
 
   async run(): Promise<void> {
-    const {args, flags} = this.parse(Init);
+    const {args, flags} = await this.parse(Init);
 
     if (flags.specVersion === '0.0.1') {
       this.log(

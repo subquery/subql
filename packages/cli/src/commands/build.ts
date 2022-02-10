@@ -3,7 +3,7 @@
 
 import {lstatSync, readFileSync} from 'fs';
 import path from 'path';
-import {Command, flags} from '@oclif/command';
+import {Command, Flags} from '@oclif/core';
 import cli from 'cli-ux';
 import {runWebpack} from '../controller/build-controller';
 
@@ -11,14 +11,14 @@ export default class Build extends Command {
   static description = 'Build this SubQuery project code';
 
   static flags = {
-    location: flags.string({char: 'l', description: 'local folder'}),
-    output: flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
-    mode: flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
+    location: Flags.string({char: 'l', description: 'local folder'}),
+    output: Flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
+    mode: Flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
   };
 
   async run(): Promise<void> {
     try {
-      const {flags} = this.parse(Build);
+      const {flags} = await this.parse(Build);
 
       const directory = flags.location ? path.resolve(flags.location) : process.cwd();
       const isDev = flags.mode === 'development' || flags.mode === 'dev';

@@ -12,13 +12,12 @@ import {
 } from '@polkadot/util';
 import { getTypeByScalarName } from '@subql/common';
 import { GraphQLModelsType } from '@subql/common/graphql/types';
-import { ModelAttributes } from 'sequelize';
-import { ModelAttributeColumnOptions } from 'sequelize/types/lib/model';
+import { ModelAttributes, ModelAttributeColumnOptions } from 'sequelize';
 
 export function modelsTypeToModelAttributes(
   modelType: GraphQLModelsType,
   enums: Map<string, string>,
-): ModelAttributes<any> {
+): ModelAttributes {
   const fields = modelType.fields;
   return Object.values(fields).reduce((acc, field) => {
     const allowNull = field.nullable;

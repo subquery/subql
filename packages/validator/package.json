@@ -18,12 +18,12 @@
   "dependencies": {
     "@subql/common": "workspace:*",
     "axios": "^0.24.0",
-    "ipfs-http-client": "^52.0.5",
+    "ipfs-http-client": "^56.0.0",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.4"
+    "@types/js-yaml": "^4.0.5"
   },
   "stableVersion": "0.4.3-1"
 }
