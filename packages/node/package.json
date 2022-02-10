@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "0.27.3-4",
+  "version": "0.27.3-5",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -65,5 +65,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "0.27.3-3"
+  "stableVersion": "0.27.3-4"
 }
