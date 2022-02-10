@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for ethereum json artifacts instead of abi (#790)
 ### Changed
 - Update `moonbeam-types-bundle` and `polkadot/api` (#773) 
+### Fixed
+- Lowercase moonbeam dictionary query fields (#792)
 
 ## [0.4.1] - 2022-01-13
 ### Changed
