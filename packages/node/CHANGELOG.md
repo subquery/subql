@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
 ## [0.28.0] - 2022-02-09
 ### Added
 - Support running the indexer from locations other than the filesystem, and refactor `SubqueryProject` class (#511) 
