@@ -52,6 +52,9 @@ import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
 import PgDictionaryPlugin from './PgDictionaryPlugin';
 
+import {argv} from '../../yargs';
+const dictionary = argv('dict') as boolean;
+
 /* eslint-enable */
 
 export const defaultPlugins = [
@@ -102,7 +105,6 @@ const plugins = [
   ...pgDefaultPlugins,
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
-  PgDictionaryPlugin,
   ConnectionFilterPlugin,
   smartTagsPlugin,
   GetMetadataPlugin,
@@ -127,5 +129,9 @@ const plugins = [
     };
   }, true),
 ];
+
+if (dictionary) {
+  plugins.push(PgDictionaryPlugin);
+}
 
 export {plugins};

@@ -97,9 +97,7 @@ const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
   const [schemaName] = options.pgSchemas;
   let metadataTableExists = false;
 
-  const tableSearch = build.pgIntrospectionResultsByKind.attribute.find(
-    (attr: {class: {name: string}}) => attr.class.name === '_metadata'
-  );
+  const tableSearch = build.pgIntrospectionResultsByKind.class.find((rel: {name: string}) => rel.name === '_metadata');
 
   if (tableSearch !== undefined) {
     metadataTableExists = true;

@@ -1,79 +1,143 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {QueryBuilder} from 'graphile-build-pg';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 
+const SORT_ARGS = {
+  lessThan: '<',
+  lessThanOrEqualTo: '<=',
+  greaterThan: '>',
+  greaterThanOrEqualTo: '>=',
+};
+
+const generateArgs = (queryBuilder: QueryBuilder, args, sql) => {
+  queryBuilder.orderBy(sql.fragment`block_height`, true);
+
+  if (args.first) {
+    queryBuilder.first(args.first);
+  }
+
+  if (args.filter) {
+    const filter = args.filter;
+
+    if (filter.module) {
+      queryBuilder.where(sql.fragment`module = ${sql.value(filter.module)}`);
+    }
+    if (filter.call) {
+      queryBuilder.where(sql.fragment`call = ${sql.value(filter.call)}`);
+    }
+    if (filter.event) {
+      queryBuilder.where(sql.fragment`event = ${sql.value(filter.event)}`);
+    }
+
+    if (filter.blockHeight) {
+      const heightFilter = filter.blockHeight;
+
+      if (heightFilter.isEqualTo) {
+        queryBuilder.where(sql.fragment`block_height = ${sql.value(filter.blockHeight)}`);
+      } else if (heightFilter.sort) {
+        const sort = heightFilter.sort;
+
+        for (const i in sort) {
+          const value = sort[i];
+          if (SORT_ARGS[i]) {
+            queryBuilder.where(sql.join([sql.fragment`block_height`, sql.value(value)], SORT_ARGS[i]));
+          }
+        }
+      }
+    }
+  }
+};
+
 const PgDictionaryPlugin = makeExtendSchemaPlugin((build, options) => {
-  const {pgSql: sql} = build;
   const [schemaName] = options.pgSchemas;
-  //maybe have a flag to enable this for a dictionary service.
+  const {pgSql: sql} = build;
 
-  //TODO: Possibly Add Plugin using builder.hook so I only have to do table search up once.
-  //      I might be able to combine this with earch of my other 2 plugins to let them know if table exists.
-  //      Ask benje why introspection query fires so much.
+  const eventsTableExists = build.pgIntrospectionResultsByKind.class.find(
+    (rel: {name: string}) => rel.name === 'events'
+  );
 
-  //TODO: When there is a flag do some sort of validation to check that all these tables and columns exist
-  //      but do outside this file so it doesn't get called everytime there is a query.
+  const extrinsicsTableExists = build.pgIntrospectionResultsByKind.class.find(
+    (rel: {name: string}) => rel.name === 'extrinsics'
+  );
 
-  //TODO: still be able to apply all the filters
-
-  // const psuedo =  `select distinct on (blockHeight) block_height from "d-9955/subquery/dictionary-kusama".events
-  // where module = 'balances' and event='Transfer' and block_height between 370000 and 400000
-  // order by block_height limit 20`
-
-  //TODO: will need to do a introspection or have a flag to decide
-  //TODO: I actually only need to resolve 1 field which is keys
-  //TODO: column needs to be an enum that maps to returned sql statement
-  //TODO: figure out when to use selectGraphQLResultFromTable vs
-
-  //If I can't use filter I need to add arguments for distinctEvents & distinctExtrinsics.
+  const specVersionTableExists = build.pgIntrospectionResultsByKind.class.find(
+    (rel: {name: string}) => rel.name === 'spec_versions'
+  );
 
   return {
     typeDefs: gql`
-      # enum Columns {
-      #   blockHeight:
-      #   # Maybe any else?
-      # }
-
-      type Keys {
-        values: String
+      input SortOperators {
+        lessThan: Int
+        lessThanOrEqualTo: Int
+        greaterThan: Int
+        greaterThanOrEqualTo: Int
       }
 
+      input BlockHeightFilter @oneOf {
+        sort: SortOperators
+        isEqualTo: Int
+      }
+
+      input FilterDistinctEvents {
+        module: String
+        event: String
+        blockHeight: BlockHeightFilter
+      }
+
+      input FilterDistinctExtrinsics {
+        module: String
+        call: String
+        blockHeight: BlockHeightFilter
+      }
+
+      input FilterDistinctSpecVersions {
+        blockHeight: BlockHeightFilter
+      }
+
+      #TODO: update "on" to be enum
+      #TODO: updating typing on resolver promises
       extend type Query {
-        #distinctEventHeights?
-        distinctEvent(on: String!): [Keys]
-        distinctExtrinsics(on: String!): [Keys]
+        distinctEvents(on: String!, first: Int, filter: FilterDistinctEvents): [Event!]
+        distinctExtrinics(on: String!, first: Int, filter: FilterDistinctExtrinsics): [Extrinsic!]
+        distinctSpecVersions(on: String!, first: Int, filter: FilterDistinctSpecVersions): [SpecVersion!]
       }
     `,
     resolvers: {
       Query: {
-        distinctEvents: async (_query, args, context, resolveInfo) => {
-          console.log(args);
+        distinctEvents: async (_parentObject, args, _context, info): Promise<any> => {
+          if (eventsTableExists) {
+            return info.graphile.selectGraphQLResultFromTable(
+              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
+                schemaName
+              )}.events)`,
+              (_tableAlias, queryBuilder) => generateArgs(queryBuilder, args, sql)
+            );
+          }
           return;
-          const rows = await resolveInfo.graphile.selectGraphQLResultFromTable(
-            sql.fragment`(select distinct on (${args.column}}) from "${schemaName}".Events(${sql.value(
-              args.searchText
-            )}))`,
-            (_tableAlias, queryBuilder) => {
-              queryBuilder;
-              queryBuilder.limit(100);
-            }
-          );
-          return rows[0];
         },
-        distinctExtrinsics: async (_query, args, context, resolveInfo) => {
-          console.log(args);
+        distinctExtrinics: async (_parentObject, args, _context, info): Promise<any> => {
+          if (extrinsicsTableExists) {
+            return info.graphile.selectGraphQLResultFromTable(
+              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
+                schemaName
+              )}.extrinsics)`,
+              (_tableAlias, queryBuilder) => generateArgs(queryBuilder, args, sql)
+            );
+          }
           return;
-          const rows = await resolveInfo.graphile.selectGraphQLResultFromTable(
-            sql.fragment`(select distinct on (${args.column}}) from "${schemaName}".Events(${sql.value(
-              args.searchText
-            )}))`,
-            (_tableAlias, queryBuilder) => {
-              queryBuilder;
-              queryBuilder.limit(50);
-            }
-          );
-          return rows;
+        },
+        distinctSpecVersions: async (_parentObject, args, _context, info): Promise<any> => {
+          if (specVersionTableExists) {
+            return info.graphile.selectGraphQLResultFromTable(
+              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
+                schemaName
+              )}.spec_versions)`,
+              (_tableAlias, queryBuilder) => generateArgs(queryBuilder, args, sql)
+            );
+          }
+          return;
         },
       },
     },
