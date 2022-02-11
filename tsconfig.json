@@ -35,8 +35,11 @@
   "references": [
     {"path": "packages/cli"},
     {"path": "packages/common"},
+    {"path": "packages/common-substrate"},
+    {"path": "packages/common-terra"},
     {"path": "packages/node"},
     {"path": "packages/types"},
+    {"path": "packages/types-terra"},
     {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],
