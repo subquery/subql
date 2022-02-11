@@ -55,7 +55,19 @@ export class ReaderFactory {
     }
 
     if (stats.isFile()) {
-      const projectPath = await extractFromArchive(location);
+      let projectPath: string;
+      const {dir, ext} = path.parse(location);
+      if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
+        projectPath = dir;
+      } else {
+        try {
+          projectPath = await extractFromArchive(location);
+        } catch (e) {
+          throw new Error(
+            `Unsupported subquery entry format '${ext}'. Support formats are: yaml, json and archive file`
+          );
+        }
+      }
       return new LocalReader(projectPath);
     }
 

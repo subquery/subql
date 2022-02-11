@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import fs from 'fs';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { ProjectNetworkConfig } from '@subql/common';
@@ -39,8 +40,9 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   return {
     ...config,
     subqueryName:
-      config.subqueryName ??
-      last(path.resolve(config.subquery).split(path.sep)),
+      config.subqueryName ?? config.ipfs
+        ? config.subquery
+        : last(getProjectRoot(config.subquery).split(path.sep)),
   } as MinConfig;
 }
 
@@ -66,6 +68,20 @@ export function validDbSchemaName(name: string): boolean {
     }
     return flag0 && flag1;
   }
+}
+
+// --subquery -f pass in can be project.yaml or project.path,
+// use this to determine its project root
+function getProjectRoot(subquery: string): string {
+  let projectPath: string;
+  const stats = fs.statSync(subquery);
+  if (stats.isDirectory()) {
+    projectPath = subquery;
+  } else if (stats.isFile()) {
+    const { dir } = path.parse(subquery);
+    projectPath = dir;
+  }
+  return projectPath;
 }
 
 function warnDeprecations() {
@@ -116,7 +132,7 @@ export class ConfigureModule {
       ? argv.subquery
       : path.resolve(
           config.configDir && !argv.subquery ? config.configDir : '.',
-          config.subquery,
+          getProjectRoot(config.subquery),
         );
 
     const project = async () => {
