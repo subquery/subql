@@ -73,15 +73,15 @@ export function validDbSchemaName(name: string): boolean {
 // --subquery -f pass in can be project.yaml or project.path,
 // use this to determine its project root
 function getProjectRoot(subquery: string): string {
-  let projectPath: string;
+  let projectRoot: string;
   const stats = fs.statSync(subquery);
   if (stats.isDirectory()) {
-    projectPath = subquery;
+    projectRoot = subquery;
   } else if (stats.isFile()) {
     const { dir } = path.parse(subquery);
-    projectPath = dir;
+    projectRoot = dir;
   }
-  return projectPath;
+  return path.resolve(projectRoot);
 }
 
 function warnDeprecations() {
