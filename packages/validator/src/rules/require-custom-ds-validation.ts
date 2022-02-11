@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {isCustomDs} from '@subql/common';
+import {isCustomDs} from '@subql/common-substrate';
 import {SubqlDatasourceProcessor, SubqlNetworkFilter} from '@subql/types';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';

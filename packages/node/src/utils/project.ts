@@ -4,20 +4,17 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
   ChainTypes,
   CustomDatasourceV0_2_0,
-  GithubReader,
-  IPFSReader,
   isCustomDs,
   loadChainTypes,
   loadChainTypesFromJs,
-  LocalReader,
   parseChainTypes,
-  Reader,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-} from '@subql/common';
+} from '@subql/common-substrate';
 import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,

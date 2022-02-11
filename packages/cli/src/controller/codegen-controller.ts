@@ -13,10 +13,9 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
-  loadProjectManifest,
-  ProjectManifestVersioned,
-  isCustomDs,
 } from '@subql/common';
+import {loadSubstrateProjectManifest, ProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
+import {loadTerraProjectManifest} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
@@ -191,12 +190,18 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  const manifest = loadProjectManifest(projectPath);
+  let manifest;
+  try {
+    manifest = loadSubstrateProjectManifest(projectPath);
+    await generateDatasourceTemplates(projectPath, manifest);
+  } catch (e) {
+    manifest = loadTerraProjectManifest(projectPath);
+  }
 
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   await generateEnums(projectPath, path.join(projectPath, manifest.schema));
-  await generateDatasourceTemplates(projectPath, manifest);
+
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
       await renderTemplate(TYPES_INDEX_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `index.ts`), {

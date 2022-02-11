@@ -1,13 +1,11 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlDatasource} from '@subql/types';
-
-export interface IProjectManifest {
+export interface IProjectManifest<D> {
   specVersion: string;
   description: string;
   repository: string;
-  dataSources: SubqlDatasource[];
+  dataSources: D[];
   toDeployment(): string;
   validate(): void;
 }
@@ -15,5 +13,5 @@ export interface IProjectManifest {
 export interface ProjectNetworkConfig {
   endpoint: string;
   dictionary?: string;
-  genesisHash?: string;
+  //genesisHash?: string;
 }
