@@ -23,17 +23,19 @@ const PgDictionaryPlugin = makeExtendSchemaPlugin((build, options) => {
   return {
     typeDefs: gql`
       extend type Query {
-        distinctEvents(on: String!): EventsConnection!
-        distinctExtrinics(on: String!): ExtrinsicsConnection!
-        distinctSpecVersions(on: String!): SpecVersionsConnection!
+        distinctEvents(on: EventsGroupBy!): EventsConnection!
+        distinctExtrinics(on: ExtrinsicsGroupBy!): ExtrinsicsConnection!
+        distinctSpecVersions(on: SpecVersionsGroupBy!): SpecVersionsConnection!
       }
     `,
     resolvers: {
       Query: {
         distinctEvents: async (_parentObject, args, _context, info): Promise<any> => {
           if (eventsTableExists) {
+            const {text} = sql.compile(args.on.spec());
+            const fmtArg = text.slice(1).replace(/['"]+/g, '');
             return info.graphile.selectGraphQLResultFromTable(
-              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
+              sql.fragment`(select distinct on (${sql.identifier(fmtArg)}) * FROM ${sql.identifier(
                 schemaName
               )}.events)`,
               () => {}
@@ -43,8 +45,10 @@ const PgDictionaryPlugin = makeExtendSchemaPlugin((build, options) => {
         },
         distinctExtrinics: async (_parentObject, args, _context, info): Promise<any> => {
           if (extrinsicsTableExists) {
+            const {text} = sql.compile(args.on.spec());
+            const fmtArg = text.slice(1).replace(/['"]+/g, '');
             return info.graphile.selectGraphQLResultFromTable(
-              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
+              sql.fragment`(select distinct on (${sql.identifier(fmtArg)}) * from ${sql.identifier(
                 schemaName
               )}.extrinsics)`,
               () => {}
@@ -54,10 +58,10 @@ const PgDictionaryPlugin = makeExtendSchemaPlugin((build, options) => {
         },
         distinctSpecVersions: async (_parentObject, args, _context, info): Promise<any> => {
           if (specVersionTableExists) {
+            const {text} = sql.compile(args.on.spec());
+            const fmtArg = text.slice(1).replace(/['"]+/g, '');
             return info.graphile.selectGraphQLResultFromTable(
-              sql.fragment`(select distinct on (${sql.identifier(args.on)}) * from ${sql.identifier(
-                schemaName
-              )}.spec_versions)`,
+              sql.fragment`(select distinct on (${fmtArg}) * from ${sql.identifier(schemaName)}.spec_versions)`,
               () => {}
             );
           }
