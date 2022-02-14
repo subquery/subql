@@ -43,7 +43,7 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
-const MINIMUM_BATCH_SIZE = 1;
+const MINIMUM_BATCH_SIZE = 5;
 
 const { argv } = getYargsOption();
 
@@ -344,7 +344,7 @@ export class FetchService implements OnApplicationShutdown {
 
       scaledBatchSize = Math.max(
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        MINIMUM_BATCH_SIZE,
+        Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
 
       if (
