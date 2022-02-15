@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {parseChainTypes} from '@subql/common';
+import yaml from 'js-yaml';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';
 
@@ -24,7 +25,7 @@ export default class RequireValidChainTypes implements Rule {
     if (ext === '.js' || ext === '.cjs') return true;
 
     try {
-      const rawChainTypes = await ctx.reader.getFile(schema.network.chaintypes.file);
+      const rawChainTypes = yaml.load(await ctx.reader.getFile(schema.network.chaintypes.file));
       parseChainTypes(rawChainTypes);
       return true;
     } catch (e) {
