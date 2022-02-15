@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.4] - 2022-02-15
+### Fixed
+- Fix chainTypes validation when load from yaml or json (#804)
+
 ## [0.4.3] - 2022-02-09
 ### Changed
 - Move readers from validator to common (#551)
@@ -46,7 +50,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/subquery/subql/compare/query/0.4.3...query/0.4.4
 [0.4.3]: https://github.com/subquery/subql/compare/query/0.4.2...query/0.4.3
 [0.4.2]: https://github.com/subquery/subql/compare/query/0.4.1...query/0.4.2
 [0.4.1]: https://github.com/subquery/subql/compare/query/0.4.0...query/0.4.1

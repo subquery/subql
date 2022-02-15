@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.1] - 2022-02-15
+### Fixed
+- Fixed issue that node stop fetch block when set batch size to 1. (#802)
+
 ## [0.28.0] - 2022-02-09
 ### Added
 - Support running the indexer from locations other than the filesystem, and refactor `SubqueryProject` class (#511) 
@@ -408,7 +412,8 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.28.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.28.1...HEAD
+[0.28.1]: https://github.com/subquery/subql/compare/node/0.28.0...node/0.28.1
 [0.28.0]: https://github.com/subquery/subql/compare/node/0.27.2...node/0.28.0
 [0.27.2]: https://github.com/subquery/subql/compare/node/0.27.1...node/0.27.2
 [0.27.1]: https://github.com/subquery/subql/compare/node/0.27.0...node/0.27.1
