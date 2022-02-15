@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.20.1] - 2022-02-15
+### Fixed
+- Patch release with @subql/validator version bump, in order to fix validation issue. 
+
 ## [0.20.0] - 2022-02-09
 ### Added
 - Add support for dynamic data sources (#773)
@@ -146,7 +150,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - support subcommand codegen
 - support subcommand init
 
-[Unreleased]: https://github.com/subquery/subql/compare/cli/0.20.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/cli/0.20.1...HEAD
+[0.20.1]: https://github.com/subquery/subql/compare/cli/0.20.0...cli/0.20.1
 [0.20.0]: https://github.com/subquery/subql/compare/cli/0.19.0...cli/0.20.0
 [0.19.0]: https://github.com/subquery/subql/compare/cli/0.18.0...cli/0.19.0
 [0.18.0]: https://github.com/subquery/subql/compare/cli/0.17.0...cli/0.18.0

@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -74,6 +74,5 @@
     "version": "oclif-dev readme && git add README.md",
     "format": "prettier --write \"src/**/*.ts\""
   },
-  "types": "lib/index.d.ts",
-  "stableVersion": "0.19.1-8"
+  "types": "lib/index.d.ts"
 }
