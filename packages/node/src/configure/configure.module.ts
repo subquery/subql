@@ -20,6 +20,11 @@ const YargsNameMapping = {
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
 
+interface ProjectRootAndManifest {
+  root: string;
+  manifest: string;
+}
+
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
@@ -42,7 +47,7 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
     subqueryName:
       config.subqueryName ?? config.ipfs
         ? config.subquery
-        : last(getProjectRoot(config.subquery).split(path.sep)),
+        : last(getProjectRootAndManifest(config.subquery).root.split(path.sep)),
   } as MinConfig;
 }
 
@@ -71,17 +76,20 @@ export function validDbSchemaName(name: string): boolean {
 }
 
 // --subquery -f pass in can be project.yaml or project.path,
-// use this to determine its project root
-function getProjectRoot(subquery: string): string {
-  let projectRoot: string;
+// use this to determine its project root and manifest
+function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
+  const project = {} as ProjectRootAndManifest;
   const stats = fs.statSync(subquery);
   if (stats.isDirectory()) {
-    projectRoot = subquery;
+    project.root = subquery;
+    project.manifest = path.resolve(subquery, 'project.yaml');
   } else if (stats.isFile()) {
     const { dir } = path.parse(subquery);
-    projectRoot = dir;
+    project.root = dir;
+    project.manifest = subquery;
   }
-  return path.resolve(projectRoot);
+  project.root = path.resolve(project.root);
+  return project;
 }
 
 function warnDeprecations() {
@@ -128,12 +136,18 @@ export class ConfigureModule {
       setLevel('debug');
     }
 
-    const projectPath = config.ipfs
-      ? argv.subquery
-      : path.resolve(
-          config.configDir && !argv.subquery ? config.configDir : '.',
-          getProjectRoot(config.subquery),
-        );
+    let projectPath: string;
+    let manifestPath: string | undefined;
+    if (config.ipfs) {
+      projectPath = argv.subquery;
+    } else {
+      const project = getProjectRootAndManifest(config.subquery);
+      projectPath = path.resolve(
+        config.configDir && !argv.subquery ? config.configDir : '.',
+        project.root,
+      );
+      manifestPath = project.manifest;
+    }
 
     const project = async () => {
       const p = await SubqueryProject.create(
@@ -147,6 +161,7 @@ export class ConfigureModule {
         ),
         {
           ipfs: config.ipfs,
+          manifestPath: manifestPath,
         },
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');

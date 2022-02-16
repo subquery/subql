@@ -10,7 +10,7 @@ describe('LocalReader', () => {
 
   beforeAll(() => {
     const loc = path.join(__dirname, '../../../fixtures');
-    reader = new LocalReader(loc);
+    reader = new LocalReader(loc, path.resolve(loc, './project.yaml'));
   });
 
   it('should return the package json object', async () => {

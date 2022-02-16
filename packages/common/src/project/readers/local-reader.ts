@@ -8,7 +8,7 @@ import {IPackageJson} from 'package-json-type';
 import {Reader} from './reader';
 
 export class LocalReader implements Reader {
-  constructor(private readonly projectPath: string, private readonly manifestPath?: string) {}
+  constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
 
   get root(): string {
     return this.projectPath;
@@ -19,7 +19,10 @@ export class LocalReader implements Reader {
   }
 
   async getProjectSchema(): Promise<unknown | undefined> {
-    return this.manifestPath ?? yaml.load(await this.getFile('project.yaml'));
+    if (!fs.existsSync(this.manifestPath)) {
+      return Promise.resolve(undefined);
+    }
+    return yaml.load(fs.readFileSync(this.manifestPath, 'utf-8'));
   }
 
   async getFile(fileName: string): Promise<string | undefined> {
