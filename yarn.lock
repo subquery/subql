@@ -4766,7 +4766,6 @@ __metadata:
     "@types/express": ^4.17.13
     "@types/jest": ^27.0.2
     "@types/lodash": ^4.14.176
-    "@types/sequelize": ^4.28.10
     "@types/supertest": ^2.0.11
     "@types/tar": ^6.1.0
     "@types/yargs": ^16.0.4
@@ -4817,7 +4816,6 @@ __metadata:
     "@types/jest": ^27.4.0
     "@types/lodash": ^4.14.178
     "@types/pino": ^6.3.12
-    "@types/sequelize": ^4.28.11
     "@types/supertest": ^2.0.11
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
@@ -5106,13 +5104,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/bluebird@npm:*":
-  version: 3.5.33
-  resolution: "@types/bluebird@npm:3.5.33"
-  checksum: 80e81272c4e39a686f194a044d7e5441272e47f28694a31fe9e11f5b10a560040aad083bbb5106614604dde7ca237d6f0c830dc897e69c7eef812924437054b9
-  languageName: node
-  linkType: hard
-
 "@types/bn.js@npm:4.11.6":
   version: 4.11.6
   resolution: "@types/bn.js@npm:4.11.6"
@@ -5157,15 +5148,6 @@ __metadata:
   dependencies:
     "@types/node": "*"
   checksum: c6e2aa299cf3979c00602f48ce9163700f0cbfec6ba2a8e1506d08f51da0279805a478ea094252fad7c369a563ee033b359c708ab34b1763397c58d7e2df07ad
-  languageName: node
-  linkType: hard
-
-"@types/continuation-local-storage@npm:*":
-  version: 3.2.2
-  resolution: "@types/continuation-local-storage@npm:3.2.2"
-  dependencies:
-    "@types/node": "*"
-  checksum: e45b99f1c0e64dac258a5daf717993c8d8ebe1deeccbb7eab7f0fe3430c93915826c54cdbbba61b50a312cb9058dfbc8cd778443609d66ebe1be84f0166a95af
   languageName: node
   linkType: hard
 
@@ -5418,13 +5400,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:*":
-  version: 4.14.168
-  resolution: "@types/lodash@npm:4.14.168"
-  checksum: 3326966ee089debde7a7d819e13b64991756e879945852c3357df14a7be837130f697c2cb451be9dd599eb7213fed0975bc9ca0f8f56b46fa73c46a83815b79c
-  languageName: node
-  linkType: hard
-
 "@types/lodash@npm:^4.14.176":
   version: 4.14.176
   resolution: "@types/lodash@npm:4.14.176"
@@ -5657,30 +5632,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sequelize@npm:^4.28.10":
-  version: 4.28.10
-  resolution: "@types/sequelize@npm:4.28.10"
-  dependencies:
-    "@types/bluebird": "*"
-    "@types/continuation-local-storage": "*"
-    "@types/lodash": "*"
-    "@types/validator": "*"
-  checksum: b47e984e0c5c8a2d2cf51ab0a3cd775b8cea42f2966a41d7027fabf0aa976967d47f4b134c2ccf51be0479e0e57dfb697b5e412faa2bd53e381647b2f866a213
-  languageName: node
-  linkType: hard
-
-"@types/sequelize@npm:^4.28.11":
-  version: 4.28.11
-  resolution: "@types/sequelize@npm:4.28.11"
-  dependencies:
-    "@types/bluebird": "*"
-    "@types/continuation-local-storage": "*"
-    "@types/lodash": "*"
-    "@types/validator": "*"
-  checksum: 46f17678fdc3e3a2650372baa42b2f4ae81ef2b83ffebe813319484ebae35200093b0ac6ac07df3084b9c08e21561b75510f5a6caec808d831db95de9dc37efd
-  languageName: node
-  linkType: hard
-
 "@types/serve-static@npm:*":
   version: 1.13.9
   resolution: "@types/serve-static@npm:1.13.9"
@@ -5755,7 +5706,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/validator@npm:*, @types/validator@npm:^13.1.3":
+"@types/validator@npm:^13.1.3":
   version: 13.1.3
   resolution: "@types/validator@npm:13.1.3"
   checksum: 3ffecee869a8bfef7e9cda47bc37e7e074c2b1e1ab90dfabf345ee7e15818bd3272b575afe490b096b597d22c3a7a4ce0d3708d59cadd368f63f443cdb13c66d
