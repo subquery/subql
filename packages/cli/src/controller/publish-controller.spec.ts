@@ -95,7 +95,8 @@ describe('Cli publish', () => {
 
   it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const cid = await uploadToIpfs(projectDir, testAuth);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const cid = await uploadToIpfs(projectDir, testAuth, manifestPath);
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
@@ -109,7 +110,8 @@ describe('Cli publish', () => {
 
   it('throw error when v0.0.1 try to deploy', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
-    const reader = await ReaderFactory.create(projectDir);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const reader = await ReaderFactory.create(projectDir, {manifestPath});
     const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
     expect(() => manifest.toDeployment()).toThrowError(
       'Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above'
@@ -118,7 +120,8 @@ describe('Cli publish', () => {
 
   it('convert to deployment and removed descriptive field', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const reader = await ReaderFactory.create(projectDir);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const reader = await ReaderFactory.create(projectDir, {manifestPath});
     const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
     const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('name');

@@ -25,6 +25,8 @@ export default class Publish extends Command {
     if (!lstatSync(directory).isDirectory()) {
       this.error('Argument `location` is not a valid directory');
     }
+    //TODO, now publish will only read from project.yaml, we might allow it point to different file
+    const manifestPath = path.resolve(directory, 'project.yaml');
 
     // Ensure that the project is built
     try {
@@ -49,7 +51,7 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(directory, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+    const cid = await uploadToIpfs(directory, authToken.trim(), manifestPath, flags.ipfs).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }
