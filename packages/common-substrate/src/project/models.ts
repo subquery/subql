@@ -1,4 +1,4 @@
-// Copyright 2020-2021 OnFinality Limited authors & contributors
+// Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
@@ -6,11 +6,14 @@ import {
   CustomDataSourceAsset,
   FileReference,
   SubqlBlockFilter,
+  SubqlBlockHandler,
   SubqlCallFilter,
+  SubqlCallHandler,
   SubqlCustomDatasource,
   SubqlCustomHandler,
   SubqlDatasourceKind,
   SubqlEventFilter,
+  SubqlEventHandler,
   SubqlHandler,
   SubqlHandlerKind,
   SubqlMapping,
@@ -18,7 +21,6 @@ import {
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
 } from '@subql/types';
-
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -30,7 +32,6 @@ import {
   IsString,
   IsObject,
   ValidateNested,
-  IsEthereumAddress,
 } from 'class-validator';
 
 export class BlockFilter implements SubqlBlockFilter {
@@ -73,7 +74,7 @@ export class CallFilter extends EventFilter implements SubqlCallFilter {
   success?: boolean;
 }
 
-export class BlockHandler {
+export class BlockHandler implements SubqlBlockHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => BlockFilter)
@@ -84,7 +85,7 @@ export class BlockHandler {
   handler: string;
 }
 
-export class CallHandler {
+export class CallHandler implements SubqlCallHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => CallFilter)
@@ -95,7 +96,7 @@ export class CallHandler {
   handler: string;
 }
 
-export class EventHandler {
+export class EventHandler implements SubqlEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)

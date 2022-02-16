@@ -4,7 +4,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { isRuntimeDataSourceV0_3_0 } from '@subql/common-terra/src/project/versioned/v0_3_0';
+import { isRuntimeDataSourceV0_3_0 } from '@subql/common-terra';
 import {
   SubqlTerraDatasource,
   SubqlTerraHandler,

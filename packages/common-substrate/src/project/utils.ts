@@ -1,4 +1,4 @@
-// Copyright 2020-2021 OnFinality Limited authors & contributors
+// Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -10,6 +10,8 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
 } from '@subql/types';
+
+import detectPort from 'detect-port';
 
 export function isBlockHandlerProcessor<T extends SubqlNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
@@ -35,4 +37,19 @@ export function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): d
 
 export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
   return ds.kind === SubqlDatasourceKind.Runtime;
+}
+
+export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
+  for (let port = startPort; port <= startPort + range; port++) {
+    try {
+      const _port = await detectPort(port);
+      if (_port === port) {
+        return port;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  return null;
 }

@@ -20,7 +20,7 @@ import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
 
-const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
+let MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
@@ -192,10 +192,14 @@ export async function codegen(projectPath: string): Promise<void> {
 
   let manifest;
   try {
+    console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
     await generateDatasourceTemplates(projectPath, manifest);
   } catch (e) {
+    console.log('Loading substrate manifest failed');
+    console.log('Loading terra manifest...');
     manifest = loadTerraProjectManifest(projectPath);
+    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
   }
 
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));

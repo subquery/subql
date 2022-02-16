@@ -8,19 +8,18 @@ import {ProjectManifestV0_0_1Impl} from './v0_0_1';
 import {ProjectManifestV0_2_0Impl} from './v0_2_0';
 import {ProjectManifestV0_2_1Impl} from './v0_2_1';
 import {ProjectManifestV0_3_0Impl} from './v0_3_0';
-
 export type VersionedProjectManifest = {specVersion: string};
 
-const SUPPORTED_VERSIONS = {
+const SUBSTRATE_SUPPORTED_VERSIONS = {
   '0.0.1': ProjectManifestV0_0_1Impl,
   '0.2.0': ProjectManifestV0_2_0Impl,
   '0.2.1': ProjectManifestV0_2_1Impl,
   '0.3.0': ProjectManifestV0_3_0Impl,
 };
 
-type Versions = keyof typeof SUPPORTED_VERSIONS;
+type Versions = keyof typeof SUBSTRATE_SUPPORTED_VERSIONS;
 
-type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
+type ProjectManifestImpls = InstanceType<typeof SUBSTRATE_SUPPORTED_VERSIONS[Versions]>;
 
 export function manifestIsV0_0_1(manifest: ISubstrateProjectManifest): manifest is ProjectManifestV0_0_1Impl {
   return manifest.specVersion === '0.0.1';
@@ -42,10 +41,11 @@ export class ProjectManifestVersioned implements ISubstrateProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
-    const klass = SUPPORTED_VERSIONS[projectManifest.specVersion as Versions];
+    const klass = SUBSTRATE_SUPPORTED_VERSIONS[projectManifest.specVersion as Versions];
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
+    const impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
     this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
   }
 

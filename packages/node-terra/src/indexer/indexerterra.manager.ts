@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getAllEntitiesRelations } from '@subql/common';
+import { getAllEntitiesRelations, buildSchemaFromFile } from '@subql/common';
 import {
   SubqlTerraCustomDatasource,
   SubqlTerraHandlerKind,
@@ -107,8 +107,9 @@ export class IndexerTerraManager {
     await this.dsProcessorService.validateCustomDs();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    const schema = await this.ensureProject();
-    await this.initDbSchema(schema);
+    //const schema = await this.ensureProject();
+    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
+    await this.initDbSchema();
     await this.ensureMetadata(this.subqueryState.dbSchema);
     //TODO: implement POI
     logger.info(`${this.subqueryState.nextBlockHeight}`);
@@ -124,50 +125,51 @@ export class IndexerTerraManager {
     //TODO: implement POI
   }
 
-  private async ensureProject(): Promise<string> {
-    let schema = await this.getExistingProjectSchema();
-    if (!schema) {
-      schema = await this.createProjectSchema();
+  private async ensureProject(name: string): Promise<SubqueryModel> {
+    let project = await this.subqueryRepo.findOne({
+      where: { name: this.nodeConfig.subqueryName },
+    });
+    const { chainId } = this.apiService.networkMeta;
+    if (!project) {
+      project = await this.createProjectSchema(name);
     } else {
       if (argv['force-clean']) {
         try {
-          // drop existing project schema and metadata table
-          await this.sequelize.dropSchema(`"${schema}"`, {
+          // drop existing project schema
+          this.sequelize.dropSchema(project.dbSchema, {
             logging: false,
             benchmark: false,
           });
 
-          // remove schema from subquery table (might not exist)
+          // remove schema from project table
           await this.sequelize.query(
             ` DELETE
               FROM public.subqueries
-              WHERE name = :name`,
+              where db_schema = :subquerySchema`,
             {
-              replacements: { name: this.nodeConfig.subqueryName },
+              replacements: { subquerySchema: project.dbSchema },
               type: QueryTypes.DELETE,
             },
           );
 
           logger.info('force cleaned schema and tables');
-
-          if (fs.existsSync(this.nodeConfig.mmrPath)) {
-            await fs.promises.unlink(this.nodeConfig.mmrPath);
-            logger.info('force cleaned file based mmr');
-          }
         } catch (err) {
-          logger.error(err, 'failed to force clean');
+          logger.error(err, 'failed to force clean schema and tables');
         }
-        schema = await this.createProjectSchema();
+        project = await this.createProjectSchema(name);
+      }
+      if (!project.network) {
+        project.network = chainId;
+        await project.save();
+      } else if (project.network !== chainId) {
+        logger.error(
+          `Not same network: chain ID different. expected="${project.network}" actual="${chainId}"`,
+        );
+        process.exit(1);
       }
     }
-
-    this.eventEmitter.emit(IndexerEvent.Ready, {
-      value: true,
-    });
-
-    return schema;
+    return project;
   }
-
   // Get existing project schema, undefined when doesn't exist
   private async getExistingProjectSchema(): Promise<string> {
     let schema = this.nodeConfig.localMode
@@ -199,24 +201,34 @@ export class IndexerTerraManager {
     return schema;
   }
 
-  private async createProjectSchema(): Promise<string> {
-    let schema: string;
+  private async createProjectSchema(name: string): Promise<SubqueryModel> {
+    let projectSchema: string;
+    const { chainId } = this.apiService.networkMeta;
     if (this.nodeConfig.localMode) {
       // create tables in default schema if local mode is enabled
-      schema = DEFAULT_DB_SCHEMA;
+      projectSchema = DEFAULT_DB_SCHEMA;
     } else {
-      schema = this.nodeConfig.dbSchema;
+      const suffix = await this.nextSubquerySchemaSuffix();
+      projectSchema = `subquery_${suffix}`;
       const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, undefined);
+      if (!(schemas as unknown as string[]).includes(projectSchema)) {
+        await this.sequelize.createSchema(projectSchema, undefined);
       }
     }
-
-    return schema;
+    return this.subqueryRepo.create({
+      name,
+      dbSchema: projectSchema,
+      hash: '0x',
+      nextBlockHeight: this.getStartBlockFromDataSources(),
+      network: chainId,
+    });
   }
 
-  private async initDbSchema(schema: string): Promise<void> {
-    const graphqlSchema = this.project.schema;
+  private async initDbSchema(): Promise<void> {
+    const schema = this.subqueryState.dbSchema;
+    const graphqlSchema = buildSchemaFromFile(
+      path.join(this.project.path, this.project.schema),
+    );
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
   }

@@ -4,9 +4,9 @@
 import {
   loadTerraProjectManifest,
   TerraProjectNetworkConfig,
+  ProjectManifestVersioned,
+  TerraProjectNetworkV0_3_0,
 } from '@subql/common-terra';
-import { ProjectManifestVersioned } from '@subql/common-terra/src/project/versioned';
-import { TerraProjectNetworkV0_3_0 } from '@subql/common-terra/src/project/versioned/v0_3_0';
 import {
   SubqlTerraDatasourceKind,
   SubqlTerraDatasource,
@@ -31,7 +31,11 @@ export class SubqueryTerraProject {
     this._path = path;
 
     manifest.dataSources?.forEach(function (dataSource) {
-      if (!(dataSource.kind in SubqlTerraDatasourceKind)) {
+      if (
+        !Object.values(SubqlTerraDatasourceKind).includes(
+          dataSource.kind as SubqlTerraDatasourceKind,
+        )
+      ) {
         throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
       }
       if (!dataSource.startBlock || dataSource.startBlock < 1) {

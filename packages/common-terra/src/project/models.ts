@@ -13,6 +13,8 @@ import {
   SubqlTerraCustomDatasource,
   FileReference,
   CustomDataSourceAsset,
+  SubqlTerraBlockHandler,
+  SubqlTerraEventHandler,
 } from '@subql/types-terra';
 
 import {plainToClass, Transform, Type} from 'class-transformer';
@@ -24,14 +26,14 @@ export class TerraEventFilter implements SubqlTerraEventFilter {
   type: string;
 }
 
-export class TerraBlockHandler {
+export class TerraBlockHandler implements SubqlTerraBlockHandler {
   @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Block]})
   kind: SubqlTerraHandlerKind.Block;
   @IsString()
   handler: string;
 }
 
-export class TerraEventHandler {
+export class TerraEventHandler implements SubqlTerraEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => TerraEventFilter)
