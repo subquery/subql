@@ -19,7 +19,8 @@ describe('ReaderFactory', () => {
 
   it('should return the Local Reader', async () => {
     const loc = path.join(__dirname, '../../../fixtures');
-    const reader = await ReaderFactory.create(loc);
+    const manifestPath = path.resolve(loc, 'project.yaml');
+    const reader = await ReaderFactory.create(loc, {manifestPath});
     expect(reader instanceof LocalReader).toBeTruthy();
   });
 

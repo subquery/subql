@@ -5,7 +5,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { ProjectNetworkConfig } from '@subql/common';
+import { ProjectNetworkConfig, getProjectRootAndManifest } from '@subql/common';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
@@ -19,11 +19,6 @@ const YargsNameMapping = {
 };
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
-
-interface ProjectRootAndManifest {
-  root: string;
-  manifest: string;
-}
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
@@ -73,23 +68,6 @@ export function validDbSchemaName(name: string): boolean {
     }
     return flag0 && flag1;
   }
-}
-
-// --subquery -f pass in can be project.yaml or project.path,
-// use this to determine its project root and manifest
-function getProjectRootAndManifest(subquery: string): ProjectRootAndManifest {
-  const project = {} as ProjectRootAndManifest;
-  const stats = fs.statSync(subquery);
-  if (stats.isDirectory()) {
-    project.root = subquery;
-    project.manifest = path.resolve(subquery, 'project.yaml');
-  } else if (stats.isFile()) {
-    const { dir } = path.parse(subquery);
-    project.root = dir;
-    project.manifest = subquery;
-  }
-  project.root = path.resolve(project.root);
-  return project;
 }
 
 function warnDeprecations() {

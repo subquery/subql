@@ -4,6 +4,7 @@
 import {lstatSync, readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {getProjectRootAndManifest} from '@subql/common';
 import {uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
@@ -20,17 +21,11 @@ export default class Publish extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
 
-    const directory = flags.location ? path.resolve(flags.location) : process.cwd();
-
-    if (!lstatSync(directory).isDirectory()) {
-      this.error('Argument `location` is not a valid directory');
-    }
-    //TODO, now publish will only read from project.yaml, we might allow it point to different file
-    const manifestPath = path.resolve(directory, 'project.yaml');
+    const project = getProjectRootAndManifest(flags.location ? path.resolve(flags.location) : process.cwd());
 
     // Ensure that the project is built
     try {
-      await Build.run(['--location', directory]);
+      await Build.run(['--location', project.root]);
     } catch (e) {
       this.log(e);
       this.error('Failed to build project');
@@ -51,7 +46,9 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(directory, authToken.trim(), manifestPath, flags.ipfs).catch((e) => this.error(e));
+    const cid = await uploadToIpfs(project.root, authToken.trim(), project.manifest, flags.ipfs).catch((e) =>
+      this.error(e)
+    );
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

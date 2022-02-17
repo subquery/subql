@@ -11,6 +11,7 @@ import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
+import Publish from '../commands/publish';
 import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
 import {cloneProjectGit, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
@@ -59,7 +60,7 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
   childProcess.execSync(`npm i`, {cwd: projectDir});
 
   await Codegen.run(['-l', projectDir]);
-  await Build.run(['-l', projectDir]);
+  await Build.run(['-f', projectDir]);
 
   return projectDir;
 }
@@ -134,5 +135,25 @@ describe('Cli publish', () => {
     expect(deployment).toContain('genesisHash');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
+  });
+});
+
+describe('Cli publish from a specific manifest', () => {
+  let projectDir: string;
+  afterEach(async () => {
+    try {
+      await promisify(rimraf)(projectDir);
+    } catch (e) {
+      console.warn('Failed to clean up tmp dir after test');
+    }
+  });
+
+  it('upload project from a manifest or a directory', async () => {
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    await Publish.run(['-f', projectDir]);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const testManifestPath = path.resolve(projectDir, 'test.yaml');
+    fs.renameSync(manifestPath, testManifestPath);
+    await Publish.run(['-f', testManifestPath]);
   });
 });
