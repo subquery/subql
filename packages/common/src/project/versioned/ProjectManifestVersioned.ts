@@ -72,11 +72,11 @@ export class ProjectManifestVersioned implements IProjectManifest {
   }
 
   toDeployment(): string | undefined {
-    return this.toDeployment();
+    return this._impl.toDeployment();
   }
 
   validate(): void {
-    this._impl.validate();
+    return this._impl.validate();
   }
 
   get dataSources(): SubqlDatasource[] {
