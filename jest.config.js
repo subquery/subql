@@ -23,8 +23,11 @@ module.exports = {
   collectCoverageFrom: [
     'packages/cli/src/**/*.ts',
     'packages/common/src/**/*.ts',
+    'packages/common-substrate/src/**/*.ts',
+    'packages/common-terra/src/**/*.ts',
     'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
+    'packages/node-terra/src/**/*.ts',
     'packages/validator/src/**/*.ts',
   ],
 
@@ -90,6 +93,10 @@ module.exports = {
   moduleNameMapper: {
     '^@subql/common': '<rootDir>/packages/common/src',
     '^@subql/common/(.*)$': '<rootDir>/packages/common/src/$1',
+    '^@subql/common-substrate': '<rootDir>/packages/common-substrate/src',
+    '^@subql/common-substrate/(.*)$': '<rootDir>/packages/common-substrate/src/$1',
+    '^@subql/common-terra': '<rootDir>/packages/common-terra/src',
+    '^@subql/common-terra/(.*)$': '<rootDir>/packages/common-terra/src/$1',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
