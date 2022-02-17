@@ -13,7 +13,7 @@ export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
-    location: Flags.string({char: 'l', description: 'local folder'}),
+    location: Flags.string({char: 'f', description: 'from project or manifest path'}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
   };
 
