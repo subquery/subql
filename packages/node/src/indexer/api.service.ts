@@ -31,7 +31,7 @@ export class ApiService implements OnApplicationShutdown {
   constructor(
     protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) { }
 
   async onApplicationShutdown(): Promise<void> {
     if (this.project.network === 'substrate') {
@@ -64,7 +64,7 @@ export class ApiService implements OnApplicationShutdown {
       ...chainTypes,
     };
 
-    this.api = new ApiWrapper(network, this.apiOption);
+    this.api = new ApiWrapper('polkadot', this.apiOption);
     await this.api.init();
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });

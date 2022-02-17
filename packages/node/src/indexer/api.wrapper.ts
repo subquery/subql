@@ -19,7 +19,7 @@ export class ApiWrapper {
   consts: any;
   rpc: any;
 
-  constructor(private network: string, private options: any | ApiOptions) {}
+  constructor(private network: string, private options: any | ApiOptions) { }
 
   async init(): Promise<void> {
     switch (this.network) {
