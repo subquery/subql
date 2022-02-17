@@ -277,7 +277,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo = await this.api.tendermint.nodeInfo();
+    const nodeInfo: any = await this.api.tendermint.nodeInfo();
     if (metaData.chainId !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;

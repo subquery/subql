@@ -36,7 +36,7 @@ export class ApiTerraService {
       chainId: network.chainId,
     };
 
-    const nodeInfo = await this.api.tendermint.nodeInfo();
+    const nodeInfo: any = await this.api.tendermint.nodeInfo();
 
     if (network.chainId !== nodeInfo.default_node_info.network) {
       const err = new Error(
