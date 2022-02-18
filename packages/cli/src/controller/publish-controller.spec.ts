@@ -38,7 +38,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
 //Replace your access token before test
-const testAuth = 'MTA0MzE2NTc=JIwMq1cCzGIWddlskYRE';
+const testAuth = 'MTA0MzE2NTc=9ykFgFWle8ks8x7G7AgB';
 
 jest.setTimeout(120000);
 
@@ -96,6 +96,7 @@ describe('Cli publish', () => {
   it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
     const cid = await uploadToIpfs(projectDir, testAuth);
+    console.log(cid);
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);

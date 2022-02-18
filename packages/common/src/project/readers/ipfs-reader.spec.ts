@@ -4,13 +4,13 @@
 import {IPFSReader} from './ipfs-reader';
 import {Reader} from './reader';
 
-const IPFSGateway = 'https://interipfs.thechaindata.com/ipfs/api/v0';
+const IPFSGateway = 'https://ipfs.subquery.network/ipfs/api/v0';
 
 describe('IPFSReader', () => {
   let reader: Reader;
 
   it('should return a project deployment', async () => {
-    reader = new IPFSReader('Qmdwxos2aDv8KebrLcs2Y9uANJ5SFawagDwKgiogRrrUjM', IPFSGateway);
+    reader = new IPFSReader('QmdbvqfQ1VfDnPqnS3cA24erB3ADNh8s3UdLUMrQoC9U73', IPFSGateway);
 
     const data: any = await reader.getProjectSchema();
 
