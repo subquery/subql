@@ -43,7 +43,9 @@ export async function fetchSolanaBlocksBatches(
   return blocks.map(
     (blockInfo) => {
       return {
-        block: blockInfo
+        block: {
+          block: blockInfo
+        }
       } as unknown as BlockContent
     },
   );

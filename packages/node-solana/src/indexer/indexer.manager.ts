@@ -69,7 +69,10 @@ export class IndexerSolanaManager {
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block } = blockContent;
-    console.log("blockContent", blockContent);
+    console.log("===========================");
+    console.log("block", block);
+    console.log("blockContent", blockContent.block.block.parentSlot);
+    console.log("===========================");
     const blockHeight = +block.block.parentSlot + 1; // convert to block height
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -95,7 +98,6 @@ export class IndexerSolanaManager {
       await this.storeService.setMetadata(
           'lastProcessedHeight', blockHeight + 1
       );
-
       //TODO: implement POI
     } catch (e) {
       await tx.rollback();

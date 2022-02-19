@@ -273,7 +273,7 @@ export class FetchService implements OnApplicationShutdown {
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(5);
       const blocks = await fetchSolanaBlocksBatches(this.api, bufferBlocks);
-      console.log("blocks", blocks);
+      // console.log("blocks", blocks);
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
