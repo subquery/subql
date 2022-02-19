@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.17.1-0",
+  "version": "0.17.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -13,8 +13,6 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polkadot/util": "^8",
-    "@subql/types": "workspace:*",
     "@subql/x-vm2": "^3.9.3-0.1.0",
     "ansi-styles": "^6.1.0",
     "bn.js": "5.2.0",
@@ -39,6 +37,5 @@
     "@types/js-yaml": "^4.0.5",
     "@types/pino": "^6.3.12",
     "@types/tar": "^6.1.1"
-  },
-  "stableVersion": "0.17.0"
+  }
 }
