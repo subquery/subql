@@ -2,38 +2,40 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  loadTerraProjectManifest,
-  TerraProjectNetworkConfig,
-} from '@subql/common-terra';
-import { ProjectManifestVersioned } from '@subql/common-terra/src/project/versioned';
-import { TerraProjectNetworkV0_3_0 } from '@subql/common-terra/src/project/versioned/v0_3_0';
+  loadSolanaProjectManifest,
+  SolanaProjectNetworkConfig,
+} from '@subql/common-solana';
+import { ProjectManifestVersioned } from '@subql/common-solana/src/project/versioned';
+import { SolanaProjectNetworkV0_3_0 } from '@subql/common-solana/src/project/versioned/v0_3_0';
 import {
-  SubqlTerraDatasourceKind,
-  SubqlTerraDatasource,
-} from '@subql/types-terra';
+  SubqlSolanaDatasourceKind,
+  SubqlSolanaDatasource,
+} from '@subql/types-solana';
 import { getLogger } from '../utils/logger';
 import { prepareProjectDir } from '../utils/project';
 
 const logger = getLogger('configure');
 
-export class SubqueryTerraProject {
+export class SubquerySolanaProject {
   private _path: string;
   private _projectManifest: ProjectManifestVersioned;
 
-  static async create(path: string): Promise<SubqueryTerraProject> {
+  static async create(path: string): Promise<SubquerySolanaProject> {
     const projectPath = await prepareProjectDir(path);
-    const projectManifest = loadTerraProjectManifest(projectPath);
-    return new SubqueryTerraProject(projectManifest, projectPath);
+    const projectManifest = loadSolanaProjectManifest(projectPath);
+    return new SubquerySolanaProject(projectManifest as any, projectPath);
   }
 
   constructor(manifest: ProjectManifestVersioned, path: string) {
     this._projectManifest = manifest;
     this._path = path;
 
+    console.log("manifest", manifest);
+    console.log("manifest dataSources", manifest?.dataSources);
     manifest.dataSources?.forEach(function (dataSource) {
-      if (!(dataSource.kind in SubqlTerraDatasourceKind)) {
-        throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
-      }
+      // if (!(dataSource.kind in SubqlSolanaDatasourceKind)) {
+      //   throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
+      // }
       if (!dataSource.startBlock || dataSource.startBlock < 1) {
         if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
         dataSource.startBlock = 1;
@@ -45,10 +47,10 @@ export class SubqueryTerraProject {
     return this._projectManifest;
   }
 
-  get network(): TerraProjectNetworkConfig {
+  get network(): SolanaProjectNetworkConfig {
     const impl = this._projectManifest.asImpl;
     const network = {
-      ...(impl.network as TerraProjectNetworkV0_3_0),
+      ...(impl.network as SolanaProjectNetworkV0_3_0),
     };
 
     if (!network.endpoint) {
@@ -63,8 +65,8 @@ export class SubqueryTerraProject {
   get path(): string {
     return this._path;
   }
-  get dataSources(): SubqlTerraDatasource[] {
-    return this._projectManifest.dataSources as SubqlTerraDatasource[];
+  get dataSources(): SubqlSolanaDatasource[] {
+    return this._projectManifest.dataSources as SubqlSolanaDatasource[];
   }
   get schema(): string {
     return this._projectManifest.schema;

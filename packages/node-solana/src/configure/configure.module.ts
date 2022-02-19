@@ -4,12 +4,11 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { ProjectNetworkConfig } from '@subql/common';
-import { camelCase, last, omitBy, isNil } from 'lodash';
+import { camelCase, last} from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
-import { SubqueryProject } from './SubqueryProject';
+import { SubquerySolanaProject } from './project.model';
 
 const logger = getLogger('configure');
 
@@ -60,7 +59,7 @@ export function validDbSchemaName(name: string): boolean {
     }
     if (!flag1) {
       logger.error(
-        `Invalid schema name '${name}', schema name must start with a letter or underscore, 
+        `Invalid schema name '${name}', schema name must start with a letter or underscore,
          be less than 63 bytes and must contain only valid alphanumeric characters (can include characters '_-/')`,
       );
     }
@@ -120,18 +119,8 @@ export class ConfigureModule {
         );
 
     const project = async () => {
-      const p = await SubqueryProject.create(
+      const p = await SubquerySolanaProject.create(
         projectPath,
-        omitBy<ProjectNetworkConfig>(
-          {
-            endpoint: config.networkEndpoint,
-            dictionary: config.networkDictionary,
-          },
-          isNil,
-        ),
-        {
-          ipfs: config.ipfs,
-        },
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
@@ -148,11 +137,11 @@ export class ConfigureModule {
           useValue: config,
         },
         {
-          provide: SubqueryProject,
+          provide: SubquerySolanaProject,
           useFactory: project,
         },
       ],
-      exports: [NodeConfig, SubqueryProject],
+      exports: [NodeConfig, SubquerySolanaProject],
     };
   }
 }

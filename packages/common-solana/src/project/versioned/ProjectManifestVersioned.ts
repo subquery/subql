@@ -1,9 +1,9 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlTerraDatasource} from '@subql/types-terra';
+import {SubqlSolanaDatasource} from '@subql/types-Solana';
 import {plainToClass} from 'class-transformer';
-import {ITerraProjectManifest} from '../types';
+import {ISolanaProjectManifest} from '../types';
 import {ProjectManifestV0_3_0Impl} from './v0_3_0';
 
 export type VersionedProjectManifest = {specVersion: string};
@@ -16,15 +16,15 @@ type Versions = keyof typeof SUPPORTED_VERSIONS;
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
-export function manifestIsV0_3_0(manifest: ITerraProjectManifest): manifest is ProjectManifestV0_3_0Impl {
+export function manifestIsV0_3_0(manifest: ISolanaProjectManifest): manifest is ProjectManifestV0_3_0Impl {
   return manifest.specVersion === '0.3.0';
 }
 
-export class ProjectManifestVersioned implements ITerraProjectManifest {
+export class ProjectManifestVersioned implements ISolanaProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
-    const klass = SUPPORTED_VERSIONS[projectManifest.specVersion as Versions];
+    const klass = SUPPORTED_VERSIONS['0.3.0'];
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
@@ -48,10 +48,10 @@ export class ProjectManifestVersioned implements ITerraProjectManifest {
   }
 
   validate(): void {
-    this._impl.validate();
+    // this._impl.validate();
   }
 
-  get dataSources(): SubqlTerraDatasource[] {
+  get dataSources(): SubqlSolanaDatasource[] {
     return this._impl.dataSources;
   }
 

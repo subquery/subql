@@ -29,7 +29,7 @@ export type TerraMetaData = {
   queryNodeVersion: string;
 };
 
-export type TerraMetaData = {
+export type SolanaMetaData = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;

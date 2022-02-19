@@ -1,5 +1,5 @@
 {
-  "name": "@subql/node",
+  "name": "@subql/node-solana",
   "version": "0.28.2",
   "description": "",
   "author": "Ian He",
@@ -25,6 +25,7 @@
     "@nestjs/platform-express": "^8.2.6",
     "@nestjs/schedule": "^1.0.2",
     "@polkadot/api": "7.8.1",
+    "@solana/web3.js": "^1.35.0",
     "@subql/common": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",

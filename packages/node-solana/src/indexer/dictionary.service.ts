@@ -1,4 +1,4 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
+// Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -9,22 +9,36 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/common';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import {
+  buildQuery,
+  GqlNode,
+  GqlQuery,
+  GqlVar,
+  SolanaMetaData,
+} from '@subql/common';
 import fetch from 'node-fetch';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubquerySolanaProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { getYargsOption } from '../yargs';
 
-export type Dictionary = {
-  _metadata: MetaData;
+export type SolanaDictionary = {
+  _metadata: SolanaMetaData;
   batchBlocks: number[];
-  //TODO
-  // specVersions: number[];
 };
+
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
+
+interface DictionaryQueryCondition {
+  field: string;
+  value: string;
+}
+
+export interface DictionaryQueryEntry {
+  entity: string;
+  conditions: DictionaryQueryCondition[];
+}
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
@@ -101,7 +115,7 @@ export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
-  constructor(protected project: SubqueryProject) {
+  constructor(protected project: SubquerySolanaProject) {
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -134,7 +148,7 @@ export class DictionaryService implements OnApplicationShutdown {
     queryEndBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[],
-  ): Promise<Dictionary> {
+  ): Promise<SolanaDictionary> {
     const { query, variables } = this.dictionaryQuery(
       startBlock,
       queryEndBlock,
@@ -148,11 +162,11 @@ export class DictionaryService implements OnApplicationShutdown {
         variables,
       });
       const blockHeightSet = new Set<number>();
-      const specVersionBlockHeightSet = new Set<number>();
+      //const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
         if (
-          entity !== 'specVersions' &&
+          //entity !== 'specVersions' &&
           entity !== '_metadata' &&
           resp.data[entity].nodes.length >= 0
         ) {
@@ -162,11 +176,11 @@ export class DictionaryService implements OnApplicationShutdown {
           }
         }
       }
-      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
-        for (const node of resp.data.specVersions.nodes) {
-          specVersionBlockHeightSet.add(Number(node.blockHeight));
-        }
-      }
+      //if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
+      //  for (const node of resp.data.specVersions.nodes) {
+      //    specVersionBlockHeightSet.add(Number(node.blockHeight));
+      //  }
+      //}
       const _metadata = resp.data._metadata;
       const endBlock = Math.min(
         ...Object.values(entityEndBlock).map((height) =>
@@ -207,17 +221,17 @@ export class DictionaryService implements OnApplicationShutdown {
     const nodes: GqlNode[] = [
       {
         entity: '_metadata',
-        project: ['lastProcessedHeight', 'genesisHash'],
+        project: ['lastProcessedHeight', 'chainId'],
       },
-      {
-        entity: 'specVersions',
-        project: [
-          {
-            entity: 'nodes',
-            project: ['id', 'blockHeight'],
-          },
-        ],
-      },
+      //{
+      //  entity: 'specVersions',
+      //  project: [
+      //    {
+      //      entity: 'nodes',
+      //      project: ['id', 'blockHeight'],
+      //    },
+      //  ],
+      //},
     ];
     for (const entity of Object.keys(mapped)) {
       const [pVars, node] = buildDictQueryFragment(

@@ -1,27 +1,26 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
+// Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { isRuntimeDataSourceV0_2_0, levelFilter } from '@subql/common';
-import { Store, SubqlDatasource } from '@subql/types';
+import { levelFilter } from '@subql/common';
+import { SubqlSolanaDatasource, Store } from '@subql/types-solana';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubquerySolanaProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
-import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';
-import { ApiAt } from './types';
+
+//const vm = require('../x-vm2');
 
 const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
-  script: string;
   root: string;
   entry: string;
 }
@@ -33,13 +32,31 @@ const DEFAULT_OPTION: NodeVMOptions = {
   require: {
     builtin: argv.unsafe
       ? ['*']
-      : ['assert', 'buffer', 'crypto', 'util', 'path'],
+      : ['assert', 'buffer', 'crypto', 'util', 'path'], // No events here without unsafe
+    external: true,
+    context: 'sandbox',
+    mock: {
+      events: undefined, // Remove events, I think this will cause @terra-money/terra.js to use a js implementation rather than native one
+    },
+  },
+  wrapper: 'commonjs',
+  sourceExtensions: ['js', 'cjs'],
+};
+
+/**
+ const DEFAULT_OPTION: NodeVMOptions = {
+  console: 'redirect',
+  wasm: argv.unsafe,
+  sandbox: {},
+  require: {
+    builtin: ['*'],
     external: true,
     context: 'sandbox',
   },
   wrapper: 'commonjs',
   sourceExtensions: ['js', 'cjs'],
 };
+ **/
 
 const logger = getLogger('sandbox');
 
@@ -67,7 +84,8 @@ export class IndexerSandbox extends Sandbox {
     super(
       option,
       new VMScript(
-        `const mappingFunctions = require('${option.entry}');
+        `
+      const mappingFunctions = require('${option.entry}');
       module.exports = mappingFunctions[funcName](...args);
     `,
         path.join(option.root, 'sandbox'),
@@ -77,6 +95,7 @@ export class IndexerSandbox extends Sandbox {
   }
 
   async securedExec(funcName: string, args: unknown[]): Promise<void> {
+    //logger.info(JSON.stringify(args));
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     try {
@@ -109,37 +128,32 @@ export class SandboxService {
     private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryProject,
+    private readonly project: SubquerySolanaProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
+  getDsProcessor(ds: SubqlSolanaDatasource): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
           // api: await this.apiService.getPatchedApi(),
-          store: this.storeService.getStore(),
-          root: this.project.root,
-          script: ds.mapping.entryScript,
           entry,
+          root: this.project.path,
+          store: this.storeService.getStore(),
         },
         this.nodeConfig,
       );
       this.processorCache[entry] = processor;
     }
-    processor.freeze(api, 'api');
-    if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi(), 'unsafeApi');
-    }
+    processor.freeze(this.apiService.getApi(), 'api');
+    //if (argv.unsafe) {
+    //  processor.freeze(this.apiService.getApi(), 'unsafeApi');
+    // }
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubqlDatasource): string {
-    if (isRuntimeDataSourceV0_2_0(ds)) {
-      return ds.mapping.file;
-    } else {
-      return getProjectEntry(this.project.root);
-    }
+  private getDataSourceEntry(ds: SubqlSolanaDatasource): string {
+    return ds.mapping.file;
   }
 }

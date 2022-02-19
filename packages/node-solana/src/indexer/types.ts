@@ -5,15 +5,11 @@ import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
 import {
   Entity,
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-} from '@subql/types';
+  SolanaBlock
+} from '@subql/types-solana';
 
 export interface BlockContent {
-  block: SubstrateBlock;
-  extrinsics: SubstrateExtrinsic[];
-  events: SubstrateEvent[];
+  block: SolanaBlock;
 }
 
 export enum OperationType {

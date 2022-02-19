@@ -1,30 +1,24 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
-import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
+import {Connection} from "@solana/web3.js";
+import {SolanaBlock} from './interfaces';
 
-export enum SubqlDatasourceKind {
-  Runtime = 'substrate/Runtime',
+export enum SubqlSolanaDatasourceKind {
+  Runtime = 'solana/Runtime',
 }
 
-export enum SubqlHandlerKind {
-  Block = 'substrate/BlockHandler',
-  Call = 'substrate/CallHandler',
-  Event = 'substrate/EventHandler',
+export enum SubqlSolanaHandlerKind {
+  Block = 'solana/BlockHandler',
 }
 
 export type RuntimeHandlerInputMap = {
-  [SubqlHandlerKind.Block]: SubstrateBlock;
-  [SubqlHandlerKind.Event]: SubstrateEvent;
-  [SubqlHandlerKind.Call]: SubstrateExtrinsic;
+  [SubqlSolanaHandlerKind.Block]: SolanaBlock;
 };
 
 type RuntimeFilterMap = {
-  [SubqlHandlerKind.Block]: SubqlNetworkFilter;
-  [SubqlHandlerKind.Event]: SubqlEventFilter;
-  [SubqlHandlerKind.Call]: SubqlCallFilter;
+  [SubqlSolanaHandlerKind.Block]: SubqlSolanaNetworkFilter;
 };
 
 export interface ProjectManifest {
@@ -39,62 +33,51 @@ export interface ProjectManifest {
     customTypes?: RegistryTypes;
   };
 
-  dataSources: SubqlDatasource[];
+  dataSources: SubqlSolanaDatasource[];
 }
 
 // [startSpecVersion?, endSpecVersion?] closed range
 export type SpecVersionRange = [number, number];
 
-interface SubqlBaseHandlerFilter {
+interface SubqlSolanaBaseHandlerFilter {
   specVersion?: SpecVersionRange;
 }
 
-export type SubqlBlockFilter = SubqlBaseHandlerFilter;
+export type SubqlSolanaBlockFilter = SubqlSolanaBaseHandlerFilter;
 
-export interface SubqlEventFilter extends SubqlBaseHandlerFilter {
+export interface SubqlSolanaEventFilter extends SubqlSolanaBaseHandlerFilter {
   module?: string;
   method?: string;
 }
 
-export interface SubqlCallFilter extends SubqlEventFilter {
+export interface SubqlSolanaCallFilter extends SubqlSolanaEventFilter {
   success?: boolean;
 }
 
-export interface SubqlBlockHandler {
+export interface SubqlSolanaBlockHandler {
   handler: string;
-  kind: SubqlHandlerKind.Block;
-  filter?: SubqlBlockFilter;
+  kind: SubqlSolanaHandlerKind.Block;
+  filter?: SubqlSolanaBlockFilter;
 }
 
-export interface SubqlCallHandler {
-  handler: string;
-  kind: SubqlHandlerKind.Call;
-  filter?: SubqlCallFilter;
-}
-
-export interface SubqlEventHandler {
-  handler: string;
-  kind: SubqlHandlerKind.Event;
-  filter?: SubqlEventFilter;
-}
-
-export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
+export interface SubqlSolanaCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
 }
 
-export type SubqlRuntimeHandler = SubqlBlockHandler | SubqlCallHandler | SubqlEventHandler;
+export type SubqlSolanaRuntimeHandler = SubqlSolanaBlockHandler;
 
-export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
+export type SubqlSolanaHandler = SubqlSolanaRuntimeHandler | SubqlSolanaCustomHandler<string, unknown>;
 
-export type SubqlHandlerFilter = SubqlBlockFilter | SubqlCallFilter | SubqlEventFilter;
+export type SubqlSolanaHandlerFilter = SubqlSolanaBlockFilter | SubqlSolanaCallFilter;
 
-export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
+export interface SubqlSolanaMapping<T extends SubqlSolanaHandler = SubqlSolanaHandler> {
+  file: string;
   handlers: T[];
 }
 
-interface ISubqlDatasource<M extends SubqlMapping, F extends SubqlNetworkFilter = SubqlNetworkFilter> {
+interface ISubqlSolanaDatasource<M extends SubqlSolanaMapping, F extends SubqlSolanaNetworkFilter = SubqlSolanaNetworkFilter> {
   name?: string;
   kind: string;
   filter?: F;
@@ -102,16 +85,16 @@ interface ISubqlDatasource<M extends SubqlMapping, F extends SubqlNetworkFilter 
   mapping: M;
 }
 
-export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
-  extends ISubqlDatasource<M> {
-  kind: SubqlDatasourceKind.Runtime;
+export interface SubqlSolanaRuntimeDatasource<M extends SubqlSolanaMapping<SubqlSolanaRuntimeHandler> = SubqlSolanaMapping<SubqlSolanaRuntimeHandler>>
+  extends ISubqlSolanaDatasource<M> {
+  kind: SubqlSolanaDatasourceKind.Runtime;
 }
 
-export interface SubqlNetworkFilter {
+export interface SubqlSolanaNetworkFilter {
   specName?: string;
 }
 
-export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource; // | SubqlBuiltinDataSource;
+export type SubqlSolanaDatasource = SubqlSolanaRuntimeDatasource | SubqlSolanaCustomDatasource; // | SubqlSolanaBuiltinDataSource;
 
 export interface FileReference {
   file: string;
@@ -121,36 +104,34 @@ export type CustomDataSourceAsset = FileReference;
 
 export type Processor<O = any> = FileReference & {options?: O};
 
-export interface SubqlCustomDatasource<
+export interface SubqlSolanaCustomDatasource<
   K extends string = string,
-  T extends SubqlNetworkFilter = SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
+  M extends SubqlSolanaMapping = SubqlSolanaMapping<SubqlSolanaCustomHandler>,
   O = any
-> extends ISubqlDatasource<M, T> {
+> extends ISubqlSolanaDatasource<M> {
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
   processor: Processor<O>;
 }
 
-//export type SubqlBuiltinDataSource = ISubqlDatasource;
+//export type SubqlSolanaBuiltinDataSource = ISubqlSolanaDatasource;
 
 export interface HandlerInputTransformer<
-  T extends SubqlHandlerKind,
+  T extends SubqlSolanaHandlerKind,
   U,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+  DS extends SubqlSolanaCustomDatasource = SubqlSolanaCustomDatasource
 > {
-  (original: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets: Record<string, string>): Promise<U>; //  | SubqlBuiltinDataSource
+  (original: RuntimeHandlerInputMap[T], ds: DS, api: Connection, assets: Record<string, string>): Promise<U>; //  | SubqlSolanaBuiltinDataSource
 }
 
-export interface SubqlDatasourceProcessor<
+export interface SubqlSolanaDatasourceProcessor<
   K extends string,
-  F extends SubqlNetworkFilter,
-  DS extends SubqlCustomDatasource<K, F> = SubqlCustomDatasource<K, F>
+  DS extends SubqlSolanaCustomDatasource<K> = SubqlSolanaCustomDatasource<K>
 > {
   kind: K;
   validate(ds: DS, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
-  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown, DS>};
+  dsFilterProcessor(ds: DS, api: Connection): boolean;
+  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlSolanaHandlerKind, unknown, unknown, DS>};
 }
 
 export interface DictionaryQueryCondition {
@@ -165,10 +146,10 @@ export interface DictionaryQueryEntry {
 
 // only allow one custom handler for each baseHandler kind
 export interface SecondLayerHandlerProcessor<
-  K extends SubqlHandlerKind,
+  K extends SubqlSolanaHandlerKind,
   F,
   E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+  DS extends SubqlSolanaCustomDatasource = SubqlSolanaCustomDatasource
 > {
   baseHandlerKind: K;
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];

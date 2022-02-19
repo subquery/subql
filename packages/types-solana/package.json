@@ -1,5 +1,5 @@
 {
-  "name": "@subql/types",
+  "name": "@subql/types-solana",
   "version": "0.14.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
@@ -15,11 +15,10 @@
     "src/global.d.ts",
     "/dist"
   ],
-  "peerDependencies": {
-    "@polkadot/api": "^7"
-  },
   "devDependencies": {
-    "@polkadot/api": "^7",
     "@types/app-module-path": "^2.2.0"
+  },
+  "dependencies": {
+    "@solana/web3.js": "^1.35.0"
   }
 }

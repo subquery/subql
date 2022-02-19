@@ -2,47 +2,32 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  SubqlTerraEventFilter,
-  SubqlTerraHandlerKind,
-  SubqlTerraCustomHandler,
-  SubqlTerraMapping,
-  SubqlTerraHandler,
-  SubqlTerraRuntimeHandler,
-  SubqlTerraRuntimeDatasource,
-  SubqlTerraDatasourceKind,
-  SubqlTerraCustomDatasource,
+  SubqlSolanaHandlerKind,
+  SubqlSolanaCustomHandler,
+  SubqlSolanaMapping,
+  SubqlSolanaHandler,
+  SubqlSolanaRuntimeHandler,
+  SubqlSolanaRuntimeDatasource,
+  SubqlSolanaDatasourceKind,
+  SubqlSolanaCustomDatasource,
   FileReference,
   CustomDataSourceAsset,
-} from '@subql/types-terra';
+} from '@subql/types-solana';
 
 import {plainToClass, Transform, Type} from 'class-transformer';
 
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
 
-export class TerraEventFilter implements SubqlTerraEventFilter {
-  @IsString()
-  type: string;
-}
 
-export class TerraBlockHandler {
-  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Block]})
-  kind: SubqlTerraHandlerKind.Block;
+export class SolanaBlockHandler {
+  @IsEnum(SubqlSolanaHandlerKind, {groups: [SubqlSolanaHandlerKind.Block]})
+  kind: SubqlSolanaHandlerKind.Block;
   @IsString()
   handler: string;
 }
 
-export class TerraEventHandler {
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => TerraEventFilter)
-  filter?: SubqlTerraEventFilter;
-  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Event]})
-  kind: SubqlTerraHandlerKind.Event;
-  @IsString()
-  handler: string;
-}
 
-export class TerraCustomHandler implements SubqlTerraCustomHandler {
+export class SolanaCustomHandler implements SubqlSolanaCustomHandler {
   @IsString()
   kind: string;
   @IsString()
@@ -52,15 +37,13 @@ export class TerraCustomHandler implements SubqlTerraCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class TerraMapping implements SubqlTerraMapping {
+export class SolanaMapping implements SubqlSolanaMapping {
   @Transform((params) => {
-    const handlers: SubqlTerraHandler[] = params.value;
+    const handlers: SubqlSolanaHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlTerraHandlerKind.Event:
-          return plainToClass(TerraEventHandler, handler);
-        case SubqlTerraHandlerKind.Block:
-          return plainToClass(TerraBlockHandler, handler);
+        case SubqlSolanaHandlerKind.Block:
+          return plainToClass(SolanaBlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
       }
@@ -68,55 +51,55 @@ export class TerraMapping implements SubqlTerraMapping {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubqlTerraHandler[];
+  handlers: SubqlSolanaHandler[];
   @IsString()
   file: string;
 }
 
-export class TerraCustomMapping implements SubqlTerraMapping<SubqlTerraCustomHandler> {
+export class SolanaCustomMapping implements SubqlSolanaMapping<SubqlSolanaCustomHandler> {
   @IsArray()
-  @Type(() => TerraCustomHandler)
+  @Type(() => SolanaCustomHandler)
   @ValidateNested()
-  handlers: TerraCustomHandler[];
+  handlers: SolanaCustomHandler[];
   @IsString()
   file: string;
 }
 
-export class TerraRuntimeDataSourceBase<M extends SubqlTerraMapping<SubqlTerraRuntimeHandler>>
-  implements SubqlTerraRuntimeDatasource<M>
+export class SolanaRuntimeDataSourceBase<M extends SubqlSolanaMapping<SubqlSolanaRuntimeHandler>>
+  implements SubqlSolanaRuntimeDatasource<M>
 {
-  @IsEnum(SubqlTerraDatasourceKind, {groups: [SubqlTerraDatasourceKind.Runtime]})
-  kind: SubqlTerraDatasourceKind.Runtime;
-  @Type(() => TerraMapping)
+  @IsEnum(SubqlSolanaDatasourceKind, {groups: [SubqlSolanaDatasourceKind.Runtime]})
+  kind: SubqlSolanaDatasourceKind.Runtime;
+  @Type(() => SolanaMapping)
   @ValidateNested()
   mapping: M;
   @IsInt()
   startBlock: number;
 }
 
-export class TerraFileReferenceImpl implements FileReference {
+export class SolanaFileReferenceImpl implements FileReference {
   @IsString()
   file: string;
 }
 
-export class TerraCustomDataSourceBase<
+export class SolanaCustomDataSourceBase<
   K extends string,
-  M extends SubqlTerraMapping = SubqlTerraMapping<SubqlTerraCustomHandler>,
+  M extends SubqlSolanaMapping = SubqlSolanaMapping<SubqlSolanaCustomHandler>,
   O = any
-> implements SubqlTerraCustomDatasource<K, M, O>
+> implements SubqlSolanaCustomDatasource<K, M, O>
 {
   @IsString()
   kind: K;
-  @Type(() => TerraCustomMapping)
+  @Type(() => SolanaCustomMapping)
   @ValidateNested()
   mapping: M;
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @Type(() => TerraFileReferenceImpl)
+  @Type(() => SolanaFileReferenceImpl)
   @ValidateNested({each: true})
   assets: Map<string, CustomDataSourceAsset>;
-  @Type(() => TerraFileReferenceImpl)
+  @Type(() => SolanaFileReferenceImpl)
   @IsObject()
   processor: FileReference;
 }

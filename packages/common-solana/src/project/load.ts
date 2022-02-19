@@ -26,7 +26,7 @@ function loadFromFile(file: string): unknown {
   return loadFromJsonOrYaml(filePath);
 }
 
-export function loadTerraProjectManifest(file: string): ProjectManifestVersioned {
+export function loadSolanaProjectManifest(file: string): ProjectManifestVersioned {
   const doc = loadFromFile(file);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();

@@ -3,30 +3,30 @@
 
 import fs from 'fs';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common-terra';
+import { loadFromJsonOrYaml } from '@subql/common-solana';
 import {
-  SecondLayerTerraHandlerProcessor,
-  SubqlTerraCustomDatasource,
-  SubqlTerraDatasource,
-  SubqlTerraDatasourceKind,
-  SubqlTerraHandlerKind,
-  SubqlTerraRuntimeDatasource,
-  TerraProjectManifest,
-} from '@subql/types-terra';
+  SecondLayerHandlerProcessor,
+  SubqlSolanaCustomDatasource,
+  SubqlSolanaDatasource,
+  SubqlSolanaDatasourceKind,
+  SubqlSolanaHandlerKind,
+  SubqlSolanaRuntimeDatasource,
+  ProjectManifest,
+} from '@subql/types-solana';
 
-export function isCustomTerraDs(
-  ds: SubqlTerraDatasource,
-): ds is SubqlTerraCustomDatasource<string> {
+export function isCustomSolanaDs(
+  ds: SubqlSolanaDatasource,
+): ds is SubqlSolanaCustomDatasource<string> {
   return (
-    ds.kind !== SubqlTerraDatasourceKind.Runtime &&
-    !!(ds as SubqlTerraCustomDatasource<string>).processor
+    ds.kind !== SubqlSolanaDatasourceKind.Runtime &&
+    !!(ds as SubqlSolanaCustomDatasource<string>).processor
   );
 }
 
-export function isRuntimeTerraDs(
-  ds: SubqlTerraDatasource,
-): ds is SubqlTerraRuntimeDatasource {
-  return ds.kind === SubqlTerraDatasourceKind.Runtime;
+export function isRuntimeSolanaDs(
+  ds: SubqlSolanaDatasource,
+): ds is SubqlSolanaRuntimeDatasource {
+  return ds.kind === SubqlSolanaDatasourceKind.Runtime;
 }
 
 function loadFromFile(file: string): unknown {
@@ -38,27 +38,17 @@ function loadFromFile(file: string): unknown {
   return loadFromJsonOrYaml(filePath);
 }
 
-export function loadTerraProjectManifest(file: string): TerraProjectManifest {
-  const doc = loadFromFile(file) as TerraProjectManifest;
+export function loadSolanaProjectManifest(file: string): ProjectManifest {
+  const doc = loadFromFile(file) as ProjectManifest;
   return doc;
 }
 
 export function isBlockHandlerProcessor<E>(
-  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<
-  SubqlTerraHandlerKind.Block,
+  hp: SecondLayerHandlerProcessor<SubqlSolanaHandlerKind, unknown, unknown>,
+): hp is SecondLayerHandlerProcessor<
+  SubqlSolanaHandlerKind.Block,
   unknown,
   E
 > {
-  return hp.baseHandlerKind === SubqlTerraHandlerKind.Block;
-}
-
-export function isEventHandlerProcessor<E>(
-  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>,
-): hp is SecondLayerTerraHandlerProcessor<
-  SubqlTerraHandlerKind.Event,
-  unknown,
-  E
-> {
-  return hp.baseHandlerKind === SubqlTerraHandlerKind.Event;
+  return hp.baseHandlerKind === SubqlSolanaHandlerKind.Block;
 }

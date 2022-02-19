@@ -1,25 +1,22 @@
-// Copyright 2020-2022 OnFinality Limited authors & contributors
+// Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs } from '@subql/common';
 import {
-  SubqlCustomDatasource,
-  SubqlDatasource,
-  SubqlDatasourceProcessor,
-  SubqlNetworkFilter,
-} from '@subql/types';
+  SubqlSolanaCustomDatasource,
+  SubqlSolanaDatasourceProcessor,
+} from '@subql/types-solana';
 import { VMScript } from '@subql/x-vm2';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubquerySolanaProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandbox.service';
+import { isCustomSolanaDs } from './utils';
 
 export interface DsPluginSandboxOption {
   root: string;
   entry: string;
-  script: string;
 }
 
 const logger = getLogger('ds-sandbox');
@@ -36,10 +33,7 @@ export class DsPluginSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 
-  getDsPlugin<
-    D extends string,
-    T extends SubqlNetworkFilter,
-  >(): SubqlDatasourceProcessor<D, T> {
+  getDsPlugin<D extends string>(): SubqlSolanaDatasourceProcessor<D> {
     return this.run(this.script);
   }
 }
@@ -47,20 +41,18 @@ export class DsPluginSandbox extends Sandbox {
 @Injectable()
 export class DsProcessorService {
   private processorCache: {
-    [entry: string]: SubqlDatasourceProcessor<string, SubqlNetworkFilter>;
+    [entry: string]: SubqlSolanaDatasourceProcessor<string>;
   } = {};
-  constructor(private project: SubqueryProject) {}
+  constructor(private project: SubquerySolanaProject) {}
 
-  async validateCustomDs(datasources: SubqlCustomDatasource[]): Promise<void> {
-    for (const ds of datasources) {
+  async validateCustomDs(): Promise<void> {
+    for (const ds of this.project.dataSources.filter(isCustomSolanaDs)) {
       const processor = this.getDsProcessor(ds);
-      /* Standard validation applicable to all custom ds and processors */
       if (ds.kind !== processor.kind) {
         throw new Error(
           `ds kind (${ds.kind}) doesnt match processor (${processor.kind})`,
         );
       }
-
       for (const handler of ds.mapping.handlers) {
         if (!(handler.kind in processor.handlerProcessors)) {
           throw new Error(
@@ -72,6 +64,7 @@ export class DsProcessorService {
       }
 
       ds.mapping.handlers.map((handler) =>
+        //filter here
         processor.handlerProcessors[handler.kind].filterValidator(
           handler.filter,
         ),
@@ -82,24 +75,19 @@ export class DsProcessorService {
     }
   }
 
-  async validateProjectCustomDatasources(): Promise<void> {
-    await this.validateCustomDs((this.project.dataSources as SubqlDatasource[]).filter(isCustomDs));
-  }
-
-  getDsProcessor<D extends string, T extends SubqlNetworkFilter>(
-    ds: SubqlCustomDatasource<string, T>,
-  ): SubqlDatasourceProcessor<D, T> {
-    if (!isCustomDs(ds)) {
+  getDsProcessor<D extends string>(
+    ds: SubqlSolanaCustomDatasource<string>,
+  ): SubqlSolanaDatasourceProcessor<D> {
+    if (!isCustomSolanaDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
     if (!this.processorCache[ds.processor.file]) {
       const sandbox = new DsPluginSandbox({
-        root: this.project.root,
+        root: this.project.path,
         entry: ds.processor.file,
-        script: null /* TODO get working with Readers, same as with sandbox */,
       });
       try {
-        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
+        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();
       } catch (e) {
         logger.error(`not supported ds @${ds.kind}`);
         throw e;
@@ -107,15 +95,15 @@ export class DsProcessorService {
     }
     return this.processorCache[
       ds.processor.file
-    ] as unknown as SubqlDatasourceProcessor<D, T>;
+      ] as unknown as SubqlSolanaDatasourceProcessor<D>;
   }
-
   // eslint-disable-next-line @typescript-eslint/require-await
-  async getAssets(ds: SubqlCustomDatasource): Promise<Record<string, string>> {
-    if (!isCustomDs(ds)) {
+  async getAssets(
+    ds: SubqlSolanaCustomDatasource,
+  ): Promise<Record<string, string>> {
+    if (!isCustomSolanaDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
-
     if (!ds.assets) {
       return {};
     }
@@ -123,9 +111,8 @@ export class DsProcessorService {
     const res: Record<string, string> = {};
 
     for (const [name, { file }] of ds.assets) {
-      // TODO update with https://github.com/subquery/subql/pull/511
       try {
-        res[name] = fs.readFileSync(file, {
+        res[name] = fs.readFileSync(path.join(this.project.path, file), {
           encoding: 'utf8',
         });
       } catch (e) {
@@ -133,7 +120,6 @@ export class DsProcessorService {
         throw e;
       }
     }
-
     return res;
   }
 }

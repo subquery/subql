@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
-import {SubqlTerraDatasource} from '@subql/types-terra';
+import {SubqlSolanaDatasource} from '@subql/types-solana';
 
-export type ITerraProjectManifest = IProjectManifest<SubqlTerraDatasource>;
+export type ISolanaProjectManifest = IProjectManifest<SubqlSolanaDatasource>;
 
-export interface TerraProjectNetworkConfig extends ProjectNetworkConfig {
+export interface SolanaProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
 }
