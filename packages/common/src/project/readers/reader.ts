@@ -2,17 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import os from 'os';
-import path from 'path';
+import {getProjectRootAndManifest} from '@subql/common/project';
 import {IPackageJson} from 'package-json-type';
-import tar from 'tar';
 import {GithubReader} from './github-reader';
 import {IPFSReader} from './ipfs-reader';
 import {LocalReader} from './local-reader';
 
 export type ReaderOptions = {
   ipfs?: string;
-  manifestPath?: string;
 };
 
 export interface Reader {
@@ -42,10 +39,10 @@ export class ReaderFactory {
       return new IPFSReader(locationWithoutSchema, options.ipfs);
     }
 
-    const stats = fs.statSync(location);
-    //local mode: projectPath, manifestPath
-    if (stats.isDirectory()) {
-      return new LocalReader(location, options.manifestPath);
+    //local mode
+    if (fs.existsSync(location)) {
+      const project = getProjectRootAndManifest(location);
+      return new LocalReader(project.root, project.manifest);
     }
 
     throw new Error(`unknown location: ${location}`);

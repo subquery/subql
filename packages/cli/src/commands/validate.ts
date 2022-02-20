@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, Flags} from '@oclif/core';
+import {IPFS_CLIENT_ENDPOINT} from '@subql/common';
 import {commonRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
-import {IPFS_CLIENT_ENDPOINT} from '../constants';
 
 export default class Validate extends Command {
   static description = 'Check a folder or github repo is a validate subquery project';

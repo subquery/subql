@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { ProjectNetworkConfig, getProjectRootAndManifest } from '@subql/common';
@@ -17,6 +16,8 @@ const logger = getLogger('configure');
 const YargsNameMapping = {
   local: 'localMode',
 };
+
+const IPFS_REGEX = /ipfs:\/\//i;
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
 
@@ -37,11 +38,12 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
 }
 
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
+  const ipfsMatch = config.subquery.match(IPFS_REGEX);
   return {
     ...config,
     subqueryName:
-      config.subqueryName ?? config.ipfs
-        ? config.subquery
+      config.subqueryName ?? ipfsMatch
+        ? config.subquery.replace('ipfs://', '')
         : last(getProjectRootAndManifest(config.subquery).root.split(path.sep)),
   } as MinConfig;
 }
@@ -115,16 +117,15 @@ export class ConfigureModule {
     }
 
     let projectPath: string;
-    let manifestPath: string | undefined;
-    if (config.ipfs) {
+
+    const ipfsMatch = argv.subquery.match(IPFS_REGEX);
+    if (ipfsMatch) {
       projectPath = argv.subquery;
     } else {
-      const project = getProjectRootAndManifest(config.subquery);
       projectPath = path.resolve(
         config.configDir && !argv.subquery ? config.configDir : '.',
-        project.root,
+        argv.subquery,
       );
-      manifestPath = project.manifest;
     }
 
     const project = async () => {
@@ -139,13 +140,11 @@ export class ConfigureModule {
         ),
         {
           ipfs: config.ipfs,
-          manifestPath: manifestPath,
         },
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
-
       return p;
     };
 

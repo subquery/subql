@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {lstatSync, readFileSync, existsSync} from 'fs';
+import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
@@ -46,9 +46,7 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(project.root, authToken.trim(), project.manifest, flags.ipfs).catch((e) =>
-      this.error(e)
-    );
+    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

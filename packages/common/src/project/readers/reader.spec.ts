@@ -19,8 +19,7 @@ describe('ReaderFactory', () => {
 
   it('should return the Local Reader', async () => {
     const loc = path.join(__dirname, '../../../fixtures');
-    const manifestPath = path.resolve(loc, 'project.yaml');
-    const reader = await ReaderFactory.create(loc, {manifestPath});
+    const reader = await ReaderFactory.create(loc);
     expect(reader instanceof LocalReader).toBeTruthy();
   });
 
@@ -41,5 +40,9 @@ describe('ReaderFactory', () => {
     const reader = await ReaderFactory.create(tarPath);
     const finalPath = reader.root;
     expect(fs.existsSync(finalPath)).toBeTruthy();
+  });
+
+  it('throw error if getProjectRootAndManifest path not exist', async () => {
+    await expect(() => ReaderFactory.create('path/not/exist')).rejects.toThrow(/unknown location/);
   });
 });

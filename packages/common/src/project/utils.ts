@@ -56,7 +56,7 @@ export async function findAvailablePort(startPort: number, range = 10): Promise<
   return null;
 }
 
-interface ProjectRootAndManifest {
+export interface ProjectRootAndManifest {
   root: string;
   manifest: string;
 }

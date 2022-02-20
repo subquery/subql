@@ -5,16 +5,14 @@ import {u8aConcat} from '@polkadot/util';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
+import {IPFS_CLIENT_ENDPOINT} from '../../constants';
 import {Reader} from './reader';
 
 export class IPFSReader implements Reader {
   private ipfs: IPFS.IPFSHTTPClient;
 
-  constructor(private readonly cid: string, gateway: string) {
-    if (!gateway) {
-      throw new Error('IPFS Gateway not provided');
-    }
-    this.ipfs = IPFS.create({url: gateway});
+  constructor(private readonly cid: string, gateway?: string) {
+    this.ipfs = IPFS.create({url: gateway ?? IPFS_CLIENT_ENDPOINT});
   }
 
   get root(): undefined {

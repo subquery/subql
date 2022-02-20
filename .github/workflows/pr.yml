@@ -22,4 +22,6 @@ jobs:
       run: yarn lint
     - name: test
       run: yarn test:docker
+      env:
+        SUBQL_ACCESS_TOEKEN: ${{ secrets.SUBQL_ACCESS_TOEKEN }}
 

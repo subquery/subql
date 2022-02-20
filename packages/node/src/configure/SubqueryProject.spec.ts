@@ -2,36 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { ReaderFactory } from '@subql/common';
 
 import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
     let projectDirV0_0_1: string;
-    let projectDirV0_0_1_Manifest: string;
 
     let projectDirV0_2_0: string;
-    let projectDirV0_2_0_Manifest: string;
 
     beforeEach(() => {
       projectDirV0_0_1 = path.resolve(
         __dirname,
         '../../test/projectFixture/v0.0.1',
       );
-
-      projectDirV0_0_1_Manifest = path.resolve(
-        projectDirV0_0_1,
-        'project.yaml',
-      );
-
       projectDirV0_2_0 = path.resolve(
         __dirname,
         '../../test/projectFixture/v0.2.0',
-      );
-      projectDirV0_2_0_Manifest = path.resolve(
-        projectDirV0_2_0,
-        'project.yaml',
       );
     });
     it('convert 0.0.1 to project object', () => {
@@ -39,23 +26,15 @@ describe('SubqueryProject', () => {
     });
 
     it('load 0.0.1 chain types', async () => {
-      const project = await SubqueryProject.create(
-        projectDirV0_0_1,
-        undefined,
-        { manifestPath: projectDirV0_0_1_Manifest },
-      );
+      const project = await SubqueryProject.create(projectDirV0_0_1, undefined);
       console.log(project.chainTypes);
     });
 
     it('convert local 0.2.0 manifest to project object', async () => {
       //manually pass the endpoint
-      const project = await SubqueryProject.create(
-        projectDirV0_2_0,
-        {
-          endpoint: 'wss://rpc.polkadot.io/public-ws',
-        },
-        { manifestPath: projectDirV0_2_0_Manifest },
-      );
+      const project = await SubqueryProject.create(projectDirV0_2_0, {
+        endpoint: 'wss://rpc.polkadot.io/public-ws',
+      });
       expect((project.dataSources[1] as any).processor.file).toMatch(
         /moonbeam.js/,
       );

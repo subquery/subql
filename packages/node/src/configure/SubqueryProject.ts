@@ -87,7 +87,7 @@ async function loadProjectFromManifest0_0_1(
 ): Promise<SubqueryProject> {
   return {
     id: path, //user project path as it id for now
-    root: await getProjectRoot(reader, path),
+    root: await getProjectRoot(reader),
     network: {
       ...projectManifest.network,
       ...networkOverrides,
@@ -114,7 +114,7 @@ async function loadProjectFromManifest0_2_0(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
 
   const network = {
     ...projectManifest.network,
@@ -162,7 +162,7 @@ async function loadProjectFromManifest0_2_1(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
   const project = await loadProjectFromManifest0_2_0(
     projectManifest,
     reader,

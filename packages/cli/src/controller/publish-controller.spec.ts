@@ -38,8 +38,8 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
 };
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
-//Replace your access token before test
-const testAuth = 'MTA0MzE2NTc=JIwMq1cCzGIWddlskYRE';
+// Replace/Update your access token when test locally
+const testAuth = process.env.SUBQL_ACCESS_TOEKN;
 
 jest.setTimeout(120000);
 
@@ -96,11 +96,18 @@ describe('Cli publish', () => {
 
   it('should upload appropriate project to IPFS', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const manifestPath = path.resolve(projectDir, 'project.yaml');
-    const cid = await uploadToIpfs(projectDir, testAuth, manifestPath);
+    const cid = await uploadToIpfs(projectDir, testAuth);
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
+  });
+
+  it('upload project from a manifest', async () => {
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const testManifestPath = path.resolve(projectDir, 'test.yaml');
+    fs.renameSync(manifestPath, testManifestPath);
+    await Publish.run(['-f', testManifestPath]);
   });
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
@@ -111,8 +118,7 @@ describe('Cli publish', () => {
 
   it('throw error when v0.0.1 try to deploy', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
-    const manifestPath = path.resolve(projectDir, 'project.yaml');
-    const reader = await ReaderFactory.create(projectDir, {manifestPath});
+    const reader = await ReaderFactory.create(projectDir);
     const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
     expect(() => manifest.toDeployment()).toThrowError(
       'Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above'
@@ -121,8 +127,7 @@ describe('Cli publish', () => {
 
   it('convert to deployment and removed descriptive field', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
-    const manifestPath = path.resolve(projectDir, 'project.yaml');
-    const reader = await ReaderFactory.create(projectDir, {manifestPath});
+    const reader = await ReaderFactory.create(projectDir);
     const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
     const deployment = manifest.toDeployment();
     expect(deployment).not.toContain('name');
@@ -135,25 +140,5 @@ describe('Cli publish', () => {
     expect(deployment).toContain('genesisHash');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
-  });
-});
-
-describe('Cli publish from a specific manifest', () => {
-  let projectDir: string;
-  afterEach(async () => {
-    try {
-      await promisify(rimraf)(projectDir);
-    } catch (e) {
-      console.warn('Failed to clean up tmp dir after test');
-    }
-  });
-
-  it('upload project from a manifest or a directory', async () => {
-    projectDir = await createTestProject(projectSpecV0_2_0);
-    await Publish.run(['-f', projectDir]);
-    const manifestPath = path.resolve(projectDir, 'project.yaml');
-    const testManifestPath = path.resolve(projectDir, 'test.yaml');
-    fs.renameSync(manifestPath, testManifestPath);
-    await Publish.run(['-f', testManifestPath]);
   });
 });
