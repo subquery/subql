@@ -4,7 +4,7 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import {Connection} from "@solana/web3.js";
+import { Connection } from '@solana/web3.js';
 import { isRuntimeDataSourceV0_3_0 } from '@subql/common-solana/dist/project/versioned/v0_3_0';
 import {
   SubqlSolanaDatasource,
@@ -109,14 +109,16 @@ export class FetchService implements OnApplicationShutdown {
         let success = false;
         while (!success) {
           try {
-            await next(block);
+            if (block.block.block) {
+              await next(block);
+            }
             success = true;
           } catch (e) {
             logger.error(
               e,
-              `failed to index block at height ${+block.block.block.parentSlot + 1} ${
-                e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
-              }`,
+              `failed to index block at height ${
+                +block.block.block.parentSlot + 1
+              } ${e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''}`,
             );
             process.exit(1);
           }
@@ -146,9 +148,7 @@ export class FetchService implements OnApplicationShutdown {
     }
     try {
       const finalizedBlock = await this.api.getSlot();
-      const currentFinalizedHeight = parseInt(
-        finalizedBlock.toString(),
-      );
+      const currentFinalizedHeight = parseInt(finalizedBlock.toString());
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
@@ -199,7 +199,7 @@ export class FetchService implements OnApplicationShutdown {
           );
           if (
             dictionary &&
-            (this.dictionaryValidation(dictionary, startBlockHeight))
+            this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
             const { batchBlocks } = dictionary;
             if (batchBlocks.length === 0) {
@@ -271,7 +271,7 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(5);
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(5); // change me, to many requests
       const blocks = await fetchSolanaBlocksBatches(this.api, bufferBlocks);
       // console.log("blocks", blocks);
       logger.info(

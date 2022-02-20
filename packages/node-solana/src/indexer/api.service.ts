@@ -4,8 +4,8 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Connection, ConnectionConfig } from '@solana/web3.js';
-import * as web3 from "@solana/web3.js";
-import {SubquerySolanaProject} from "../configure/project.model";
+import * as web3 from '@solana/web3.js';
+import { SubquerySolanaProject } from '../configure/project.model';
 import { getLogger } from '../utils/logger';
 import { NetworkMetadataPayload } from './events';
 
@@ -27,9 +27,12 @@ export class ApiService {
   async init(): Promise<ApiService> {
     const { network } = this.project;
     this.clientConfig = {
+      commitment: 'finalized',
     };
 
-    this.api = new Connection(web3.clusterApiUrl('testnet'));
+    this.api = new Connection(web3.clusterApiUrl('testnet'), {
+      commitment: 'finalized',
+    });
 
     this.networkMeta = {
       chainId: network.chainId,

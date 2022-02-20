@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {Connection} from "@solana/web3.js";
+import { Connection } from '@solana/web3.js';
 import { getAllEntitiesRelations } from '@subql/common';
 import {
   SubqlSolanaCustomDatasource,
@@ -26,7 +26,7 @@ import { profiler } from '../utils/profiler';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
-import {MetadataFactory, MetadataRepo} from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
@@ -69,10 +69,10 @@ export class IndexerSolanaManager {
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block } = blockContent;
-    console.log("===========================");
-    console.log("block", block);
-    console.log("blockContent", blockContent.block.block.parentSlot);
-    console.log("===========================");
+    console.log('===========================');
+    console.log('block', block);
+    console.log('blockContent', blockContent.block.block.parentSlot);
+    console.log('===========================');
     const blockHeight = +block.block.parentSlot + 1; // convert to block height
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -95,9 +95,12 @@ export class IndexerSolanaManager {
       }
       // this.subqueryState.nextBlockHeight = blockHeight + 1; // next block height
       // await this.subqueryState.save({ transaction: tx });
+      console.log('==============STORE lastProcessedHeight=============');
       await this.storeService.setMetadata(
-          'lastProcessedHeight', blockHeight + 1
+        'lastProcessedHeight',
+        blockHeight + 1,
       );
+      console.log('==============STORE lastProcessedHeight=============');
       //TODO: implement POI
     } catch (e) {
       await tx.rollback();
@@ -113,7 +116,7 @@ export class IndexerSolanaManager {
     this.api = this.apiService.getApi();
     const schema = await this.ensureProject();
     await this.initDbSchema(schema);
-    console.log("this.nodeConfig.subqueryName", this.nodeConfig.subqueryName);
+    console.log('this.nodeConfig.subqueryName', this.nodeConfig.subqueryName);
     this.metadataRepo = await this.ensureMetadata(schema);
 
     // get current process block height
@@ -135,13 +138,11 @@ export class IndexerSolanaManager {
     }
     //TODO: implement POI
     logger.info(`startHeight ${startHeight}`);
-    void this.fetchService
-      .startLoop(startHeight)
-      .catch((err) => {
-        logger.error(err, 'failed to fetch block');
-        // FIXME: retry before exit
-        process.exit(1);
-      });
+    void this.fetchService.startLoop(startHeight).catch((err) => {
+      logger.error(err, 'failed to fetch block');
+      // FIXME: retry before exit
+      process.exit(1);
+    });
     this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
     //TODO: implement POI
@@ -241,7 +242,7 @@ export class IndexerSolanaManager {
   private async initDbSchema(schema: string): Promise<void> {
     const graphqlSchema = this.project.schema;
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    console.log("modelsRelations", modelsRelations);
+    console.log('modelsRelations', modelsRelations);
     await this.storeService.init(modelsRelations, schema);
   }
 
@@ -323,9 +324,7 @@ export class IndexerSolanaManager {
       process.exit(1);
     }
 
-    let filteredDs = ds.filter(
-      (ds) => ds.startBlock <= nextBlockHeight,
-    );
+    let filteredDs = ds.filter((ds) => ds.startBlock <= nextBlockHeight);
     if (filteredDs.length === 0) {
       logger.error(
         `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
@@ -385,7 +384,9 @@ export class IndexerSolanaManager {
       const transformedData = await Promise.all(
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
-          .map((data) => processor.transformer(data, ds, this.api as any, assets)),
+          .map((data) =>
+            processor.transformer(data, ds, this.api as any, assets),
+          ),
       );
 
       for (const data of transformedData) {
