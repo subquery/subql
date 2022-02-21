@@ -78,7 +78,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       path: '/',
       cors: true,
     });
-
     return server;
   }
 }
