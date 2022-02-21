@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {parseChainTypes} from '@subql/common';
+import {parseChainTypes} from '@subql/common-substrate';
 import yaml from 'js-yaml';
 import {Context} from '../context';
 import {Rule, RuleType} from './rule';

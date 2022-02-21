@@ -8,8 +8,9 @@
     "outDir": "./dist"
   },
   "references": [
-    {"path": "../common"},
-    {"path": "../types"}
+    { "path": "../common" },
+    { "path": "../common-substrate" },
+    { "path": "../types" }
   ],
   "include": ["src/**/*"]
 }

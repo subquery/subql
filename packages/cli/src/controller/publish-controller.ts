@@ -3,7 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {parseProjectManifest, ReaderFactory, manifestIsV0_2_0} from '@subql/common';
+import {ReaderFactory} from '@subql/common';
+import {parseProjectManifest, manifestIsV0_2_0} from '@subql/common-substrate';
 import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
