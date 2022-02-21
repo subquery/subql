@@ -15,8 +15,6 @@ import { getYargsOption } from '../yargs';
 import { ApiTerraService } from './apiterra.service';
 import { StoreService } from './store.service';
 
-//const vm = require('../x-vm2');
-
 const { argv } = getYargsOption();
 
 export interface SandboxOption {
@@ -42,21 +40,6 @@ const DEFAULT_OPTION: NodeVMOptions = {
   wrapper: 'commonjs',
   sourceExtensions: ['js', 'cjs'],
 };
-
-/**
-const DEFAULT_OPTION: NodeVMOptions = {
-  console: 'redirect',
-  wasm: argv.unsafe,
-  sandbox: {},
-  require: {
-    builtin: ['*'],
-    external: true,
-    context: 'sandbox',
-  },
-  wrapper: 'commonjs',
-  sourceExtensions: ['js', 'cjs'],
-};
-**/
 
 const logger = getLogger('sandbox');
 
@@ -137,7 +120,6 @@ export class SandboxTerraService {
     if (!processor) {
       processor = new IndexerSandbox(
         {
-          // api: await this.apiService.getPatchedApi(),
           entry,
           root: this.project.path,
           store: this.storeService.getStore(),
@@ -146,10 +128,11 @@ export class SandboxTerraService {
       );
       this.processorCache[entry] = processor;
     }
-    processor.freeze(this.apiService.getApi(), 'api');
-    //if (argv.unsafe) {
-    //  processor.freeze(this.apiService.getApi(), 'unsafeApi');
-    // }
+    /* Disable api because we cannot set to a point in time */
+    // processor.freeze(this.apiService.getApi(), 'api');
+    if (argv.unsafe) {
+      processor.freeze(this.apiService.getApi(), 'unsafeApi');
+    }
     return processor;
   }
 
