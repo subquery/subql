@@ -25,7 +25,7 @@ export class RuntimeDataSourceV0_0_1Impl
   name: string;
 }
 
-export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_0_1 {
+export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl<null> implements ProjectManifestV0_0_1 {
   @Equals('0.0.1')
   specVersion: string;
   @ValidateNested()
@@ -38,7 +38,8 @@ export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implement
   @ValidateNested()
   @Type(() => RuntimeDataSourceV0_0_1Impl)
   dataSources: RuntimeDataSourceV0_0_1[];
-  toDeployment(): string {
+
+  get deployment(): null {
     throw new Error('Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above');
   }
 

@@ -79,7 +79,10 @@ export class DeploymentV0_3_0 {
   network: TerraProjectNetworkDeploymentV0_3_0;
 }
 
-export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implements TerraProjectManifestV0_3_0 {
+export class ProjectManifestV0_3_0Impl
+  extends ProjectManifestBaseImpl<DeploymentV0_3_0>
+  implements TerraProjectManifestV0_3_0
+{
   @Equals('0.3.0')
   specVersion: string;
   @IsString()
@@ -105,27 +108,11 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
   dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
   private _deployment: DeploymentV0_3_0;
 
-  toDeployment(): string {
-    return yaml.dump(this._deployment, {
-      sortKeys: true,
-      condenseFlow: true,
-    });
-  }
-
   get deployment(): DeploymentV0_3_0 {
     if (!this._deployment) {
       this._deployment = plainToClass(DeploymentV0_3_0, this);
       validateSync(this._deployment, {whitelist: true});
     }
     return this._deployment;
-  }
-
-  validate(): void {
-    const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
-    if (errors?.length) {
-      // TODO: print error details
-      const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`failed to parse project.yaml.\n${errorMsgs}`);
-    }
   }
 }

@@ -100,7 +100,10 @@ export class DeploymentV0_2_0 {
   network: ProjectNetworkDeploymentV0_2_0;
 }
 
-export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implements ProjectManifestV0_2_0 {
+export class ProjectManifestV0_2_0Impl<D extends object = DeploymentV0_2_0>
+  extends ProjectManifestBaseImpl<D>
+  implements ProjectManifestV0_2_0
+{
   @Equals('0.2.0')
   specVersion: string;
   @IsString()
@@ -124,24 +127,13 @@ export class ProjectManifestV0_2_0Impl extends ProjectManifestBaseImpl implement
     keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
-  protected _deployment: DeploymentV0_2_0;
+  protected _deployment: D;
 
-  toDeployment(): string {
-    return yaml.dump(this._deployment, {
-      sortKeys: true,
-      condenseFlow: true,
-    });
-  }
-
-  get deployment(): DeploymentV0_2_0 {
+  get deployment(): D {
     if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV0_2_0, this);
+      this._deployment = plainToClass(DeploymentV0_2_0, this) as unknown as D;
       validateSync(this._deployment, {whitelist: true});
     }
     return this._deployment;
-  }
-
-  validate(): void {
-    return validateObject(this.deployment, 'failed to validate project.');
   }
 }

@@ -39,7 +39,10 @@ export class DeploymentV0_2_1 extends DeploymentV0_2_0 {
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
 }
 
-export class ProjectManifestV0_2_1Impl extends ProjectManifestV0_2_0Impl implements ProjectManifestV0_2_1 {
+export class ProjectManifestV0_2_1Impl
+  extends ProjectManifestV0_2_0Impl<DeploymentV0_2_1>
+  implements ProjectManifestV0_2_1
+{
   @IsOptional()
   @IsArray()
   @ValidateNested()

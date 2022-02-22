@@ -3,31 +3,24 @@
 
 import fs from 'fs';
 import path from 'path';
-import yaml from 'js-yaml';
+import {loadFromJsonOrYaml} from '@subql/common';
 import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadFromJsonOrYaml(file: string): unknown {
-  const {ext} = path.parse(file);
-
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
-    throw new Error(`Extension ${ext} not supported`);
-  }
-
-  const rawContent = fs.readFileSync(file, 'utf-8');
-  return yaml.load(rawContent);
-}
-
-function loadFromFile(file: string): unknown {
-  let filePath = file;
-  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
-    filePath = path.join(file, 'project.yaml');
-  }
-
-  return loadFromJsonOrYaml(filePath);
-}
-
 export function loadTerraProjectManifest(file: string): ProjectManifestVersioned {
-  const doc = loadFromFile(file);
+  let manifestPath = file;
+  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
+    const yamlFilePath = path.join(file, 'project.yaml');
+    const jsonFilePath = path.join(file, 'project.json');
+    if (fs.existsSync(yamlFilePath)) {
+      manifestPath = yamlFilePath;
+    } else if (fs.existsSync(jsonFilePath)) {
+      manifestPath = jsonFilePath;
+    } else {
+      throw new Error(`Could not find project manifest under dir ${file}`);
+    }
+  }
+
+  const doc = loadFromJsonOrYaml(manifestPath);
   const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
