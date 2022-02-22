@@ -7,6 +7,8 @@ jobs:
   pr:
     name: pr
     runs-on: ubuntu-latest
+    env:
+      SUBQL_ACCESS_TOEKEN: ${{ secrets.SUBQL_ACCESS_TOEKEN }}
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js environment
@@ -22,6 +24,4 @@ jobs:
       run: yarn lint
     - name: test
       run: yarn test:docker
-      env:
-        SUBQL_ACCESS_TOEKEN: ${{ secrets.SUBQL_ACCESS_TOEKEN }}
 
