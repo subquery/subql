@@ -4,9 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
-import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
+import {TerraProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function loadTerraProjectManifest(file: string): ProjectManifestVersioned {
+export function loadTerraProjectManifest(file: string): TerraProjectManifestVersioned {
   let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
@@ -21,7 +21,13 @@ export function loadTerraProjectManifest(file: string): ProjectManifestVersioned
   }
 
   const doc = loadFromJsonOrYaml(manifestPath);
-  const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
+  const projectManifest = new TerraProjectManifestVersioned(doc as VersionedProjectManifest);
+  projectManifest.validate();
+  return projectManifest;
+}
+
+export function parseTerraProjectManifest(raw: unknown): TerraProjectManifestVersioned {
+  const projectManifest = new TerraProjectManifestVersioned(raw as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }

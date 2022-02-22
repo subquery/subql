@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Reader, ReaderFactory, ReaderOptions} from '@subql/common';
-import {ProjectManifestVersioned, VersionedProjectManifest} from '@subql/common-substrate';
+import {parseSubstrateProjectManifest} from '@subql/common-substrate';
+import {parseTerraProjectManifest} from '@subql/common-terra';
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
 
@@ -40,15 +41,20 @@ export class Validator {
       skipped: false,
     });
 
-    const schema = new ProjectManifestVersioned(rawSchema as VersionedProjectManifest);
+    let schema;
+    try {
+      schema = parseSubstrateProjectManifest(rawSchema);
 
-    if (schema.isV0_0_1) {
-      reports.push({
-        name: 'package-json-file',
-        description: 'A valid `package.json` file must exist in the root directory of the project',
-        valid: !!pkg,
-        skipped: false,
-      });
+      if (schema.isV0_0_1) {
+        reports.push({
+          name: 'package-json-file',
+          description: 'A valid `package.json` file must exist in the root directory of the project',
+          valid: !!pkg,
+          skipped: false,
+        });
+      }
+    } catch (e) {
+      schema = parseTerraProjectManifest(rawSchema);
     }
 
     const ctx: Context = {

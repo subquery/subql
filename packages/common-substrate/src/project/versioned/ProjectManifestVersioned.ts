@@ -37,7 +37,7 @@ export function manifestIsV0_3_0(manifest: ISubstrateProjectManifest): manifest 
   return manifest.specVersion === '0.3.0';
 }
 
-export class ProjectManifestVersioned implements ISubstrateProjectManifest {
+export class SubstrateProjectManifestVersioned implements ISubstrateProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {

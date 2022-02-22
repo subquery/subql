@@ -8,10 +8,10 @@ import {NodeVM, VMScript} from '@subql/x-vm2';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {ChainTypes} from './models';
-import {ProjectManifestVersioned, VersionedProjectManifest} from './versioned';
+import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function parseProjectManifest(raw: unknown): ProjectManifestVersioned {
-  const projectManifest = new ProjectManifestVersioned(raw as VersionedProjectManifest);
+export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectManifestVersioned {
+  const projectManifest = new SubstrateProjectManifestVersioned(raw as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }
@@ -33,7 +33,7 @@ export function loadChainTypes(file: string, projectRoot: string): unknown {
   }
 }
 
-export function loadSubstrateProjectManifest(file: string): ProjectManifestVersioned {
+export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
   let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
@@ -48,7 +48,7 @@ export function loadSubstrateProjectManifest(file: string): ProjectManifestVersi
   }
 
   const doc = loadFromJsonOrYaml(manifestPath);
-  const projectManifest = new ProjectManifestVersioned(doc as VersionedProjectManifest);
+  const projectManifest = new SubstrateProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }

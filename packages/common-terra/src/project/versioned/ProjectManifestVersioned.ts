@@ -20,7 +20,7 @@ export function manifestIsV0_3_0(manifest: ITerraProjectManifest): manifest is P
   return manifest.specVersion === '0.3.0';
 }
 
-export class ProjectManifestVersioned implements ITerraProjectManifest {
+export class TerraProjectManifestVersioned implements ITerraProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
