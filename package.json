@@ -31,7 +31,7 @@
     "typescript": "^4.4.4"
   },
   "resolutions": {
-    "@polkadot/api": "7.8.1",
+    "@polkadot/api": "7.9.1",
     "@polkadot/util": "8.4.1"
   },
   "scripts": {
