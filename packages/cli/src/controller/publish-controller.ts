@@ -4,7 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 import {ReaderFactory} from '@subql/common';
-import {parseProjectManifest, manifestIsV0_2_0} from '@subql/common-substrate';
+import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
+import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
@@ -13,11 +14,17 @@ import {IPFS_CLUSTER_ENDPOINT} from '../constants';
 
 export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
   const reader = await ReaderFactory.create(projectDir);
-  const manifest = parseProjectManifest(await reader.getProjectSchema()).asImpl;
-
-  if (!manifestIsV0_2_0(manifest)) {
-    throw new Error('Unsupported project manifest spec, only 0.2.0 is supported');
+  let manifest;
+  const schema = await reader.getProjectSchema();
+  try {
+    manifest = parseSubstrateProjectManifest(schema).asImpl;
+    if (manifestIsV0_0_1(manifest)) {
+      throw new Error('Unsupported project manifest spec, only 0.2.0 or greater is supported');
+    }
+  } catch (e) {
+    manifest = parseTerraProjectManifest(schema).asImpl;
   }
+
   let ipfs: IPFSHTTPClient;
   if (ipfsEndpoint) {
     ipfs = create({url: ipfsEndpoint});
