@@ -7,6 +7,45 @@ SubQuery allows every Substrate/Polkadot team to process and query their data. T
 
 SubQuery aims to support all Substrate-compatible networks.
 
+
+### Run project
+The first, you need to create sample project with command: `subql init sample`
+
+Then go to sample project directory and run `yarn install` to install all dependencies
+
+After installation, change your project.yaml file, here is an example:
+
+```yaml
+specVersion: 0.2.0
+name: sample
+version: 0.0.4
+description: Cuong
+repository: https://github.com/subquery/subql-starter
+schema:
+  file: /Users/trancuong/Sotatek/SubQuery/sample/schema.graphql
+network:
+  endpoint: wss://polkadot.api.onfinality.io/public-ws
+  genesisHash: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3'
+dataSources:
+  - kind: solana/Runtime
+    startBlock: 97497290
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleBlock
+          kind: solana/BlockHandler
+```
+
+After that, you can run `yarn codegen && yarn build` to build the sample project
+
+Then go to `subql` project, in root path of the project, run the following command:
+```shell
+yarn install
+cd packages/types-solana && yarn build
+cd ../common-solana && yarn build
+cd ../node-solana && yarn build
+```
+
 ## Get Started
 #### Installation
 ```shell
