@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   ProjectManifestV0_2_0,
-  ProjectManifestVersioned,
+  SubstrateProjectManifestVersioned,
   ProjectNetworkV0_0_1,
   ChainTypes,
   loadSubstrateProjectManifest,
@@ -21,7 +21,7 @@ const MANIFEST_V_0_2_0 = `project_0_2_0.yaml`;
 
 export async function prepare(
   location: string,
-  manifest: ProjectManifestVersioned
+  manifest: SubstrateProjectManifestVersioned
 ): Promise<[ProjectSpecV0_2_0, string]> {
   const packageData = await fs.promises.readFile(`${location}/package.json`, 'utf8');
   const jsonProjectData = JSON.parse(packageData);
@@ -79,7 +79,7 @@ export async function prepare(
 export async function migrate(
   projectPath: string,
   project: ProjectSpecV0_2_0,
-  manifest: ProjectManifestVersioned,
+  manifest: SubstrateProjectManifestVersioned,
   chainTypes?: string
 ): Promise<void> {
   const originManifestPath = path.join(projectPath, MANIFEST_PATH);

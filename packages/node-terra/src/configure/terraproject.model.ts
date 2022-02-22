@@ -4,7 +4,7 @@
 import {
   loadTerraProjectManifest,
   TerraProjectNetworkConfig,
-  ProjectManifestVersioned,
+  TerraProjectManifestVersioned,
   TerraProjectNetworkV0_3_0,
 } from '@subql/common-terra';
 import {
@@ -18,7 +18,7 @@ const logger = getLogger('configure');
 
 export class SubqueryTerraProject {
   private _path: string;
-  private _projectManifest: ProjectManifestVersioned;
+  private _projectManifest: TerraProjectManifestVersioned;
 
   static async create(path: string): Promise<SubqueryTerraProject> {
     const projectPath = await prepareProjectDir(path);
@@ -26,7 +26,7 @@ export class SubqueryTerraProject {
     return new SubqueryTerraProject(projectManifest, projectPath);
   }
 
-  constructor(manifest: ProjectManifestVersioned, path: string) {
+  constructor(manifest: TerraProjectManifestVersioned, path: string) {
     this._projectManifest = manifest;
     this._path = path;
 
@@ -45,7 +45,7 @@ export class SubqueryTerraProject {
     });
   }
 
-  get projectManifest(): ProjectManifestVersioned {
+  get projectManifest(): TerraProjectManifestVersioned {
     return this._projectManifest;
   }
 

@@ -10,7 +10,7 @@ import {
 } from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
-  parseProjectManifest,
+  parseSubstrateProjectManifest,
   ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
@@ -51,7 +51,7 @@ export class SubqueryProject {
     // and the `loadProjectManifest(projectPath)` only support local mode
     const reader = await ReaderFactory.create(path, readerOptions);
     const projectSchema = await reader.getProjectSchema();
-    const manifest = parseProjectManifest(projectSchema);
+    const manifest = parseSubstrateProjectManifest(projectSchema);
 
     if (manifest.isV0_0_1) {
       return loadProjectFromManifest0_0_1(

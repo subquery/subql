@@ -14,7 +14,7 @@ import {
   GraphQLEntityIndex,
   getAllEnums,
 } from '@subql/common';
-import {loadSubstrateProjectManifest, ProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
+import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
 import {loadTerraProjectManifest} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
@@ -278,7 +278,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 
 export async function generateDatasourceTemplates(
   projectPath: string,
-  projectManifest: ProjectManifestVersioned
+  projectManifest: SubstrateProjectManifestVersioned
 ): Promise<void> {
   if (!projectManifest.isV0_2_1) return;
 

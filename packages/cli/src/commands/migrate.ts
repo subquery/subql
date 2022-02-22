@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {loadSubstrateProjectManifest, ProjectManifestVersioned} from '@subql/common-substrate';
+import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {migrate, prepare} from '../controller/migrate-controller';
 
 export default class Migrate extends Command {
@@ -18,7 +18,7 @@ export default class Migrate extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Migrate);
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
-    let manifest: ProjectManifestVersioned;
+    let manifest: SubstrateProjectManifestVersioned;
     try {
       manifest = loadSubstrateProjectManifest(location);
     } catch (e) {
