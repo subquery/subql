@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, Flags} from '@oclif/core';
-import {IPFS_CLIENT_ENDPOINT} from '@subql/common';
+import {IPFS_NODE_ENDPOINT} from '@subql/common';
 import {commonRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
 
@@ -13,7 +13,7 @@ export default class Validate extends Command {
     location: Flags.string({char: 'l', description: 'local folder, github repo url or IPFS cid'}),
     ipfs: Flags.string({
       description: 'IPFS gateway endpoint, used for validating projects on IPFS',
-      default: IPFS_CLIENT_ENDPOINT,
+      default: IPFS_NODE_ENDPOINT,
     }),
     silent: Flags.boolean(),
   };

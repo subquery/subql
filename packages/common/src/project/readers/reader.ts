@@ -4,6 +4,7 @@
 import fs from 'fs';
 import {getProjectRootAndManifest} from '@subql/common/project';
 import {IPackageJson} from 'package-json-type';
+import {IPFS_REGEX} from '../../constants';
 import {GithubReader} from './github-reader';
 import {IPFSReader} from './ipfs-reader';
 import {LocalReader} from './local-reader';
@@ -19,11 +20,6 @@ export interface Reader {
   root: string | undefined;
 }
 
-const CIDv0 = new RegExp(/Qm[1-9A-Za-z]{44}[^OIl]/i);
-const CIDv1 = new RegExp(
-  /Qm[1-9A-HJ-NP-Za-km-z]{44,}|b[A-Za-z2-7]{58,}|B[A-Z2-7]{58,}|z[1-9A-HJ-NP-Za-km-z]{48,}|F[0-9A-F]{50,}/i
-);
-
 export class ReaderFactory {
   // eslint-disable-next-line @typescript-eslint/require-await
   static async create(location: string, options?: ReaderOptions): Promise<Reader> {
@@ -33,10 +29,9 @@ export class ReaderFactory {
       return new GithubReader(githubMatch[1]);
     }
 
-    const locationWithoutSchema = location.replace('ipfs://', '');
-
-    if (CIDv0.test(locationWithoutSchema) || CIDv1.test(locationWithoutSchema)) {
-      return new IPFSReader(locationWithoutSchema, options.ipfs);
+    const ipfsMatch = location.match(IPFS_REGEX);
+    if (ipfsMatch) {
+      return new IPFSReader(location.replace('ipfs://', ''), options.ipfs);
     }
 
     //local mode

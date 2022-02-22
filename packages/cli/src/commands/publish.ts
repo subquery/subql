@@ -39,10 +39,10 @@ export default class Publish extends Command {
       try {
         authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
       } catch (e) {
-        this.error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
+        throw new Error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
       }
     } else {
-      this.error('Please provide SUBQL_ACCESS_TOKEN before publish');
+      throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
 
     this.log('Uploading SupQuery project to IPFS');

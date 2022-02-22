@@ -11,7 +11,7 @@ export class LocalReader implements Reader {
   constructor(private readonly projectPath: string, private readonly manifestPath: string) {}
 
   get root(): string {
-    return this.projectPath;
+    return path.resolve(this.projectPath);
   }
 
   async getPkg(): Promise<IPackageJson | undefined> {
@@ -26,7 +26,7 @@ export class LocalReader implements Reader {
   }
 
   async getFile(fileName: string): Promise<string | undefined> {
-    const file = path.join(this.projectPath, fileName);
+    const file = path.resolve(this.projectPath, fileName);
     if (!fs.existsSync(file)) {
       return Promise.resolve(undefined);
     }

@@ -9,7 +9,8 @@ export function getYargsOption() {
   return yargs(hideBin(process.argv)).options({
     subquery: {
       alias: 'f',
-      demandOption: false,
+      demandOption: true,
+      default: process.cwd(),
       describe: 'Local path or IPFS cid of the subquery project',
       type: 'string',
     },
