@@ -7,7 +7,7 @@ import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
-import {EthTransaction, EvmLog, ExitReason} from '@polkadot/types/interfaces';
+import {EthTransaction, TransactionV2, EvmLog, ExitReason} from '@polkadot/types/interfaces';
 import {
   SubqlDatasourceProcessor,
   SubqlCustomDatasource,
@@ -101,22 +101,6 @@ type RawEvent = {
   data: string;
 };
 
-type RawTransaction = {
-  nonce: number;
-  gasPrice: string;
-  gasLimit: string;
-  action: {
-    call: string; // hex string
-  };
-  value: string;
-  input: string; // hex string
-  signature: {
-    v: number;
-    r: string; // hex string
-    s: string; // hex string
-  };
-};
-
 type ExecutionEvent = {
   from: string;
   to?: string; // Can be undefined for contract creation
@@ -170,6 +154,9 @@ function buildInterface(ds: MoonbeamDatasource, assets: Record<string, string>):
   if (!contractInterfaces[abi]) {
     // Constructing the interface validates the ABI
     try {
+      if (!assets[abi]) {
+        throw new Error(`Abi "${abi}"not found in assets`);
+      }
       let abiObj = JSON.parse(assets[abi]);
 
       /*
@@ -318,8 +305,13 @@ const CallProcessor: SecondLayerHandlerProcessor<
     api: ApiPromise,
     assets: Record<string, string>
   ): Promise<MoonbeamCall> {
-    const [tx] = original.extrinsic.method.args as [EthTransaction];
-    const rawTx = tx.toJSON() as unknown as RawTransaction;
+    const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
+
+    const rawTx = (tx as TransactionV2).isEip1559
+      ? (tx as TransactionV2).asEip1559
+      : (tx as TransactionV2).isLegacy
+      ? (tx as TransactionV2).asLegacy
+      : (tx as EthTransaction);
     let from, hash, to, success;
     try {
       const executionEvent = getExecutionEvent(original);
@@ -331,17 +323,15 @@ const CallProcessor: SecondLayerHandlerProcessor<
       success = false;
     }
 
-    const call: MoonbeamCall = {
-      // Transaction properties
+    let call: MoonbeamCall;
+
+    const baseCall /*: Partial<MoonbeamCall>*/ = {
       from,
       to, // when contract creation
-      nonce: rawTx.nonce,
-      gasLimit: BigNumber.from(rawTx.gasLimit),
-      gasPrice: BigNumber.from(rawTx.gasPrice),
-      data: rawTx.input,
-      value: BigNumber.from(rawTx.value),
-      chainId: undefined, // TODO
-      ...rawTx.signature,
+      nonce: rawTx.nonce.toNumber(),
+      gasLimit: BigNumber.from(rawTx.gasLimit.toBigInt()),
+      data: rawTx.input.toHex(),
+      value: BigNumber.from(rawTx.value.toBigInt()),
 
       // Transaction response properties
       hash,
@@ -350,6 +340,35 @@ const CallProcessor: SecondLayerHandlerProcessor<
       timestamp: Math.round(original.block.timestamp.getTime() / 1000),
       success,
     };
+
+    if ((tx as TransactionV2).isEip1559) {
+      const eip1559tx = (tx as TransactionV2).asEip1559;
+
+      call = {
+        ...baseCall,
+        chainId: eip1559tx.chainId.toNumber(),
+        maxFeePerGas: BigNumber.from(eip1559tx.maxFeePerGas.toBigInt()),
+        maxPriorityFeePerGas: BigNumber.from(eip1559tx.maxPriorityFeePerGas.toBigInt()),
+
+        s: eip1559tx.s.toHex(),
+        r: eip1559tx.r.toHex(),
+        type: 2,
+      };
+    } else {
+      const legacyTx = (tx as TransactionV2).isLegacy ? (tx as TransactionV2).asLegacy : (tx as EthTransaction);
+
+      call = {
+        ...baseCall,
+
+        gasPrice: BigNumber.from(legacyTx.gasPrice.toBigInt()),
+        chainId: undefined,
+
+        r: legacyTx.signature.r.toHex(),
+        s: legacyTx.signature.s.toHex(),
+        v: legacyTx.signature.v.toNumber(),
+        type: 0,
+      };
+    }
 
     try {
       const iface = buildInterface(ds, assets);
