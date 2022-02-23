@@ -1,9 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {lstatSync, readFileSync, existsSync} from 'fs';
+import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {getProjectRootAndManifest} from '@subql/common';
 import {uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
@@ -13,22 +14,18 @@ export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
 
   static flags = {
-    location: Flags.string({char: 'l', description: 'local folder'}),
+    location: Flags.string({char: 'f', description: 'from project or manifest path'}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
 
-    const directory = flags.location ? path.resolve(flags.location) : process.cwd();
-
-    if (!lstatSync(directory).isDirectory()) {
-      this.error('Argument `location` is not a valid directory');
-    }
+    const project = getProjectRootAndManifest(flags.location ? path.resolve(flags.location) : process.cwd());
 
     // Ensure that the project is built
     try {
-      await Build.run(['--location', directory]);
+      await Build.run(['--location', project.root]);
     } catch (e) {
       this.log(e);
       this.error('Failed to build project');
@@ -42,14 +39,14 @@ export default class Publish extends Command {
       try {
         authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
       } catch (e) {
-        this.error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
+        throw new Error(`Failed to read SUBQL_ACCESS_TOKEN from ${ACCESS_TOKEN_PATH}: ${e}`);
       }
     } else {
-      this.error('Please provide SUBQL_ACCESS_TOKEN before publish');
+      throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
 
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(directory, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }

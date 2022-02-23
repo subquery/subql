@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { ReaderFactory } from '@subql/common';
 
 import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
     let projectDirV0_0_1: string;
+
     let projectDirV0_2_0: string;
 
     beforeEach(() => {
@@ -16,7 +16,6 @@ describe('SubqueryProject', () => {
         __dirname,
         '../../test/projectFixture/v0.0.1',
       );
-
       projectDirV0_2_0 = path.resolve(
         __dirname,
         '../../test/projectFixture/v0.2.0',
@@ -27,12 +26,11 @@ describe('SubqueryProject', () => {
     });
 
     it('load 0.0.1 chain types', async () => {
-      const project = await SubqueryProject.create(projectDirV0_0_1);
+      const project = await SubqueryProject.create(projectDirV0_0_1, undefined);
       console.log(project.chainTypes);
     });
 
     it('convert local 0.2.0 manifest to project object', async () => {
-      const reader = await ReaderFactory.create(projectDirV0_2_0);
       //manually pass the endpoint
       const project = await SubqueryProject.create(projectDirV0_2_0, {
         endpoint: 'wss://rpc.polkadot.io/public-ws',

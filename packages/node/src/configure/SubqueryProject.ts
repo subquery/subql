@@ -50,6 +50,9 @@ export class SubqueryProject {
     // and the `loadProjectManifest(projectPath)` only support local mode
     const reader = await ReaderFactory.create(path, readerOptions);
     const projectSchema = await reader.getProjectSchema();
+    if (projectSchema === undefined) {
+      throw new Error(`Get manifest from project path ${path} failed`);
+    }
     const manifest = parseProjectManifest(projectSchema);
 
     if (manifest.isV0_0_1) {
@@ -92,7 +95,7 @@ async function loadProjectFromManifest0_0_1(
 ): Promise<SubqueryProject> {
   return {
     id: path, //user project path as it id for now
-    root: await getProjectRoot(reader, path),
+    root: await getProjectRoot(reader),
     network: {
       ...projectManifest.network,
       ...networkOverrides,
@@ -119,7 +122,7 @@ async function loadProjectFromManifest0_2_0(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
 
   const network = {
     ...projectManifest.network,
@@ -167,7 +170,7 @@ async function loadProjectFromManifest0_2_1(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
   const project = await loadProjectFromManifest0_2_0(
     projectManifest,
     reader,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {createServer} from 'http';
-import {findAvailablePort} from './utils';
+import {findAvailablePort, getProjectRootAndManifest} from './utils';
 
 describe('Utility', () => {
   describe('findAvailablePorts', () => {
@@ -21,6 +21,10 @@ describe('Utility', () => {
       server.listen(port);
       expect(await findAvailablePort(1337, 1)).toEqual(port + 1);
       server.close();
+    });
+
+    it('throw error if getProjectRootAndManifest path not exist', () => {
+      expect(() => getProjectRootAndManifest('path/not/exist')).toThrow();
     });
   });
 });
