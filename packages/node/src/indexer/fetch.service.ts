@@ -282,10 +282,7 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.getFinalizedHead();
-      const finalizedBlock = await this.api.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const currentFinalizedHeight = await this.api.getFinalizedBlockHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {

@@ -132,6 +132,25 @@ export class ApiWrapper {
     return version;
   }
 
+  async getFinalizedBlockHeight(): Promise<number> {
+    let finalizedBlockHeight: number;
+    let finalizedHead;
+    let finalizedBlock;
+    switch (this.network) {
+      case 'algorand':
+        finalizedBlockHeight = await this.getLastHeight();
+        break;
+      case 'polkadot':
+        finalizedHead = await this.getFinalizedHead();
+        finalizedBlock = await this.getBlock(finalizedHead);
+        finalizedBlockHeight = finalizedBlock.block.header.number.toNumber();
+        break;
+      default:
+        break;
+    }
+    return finalizedBlockHeight;
+  }
+
   async getFinalizedHead(): Promise<string | BlockHash | number> {
     let finalizedHead: string | BlockHash | number;
     switch (this.network) {
