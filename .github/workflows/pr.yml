@@ -8,7 +8,7 @@ jobs:
     name: pr
     runs-on: ubuntu-latest
     env:
-      SUBQL_ACCESS_TOEKEN: ${{ secrets.SUBQL_ACCESS_TOEKEN }}
+      SUBQL_ACCESS_TOEKEN: MTA0MzE2NTc=XF2qLZbPH0Lzo6PqYimq
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js environment
