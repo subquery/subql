@@ -4590,7 +4590,6 @@ __metadata:
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.0.2
-    "@types/js-sha512": ^0
     "@types/lodash": ^4.14.176
     "@types/pino": ^6.3.8
     "@types/sequelize": ^4.28.10
@@ -4602,7 +4601,6 @@ __metadata:
     app-module-path: ^2.2.0
     dayjs: ^1.10.7
     dotenv: ^15.0.1
-    js-sha512: ^0.8.0
     lodash: ^4.17.21
     merkle-tools: ^1.4.1
     nodemon: ^2.0.15
@@ -5104,13 +5102,6 @@ __metadata:
     jest-diff: ^27.0.0
     pretty-format: ^27.0.0
   checksum: d2350267f954f9a2e4a15e5f02fbf19a77abfb9fd9e57a954de1fb0e9a0d3d5f8d3646ac7d9c42aeb4b4d828d2e70624ec149c85bb50a48634a54eed8429e1f8
-  languageName: node
-  linkType: hard
-
-"@types/js-sha512@npm:^0":
-  version: 0.7.0
-  resolution: "@types/js-sha512@npm:0.7.0"
-  checksum: af1347f394f3284ace870830897dc327c8e5fe677b0fde27d811ea7fd538a372429f1947b547e6312e77fb7278b809faa954b7b84a14969b13ac030336d34931
   languageName: node
   linkType: hard
 
