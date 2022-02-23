@@ -8,7 +8,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
 ## [0.20.1] - 2022-02-15
 ### Fixed
 - Patch release with @subql/validator version bump, in order to fix validation issue. 
