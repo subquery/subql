@@ -7,14 +7,15 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
+import { getAllEntitiesRelations } from '@subql/common';
 import {
-  getAllEntitiesRelations,
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
-} from '@subql/common';
+  SubstrateProjectNetworkConfig,
+} from '@subql/common-substrate';
 import {
   RuntimeHandlerInputMap,
   SecondLayerHandlerProcessor,

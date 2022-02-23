@@ -1,0 +1,35 @@
+{
+  "name": "@subql/common-substrate",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "build": "rm -rf dist && tsc -b",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@polkadot/util": "^7.9.2",
+    "@subql/common": "workspace:*",
+    "@subql/types": "workspace:*",
+    "bn.js": "4.11.6",
+    "class-transformer": "0.4.0",
+    "class-validator": "^0.13.1",
+    "flatted": "^3.2.2",
+    "graphql": "^15.7.2",
+    "graphql-tag": "^2.12.5",
+    "js-yaml": "^4.1.0",
+    "pino": "^6.13.3",
+    "reflect-metadata": "^0.1.13",
+    "sequelize": "^6.6.2"
+  },
+  "devDependencies": {
+    "@types/bn.js": "4.11.6",
+    "@types/js-yaml": "^4.0.4",
+    "@types/pino": "^6.3.12"
+  }
+}

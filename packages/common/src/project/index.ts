@@ -6,4 +6,3 @@ export * from './load';
 export * from './versioned';
 export * from './utils';
 export * from './readers';
-export * from './models';

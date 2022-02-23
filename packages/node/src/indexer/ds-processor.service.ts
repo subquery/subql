@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs } from '@subql/common';
+import { isCustomDs } from '@subql/common-substrate';
 import {
   SubqlCustomDatasource,
   SubqlDatasource,
@@ -83,7 +83,9 @@ export class DsProcessorService {
   }
 
   async validateProjectCustomDatasources(): Promise<void> {
-    await this.validateCustomDs((this.project.dataSources as SubqlDatasource[]).filter(isCustomDs));
+    await this.validateCustomDs(
+      (this.project.dataSources as SubqlDatasource[]).filter(isCustomDs),
+    );
   }
 
   getDsProcessor<D extends string, T extends SubqlNetworkFilter>(
