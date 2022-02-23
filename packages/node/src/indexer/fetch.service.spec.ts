@@ -251,8 +251,7 @@ describe('FetchService', () => {
     );
     await fetchService.init();
     const api = apiService.getApi();
-    expect(api.getFinalizedHead).toHaveBeenCalledTimes(1);
-    expect(api.getBlock).toHaveBeenCalledTimes(1);
+    expect(api.getFinalizedBlockHeight).toHaveBeenCalledTimes(1);
   });
 
   it('log errors when failed to get finalized block', async () => {

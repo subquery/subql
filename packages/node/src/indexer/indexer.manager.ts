@@ -403,14 +403,14 @@ export class IndexerManager {
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
-        `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
+        `Did not find any dataSource match with network specName ${this.api.specName}`,
       );
       process.exit(1);
     }
     filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight}
          or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
@@ -420,7 +420,7 @@ export class IndexerManager {
       if (isCustomDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api.client);
+          .dsFilterProcessor(ds, this.api.substrate);
       } else {
         return true;
       }
@@ -451,7 +451,7 @@ export class IndexerManager {
     return this.project.dataSources.filter(
       (ds) =>
         !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
+        ds.filter.specName === this.api.specName.toString(),
     );
   }
 
@@ -509,7 +509,7 @@ export class IndexerManager {
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
           .map((data) =>
-            processor.transformer(data, ds, this.api.client, assets),
+            processor.transformer(data, ds, this.api.substrate, assets),
           ),
       );
 

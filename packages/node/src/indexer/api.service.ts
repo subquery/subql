@@ -19,6 +19,12 @@ const NOT_SUPPORT = (name: string) => () => {
 
 const logger = getLogger('api');
 
+const optionsAlgo = {
+  token: 'a51a4df895858d2234df7ada60437bc6f5591509191932f3d86f1c4e5edfd2ec',
+  server: 'http://127.0.0.1',
+  port: 8080,
+};
+
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiWrapper;
@@ -31,7 +37,7 @@ export class ApiService implements OnApplicationShutdown {
   constructor(
     protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
-  ) { }
+  ) {}
 
   async onApplicationShutdown(): Promise<void> {
     if (this.project.network === 'substrate') {
@@ -64,12 +70,11 @@ export class ApiService implements OnApplicationShutdown {
       ...chainTypes,
     };
 
-    const optionsAlgo = {
-      token: 'a51a4df895858d2234df7ada60437bc6f5591509191932f3d86f1c4e5edfd2ec',
-      server: 'http://127.0.0.1',
-      port: 8080,
-    };
-    this.api = new ApiWrapper('polkadot', this.apiOption);
+    if (network === 'polkadot') {
+      this.api = new ApiWrapper('polkadot', this.apiOption);
+    } else {
+      this.api = new ApiWrapper('algorand', optionsAlgo);
+    }
     await this.api.init();
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
@@ -82,7 +87,7 @@ export class ApiService implements OnApplicationShutdown {
 
     this.networkMeta = {
       chain: this.api.runtimeChain,
-      specName: this.api.runtimeVersion.specName,
+      specName: this.api.specName,
       genesisHash: this.api.genesisHash,
     };
 
@@ -107,7 +112,7 @@ export class ApiService implements OnApplicationShutdown {
   async getPatchedApi(
     blockHash: string | BlockHash,
     blockNumber: number,
-    parentBlockHash?: string | BlockHash,
+    parentBlockHash?: BlockHash,
   ): Promise<ApiAt> {
     this.currentBlockHash = blockHash.toString();
     this.currentBlockNumber = blockNumber;
@@ -116,11 +121,11 @@ export class ApiService implements OnApplicationShutdown {
         parentBlockHash,
       );
     }
-    const apiAt = (await this.api.client.at(
+    const apiAt = (await this.api.substrate.at(
       blockHash,
       this.currentRuntimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.api.client, apiAt);
+    this.patchApiRpc(this.api.substrate, apiAt);
     return apiAt;
   }
 
