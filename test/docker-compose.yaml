@@ -25,6 +25,5 @@ services:
       SUBQL_ACCESS_TOKEN: ${SUBQL_ACCESS_TOKEN}
     command:
       - yarn
-      - test
-      - packages/cli/src/controller/publish-controller.spec.ts
+      - test:all
 
