@@ -12,7 +12,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Fixed 
 - Fix function call from calling itself (#808)
 ### Changed
-- Update readers to support reader project from its manifest file, use `constants.ts to` store shared variables(#800)
+- Update readers to support reader project from its manifest file (#800)
 
 ## [0.17.0] - 2021-02-09
 ### Added
