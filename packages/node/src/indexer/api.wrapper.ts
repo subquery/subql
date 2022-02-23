@@ -7,8 +7,11 @@ import {
   BlockHash,
   SignedBlock,
   RuntimeVersion,
-  Header,
+  Header as SubstrateHeader,
 } from '@polkadot/types/interfaces';
+import AlgorandHeader from 'algosdk/dist/types/src/types/blockHeader';
+
+type Header = SubstrateHeader | AlgorandHeader;
 
 export class ApiWrapper {
   client: ApiPromise; // algosdk.Algodv2 | ApiPromise;
@@ -16,10 +19,10 @@ export class ApiWrapper {
   consts: any;
   rpc: any;
 
-  constructor(private blockChain: string, private options: any | ApiOptions) {}
+  constructor(private network: string, private options: any | ApiOptions) {}
 
   async init(): Promise<void> {
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -35,7 +38,7 @@ export class ApiWrapper {
 
   get genesisHash(): string {
     let genesisHash: string;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -49,7 +52,7 @@ export class ApiWrapper {
 
   get runtimeChain(): string {
     let runtimeChain: string;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -63,7 +66,7 @@ export class ApiWrapper {
 
   get runtimeVersion(): any {
     let runtimeVersion: any;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -78,7 +81,7 @@ export class ApiWrapper {
   }
 
   async disconnect(): Promise<void> {
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -90,7 +93,7 @@ export class ApiWrapper {
   }
 
   on(eventName: string | ApiInterfaceEvents, callback: () => void): void {
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -105,7 +108,7 @@ export class ApiWrapper {
     parentBlockHash: string | BlockHash,
   ): Promise<any | RuntimeVersion> {
     let version: any | RuntimeVersion;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -121,7 +124,7 @@ export class ApiWrapper {
 
   async getFinalizedHead(): Promise<string | BlockHash> {
     let finalizedHead: string | BlockHash;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -135,7 +138,7 @@ export class ApiWrapper {
 
   async getBlock(blockHash: string | BlockHash): Promise<any | SignedBlock> {
     let block: any | SignedBlock;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -149,11 +152,14 @@ export class ApiWrapper {
 
   async getHeader(): Promise<any | Header> {
     let header: any | Header;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
-        header = await this.client.rpc.chain.getHeader();
+        header = new GenericHeader(
+          await this.client.rpc.chain.getHeader(),
+          this.network,
+        );
         break;
       default:
         break;
@@ -163,7 +169,7 @@ export class ApiWrapper {
 
   async getBlockHash(height: number): Promise<any | BlockHash> {
     let blockHash: any | BlockHash;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -176,7 +182,7 @@ export class ApiWrapper {
   }
 
   async getBlockRegistry(blockHash: string | BlockHash): Promise<void> {
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -189,7 +195,7 @@ export class ApiWrapper {
 
   async at(blockHash: string | BlockHash): Promise<any> {
     let clientAt: any;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -203,7 +209,7 @@ export class ApiWrapper {
 
   getRegistryDefinition(type: string): any {
     let registryDefinition: any;
-    switch (this.blockChain) {
+    switch (this.network) {
       case 'algorand':
         break;
       case 'polkadot':
@@ -213,5 +219,26 @@ export class ApiWrapper {
         break;
     }
     return registryDefinition;
+  }
+}
+
+class GenericHeader {
+  private network: string;
+  private inner: any;
+
+  constructor(header: Header, network: string) {
+    this.network = network;
+    this.inner = header as any;
+  }
+
+  number() {
+    switch (this.network) {
+      case 'algorand':
+        return this.inner.rnd;
+      case 'polkadot':
+        return this.inner.number.toNumber();
+      default:
+        return -1;
+    }
   }
 }

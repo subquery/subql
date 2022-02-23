@@ -30,6 +30,7 @@
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
     "@subql/x-vm2": "^3.9.3-0.1.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
+    "algosdk": "^1.13.1",
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.7",
     "lodash": "^4.17.21",

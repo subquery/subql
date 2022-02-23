@@ -194,7 +194,7 @@ async function loadProjectFromManifest0_3_0(
   path: string,
   networkOverrides?: Partial<ProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
 
   const network = {
     ...projectManifest.network,

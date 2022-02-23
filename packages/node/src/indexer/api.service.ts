@@ -34,7 +34,9 @@ export class ApiService implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect()]);
+    if (this.project.network === 'substrate') {
+      await Promise.all([this.api?.disconnect()]);
+    }
   }
 
   async init(): Promise<ApiService> {
@@ -46,7 +48,6 @@ export class ApiService implements OnApplicationShutdown {
       logger.error(e);
       process.exit(1);
     }
-    // We have the connection chain
     logger.info(JSON.stringify(this.project.network));
     let provider: WsProvider | HttpProvider;
     let throwOnConnect = false;
@@ -62,7 +63,8 @@ export class ApiService implements OnApplicationShutdown {
       throwOnConnect,
       ...chainTypes,
     };
-    this.api = new ApiWrapper('polkadot', this.apiOption);
+
+    this.api = new ApiWrapper(network, this.apiOption);
     await this.api.init();
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
