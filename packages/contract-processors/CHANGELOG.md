@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.1] - 2022-02-23
 ### Added
-Add support for EIP1599 transactions to Moonbeam contract processor (#814)
+- Add support for EIP1599 transactions to Moonbeam contract processor (#814)
 
 ## [0.5.0] - 2022-02-09
 ### Added
