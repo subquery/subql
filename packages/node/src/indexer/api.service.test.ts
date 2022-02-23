@@ -72,7 +72,7 @@ describe('ApiService', () => {
 
     const apiAt = await api.at(TEST_BLOCKHASH);
     apiAt.registry;
-    expect(api.registry.getDefinition('TestType')).toEqual('u32');
+    expect(api.getRegistryDefinition('TestType')).toEqual('u32');
     // workaround for ending the test immediately (before return of subscribeRuntimeVersion)
     // will cause an unhandled promise rejection and affect the result of next test.
     await delay(0.5);
@@ -81,7 +81,7 @@ describe('ApiService', () => {
   it('api query is locked at specified block', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
-    const blockhash = await api.rpc.chain.getBlockHash(1);
+    const blockhash = await api.getBlockHash(1);
     const validators = await api.query.session.validators.at(blockhash);
     const patchedApi = await apiService.getPatchedApi(blockhash, 1);
     const [patchedValidators, currentValidators] = await Promise.all([
@@ -95,7 +95,7 @@ describe('ApiService', () => {
   it('api query input is double map', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
-    const blockhash = await api.rpc.chain.getBlockHash(6721189);
+    const blockhash = await api.getBlockHash(6721189);
     const patchedApi = await apiService.getPatchedApi(blockhash, 6721189);
     const apiResults = await api.query.staking.erasStakers.at(
       blockhash,
@@ -118,9 +118,9 @@ describe('ApiService', () => {
     const currentMaxNRPV =
       api.consts.staking.maxNominatorRewardedPerValidator.toNumber();
     if (currentMaxNRPV === 128) {
-      blockhash = await api.rpc.chain.getBlockHash(4401242);
+      blockhash = await api.getBlockHash(4401242);
     } else {
-      blockhash = await api.rpc.chain.getBlockHash(4401243);
+      blockhash = await api.getBlockHash(4401243);
     }
     const patchedApi = await apiService.getPatchedApi(blockhash, 4401243);
 
@@ -279,11 +279,11 @@ describe('ApiService', () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
 
-    const blockhash = await api.rpc.chain.getBlockHash(4401242);
+    const blockhash = await api.getBlockHash(4401242);
     const patchedApi = await apiService.getPatchedApi(blockhash, 4401242);
 
     const b1 = await patchedApi.rpc.chain.getBlock();
-    const apiBlock = await api.rpc.chain.getBlock(blockhash);
+    const apiBlock = await api.getBlock(blockhash);
     const b2 = await patchedApi.rpc.chain.getBlock('0x12312314');
 
     expect(b1.block.hash.toString()).toEqual(blockhash.toString());
@@ -298,11 +298,11 @@ describe('ApiService', () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
 
-    const blockhash1 = await api.rpc.chain.getBlockHash(1378036);
+    const blockhash1 = await api.getBlockHash(1378036);
     let patchedApi = await apiService.getPatchedApi(blockhash1, 1378036);
     const validators1 = await patchedApi.query.session.validators();
 
-    const blockhash2 = await api.rpc.chain.getBlockHash(1385137);
+    const blockhash2 = await api.getBlockHash(1385137);
     patchedApi = await apiService.getPatchedApi(blockhash2, 1385137);
     const validators2 = await patchedApi.query.session.validators();
     // prettier-ignore
@@ -319,7 +319,7 @@ describe('ApiService', () => {
   it('support http provider', async () => {
     const apiService = await prepareApiService(HTTP_ENDPOINT);
     const api = apiService.getApi();
-    const blockhash = await api.rpc.chain.getBlockHash(1);
+    const blockhash = await api.getBlockHash(1);
     const patchedApi = await apiService.getPatchedApi(blockhash, 1);
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
   });
@@ -332,7 +332,7 @@ describe('ApiService', () => {
     const api = apiService.getApi();
 
     const blockNumber = 1545235;
-    const blockhash = await api.rpc.chain.getBlockHash(blockNumber);
+    const blockhash = await api.getBlockHash(blockNumber);
     const patchedApi = await apiService.getPatchedApi(blockhash, blockNumber);
 
     /* Block number should be ignored and `blockNumber` above used */

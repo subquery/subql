@@ -5,7 +5,6 @@ import assert from 'assert';
 import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   getAllEntitiesRelations,
@@ -33,6 +32,7 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { ApiWrapper } from './api.wrapper';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -56,7 +56,7 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
-  private api: ApiPromise;
+  private api: ApiWrapper;
   private prevSpecVersion?: number;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
@@ -420,7 +420,7 @@ export class IndexerManager {
       if (isCustomDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.api.client);
       } else {
         return true;
       }
@@ -508,7 +508,9 @@ export class IndexerManager {
       const transformedData = await Promise.all(
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
-          .map((data) => processor.transformer(data, ds, this.api, assets)),
+          .map((data) =>
+            processor.transformer(data, ds, this.api.client, assets),
+          ),
       );
 
       for (const data of transformedData) {

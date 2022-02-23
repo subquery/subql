@@ -9,6 +9,7 @@ import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
+import { ApiWrapper } from './api.wrapper';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { ApiAt } from './types';
 
@@ -20,7 +21,7 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
-  private api: ApiPromise;
+  private api: ApiWrapper;
   private currentBlockHash: string;
   private currentBlockNumber: number;
   private currentRuntimeVersion: RuntimeVersion;
@@ -61,7 +62,8 @@ export class ApiService implements OnApplicationShutdown {
       throwOnConnect,
       ...chainTypes,
     };
-    this.api = await ApiPromise.create(this.apiOption);
+    this.api = new ApiWrapper('polkadot', this.apiOption);
+    await this.api.init();
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     this.api.on('connected', () => {
@@ -72,9 +74,9 @@ export class ApiService implements OnApplicationShutdown {
     });
 
     this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
+      chain: this.api.runtimeChain,
+      specName: this.api.runtimeVersion.specName,
+      genesisHash: this.api.genesisHash,
     };
 
     if (
@@ -91,7 +93,7 @@ export class ApiService implements OnApplicationShutdown {
     return this;
   }
 
-  getApi(): ApiPromise {
+  getApi(): ApiWrapper {
     return this.api;
   }
 
@@ -103,15 +105,15 @@ export class ApiService implements OnApplicationShutdown {
     this.currentBlockHash = blockHash.toString();
     this.currentBlockNumber = blockNumber;
     if (parentBlockHash) {
-      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
+      this.currentRuntimeVersion = await this.api.getRuntimeVersion(
         parentBlockHash,
       );
     }
-    const apiAt = (await this.api.at(
+    const apiAt = (await this.api.client.at(
       blockHash,
       this.currentRuntimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.api, apiAt);
+    this.patchApiRpc(this.api.client, apiAt);
     return apiAt;
   }
 

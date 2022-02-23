@@ -250,10 +250,9 @@ describe('FetchService', () => {
       project,
     );
     await fetchService.init();
-    expect(
-      apiService.getApi().rpc.chain.getFinalizedHead,
-    ).toHaveBeenCalledTimes(1);
-    expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(1);
+    const api = apiService.getApi();
+    expect(api.getFinalizedHead).toHaveBeenCalledTimes(1);
+    expect(api.getBlock).toHaveBeenCalledTimes(1);
   });
 
   it('log errors when failed to get finalized block', async () => {

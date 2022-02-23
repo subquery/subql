@@ -21,6 +21,7 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
+import { ApiWrapper } from '../indexer/api.wrapper';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 const logger = getLogger('fetch');
@@ -178,7 +179,7 @@ export function filterEvents(
 
 // TODO: prefetch all known runtime upgrades at once
 export async function prefetchMetadata(
-  api: ApiPromise,
+  api: ApiWrapper,
   hash: BlockHash,
 ): Promise<void> {
   await api.getBlockRegistry(hash);

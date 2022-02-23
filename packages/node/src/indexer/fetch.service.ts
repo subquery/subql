@@ -5,7 +5,6 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ApiPromise } from '@polkadot/api';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -31,6 +30,7 @@ import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { ApiWrapper } from './api.wrapper';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -143,7 +143,7 @@ export class FetchService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): ApiPromise {
+  get api(): ApiWrapper {
     return this.apiService.getApi();
   }
 
@@ -156,7 +156,7 @@ export class FetchService implements OnApplicationShutdown {
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
         (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+          this.api.runtimeVersion.specName,
     );
     for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
@@ -282,8 +282,8 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
+      const finalizedHead = await this.api.getFinalizedHead();
+      const finalizedBlock = await this.api.getBlock(finalizedHead);
       const currentFinalizedHeight =
         finalizedBlock.block.header.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
@@ -304,7 +304,7 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const bestHeader = await this.api.rpc.chain.getHeader();
+      const bestHeader = await this.api.getHeader();
       const currentBestHeight = bestHeader.number.toNumber();
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
@@ -437,15 +437,13 @@ export class FetchService implements OnApplicationShutdown {
 
   @profiler(argv.profiler)
   async fetchMeta(height: number): Promise<boolean> {
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
+    const parentBlockHash = await this.api.getBlockHash(
       Math.max(height - 1, 0),
     );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
+    const runtimeVersion = await this.api.getRuntimeVersion(parentBlockHash);
     const specVersion = runtimeVersion.specVersion.toNumber();
     if (this.parentSpecVersion !== specVersion) {
-      const blockHash = await this.api.rpc.chain.getBlockHash(height);
+      const blockHash = await this.api.getBlockHash(height);
       await SubstrateUtil.prefetchMetadata(this.api, blockHash);
       this.parentSpecVersion = specVersion;
       return true;
