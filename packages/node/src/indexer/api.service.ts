@@ -45,7 +45,8 @@ export class ApiService implements OnApplicationShutdown {
       logger.error(e);
       process.exit(1);
     }
-
+    // We have the connection chain
+    logger.info(JSON.stringify(this.project.network));
     let provider: WsProvider | HttpProvider;
     let throwOnConnect = false;
     if (network.endpoint.startsWith('ws')) {
