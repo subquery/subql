@@ -234,11 +234,8 @@ async function makeTempDir(): Promise<string> {
   return fs.promises.mkdtemp(`${tmpDir}${sep}`);
 }
 
-export async function getProjectRoot(
-  reader: Reader,
-  path: string,
-): Promise<string> {
-  if (reader instanceof LocalReader) return path;
+export async function getProjectRoot(reader: Reader): Promise<string> {
+  if (reader instanceof LocalReader) return reader.root;
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }

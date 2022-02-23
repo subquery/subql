@@ -12,6 +12,7 @@ import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
 import Build from '../commands/build';
 import Codegen from '../commands/codegen';
+import Publish from '../commands/publish';
 import {isProjectSpecV0_0_1, ProjectSpecBase, ProjectSpecV0_0_1, ProjectSpecV0_2_0} from '../types';
 import {cloneProjectGit, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
@@ -38,8 +39,8 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
 };
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
-//Replace your access token before test
-const testAuth = 'MTA0MzE2NTc=JIwMq1cCzGIWddlskYRE';
+// Replace/Update your access token when test locally
+const testAuth = process.env.SUBQL_ACCESS_TOEKN;
 
 jest.setTimeout(120000);
 
@@ -60,7 +61,7 @@ async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> 
   childProcess.execSync(`npm i`, {cwd: projectDir});
 
   await Codegen.run(['-l', projectDir]);
-  await Build.run(['-l', projectDir]);
+  await Build.run(['-f', projectDir]);
 
   return projectDir;
 }
@@ -100,6 +101,14 @@ describe('Cli publish', () => {
     expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
+  });
+
+  it('upload project from a manifest', async () => {
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const testManifestPath = path.resolve(projectDir, 'test.yaml');
+    fs.renameSync(manifestPath, testManifestPath);
+    await Publish.run(['-f', testManifestPath]);
   });
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {

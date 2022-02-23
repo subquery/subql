@@ -3,17 +3,16 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory} from '@subql/common';
+import {ReaderFactory, IPFS_CLUSTER_ENDPOINT} from '@subql/common';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
-import {IPFS_CLUSTER_ENDPOINT} from '../constants';
 
-export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
-  const reader = await ReaderFactory.create(projectDir);
+export async function uploadToIpfs(projectPath: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
+  const reader = await ReaderFactory.create(projectPath);
   let manifest;
   const schema = await reader.getProjectSchema();
   try {
@@ -29,7 +28,7 @@ export async function uploadToIpfs(projectDir: string, authToken: string, ipfsEn
   if (ipfsEndpoint) {
     ipfs = create({url: ipfsEndpoint});
   }
-  const deployment = await replaceFileReferences(projectDir, manifest, authToken, ipfs);
+  const deployment = await replaceFileReferences(reader.root, manifest, authToken, ipfs);
   // Upload schema
   return uploadFile(deployment.toDeployment(), authToken, ipfs);
 }

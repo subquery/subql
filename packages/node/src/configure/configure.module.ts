@@ -4,13 +4,13 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
+import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './SubqueryProject';
-
 const logger = getLogger('configure');
 
 const YargsNameMapping = {
@@ -36,11 +36,13 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
 }
 
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
+  const ipfsMatch = config.subquery.match(IPFS_REGEX);
   return {
     ...config,
     subqueryName:
-      config.subqueryName ??
-      last(path.resolve(config.subquery).split(path.sep)),
+      config.subqueryName ?? ipfsMatch
+        ? config.subquery.replace(IPFS_REGEX, '')
+        : last(getProjectRootAndManifest(config.subquery).root.split(path.sep)),
   } as MinConfig;
 }
 
@@ -112,16 +114,9 @@ export class ConfigureModule {
       setLevel('debug');
     }
 
-    const projectPath = config.ipfs
-      ? argv.subquery
-      : path.resolve(
-          config.configDir && !argv.subquery ? config.configDir : '.',
-          config.subquery,
-        );
-
     const project = async () => {
       const p = await SubqueryProject.create(
-        projectPath,
+        argv.subquery,
         omitBy<SubstrateProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoint,

@@ -11,7 +11,7 @@ export default class Build extends Command {
   static description = 'Build this SubQuery project code';
 
   static flags = {
-    location: Flags.string({char: 'l', description: 'local folder'}),
+    location: Flags.string({char: 'f', description: 'local folder'}),
     output: Flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
     mode: Flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
   };
