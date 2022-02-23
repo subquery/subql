@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BlockResponse} from '@solana/web3.js';
+import {BlockResponse, TransactionResponse} from '@solana/web3.js';
 
 export interface Entity {
   id: string;
@@ -21,4 +21,10 @@ export interface Store {
 
 export interface SolanaBlock {
   block: BlockResponse;
+}
+
+export interface SolanaTransaction {
+  transaction: BlockResponse;
+  block: BlockResponse;
+  success: boolean;
 }

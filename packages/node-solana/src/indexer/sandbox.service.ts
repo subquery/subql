@@ -35,9 +35,6 @@ const DEFAULT_OPTION: NodeVMOptions = {
       : ['assert', 'buffer', 'crypto', 'util', 'path'], // No events here without unsafe
     external: true,
     context: 'sandbox',
-    mock: {
-      events: undefined, // Remove events, I think this will cause @terra-money/terra.js to use a js implementation rather than native one
-    },
   },
   wrapper: 'commonjs',
   sourceExtensions: ['js', 'cjs'],

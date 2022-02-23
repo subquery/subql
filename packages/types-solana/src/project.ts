@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {RegistryTypes} from '@polkadot/types/types';
-import {Connection} from "@solana/web3.js";
-import {SolanaBlock} from './interfaces';
+import {Connection} from '@solana/web3.js';
+import {SolanaBlock, SolanaTransaction} from './interfaces';
 
 export enum SubqlSolanaDatasourceKind {
   Runtime = 'solana/Runtime',
@@ -11,14 +11,17 @@ export enum SubqlSolanaDatasourceKind {
 
 export enum SubqlSolanaHandlerKind {
   Block = 'solana/BlockHandler',
+  Transaction = 'solana/TransactionHandler',
 }
 
 export type RuntimeHandlerInputMap = {
   [SubqlSolanaHandlerKind.Block]: SolanaBlock;
+  [SubqlSolanaHandlerKind.Transaction]: SolanaTransaction;
 };
 
 type RuntimeFilterMap = {
   [SubqlSolanaHandlerKind.Block]: SubqlSolanaNetworkFilter;
+  [SubqlSolanaHandlerKind.Transaction]: SubqlTransactionNetworkFilter;
 };
 
 export interface ProjectManifest {
@@ -45,12 +48,7 @@ interface SubqlSolanaBaseHandlerFilter {
 
 export type SubqlSolanaBlockFilter = SubqlSolanaBaseHandlerFilter;
 
-export interface SubqlSolanaEventFilter extends SubqlSolanaBaseHandlerFilter {
-  module?: string;
-  method?: string;
-}
-
-export interface SubqlSolanaCallFilter extends SubqlSolanaEventFilter {
+export interface SubqlSolanaTransactionFilter extends SubqlSolanaBaseHandlerFilter {
   success?: boolean;
 }
 
@@ -60,24 +58,33 @@ export interface SubqlSolanaBlockHandler {
   filter?: SubqlSolanaBlockFilter;
 }
 
+export interface SubqlTransactionBlockHandler {
+  handler: string;
+  kind: SubqlSolanaHandlerKind.Transaction;
+  filter?: SubqlSolanaTransactionFilter;
+}
+
 export interface SubqlSolanaCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
 }
 
-export type SubqlSolanaRuntimeHandler = SubqlSolanaBlockHandler;
+export type SubqlSolanaRuntimeHandler = SubqlSolanaBlockHandler | SubqlTransactionBlockHandler;
 
 export type SubqlSolanaHandler = SubqlSolanaRuntimeHandler | SubqlSolanaCustomHandler<string, unknown>;
 
-export type SubqlSolanaHandlerFilter = SubqlSolanaBlockFilter | SubqlSolanaCallFilter;
+export type SubqlSolanaHandlerFilter = SubqlSolanaBlockFilter | SubqlSolanaTransactionFilter;
 
 export interface SubqlSolanaMapping<T extends SubqlSolanaHandler = SubqlSolanaHandler> {
   file: string;
   handlers: T[];
 }
 
-interface ISubqlSolanaDatasource<M extends SubqlSolanaMapping, F extends SubqlSolanaNetworkFilter = SubqlSolanaNetworkFilter> {
+interface ISubqlSolanaDatasource<
+  M extends SubqlSolanaMapping,
+  F extends SubqlSolanaNetworkFilter = SubqlSolanaNetworkFilter
+> {
   name?: string;
   kind: string;
   filter?: F;
@@ -85,13 +92,18 @@ interface ISubqlSolanaDatasource<M extends SubqlSolanaMapping, F extends SubqlSo
   mapping: M;
 }
 
-export interface SubqlSolanaRuntimeDatasource<M extends SubqlSolanaMapping<SubqlSolanaRuntimeHandler> = SubqlSolanaMapping<SubqlSolanaRuntimeHandler>>
-  extends ISubqlSolanaDatasource<M> {
+export interface SubqlSolanaRuntimeDatasource<
+  M extends SubqlSolanaMapping<SubqlSolanaRuntimeHandler> = SubqlSolanaMapping<SubqlSolanaRuntimeHandler>
+> extends ISubqlSolanaDatasource<M> {
   kind: SubqlSolanaDatasourceKind.Runtime;
 }
 
 export interface SubqlSolanaNetworkFilter {
   specName?: string;
+}
+
+export interface SubqlTransactionNetworkFilter extends SubqlSolanaNetworkFilter {
+  success?: boolean;
 }
 
 export type SubqlSolanaDatasource = SubqlSolanaRuntimeDatasource | SubqlSolanaCustomDatasource; // | SubqlSolanaBuiltinDataSource;

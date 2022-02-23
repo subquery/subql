@@ -69,10 +69,6 @@ export class IndexerSolanaManager {
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block } = blockContent;
-    console.log('===========================');
-    console.log('block', block);
-    console.log('blockContent', blockContent.block.block.parentSlot);
-    console.log('===========================');
     const blockHeight = +block.block.parentSlot + 1; // convert to block height
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
@@ -90,18 +86,15 @@ export class IndexerSolanaManager {
             blockContent,
           );
         } else if (isCustomSolanaDs(ds)) {
-          await this.indexBlockForCustomDs(ds, vm, blockContent);
+          logger.error('Not support custom datasource');
+          process.exit(1);
+          // await this.indexBlockForCustomDs(ds, vm, blockContent);
         }
       }
-      // this.subqueryState.nextBlockHeight = blockHeight + 1; // next block height
-      // await this.subqueryState.save({ transaction: tx });
-      console.log('==============STORE lastProcessedHeight=============');
       await this.storeService.setMetadata(
         'lastProcessedHeight',
         blockHeight + 1,
       );
-      console.log('==============STORE lastProcessedHeight=============');
-      //TODO: implement POI
     } catch (e) {
       await tx.rollback();
       throw e;
@@ -116,7 +109,6 @@ export class IndexerSolanaManager {
     this.api = this.apiService.getApi();
     const schema = await this.ensureProject();
     await this.initDbSchema(schema);
-    console.log('this.nodeConfig.subqueryName', this.nodeConfig.subqueryName);
     this.metadataRepo = await this.ensureMetadata(schema);
 
     // get current process block height
@@ -148,6 +140,7 @@ export class IndexerSolanaManager {
     //TODO: implement POI
   }
 
+  // TODO: what this function used to do?
   private async ensureProject(): Promise<string> {
     let schema = await this.getExistingProjectSchema();
     if (!schema) {
@@ -192,6 +185,7 @@ export class IndexerSolanaManager {
     return schema;
   }
 
+  // TODO: what this function used to do?
   // Get existing project schema, undefined when doesn't exist
   private async getExistingProjectSchema(): Promise<string> {
     let schema = this.nodeConfig.localMode
@@ -223,6 +217,7 @@ export class IndexerSolanaManager {
     return schema;
   }
 
+  // TODO: what this function used to do?
   private async createProjectSchema(): Promise<string> {
     let schema: string;
     if (this.nodeConfig.localMode) {
@@ -239,13 +234,14 @@ export class IndexerSolanaManager {
     return schema;
   }
 
+  // TODO: what this function used to do?
   private async initDbSchema(schema: string): Promise<void> {
     const graphqlSchema = this.project.schema;
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    console.log('modelsRelations', modelsRelations);
     await this.storeService.init(modelsRelations, schema);
   }
 
+  // TODO: what this function used to do?
   private async ensureMetadata(schema: string) {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
     const { chainId } = this.apiService.networkMeta;
@@ -317,6 +313,7 @@ export class IndexerSolanaManager {
     return Number(nextval);
   }
 
+  // TODO: what this function used to do?
   private filterDataSources(nextBlockHeight: number): SubqlSolanaDatasource[] {
     const ds = this.project.dataSources;
     if (ds.length === 0) {
@@ -363,11 +360,17 @@ export class IndexerSolanaManager {
         case SubqlSolanaHandlerKind.Block:
           await vm.securedExec(handler.handler, [solanaBlock]);
           break;
+        case SubqlSolanaHandlerKind.Transaction:
+          for (const tx of block.block.transactions) {
+            await vm.securedExec(handler.handler, [tx]);
+          }
+          break;
         default:
       }
     }
   }
 
+  // TODO: implement this
   private async indexBlockForCustomDs(
     ds: SubqlSolanaCustomDatasource<string>,
     vm: IndexerSandbox,

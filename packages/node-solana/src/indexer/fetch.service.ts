@@ -11,7 +11,6 @@ import {
   SubqlSolanaHandler,
   SubqlSolanaHandlerFilter,
   SubqlSolanaHandlerKind,
-  SubqlSolanaEventFilter,
 } from '@subql/types-solana';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';

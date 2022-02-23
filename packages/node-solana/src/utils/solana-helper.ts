@@ -3,12 +3,10 @@
 
 import {
   BlockResponse,
-  ConfirmedBlock,
   Connection,
   RpcResponseAndContext,
   SignatureStatus,
 } from '@solana/web3.js';
-import { SubqlSolanaEventFilter } from '@subql/types-solana';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
@@ -34,7 +32,7 @@ export async function fetchSolanaBlocksArray(
   return res.filter((r) => r !== null);
 }
 
-export async function getTxInfobyHashes(
+export async function getTxInfoByHashes(
   api: Connection,
   txHashes: string[],
 ): Promise<RpcResponseAndContext<SignatureStatus>[]> {
