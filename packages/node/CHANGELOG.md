@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.3] - 2022-02-23
+### Changed
+- Update Polkadot/api to 7.9.1
+
 ## [0.28.2] - 2022-02-16
 ### Changed
 - Update Polkadot/api to 7.8.1 ,in order to resolve previous release issue (#806)
