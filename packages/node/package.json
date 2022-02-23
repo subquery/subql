@@ -64,5 +64,6 @@
   "files": [
     "/dist",
     "/bin"
-  ]
+  ],
+  "stableVersion": "0.28.2"
 }
