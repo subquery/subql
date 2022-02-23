@@ -21,6 +21,7 @@ import {
   CustomDatasourceV0_2_0,
   RuntimeDataSourceV0_2_0,
   SubqlMappingV0_2_0,
+  ProjectManifestV0_2_0Impl,
 } from '../v0_2_0';
 import {SubstrateProjectManifestV0_3_0} from './types';
 
@@ -64,7 +65,7 @@ export class DeploymentV0_3_0 {
 }
 
 export class ProjectManifestV0_3_0Impl
-  extends ProjectManifestBaseImpl<DeploymentV0_3_0>
+  extends ProjectManifestV0_2_0Impl<DeploymentV0_3_0>
   implements SubstrateProjectManifestV0_3_0
 {
   @Equals('0.3.0')
@@ -90,7 +91,7 @@ export class ProjectManifestV0_3_0Impl
     keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
-  private _deployment: DeploymentV0_3_0;
+  protected _deployment: DeploymentV0_3_0;
 
   get deployment(): DeploymentV0_3_0 {
     if (!this._deployment) {

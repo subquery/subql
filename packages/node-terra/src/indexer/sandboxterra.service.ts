@@ -121,7 +121,7 @@ export class SandboxTerraService {
       processor = new IndexerSandbox(
         {
           entry,
-          root: this.project.path,
+          root: this.project.root,
           store: this.storeService.getStore(),
         },
         this.nodeConfig,

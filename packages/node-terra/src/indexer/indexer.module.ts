@@ -10,23 +10,23 @@ import { BenchmarkService } from './benchmark.service';
 import { TerraDictionaryService } from './dictionaryterra.service';
 import { FetchTerraService } from './fetchterra.service';
 import { IndexerTerraManager } from './indexerterra.manager';
+import { MmrService } from './mmr.service';
+import { PoiService } from './poi.service';
 import { SandboxTerraService } from './sandboxterra.service';
 import { StoreService } from './store.service';
 import { TerraDsProcessorService } from './terrads-processor.service';
-
+import { DynamicDsService } from './terradynamic-ds.service';
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     IndexerTerraManager,
     StoreService,
     {
-      //provide: ApiService,
       provide: ApiTerraService,
       useFactory: async (
         project: SubqueryTerraProject,
         eventEmitter: EventEmitter2,
       ) => {
-        //const apiService = new ApiService(project, eventEmitter);
         const apiService = new ApiTerraService(project, eventEmitter);
         await apiService.init();
         return apiService;
@@ -38,6 +38,9 @@ import { TerraDsProcessorService } from './terrads-processor.service';
     TerraDictionaryService,
     SandboxTerraService,
     TerraDsProcessorService,
+    PoiService,
+    MmrService,
+    DynamicDsService,
   ],
   exports: [StoreService],
 })

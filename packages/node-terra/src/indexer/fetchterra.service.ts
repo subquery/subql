@@ -1,10 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { isRuntimeDataSourceV0_3_0 } from '@subql/common-terra';
+import {
+  isRuntimeDataSourceV0_3_0,
+  isCustomTerraDs,
+  isRuntimeTerraDs,
+} from '@subql/common-terra';
 import {
   SubqlTerraDatasource,
   SubqlTerraHandler,
@@ -18,9 +23,11 @@ import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
 import { delay } from '../utils/promise';
-import { fetchTerraBlocksBatches } from '../utils/terra-helper';
+import * as TerraUtil from '../utils/terra-helper';
+import { getYargsOption } from '../yargs';
 import { ApiTerraService } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
 import {
@@ -31,11 +38,24 @@ import {
 import { IndexerEvent } from './events';
 import { TerraDsProcessorService } from './terrads-processor.service';
 import { TerraBlockContent } from './types';
-import { isCustomTerraDs, isRuntimeTerraDs } from './utils';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
+const CHECK_MEMORY_INTERVAL = 60000;
+const HIGH_THRESHOLD = 0.85;
+const LOW_THRESHOLD = 0.6;
+const MINIMUM_BATCH_SIZE = 5;
+
+const { argv } = getYargsOption();
+
+const fetchBlocksBatches = argv.profiler
+  ? profilerWrap(
+      TerraUtil.fetchTerraBlocksBatches,
+      'TerraUtil',
+      'fetchTerraBlocksBatches',
+    )
+  : TerraUtil.fetchTerraBlocksBatches;
 
 function eventFilterToQueryEntry(
   filter: SubqlTerraEventFilter,
@@ -51,6 +71,31 @@ function eventFilterToQueryEntry(
   };
 }
 
+function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
+  const memoryData = getHeapStatistics();
+  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
+  if (argv.profiler) {
+    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
+    logger.info(`Heap Usage: ${ratio}`);
+  }
+  let scale = batchSizeScale;
+
+  if (ratio > HIGH_THRESHOLD) {
+    if (scale > 0) {
+      scale = Math.max(scale - 0.1, 0);
+      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
+    }
+  }
+
+  if (ratio < LOW_THRESHOLD) {
+    if (scale < 1) {
+      scale = Math.min(scale + 0.1, 1);
+      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
+    }
+  }
+  return scale;
+}
+
 @Injectable()
 export class FetchTerraService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
@@ -61,6 +106,7 @@ export class FetchTerraService implements OnApplicationShutdown {
   private isShutdown = false;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
+  private batchSizeScale: number;
 
   constructor(
     private apiService: ApiTerraService,
@@ -76,6 +122,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.blockNumberBuffer = new BlockedQueue<number>(
       this.nodeConfig.batchSize * 3,
     );
+    this.batchSizeScale = 1;
   }
 
   onApplicationShutdown(): void {
@@ -93,20 +140,35 @@ export class FetchTerraService implements OnApplicationShutdown {
       isRuntimeDataSourceV0_3_0(ds),
     );
     for (const ds of dataSources) {
+      const plugin = isCustomTerraDs(ds)
+        ? this.dsProcessorService.getDsProcessor(ds)
+        : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
         if (baseHandlerKind === SubqlTerraHandlerKind.Block) {
           return [];
         }
-        const filterList = isRuntimeTerraDs(ds)
-          ? [
-              (handler as SubqlTerraEventHandler)
-                .filter as SubqlTerraHandlerFilter,
-            ].filter(Boolean)
-          : this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
+        let filterList: SubqlTerraHandlerFilter[];
+        if (isCustomTerraDs(ds)) {
+          const processor = plugin.handlerProcessors[handler.kind];
+          if (processor.dictionaryQuery) {
+            const queryEntry = processor.dictionaryQuery(
+              (handler as SubqlTerraEventHandler).filter,
               ds,
-              handler.kind,
             );
+            if (queryEntry) {
+              queryEntries.push(queryEntry);
+              continue;
+            }
+          }
+          filterList = this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
+            ds,
+            handler.kind,
+          );
+        } else {
+          filterList = [(handler as SubqlTerraEventHandler).filter];
+        }
+        filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubqlTerraHandlerKind.Event: {
@@ -173,6 +235,20 @@ export class FetchTerraService implements OnApplicationShutdown {
     await this.getLatestBlockHead();
   }
 
+  @Interval(CHECK_MEMORY_INTERVAL)
+  checkBatchScale() {
+    if (argv['scale-batch-size']) {
+      const scale = checkMemoryUsage(
+        this.nodeConfig.batchSize,
+        this.batchSizeScale,
+      );
+
+      if (this.batchSizeScale !== scale) {
+        this.batchSizeScale = scale;
+      }
+    }
+  }
+
   @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getLatestBlockHead() {
     if (!this.api) {
@@ -211,11 +287,18 @@ export class FetchTerraService implements OnApplicationShutdown {
 
   async fillNextBlockBuffer(initBlockHeight: number) {
     let startBlockHeight: number;
+    let scaledBatchSize: number;
 
     while (!this.isShutdown) {
       startBlockHeight = this.latestBufferedHeight
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
+
+      scaledBatchSize = Math.max(
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+        MINIMUM_BATCH_SIZE,
+      );
+
       if (
         this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
         startBlockHeight > this.latestFinalizedHeight
@@ -259,20 +342,26 @@ export class FetchTerraService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-      const endHeight = this.nextEndBlockHeight(startBlockHeight);
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
     }
   }
 
-  private nextEndBlockHeight(startBlockHeight: number): number {
-    let endBlockHeight = startBlockHeight + this.nodeConfig.batchSize - 1;
+  private nextEndBlockHeight(
+    startBlockHeight: number,
+    scaledBatchSize: number,
+  ): number {
+    let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
+
     if (endBlockHeight > this.latestFinalizedHeight) {
       endBlockHeight = this.latestFinalizedHeight;
     }
     return endBlockHeight;
   }
-
   private async dictionaryValidation(
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
@@ -308,7 +397,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       const takeCount = Math.min(
         this.blockBuffer.freeSize,
-        this.nodeConfig.batchSize,
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
       );
 
       if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
@@ -317,7 +406,7 @@ export class FetchTerraService implements OnApplicationShutdown {
       }
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await fetchTerraBlocksBatches(this.api, bufferBlocks);
+      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]

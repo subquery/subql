@@ -129,6 +129,16 @@ export interface SubqlTerraDatasourceProcessor<
   };
 }
 
+export interface DictionaryQueryCondition {
+  field: string;
+  value: string;
+}
+
+export interface DictionaryQueryEntry {
+  entity: string;
+  conditions: DictionaryQueryCondition[];
+}
+
 export interface SecondLayerTerraHandlerProcessor<
   K extends SubqlTerraHandlerKind,
   F,
@@ -140,5 +150,5 @@ export interface SecondLayerTerraHandlerProcessor<
   transformer: TerraHandlerInputTransformer<K, E, DS>;
   filterProcessor: (filter: F | undefined, input: TerraRuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
-  // dictionaryQuery: (filter: F) => DictionaryQuery;
+  dictionaryQuery: (filter: F, ds: DS) => DictionaryQueryEntry;
 }

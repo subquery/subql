@@ -5,7 +5,14 @@ import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getAllEntitiesRelations, buildSchemaFromFile } from '@subql/common';
+import {
+  isBlockHandlerProcessor,
+  isCustomTerraDs,
+  isRuntimeTerraDs,
+  isEventHandlerProcessor,
+} from '@subql/common-terra';
 import {
   SubqlTerraCustomDatasource,
   SubqlTerraHandlerKind,
@@ -17,33 +24,35 @@ import {
   TerraBlock,
   TerraEvent,
 } from '@subql/types-terra';
-import { LCDClient } from '@terra-money/terra.js';
-import { QueryTypes, Sequelize } from 'sequelize';
+import { LCDClient, hashToHex } from '@terra-money/terra.js';
+import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryTerraProject } from '../configure/terraproject.model';
+import {
+  SubqueryTerraProject,
+  SubqlTerraProjectDs,
+} from '../configure/terraproject.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
 import { ApiTerraService } from './apiterra.service';
-import { MetadataFactory } from './entities/Metadata.entity';
+import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchTerraService } from './fetchterra.service';
+import { MmrService } from './mmr.service';
+import { PoiService } from './poi.service';
+import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox, SandboxTerraService } from './sandboxterra.service';
 import { StoreService } from './store.service';
 import { TerraDsProcessorService } from './terrads-processor.service';
+import { DynamicDsService } from './terradynamic-ds.service';
 import { TerraBlockContent } from './types';
-import {
-  isBlockHandlerProcessor,
-  isCustomTerraDs,
-  isRuntimeTerraDs,
-  isEventHandlerProcessor,
-} from './utils';
 
-//const { version: packageVersion } = require('../../package.json');
+const { version: packageVersion } = require('../../package.json');
 
 const DEFAULT_DB_SCHEMA = 'public';
+const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
 const { argv } = getYargsOption();
@@ -52,21 +61,55 @@ const { argv } = getYargsOption();
 export class IndexerTerraManager {
   private api: LCDClient;
   private subqueryState: SubqueryModel;
-  private filteredDataSources: SubqlTerraDatasource[];
+  protected metadataRepo: MetadataRepo;
+  private filteredDataSources: SubqlTerraProjectDs[];
 
   constructor(
     private storeService: StoreService,
     private apiService: ApiTerraService,
     private fetchService: FetchTerraService,
-    //TODO: implement mmr and poi
+    private poiService: PoiService,
+    protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryTerraProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxTerraService,
     private dsProcessorService: TerraDsProcessorService,
+    private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
+
+  async indexBlockForDs(
+    ds: SubqlTerraProjectDs,
+    blockContent: TerraBlockContent,
+    blockHeight: number,
+    tx: Transaction,
+  ): Promise<void> {
+    const vm = this.sandboxService.getDsProcessor(ds);
+
+    // Inject function to create ds into vm
+    vm.freeze(
+      (templateName: string, args?: Record<string, unknown>) =>
+        this.dynamicDsService.createDynamicDatasource(
+          {
+            templateName,
+            args,
+            startBlock: blockHeight,
+          },
+          tx,
+        ),
+      'createDynamicDatasource',
+    );
+
+    if (isRuntimeTerraDs(ds)) {
+      await this.indexBlockForRuntimeDs(vm, ds.mapping.handlers, blockContent);
+    } else if (isCustomTerraDs(ds)) {
+      await this.indexBlockForCustomDs(ds, vm, blockContent);
+    }
+
+    // TODO should we remove createDynamicDatasource from vm here?
+  }
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: TerraBlockContent): Promise<void> {
@@ -78,98 +121,150 @@ export class IndexerTerraManager {
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
+
+    let poiBlockHash: Uint8Array;
     try {
+      // Run predefined data sources
       for (const ds of this.filteredDataSources) {
-        const vm = this.sandboxService.getDsProcessor(ds);
-        if (isRuntimeTerraDs(ds)) {
-          await this.indexBlockForRuntimeDs(
-            vm,
-            ds.mapping.handlers,
-            blockContent,
+        await this.indexBlockForDs(ds, blockContent, blockHeight, tx);
+      }
+
+      // Run dynamic data sources, must be after predefined datasources
+      // FIXME if any new dynamic datasources are created here they wont be run for the current block
+      for (const ds of await this.dynamicDsService.getDynamicDatasources()) {
+        await this.indexBlockForDs(ds, blockContent, blockHeight, tx);
+      }
+
+      await this.storeService.setMetadataBatch(
+        [
+          { key: 'lastProcessedHeight', value: blockHeight },
+          { key: 'lastProcessedTimestamp', value: Date.now() },
+        ],
+        { transaction: tx },
+      );
+      if (this.nodeConfig.proofOfIndex) {
+        const operationHash = this.storeService.getOperationMerkleRoot();
+        //check if operation is null, then poi will not be insert
+        const blockHash = hashToHex(block.block_id.hash);
+        const blockHashBytes = new Uint8Array(
+          blockHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)),
+        );
+        if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
+          const poiBlock = PoiBlock.create(
+            blockHeight,
+            blockHashBytes,
+            operationHash,
+            await this.poiService.getLatestPoiBlockHash(),
+            this.project.id,
           );
-        } else if (isCustomTerraDs(ds)) {
-          await this.indexBlockForCustomDs(ds, vm, blockContent);
+          poiBlockHash = poiBlock.hash;
+          await this.storeService.setPoi(poiBlock, { transaction: tx });
         }
       }
-      this.subqueryState.nextBlockHeight = +block.block.header.height + 1;
-      await this.subqueryState.save({ transaction: tx });
-
-      //TODO: implement POI
     } catch (e) {
       await tx.rollback();
       throw e;
     }
     await tx.commit();
     this.fetchService.latestProcessed(+block.block.header.height);
+    if (this.nodeConfig.proofOfIndex) {
+      this.poiService.setLatestPoiBlockHash(poiBlockHash);
+    }
   }
 
   async start(): Promise<void> {
-    await this.dsProcessorService.validateCustomDs();
+    await this.dsProcessorService.validateProjectCustomDatasources();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    //const schema = await this.ensureProject();
-    this.subqueryState = await this.ensureProject(this.nodeConfig.subqueryName);
-    await this.initDbSchema();
-    await this.ensureMetadata(this.subqueryState.dbSchema);
-    //TODO: implement POI
-    logger.info(`${this.subqueryState.nextBlockHeight}`);
-    void this.fetchService
-      .startLoop(this.subqueryState.nextBlockHeight)
-      .catch((err) => {
-        logger.error(err, 'failed to fetch block');
-        // FIXME: retry before exit
+    const schema = await this.ensureProject();
+    await this.initDbSchema(schema);
+    this.metadataRepo = await this.ensureMetadata(schema);
+    this.dynamicDsService.init(this.metadataRepo);
+
+    if (this.nodeConfig.proofOfIndex) {
+      await Promise.all([
+        this.poiService.init(schema),
+        this.mmrService.init(schema),
+      ]);
+    }
+
+    let startHeight: number;
+    const lastProcessedHeight = await this.metadataRepo.findOne({
+      where: { key: 'lastProcessedHeight' },
+    });
+    if (lastProcessedHeight !== null && lastProcessedHeight.value !== null) {
+      startHeight = Number(lastProcessedHeight.value) + 1;
+    } else {
+      const project = await this.subqueryRepo.findOne({
+        where: { name: this.nodeConfig.subqueryName },
+      });
+      if (project !== null) {
+        startHeight = project.nextBlockHeight;
+      } else {
+        startHeight = this.getStartBlockFromDataSources();
+      }
+    }
+
+    void this.fetchService.startLoop(startHeight).catch((err) => {
+      logger.error(err, 'failed to fetch block');
+      // FIXME: retry before exit
+      process.exit(1);
+    });
+    this.filteredDataSources = this.filterDataSources(startHeight);
+    this.fetchService.register((block) => this.indexBlock(block));
+
+    if (this.nodeConfig.proofOfIndex) {
+      void this.mmrService.syncFileBaseFromPoi().catch((err) => {
+        logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
       });
-    this.filteredDataSources = this.filterDataSources();
-    this.fetchService.register((block) => this.indexBlock(block));
-    //TODO: implement POI
+    }
   }
 
-  private async ensureProject(name: string): Promise<SubqueryModel> {
-    let project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-    const { chainId } = this.apiService.networkMeta;
-    if (!project) {
-      project = await this.createProjectSchema(name);
+  private async ensureProject(): Promise<string> {
+    let schema = await this.getExistingProjectSchema();
+    if (!schema) {
+      schema = await this.createProjectSchema();
     } else {
       if (argv['force-clean']) {
         try {
-          // drop existing project schema
-          this.sequelize.dropSchema(project.dbSchema, {
+          // drop existing project schema and metadata table
+          await this.sequelize.dropSchema(`"${schema}"`, {
             logging: false,
             benchmark: false,
           });
 
-          // remove schema from project table
+          // remove schema from subquery table (might not exist)
           await this.sequelize.query(
             ` DELETE
               FROM public.subqueries
-              where db_schema = :subquerySchema`,
+              WHERE name = :name`,
             {
-              replacements: { subquerySchema: project.dbSchema },
+              replacements: { name: this.nodeConfig.subqueryName },
               type: QueryTypes.DELETE,
             },
           );
 
           logger.info('force cleaned schema and tables');
+
+          if (fs.existsSync(this.nodeConfig.mmrPath)) {
+            await fs.promises.unlink(this.nodeConfig.mmrPath);
+            logger.info('force cleaned file based mmr');
+          }
         } catch (err) {
-          logger.error(err, 'failed to force clean schema and tables');
+          logger.error(err, 'failed to force clean');
         }
-        project = await this.createProjectSchema(name);
-      }
-      if (!project.network) {
-        project.network = chainId;
-        await project.save();
-      } else if (project.network !== chainId) {
-        logger.error(
-          `Not same network: chain ID different. expected="${project.network}" actual="${chainId}"`,
-        );
-        process.exit(1);
+        schema = await this.createProjectSchema();
       }
     }
-    return project;
+
+    this.eventEmitter.emit(IndexerEvent.Ready, {
+      value: true,
+    });
+
+    return schema;
   }
+
   // Get existing project schema, undefined when doesn't exist
   private async getExistingProjectSchema(): Promise<string> {
     let schema = this.nodeConfig.localMode
@@ -201,48 +296,46 @@ export class IndexerTerraManager {
     return schema;
   }
 
-  private async createProjectSchema(name: string): Promise<SubqueryModel> {
-    let projectSchema: string;
-    const { chainId } = this.apiService.networkMeta;
+  private async createProjectSchema(): Promise<string> {
+    let schema: string;
     if (this.nodeConfig.localMode) {
       // create tables in default schema if local mode is enabled
-      projectSchema = DEFAULT_DB_SCHEMA;
+      schema = DEFAULT_DB_SCHEMA;
     } else {
-      const suffix = await this.nextSubquerySchemaSuffix();
-      projectSchema = `subquery_${suffix}`;
+      schema = this.nodeConfig.dbSchema;
       const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(projectSchema)) {
-        await this.sequelize.createSchema(projectSchema, undefined);
+      if (!(schemas as unknown as string[]).includes(schema)) {
+        await this.sequelize.createSchema(`"${schema}"`, undefined);
       }
     }
-    return this.subqueryRepo.create({
-      name,
-      dbSchema: projectSchema,
-      hash: '0x',
-      nextBlockHeight: this.getStartBlockFromDataSources(),
-      network: chainId,
-    });
+
+    return schema;
   }
 
-  private async initDbSchema(): Promise<void> {
-    const schema = this.subqueryState.dbSchema;
-    const graphqlSchema = buildSchemaFromFile(
-      path.join(this.project.path, this.project.schema),
-    );
+  private async initDbSchema(schema: string): Promise<void> {
+    const graphqlSchema = this.project.schema;
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
     await this.storeService.init(modelsRelations, schema);
   }
 
-  private async ensureMetadata(schema: string) {
+  private async ensureMetadata(schema: string): Promise<MetadataRepo> {
     const metadataRepo = MetadataFactory(this.sequelize, schema);
-    const { chainId } = this.apiService.networkMeta;
+
+    const project = await this.subqueryRepo.findOne({
+      where: { name: this.nodeConfig.subqueryName },
+    });
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
       this.apiService.networkMeta,
     );
 
-    const keys = ['blockOffset', 'chain', 'genesisHash'] as const;
+    const keys = [
+      'lastProcessedHeight',
+      'blockOffset',
+      'indexerNodeVersion',
+      'chain',
+    ] as const;
 
     const entries = await metadataRepo.findAll({
       where: {
@@ -253,28 +346,29 @@ export class IndexerTerraManager {
     const keyValue = entries.reduce((arr, curr) => {
       arr[curr.key] = curr.value;
       return arr;
-    }, {} as { [key in typeof keys[number]]: string });
+    }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
+    const { chainId } = this.apiService.networkMeta;
+
+    // blockOffset and genesisHash should only have been created once, never updated.
+    // If blockOffset is changed, will require re-index and re-sync poi.
     if (!keyValue.blockOffset) {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await this.storeService.setMetadata('blockOffset', offsetValue);
+      await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
     if (keyValue.chain !== chainId) {
-      await this.storeService.setMetadata('chain', chainId);
+      await metadataRepo.upsert({ key: 'chain', value: chainId });
     }
-  }
 
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.project.dataSources.map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(`Failed to find a valid datasource.`);
-      process.exit(1);
-    } else {
-      return Math.min(...startBlocksList);
+    if (keyValue.indexerNodeVersion !== packageVersion) {
+      await metadataRepo.upsert({
+        key: 'indexerNodeVersion',
+        value: packageVersion,
+      });
     }
+
+    return metadataRepo;
   }
 
   private async nextSubquerySchemaSuffix(): Promise<number> {
@@ -302,18 +396,17 @@ export class IndexerTerraManager {
     return Number(nextval);
   }
 
-  private filterDataSources(): SubqlTerraDatasource[] {
+  private filterDataSources(processedHeight: number): SubqlTerraProjectDs[] {
     const ds = this.project.dataSources;
     if (ds.length === 0) {
       logger.error(`Did not find any datasource`);
       process.exit(1);
     }
-    let filteredDs = ds.filter(
-      (ds) => ds.startBlock <= this.subqueryState.nextBlockHeight,
-    );
+    let filteredDs = ds.filter((ds) => ds.startBlock <= processedHeight);
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${this.subqueryState.nextBlockHeight} or delete your database and start again from the currently specified startBlock`,
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
+         or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
@@ -333,6 +426,20 @@ export class IndexerTerraManager {
       process.exit(1);
     }
     return filteredDs;
+  }
+
+  private getStartBlockFromDataSources() {
+    const startBlocksList = this.project.dataSources.map(
+      (item) => item.startBlock ?? 1,
+    );
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
+      process.exit(1);
+    } else {
+      return Math.min(...startBlocksList);
+    }
   }
 
   private async indexBlockForRuntimeDs(

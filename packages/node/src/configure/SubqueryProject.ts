@@ -14,6 +14,7 @@ import {
   ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
+  ProjectManifestV0_3_0Impl,
 } from '@subql/common-substrate';
 import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -70,6 +71,13 @@ export class SubqueryProject {
     } else if (manifest.isV0_2_1) {
       return loadProjectFromManifest0_2_1(
         manifest.asV0_2_1,
+        reader,
+        path,
+        networkOverrides,
+      );
+    } else if (manifest.isV0_3_0) {
+      return loadProjectFromManifest0_3_0(
+        manifest.asV0_3_0,
         reader,
         path,
         networkOverrides,
@@ -175,6 +183,23 @@ async function loadProjectFromManifest0_2_1(
     ...ds,
     name: projectManifest.templates[index].name,
   }));
+
+  return project;
+}
+
+async function loadProjectFromManifest0_3_0(
+  projectManifest: ProjectManifestV0_3_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+): Promise<SubqueryProject> {
+  const root = await getProjectRoot(reader, path);
+  const project = await loadProjectFromManifest0_2_0(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides,
+  );
 
   return project;
 }

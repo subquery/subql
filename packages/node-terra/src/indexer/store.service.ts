@@ -3,17 +3,19 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { hexToU8a } from '@polkadot/util';
+import { hexToU8a, u8aToBuffer } from '@polkadot/util';
+import { blake2AsHex } from '@polkadot/util-crypto';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types-terra';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
+  CreationAttributes,
+  Model,
   QueryTypes,
   Sequelize,
   Transaction,
+  UpsertOptions,
   Utils,
-  CreationAttributes,
-  Model,
 } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
@@ -25,10 +27,15 @@ import {
   getFkConstraint,
   smartTags,
 } from '../utils/sync-helper';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-//import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-//import { PoiService } from './poi.service';
-//import { StoreOperations } from './StoreOperations';
+import {
+  Metadata,
+  MetadataFactory,
+  MetadataRepo,
+} from './entities/Metadata.entity';
+import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
+import { PoiService } from './poi.service';
+import { StoreOperations } from './StoreOperations';
+import { OperationType } from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -45,13 +52,14 @@ export class StoreService {
   private modelIndexedFields: IndexField[];
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
-  //private poiRepo: PoiRepo;
+  private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
-  //private operationStack: StoreOperations;
+  private operationStack: StoreOperations;
 
   constructor(
     private sequelize: Sequelize,
-    private config: NodeConfig, //private poiService: PoiService,
+    private config: NodeConfig,
+    private poiService: PoiService,
   ) {}
 
   async init(
@@ -77,15 +85,14 @@ export class StoreService {
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
 
-    let i = 0;
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `${schema}_custom_enum_${i}`;
+      const enumTypeName = `${schema}_enum_${this.enumNameToHash(e.name)}`;
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
-         from pg_type t 
+         from pg_type t
          join pg_enum e on t.oid = e.enumtypid
          where t.typname = ?;`,
         { replacements: [enumTypeName] },
@@ -93,7 +100,7 @@ export class StoreService {
 
       if (results.length === 0) {
         await this.sequelize.query(
-          `CREATE TYPE ${enumTypeName} as ENUM (${e.values
+          `CREATE TYPE "${enumTypeName}" as ENUM (${e.values
             .map(() => '?')
             .join(',')});`,
           {
@@ -122,12 +129,10 @@ export class StoreService {
         e.description ? `\\n ${e.description}` : ''
       }`;
 
-      await this.sequelize.query(`COMMENT ON TYPE ${enumTypeName} IS E?`, {
+      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E?`, {
         replacements: [comment],
       });
-      enumTypeMap.set(e.name, enumTypeName);
-
-      i++;
+      enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
@@ -171,7 +176,7 @@ export class StoreService {
           });
           extraQueries.push(
             commentConstraintQuery(
-              `${schema}.${rel.target.tableName}`,
+              `"${schema}"."${rel.target.tableName}"`,
               fkConstraint,
               tags,
             ),
@@ -196,7 +201,7 @@ export class StoreService {
           });
           extraQueries.push(
             commentConstraintQuery(
-              `${schema}.${rel.target.tableName}`,
+              `"${schema}"."${rel.target.tableName}"`,
               fkConstraint,
               tags,
             ),
@@ -208,9 +213,9 @@ export class StoreService {
           throw new Error('Relation type is not supported');
       }
     }
-    //if (this.config.proofOfIndex) {
-    //  this.poiRepo = PoiFactory(this.sequelize, schema);
-    //}
+    if (this.config.proofOfIndex) {
+      this.poiRepo = PoiFactory(this.sequelize, schema);
+    }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
     await this.sequelize.sync();
@@ -219,28 +224,45 @@ export class StoreService {
     }
   }
 
-  setTransaction(tx: Transaction) {
+  enumNameToHash(enumName: string): string {
+    return blake2AsHex(enumName).substr(2, 10);
+  }
+
+  setTransaction(tx: Transaction): void {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
-    //if (this.config.proofOfIndex) {
-    //  this.operationStack = new StoreOperations(this.modelsRelations.models);
-    //}
+    if (this.config.proofOfIndex) {
+      this.operationStack = new StoreOperations(this.modelsRelations.models);
+    }
+  }
+
+  async setMetadataBatch(
+    metadata: Metadata[],
+    options?: UpsertOptions<Metadata>,
+  ): Promise<void> {
+    await Promise.all(
+      metadata.map(({ key, value }) => this.setMetadata(key, value, options)),
+    );
   }
 
   async setMetadata(
     key: string,
     value: string | number | boolean,
+    options?: UpsertOptions<Metadata>,
   ): Promise<void> {
-    assert(this.metaDataRepo, `model _metadata does not exist`);
-    await this.metaDataRepo.upsert({ key, value });
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value }, options);
   }
-  /*
-  async setPoi(tx: Transaction, blockPoi: ProofOfIndex): Promise<void> {
-    assert(this.poiRepo, `model _poi does not exist`);
+
+  async setPoi(
+    blockPoi: ProofOfIndex,
+    options?: UpsertOptions<ProofOfIndex>,
+  ): Promise<void> {
+    assert(this.poiRepo, `Model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
     blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await this.poiRepo.upsert(blockPoi, { transaction: tx });
+    await this.poiRepo.upsert(blockPoi, options);
   }
 
   getOperationMerkleRoot(): Uint8Array {
@@ -251,7 +273,7 @@ export class StoreService {
     }
     return merkelRoot;
   }
-  */
+
   private async getAllIndexFields(schema: string) {
     const fields: IndexField[][] = [];
     for (const entity of this.modelsRelations.models) {
@@ -368,17 +390,29 @@ group by
         await model.upsert(data as unknown as CreationAttributes<Model>, {
           transaction: this.tx,
         });
-        //if (this.config.proofOfIndex) {
-        //this.operationStack.put(OperationType.Set, entity, data);
-        //}
+        if (this.config.proofOfIndex) {
+          this.operationStack.put(OperationType.Set, entity, data);
+        }
+      },
+      bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
+        const model = this.sequelize.model(entity);
+        assert(model, `model ${entity} not exists`);
+        await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
+          transaction: this.tx,
+        });
+        if (this.config.proofOfIndex) {
+          for (const item of data) {
+            this.operationStack.put(OperationType.Set, entity, item);
+          }
+        }
       },
       remove: async (entity: string, id: string): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
         await model.destroy({ where: { id }, transaction: this.tx });
-        //if (this.config.proofOfIndex) {
-        //  this.operationStack.put(OperationType.Remove, entity, id);
-        //}
+        if (this.config.proofOfIndex) {
+          this.operationStack.put(OperationType.Remove, entity, id);
+        }
       },
     };
   }

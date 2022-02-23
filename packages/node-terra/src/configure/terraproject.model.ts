@@ -2,75 +2,104 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+  ReaderFactory,
+  ReaderOptions,
+  Reader,
+  buildSchemaFromString,
+} from '@subql/common';
+import {
   loadTerraProjectManifest,
   TerraProjectNetworkConfig,
   TerraProjectManifestVersioned,
   TerraProjectNetworkV0_3_0,
+  ProjectManifestV0_3_0Impl,
+  parseTerraProjectManifest,
 } from '@subql/common-terra';
 import {
   SubqlTerraDatasourceKind,
   SubqlTerraDatasource,
 } from '@subql/types-terra';
-import { getLogger } from '../utils/logger';
-import { prepareProjectDir } from '../utils/project';
+import { GraphQLSchema } from 'graphql';
+import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
 
-const logger = getLogger('configure');
+export type SubqlTerraProjectDs = SubqlTerraDatasource & {
+  mapping: SubqlTerraDatasource['mapping'] & { entryScript: string };
+};
+
+export type SubqlProjectDsTemplate = Omit<SubqlTerraProjectDs, 'startBlock'> & {
+  name: string;
+};
 
 export class SubqueryTerraProject {
-  private _path: string;
-  private _projectManifest: TerraProjectManifestVersioned;
+  id: string;
+  root: string;
+  network: Partial<TerraProjectNetworkConfig>;
+  dataSources: SubqlTerraProjectDs[];
+  schema: GraphQLSchema;
+  templates: SubqlProjectDsTemplate[];
 
-  static async create(path: string): Promise<SubqueryTerraProject> {
-    const projectPath = await prepareProjectDir(path);
-    const projectManifest = loadTerraProjectManifest(projectPath);
-    return new SubqueryTerraProject(projectManifest, projectPath);
-  }
+  static async create(
+    path: string,
+    networkOverrides?: Partial<TerraProjectNetworkConfig>,
+    readerOptions?: ReaderOptions,
+  ): Promise<SubqueryTerraProject> {
+    // We have to use reader here, because path can be remote or local
+    // and the `loadProjectManifest(projectPath)` only support local mode
+    const reader = await ReaderFactory.create(path, readerOptions);
+    const projectSchema = await reader.getProjectSchema();
+    const manifest = parseTerraProjectManifest(projectSchema);
 
-  constructor(manifest: TerraProjectManifestVersioned, path: string) {
-    this._projectManifest = manifest;
-    this._path = path;
-
-    manifest.dataSources?.forEach(function (dataSource) {
-      if (
-        !Object.values(SubqlTerraDatasourceKind).includes(
-          dataSource.kind as SubqlTerraDatasourceKind,
-        )
-      ) {
-        throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
-      }
-      if (!dataSource.startBlock || dataSource.startBlock < 1) {
-        if (dataSource.startBlock < 1) logger.warn('start block changed to #1');
-        dataSource.startBlock = 1;
-      }
-    });
-  }
-
-  get projectManifest(): TerraProjectManifestVersioned {
-    return this._projectManifest;
-  }
-
-  get network(): TerraProjectNetworkConfig {
-    const impl = this._projectManifest.asImpl;
-    const network = {
-      ...(impl.network as TerraProjectNetworkV0_3_0),
-    };
-
-    if (!network.endpoint) {
-      throw new Error(
-        `Network endpoint must be provided for network. chainId="${network.chainId}"`,
+    if (manifest.isV0_3_0) {
+      return loadProjectFromManifest0_3_0(
+        manifest.asV0_3_0,
+        reader,
+        path,
+        networkOverrides,
       );
     }
+  }
+}
 
-    return network;
+async function loadProjectFromManifest0_3_0(
+  projectManifest: ProjectManifestV0_3_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<TerraProjectNetworkConfig>,
+): Promise<SubqueryTerraProject> {
+  const root = await getProjectRoot(reader, path);
+
+  const network = {
+    ...projectManifest.network,
+    ...networkOverrides,
+  };
+  if (!network.endpoint) {
+    throw new Error(
+      `Network endpoint must be provided for network. chainId="${network.chainId}"`,
+    );
   }
 
-  get path(): string {
-    return this._path;
+  let schemaString: string;
+  try {
+    schemaString = await reader.getFile(projectManifest.schema.file);
+  } catch (e) {
+    throw new Error(
+      `unable to fetch the schema from ${projectManifest.schema.file}`,
+    );
   }
-  get dataSources(): SubqlTerraDatasource[] {
-    return this._projectManifest.dataSources as SubqlTerraDatasource[];
-  }
-  get schema(): string {
-    return this._projectManifest.schema;
-  }
+  const schema = buildSchemaFromString(schemaString);
+
+  const dataSources = await updateDataSourcesV0_3_0(
+    projectManifest.dataSources,
+    reader,
+    root,
+  );
+
+  return {
+    id: reader.root ? reader.root : path, //TODO, need to method to get project_id
+    root,
+    network,
+    dataSources,
+    schema,
+    templates: [],
+  };
 }

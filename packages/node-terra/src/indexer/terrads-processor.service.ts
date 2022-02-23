@@ -4,15 +4,16 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { isCustomTerraDs } from '@subql/common-terra';
 import {
   SubqlTerraCustomDatasource,
   SubqlTerraDatasourceProcessor,
+  SubqlTerraDatasource,
 } from '@subql/types-terra';
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandboxterra.service';
-import { isCustomTerraDs } from './utils';
 
 export interface DsPluginSandboxOption {
   root: string;
@@ -45,8 +46,10 @@ export class TerraDsProcessorService {
   } = {};
   constructor(private project: SubqueryTerraProject) {}
 
-  async validateCustomDs(): Promise<void> {
-    for (const ds of this.project.dataSources.filter(isCustomTerraDs)) {
+  async validateCustomDs(
+    datasources: SubqlTerraCustomDatasource[],
+  ): Promise<void> {
+    for (const ds of datasources) {
       const processor = this.getDsProcessor(ds);
       if (ds.kind !== processor.kind) {
         throw new Error(
@@ -75,6 +78,14 @@ export class TerraDsProcessorService {
     }
   }
 
+  async validateProjectCustomDatasources(): Promise<void> {
+    await this.validateCustomDs(
+      (this.project.dataSources as SubqlTerraDatasource[]).filter(
+        isCustomTerraDs,
+      ),
+    );
+  }
+
   getDsProcessor<D extends string>(
     ds: SubqlTerraCustomDatasource<string>,
   ): SubqlTerraDatasourceProcessor<D> {
@@ -83,7 +94,7 @@ export class TerraDsProcessorService {
     }
     if (!this.processorCache[ds.processor.file]) {
       const sandbox = new TerraDsPluginSandbox({
-        root: this.project.path,
+        root: this.project.root,
         entry: ds.processor.file,
       });
       try {
@@ -112,7 +123,7 @@ export class TerraDsProcessorService {
 
     for (const [name, { file }] of ds.assets) {
       try {
-        res[name] = fs.readFileSync(path.join(this.project.path, file), {
+        res[name] = fs.readFileSync(path.join(this.project.root, file), {
           encoding: 'utf8',
         });
       } catch (e) {
