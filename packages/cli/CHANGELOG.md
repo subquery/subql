@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.21.0] - 2022-02-24
+### Added
+- Support cli publish from a manifest file (#800)
 
 ## [0.20.1] - 2022-02-15
 ### Fixed
