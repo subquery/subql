@@ -13,19 +13,24 @@ import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 import {SolanaCustomDataSourceBase, SolanaRuntimeDataSourceBase, SolanaMapping} from '../../models';
-import {CustomDatasourceV0_3_0, SolanaProjectManifestV0_3_0, RuntimeDataSourceV0_3_0, SubqlMappingV0_3_0} from './types';
+import {
+  CustomDatasourceV0_0_1,
+  SolanaProjectManifestV0_0_1,
+  RuntimeDataSourceV0_0_1,
+  SubqlMappingV0_0_1,
+} from './types';
 
-export class FileTypeV0_3_0 {
+export class FileTypeV0_0_1 {
   @IsString()
   file: string;
 }
 
-export class SolanaProjectNetworkDeploymentV0_3_0 {
+export class SolanaProjectNetworkDeploymentV0_0_1 {
   @IsString()
   chainId: string;
 }
 
-export class SolanaProjectNetworkV0_3_0 extends SolanaProjectNetworkDeploymentV0_3_0 {
+export class SolanaProjectNetworkV0_0_1 extends SolanaProjectNetworkDeploymentV0_0_1 {
   @IsString()
   endpoint: string;
   @IsString()
@@ -36,51 +41,51 @@ export class SolanaProjectNetworkV0_3_0 extends SolanaProjectNetworkDeploymentV0
   genesisHash?: string;
 }
 
-export class SolanaProjectMappingV0_3_0 extends SolanaMapping {
+export class SolanaProjectMappingV0_0_1 extends SolanaMapping {
   @IsString()
   file: string;
 }
 
-export class SolanaRuntimeDataSourceV0_3_0Impl
-  extends SolanaRuntimeDataSourceBase<SubqlMappingV0_3_0<SubqlSolanaRuntimeHandler>>
-  implements RuntimeDataSourceV0_3_0
+export class SolanaRuntimeDataSourceV0_0_1Impl
+  extends SolanaRuntimeDataSourceBase<SubqlMappingV0_0_1<SubqlSolanaRuntimeHandler>>
+  implements RuntimeDataSourceV0_0_1
 {
-  @Type(() => SolanaProjectMappingV0_3_0)
+  @Type(() => SolanaProjectMappingV0_0_1)
   @ValidateNested()
-  mapping: SubqlMappingV0_3_0<SubqlSolanaRuntimeHandler>;
+  mapping: SubqlMappingV0_0_1<SubqlSolanaRuntimeHandler>;
 }
 
-export class SolanaCustomDataSourceV0_3_0Impl<
+export class SolanaCustomDataSourceV0_0_1Impl<
     K extends string = string,
     M extends SubqlSolanaMapping = SubqlSolanaMapping<SubqlSolanaCustomHandler>
   >
   extends SolanaCustomDataSourceBase<K, M>
   implements SubqlSolanaCustomDatasource<K, M> {}
 
-export class DeploymentV0_3_0 {
-  @Equals('0.3.0')
+export class DeploymentV0_0_1 {
+  @Equals('0.0.1')
   @IsString()
   specVersion: string;
   @ValidateNested()
-  @Type(() => FileTypeV0_3_0)
-  schema: FileTypeV0_3_0;
+  @Type(() => FileTypeV0_0_1)
+  schema: FileTypeV0_0_1;
   @IsArray()
   @ValidateNested()
-  @Type(() => SolanaCustomDataSourceV0_3_0Impl, {
+  @Type(() => SolanaCustomDataSourceV0_0_1Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SolanaRuntimeDataSourceV0_3_0Impl, name: 'Solana/Runtime'}],
+      subTypes: [{value: SolanaRuntimeDataSourceV0_0_1Impl, name: 'Solana/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
+  dataSources: (RuntimeDataSourceV0_0_1 | CustomDatasourceV0_0_1)[];
   @ValidateNested()
-  @Type(() => SolanaProjectNetworkDeploymentV0_3_0)
-  network: SolanaProjectNetworkDeploymentV0_3_0;
+  @Type(() => SolanaProjectNetworkDeploymentV0_0_1)
+  network: SolanaProjectNetworkDeploymentV0_0_1;
 }
 
-export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implements SolanaProjectManifestV0_3_0 {
-  @Equals('0.3.0')
+export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements SolanaProjectManifestV0_0_1 {
+  @Equals('0.0.1')
   specVersion: string;
   @IsString()
   name: string;
@@ -88,22 +93,22 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
   version: string;
   @IsObject()
   @ValidateNested()
-  @Type(() => SolanaProjectNetworkV0_3_0)
-  network: SolanaProjectNetworkV0_3_0;
+  @Type(() => SolanaProjectNetworkV0_0_1)
+  network: SolanaProjectNetworkV0_0_1;
   @ValidateNested()
-  @Type(() => FileTypeV0_3_0)
-  schema: FileTypeV0_3_0;
+  @Type(() => FileTypeV0_0_1)
+  schema: FileTypeV0_0_1;
   @IsArray()
   @ValidateNested()
-  @Type(() => SolanaCustomDataSourceV0_3_0Impl, {
+  @Type(() => SolanaCustomDataSourceV0_0_1Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SolanaRuntimeDataSourceV0_3_0Impl, name: 'Solana/Runtime'}],
+      subTypes: [{value: SolanaRuntimeDataSourceV0_0_1Impl, name: 'Solana/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
-  private _deployment: DeploymentV0_3_0;
+  dataSources: (RuntimeDataSourceV0_0_1 | CustomDatasourceV0_0_1)[];
+  private _deployment: DeploymentV0_0_1;
 
   toDeployment(): string {
     return yaml.dump(this._deployment, {
@@ -112,9 +117,9 @@ export class ProjectManifestV0_3_0Impl extends ProjectManifestBaseImpl implement
     });
   }
 
-  get deployment(): DeploymentV0_3_0 {
+  get deployment(): DeploymentV0_0_1 {
     if (!this._deployment) {
-      this._deployment = plainToClass(DeploymentV0_3_0, this);
+      this._deployment = plainToClass(DeploymentV0_0_1, this);
       validateSync(this._deployment, {whitelist: true});
     }
     return this._deployment;

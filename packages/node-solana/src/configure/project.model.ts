@@ -6,7 +6,7 @@ import {
   SolanaProjectNetworkConfig,
 } from '@subql/common-solana';
 import { ProjectManifestVersioned } from '@subql/common-solana/src/project/versioned';
-import { SolanaProjectNetworkV0_3_0 } from '@subql/common-solana/src/project/versioned/v0_3_0';
+import { SolanaProjectNetworkV0_0_1 } from '@subql/common-solana/src/project/versioned/v0_0_1';
 import {
   SubqlSolanaDatasourceKind,
   SubqlSolanaDatasource,
@@ -30,8 +30,8 @@ export class SubquerySolanaProject {
     this._projectManifest = manifest;
     this._path = path;
 
-    console.log("manifest", manifest);
-    console.log("manifest dataSources", manifest?.dataSources);
+    console.log('manifest', manifest);
+    console.log('manifest dataSources', manifest?.dataSources);
     manifest.dataSources?.forEach(function (dataSource) {
       // if (!(dataSource.kind in SubqlSolanaDatasourceKind)) {
       //   throw new Error(`Invalid datasource kind: "${dataSource.kind}"`);
@@ -50,7 +50,7 @@ export class SubquerySolanaProject {
   get network(): SolanaProjectNetworkConfig {
     const impl = this._projectManifest.asImpl;
     const network = {
-      ...(impl.network as SolanaProjectNetworkV0_3_0),
+      ...(impl.network as SolanaProjectNetworkV0_0_1),
     };
 
     if (!network.endpoint) {
