@@ -4,27 +4,27 @@
 import {SubqlSolanaDatasource} from '@subql/types-Solana';
 import {plainToClass} from 'class-transformer';
 import {ISolanaProjectManifest} from '../types';
-import {ProjectManifestV0_3_0Impl} from './v0_3_0';
+import {ProjectManifestV0_0_1Impl} from './v0_0_1';
 
 export type VersionedProjectManifest = {specVersion: string};
 
 const SUPPORTED_VERSIONS = {
-  '0.3.0': ProjectManifestV0_3_0Impl,
+  '0.0.1': ProjectManifestV0_0_1Impl,
 };
 
 type Versions = keyof typeof SUPPORTED_VERSIONS;
 
 type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
-export function manifestIsV0_3_0(manifest: ISolanaProjectManifest): manifest is ProjectManifestV0_3_0Impl {
-  return manifest.specVersion === '0.3.0';
+export function manifestIsV0_0_1(manifest: ISolanaProjectManifest): manifest is ProjectManifestV0_0_1Impl {
+  return manifest.specVersion === '0.0.1';
 }
 
 export class ProjectManifestVersioned implements ISolanaProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
-    const klass = SUPPORTED_VERSIONS['0.3.0'];
+    const klass = SUPPORTED_VERSIONS['0.0.1'];
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
@@ -35,12 +35,12 @@ export class ProjectManifestVersioned implements ISolanaProjectManifest {
     return this._impl;
   }
 
-  get isV0_3_0(): boolean {
-    return this.specVersion === '0.3.0';
+  get isV0_0_1(): boolean {
+    return this.specVersion === '0.0.1';
   }
 
-  get asV0_3_0(): ProjectManifestV0_3_0Impl {
-    return this._impl as ProjectManifestV0_3_0Impl;
+  get asV0_0_1(): ProjectManifestV0_0_1Impl {
+    return this._impl as ProjectManifestV0_0_1Impl;
   }
 
   toDeployment(): string | undefined {

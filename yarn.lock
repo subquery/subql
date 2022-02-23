@@ -4740,6 +4740,7 @@ __metadata:
     "@types/rimraf": ^3.0.2
     "@types/yargs": ^16.0.4
     apollo-server-express: ^3.6.2
+    dotenv: ^16.0.0
     express-pino-logger: ^6.0.0
     graphile-build: ^4.12.2
     graphile-build-pg: ^4.12.2
@@ -8811,6 +8812,13 @@ __metadata:
   version: 15.0.1
   resolution: "dotenv@npm:15.0.1"
   checksum: acebaa5b0bb23fdbbdc50827936bdf6782e935b73c6048e949df352515576ec9542455a93f58cc3eefd839e45c670fbfed250a1061eb72f536dab05745d1bf33
+  languageName: node
+  linkType: hard
+
+"dotenv@npm:^16.0.0":
+  version: 16.0.0
+  resolution: "dotenv@npm:16.0.0"
+  checksum: 664cebb51f0a9a1d1b930f51f0271e72e26d62feaecc9dc03df39453dd494b4e724809ca480fb3ec3213382b1ed3f791aaeb83569a137f9329ce58efd4853dbf
   languageName: node
   linkType: hard
 

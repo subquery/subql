@@ -17,7 +17,7 @@ const logger = getLogger('fetch');
 async function getBlockByHeight(api: Connection, height: number) {
   let res;
   res = await api.getBlock(height).catch((e) => {
-    logger.error(`failed to fetch Block ${height}`);
+    logger.error(e, `failed to fetch Block ${height}`);
     // throw e;
     res = null;
   });

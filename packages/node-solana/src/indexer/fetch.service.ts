@@ -5,7 +5,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { Connection } from '@solana/web3.js';
-import { isRuntimeDataSourceV0_3_0 } from '@subql/common-solana/dist/project/versioned/v0_3_0';
+import { isRuntimeDataSourceV0_0_1 } from '@subql/common-solana/dist/project/versioned/v0_0_1';
 import {
   SubqlSolanaDatasource,
   SubqlSolanaHandler,
@@ -75,7 +75,7 @@ export class FetchService implements OnApplicationShutdown {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter((ds) =>
-      isRuntimeDataSourceV0_3_0(ds),
+      isRuntimeDataSourceV0_0_1(ds),
     );
     for (const ds of dataSources) {
       for (const handler of ds.mapping.handlers) {
