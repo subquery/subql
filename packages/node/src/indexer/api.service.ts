@@ -64,6 +64,11 @@ export class ApiService implements OnApplicationShutdown {
       ...chainTypes,
     };
 
+    const optionsAlgo = {
+      token: 'a51a4df895858d2234df7ada60437bc6f5591509191932f3d86f1c4e5edfd2ec',
+      server: 'http://127.0.0.1',
+      port: 8080,
+    };
     this.api = new ApiWrapper('polkadot', this.apiOption);
     await this.api.init();
 

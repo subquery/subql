@@ -304,8 +304,8 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const bestHeader = await this.api.getHeader();
-      const currentBestHeight = bestHeader.number.toNumber();
+      const currentBestHeight = await this.api.getLastHeight();
+      console.log(currentBestHeight);
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {

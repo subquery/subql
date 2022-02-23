@@ -10,11 +10,13 @@ import {
   Header as SubstrateHeader,
 } from '@polkadot/types/interfaces';
 import AlgorandHeader from 'algosdk/dist/types/src/types/blockHeader';
+import algosdk from "algosdk";
 
 type Header = SubstrateHeader | AlgorandHeader;
 
 export class ApiWrapper {
-  client: ApiPromise; // algosdk.Algodv2 | ApiPromise;
+  client: ApiPromise;
+  clientAlgo: algosdk.Algodv2;
   query: any;
   consts: any;
   rpc: any;
@@ -24,6 +26,11 @@ export class ApiWrapper {
   async init(): Promise<void> {
     switch (this.network) {
       case 'algorand':
+        this.clientAlgo = new algosdk.Algodv2(
+          this.options.token,
+          this.options.server,
+          this.options.port,
+        );
         break;
       case 'polkadot':
         this.client = await ApiPromise.create(this.options);
@@ -68,6 +75,9 @@ export class ApiWrapper {
     let runtimeVersion: any;
     switch (this.network) {
       case 'algorand':
+        runtimeVersion = {
+          specName: 'algorand',
+        };
         break;
       case 'polkadot':
         runtimeVersion = {
@@ -122,10 +132,11 @@ export class ApiWrapper {
     return version;
   }
 
-  async getFinalizedHead(): Promise<string | BlockHash> {
-    let finalizedHead: string | BlockHash;
+  async getFinalizedHead(): Promise<string | BlockHash | number> {
+    let finalizedHead: string | BlockHash | number;
     switch (this.network) {
       case 'algorand':
+        finalizedHead = await this.getLastHeight();
         break;
       case 'polkadot':
         finalizedHead = await this.client.rpc.chain.getFinalizedHead();
@@ -136,10 +147,13 @@ export class ApiWrapper {
     return finalizedHead;
   }
 
-  async getBlock(blockHash: string | BlockHash): Promise<any | SignedBlock> {
+  async getBlock(
+    blockHash: string | BlockHash | number,
+  ): Promise<any | SignedBlock> {
     let block: any | SignedBlock;
     switch (this.network) {
       case 'algorand':
+        block = await this.clientAlgo.block(blockHash as number).do();
         break;
       case 'polkadot':
         block = await this.client.rpc.chain.getBlock(blockHash as BlockHash);
@@ -150,10 +164,32 @@ export class ApiWrapper {
     return block;
   }
 
-  async getHeader(): Promise<any | Header> {
-    let header: any | Header;
+  async getLastHeight(): Promise<number> {
+    let lastHeight: any | Header;
     switch (this.network) {
       case 'algorand':
+        lastHeight = (await this.clientAlgo.status().do())['last-round'];
+        break;
+      case 'polkadot':
+        lastHeight = (
+          await this.client.rpc.chain.getHeader()
+        ).number.toNumber();
+        break;
+      default:
+        break;
+    }
+    return lastHeight;
+  }
+  async getHeader(): Promise<any | Header> {
+    let header: any | Header;
+    const objAlgo: any = {};
+    switch (this.network) {
+      case 'algorand':
+        objAlgo.status = await this.clientAlgo.status().do();
+        objAlgo.round = objAlgo.status['last-round'];
+        objAlgo.ret = await this.clientAlgo.block(objAlgo.round).do();
+        header = objAlgo.ret.block;
+        delete header.txns;
         break;
       case 'polkadot':
         header = new GenericHeader(
@@ -171,6 +207,7 @@ export class ApiWrapper {
     let blockHash: any | BlockHash;
     switch (this.network) {
       case 'algorand':
+        blockHash = (await this.clientAlgo.block(height + 1).do()).block.prev;
         break;
       case 'polkadot':
         blockHash = await this.client.rpc.chain.getBlockHash(height);
