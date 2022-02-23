@@ -2,10 +2,26 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NestFactory} from '@nestjs/core';
-import {findAvailablePort} from '@subql/common';
+import detectPort from 'detect-port';
 import {AppModule} from './app.module';
 import {getLogger, NestLogger} from './utils/logger';
 import {getYargsOption} from './yargs';
+
+async function findAvailablePort(startPort: number, range = 10): Promise<number> {
+  for (let port = startPort; port <= startPort + range; port++) {
+    try {
+      const _port = await detectPort(port);
+      if (_port === port) {
+        return port;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  return null;
+}
+
 
 const DEFAULT_PORT = 3000;
 const {argv} = getYargsOption();

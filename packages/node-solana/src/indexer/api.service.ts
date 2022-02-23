@@ -30,7 +30,7 @@ export class ApiService {
       commitment: 'finalized',
     };
 
-    this.api = new Connection(web3.clusterApiUrl('testnet'), {
+    this.api = new Connection(network.endpoint, {
       commitment: 'finalized',
     });
 
