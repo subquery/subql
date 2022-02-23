@@ -10,6 +10,11 @@
     "outDir": "lib",
     "noImplicitAny": true
   },
-  "references": [{"path": "../common"}, {"path": "../validator"}],
+  "references": [
+    {"path": "../common"},
+    {"path": "../common-substrate"},
+    {"path": "../common-terra"},
+    {"path": "../validator"}
+  ],
   "include": ["src/**/*"]
 }

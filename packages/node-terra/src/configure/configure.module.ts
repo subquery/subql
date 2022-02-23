@@ -4,11 +4,8 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import {
-  ProjectNetworkConfig,
-  getProjectRootAndManifest,
-  IPFS_REGEX,
-} from '@subql/common';
+import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
+import { TerraProjectNetworkConfig } from '@subql/common-terra';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
@@ -116,7 +113,7 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryTerraProject.create(
         argv.subquery,
-        omitBy<ProjectNetworkConfig>(
+        omitBy<TerraProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,

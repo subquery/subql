@@ -42,9 +42,24 @@ jobs:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-types-terra
+        with:
+          paths: packages/types-terra
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
           paths: packages/common
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-substrate
+        with:
+          paths: packages/common-substrate
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-terra
+        with:
+          paths: packages/common-terra
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-contract-processors
@@ -60,6 +75,11 @@ jobs:
         id: changed-node
         with:
           paths: packages/node
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node-terra
+        with:
+          paths: packages/node-terra
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-query
@@ -85,11 +105,35 @@ jobs:
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish Types Terra
+        if: steps.changed-types-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types-terra
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish Common
         if: steps.changed-common.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
           package-path: packages/common
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Common Substrate
+        if: steps.changed-common-substrate.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-substrate
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Common Terra
+        if: steps.changed-common-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-terra
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
@@ -106,6 +150,14 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/node
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Node Terra
+        if: steps.changed-node-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node-terra
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 

@@ -346,7 +346,7 @@ export class FetchService implements OnApplicationShutdown {
 
       scaledBatchSize = Math.max(
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
+        MINIMUM_BATCH_SIZE,
       );
 
       if (

@@ -16,7 +16,6 @@ import {
 } from '@subql/common';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
 import {loadTerraProjectManifest} from '@subql/common-terra';
-
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
