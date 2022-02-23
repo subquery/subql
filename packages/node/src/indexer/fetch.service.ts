@@ -155,8 +155,7 @@ export class FetchService implements OnApplicationShutdown {
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName,
+        (ds as RuntimeDataSourceV0_0_1).filter.specName === this.api.specName,
     );
     for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
@@ -282,10 +281,7 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.getFinalizedHead();
-      const finalizedBlock = await this.api.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const currentFinalizedHeight = await this.api.getFinalizedBlockHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
@@ -304,8 +300,8 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const bestHeader = await this.api.getHeader();
-      const currentBestHeight = bestHeader.number.toNumber();
+      const currentBestHeight = await this.api.getLastHeight();
+      console.log(currentBestHeight);
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
@@ -437,14 +433,21 @@ export class FetchService implements OnApplicationShutdown {
 
   @profiler(argv.profiler)
   async fetchMeta(height: number): Promise<boolean> {
-    const parentBlockHash = await this.api.getBlockHash(
+    // This function only make sense for Substrate base chain
+    if (this.project.network !== 'polkadot') {
+      return false;
+    }
+
+    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
-    const runtimeVersion = await this.api.getRuntimeVersion(parentBlockHash);
+    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
+      parentBlockHash,
+    );
     const specVersion = runtimeVersion.specVersion.toNumber();
     if (this.parentSpecVersion !== specVersion) {
-      const blockHash = await this.api.getBlockHash(height);
-      await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+      const blockHash = await this.api.rpc.chain.getBlockHash(height);
+      await SubstrateUtil.prefetchMetadata(this.api.substrate, blockHash);
       this.parentSpecVersion = specVersion;
       return true;
     }

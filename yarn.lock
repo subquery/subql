@@ -4589,10 +4589,10 @@ __metadata:
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
-    "@types/jest": ^27.4.0
-    "@types/lodash": ^4.14.178
-    "@types/pino": ^6.3.12
-    "@types/sequelize": ^4.28.11
+    "@types/jest": ^27.0.2
+    "@types/lodash": ^4.14.176
+    "@types/pino": ^6.3.8
+    "@types/sequelize": ^4.28.10
     "@types/supertest": ^2.0.11
     "@types/tar": ^6.1.1
     "@types/yargs": ^16.0.4
@@ -5085,6 +5085,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jest@npm:^27.0.2":
+  version: 27.4.1
+  resolution: "@types/jest@npm:27.4.1"
+  dependencies:
+    jest-matcher-utils: ^27.0.0
+    pretty-format: ^27.0.0
+  checksum: 5184f3eef4832d01ee8f59bed15eec45ccc8e29c724a5e6ce37bf74396b37bdf04f557000f45ba4fc38ae6075cf9cfcce3d7a75abc981023c61ceb27230a93e4
+  languageName: node
+  linkType: hard
+
 "@types/jest@npm:^27.4.0":
   version: 27.4.0
   resolution: "@types/jest@npm:27.4.0"
@@ -5139,7 +5149,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:^4.14.178":
+"@types/lodash@npm:^4.14.176, @types/lodash@npm:^4.14.178":
   version: 4.14.178
   resolution: "@types/lodash@npm:4.14.178"
   checksum: a69a04a60bfc5257c3130a554b4efa0c383f0141b7b3db8ab7cf07ad2a46ea085fce66d0242da41da7e5647b133d5dfb2c15add9cbed8d7fef955e4a1e5b3128
@@ -5298,7 +5308,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pino@npm:6.3, @types/pino@npm:^6.3.12":
+"@types/pino@npm:6.3, @types/pino@npm:^6.3.12, @types/pino@npm:^6.3.8":
   version: 6.3.12
   resolution: "@types/pino@npm:6.3.12"
   dependencies:
@@ -5350,7 +5360,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/sequelize@npm:^4.28.11":
+"@types/sequelize@npm:^4.28.10":
   version: 4.28.11
   resolution: "@types/sequelize@npm:4.28.11"
   dependencies:
@@ -12271,7 +12281,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"jest-matcher-utils@npm:^27.5.1":
+"jest-matcher-utils@npm:^27.0.0, jest-matcher-utils@npm:^27.5.1":
   version: 27.5.1
   resolution: "jest-matcher-utils@npm:27.5.1"
   dependencies:
