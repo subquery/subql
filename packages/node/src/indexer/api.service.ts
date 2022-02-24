@@ -12,6 +12,7 @@ import { getLogger } from '../utils/logger';
 import { ApiWrapper } from './api.wrapper';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { ApiAt } from './types';
+import { AlgorandOptions } from './typesAlgo';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
@@ -19,19 +20,13 @@ const NOT_SUPPORT = (name: string) => () => {
 
 const logger = getLogger('api');
 
-const optionsAlgo = {
-  token: 'a51a4df895858d2234df7ada60437bc6f5591509191932f3d86f1c4e5edfd2ec',
-  server: 'http://127.0.0.1',
-  port: 8080,
-};
-
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiWrapper;
   private currentBlockHash: string;
   private currentBlockNumber: number;
   private currentRuntimeVersion: RuntimeVersion;
-  private apiOption: ApiOptions;
+  private apiOption: ApiOptions | AlgorandOptions;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -64,16 +59,22 @@ export class ApiService implements OnApplicationShutdown {
       throwOnConnect = true;
     }
 
+    // this.apiOption = {
+    //   provider,
+    //   throwOnConnect,
+    //   ...chainTypes,
+    // };
+
     this.apiOption = {
-      provider,
-      throwOnConnect,
-      ...chainTypes,
+      token: 'ea7142d221d92ab184a78863c817d8c34e134e31f11668b797465e331848e481',
+      server: 'http://localhost',
+      port: 8080,
     };
 
     if (network === 'polkadot') {
       this.api = new ApiWrapper('polkadot', this.apiOption);
     } else {
-      this.api = new ApiWrapper('algorand', optionsAlgo);
+      this.api = new ApiWrapper('algorand', this.apiOption);
     }
     await this.api.init();
 

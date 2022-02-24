@@ -21,7 +21,6 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
-import { ApiWrapper } from '../indexer/api.wrapper';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 const logger = getLogger('fetch');

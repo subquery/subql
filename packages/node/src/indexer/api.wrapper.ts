@@ -3,23 +3,14 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { ApiInterfaceEvents, ApiOptions } from '@polkadot/api/types';
-import {
-  BlockHash,
-  SignedBlock,
-  RuntimeVersion,
-  Header as SubstrateHeader,
-} from '@polkadot/types/interfaces';
-import algosdk, { Transaction } from 'algosdk';
-import AlgorandHeader from 'algosdk/dist/types/src/types/blockHeader';
-
-type AlgorandRessouces = {
-  client: algosdk.Algodv2;
-  lastHeader: AlgorandHeader;
-};
+import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
+import algosdk from 'algosdk';
+import { BlockContent } from './types';
+import { AlgorandBlock, AlgorandApi } from './typesAlgo';
 
 export class ApiWrapper {
   substrate: ApiPromise;
-  algorand: AlgorandRessouces;
+  algorand: AlgorandApi;
   query: any;
   consts: any;
   rpc: any;
@@ -29,6 +20,10 @@ export class ApiWrapper {
   async init(): Promise<void> {
     switch (this.network) {
       case 'algorand':
+        this.algorand = {
+          client: null,
+          lastHeader: null,
+        };
         this.algorand.client = new algosdk.Algodv2(
           this.options.token,
           this.options.server,
@@ -55,7 +50,7 @@ export class ApiWrapper {
     let genesisHash: string;
     switch (this.network) {
       case 'algorand':
-        genesisHash = this.algorand.lastHeader.gh;
+        genesisHash = this.algorand.lastHeader.gh.toString('hex');
         break;
       case 'polkadot':
         genesisHash = this.substrate.genesisHash.toString();
@@ -70,7 +65,7 @@ export class ApiWrapper {
     let runtimeChain: string;
     switch (this.network) {
       case 'algorand':
-        runtimeChain = this.algorand.lastHeader.gen;
+        runtimeChain = this.algorand.lastHeader.gen as string;
         break;
       case 'polkadot':
         runtimeChain = this.substrate.runtimeChain.toString();
@@ -173,5 +168,29 @@ export class ApiWrapper {
         break;
     }
     return lastHeight;
+  }
+
+  async fetchBlocksArray(
+    bufferBlocks: number[],
+    fetchForPolkadot: (
+      a: ApiPromise,
+      b: number[],
+      c: number,
+    ) => Promise<BlockContent[]>,
+    overallSpecVer?: number,
+  ): Promise<AlgorandBlock | BlockContent[]> {
+    switch (this.network) {
+      case 'algorand':
+        return Promise.all(
+          bufferBlocks.map(
+            async (round) =>
+              (await this.algorand.client.block(round).do()).block,
+          ),
+        );
+      case 'polkadot':
+        return fetchForPolkadot(this.substrate, bufferBlocks, overallSpecVer);
+      default:
+        return null;
+    }
   }
 }
