@@ -43,9 +43,12 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   return {
     ...config,
     subqueryName:
-      config.subqueryName ?? ipfsMatch
+      config.subqueryName ??
+      (ipfsMatch
         ? config.subquery.replace(IPFS_REGEX, '')
-        : last(getProjectRootAndManifest(config.subquery).root.split(path.sep)),
+        : last(
+            getProjectRootAndManifest(config.subquery).root.split(path.sep),
+          )),
   } as MinConfig;
 }
 
