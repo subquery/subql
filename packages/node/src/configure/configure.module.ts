@@ -26,11 +26,15 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
 
-    if (key === 'network-registry') {
+    if (
+      key === 'network-registry' ||
+      key === 'ipfs-headers' ||
+      key === 'ipfsHeaders'
+    ) {
       try {
         value = JSON.parse(value as string);
       } catch (e) {
-        throw new Error('Argument `network-registry` is not valid JSON');
+        throw new Error(`Argument "${key}" is not valid JSON`);
       }
     }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
@@ -129,6 +133,7 @@ export class ConfigureModule {
         ),
         {
           ipfs: config.ipfs,
+          ipfsHeaders: config.ipfsHeaders,
         },
       ).catch((err) => {
         logger.error(err, 'Create Subquery project from given path failed!');

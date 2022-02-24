@@ -128,6 +128,11 @@ export function getYargsOption() {
       describe: 'IPFS gateway endpoint',
       type: 'string',
     },
+    'ipfs-headers': {
+      demandOption: false,
+      describe: 'JSON object providing headers to IPFS requests',
+      type: 'string',
+    },
     port: {
       alias: 'p',
       demandOption: false,

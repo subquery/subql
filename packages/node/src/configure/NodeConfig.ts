@@ -31,6 +31,7 @@ export interface IConfig {
   readonly proofOfIndex: boolean;
   readonly mmrPath?: string;
   readonly ipfs?: string;
+  readonly ipfsHeaders?: Record<string, string>;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> &
@@ -140,6 +141,10 @@ export class NodeConfig implements IConfig {
   }
   get ipfs(): string {
     return this._config.ipfs;
+  }
+
+  get ipfsHeaders(): Record<string, string> {
+    return this._config.ipfsHeaders;
   }
 
   get dbSchema(): string {

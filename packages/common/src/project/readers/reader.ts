@@ -11,6 +11,7 @@ import {LocalReader} from './local-reader';
 
 export type ReaderOptions = {
   ipfs?: string;
+  ipfsHeaders?: Record<string, string>;
 };
 
 export interface Reader {
@@ -31,7 +32,7 @@ export class ReaderFactory {
 
     const ipfsMatch = location.match(IPFS_REGEX);
     if (ipfsMatch) {
-      return new IPFSReader(location.replace('ipfs://', ''), options.ipfs);
+      return new IPFSReader(location.replace('ipfs://', ''), options.ipfs, options.ipfsHeaders);
     }
 
     //local mode

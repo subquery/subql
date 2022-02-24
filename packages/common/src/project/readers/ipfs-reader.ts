@@ -16,11 +16,14 @@ const CIDv1 = new RegExp(
 export class IPFSReader implements Reader {
   private ipfs: IPFS.IPFSHTTPClient;
 
-  constructor(private readonly cid: string, gateway?: string) {
+  constructor(private readonly cid: string, gateway?: string, headers?: Record<string, string>) {
     if (!CIDv0.test(cid) && !CIDv1.test(cid)) {
       throw new Error('IPFS project path CID is not valid');
     }
-    this.ipfs = IPFS.create({url: gateway ?? IPFS_NODE_ENDPOINT});
+    this.ipfs = IPFS.create({
+      url: gateway ?? IPFS_NODE_ENDPOINT,
+      headers,
+    });
   }
 
   get root(): undefined {
