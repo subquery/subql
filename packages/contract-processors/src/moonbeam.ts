@@ -389,17 +389,23 @@ const CallProcessor: SecondLayerHandlerProcessor<
         return false;
       }
 
-      const [tx] = input.extrinsic.method.args as [EthTransaction];
+      const [tx] = input.extrinsic.method.args as [TransactionV2 | EthTransaction];
+
+      const rawTx = (tx as TransactionV2).isEip1559
+        ? (tx as TransactionV2).asEip1559
+        : (tx as TransactionV2).isLegacy
+        ? (tx as TransactionV2).asLegacy
+        : (tx as EthTransaction);
 
       // if `to` is null then we handle contract creation
       if (
         (ds.processor?.options?.address && !stringNormalizedEq(ds.processor.options.address, to)) ||
-        (ds.processor?.options?.address === null && !tx.action.isCreate)
+        (ds.processor?.options?.address === null && !rawTx.action.isCreate)
       ) {
         return false;
       }
 
-      if (filter?.function && tx.input.toHex().indexOf(functionToSighash(filter.function)) !== 0) {
+      if (filter?.function && rawTx.input.toHex().indexOf(functionToSighash(filter.function)) !== 0) {
         return false;
       }
 

@@ -403,6 +403,18 @@ describe('MoonbeamDs', () => {
 
         expect(processor.filterProcessor({function: '0x0000000'}, transaction, {} as MoonbeamDatasource)).toBeFalsy();
       });
+
+      it('can filter function on a legacy transaction post EIP1559', async () => {
+        api = await ApiPromise.create({
+          provider: new WsProvider('wss://moonbeam.api.onfinality.io/public-ws'),
+          typesBundle: typesBundleDeprecated as any,
+        });
+        const [{extrinsics}] = await fetchBlocks(api, 459730, 459730);
+
+        transaction = extrinsics[3];
+
+        expect(processor.filterProcessor({function: '0xab0a39e6'}, transaction, {} as MoonbeamDatasource)).toBeTruthy();
+      });
     });
   });
 
