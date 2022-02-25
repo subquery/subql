@@ -1,6 +1,6 @@
 {
   "name": "@subql/contract-processors",
-  "version": "0.5.1",
+  "version": "0.5.2-0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -24,5 +24,6 @@
   },
   "peerDependencies": {
     "@polkadot/api": "^7"
-  }
+  },
+  "stableVersion": "0.5.1"
 }
