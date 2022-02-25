@@ -18,6 +18,7 @@ const logger = getLogger('configure');
 
 const YargsNameMapping = {
   local: 'localMode',
+  'ipfs-header': 'ipfsHeaders',
 };
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
@@ -26,16 +27,21 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
     if (['_', '$0'].includes(key)) return acc;
 
-    if (
-      key === 'network-registry' ||
-      key === 'ipfs-headers' ||
-      key === 'ipfsHeaders'
-    ) {
+    if (key === 'network-registry') {
       try {
         value = JSON.parse(value as string);
       } catch (e) {
         throw new Error(`Argument "${key}" is not valid JSON`);
       }
+    }
+
+    if (key === 'ipfs-header') {
+      value = (value as string[]).reduce((acc, header) => {
+        const [headerKey, headerValue] = header.split(':').map((v) => v.trim());
+        acc[headerKey] = headerValue;
+
+        return acc;
+      }, {});
     }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
