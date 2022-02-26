@@ -34,24 +34,24 @@ import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from '
 
 type TopicFilter = string | null | undefined;
 
-export type MoonbeamDatasource = SubqlCustomDatasource<
-  'substrate/Moonbeam',
+export type FrontierDatasource = SubqlCustomDatasource<
+  'substrate/Frontier',
   SubqlNetworkFilter,
   SubqlMapping<SubqlCustomHandler>,
-  MoonbeamProcessorOptions
+  FrontierProcessorOptions
 >;
 
-export interface MoonbeamEventFilter {
+export interface FrontierEventFilter {
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
 
-export interface MoonbeamCallFilter {
+export interface FrontierCallFilter {
   from?: string;
   function?: string;
 }
 
-export type MoonbeamEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
-export type MoonbeamCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
+export type FrontierEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
+export type FrontierCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
   success: boolean;
 };
@@ -71,7 +71,7 @@ export class TopicFilterValidator implements ValidatorConstraintInterface {
   }
 }
 
-class MoonbeamProcessorOptions {
+class FrontierProcessorOptions {
   @IsOptional()
   @IsString()
   abi?: string;
@@ -80,13 +80,13 @@ class MoonbeamProcessorOptions {
   address?: string;
 }
 
-class MoonbeamEventFilterImpl implements MoonbeamEventFilter {
+class FrontierEventFilterImpl implements FrontierEventFilter {
   @IsOptional()
   @Validate(TopicFilterValidator, {each: true})
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
 
-class MoonbeamCallFilterImpl implements MoonbeamCallFilter {
+class FrontierCallFilterImpl implements FrontierCallFilter {
   @IsOptional()
   @IsEthereumAddress()
   from?: string;
@@ -140,7 +140,7 @@ async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promi
 
 const contractInterfaces: Record<string, Interface> = {};
 
-function buildInterface(ds: MoonbeamDatasource, assets: Record<string, string>): Interface | undefined {
+function buildInterface(ds: FrontierDatasource, assets: Record<string, string>): Interface | undefined {
   const abi = ds.processor?.options?.abi;
   if (!abi) {
     return;
@@ -179,18 +179,18 @@ function buildInterface(ds: MoonbeamDatasource, assets: Record<string, string>):
 
 const EventProcessor: SecondLayerHandlerProcessor<
   SubqlHandlerKind.Event,
-  MoonbeamEventFilter,
-  MoonbeamEvent,
-  MoonbeamDatasource
+  FrontierEventFilter,
+  FrontierEvent,
+  FrontierDatasource
 > = {
   baseFilter: [{module: 'evm', method: 'Log'}],
   baseHandlerKind: SubqlHandlerKind.Event,
   async transformer(
     original: SubstrateEvent,
-    ds: MoonbeamDatasource,
+    ds: FrontierDatasource,
     api: ApiPromise,
     assets: Record<string, string>
-  ): Promise<MoonbeamEvent> {
+  ): Promise<FrontierEvent> {
     const [eventData] = original.event.data;
 
     const baseFilter = Array.isArray(EventProcessor.baseFilter)
@@ -203,7 +203,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     const {hash} = getExecutionEvent(original.extrinsic); // shouldn't fail here
 
-    const log: MoonbeamEvent = {
+    const log: FrontierEvent = {
       ...(eventData.toJSON() as unknown as RawEvent),
       blockNumber: original.block.block.header.number.toNumber(),
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
@@ -225,7 +225,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     return log;
   },
-  filterProcessor(filter: MoonbeamEventFilter | undefined, input: SubstrateEvent, ds: MoonbeamDatasource): boolean {
+  filterProcessor(filter: FrontierEventFilter | undefined, input: SubstrateEvent, ds: FrontierDatasource): boolean {
     const [eventData] = input.event.data;
     const rawEvent = eventData as EvmLog;
 
@@ -252,17 +252,17 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     return true;
   },
-  filterValidator(filter?: MoonbeamEventFilter): void {
+  filterValidator(filter?: FrontierEventFilter): void {
     if (!filter) return;
-    const filterCls = plainToClass(MoonbeamEventFilterImpl, filter);
+    const filterCls = plainToClass(FrontierEventFilterImpl, filter);
     const errors = validateSync(filterCls, {whitelist: true, forbidNonWhitelisted: true});
 
     if (errors?.length) {
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`Invalid Moonbeam event filter.\n${errorMsgs}`);
+      throw new Error(`Invalid Frontier event filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: MoonbeamEventFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierEventFilter, ds: FrontierDatasource): DictionaryQueryEntry {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmLogs',
       conditions: [],
@@ -293,18 +293,18 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
 const CallProcessor: SecondLayerHandlerProcessor<
   SubqlHandlerKind.Call,
-  MoonbeamCallFilter,
-  MoonbeamCall,
-  MoonbeamDatasource
+  FrontierCallFilter,
+  FrontierCall,
+  FrontierDatasource
 > = {
   baseFilter: [{module: 'ethereum', method: 'transact'}],
   baseHandlerKind: SubqlHandlerKind.Call,
   async transformer(
     original: SubstrateExtrinsic,
-    ds: MoonbeamDatasource,
+    ds: FrontierDatasource,
     api: ApiPromise,
     assets: Record<string, string>
-  ): Promise<MoonbeamCall> {
+  ): Promise<FrontierCall> {
     const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
 
     const rawTx = (tx as TransactionV2).isEip1559
@@ -323,9 +323,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
       success = false;
     }
 
-    let call: MoonbeamCall;
+    let call: FrontierCall;
 
-    const baseCall /*: Partial<MoonbeamCall>*/ = {
+    const baseCall /*: Partial<FrontierCall>*/ = {
       from,
       to, // when contract creation
       nonce: rawTx.nonce.toNumber(),
@@ -381,7 +381,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
     return call;
   },
-  filterProcessor(filter: MoonbeamCallFilter | undefined, input: SubstrateExtrinsic, ds: MoonbeamDatasource): boolean {
+  filterProcessor(filter: FrontierCallFilter | undefined, input: SubstrateExtrinsic, ds: FrontierDatasource): boolean {
     try {
       const {from, to} = getExecutionEvent(input);
 
@@ -415,17 +415,17 @@ const CallProcessor: SecondLayerHandlerProcessor<
       return false;
     }
   },
-  filterValidator(filter?: MoonbeamCallFilter): void {
+  filterValidator(filter?: FrontierCallFilter): void {
     if (!filter) return;
-    const filterCls = plainToClass(MoonbeamCallFilterImpl, filter);
+    const filterCls = plainToClass(FrontierCallFilterImpl, filter);
     const errors = validateSync(filterCls, {whitelist: true, forbidNonWhitelisted: true});
 
     if (errors?.length) {
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`Invalid Moonbeam call filter.\n${errorMsgs}`);
+      throw new Error(`Invalid Frontier call filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: MoonbeamCallFilter, ds: MoonbeamDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierCallFilter, ds: FrontierDatasource): DictionaryQueryEntry {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmTransactions',
       conditions: [],
@@ -444,19 +444,19 @@ const CallProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
-  'substrate/Moonbeam',
+export const FrontierDatasourcePlugin: SubqlDatasourceProcessor<
+  'substrate/Frontier',
   SubqlNetworkFilter,
-  MoonbeamDatasource
+  FrontierDatasource
 > = {
-  kind: 'substrate/Moonbeam',
-  validate(ds: MoonbeamDatasource, assets: Record<string, string>): void {
+  kind: 'substrate/Frontier',
+  validate(ds: FrontierDatasource, assets: Record<string, string>): void {
     if (ds.processor.options) {
-      const opts = plainToClass(MoonbeamProcessorOptions, ds.processor.options);
+      const opts = plainToClass(FrontierProcessorOptions, ds.processor.options);
       const errors = validateSync(opts, {whitelist: true, forbidNonWhitelisted: true});
       if (errors?.length) {
         const errorMsgs = errors.map((e) => e.toString()).join('\n');
-        throw new Error(`Invalid Moonbeam call filter.\n${errorMsgs}`);
+        throw new Error(`Invalid Frontier call filter.\n${errorMsgs}`);
       }
     }
 
@@ -464,13 +464,13 @@ export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
 
     return;
   },
-  dsFilterProcessor(ds: MoonbeamDatasource): boolean {
+  dsFilterProcessor(ds: FrontierDatasource): boolean {
     return ds.kind === this.kind;
   },
   handlerProcessors: {
-    'substrate/MoonbeamEvent': EventProcessor,
-    'substrate/MoonbeamCall': CallProcessor,
+    'substrate/FrontierEvent': EventProcessor,
+    'substrate/FrontierCall': CallProcessor,
   },
 };
 
-export default MoonbeamDatasourcePlugin;
+export default FrontierDatasourcePlugin;
