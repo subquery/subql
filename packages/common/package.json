@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.18.0",
+  "version": "0.18.1-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -37,5 +37,6 @@
     "@types/js-yaml": "^4.0.5",
     "@types/pino": "^6.3.12",
     "@types/tar": "^6.1.1"
-  }
+  },
+  "stableVersion": "0.18.0"
 }
