@@ -18,3 +18,13 @@ export type MetaData = {
   queryNodeVersion: string;
   rowCountEstimate: [TableEstimate];
 };
+
+export type TerraMetaData = {
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: number;
+  targetHeight: number;
+  chainId: string;
+  indexerHealthy: boolean;
+  indexerNodeVersion: string;
+  queryNodeVersion: string;
+};

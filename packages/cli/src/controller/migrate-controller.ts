@@ -5,11 +5,11 @@ import fs from 'fs';
 import path from 'path';
 import {
   ProjectManifestV0_2_0,
-  ProjectManifestVersioned,
+  SubstrateProjectManifestVersioned,
   ProjectNetworkV0_0_1,
   ChainTypes,
-  loadProjectManifest,
-} from '@subql/common';
+  loadSubstrateProjectManifest,
+} from '@subql/common-substrate';
 import {cli} from 'cli-ux';
 import yaml from 'js-yaml';
 import {getGenesisHash} from '../jsonrpc';
@@ -21,7 +21,7 @@ const MANIFEST_V_0_2_0 = `project_0_2_0.yaml`;
 
 export async function prepare(
   location: string,
-  manifest: ProjectManifestVersioned
+  manifest: SubstrateProjectManifestVersioned
 ): Promise<[ProjectSpecV0_2_0, string]> {
   const packageData = await fs.promises.readFile(`${location}/package.json`, 'utf8');
   const jsonProjectData = JSON.parse(packageData);
@@ -79,7 +79,7 @@ export async function prepare(
 export async function migrate(
   projectPath: string,
   project: ProjectSpecV0_2_0,
-  manifest: ProjectManifestVersioned,
+  manifest: SubstrateProjectManifestVersioned,
   chainTypes?: string
 ): Promise<void> {
   const originManifestPath = path.join(projectPath, MANIFEST_PATH);
@@ -112,7 +112,7 @@ export async function migrate(
   }
   //validate before backup and conversion
   try {
-    loadProjectManifest(manifestV0_2_0).isV0_2_0;
+    loadSubstrateProjectManifest(manifestV0_2_0).isV0_2_0;
   } catch (e) {
     console.error(`${manifestV0_2_0} failed validation for manifest spec 0.2.0, \n ${e}`);
     const keep = await cli.confirm(`However, do you want keep ${manifestV0_2_0} for inspection before retry? [Y/N]`);

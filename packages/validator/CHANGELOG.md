@@ -9,6 +9,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+=======
 ## [0.4.5] - 2022-02-24
 ### Changed
 - Bump with subql/common release, as `reader` has been updated.
@@ -54,8 +55,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init release: support validation of subquery project
 
-[Unreleased]: https://github.com/subquery/subql/compare/v0.4.4...HEAD
-[0.4.4]: https://github.com/subquery/subql/compare/query/0.4.3...query/0.4.4
+[Unreleased]: https://github.com/subquery/subql/compare/v0.4.3...HEAD
 [0.4.3]: https://github.com/subquery/subql/compare/query/0.4.2...query/0.4.3
 [0.4.2]: https://github.com/subquery/subql/compare/query/0.4.1...query/0.4.2
 [0.4.1]: https://github.com/subquery/subql/compare/query/0.4.0...query/0.4.1
