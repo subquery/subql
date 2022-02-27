@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.29.1] - 2022-02-23
+### Fixed
+- Fix get default subquery name (#820)
+
+## [0.29.0] - 2022-02-23
+### Changed
+- Update Polkadot/api to 7.9.1 (#815)
+- Support node indexing from a manifest file (#800)
+
 ## [0.28.2] - 2022-02-16
 ### Changed
 - Update Polkadot/api to 7.8.1 ,in order to resolve previous release issue (#806)

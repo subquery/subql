@@ -9,6 +9,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+=======
+## [0.4.5] - 2022-02-24
+### Changed
+- Bump with subql/common release, as `reader` has been updated.
+
+## [0.4.4] - 2022-02-15
+### Fixed
+- Fix chainTypes validation when load from yaml or json (#804)
+
 ## [0.4.3] - 2022-02-09
 ### Changed
 - Move readers from validator to common (#551)

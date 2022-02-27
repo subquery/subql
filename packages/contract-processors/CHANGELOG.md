@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.2] - 2022-02-25
+### Fixed
+- Fix moonbeam filters post EIP1559 (#825)
+
 ## [0.5.1] - 2022-02-23
 ### Added
 - Add support for EIP1599 transactions to Moonbeam contract processor (#814)
