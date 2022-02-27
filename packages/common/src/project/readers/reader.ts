@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import {getProjectRootAndManifest} from '@subql/common';
 import {IPackageJson} from 'package-json-type';
 import {IPFS_REGEX} from '../../constants';
 import {getProjectRootAndManifest} from '../../project';
