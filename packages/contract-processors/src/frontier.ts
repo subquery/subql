@@ -71,7 +71,7 @@ class TopicFilterValidator implements ValidatorConstraintInterface {
   }
 }
 
-class FrontierProcessorOptions {
+export class FrontierProcessorOptions {
   @IsOptional()
   @IsString()
   abi?: string;
@@ -99,22 +99,6 @@ type RawEvent = {
   address: string;
   topics: string[];
   data: string;
-};
-
-type RawTransaction = {
-  nonce: number;
-  gasPrice: string;
-  gasLimit: string;
-  action: {
-    call: string; // hex string
-  };
-  value: string;
-  input: string; // hex string
-  signature: {
-    v: number;
-    r: string; // hex string
-    s: string; // hex string
-  };
 };
 
 type ExecutionEvent = {
@@ -318,7 +302,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
     api: ApiPromise,
     assets: Record<string, string>
   ): Promise<FrontierCall> {
-const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
+    const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
 
     const rawTx = (tx as TransactionV2).isEip1559
       ? (tx as TransactionV2).asEip1559
@@ -396,7 +380,7 @@ const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
   },
   filterProcessor(filter: FrontierCallFilter | undefined, input: SubstrateExtrinsic, ds: FrontierDatasource): boolean {
     try {
-     const {from, to} = getExecutionEvent(input);
+      const {from, to} = getExecutionEvent(input);
 
       if (filter?.from && !stringNormalizedEq(filter.from, from)) {
         return false;
