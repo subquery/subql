@@ -64,3 +64,5 @@ export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
     ] as unknown as MoonbeamCallSecondLayerHandlerProcessor,
   },
 };
+
+export default MoonbeamDatasourcePlugin;
