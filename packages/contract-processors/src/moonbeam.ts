@@ -11,24 +11,24 @@ import {
   SubqlMapping,
   SubqlNetworkFilter,
 } from '@subql/types';
-import FrontierDatasourcePlugin, {
-  FrontierCall,
-  FrontierEvent,
-  FrontierEventFilter,
-  FrontierCallFilter,
-  FrontierProcessorOptions,
-} from './frontier';
+import FrontierEvmDatasourcePlugin, {
+  FrontierEvmCall,
+  FrontierEvmEvent,
+  FrontierEvmEventFilter,
+  FrontierEvmCallFilter,
+  FrontierEvmProcessorOptions,
+} from './frontierEvm';
 
-export type MoonbeamCall<T extends Result = Result> = FrontierCall<T>;
-export type MoonbeamEvent<T extends Result = Result> = FrontierEvent<T>;
-export type MoonbeamEventFilter = FrontierEventFilter;
-export type MoonbeamCallFilter = FrontierCallFilter;
+export type MoonbeamCall<T extends Result = Result> = FrontierEvmCall<T>;
+export type MoonbeamEvent<T extends Result = Result> = FrontierEvmEvent<T>;
+export type MoonbeamEventFilter = FrontierEvmEventFilter;
+export type MoonbeamCallFilter = FrontierEvmCallFilter;
 
 export type MoonbeamDatasource = SubqlCustomDatasource<
   'substrate/Moonbeam',
   SubqlNetworkFilter,
   SubqlMapping<SubqlCustomHandler>,
-  FrontierProcessorOptions
+  FrontierEvmProcessorOptions
 >;
 
 type MoonbeamEventSecondLayerHandlerProcessor = SecondLayerHandlerProcessor<
@@ -51,16 +51,16 @@ export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
   MoonbeamDatasource
 > = {
   kind: 'substrate/Moonbeam',
-  validate: FrontierDatasourcePlugin.validate.bind(this),
+  validate: FrontierEvmDatasourcePlugin.validate.bind(this),
   dsFilterProcessor(ds: MoonbeamDatasource): boolean {
     return ds.kind === this.kind;
   },
   handlerProcessors: {
-    'substrate/MoonbeamEvent': FrontierDatasourcePlugin.handlerProcessors[
-      'substrate/FrontierEvent'
+    'substrate/MoonbeamEvent': FrontierEvmDatasourcePlugin.handlerProcessors[
+      'substrate/FrontierEvmEvent'
     ] as unknown as MoonbeamEventSecondLayerHandlerProcessor,
-    'substrate/MoonbeamCall': FrontierDatasourcePlugin.handlerProcessors[
-      'substrate/FrontierCall'
+    'substrate/MoonbeamCall': FrontierEvmDatasourcePlugin.handlerProcessors[
+      'substrate/FrontierEvmCall'
     ] as unknown as MoonbeamCallSecondLayerHandlerProcessor,
   },
 };
