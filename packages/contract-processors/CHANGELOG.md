@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.3] - 2022-02-28
+### Added
+- Support frontier evm processor (#812)
+
 ## [0.5.2] - 2022-02-25
 ### Fixed
 - Fix moonbeam filters post EIP1559 (#825)
@@ -56,8 +60,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Basic implementation for moonbeam evm processor (#547)
 
-[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.4.2...HEAD
-[0.4.2]: https://github.com/subquery/subql/compare/contract-processors/0.4.1...contract-processors/0.4.2
+[Unreleased]: https://github.com/subquery/subql/compare/contract-processors/0.5.3...HEAD
+[0.5.3]: https://github.com/subquery/subql/compare/contract-processors/0.5.2...contract-processors/0.5.3
+[0.5.2]: https://github.com/subquery/subql/compare/contract-processors/0.5.1...contract-processors/0.5.2
+[0.5.1]: https://github.com/subquery/subql/compare/contract-processors/0.5.0...contract-processors/0.5.1
+[0.5.0]: https://github.com/subquery/subql/compare/contract-processors/0.4.1...contract-processors/0.5.0
 [0.4.1]: https://github.com/subquery/subql/compare/contract-processors/0.4.0...contract-processors/0.4.1
 [0.4.0]: https://github.com/subquery/subql/compare/contract-processors/0.3.1...contract-processors/0.4.0
 [0.3.1]: https://github.com/subquery/subql/compare/contract-processors/0.3.0...contract-processors/0.3.1
