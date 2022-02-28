@@ -418,7 +418,6 @@ export class FetchService implements OnApplicationShutdown {
         fetchBlocksBatches,
         metadataChanged ? undefined : this.parentSpecVersion,
       );
-      console.log(blocks); // TODO : Remove it
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]

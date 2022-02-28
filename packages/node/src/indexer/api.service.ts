@@ -73,18 +73,17 @@ export class ApiService implements OnApplicationShutdown {
 
     if (network === 'polkadot') {
       this.api = new ApiWrapper('polkadot', this.apiOption);
+      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
+      this.api.on('connected', () => {
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
+      });
+      this.api.on('disconnected', () => {
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
+      });
     } else {
       this.api = new ApiWrapper('algorand', this.apiOption);
     }
     await this.api.init();
-
-    this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    this.api.on('connected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    });
-    this.api.on('disconnected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
-    });
 
     this.networkMeta = {
       chain: this.api.runtimeChain,
@@ -118,7 +117,7 @@ export class ApiService implements OnApplicationShutdown {
     this.currentBlockHash = blockHash.toString();
     this.currentBlockNumber = blockNumber;
     if (parentBlockHash) {
-      this.currentRuntimeVersion = await this.api.getRuntimeVersion(
+      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         parentBlockHash,
       );
     }
