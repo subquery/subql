@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {Result} from '@ethersproject/abi';
 import {
   SecondLayerHandlerProcessor,
   SubqlCustomDatasource,
@@ -18,8 +19,8 @@ import FrontierDatasourcePlugin, {
   FrontierProcessorOptions,
 } from './frontier';
 
-export type MoonbeamCall = FrontierCall;
-export type MoonbeamEvent = FrontierEvent;
+export type MoonbeamCall<T extends Result = Result> = FrontierCall<T>;
+export type MoonbeamEvent<T extends Result = Result> = FrontierEvent<T>;
 export type MoonbeamEventFilter = FrontierEventFilter;
 export type MoonbeamCallFilter = FrontierCallFilter;
 
