@@ -34,24 +34,24 @@ import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from '
 
 type TopicFilter = string | null | undefined;
 
-export type FrontierDatasource = SubqlCustomDatasource<
-  'substrate/Frontier',
+export type FrontierEvmDatasource = SubqlCustomDatasource<
+  'substrate/FrontierEvm',
   SubqlNetworkFilter,
   SubqlMapping<SubqlCustomHandler>,
-  FrontierProcessorOptions
+  FrontierEvmProcessorOptions
 >;
 
-export interface FrontierEventFilter {
+export interface FrontierEvmEventFilter {
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
 
-export interface FrontierCallFilter {
+export interface FrontierEvmCallFilter {
   from?: string;
   function?: string;
 }
 
-export type FrontierEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
-export type FrontierCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
+export type FrontierEvmEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
+export type FrontierEvmCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
   success: boolean;
 };
@@ -71,7 +71,7 @@ class TopicFilterValidator implements ValidatorConstraintInterface {
   }
 }
 
-export class FrontierProcessorOptions {
+export class FrontierEvmProcessorOptions {
   @IsOptional()
   @IsString()
   abi?: string;
@@ -80,13 +80,13 @@ export class FrontierProcessorOptions {
   address?: string;
 }
 
-class FrontierEventFilterImpl implements FrontierEventFilter {
+class FrontierEvmEventFilterImpl implements FrontierEvmEventFilter {
   @IsOptional()
   @Validate(TopicFilterValidator, {each: true})
   topics?: [TopicFilter, TopicFilter, TopicFilter, TopicFilter];
 }
 
-class FrontierCallFilterImpl implements FrontierCallFilter {
+class FrontierEvmCallFilterImpl implements FrontierEvmCallFilter {
   @IsOptional()
   @IsEthereumAddress()
   from?: string;
@@ -140,7 +140,7 @@ async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promi
 
 const contractInterfaces: Record<string, Interface> = {};
 
-function buildInterface(ds: FrontierDatasource, assets: Record<string, string>): Interface | undefined {
+function buildInterface(ds: FrontierEvmDatasource, assets: Record<string, string>): Interface | undefined {
   const abi = ds.processor?.options?.abi;
   if (!abi) {
     return;
@@ -176,18 +176,18 @@ function buildInterface(ds: FrontierDatasource, assets: Record<string, string>):
 
 const EventProcessor: SecondLayerHandlerProcessor<
   SubqlHandlerKind.Event,
-  FrontierEventFilter,
-  FrontierEvent,
-  FrontierDatasource
+  FrontierEvmEventFilter,
+  FrontierEvmEvent,
+  FrontierEvmDatasource
 > = {
   baseFilter: [{module: 'evm', method: 'Log'}],
   baseHandlerKind: SubqlHandlerKind.Event,
   async transformer(
     original: SubstrateEvent,
-    ds: FrontierDatasource,
+    ds: FrontierEvmDatasource,
     api: ApiPromise,
     assets: Record<string, string>
-  ): Promise<FrontierEvent> {
+  ): Promise<FrontierEvmEvent> {
     const [eventData] = original.event.data;
 
     const baseFilter = Array.isArray(EventProcessor.baseFilter)
@@ -200,7 +200,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     const {hash} = getExecutionEvent(original.extrinsic); // shouldn't fail here
 
-    const log: FrontierEvent = {
+    const log: FrontierEvmEvent = {
       ...(eventData.toJSON() as unknown as RawEvent),
       blockNumber: original.block.block.header.number.toNumber(),
       blockHash: await getEtheruemBlockHash(api, original.block.block.header.number.toNumber()),
@@ -222,7 +222,11 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     return log;
   },
-  filterProcessor(filter: FrontierEventFilter | undefined, input: SubstrateEvent, ds: FrontierDatasource): boolean {
+  filterProcessor(
+    filter: FrontierEvmEventFilter | undefined,
+    input: SubstrateEvent,
+    ds: FrontierEvmDatasource
+  ): boolean {
     const [eventData] = input.event.data;
     const rawEvent = eventData as EvmLog;
 
@@ -249,9 +253,9 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
     return true;
   },
-  filterValidator(filter?: FrontierEventFilter): void {
+  filterValidator(filter?: FrontierEvmEventFilter): void {
     if (!filter) return;
-    const filterCls = plainToClass(FrontierEventFilterImpl, filter);
+    const filterCls = plainToClass(FrontierEvmEventFilterImpl, filter);
     const errors = validateSync(filterCls, {whitelist: true, forbidNonWhitelisted: true});
 
     if (errors?.length) {
@@ -259,7 +263,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Frontier event filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: FrontierEventFilter, ds: FrontierDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierEvmEventFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmLogs',
       conditions: [],
@@ -290,18 +294,18 @@ const EventProcessor: SecondLayerHandlerProcessor<
 
 const CallProcessor: SecondLayerHandlerProcessor<
   SubqlHandlerKind.Call,
-  FrontierCallFilter,
-  FrontierCall,
-  FrontierDatasource
+  FrontierEvmCallFilter,
+  FrontierEvmCall,
+  FrontierEvmDatasource
 > = {
   baseFilter: [{module: 'ethereum', method: 'transact'}],
   baseHandlerKind: SubqlHandlerKind.Call,
   async transformer(
     original: SubstrateExtrinsic,
-    ds: FrontierDatasource,
+    ds: FrontierEvmDatasource,
     api: ApiPromise,
     assets: Record<string, string>
-  ): Promise<FrontierCall> {
+  ): Promise<FrontierEvmCall> {
     const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
 
     const rawTx = (tx as TransactionV2).isEip1559
@@ -320,7 +324,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
       success = false;
     }
 
-    let call: FrontierCall;
+    let call: FrontierEvmCall;
 
     const baseCall /*: Partial<MoonbeamCall>*/ = {
       from,
@@ -378,7 +382,11 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
     return call;
   },
-  filterProcessor(filter: FrontierCallFilter | undefined, input: SubstrateExtrinsic, ds: FrontierDatasource): boolean {
+  filterProcessor(
+    filter: FrontierEvmCallFilter | undefined,
+    input: SubstrateExtrinsic,
+    ds: FrontierEvmDatasource
+  ): boolean {
     try {
       const {from, to} = getExecutionEvent(input);
 
@@ -412,17 +420,17 @@ const CallProcessor: SecondLayerHandlerProcessor<
       return false;
     }
   },
-  filterValidator(filter?: FrontierCallFilter): void {
+  filterValidator(filter?: FrontierEvmCallFilter): void {
     if (!filter) return;
-    const filterCls = plainToClass(FrontierCallFilterImpl, filter);
+    const filterCls = plainToClass(FrontierEvmCallFilterImpl, filter);
     const errors = validateSync(filterCls, {whitelist: true, forbidNonWhitelisted: true});
 
     if (errors?.length) {
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
-      throw new Error(`Invalid Frontier call filter.\n${errorMsgs}`);
+      throw new Error(`Invalid Frontier Evm call filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: FrontierCallFilter, ds: FrontierDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierEvmCallFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmTransactions',
       conditions: [],
@@ -441,19 +449,19 @@ const CallProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-export const FrontierDatasourcePlugin: SubqlDatasourceProcessor<
-  'substrate/Frontier',
+export const FrontierEvmDatasourcePlugin: SubqlDatasourceProcessor<
+  'substrate/FrontierEvm',
   SubqlNetworkFilter,
-  FrontierDatasource
+  FrontierEvmDatasource
 > = {
-  kind: 'substrate/Frontier',
-  validate(ds: FrontierDatasource, assets: Record<string, string>): void {
+  kind: 'substrate/FrontierEvm',
+  validate(ds: FrontierEvmDatasource, assets: Record<string, string>): void {
     if (ds.processor.options) {
-      const opts = plainToClass(FrontierProcessorOptions, ds.processor.options);
+      const opts = plainToClass(FrontierEvmProcessorOptions, ds.processor.options);
       const errors = validateSync(opts, {whitelist: true, forbidNonWhitelisted: true});
       if (errors?.length) {
         const errorMsgs = errors.map((e) => e.toString()).join('\n');
-        throw new Error(`Invalid Frontier call filter.\n${errorMsgs}`);
+        throw new Error(`Invalid Frontier Evm call filter.\n${errorMsgs}`);
       }
     }
 
@@ -461,13 +469,13 @@ export const FrontierDatasourcePlugin: SubqlDatasourceProcessor<
 
     return;
   },
-  dsFilterProcessor(ds: FrontierDatasource): boolean {
+  dsFilterProcessor(ds: FrontierEvmDatasource): boolean {
     return ds.kind === this.kind;
   },
   handlerProcessors: {
-    'substrate/FrontierEvent': EventProcessor,
-    'substrate/FrontierCall': CallProcessor,
+    'substrate/FrontierEvmEvent': EventProcessor,
+    'substrate/FrontierEvmCall': CallProcessor,
   },
 };
 
-export default FrontierDatasourcePlugin;
+export default FrontierEvmDatasourcePlugin;
