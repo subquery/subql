@@ -2,44 +2,57 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import algosdk from 'algosdk';
+import { ApiWrapper } from './api.wrapper';
+import { AlgorandBlock, AlgorandOptions } from './typesAlgo';
 
-export function AlgorandClient(
-  token: string,
-  server: string,
-  port: number,
-): algosdk.Algodv2 {
-  return new algosdk.Algodv2(token, server, port);
-}
+export class AlgorandApi implements ApiWrapper {
+  private lastHeader: any;
+  private client: algosdk.Algodv2;
 
-export async function AlgorandLastHeader(
-  client: algosdk.Algodv2,
-): Promise<any> {
-  const lastHeader = (
-    await client.block((await client.status().do())['last-round']).do()
-  ).block;
-  return lastHeader;
-}
+  constructor(private options: AlgorandOptions) {}
 
-export function AlgorandGenesisHash(lastHeader: any): string {
-  return lastHeader.gh.toString('hex');
-}
+  async init(): Promise<void> {
+    this.client = new algosdk.Algodv2(
+      this.options.token,
+      this.options.server,
+      this.options.port,
+    );
+    this.lastHeader = (
+      await this.client
+        .block((await this.client.status().do())['last-round'])
+        .do()
+    ).block;
+  }
 
-export function AlgorandRuntimeChain(lastHeader: any): string {
-  return lastHeader.gen as string;
-}
+  getGenesisHash(): string {
+    return this.lastHeader.gh.toString('hex');
+  }
 
-export async function AlgorandGetFinalizedBlockHeight(
-  client: algosdk.Algodv2,
-): Promise<number> {
-  const finalizedBlockHeight: number = (await client.status().do())[
-    'last-round'
-  ];
-  return finalizedBlockHeight;
-}
+  getRuntimeChain(): string {
+    return this.lastHeader.gen as string;
+  }
 
-export async function AlgorandGetLastHeight(
-  client: algosdk.Algodv2,
-): Promise<number> {
-  const lastHeight = (await client.status().do())['last-round'];
-  return lastHeight;
+  getSpecName(): string {
+    return 'algorand';
+  }
+
+  async getFinalizedBlockHeight(): Promise<number> {
+    const finalizedBlockHeight = (await this.client.status().do())[
+      'last-round'
+    ];
+    return finalizedBlockHeight;
+  }
+
+  async getLastHeight(): Promise<number> {
+    const lastHeight = (await this.client.status().do())['last-round'];
+    return lastHeight;
+  }
+
+  async fetchBlocksBatches(bufferBlocks: number[]): Promise<AlgorandBlock[]> {
+    return Promise.all(
+      bufferBlocks.map(
+        async (round) => (await this.client.block(round).do()).block,
+      ),
+    );
+  }
 }

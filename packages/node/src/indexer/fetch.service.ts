@@ -24,7 +24,7 @@ import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
+import { profiler } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
@@ -46,14 +46,6 @@ const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 
 const { argv } = getYargsOption();
-
-const fetchBlocksBatches = argv.profiler
-  ? profilerWrap(
-      SubstrateUtil.fetchBlocksBatches,
-      'SubstrateUtil',
-      'fetchBlocksBatches',
-    )
-  : SubstrateUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
   filter: SubqlEventFilter,
@@ -155,7 +147,8 @@ export class FetchService implements OnApplicationShutdown {
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName === this.api.specName,
+        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
+          this.api.getSpecName(),
     );
     for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
@@ -413,9 +406,8 @@ export class FetchService implements OnApplicationShutdown {
       const metadataChanged = await this.fetchMeta(
         bufferBlocks[bufferBlocks.length - 1],
       );
-      const blocks = await this.api.fetchBlocksArray(
+      const blocks = await this.api.fetchBlocksBatches(
         bufferBlocks,
-        fetchBlocksBatches,
         metadataChanged ? undefined : this.parentSpecVersion,
       );
       logger.info(
