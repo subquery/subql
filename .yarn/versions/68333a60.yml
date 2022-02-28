@@ -1,9 +1,0 @@
-undecided:
-  - "@subql/common"
-  - "@subql/common-substrate"
-  - "@subql/common-terra"
-  - "@subql/node"
-  - "@subql/node-terra"
-  - "@subql/query"
-  - "@subql/types-terra"
-  - "@subql/validator"
