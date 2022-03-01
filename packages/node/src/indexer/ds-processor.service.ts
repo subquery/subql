@@ -83,7 +83,9 @@ export class DsProcessorService {
   }
 
   async validateProjectCustomDatasources(): Promise<void> {
-    await this.validateCustomDs((this.project.dataSources as SubqlDatasource[]).filter(isCustomDs));
+    await this.validateCustomDs(
+      (this.project.dataSources as SubqlDatasource[]).filter(isCustomDs),
+    );
   }
 
   getDsProcessor<D extends string, T extends SubqlNetworkFilter>(

@@ -24,18 +24,18 @@ import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
+import { profiler } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { ApiWrapper } from './api.wrapper';
+import { SubstrateApi } from './api.substrate';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
-import { BlockContent } from './types';
+import { BlockContent, ApiWrapper } from './types';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
@@ -46,14 +46,6 @@ const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 
 const { argv } = getYargsOption();
-
-const fetchBlocksBatches = argv.profiler
-  ? profilerWrap(
-      SubstrateUtil.fetchBlocksBatches,
-      'SubstrateUtil',
-      'fetchBlocksBatches',
-    )
-  : SubstrateUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
   filter: SubqlEventFilter,
@@ -155,7 +147,8 @@ export class FetchService implements OnApplicationShutdown {
       (ds) =>
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName === this.api.specName,
+        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
+          this.api.getSpecName(),
     );
     for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
@@ -261,7 +254,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale() {
+  checkBatchScale(): void {
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
@@ -275,7 +268,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedBlockHead() {
+  async getFinalizedBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -294,7 +287,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getBestBlockHead() {
+  async getBestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;
@@ -413,12 +406,10 @@ export class FetchService implements OnApplicationShutdown {
       const metadataChanged = await this.fetchMeta(
         bufferBlocks[bufferBlocks.length - 1],
       );
-      const blocks = await this.api.fetchBlocksArray(
+      const blocks = await this.api.fetchBlocksBatches(
         bufferBlocks,
-        fetchBlocksBatches,
         metadataChanged ? undefined : this.parentSpecVersion,
       );
-      console.log(blocks); // TODO : Remove it
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
@@ -435,19 +426,20 @@ export class FetchService implements OnApplicationShutdown {
   async fetchMeta(height: number): Promise<boolean> {
     // This function only make sense for Substrate base chain
 
-    if (this.project.network !== 'polkadot') {
+    if (this.project.network.type !== 'substrate') {
       return false;
     }
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
+    const substrateApi = this.api as SubstrateApi;
+    const parentBlockHash = await substrateApi.getBlockHash(
       Math.max(height - 1, 0),
     );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
+    const runtimeVersion = await substrateApi.getRuntimeVersion(
       parentBlockHash,
     );
     const specVersion = runtimeVersion.specVersion.toNumber();
     if (this.parentSpecVersion !== specVersion) {
-      const blockHash = await this.api.rpc.chain.getBlockHash(height);
-      await SubstrateUtil.prefetchMetadata(this.api.substrate, blockHash);
+      const blockHash = await substrateApi.getBlockHash(height);
+      await SubstrateUtil.prefetchMetadata(substrateApi.getClient(), blockHash);
       this.parentSpecVersion = specVersion;
       return true;
     }
@@ -470,7 +462,7 @@ export class FetchService implements OnApplicationShutdown {
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): boolean {
-    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+    if (metaData.genesisHash !== this.api.getGenesisHash()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {

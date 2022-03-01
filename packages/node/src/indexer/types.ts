@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise } from '@polkadot/api';
-import { ApiDecoration } from '@polkadot/api/types';
+import { ApiDecoration, ApiInterfaceEvents } from '@polkadot/api/types';
 import {
   Entity,
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
+import algosdk from 'algosdk';
 
 export interface BlockContent {
   block: SubstrateBlock;
@@ -28,3 +29,29 @@ export type OperationEntity = {
 };
 
 export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };
+
+export type AlgorandBlock = Record<string, any>;
+
+export interface AlgorandApi {
+  client: algosdk.Algodv2;
+  lastHeader: any; // Record<string, Buffer | number | string>;
+}
+
+export interface AlgorandOptions {
+  token: string;
+  server: string;
+  port: number;
+}
+
+export interface ApiWrapper {
+  init: () => Promise<void>;
+  getGenesisHash: () => string;
+  getRuntimeChain: () => string;
+  getSpecName: () => string;
+  getFinalizedBlockHeight: () => Promise<number>;
+  getLastHeight: () => Promise<number>;
+  fetchBlocksBatches: (
+    bufferBlocks: number[],
+    overallSpecNumber?: number,
+  ) => Promise<AlgorandBlock[] | BlockContent[]>;
+}
