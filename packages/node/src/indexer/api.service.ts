@@ -8,9 +8,8 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { AlgorandApi } from './api.algorand';
 import { SubstrateApi } from './api.substrate';
-import { ApiWrapper } from './api.wrapper';
 import { NetworkMetadataPayload } from './events';
-import { ApiAt } from './types';
+import { ApiAt, ApiWrapper } from './types';
 
 const logger = getLogger('api');
 

@@ -3,7 +3,11 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
-import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
+import {
+  ApiInterfaceEvents,
+  ApiOptions,
+  RpcMethodResult,
+} from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   AnyFunction,
@@ -14,23 +18,12 @@ import { ProjectNetworkConfig } from '@subql/common';
 import { profilerWrap } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
-import { ApiWrapper } from './api.wrapper';
 import { IndexerEvent } from './events';
-import { ApiAt, BlockContent } from './types';
+import { ApiAt, BlockContent, ApiWrapper } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
 };
-
-const { argv } = getYargsOption();
-
-const fetchBlocksBatchesUtil = argv.profiler
-  ? profilerWrap(
-      SubstrateUtil.fetchBlocksBatches,
-      'SubstrateUtil',
-      'fetchBlocksBatches',
-    )
-  : SubstrateUtil.fetchBlocksBatches;
 
 export class SubstrateApi implements ApiWrapper {
   private client: ApiPromise;
@@ -105,12 +98,25 @@ export class SubstrateApi implements ApiWrapper {
     bufferBlocks: number[],
     overallSpecNumber?: number,
   ): Promise<BlockContent[]> {
+    const { argv } = getYargsOption();
+
+    const fetchBlocksBatchesUtil = argv.profiler
+      ? profilerWrap(
+          SubstrateUtil.fetchBlocksBatches,
+          'SubstrateUtil',
+          'fetchBlocksBatches',
+        )
+      : SubstrateUtil.fetchBlocksBatches;
     const blocksContent = await fetchBlocksBatchesUtil(
       bufferBlocks,
       overallSpecNumber,
     );
     return blocksContent;
   }
+
+  /****************************************************/
+  /*           SUBSTRATE SPECIFIC METHODS             */
+  /****************************************************/
 
   async getPatchedApi(
     blockHash: string | BlockHash,
@@ -131,19 +137,6 @@ export class SubstrateApi implements ApiWrapper {
     return apiAt;
   }
 
-  private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
-    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce(
-        (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(rpcPromiseResult);
-          return accInner;
-        },
-        {},
-      );
-      return acc;
-    }, {} as ApiPromise['rpc']);
-  }
-
   async getBlockHash(height: number): Promise<BlockHash> {
     const blockHash = await this.client.rpc.chain.getBlockHash(height);
     return blockHash;
@@ -156,8 +149,29 @@ export class SubstrateApi implements ApiWrapper {
     return runtimeVersion;
   }
 
+  async disconnect(): Promise<void> {
+    await this.client.disconnect();
+  }
+
+  on(type: ApiInterfaceEvents, handler: (...args: any[]) => any): void {
+    this.client.on(type, handler);
+  }
+
   getClient(): ApiPromise {
     return this.client;
+  }
+
+  private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
+    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
+      acc[module] = Object.entries(rpcMethods).reduce(
+        (accInner, [name, rpcPromiseResult]) => {
+          accInner[name] = this.redecorateRpcFunction(rpcPromiseResult);
+          return accInner;
+        },
+        {},
+      );
+      return acc;
+    }, {} as ApiPromise['rpc']);
   }
 
   private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(

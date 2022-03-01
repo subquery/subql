@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import algosdk from 'algosdk';
-import { ApiWrapper } from './api.wrapper';
-import { AlgorandBlock, AlgorandOptions } from './typesAlgo';
+import { AlgorandBlock, AlgorandOptions, ApiWrapper } from './types';
 
 export class AlgorandApi implements ApiWrapper {
   private lastHeader: any;
