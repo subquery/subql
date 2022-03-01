@@ -31,7 +31,8 @@
     "reflect-metadata": "^0.1.13",
     "rotating-file-stream": "^3.0.2",
     "sequelize": "^6.15.0",
-    "tar": "^6.1.11"
+    "tar": "^6.1.11",
+    "typescript": "^4.6.2"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",

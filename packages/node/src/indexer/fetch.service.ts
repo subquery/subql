@@ -426,7 +426,7 @@ export class FetchService implements OnApplicationShutdown {
   async fetchMeta(height: number): Promise<boolean> {
     // This function only make sense for Substrate base chain
 
-    if (this.project.network !== 'polkadot') {
+    if (this.project.network.type !== 'substrate') {
       return false;
     }
     const substrateApi = this.api as SubstrateApi;

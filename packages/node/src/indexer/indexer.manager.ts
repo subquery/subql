@@ -400,7 +400,7 @@ export class IndexerManager {
   }
 
   private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    if (this.project.network !== 'polkadot') {
+    if (this.project.network.type !== 'substrate') {
       return null;
     }
     const substrateApi = this.api as SubstrateApi;
@@ -508,7 +508,7 @@ export class IndexerManager {
       handler: SubqlCustomHandler<string, Record<string, unknown>>,
       filteredData: RuntimeHandlerInputMap[K][],
     ): Promise<void> => {
-      if (this.project.network !== 'polkadot') {
+      if (this.project.network.type !== 'substrate') {
         return null;
       }
       const substrateApi = this.api as SubstrateApi;

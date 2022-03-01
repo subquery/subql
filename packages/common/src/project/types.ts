@@ -16,4 +16,7 @@ export interface ProjectNetworkConfig {
   endpoint: string;
   dictionary?: string;
   genesisHash?: string;
+  type?: string;
+  token?: string;
+  port?: string;
 }

@@ -52,18 +52,20 @@ export class SubstrateApi implements ApiWrapper {
       throwOnConnect,
       ...chainTypes,
     };
+  }
+
+  async init(): Promise<void> {
+    this.client = await ApiPromise.create(this.options);
 
     this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
+
     this.client.on('connected', () => {
+      console.log('connected');
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
     });
     this.client.on('disconnected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
     });
-  }
-
-  async init(): Promise<void> {
-    this.client = await ApiPromise.create(this.options);
   }
 
   getGenesisHash(): string {
