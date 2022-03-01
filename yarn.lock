@@ -4793,6 +4793,7 @@ __metadata:
     "@nestjs/schedule": ^1.0.1
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
+    "@polkadot/util-crypto": ^8.4.1
     "@subql/common": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
