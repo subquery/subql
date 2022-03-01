@@ -4697,7 +4697,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-substrate@workspace:packages/common-substrate"
   dependencies:
-    "@polkadot/util": ^7.9.2
+    "@polkadot/util": ^8
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@types/bn.js": 4.11.6
@@ -4741,6 +4741,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
+    "@polkadot/util": ^8
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
