@@ -1,4 +1,4 @@
-name: "Node-to-docker"
+name: "Node-Terra-to-docker"
 on:
   workflow_dispatch:
     inputs:
