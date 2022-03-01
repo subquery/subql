@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [0.18.0] - 2021-02-24
 ### Fixed 
 - Fix function call from calling itself (#808)
