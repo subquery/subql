@@ -24,8 +24,9 @@ export class ApiService implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    if (this.project.network === 'substrate') {
-      await Promise.all([this.api?.disconnect()]);
+    if (this.project.network.type === 'substrate' && this.api) {
+      const substrateApi = this.api as SubstrateApi;
+      await Promise.all([substrateApi.disconnect()]);
     }
   }
 

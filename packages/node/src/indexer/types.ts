@@ -54,6 +54,4 @@ export interface ApiWrapper {
     bufferBlocks: number[],
     overallSpecNumber?: number,
   ) => Promise<AlgorandBlock[] | BlockContent[]>;
-  disconnect?: () => Promise<void>;
-  on?: (type: ApiInterfaceEvents, handler: (...args: any[]) => any) => void;
 }
