@@ -30,6 +30,7 @@ import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { SubstrateApi } from './api.substrate';
 import { ApiWrapper } from './api.wrapper';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
@@ -429,16 +430,17 @@ export class FetchService implements OnApplicationShutdown {
     if (this.project.network !== 'polkadot') {
       return false;
     }
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
+    const substrateApi = this.api as SubstrateApi;
+    const parentBlockHash = await substrateApi.getBlockHash(
       Math.max(height - 1, 0),
     );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
+    const runtimeVersion = await substrateApi.getRuntimeVersion(
       parentBlockHash,
     );
     const specVersion = runtimeVersion.specVersion.toNumber();
     if (this.parentSpecVersion !== specVersion) {
-      const blockHash = await this.api.rpc.chain.getBlockHash(height);
-      await SubstrateUtil.prefetchMetadata(this.api.substrate, blockHash);
+      const blockHash = await substrateApi.getBlockHash(height);
+      await SubstrateUtil.prefetchMetadata(substrateApi.getClient(), blockHash);
       this.parentSpecVersion = specVersion;
       return true;
     }
@@ -461,7 +463,7 @@ export class FetchService implements OnApplicationShutdown {
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): boolean {
-    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+    if (metaData.genesisHash !== this.api.getGenesisHash()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {

@@ -32,6 +32,7 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
+import { SubstrateApi } from './api.substrate';
 import { ApiWrapper } from './api.wrapper';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -400,10 +401,14 @@ export class IndexerManager {
   }
 
   private filterDataSources(processedHeight: number): SubqlProjectDs[] {
+    if (this.project.network !== 'polkadot') {
+      return null;
+    }
+    const substrateApi = this.api as SubstrateApi;
     let filteredDs = this.getDataSourcesForSpecName();
     if (filteredDs.length === 0) {
       logger.error(
-        `Did not find any dataSource match with network specName ${this.api.specName}`,
+        `Did not find any dataSource match with network specName ${substrateApi.getSpecName()}`,
       );
       process.exit(1);
     }
@@ -420,7 +425,7 @@ export class IndexerManager {
       if (isCustomDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api.substrate);
+          .dsFilterProcessor(ds, substrateApi.getClient());
       } else {
         return true;
       }
@@ -450,8 +455,7 @@ export class IndexerManager {
   private getDataSourcesForSpecName(): SubqlProjectDs[] {
     return this.project.dataSources.filter(
       (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.specName.toString(),
+        !ds.filter?.specName || ds.filter.specName === this.api.getSpecName(),
     );
   }
 
@@ -505,11 +509,15 @@ export class IndexerManager {
       handler: SubqlCustomHandler<string, Record<string, unknown>>,
       filteredData: RuntimeHandlerInputMap[K][],
     ): Promise<void> => {
+      if (this.project.network !== 'polkadot') {
+        return null;
+      }
+      const substrateApi = this.api as SubstrateApi;
       const transformedData = await Promise.all(
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
           .map((data) =>
-            processor.transformer(data, ds, this.api.substrate, assets),
+            processor.transformer(data, ds, substrateApi.getClient(), assets),
           ),
       );
 

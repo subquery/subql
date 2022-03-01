@@ -144,6 +144,22 @@ export class SubstrateApi implements ApiWrapper {
     }, {} as ApiPromise['rpc']);
   }
 
+  async getBlockHash(height: number): Promise<BlockHash> {
+    const blockHash = await this.client.rpc.chain.getBlockHash(height);
+    return blockHash;
+  }
+
+  async getRuntimeVersion(blockHash: BlockHash): Promise<RuntimeVersion> {
+    const runtimeVersion = await this.client.rpc.state.getRuntimeVersion(
+      blockHash,
+    );
+    return runtimeVersion;
+  }
+
+  getClient(): ApiPromise {
+    return this.client;
+  }
+
   private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
     original: RpcMethodResult<T, AnyFunction>,
   ): RpcMethodResult<T, AnyFunction> {
