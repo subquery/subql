@@ -44,6 +44,12 @@ export interface ProjectManifestV0_2_0 extends ISubstrateProjectManifest {
   dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
 }
 
+export function isDatasourceV0_2_0(
+  dataSource: SubqlDatasource
+): dataSource is RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0 {
+  return !!(dataSource as RuntimeDataSourceV0_2_0).mapping.file;
+}
+
 export function isRuntimeDataSourceV0_2_0(dataSource: SubqlDatasource): dataSource is RuntimeDataSourceV0_2_0 {
-  return dataSource.kind === SubqlDatasourceKind.Runtime && !!(dataSource as RuntimeDataSourceV0_2_0).mapping.file;
+  return dataSource.kind === SubqlDatasourceKind.Runtime && isDatasourceV0_2_0(dataSource);
 }

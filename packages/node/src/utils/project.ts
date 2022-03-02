@@ -58,9 +58,7 @@ export function getProjectEntry(root: string): string {
 
     return projectEntryCache[pkgPath];
   } catch (err) {
-    throw new Error(
-      `can not find package.json within directory ${this.option.root}`,
-    );
+    throw new Error(`can not find package.json within directory ${root}`);
   }
 }
 
