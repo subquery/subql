@@ -12,4 +12,4 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-terra/0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/0.1.0...HEAD

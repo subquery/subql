@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-terra",
-  "version": "0.0.2-1",
+  "version": "0.1.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -21,5 +21,5 @@
     "@terra-money/terra.js": "^3.0.1",
     "@types/app-module-path": "^2.2.0"
   },
-  "stableVersion": "0.0.2-0"
+  "stableVersion": "0.0.1"
 }
