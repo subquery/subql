@@ -1,7 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BlockInfo, EventsByType, LCDClient} from '@terra-money/terra.js';
+import { LCDClient} from '@terra-money/terra.js';
+import { TerraCall } from '.';
+import { TerraBlock, TerraEvent } from './interfaces';
 
 export interface FileReference {
   file: string;
@@ -13,21 +15,25 @@ export type Processor<O = any> = FileReference & {options?: O};
 
 export enum SubqlTerraDatasourceKind {
   Runtime = 'terra/Runtime',
+  Custom = 'terra/Custom'
 }
 
 export enum SubqlTerraHandlerKind {
   Block = 'terra/BlockHandler',
   Event = 'terra/EventHandler',
+  Call = 'terra/CallHandler'  
 }
 
 export type TerraRuntimeHandlerInputMap = {
-  [SubqlTerraHandlerKind.Block]: BlockInfo;
-  [SubqlTerraHandlerKind.Event]: EventsByType;
+  [SubqlTerraHandlerKind.Block]: TerraBlock;
+  [SubqlTerraHandlerKind.Event]: TerraEvent;
+  [SubqlTerraHandlerKind.Call]: TerraCall;
 };
 
 type TerraRuntimeFilterMap = {
   [SubqlTerraHandlerKind.Block]: {};
   [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
+  [SubqlTerraHandlerKind.Call]: {};
 };
 
 export interface TerraProjectManifest {
