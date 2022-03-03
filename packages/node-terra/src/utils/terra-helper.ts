@@ -1,24 +1,26 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SubqlTerraEventFilter } from '@subql/types-terra';
+import { SubqlTerraEventFilter, TerraBlock, TerraEvent, TerraCall } from '@subql/types-terra';
 import {
   BlockInfo,
   EventsByType,
   hashToHex,
+  LCDClient,
   TxInfo,
   TxLog,
+  Tx,
+  MsgExecuteContract
 } from '@terra-money/terra.js';
-import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
 
 export function filterEvents(
-  events: EventsByType[],
+  events: TerraEvent[],
   filterOrFilters?: SubqlTerraEventFilter | SubqlTerraEventFilter[] | undefined,
-): EventsByType[] {
+): TerraEvent[] {
   if (
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
@@ -32,8 +34,8 @@ export function filterEvents(
   events.forEach((event) => {
     const fe = {};
     filters.forEach((filter) => {
-      if (filter.type in event) {
-        fe[filter.type] = event[filter.type];
+      if (filter.type in event.event) {
+        fe[filter.type] = event.event[filter.type];
       }
     });
     if (Object.keys(fe).length !== 0) {
@@ -44,15 +46,15 @@ export function filterEvents(
   return filteredEvents;
 }
 
-async function getBlockByHeight(api: TerraClient, height: number) {
-  return api.blockInfo(height).catch((e) => {
+async function getBlockByHeight(api: LCDClient, height: number) {
+  return api.tendermint.blockInfo(height).catch((e) => {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
   });
 }
 
 export async function fetchTerraBlocksArray(
-  api: TerraClient,
+  api: LCDClient,
   blockArray: number[],
 ): Promise<BlockInfo[]> {
   return Promise.all(
@@ -61,18 +63,18 @@ export async function fetchTerraBlocksArray(
 }
 
 export async function getTxInfobyHashes(
-  api: TerraClient,
+  api: LCDClient,
   txHashes: string[],
 ): Promise<TxInfo[]> {
   return Promise.all(
     txHashes.map(async (hash) => {
-      return api.txInfo(hash);
+      return api.tx.txInfo(hashToHex(hash));
     }),
   );
 }
 
 export async function getEventsByTypeFromBlock(
-  api: TerraClient,
+  api: LCDClient,
   blockInfo: BlockInfo,
 ): Promise<EventsByType[]> {
   const txHashes = blockInfo.block.data.txs;
@@ -86,18 +88,64 @@ export async function getEventsByTypeFromBlock(
   return events;
 }
 
+export async function getContractExecutionTxInfos(
+  api: LCDClient,
+  blockInfo: BlockInfo,
+): Promise<TxInfo[]> {
+  const txHashes = blockInfo.block.data.txs;
+  if (txHashes.length === 0) {
+    return [];
+  }
+  const txInfos = await getTxInfobyHashes(api, txHashes);
+  return txInfos.filter((txInfo)=> (
+    !!(txInfo.tx.body.messages[0]["@type"] === "/terra.wasm.v1beta1.MsgExecuteContract")
+  ))
+}
+
+export function wrapBlock(blockInfo: BlockInfo): TerraBlock{
+  return {
+    block: blockInfo
+  };
+}
+
+export function wrapEvent(
+  blockInfo: BlockInfo,
+  events: EventsByType[]
+): TerraEvent[] {
+  return events.map((event) => <TerraEvent>{
+    block: blockInfo,
+    event: event
+  });
+}
+
+export function wrapCall(
+  txInfos: TxInfo[],
+  blockInfo: BlockInfo,
+): TerraCall[] {
+  return txInfos.map((txInfo) => <TerraCall>{
+    data: txInfo.tx.body.messages[0].toData() as MsgExecuteContract.Data,
+    tx: txInfo,
+    block: wrapBlock(blockInfo),
+    events: txInfo.logs.map((log) => log.eventsByType)
+  })
+}
+
 export async function fetchTerraBlocksBatches(
-  api: TerraClient,
+  api: LCDClient,
   blockArray: number[],
 ): Promise<TerraBlockContent[]> {
   const blocks = await fetchTerraBlocksArray(api, blockArray);
   return Promise.all(
     blocks.map(
-      async (blockInfo) =>
-        <TerraBlockContent>{
-          block: blockInfo,
-          events: await getEventsByTypeFromBlock(api, blockInfo),
-        },
+      async (blockInfo) => {
+        const e = await getEventsByTypeFromBlock(api, blockInfo)
+        const txInfos = await getContractExecutionTxInfos(api, blockInfo)
+        return <TerraBlockContent>{
+          block: wrapBlock(blockInfo),
+          events: wrapEvent(blockInfo, e),
+          call: wrapCall(txInfos, blockInfo) 
+        };
+      }
     ),
   );
 }
