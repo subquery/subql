@@ -29,3 +29,9 @@ export function isEventHandlerProcessor<E>(
 ): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, unknown, E> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Event;
 }
+
+export function isCallHandlerProcessor<E>(
+  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>
+): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Call, unknown, E> {
+  return hp.baseHandlerKind === SubqlTerraHandlerKind.Call;
+}
