@@ -91,7 +91,6 @@ export async function fetchTerraBlocksBatches(
   blockArray: number[],
 ): Promise<TerraBlockContent[]> {
   const blocks = await fetchTerraBlocksArray(api, blockArray);
-  console.log('XXXXX have raw blocks');
   return Promise.all(
     blocks.map(
       async (blockInfo) =>

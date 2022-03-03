@@ -395,33 +395,28 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   async fillBlockBuffer(): Promise<void> {
-    try {
-      while (!this.isShutdown) {
-        const takeCount = Math.min(
-          this.blockBuffer.freeSize,
-          Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        );
+    while (!this.isShutdown) {
+      const takeCount = Math.min(
+        this.blockBuffer.freeSize,
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+      );
 
-        if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-          await delay(1);
-          continue;
-        }
-
-        const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-        const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
-        logger.info(
-          `fetch block [${bufferBlocks[0]},${
-            bufferBlocks[bufferBlocks.length - 1]
-          }], total ${bufferBlocks.length} blocks`,
-        );
-        this.blockBuffer.putAll(blocks);
-        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-          value: this.blockBuffer.size,
-        });
+      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
+        await delay(1);
+        continue;
       }
-    } catch (e) {
-      console.log('XXXXXX fillBlockBuffer');
-      throw e;
+
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
+      logger.info(
+        `fetch block [${bufferBlocks[0]},${
+          bufferBlocks[bufferBlocks.length - 1]
+        }], total ${bufferBlocks.length} blocks`,
+      );
+      this.blockBuffer.putAll(blocks);
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+        value: this.blockBuffer.size,
+      });
     }
   }
 

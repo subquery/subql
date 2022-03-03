@@ -77,10 +77,7 @@ export class TerraClient {
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    return this.baseApi.tx.txInfo(hashToHex(hash), this.params).catch((e) => {
-      console.log('XXXXXX failed to get tx', e);
-      throw e;
-    });
+    return this.baseApi.tx.txInfo(hashToHex(hash), this.params);
   }
 
   get getLCDClient(): LCDClient {
