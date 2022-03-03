@@ -28,7 +28,7 @@ import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as TerraUtil from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService, TerraClient } from './apiterra.service';
+import { ApiTerraService } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
 import {
   TerraDictionary,
@@ -129,7 +129,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): TerraClient {
+  get api(): LCDClient {
     return this.apiService.getApi();
   }
 
@@ -211,7 +211,7 @@ export class FetchTerraService implements OnApplicationShutdown {
           } catch (e) {
             logger.error(
               e,
-              `failed to index block at height ${block.block.block.header.height.toString()} ${
+              `failed to index block at height ${block.block.block.block.header.height.toString()} ${
                 e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
               }`,
             );
@@ -236,7 +236,7 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale(): void {
+  checkBatchScale() {
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
@@ -250,13 +250,13 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getLatestBlockHead(): Promise<void> {
+  async getLatestBlockHead() {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
     }
     try {
-      const finalizedBlock = await this.api.blockInfo();
+      const finalizedBlock = await this.api.tendermint.blockInfo();
       const currentFinalizedHeight = parseInt(
         finalizedBlock.block.header.height,
       );
@@ -366,8 +366,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo = await this.api.nodeInfo();
-
+    const nodeInfo: any = await this.api.tendermint.nodeInfo();
     if (metaData.chainId !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
