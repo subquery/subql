@@ -2,8 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { LCDClient, LCDClientConfig } from '@terra-money/terra.js';
+import {
+  BlockInfo,
+  hashToHex,
+  LCDClient,
+  LCDClientConfig,
+  TxInfo,
+} from '@terra-money/terra.js';
+import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { NetworkMetadataPayload } from './events';
@@ -12,14 +18,13 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiTerraService {
-  private api: LCDClient;
-  private currentBlockHash: string;
+  private api: TerraClient;
   private clientConfig: LCDClientConfig;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
     protected project: SubqueryTerraProject,
-    private eventEmitter: EventEmitter2,
+    private nodeConfig: NodeConfig,
   ) {}
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -30,13 +35,16 @@ export class ApiTerraService {
       chainID: network.chainId,
     };
 
-    this.api = new LCDClient(this.clientConfig);
+    this.api = new TerraClient(
+      new LCDClient(this.clientConfig),
+      this.nodeConfig.networkEndpointParams,
+    );
 
     this.networkMeta = {
       chainId: network.chainId,
     };
 
-    const nodeInfo: any = await this.api.tendermint.nodeInfo();
+    const nodeInfo = await this.api.nodeInfo();
 
     if (network.chainId !== nodeInfo.default_node_info.network) {
       const err = new Error(
@@ -49,7 +57,34 @@ export class ApiTerraService {
     return this;
   }
 
-  getApi(): LCDClient {
+  getApi(): TerraClient {
     return this.api;
+  }
+}
+
+export class TerraClient {
+  constructor(
+    private readonly baseApi: LCDClient,
+    private readonly params?: Record<string, string>,
+  ) {}
+
+  async nodeInfo(): Promise<any> {
+    return this.baseApi.tendermint.nodeInfo(this.params);
+  }
+
+  async blockInfo(height?: number): Promise<BlockInfo> {
+    return this.baseApi.tendermint.blockInfo(height, this.params);
+  }
+
+  async txInfo(hash: string): Promise<TxInfo> {
+    return this.baseApi.tx.txInfo(hashToHex(hash), this.params).catch((e) => {
+      console.log('XXXXXX failed to get tx', e);
+      throw e;
+    });
+  }
+
+  get getLCDClient(): LCDClient {
+    /* TODO remove this and wrap all calls to include params */
+    return this.baseApi;
   }
 }

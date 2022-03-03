@@ -28,7 +28,7 @@ import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as TerraUtil from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService } from './apiterra.service';
+import { ApiTerraService, TerraClient } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
 import {
   TerraDictionary,
@@ -129,7 +129,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): LCDClient {
+  get api(): TerraClient {
     return this.apiService.getApi();
   }
 
@@ -236,7 +236,7 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale() {
+  checkBatchScale(): void {
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
@@ -250,13 +250,13 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getLatestBlockHead() {
+  async getLatestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
     }
     try {
-      const finalizedBlock = await this.api.tendermint.blockInfo();
+      const finalizedBlock = await this.api.blockInfo();
       const currentFinalizedHeight = parseInt(
         finalizedBlock.block.header.height,
       );
@@ -366,7 +366,8 @@ export class FetchTerraService implements OnApplicationShutdown {
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo: any = await this.api.tendermint.nodeInfo();
+    const nodeInfo = await this.api.nodeInfo();
+
     if (metaData.chainId !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
@@ -394,28 +395,33 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   async fillBlockBuffer(): Promise<void> {
-    while (!this.isShutdown) {
-      const takeCount = Math.min(
-        this.blockBuffer.freeSize,
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-      );
+    try {
+      while (!this.isShutdown) {
+        const takeCount = Math.min(
+          this.blockBuffer.freeSize,
+          Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+        );
 
-      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-        await delay(1);
-        continue;
+        if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
+          await delay(1);
+          continue;
+        }
+
+        const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+        const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
+        logger.info(
+          `fetch block [${bufferBlocks[0]},${
+            bufferBlocks[bufferBlocks.length - 1]
+          }], total ${bufferBlocks.length} blocks`,
+        );
+        this.blockBuffer.putAll(blocks);
+        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+          value: this.blockBuffer.size,
+        });
       }
-
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
-      this.blockBuffer.putAll(blocks);
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
-      });
+    } catch (e) {
+      console.log('XXXXXX fillBlockBuffer');
+      throw e;
     }
   }
 

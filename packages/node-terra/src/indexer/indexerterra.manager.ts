@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getAllEntitiesRelations, buildSchemaFromFile } from '@subql/common';
+import { getAllEntitiesRelations } from '@subql/common';
 import {
   isBlockHandlerProcessor,
   isCustomTerraDs,
@@ -20,23 +19,22 @@ import {
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomHandler,
   TerraRuntimeHandlerInputMap,
-  SubqlTerraDatasource,
   TerraBlock,
   TerraEvent,
 } from '@subql/types-terra';
-import { LCDClient, hashToHex } from '@terra-money/terra.js';
+import { hashToHex } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import {
   SubqueryTerraProject,
   SubqlTerraProjectDs,
 } from '../configure/terraproject.model';
-import { SubqueryModel, SubqueryRepo } from '../entities';
+import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService } from './apiterra.service';
+import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchTerraService } from './fetchterra.service';
@@ -59,8 +57,7 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerTerraManager {
-  private api: LCDClient;
-  private subqueryState: SubqueryModel;
+  private api: TerraClient;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlTerraProjectDs[];
 
@@ -415,7 +412,7 @@ export class IndexerTerraManager {
       if (isCustomTerraDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.api.getLCDClient);
       } else {
         return true;
       }
@@ -488,7 +485,9 @@ export class IndexerTerraManager {
       const transformedData = await Promise.all(
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
-          .map((data) => processor.transformer(data, ds, this.api, assets)),
+          .map((data) =>
+            processor.transformer(data, ds, this.api.getLCDClient, assets),
+          ),
       );
 
       for (const data of transformedData) {
