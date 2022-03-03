@@ -23,6 +23,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
+  readonly networkEndpointParams?: Record<string, string>;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -106,6 +107,10 @@ export class NodeConfig implements IConfig {
 
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get networkEndpointParams(): Record<string, string> | undefined {
+    return this._config.networkEndpointParams;
   }
 
   get timeout(): number {

@@ -6,10 +6,10 @@ import {
   BlockInfo,
   EventsByType,
   hashToHex,
-  LCDClient,
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
+import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
@@ -44,15 +44,15 @@ export function filterEvents(
   return filteredEvents;
 }
 
-async function getBlockByHeight(api: LCDClient, height: number) {
-  return api.tendermint.blockInfo(height).catch((e) => {
+async function getBlockByHeight(api: TerraClient, height: number) {
+  return api.blockInfo(height).catch((e) => {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
   });
 }
 
 export async function fetchTerraBlocksArray(
-  api: LCDClient,
+  api: TerraClient,
   blockArray: number[],
 ): Promise<BlockInfo[]> {
   return Promise.all(
@@ -61,18 +61,18 @@ export async function fetchTerraBlocksArray(
 }
 
 export async function getTxInfobyHashes(
-  api: LCDClient,
+  api: TerraClient,
   txHashes: string[],
 ): Promise<TxInfo[]> {
   return Promise.all(
     txHashes.map(async (hash) => {
-      return api.tx.txInfo(hashToHex(hash));
+      return api.txInfo(hash);
     }),
   );
 }
 
 export async function getEventsByTypeFromBlock(
-  api: LCDClient,
+  api: TerraClient,
   blockInfo: BlockInfo,
 ): Promise<EventsByType[]> {
   const txHashes = blockInfo.block.data.txs;
@@ -87,7 +87,7 @@ export async function getEventsByTypeFromBlock(
 }
 
 export async function fetchTerraBlocksBatches(
-  api: LCDClient,
+  api: TerraClient,
   blockArray: number[],
 ): Promise<TerraBlockContent[]> {
   const blocks = await fetchTerraBlocksArray(api, blockArray);

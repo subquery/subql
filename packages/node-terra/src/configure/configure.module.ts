@@ -14,6 +14,7 @@ import { SubqueryTerraProject } from './terraproject.model';
 
 const YargsNameMapping = {
   local: 'localMode',
+  'network-endpoint-param': 'networkEndpointParams',
 };
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
@@ -28,6 +29,14 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
       } catch (e) {
         throw new Error('Argument `network-registry` is not valid JSON');
       }
+    }
+    if (key === 'network-endpoint-param') {
+      value = (value as string[]).reduce((acc, header) => {
+        const [headerKey, headerValue] = header.split(':').map((v) => v.trim());
+        acc[headerKey] = headerValue;
+
+        return acc;
+      }, {});
     }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;

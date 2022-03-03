@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { DbModule } from '../db/db.module';
 import { ApiTerraService } from './apiterra.service';
@@ -25,13 +25,13 @@ import { DynamicDsService } from './terradynamic-ds.service';
       provide: ApiTerraService,
       useFactory: async (
         project: SubqueryTerraProject,
-        eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
-        const apiService = new ApiTerraService(project, eventEmitter);
+        const apiService = new ApiTerraService(project, nodeConfig);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryTerraProject, EventEmitter2],
+      inject: [SubqueryTerraProject, NodeConfig],
     },
     FetchTerraService,
     BenchmarkService,

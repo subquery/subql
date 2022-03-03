@@ -67,6 +67,12 @@ export function getYargsOption() {
       type: 'string',
       describe: 'Blockchain network endpoint to connect',
     },
+    'network-endpoint-param': {
+      demandOption: false,
+      type: 'array',
+      describe:
+        'Key value of api parameters passed to terra rpc. e.g. --network-endpoint-param "api_key: <your-api-key>"',
+    },
     'output-fmt': {
       demandOption: false,
       describe: 'Print log as json or plain text',
