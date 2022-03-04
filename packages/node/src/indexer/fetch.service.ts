@@ -7,11 +7,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import {
-  isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_0_1,
+  isSubstrateRuntimeDataSourceV0_2_0,
+  SubstrateRuntimeDataSourceV0_0_1,
   isCustomDs,
   isRuntimeDs,
-  isRuntimeDataSourceV0_3_0,
+  isSubstrateRuntimeDataSourceV0_3_0,
 } from '@subql/common-substrate';
 import {
   SubqlCallFilter,
@@ -154,10 +154,10 @@ export class FetchService implements OnApplicationShutdown {
 
     const dataSources = this.project.dataSources.filter(
       (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
+        isSubstrateRuntimeDataSourceV0_3_0(ds) ||
+        isSubstrateRuntimeDataSourceV0_2_0(ds) ||
+        !(ds as SubstrateRuntimeDataSourceV0_0_1).filter?.specName ||
+        (ds as SubstrateRuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
     for (const ds of dataSources) {

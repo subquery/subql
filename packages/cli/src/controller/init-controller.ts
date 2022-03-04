@@ -5,7 +5,7 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestV0_0_1, ProjectManifestV0_2_0} from '@subql/common-substrate';
+import {SubstrateProjectManifestV0_0_1, SubstrateProjectManifestV0_2_0} from '@subql/common-substrate';
 import axios from 'axios';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
@@ -80,7 +80,7 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
 
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
+  const currentProject = yaml.load(manifest) as SubstrateProjectManifestV0_0_1 | SubstrateProjectManifestV0_2_0;
   return [
     currentProject.specVersion,
     currentProject.repository,
@@ -132,15 +132,15 @@ async function prepareManifest(projectPath: string, project: ProjectSpecBase): P
   //load and write manifest(project.yaml)
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
+  const data = yaml.load(manifest) as SubstrateProjectManifestV0_0_1 | SubstrateProjectManifestV0_2_0;
   data.description = project.description ?? data.description;
   data.repository = project.repository ?? '';
 
   data.network.endpoint = project.endpoint;
 
   if (isProjectSpecV0_2_0(project)) {
-    (data as ProjectManifestV0_2_0).version = project.version;
-    (data as ProjectManifestV0_2_0).name = project.name;
+    (data as SubstrateProjectManifestV0_2_0).version = project.version;
+    (data as SubstrateProjectManifestV0_2_0).name = project.name;
     data.network.genesisHash = project.genesisHash;
   }
 

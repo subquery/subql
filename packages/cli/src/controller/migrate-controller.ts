@@ -4,9 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import {
-  ProjectManifestV0_2_0,
+  SubstrateProjectManifestV0_2_0,
   SubstrateProjectManifestVersioned,
-  ProjectNetworkV0_0_1,
+  SubstrateProjectNetworkV0_0_1,
   ChainTypes,
   loadSubstrateProjectManifest,
 } from '@subql/common-substrate';
@@ -87,7 +87,7 @@ export async function migrate(
   const manifestV0_2_0 = path.join(projectPath, MANIFEST_V_0_2_0);
 
   try {
-    const data = {} as ProjectManifestV0_2_0;
+    const data = {} as SubstrateProjectManifestV0_2_0;
     data.specVersion = '0.2.0';
     data.name = project.name;
     data.version = project.version;
@@ -141,7 +141,7 @@ async function conversion(originManifestPath: string, manifestV0_0_1: string, ma
 }
 
 export async function createChainTypes(
-  projectV1Network: ProjectNetworkV0_0_1,
+  projectV1Network: SubstrateProjectNetworkV0_0_1,
   absolutePath: string,
   ext: string
 ): Promise<void> {

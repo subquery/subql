@@ -3,9 +3,9 @@
 
 import {RegisteredTypes} from '@polkadot/types/types';
 import {SubqlNetworkFilter, SubqlRuntimeDatasource} from '@subql/types';
-import {ISubstrateProjectManifest, SubstrateProjectNetworkConfig} from '../../types';
+import {ISubstrateProjectManifest, ProjectNetworkConfig} from '../../types';
 
-export type ProjectNetworkConfigV0_0_1 = SubstrateProjectNetworkConfig & RegisteredTypes;
+export type ProjectNetworkConfigV0_0_1 = ProjectNetworkConfig & RegisteredTypes;
 
 export interface RuntimeDataSourceV0_0_1 extends SubqlRuntimeDatasource {
   name: string;

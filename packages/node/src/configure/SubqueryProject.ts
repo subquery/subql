@@ -11,10 +11,11 @@ import {
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  ProjectManifestV0_0_1Impl,
-  ProjectManifestV0_2_0Impl,
-  ProjectManifestV0_2_1Impl,
-  ProjectManifestV0_3_0Impl,
+  SubstrateProjectManifestV0_0_1Impl,
+  SubstrateProjectManifestV0_2_0Impl,
+  SubstrateProjectManifestV0_2_1Impl,
+  SubstrateProjectManifestV0_3_0Impl,
+  SubstrateProjectManifestV1_0_0Impl,
 } from '@subql/common-substrate';
 import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
@@ -42,6 +43,7 @@ export class SubqueryProject {
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
+  runner?: {}; //Todo
 
   static async create(
     path: string,
@@ -85,12 +87,19 @@ export class SubqueryProject {
         path,
         networkOverrides,
       );
+    } else if (manifest.isV1_0_0) {
+      return loadProjectFromManifest0_3_0(
+        manifest.asV0_3_0,
+        reader,
+        path,
+        networkOverrides,
+      );
     }
   }
 }
 
 async function loadProjectFromManifest0_0_1(
-  projectManifest: ProjectManifestV0_0_1Impl,
+  projectManifest: SubstrateProjectManifestV0_0_1Impl,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
@@ -119,7 +128,7 @@ async function loadProjectFromManifest0_0_1(
 }
 
 async function loadProjectFromManifest0_2_0(
-  projectManifest: ProjectManifestV0_2_0Impl,
+  projectManifest: SubstrateProjectManifestV0_2_0Impl,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
@@ -167,7 +176,7 @@ async function loadProjectFromManifest0_2_0(
 }
 
 async function loadProjectFromManifest0_2_1(
-  projectManifest: ProjectManifestV0_2_1Impl,
+  projectManifest: SubstrateProjectManifestV0_2_1Impl,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
@@ -191,18 +200,35 @@ async function loadProjectFromManifest0_2_1(
 }
 
 async function loadProjectFromManifest0_3_0(
-  projectManifest: ProjectManifestV0_3_0Impl,
+  projectManifest: SubstrateProjectManifestV0_3_0Impl,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader);
   const project = await loadProjectFromManifest0_2_0(
     projectManifest,
     reader,
     path,
     networkOverrides,
   );
+
+  return project;
+}
+
+async function loadProjectFromManifest1_0_0(
+  projectManifest: SubstrateProjectManifestV1_0_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+): Promise<SubqueryProject> {
+  const project = await loadProjectFromManifest0_2_1(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides,
+  );
+
+  project.runner = projectManifest.runner;
 
   return project;
 }

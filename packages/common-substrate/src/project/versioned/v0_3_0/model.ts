@@ -1,18 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestBaseImpl} from '@subql/common';
-import {
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlMapping,
-  SubqlNetworkFilter,
-  SubqlRuntimeHandler,
-} from '@subql/types';
-import {plainToClass, Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsString, ValidateNested, validateSync} from 'class-validator';
-import yaml from 'js-yaml';
-import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {
   FileType,
   ProjectNetworkV0_2_0,
@@ -22,8 +10,18 @@ import {
   RuntimeDataSourceV0_2_0,
   SubqlMappingV0_2_0,
   ProjectManifestV0_2_0Impl,
-} from '../v0_2_0';
-import {SubstrateProjectManifestV0_3_0} from './types';
+} from '@subql/common';
+import {
+  SubqlCustomDatasource,
+  SubqlCustomHandler,
+  SubqlMapping,
+  SubqlNetworkFilter,
+  SubqlRuntimeHandler,
+} from '@subql/types';
+import {plainToClass, Type} from 'class-transformer';
+import {Equals, IsArray, IsObject, IsString, ValidateNested, validateSync} from 'class-validator';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
+import {ProjectManifestV0_3_0} from './types';
 
 export class RuntimeDataSourceV0_3_0Impl
   extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
@@ -64,9 +62,9 @@ export class DeploymentV0_3_0 {
   network: ProjectNetworkDeploymentV0_2_0;
 }
 
-export class ProjectManifestV0_3_0Impl
+export class SubstrateProjectManifestV0_3_0Impl
   extends ProjectManifestV0_2_0Impl<DeploymentV0_3_0>
-  implements SubstrateProjectManifestV0_3_0
+  implements ProjectManifestV0_3_0
 {
   @Equals('0.3.0')
   specVersion: string;

@@ -11,7 +11,6 @@ import {
 } from '@subql/types';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
-import yaml from 'js-yaml';
 import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
 import {CustomDatasourceV0_2_0, ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 

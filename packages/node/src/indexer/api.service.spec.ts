@@ -3,7 +3,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { ProjectNetworkV0_0_1 } from '@subql/common-substrate';
+import { ProjectNetworkV0_0_1 } from '@subql/common';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
