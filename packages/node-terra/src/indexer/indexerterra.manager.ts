@@ -36,9 +36,9 @@ import {
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { filterEvents } from '../utils/terra-helper';
+import { filterCall, filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService } from './apiterra.service';
+import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchTerraService } from './fetchterra.service';
@@ -61,7 +61,7 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerTerraManager {
-  private api: LCDClient;
+  private api: TerraClient;
   private subqueryState: SubqueryModel;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlTerraProjectDs[];
@@ -417,7 +417,7 @@ export class IndexerTerraManager {
       if (isCustomTerraDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.api.getLCDClient);
       } else {
         return true;
       }
@@ -447,7 +447,7 @@ export class IndexerTerraManager {
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
     handlers: SubqlTerraRuntimeHandler[],
-    { block, events }: TerraBlockContent,
+    { block, call, events }: TerraBlockContent,
   ): Promise<void> {
     for (const handler of handlers) {
       switch (handler.kind) {
@@ -461,6 +461,13 @@ export class IndexerTerraManager {
           }
           break;
         }
+        case SubqlTerraHandlerKind.Call: {
+          const filteredCalls = filterCall(call, handler.filter);
+          for (const c of filteredCalls) {
+            await vm.securedExec(handler.handler, [c]);
+          }
+          break;
+        }
         default:
       }
     }
@@ -469,7 +476,7 @@ export class IndexerTerraManager {
   private async indexBlockForCustomDs(
     ds: SubqlTerraCustomDatasource<string>,
     vm: IndexerSandbox,
-    { block, events, call }: TerraBlockContent,
+    { block, call, events }: TerraBlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
@@ -481,7 +488,9 @@ export class IndexerTerraManager {
       const transformedData = await Promise.all(
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
-          .map((data) => processor.transformer(data, ds, this.api, assets)),
+          .map((data) =>
+            processor.transformer(data, ds, this.api.getLCDClient, assets),
+          ),
       );
 
       for (const data of transformedData) {
@@ -495,11 +504,12 @@ export class IndexerTerraManager {
         await processData(processor, handler, [block]);
       } else if (isEventHandlerProcessor(processor)) {
         const filteredEvents = filterEvents(events, processor.baseFilter);
-        for(const e of filteredEvents){
+        for (const e of filteredEvents) {
           await processData(processor, handler, [e]);
         }
       } else if (isCallHandlerProcessor(processor)) {
-        for(const c of call){
+        const filteredCalls = filterCall(call, processor.baseFilter);
+        for (const c of call) {
           await processData(processor, handler, [c]);
         }
       }

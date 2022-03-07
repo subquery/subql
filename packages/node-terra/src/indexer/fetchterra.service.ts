@@ -28,7 +28,7 @@ import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as TerraUtil from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService } from './apiterra.service';
+import { ApiTerraService, TerraClient } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
 import {
   TerraDictionary,
@@ -129,7 +129,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): LCDClient {
+  get api(): TerraClient {
     return this.apiService.getApi();
   }
 
@@ -256,7 +256,7 @@ export class FetchTerraService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedBlock = await this.api.tendermint.blockInfo();
+      const finalizedBlock = await this.api.getLCDClient.tendermint.blockInfo();
       const currentFinalizedHeight = parseInt(
         finalizedBlock.block.header.height,
       );
@@ -366,7 +366,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo: any = await this.api.tendermint.nodeInfo();
+    const nodeInfo: any = await this.api.getLCDClient.tendermint.nodeInfo();
     if (metaData.chainId !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
@@ -406,7 +406,10 @@ export class FetchTerraService implements OnApplicationShutdown {
       }
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
+      const blocks = await fetchBlocksBatches(
+        this.api.getLCDClient,
+        bufferBlocks,
+      );
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]

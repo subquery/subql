@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { LCDClient} from '@terra-money/terra.js';
-import { TerraCall } from '.';
-import { TerraBlock, TerraEvent } from './interfaces';
+import {LCDClient} from '@terra-money/terra.js';
+import {TerraBlock, TerraEvent} from './interfaces';
+import {TerraCall} from '.';
 
 export interface FileReference {
   file: string;
@@ -15,13 +15,13 @@ export type Processor<O = any> = FileReference & {options?: O};
 
 export enum SubqlTerraDatasourceKind {
   Runtime = 'terra/Runtime',
-  Custom = 'terra/Custom'
+  Custom = 'terra/Custom',
 }
 
 export enum SubqlTerraHandlerKind {
   Block = 'terra/BlockHandler',
   Event = 'terra/EventHandler',
-  Call = 'terra/CallHandler'  
+  Call = 'terra/CallHandler',
 }
 
 export type TerraRuntimeHandlerInputMap = {
@@ -33,7 +33,7 @@ export type TerraRuntimeHandlerInputMap = {
 type TerraRuntimeFilterMap = {
   [SubqlTerraHandlerKind.Block]: {};
   [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
-  [SubqlTerraHandlerKind.Call]: {};
+  [SubqlTerraHandlerKind.Call]: SubqlTerraCallFilter;
 };
 
 export interface TerraProjectManifest {
@@ -57,10 +57,21 @@ export interface TerraNetwork {
 }
 
 export interface SubqlTerraEventFilter {
+  contract?: string;
   type?: string;
+  arguments?: {
+    key: string;
+    value: unknown;
+  }[];
 }
 
-export type SubqlTerraHandlerFilter = SubqlTerraEventFilter;
+export interface SubqlTerraCallFilter {
+  contract: string;
+  from?: string;
+  function?: string;
+}
+
+export type SubqlTerraHandlerFilter = SubqlTerraEventFilter | SubqlTerraCallFilter;
 
 export interface SubqlTerraBlockHandler {
   handler: string;
@@ -73,13 +84,19 @@ export interface SubqlTerraEventHandler {
   filter?: SubqlTerraEventFilter;
 }
 
+export interface SubqlTerraCallHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Call;
+  filter?: SubqlTerraCallFilter;
+}
+
 export interface SubqlTerraCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
 }
 
-export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler;
+export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler | SubqlTerraCallHandler;
 
 export type SubqlTerraHandler = SubqlTerraRuntimeHandler | SubqlTerraCustomHandler;
 
