@@ -36,7 +36,7 @@ import {
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { filterCall, filterEvents } from '../utils/terra-helper';
+import { filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
 import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -461,13 +461,6 @@ export class IndexerTerraManager {
           }
           break;
         }
-        case SubqlTerraHandlerKind.Call: {
-          const filteredCalls = filterCall(call, handler.filter);
-          for (const c of filteredCalls) {
-            await vm.securedExec(handler.handler, [c]);
-          }
-          break;
-        }
         default:
       }
     }
@@ -508,7 +501,6 @@ export class IndexerTerraManager {
           await processData(processor, handler, [e]);
         }
       } else if (isCallHandlerProcessor(processor)) {
-        const filteredCalls = filterCall(call, processor.baseFilter);
         for (const c of call) {
           await processData(processor, handler, [c]);
         }
