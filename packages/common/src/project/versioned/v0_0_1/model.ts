@@ -1,12 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestBaseImpl} from '@subql/common';
 import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
 import {ProjectNetworkConfig} from '../../types';
+import {ProjectManifestBaseImpl} from '../base';
 import {ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
 export class ProjectNetworkV0_0_1 extends ChainTypes implements ProjectNetworkConfig {

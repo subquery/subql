@@ -51,6 +51,8 @@ export class SubstrateProjectManifestVersioned implements ISubstrateProjectManif
     if (!klass) {
       throw new Error('specVersion not supported for project manifest file');
     }
+    const impl = (this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest));
+
     this._impl = plainToClass<ProjectManifestImpls, VersionedProjectManifest>(klass, projectManifest);
   }
 

@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestBaseImpl} from '@subql/common';
 import {
   SubqlCustomDatasource,
   SubqlCustomHandler,
@@ -12,6 +11,7 @@ import {
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
+import {ProjectManifestBaseImpl} from '../base';
 import {CustomDatasourceV0_2_0, ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
 
 export class FileType {
