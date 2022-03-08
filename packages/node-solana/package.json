@@ -15,7 +15,7 @@
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
   "bin": {
-    "subql-node": "./bin/run"
+    "subql-node-solana": "./bin/run"
   },
   "dependencies": {
     "@apollo/client": "3.5.8",
