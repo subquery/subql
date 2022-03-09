@@ -3,7 +3,16 @@
 
 import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import {
+  Equals,
+  IsArray,
+  isNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  validateSync,
+} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';
 import {ProjectNetworkConfig} from '../../types';
 import {ProjectManifestBaseImpl} from '../base';

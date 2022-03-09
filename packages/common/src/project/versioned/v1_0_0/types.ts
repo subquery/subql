@@ -13,16 +13,16 @@ export enum queryKind {
 }
 
 export interface runnerSpecs {
-  node: nodeSpec;
-  query: querySpec;
+  node: NodeSpec;
+  query: QuerySpec;
 }
 
-export interface nodeSpec {
+export interface NodeSpec {
   name: nodeKind;
   version: string;
 }
 
-export interface querySpec {
+export interface QuerySpec {
   name: queryKind;
   version: string;
 }

@@ -3,4 +3,4 @@
 
 import {ProjectManifestV1_0_0Impl} from '@subql/common';
 
-export {ProjectManifestV1_0_0Impl as SubstrateProjectManifestV1_0_0Impl};
+export class SubstrateProjectManifestV1_0_0Impl extends ProjectManifestV1_0_0Impl {}

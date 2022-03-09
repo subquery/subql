@@ -33,4 +33,8 @@ describe('project.yaml', () => {
       loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.0_invalid_custom_ds.yaml'))
     ).toThrow();
   });
+
+  it('can validate a substrate v1.0.0 project.yaml with runner specs', () => {
+    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'substrate_project_1.0.0.yaml'))).not.toThrow();
+  });
 });

@@ -3,8 +3,7 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/common';
-import { isDatasourceV0_2_0 } from '@subql/common-substrate';
+import { levelFilter, isDatasourceV0_2_0 } from '@subql/common';
 import { Store, SubqlDatasource } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
