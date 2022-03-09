@@ -15,7 +15,6 @@ import {
 import {MsgExecuteContract, LCDClient, Fee, hashToHex, EventsByType, TxInfo, BlockInfo} from '@terra-money/terra.js';
 import {plainToClass} from 'class-transformer';
 import {IsOptional, IsString, validateSync} from 'class-validator';
-import {FrontierEvmCallFilter} from './frontierEvm';
 import {stringNormalizedEq} from './utils';
 
 /*
@@ -40,9 +39,12 @@ export class TerraContractProcessorOptions {
   address?: string;
 }
 
-type TerraContractCallFilter = FrontierEvmCallFilter;
+export interface TerraContractCallFilter {
+  from?: string;
+  function?: string;
+}
 
-class TerraContractCallFilterImpl implements FrontierEvmCallFilter {
+class TerraContractCallFilterImpl implements TerraContractCallFilter {
   @IsOptional()
   from?: string;
   @IsOptional()
@@ -114,12 +116,13 @@ const EventProcessor: SecondLayerTerraHandlerProcessor<
     if (msg['@type'] !== '/terra.wasm.v1beta1.MsgExecuteContract') {
       return false;
     }
-    if (ds.processor?.options?.address && !stringNormalizedEq(msg.sender, ds.processor.options.address)) {
+    if (ds.processor?.options?.address && !stringNormalizedEq(msg.contract, ds.processor.options.address)) {
       return false;
     }
     if (filter?.type && !(filter.type in input.event)) {
       return false;
     }
+    console.log(input.event);
     return true;
   },
   filterValidator(filter?: TerraContractEventFilter): void {
@@ -139,7 +142,7 @@ const EventProcessor: SecondLayerTerraHandlerProcessor<
 
 const CallProcessor: SecondLayerTerraHandlerProcessor<
   SubqlTerraHandlerKind.Call,
-  FrontierEvmCallFilter,
+  TerraContractCallFilter,
   TerraContractCall,
   TerraContractDatasource
 > = {
@@ -180,7 +183,7 @@ const CallProcessor: SecondLayerTerraHandlerProcessor<
       if (!(filter?.function in input.data.execute_msg)) {
         return false;
       }
-
+      console.log(input.data.execute_msg);
       return true;
     } catch (e) {
       (global as any).logger.warn('Unable to properly filter input');

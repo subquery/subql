@@ -485,7 +485,6 @@ export class IndexerTerraManager {
             processor.transformer(data, ds, this.api.getLCDClient, assets),
           ),
       );
-
       for (const data of transformedData) {
         await vm.securedExec(handler.handler, [data]);
       }

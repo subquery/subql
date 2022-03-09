@@ -115,7 +115,7 @@ export async function getContractExecutionTxInfos(
   const callInfos: TerraCall[] = [];
   for (const txInfo of txInfos) {
     for (const msg of txInfo.tx.body.messages) {
-      if (msg['@type'] === '/terra.wasm.v1beta1.MsgExecuteContract') {
+      if (msg.toData()['@type'] === '/terra.wasm.v1beta1.MsgExecuteContract') {
         const callInfo: TerraCall = {
           data: msg.toData() as MsgExecuteContract.Data,
           tx: txInfo,
