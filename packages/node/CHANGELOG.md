@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.1] - 2022-03-10
+### Fixed
+- Fix enum sort order (#844)
+
 ## [0.30.0] - 2022-03-01
 ### Changed
 - Update imports, as substrate related components now will be imported from `subql/common-substrate`. (#781)
@@ -429,7 +433,8 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.30.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.30.1...HEAD
+[0.30.1]: https://github.com/subquery/subql/compare/node/0.30.0...node/0.30.1
 [0.30.0]: https://github.com/subquery/subql/compare/node/0.29.1...node/0.30.0
 [0.29.1]: https://github.com/subquery/subql/compare/node/0.29.0...node/0.29.1
 [0.29.0]: https://github.com/subquery/subql/compare/node/0.28.2...node/0.29.1

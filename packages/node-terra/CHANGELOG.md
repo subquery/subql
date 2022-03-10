@@ -8,8 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-03-10
+### Fixed
+- Fix enum sort order (#844)
+
 ## [0.1.0] - 2022-03-01
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-terra/0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-terra/0.1.1...HEAD
+[0.1.1]: https://github.com/subquery/subql/compare/node/0.1.0...node/0.1.1
