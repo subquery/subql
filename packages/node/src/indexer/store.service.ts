@@ -96,8 +96,7 @@ export class StoreService {
          from pg_type t
          join pg_enum e on t.oid = e.enumtypid
          where t.typname = ?
-         order by enumsortorder;
-         `,
+         order by enumsortorder;`,
         { replacements: [enumTypeName] },
       );
 
