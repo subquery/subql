@@ -89,7 +89,6 @@ export class StoreService {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
       const enumTypeName = `${schema}_enum_${this.enumNameToHash(e.name)}`;
-      console.log(`enumTypeName : ${enumTypeName}`);
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
