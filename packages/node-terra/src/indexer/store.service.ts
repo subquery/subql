@@ -94,7 +94,8 @@ export class StoreService {
         `select e.enumlabel as enum_value
          from pg_type t
          join pg_enum e on t.oid = e.enumtypid
-         where t.typname = ?;`,
+         where t.typname = ?
+         order by enumsortorder;`,
         { replacements: [enumTypeName] },
       );
 
