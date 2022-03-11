@@ -13,6 +13,7 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
+  loadFromJsonOrYaml,
 } from '@subql/common';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
 import {loadTerraProjectManifest} from '@subql/common-terra';
@@ -190,16 +191,18 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
+  const rawManifest = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
   let manifest;
-  try {
+  if ((rawManifest as any).dataSources[0].kind.split('/')[0] === 'substrate') {
     console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
     await generateDatasourceTemplates(projectPath, manifest);
-  } catch (e) {
-    console.log('Loading substrate manifest failed');
+  } else if ((rawManifest as any).dataSources[0].kind.split('/')[0] === 'terra') {
     console.log('Loading terra manifest...');
     manifest = loadTerraProjectManifest(projectPath);
     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
+  } else {
+    throw new Error('unable to find chain from manifest');
   }
 
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
