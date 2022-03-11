@@ -2,18 +2,33 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {RegisteredTypes} from '@polkadot/types/types';
-import {SubqlNetworkFilter, SubqlRuntimeDatasource} from '@subql/types';
-import {ISubstrateProjectManifest, SubstrateProjectNetworkConfig} from '../../types';
+import {BaseMapping, IProjectManifest} from '@subql/common';
+import {
+  SubstrateProjectNetworkConfig,
+  SubstrateRuntimeDataSource,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeHandlerFilter,
+  SubstrateRuntimeHandler,
+  SubstrateDatasourceKind,
+} from '../../types';
 
 export type ProjectNetworkConfigV0_0_1 = SubstrateProjectNetworkConfig & RegisteredTypes;
 
-export interface RuntimeDataSourceV0_0_1 extends SubqlRuntimeDatasource {
+// export interface RuntimeDataSourceV0_0_1 extends SubstrateRuntimeDataSource {
+//   name: string;
+//   filter?: SubstrateNetworkFilter;
+// }
+
+export type ManifestV0_0_1Mapping = Omit<BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler>, 'file'>;
+
+export interface RuntimeDataSourceV0_0_1 extends Omit<SubstrateRuntimeDataSource, 'mapping'> {
   name: string;
-  filter?: SubqlNetworkFilter;
+  filter?: SubstrateNetworkFilter;
+  kind: SubstrateDatasourceKind.Runtime;
+  mapping: ManifestV0_0_1Mapping;
 }
 
-export interface ProjectManifestV0_0_1 extends ISubstrateProjectManifest {
+export interface ProjectManifestV0_0_1 extends IProjectManifest<RuntimeDataSourceV0_0_1> {
   schema: string;
   network: ProjectNetworkConfigV0_0_1;
-  dataSources: RuntimeDataSourceV0_0_1[];
 }

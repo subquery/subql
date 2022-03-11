@@ -18,7 +18,7 @@
     "@subql/types": "workspace:*",
     "bn.js": "4.11.6",
     "class-transformer": "0.4.0",
-    "class-validator": "^0.13.1",
+    "class-validator": "^0.13.2",
     "flatted": "^3.2.2",
     "graphql": "^15.7.2",
     "graphql-tag": "^2.12.5",

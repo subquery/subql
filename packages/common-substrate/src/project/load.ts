@@ -52,7 +52,6 @@ export function loadSubstrateProjectManifest(file: string): SubstrateProjectMani
   projectManifest.validate();
   return projectManifest;
 }
-
 export function parseChainTypes(raw: unknown): ChainTypes {
   const chainTypes = plainToClass(ChainTypes, raw);
   if (

@@ -4,13 +4,14 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs } from '@subql/common-substrate';
 import {
-  SubqlCustomDatasource,
-  SubqlDatasource,
-  SubqlDatasourceProcessor,
-  SubqlNetworkFilter,
-} from '@subql/types';
+  isCustomDs,
+  SubstrateCustomDataSource,
+  SubstrateDataSource,
+  SubstrateDatasourceProcessor,
+  SubstrateNetworkFilter,
+} from '@subql/common-substrate';
+
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
@@ -38,8 +39,8 @@ export class DsPluginSandbox extends Sandbox {
 
   getDsPlugin<
     D extends string,
-    T extends SubqlNetworkFilter,
-  >(): SubqlDatasourceProcessor<D, T> {
+    T extends SubstrateNetworkFilter,
+  >(): SubstrateDatasourceProcessor<D, T> {
     return this.run(this.script);
   }
 }
@@ -47,11 +48,16 @@ export class DsPluginSandbox extends Sandbox {
 @Injectable()
 export class DsProcessorService {
   private processorCache: {
-    [entry: string]: SubqlDatasourceProcessor<string, SubqlNetworkFilter>;
+    [entry: string]: SubstrateDatasourceProcessor<
+      string,
+      SubstrateNetworkFilter
+    >;
   } = {};
   constructor(private project: SubqueryProject) {}
 
-  async validateCustomDs(datasources: SubqlCustomDatasource[]): Promise<void> {
+  async validateCustomDs(
+    datasources: SubstrateCustomDataSource[],
+  ): Promise<void> {
     for (const ds of datasources) {
       const processor = this.getDsProcessor(ds);
       /* Standard validation applicable to all custom ds and processors */
@@ -84,13 +90,13 @@ export class DsProcessorService {
 
   async validateProjectCustomDatasources(): Promise<void> {
     await this.validateCustomDs(
-      (this.project.dataSources as SubqlDatasource[]).filter(isCustomDs),
+      (this.project.dataSources as SubstrateDataSource[]).filter(isCustomDs),
     );
   }
 
-  getDsProcessor<D extends string, T extends SubqlNetworkFilter>(
-    ds: SubqlCustomDatasource<string, T>,
-  ): SubqlDatasourceProcessor<D, T> {
+  getDsProcessor<D extends string, T extends SubstrateNetworkFilter>(
+    ds: SubstrateCustomDataSource<string, T>,
+  ): SubstrateDatasourceProcessor<D, T> {
     if (!isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
@@ -109,11 +115,13 @@ export class DsProcessorService {
     }
     return this.processorCache[
       ds.processor.file
-    ] as unknown as SubqlDatasourceProcessor<D, T>;
+    ] as unknown as SubstrateDatasourceProcessor<D, T>;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async getAssets(ds: SubqlCustomDatasource): Promise<Record<string, string>> {
+  async getAssets(
+    ds: SubstrateCustomDataSource,
+  ): Promise<Record<string, string>> {
     if (!isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }

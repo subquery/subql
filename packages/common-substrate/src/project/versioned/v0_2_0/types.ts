@@ -1,55 +1,29 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {ProjectManifestV0_2_0} from '@subql/common';
 import {
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlDatasource,
-  SubqlDatasourceKind,
-  SubqlHandler,
-  SubqlMapping,
-  SubqlNetworkFilter,
-  SubqlRuntimeDatasource,
-  SubqlRuntimeHandler,
-} from '@subql/types';
-import {ISubstrateProjectManifest} from '../../types';
+  SubstrateCustomDataSource,
+  SubstrateDataSource,
+  SubstrateDatasourceKind,
+  SubstrateRuntimeDataSource,
+} from '../../types';
 
-export interface SubqlMappingV0_2_0<T extends SubqlHandler> extends SubqlMapping<T> {
-  file: string;
-}
+// export interface SubstrateMappingV0_2_0<F, T extends SubstrateRuntimeHandler> extends BaseMapping<T> {
+//   file: string;
+// }
 
-export type RuntimeDataSourceV0_2_0 = SubqlRuntimeDatasource<SubqlMappingV0_2_0<SubqlRuntimeHandler>>;
-export type CustomDatasourceV0_2_0 = SubqlCustomDatasource<
-  string,
-  SubqlNetworkFilter,
-  SubqlMappingV0_2_0<SubqlCustomHandler>
->;
+export type RuntimeDataSourceV0_2_0 = SubstrateRuntimeDataSource;
+export type CustomDatasourceV0_2_0 = SubstrateCustomDataSource;
 
-export interface ProjectManifestV0_2_0 extends ISubstrateProjectManifest {
-  name: string;
-  version: string;
-  schema: {
-    file: string;
-  };
-
-  network: {
-    genesisHash: string;
-    endpoint?: string;
-    dictionary?: string;
-    chaintypes?: {
-      file: string;
-    };
-  };
-
-  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
-}
+export type SubstrateProjectManifestV0_2_0 = ProjectManifestV0_2_0<SubstrateDataSource>;
 
 export function isDatasourceV0_2_0(
-  dataSource: SubqlDatasource
+  dataSource: SubstrateDataSource
 ): dataSource is RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0 {
   return !!(dataSource as RuntimeDataSourceV0_2_0).mapping.file;
 }
 
-export function isRuntimeDataSourceV0_2_0(dataSource: SubqlDatasource): dataSource is RuntimeDataSourceV0_2_0 {
-  return dataSource.kind === SubqlDatasourceKind.Runtime && isDatasourceV0_2_0(dataSource);
+export function isRuntimeDataSourceV0_2_0(dataSource: SubstrateDataSource): dataSource is RuntimeDataSourceV0_2_0 {
+  return dataSource.kind === SubstrateDatasourceKind.Runtime && isDatasourceV0_2_0(dataSource);
 }

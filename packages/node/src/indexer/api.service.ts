@@ -76,12 +76,11 @@ export class ApiService implements OnApplicationShutdown {
       genesisHash: this.api.genesisHash.toString(),
     };
 
-    if (
-      network.genesisHash &&
-      network.genesisHash !== this.networkMeta.genesisHash
-    ) {
+    if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
       const err = new Error(
-        `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
+        `Network chainId doesn't match expected genesisHash. expected="${
+          network.chainId ?? network.genesisHash
+        }" actual="${this.networkMeta.genesisHash}`,
       );
       logger.error(err, err.message);
       throw err;

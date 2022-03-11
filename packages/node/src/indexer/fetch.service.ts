@@ -12,16 +12,15 @@ import {
   isCustomDs,
   isRuntimeDs,
   isRuntimeDataSourceV0_3_0,
+  SubstrateCallFilter,
+  SubstrateEventFilter,
+  SubstrateHandlerKind,
+  SubstrateHandler,
+  SubstrateDataSource,
+  SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import {
-  SubqlCallFilter,
-  SubqlEventFilter,
-  SubqlHandlerKind,
-  SubqlHandler,
-  SubqlDatasource,
-  SubqlHandlerFilter,
-  DictionaryQueryEntry,
-} from '@subql/types';
+import { DictionaryQueryEntry } from '@subql/types';
+
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -57,7 +56,7 @@ const fetchBlocksBatches = argv.profiler
   : SubstrateUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
-  filter: SubqlEventFilter,
+  filter: SubstrateEventFilter,
 ): DictionaryQueryEntry {
   return {
     entity: 'events',
@@ -71,7 +70,9 @@ function eventFilterToQueryEntry(
   };
 }
 
-function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
+function callFilterToQueryEntry(
+  filter: SubstrateCallFilter,
+): DictionaryQueryEntry {
   return {
     entity: 'extrinsics',
     conditions: [
@@ -166,7 +167,7 @@ export class FetchService implements OnApplicationShutdown {
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubqlHandlerFilter[];
+        let filterList: SubstrateRuntimeHandlerFilter[];
         if (isCustomDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
@@ -176,20 +177,21 @@ export class FetchService implements OnApplicationShutdown {
               continue;
             }
           }
-          filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
-            ds,
-            handler.kind,
-          );
+          filterList =
+            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
+              ds,
+              handler.kind,
+            );
         } else {
           filterList = [handler.filter];
         }
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubqlHandlerKind.Block:
+          case SubstrateHandlerKind.Block:
             return [];
-          case SubqlHandlerKind.Call: {
-            for (const filter of filterList as SubqlCallFilter[]) {
+          case SubstrateHandlerKind.Call: {
+            for (const filter of filterList as SubstrateCallFilter[]) {
               if (filter.module !== undefined && filter.method !== undefined) {
                 queryEntries.push(callFilterToQueryEntry(filter));
               } else {
@@ -198,8 +200,8 @@ export class FetchService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubqlHandlerKind.Event: {
-            for (const filter of filterList as SubqlEventFilter[]) {
+          case SubstrateHandlerKind.Event: {
+            for (const filter of filterList as SubstrateEventFilter[]) {
               if (filter.module !== undefined && filter.method !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
@@ -498,9 +500,9 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private getBaseHandlerKind(
-    ds: SubqlDatasource,
-    handler: SubqlHandler,
-  ): SubqlHandlerKind {
+    ds: SubstrateDataSource,
+    handler: SubstrateHandler,
+  ): SubstrateHandlerKind {
     if (isRuntimeDs(ds) && isBaseHandler(handler)) {
       return handler.kind;
     } else if (isCustomDs(ds) && isCustomHandler(handler)) {
@@ -516,8 +518,8 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private getBaseHandlerFilters<T extends SubqlHandlerFilter>(
-    ds: SubqlDatasource,
+  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
+    ds: SubstrateDataSource,
     handlerKind: string,
   ): T[] {
     if (isCustomDs(ds)) {

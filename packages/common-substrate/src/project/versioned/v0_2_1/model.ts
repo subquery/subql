@@ -4,19 +4,25 @@
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {
-  CustomDataSourceV0_2_0Impl,
+  SubstrateCustomDataSourceV0_2_0Impl,
   DeploymentV0_2_0,
   ProjectManifestV0_2_0Impl,
-  RuntimeDataSourceV0_2_0Impl,
+  SubstrateRuntimeDataSourceV0_2_0Impl,
 } from '../v0_2_0';
-import {CustomDatasourceTemplate, ProjectManifestV0_2_1, RuntimeDatasourceTemplate} from './types';
+import {CustomDatasourceTemplate, SubstrateProjectManifestV0_2_1, RuntimeDatasourceTemplate} from './types';
 
-export class RuntimeDatasourceTemplateImpl extends RuntimeDataSourceV0_2_0Impl implements RuntimeDatasourceTemplate {
+export class RuntimeDatasourceTemplateImpl
+  extends SubstrateRuntimeDataSourceV0_2_0Impl
+  implements RuntimeDatasourceTemplate
+{
   @IsString()
   name: string;
 }
 
-export class CustomDatasourceTemplateImpl extends CustomDataSourceV0_2_0Impl implements CustomDatasourceTemplate {
+export class CustomDatasourceTemplateImpl
+  extends SubstrateCustomDataSourceV0_2_0Impl
+  implements CustomDatasourceTemplate
+{
   @IsString()
   name: string;
 }
@@ -41,7 +47,7 @@ export class DeploymentV0_2_1 extends DeploymentV0_2_0 {
 
 export class ProjectManifestV0_2_1Impl
   extends ProjectManifestV0_2_0Impl<DeploymentV0_2_1>
-  implements ProjectManifestV0_2_1
+  implements SubstrateProjectManifestV0_2_1
 {
   @IsOptional()
   @IsArray()

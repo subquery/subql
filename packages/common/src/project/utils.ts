@@ -3,7 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
+import {ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
+import {satisfies, valid} from 'semver';
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {
@@ -40,4 +42,21 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   }
   project.root = path.resolve(project.root);
   return project;
+}
+
+export function validateSemver(current: string, required: string) {
+  return satisfies(current, required);
+}
+
+export class SemverVersionValidator implements ValidatorConstraintInterface {
+  validate(value: string | null | undefined): boolean {
+    const validated = valid(value, {includePrerelease: false});
+    if (validated === null || validated === undefined) {
+      return false;
+    }
+    return true;
+  }
+  defaultMessage(): string {
+    return 'Version number must follow Semver rules';
+  }
 }

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {getTypeByScalarName} from '@subql/common';
 import {
   assertListType,
   getDirectiveValues,
@@ -20,6 +19,7 @@ import {
   isObjectType,
   isUnionType,
 } from 'graphql';
+import {getTypeByScalarName} from '../types';
 import {DirectiveName} from './constant';
 import {buildSchemaFromFile} from './schema';
 import {

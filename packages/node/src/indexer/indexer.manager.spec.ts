@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqlDatasourceKind, SubqlHandlerKind } from '@subql/types';
+import {
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+} from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -61,20 +64,26 @@ function testSubqueryProject_1(): SubqueryProject {
     dataSources: [
       {
         name: 'runtime0',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
+          file: '',
           entryScript: '',
-          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
+          handlers: [
+            { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
+          ],
         },
       },
       {
         name: 'runtime1',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           entryScript: '',
-          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
+          file: '',
+          handlers: [
+            { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
+          ],
         },
       },
     ],
@@ -96,11 +105,14 @@ function testSubqueryProject_2(): SubqueryProject {
     dataSources: [
       {
         name: 'runtime0',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
+          file: '',
           entryScript: `console.log('test handler runtime0')`,
-          handlers: [{ handler: 'testSandbox', kind: SubqlHandlerKind.Event }],
+          handlers: [
+            { handler: 'testSandbox', kind: SubstrateHandlerKind.Event },
+          ],
         },
       },
     ],

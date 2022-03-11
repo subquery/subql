@@ -106,7 +106,7 @@ export class ProjectManifestV0_3_0Impl
     keepDiscriminatorProperty: true,
   })
   dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
-  private _deployment: DeploymentV0_3_0;
+  protected _deployment: DeploymentV0_3_0;
 
   get deployment(): DeploymentV0_3_0 {
     if (!this._deployment) {

@@ -4,6 +4,7 @@
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned} from '@subql/common-substrate';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
 import {migrate, prepare} from '../controller/migrate-controller';
 
 export default class Migrate extends Command {
@@ -18,16 +19,20 @@ export default class Migrate extends Command {
   async run(): Promise<void> {
     const {flags} = await this.parse(Migrate);
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
-    let manifest: SubstrateProjectManifestVersioned;
+    let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
     try {
       manifest = loadSubstrateProjectManifest(location);
     } catch (e) {
-      this.error(`Please validate project manifest before migrate. \n ${e}`);
+      try {
+        manifest = loadTerraProjectManifest(location);
+      } catch (e) {
+        this.error(`Please validate project manifest before migrate. \n ${e}`);
+      }
     }
-    if (manifest.isV0_2_0) {
-      this.log(`* You are already using manifest spec v0.2.0`);
+    if (manifest.isV1_0_0) {
+      this.log(`* You are already using manifest spec v1.0.0`);
     } else {
-      console.log(`* Converting manifest v0.0.1 to v0.2.0, please provide:`);
+      console.log(`* Converting manifest to v1.0.0, please provide:`);
       const [project, chainTypesRelativePath] = await prepare(location, manifest);
       await migrate(location, project, manifest, chainTypesRelativePath);
       this.log('* Migration completed');

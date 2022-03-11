@@ -4,10 +4,9 @@
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
-  SubqlDatasourceKind,
-  SubqlHandlerKind,
-  SubqlMapping,
-} from '@subql/types';
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+} from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -314,14 +313,15 @@ describe('FetchService', () => {
     project.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           entryScript: '',
+          file: '',
           handlers: [
             {
               handler: 'handleCall',
-              kind: SubqlHandlerKind.Call,
+              kind: SubstrateHandlerKind.Call,
               filter: {
                 module: 'utility',
                 method: 'batchAll',
@@ -378,14 +378,15 @@ describe('FetchService', () => {
     project.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           entryScript: '',
+          file: '',
           handlers: [
             {
               handler: 'handleBond',
-              kind: SubqlHandlerKind.Event,
+              kind: SubstrateHandlerKind.Event,
               filter: {
                 module: 'staking',
                 method: 'Bonded',
@@ -434,14 +435,15 @@ describe('FetchService', () => {
     project.dataSources = [
       {
         name: 'runtime',
-        kind: SubqlDatasourceKind.Runtime,
+        kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
         mapping: {
           entryScript: '',
+          file: ' ',
           handlers: [
             {
               handler: 'handleBond',
-              kind: SubqlHandlerKind.Event,
+              kind: SubstrateHandlerKind.Event,
               filter: {
                 module: 'staking',
                 method: 'Bonded',

@@ -2,12 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ProjectManifestBaseImpl} from '@subql/common';
-import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
-import {Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
-import {RuntimeDataSourceBase, ChainTypes} from '../../models';
-import {SubstrateProjectNetworkConfig} from '../../types';
-import {ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
+import {plainToClass, Transform, Type} from 'class-transformer';
+import {
+  Equals,
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  validateSync,
+} from 'class-validator';
+import {ChainTypes, SubqlNetworkFilterImpl, EventHandler, CallHandler, BlockHandler} from '../../models';
+import {
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateProjectNetworkConfig,
+  SubstrateRuntimeDataSource,
+  SubstrateRuntimeHandler,
+  SubstrateRuntimeHandlerFilter,
+} from '../../types';
+import {ManifestV0_0_1Mapping, ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
 export class ProjectNetworkV0_0_1 extends ChainTypes implements SubstrateProjectNetworkConfig {
   @IsString()
@@ -17,12 +34,42 @@ export class ProjectNetworkV0_0_1 extends ChainTypes implements SubstrateProject
   dictionary?: string;
 }
 
-export class RuntimeDataSourceV0_0_1Impl
-  extends RuntimeDataSourceBase<SubqlMapping<SubqlRuntimeHandler>>
-  implements RuntimeDataSourceV0_0_1
-{
+export class RuntimeMappingV0_0_1 implements ManifestV0_0_1Mapping {
+  @Transform((params) => {
+    const handlers: SubstrateRuntimeHandler[] = params.value;
+    return handlers.map((handler) => {
+      switch (handler.kind) {
+        case SubstrateHandlerKind.Event:
+          return plainToClass(EventHandler, handler);
+        case SubstrateHandlerKind.Call:
+          return plainToClass(CallHandler, handler);
+        case SubstrateHandlerKind.Block:
+          return plainToClass(BlockHandler, handler);
+        default:
+          throw new Error(`handler ${(handler as any).kind} not supported`);
+      }
+    });
+  })
+  @IsArray()
+  @ValidateNested()
+  handlers: SubstrateRuntimeHandler[];
+}
+
+export class RuntimeDataSourceV0_0_1Impl implements RuntimeDataSourceV0_0_1 {
   @IsString()
   name: string;
+  @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
+  kind: SubstrateDatasourceKind.Runtime;
+  @Type(() => RuntimeMappingV0_0_1)
+  @ValidateNested()
+  mapping: RuntimeMappingV0_0_1;
+  @IsOptional()
+  @IsInt()
+  startBlock?: number;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => SubqlNetworkFilterImpl)
+  filter?: SubstrateNetworkFilter;
 }
 
 export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl<null> implements ProjectManifestV0_0_1 {

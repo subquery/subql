@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {getTypeByScalarName} from '@subql/common';
+import {getTypeByScalarName} from '../types';
 
 describe('general types', () => {
   it('can get json type', () => {
