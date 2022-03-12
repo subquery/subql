@@ -37,3 +37,34 @@ export function createUniqueIndexQuery(
     field,
   )}' on '${schema}.${table}' (${underscored(field)})`;
 }
+
+export const createSendNotificationTriggerFunction = `
+CREATE OR REPLACE FUNCTION send_notification()
+    RETURNS trigger AS $$
+DECLARE
+    row RECORD;
+BEGIN
+    IF (TG_OP = 'DELETE') THEN
+      row = OLD;
+    ELSE
+      row = NEW;
+    END IF;
+    PERFORM pg_notify(
+      CONCAT(TG_TABLE_SCHEMA, '.', TG_TABLE_NAME),
+      json_build_object(
+        'id', row.id,
+        'mutation_type', TG_OP,
+        '_entity', row)::text);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;`;
+
+export function createNotifyTrigger(schema: string, table: string): string {
+  return `
+DROP TRIGGER IF EXISTS ${schema}_${table}_notify_trigger
+    ON ${schema}.${table};
+CREATE TRIGGER ${schema}_${table}_notify_trigger
+    AFTER INSERT OR UPDATE OR DELETE
+    ON ${schema}.${table}
+    FOR EACH ROW EXECUTE FUNCTION send_notification();`;
+}

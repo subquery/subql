@@ -23,6 +23,8 @@ import { getLogger } from '../utils/logger';
 import { camelCaseObjectKey } from '../utils/object';
 import {
   commentConstraintQuery,
+  createNotifyTrigger,
+  createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
   getFkConstraint,
   smartTags,
@@ -135,6 +137,8 @@ export class StoreService {
       });
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
+    const extraQueries = [];
+    extraQueries.push(createSendNotificationTriggerFunction);
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({ fields, unique, using }) => ({
@@ -145,7 +149,7 @@ export class StoreService {
       if (indexes.length > this.config.indexCountLimit) {
         throw new Error(`too many indexes on entity ${model.name}`);
       }
-      this.sequelize.define(model.name, attributes, {
+      const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
         freezeTableName: false,
@@ -154,8 +158,8 @@ export class StoreService {
         schema,
         indexes,
       });
+      extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
     }
-    const extraQueries = [];
     for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);

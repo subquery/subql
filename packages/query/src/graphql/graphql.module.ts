@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {
@@ -10,8 +11,11 @@ import {
 } from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
+import {execute, subscribe} from 'graphql';
 import {Pool} from 'pg';
-import {getPostGraphileBuilder} from 'postgraphile-core';
+import {makePluginHook} from 'postgraphile';
+import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
+import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
 import {PinoConfig} from '../utils/logger';
 import {plugins} from './plugins';
@@ -46,11 +50,22 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
-    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], {
-      replaceAllPlugins: plugins,
+
+    const pluginHook = makePluginHook([PgPubSub]);
+
+    const options: PostGraphileCoreOptions = {
+      replaceAllPlugins: [...plugins, pluginHook],
       subscriptions: true,
       dynamicJson: true,
-    });
+    };
+
+    // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
+    const hookedOptions = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
+    while (hookedOptions.appendPlugins.length) {
+      hookedOptions.replaceAllPlugins.push(hookedOptions.appendPlugins.pop());
+    }
+
+    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], hookedOptions);
 
     const schema = builder.buildSchema();
     const server = new ApolloServer({
@@ -69,6 +84,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       ],
       debug: this.config.get('NODE_ENV') !== 'production',
     });
+
+    // TODO: Replace subscriptions-transport-ws with graphql-ws when support is added to graphql-playground
+    SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
 
     app.use(ExpressPinoLogger(PinoConfig));
 
