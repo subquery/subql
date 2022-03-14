@@ -36,7 +36,7 @@ import {
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { filterEvents } from '../utils/terra-helper';
+import { filterEvents, filterCalls } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
 import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -458,6 +458,13 @@ export class IndexerTerraManager {
           const filteredEvents = filterEvents(events, handler.filter);
           for (const e of filteredEvents) {
             await vm.securedExec(handler.handler, [e]);
+          }
+          break;
+        }
+        case SubqlTerraHandlerKind.Call: {
+          const filteredCalls = filterCalls(call, handler.filter);
+          for (const c of filteredCalls) {
+            await vm.securedExec(handler.handler, [c]);
           }
           break;
         }

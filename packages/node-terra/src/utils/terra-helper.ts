@@ -6,16 +6,15 @@ import {
   TerraBlock,
   TerraEvent,
   TerraCall,
+  SubqlTerraCallFilter,
 } from '@subql/types-terra';
 import {
   BlockInfo,
-  EventsByType,
   hashToHex,
   LCDClient,
   TxInfo,
-  TxLog,
-  Tx,
   MsgExecuteContract,
+  EventsByType,
 } from '@terra-money/terra.js';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -37,18 +36,59 @@ export function filterEvents(
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
   const filteredEvents = [];
   events.forEach((event) => {
-    const fe = {};
-    filters.forEach((filter) => {
-      if (filter.type in event.event) {
-        fe[filter.type] = event.event[filter.type];
+    for (const filter of filters) {
+      const msg = event.txInfo.tx.body.messages[event.log.msg_index].toData();
+      if (
+        filter.contract &&
+        (msg['@type'] !== '/terra.wasm.v1beta1.MsgExecuteContract' ||
+          msg.contract !== filter.contract)
+      ) {
+        continue;
       }
-    });
-    if (Object.keys(fe).length !== 0) {
-      filteredEvents.push(fe);
+      if (!(filter.type in event.event)) {
+        continue;
+      }
+      filteredEvents.push(event);
+      break;
     }
   });
   console.log(filteredEvents);
   return filteredEvents;
+}
+
+export function filterCalls(
+  calls: TerraCall[],
+  filterOrFilters: SubqlTerraCallFilter | SubqlTerraCallFilter[] | undefined,
+): TerraCall[] {
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return calls;
+  }
+
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+
+  const filteredCalls = [];
+  for (const call of calls) {
+    const callsToPush = [];
+    for (const filter of filters) {
+      if (filter?.from && filter.from !== call.from) {
+        continue;
+      }
+      if (filter?.contract && filter.contract !== call.to) {
+        continue;
+      }
+      if (!(filter?.function in call.data.execute_msg)) {
+        continue;
+      }
+      callsToPush.push(call);
+    }
+    filteredCalls.push(...callsToPush);
+  }
+  console.log(filteredCalls);
+  return filteredCalls;
 }
 
 async function getBlockByHeight(api: LCDClient, height: number) {
@@ -93,9 +133,13 @@ export async function getTerraEvents(
     for (const log of txLogs) {
       const eventInfo: TerraEvent = {
         event: log.eventsByType,
-        block: blockInfo,
+        blockNumber: +blockInfo.block.header.height,
+        blockHash: blockInfo.block_id.hash,
+        blockTimestamp: ti.timestamp,
+        msgIndex: log.msg_index,
         txInfo: ti,
         log: log,
+        transactionHash: ti.txhash,
       };
       eventInfos.push(eventInfo);
     }
@@ -116,10 +160,17 @@ export async function getContractExecutionTxInfos(
   for (const txInfo of txInfos) {
     for (const msg of txInfo.tx.body.messages) {
       if (msg.toData()['@type'] === '/terra.wasm.v1beta1.MsgExecuteContract') {
+        const data = msg.toData() as MsgExecuteContract.Data;
         const callInfo: TerraCall = {
-          data: msg.toData() as MsgExecuteContract.Data,
-          tx: txInfo,
-          block: blockInfo,
+          from: data.sender,
+          to: data.contract,
+          fee: txInfo.tx.auth_info.fee.toData(),
+          data: data,
+          hash: txInfo.txhash,
+          blockNumber: +blockInfo.block.header.height,
+          blockHash: hashToHex(blockInfo.block_id.hash),
+          timestamp: txInfo.timestamp,
+          signatures: txInfo.tx.signatures,
         };
         callInfos.push(callInfo);
       }
@@ -137,31 +188,6 @@ export function wrapBlock(blockInfo: BlockInfo): TerraBlock {
   };
 }
 
-export function wrapEvent(
-  blockInfo: BlockInfo,
-  events: EventsByType[],
-): TerraEvent[] {
-  return events.map(
-    (event) =>
-      <TerraEvent>{
-        block: blockInfo,
-        event: event,
-      },
-  );
-}
-
-export function wrapCall(txInfos: TxInfo[], blockInfo: BlockInfo): TerraCall[] {
-  return txInfos.map(
-    (txInfo) =>
-      <TerraCall>{
-        data: txInfo.tx.body.messages[0].toData() as MsgExecuteContract.Data,
-        tx: txInfo,
-        block: blockInfo,
-        events: txInfo.logs.map((log) => log.eventsByType),
-      },
-  );
-}
-
 export async function fetchTerraBlocksBatches(
   api: LCDClient,
   blockArray: number[],
@@ -172,7 +198,9 @@ export async function fetchTerraBlocksBatches(
       const e = await getTerraEvents(api, blockInfo);
       const callInfos = await getContractExecutionTxInfos(api, blockInfo);
       return <TerraBlockContent>{
-        block: wrapBlock(blockInfo),
+        block: <TerraBlock>{
+          block: blockInfo,
+        },
         events: e,
         call: callInfos,
       };

@@ -33,7 +33,7 @@ export type TerraRuntimeHandlerInputMap = {
 type TerraRuntimeFilterMap = {
   [SubqlTerraHandlerKind.Block]: {};
   [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
-  [SubqlTerraHandlerKind.Call]: {};
+  [SubqlTerraHandlerKind.Call]: SubqlTerraCallFilter;
 };
 
 export interface TerraProjectManifest {
@@ -57,7 +57,14 @@ export interface TerraNetwork {
 }
 
 export interface SubqlTerraEventFilter {
+  contract?: string;
   type?: string;
+}
+
+export interface SubqlTerraCallFilter {
+  contract?: string;
+  from?: string;
+  function?: string;
 }
 
 export type SubqlTerraHandlerFilter = SubqlTerraEventFilter;
@@ -73,13 +80,19 @@ export interface SubqlTerraEventHandler {
   filter?: SubqlTerraEventFilter;
 }
 
+export interface SubqlTerraCallHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Call;
+  filter?: SubqlTerraCallFilter;
+}
+
 export interface SubqlTerraCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
 }
 
-export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler;
+export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler | SubqlTerraCallHandler;
 
 export type SubqlTerraHandler = SubqlTerraRuntimeHandler | SubqlTerraCustomHandler;
 
