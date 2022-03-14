@@ -328,7 +328,6 @@ export class FetchTerraService implements OnApplicationShutdown {
                 ),
               );
             } else {
-              console.log(331);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
