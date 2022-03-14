@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.2] - 2022-03-15
+### Fixed
+- Fix unable able fetch with small batch size issue (#847)
+
 ## [0.1.1] - 2022-03-10
 ### Fixed
 - Fix enum sort order (#844)

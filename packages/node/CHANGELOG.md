@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.2] - 2022-03-15
+### Fixed
+- Fix unable able fetch with small batch size issue (#847)
+
 ## [0.30.1] - 2022-03-10
 ### Fixed
 - Fix enum sort order (#844)
