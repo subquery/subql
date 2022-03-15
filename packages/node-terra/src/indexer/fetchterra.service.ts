@@ -256,7 +256,7 @@ export class FetchTerraService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedBlock = await this.api.getLCDClient.tendermint.blockInfo();
+      const finalizedBlock = await this.api.blockInfo();
       const currentFinalizedHeight = parseInt(
         finalizedBlock.block.header.height,
       );
