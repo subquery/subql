@@ -43,18 +43,26 @@ CREATE OR REPLACE FUNCTION send_notification()
     RETURNS trigger AS $$
 DECLARE
     row RECORD;
+    payload TEXT;
 BEGIN
     IF (TG_OP = 'DELETE') THEN
       row = OLD;
     ELSE
       row = NEW;
     END IF;
-    PERFORM pg_notify(
-      CONCAT(TG_TABLE_SCHEMA, '.', TG_TABLE_NAME),
-      json_build_object(
+    payload = json_build_object(
+      'id', row.id,
+      'mutation_type', TG_OP,
+      '_entity', row)::text;
+    IF (octet_length(payload) >= 8000) THEN
+      payload = json_build_object(
         'id', row.id,
         'mutation_type', TG_OP,
-        '_entity', row)::text);
+        '_entity', NULL)::text;
+    END IF;
+    PERFORM pg_notify(
+      CONCAT(TG_TABLE_SCHEMA, '.', TG_TABLE_NAME),
+      payload);
     RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;`;
