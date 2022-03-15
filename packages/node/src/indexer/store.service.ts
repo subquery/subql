@@ -29,6 +29,7 @@ import {
   getFkConstraint,
   smartTags,
 } from '../utils/sync-helper';
+import { getYargsOption } from '../yargs';
 import {
   Metadata,
   MetadataFactory,
@@ -40,6 +41,7 @@ import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
+const { argv } = getYargsOption();
 
 interface IndexField {
   entityName: string;
@@ -138,7 +140,9 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
-    extraQueries.push(createSendNotificationTriggerFunction);
+    if (argv.unsafe) {
+      extraQueries.push(createSendNotificationTriggerFunction);
+    }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({ fields, unique, using }) => ({
@@ -158,7 +162,11 @@ export class StoreService {
         schema,
         indexes,
       });
-      extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
+      if (argv.unsafe) {
+        extraQueries.push(
+          createNotifyTrigger(schema, sequelizeModel.tableName),
+        );
+      }
     }
     for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);

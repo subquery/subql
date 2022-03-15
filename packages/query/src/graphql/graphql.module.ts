@@ -18,8 +18,12 @@ import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
 import {PinoConfig} from '../utils/logger';
+import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
+import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
 import {ProjectService} from './project.service';
+
+const {argv} = getYargsOption();
 
 @Module({
   providers: [ProjectService],
@@ -51,21 +55,23 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
 
-    const pluginHook = makePluginHook([PgPubSub]);
-
-    const options: PostGraphileCoreOptions = {
-      replaceAllPlugins: [...plugins, pluginHook],
+    let options: PostGraphileCoreOptions = {
+      replaceAllPlugins: plugins,
       subscriptions: true,
       dynamicJson: true,
     };
 
-    // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
-    const hookedOptions = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
-    while (hookedOptions.appendPlugins.length) {
-      hookedOptions.replaceAllPlugins.push(hookedOptions.appendPlugins.pop());
+    if (argv.unsafe) {
+      const pluginHook = makePluginHook([PgPubSub]);
+      // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
+      options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
+      options.replaceAllPlugins.push(PgSubscriptionPlugin);
+      while (options.appendPlugins.length) {
+        options.replaceAllPlugins.push(options.appendPlugins.pop());
+      }
     }
 
-    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], hookedOptions);
+    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
 
     const schema = builder.buildSchema();
     const server = new ApolloServer({
@@ -85,8 +91,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       debug: this.config.get('NODE_ENV') !== 'production',
     });
 
-    // TODO: Replace subscriptions-transport-ws with graphql-ws when support is added to graphql-playground
-    SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
+    if (argv.unsafe) {
+      // TODO: Replace subscriptions-transport-ws with graphql-ws when support is added to graphql-playground
+      SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
+    }
 
     app.use(ExpressPinoLogger(PinoConfig));
 

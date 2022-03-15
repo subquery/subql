@@ -50,7 +50,6 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
-import {PgSubscriptionPlugin} from './PgSubscriptionPlugin';
 
 /* eslint-enable */
 
@@ -106,7 +105,6 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
-  PgSubscriptionPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
