@@ -62,9 +62,9 @@ $$ LANGUAGE plpgsql;`;
 export function createNotifyTrigger(schema: string, table: string): string {
   return `
 DROP TRIGGER IF EXISTS ${schema}_${table}_notify_trigger
-    ON ${schema}.${table};
+    ON "${schema}"."${table}";
 CREATE TRIGGER ${schema}_${table}_notify_trigger
     AFTER INSERT OR UPDATE OR DELETE
-    ON ${schema}.${table}
+    ON "${schema}"."${table}"
     FOR EACH ROW EXECUTE FUNCTION send_notification();`;
 }
