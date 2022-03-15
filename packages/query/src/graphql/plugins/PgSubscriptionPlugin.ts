@@ -29,8 +29,8 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
       }
 
       type SubscriptionPayload {
-        id: ID
-        mutation_type: MutationType
+        id: ID!
+        mutation_type: MutationType!
         _entity: JSON
       }
       
