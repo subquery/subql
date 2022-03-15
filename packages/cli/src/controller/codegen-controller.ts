@@ -193,11 +193,12 @@ export async function codegen(projectPath: string): Promise<void> {
 
   const rawManifest = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
   let manifest;
-  if ((rawManifest as any).dataSources[0].kind.split('/')[0] === 'substrate') {
+  const datasourceChain = (rawManifest as any).dataSources[0].kind.split('/')[0];
+  if (datasourceChain === 'substrate') {
     console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
     await generateDatasourceTemplates(projectPath, manifest);
-  } else if ((rawManifest as any).dataSources[0].kind.split('/')[0] === 'terra') {
+  } else if (datasourceChain === 'terra') {
     console.log('Loading terra manifest...');
     manifest = loadTerraProjectManifest(projectPath);
     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
