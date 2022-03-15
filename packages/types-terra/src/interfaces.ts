@@ -22,27 +22,19 @@ export interface Store {
 
 export interface TerraBlock {
   block: BlockInfo;
+  txs: TxInfo[];
 }
 
 export interface TerraEvent {
   event: EventsByType;
-  blockNumber: number;
-  blockHash: string;
-  blockTimestamp: string;
+  block: TerraBlock;
   msgIndex: number;
   txInfo: TxInfo;
   log: TxLog;
-  transactionHash: string;
 }
 
 export interface TerraCall {
-  from: string;
-  to: string;
-  fee: Fee.Data;
   data: MsgExecuteContract.Data;
-  hash: string;
-  blockNumber: number;
-  blockHash: string;
-  timestamp: string;
-  signatures: string[];
+  block: TerraBlock;
+  tx: TxInfo;
 }
