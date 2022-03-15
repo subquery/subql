@@ -23,8 +23,6 @@ export interface SolanaBlock {
   block: BlockResponse;
 }
 
-export interface SolanaTransaction {
-  transaction: BlockResponse;
-  block: BlockResponse;
-  success: boolean;
+export interface SolanaTransaction extends TransactionResponse {
+  blockHeight?: number;
 }
