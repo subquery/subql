@@ -66,7 +66,6 @@ export function filterMessages(
     }
     return false;
   });
-  console.log(filteredMessages);
   return filteredMessages;
 }
 
@@ -95,7 +94,6 @@ export function filterEvents(
     }
     return false;
   });
-  console.log(filteredEvents);
   return filteredEvents;
 }
 
@@ -137,16 +135,11 @@ export function wrapTx(
   block: TerraBlock,
   txInfos: TxInfo[],
 ): TerraTransaction[] {
-  const txs: TerraTransaction[] = [];
-  for (let i = 0; i < txInfos.length; i++) {
-    const tx: TerraTransaction = {
-      idx: i,
-      tx: txInfos[i],
-      block: block,
-    };
-    txs.push(tx);
-  }
-  return txs;
+  return txInfos.map((txInfo, idx) => ({
+    idx,
+    tx: txInfo,
+    block,
+  }));
 }
 
 export function wrapMsg(

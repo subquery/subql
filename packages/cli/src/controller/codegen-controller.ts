@@ -16,7 +16,7 @@ import {
   loadFromJsonOrYaml,
 } from '@subql/common';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
-import {loadTerraProjectManifest} from '@subql/common-terra';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
@@ -191,24 +191,24 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  const rawManifest = loadFromJsonOrYaml(path.join(projectPath, 'project.yaml'));
-  let manifest;
-  const datasourceChain = (rawManifest as any).dataSources[0].kind.split('/')[0];
-  if (datasourceChain === 'substrate') {
+  let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+
+  try {
     console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
     await generateDatasourceTemplates(projectPath, manifest);
-  } else if (datasourceChain === 'terra') {
+  } catch (e) {
+    console.log('Loading substrate manifest failed');
     console.log('Loading terra manifest...');
     manifest = loadTerraProjectManifest(projectPath);
     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
-  } else {
-    throw new Error('unable to find chain from manifest');
   }
 
-  await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
-  await generateModels(projectPath, path.join(projectPath, manifest.schema));
-  await generateEnums(projectPath, path.join(projectPath, manifest.schema));
+  const schemaPath = path.join(projectPath, manifest.schema);
+
+  await generateJsonInterfaces(projectPath, schemaPath);
+  await generateModels(projectPath, schemaPath);
+  await generateEnums(projectPath, schemaPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {

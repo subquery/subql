@@ -4771,6 +4771,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/contract-processors@workspace:packages/contract-processors"
   dependencies:
+    "@subql/types": "workspace:*"
     class-transformer: 0.5.1
     class-validator: ^0.13.2
     ethers: ^5.5.4
@@ -4798,7 +4799,7 @@ __metadata:
     "@subql/types-terra": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
-    "@terra-money/terra.js": ^3.0.1
+    "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.0.2
@@ -4925,10 +4926,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types-terra@workspace:packages/types-terra"
   dependencies:
-    "@terra-money/terra.js": ^3.0.1
     "@types/app-module-path": ^2.2.0
   peerDependencies:
-    "@terra-money/terra.js": ^3.0.1
+    "@terra-money/terra.js": ^3.0.8
   languageName: unknown
   linkType: soft
 
@@ -4997,9 +4997,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@terra-money/terra.js@npm:^3.0.1":
-  version: 3.0.7
-  resolution: "@terra-money/terra.js@npm:3.0.7"
+"@terra-money/terra.js@npm:^3.0.8":
+  version: 3.0.8
+  resolution: "@terra-money/terra.js@npm:3.0.8"
   dependencies:
     "@terra-money/terra.proto": ^0.1.7
     axios: ^0.24.0
@@ -5014,7 +5014,7 @@ __metadata:
     tmp: ^0.2.1
     utf-8-validate: ^5.0.5
     ws: ^7.5.5
-  checksum: 79afc8edcb5e3e07151cfa5c2dc03c1b76f228b805091bcdb74fc640cdfbcdce7999a89ebebe5b7aee137850f1b083e26cd391e33141ba612ae1dbee82fc6caf
+  checksum: 1b0dd3258441e0f65f6ab5136e0d92afa6ee1d77de34f225c0ad465045b1573d48d3371f65378cd8216b641a160110c39c922ce54443f8e6440c78108b5a4dd9
   languageName: node
   linkType: hard
 

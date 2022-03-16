@@ -236,7 +236,7 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale() {
+  checkBatchScale(): void {
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
@@ -250,7 +250,7 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getLatestBlockHead() {
+  async getLatestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -285,7 +285,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     ]);
   }
 
-  async fillNextBlockBuffer(initBlockHeight: number) {
+  async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
 
@@ -362,11 +362,12 @@ export class FetchTerraService implements OnApplicationShutdown {
     }
     return endBlockHeight;
   }
+
   private async dictionaryValidation(
     { _metadata: metaData }: TerraDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo: any = await this.api.getLCDClient.tendermint.nodeInfo();
+    const nodeInfo = await this.api.nodeInfo();
     if (metaData.chainId !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
