@@ -2,26 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {PgIntrospectionResultsByKind} from 'graphile-build-pg';
-import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
+import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
+
+const filter = (event, args) => {
+  if (args.mutation && !args.mutation.includes(event.mutation_type)) {
+    return false;
+  }
+  if (args.id && !args.id.includes(event.id)) {
+    return false;
+  }
+  return true;
+};
 
 export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
   const {inflection, pgIntrospectionResultsByKind} = build;
 
-  // Generate subscription fields for all database tables
-  const subscriptionFields = (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.reduce(
-    (result, table) => {
-      if (!table.namespace || table.name === '_metadata') return result;
-
-      const field = inflection.allRows(table);
-      const topic = `${table.namespace.name}.${table.name}`;
-      result.push(`${field}: SubscriptionPayload @pgSubscription(topic: "${topic}")`);
-      return result;
-    },
-    []
-  );
-
-  return {
-    typeDefs: gql`
+  const typeDefs = [
+    gql`
       enum MutationType {
         INSERT
         UPDATE
@@ -33,10 +30,26 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
         mutation_type: MutationType!
         _entity: JSON
       }
-      
-      extend type Subscription {
-        ${subscriptionFields.join('\n')}
-      }
     `,
-  };
+  ];
+
+  // Generate subscription fields for all database tables
+  (pgIntrospectionResultsByKind as PgIntrospectionResultsByKind).class.forEach((table) => {
+    if (!table.namespace || table.name === '_metadata') return;
+
+    const field = inflection.allRows(table);
+    const topic = `${table.namespace.name}.${table.name}`;
+    typeDefs.push(
+      gql`
+        extend type Subscription {
+          ${field}(id: [ID!], mutation: [MutationType!]): SubscriptionPayload
+          @pgSubscription(
+            topic: ${embed(topic)}
+            filter: ${embed(filter)}
+          )
+        }`
+    );
+  });
+
+  return {typeDefs};
 });
