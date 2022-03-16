@@ -15,32 +15,29 @@ import {
   CustomDataSourceAsset,
   SubqlTerraBlockHandler,
   SubqlTerraEventHandler,
-  SubqlTerraCallHandler,
-  SubqlTerraCallFilter,
+  SubqlTerraMessageFilter,
+  SubqlTerraTransactionHandler,
+  SubqlTerraMessageHandler,
 } from '@subql/types-terra';
 
 import {plainToClass, Transform, Type} from 'class-transformer';
 
 import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
 
-export class TerraEventFilter implements SubqlTerraEventFilter {
-  @IsOptional()
-  @IsString()
-  contract?: string;
+export class TerraMessageFilter implements SubqlTerraMessageFilter {
   @IsString()
   type: string;
+  @IsOptional()
+  @IsObject()
+  values?: {[key: string]: string};
 }
 
-export class TerraCallFilter implements SubqlTerraCallFilter {
-  @IsOptional()
+export class TerraEventFilter implements SubqlTerraEventFilter {
   @IsString()
-  contract?: string;
+  type: string;
   @IsOptional()
-  @IsString()
-  function?: string;
-  @IsOptional()
-  @IsString()
-  from?: string;
+  @Type(() => TerraMessageFilter)
+  messageFilter?: SubqlTerraMessageFilter;
 }
 
 export class TerraBlockHandler implements SubqlTerraBlockHandler {
@@ -50,6 +47,24 @@ export class TerraBlockHandler implements SubqlTerraBlockHandler {
   handler: string;
 }
 
+export class TerraTransactionHandler implements SubqlTerraTransactionHandler {
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Transaction]})
+  kind: SubqlTerraHandlerKind.Transaction;
+  @IsString()
+  handler: string;
+}
+
+export class TerraMessageHandler implements SubqlTerraMessageHandler {
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Message]})
+  kind: SubqlTerraHandlerKind.Message;
+  @IsString()
+  handler: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TerraMessageFilter)
+  filter?: TerraMessageFilter;
+}
+
 export class TerraEventHandler implements SubqlTerraEventHandler {
   @IsOptional()
   @ValidateNested()
@@ -57,17 +72,6 @@ export class TerraEventHandler implements SubqlTerraEventHandler {
   filter?: SubqlTerraEventFilter;
   @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Event]})
   kind: SubqlTerraHandlerKind.Event;
-  @IsString()
-  handler: string;
-}
-
-export class TerraCallHandler implements SubqlTerraCallHandler {
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => TerraCallFilter)
-  filter?: SubqlTerraCallFilter;
-  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Call]})
-  kind: SubqlTerraHandlerKind.Call;
   @IsString()
   handler: string;
 }
@@ -87,10 +91,12 @@ export class TerraMapping implements SubqlTerraMapping {
     const handlers: SubqlTerraHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlTerraHandlerKind.Call:
-          return plainToClass(TerraCallHandler, handler);
         case SubqlTerraHandlerKind.Event:
           return plainToClass(TerraEventHandler, handler);
+        case SubqlTerraHandlerKind.Message:
+          return plainToClass(TerraMessageHandler, handler);
+        case SubqlTerraHandlerKind.Transaction:
+          return plainToClass(TerraTransactionHandler, handler);
         case SubqlTerraHandlerKind.Block:
           return plainToClass(TerraBlockHandler, handler);
         default:

@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BlockInfo, EventsByType, MsgExecuteContract, Fee, TxInfo, TxLog} from '@terra-money/terra.js';
+import {BlockInfo, Event, TxInfo, TxLog, Msg} from '@terra-money/terra.js';
 
 export interface Entity {
   id: string;
@@ -25,16 +25,24 @@ export interface TerraBlock {
   txs: TxInfo[];
 }
 
-export interface TerraEvent {
-  event: EventsByType;
-  block: TerraBlock;
-  msgIndex: number;
-  txInfo: TxInfo;
-  log: TxLog;
-}
-
-export interface TerraCall {
-  data: MsgExecuteContract.Data;
+export interface TerraTransaction {
+  idx: number;
   block: TerraBlock;
   tx: TxInfo;
+}
+
+export interface TerraMessage {
+  idx: number;
+  block: TerraBlock;
+  tx: TerraTransaction;
+  msg: Msg;
+}
+
+export interface TerraEvent {
+  idx: number;
+  block: TerraBlock;
+  tx: TerraTransaction;
+  msg: TerraMessage;
+  log: TxLog;
+  event: Event;
 }

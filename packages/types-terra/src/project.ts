@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {LCDClient} from '@terra-money/terra.js';
-import {TerraBlock, TerraEvent} from './interfaces';
-import {TerraCall} from '.';
+import {TerraBlock, TerraTransaction, TerraMessage, TerraEvent} from './interfaces';
 
 export interface FileReference {
   file: string;
@@ -20,20 +19,23 @@ export enum SubqlTerraDatasourceKind {
 
 export enum SubqlTerraHandlerKind {
   Block = 'terra/BlockHandler',
+  Transaction = 'terra/TransactionHandler',
+  Message = 'terra/MessageHandler',
   Event = 'terra/EventHandler',
-  Call = 'terra/CallHandler',
 }
 
 export type TerraRuntimeHandlerInputMap = {
   [SubqlTerraHandlerKind.Block]: TerraBlock;
+  [SubqlTerraHandlerKind.Transaction]: TerraTransaction;
+  [SubqlTerraHandlerKind.Message]: TerraMessage;
   [SubqlTerraHandlerKind.Event]: TerraEvent;
-  [SubqlTerraHandlerKind.Call]: TerraCall;
 };
 
 type TerraRuntimeFilterMap = {
   [SubqlTerraHandlerKind.Block]: {};
+  [SubqlTerraHandlerKind.Transaction]: {};
+  [SubqlTerraHandlerKind.Message]: SubqlTerraMessageFilter;
   [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
-  [SubqlTerraHandlerKind.Call]: SubqlTerraCallFilter;
 };
 
 export interface TerraProjectManifest {
@@ -56,22 +58,34 @@ export interface TerraNetwork {
   chainId: string;
 }
 
+export interface SubqlTerraMessageFilter {
+  type: string;
+  values?: {
+    [key: string]: string;
+  };
+}
+
 export interface SubqlTerraEventFilter {
-  contract?: string;
-  type?: string;
+  type: string;
+  messageFilter?: SubqlTerraMessageFilter;
 }
 
-export interface SubqlTerraCallFilter {
-  contract?: string;
-  from?: string;
-  function?: string;
-}
-
-export type SubqlTerraHandlerFilter = SubqlTerraEventFilter;
+export type SubqlTerraHandlerFilter = SubqlTerraEventFilter | SubqlTerraMessageFilter;
 
 export interface SubqlTerraBlockHandler {
   handler: string;
   kind: SubqlTerraHandlerKind.Block;
+}
+
+export interface SubqlTerraTransactionHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Transaction;
+}
+
+export interface SubqlTerraMessageHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Message;
+  filter?: SubqlTerraMessageFilter;
 }
 
 export interface SubqlTerraEventHandler {
@@ -80,19 +94,17 @@ export interface SubqlTerraEventHandler {
   filter?: SubqlTerraEventFilter;
 }
 
-export interface SubqlTerraCallHandler {
-  handler: string;
-  kind: SubqlTerraHandlerKind.Call;
-  filter?: SubqlTerraCallFilter;
-}
-
 export interface SubqlTerraCustomHandler<K extends string = string, F = Record<string, unknown>> {
   handler: string;
   kind: K;
   filter?: F;
 }
 
-export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler | SubqlTerraCallHandler;
+export type SubqlTerraRuntimeHandler =
+  | SubqlTerraBlockHandler
+  | SubqlTerraTransactionHandler
+  | SubqlTerraMessageHandler
+  | SubqlTerraEventHandler;
 
 export type SubqlTerraHandler = SubqlTerraRuntimeHandler | SubqlTerraCustomHandler;
 

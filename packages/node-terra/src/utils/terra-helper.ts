@@ -3,22 +3,72 @@
 
 import {
   SubqlTerraEventFilter,
+  SubqlTerraMessageFilter,
   TerraBlock,
   TerraEvent,
-  TerraCall,
-  SubqlTerraCallFilter,
+  TerraTransaction,
+  TerraMessage,
 } from '@subql/types-terra';
 import {
   BlockInfo,
   hashToHex,
   LCDClient,
+  Msg,
   TxInfo,
-  MsgExecuteContract,
 } from '@terra-money/terra.js';
+import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
+
+function filterMessageData(
+  data: TerraMessage,
+  filter: SubqlTerraMessageFilter,
+): boolean {
+  const dataObj = data.msg.toData();
+  if (filter.type !== dataObj['@type']) {
+    return false;
+  }
+  if (filter.values) {
+    for (const key in filter.values) {
+      if (!(key in dataObj) || filter.values[key] !== dataObj[key]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+export function filterMessages(
+  messages: TerraMessage[],
+  filterOrFilters?:
+    | SubqlTerraMessageFilter
+    | SubqlTerraMessageFilter[]
+    | undefined,
+): TerraMessage[] {
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return messages;
+  }
+
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+
+  const filteredMessages = messages.filter((message) => {
+    for (const filter of filters) {
+      if (!filterMessageData(message, filter)) {
+        continue;
+      }
+      return true;
+    }
+    return false;
+  });
+  console.log(filteredMessages);
+  return filteredMessages;
+}
 
 export function filterEvents(
   events: TerraEvent[],
@@ -33,72 +83,31 @@ export function filterEvents(
 
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  const filteredEvents = [];
-  events.forEach((event) => {
+  const filteredEvents = events.filter((event) => {
     for (const filter of filters) {
-      const msg = event.txInfo.tx.body.messages[event.log.msg_index].toData();
-      if (
-        filter.contract &&
-        (msg['@type'] !== '/terra.wasm.v1beta1.MsgExecuteContract' ||
-          msg.contract !== filter.contract)
-      ) {
+      if (filter.type !== event.event.type) {
         continue;
       }
-      if (!(filter.type in event.event)) {
+      if (!filterMessageData(event.msg, filter.messageFilter)) {
         continue;
       }
-      filteredEvents.push(event);
-      break;
+      return true;
     }
+    return false;
   });
   console.log(filteredEvents);
   return filteredEvents;
 }
 
-export function filterCalls(
-  calls: TerraCall[],
-  filterOrFilters: SubqlTerraCallFilter | SubqlTerraCallFilter[] | undefined,
-): TerraCall[] {
-  if (
-    !filterOrFilters ||
-    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
-  ) {
-    return calls;
-  }
-
-  const filters =
-    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-
-  const filteredCalls = [];
-  for (const call of calls) {
-    const callsToPush = [];
-    for (const filter of filters) {
-      if (filter?.from && filter.from !== call.data.sender) {
-        continue;
-      }
-      if (filter?.contract && filter.contract !== call.data.contract) {
-        continue;
-      }
-      if (!(filter?.function in call.data.execute_msg)) {
-        continue;
-      }
-      callsToPush.push(call);
-    }
-    filteredCalls.push(...callsToPush);
-  }
-  console.log(filteredCalls);
-  return filteredCalls;
-}
-
-async function getBlockByHeight(api: LCDClient, height: number) {
-  return api.tendermint.blockInfo(height).catch((e) => {
+async function getBlockByHeight(api: TerraClient, height: number) {
+  return api.blockInfo(height).catch((e) => {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
   });
 }
 
 export async function fetchTerraBlocksArray(
-  api: LCDClient,
+  api: TerraClient,
   blockArray: number[],
 ): Promise<BlockInfo[]> {
   return Promise.all(
@@ -107,68 +116,91 @@ export async function fetchTerraBlocksArray(
 }
 
 export async function getTxInfobyHashes(
-  api: LCDClient,
+  api: TerraClient,
   txHashes: string[],
 ): Promise<TxInfo[]> {
   return Promise.all(
     txHashes.map(async (hash) => {
-      return api.tx.txInfo(hashToHex(hash));
+      return api.txInfo(hash);
     }),
   );
 }
 
-export function getTerraEvents(
-  api: LCDClient,
-  blockInfo: BlockInfo,
-  txInfos: TxInfo[],
-): TerraEvent[] {
-  const eventInfos: TerraEvent[] = [];
-  for (const ti of txInfos) {
-    const txLogs = ti.logs;
-    for (const log of txLogs) {
-      const eventInfo: TerraEvent = {
-        event: log.eventsByType,
-        block: <TerraBlock>{
-          block: blockInfo,
-          txs: txInfos,
-        },
-        msgIndex: log.msg_index,
-        txInfo: ti,
-        log: log,
-      };
-      eventInfos.push(eventInfo);
-    }
-  }
-  return eventInfos;
+export function wrapBlock(block: BlockInfo, txs: TxInfo[]): TerraBlock {
+  return {
+    block: block,
+    txs: txs,
+  };
 }
 
-export function getContractExecutionTxInfos(
-  api: LCDClient,
-  blockInfo: BlockInfo,
+export function wrapTx(
+  block: TerraBlock,
   txInfos: TxInfo[],
-): TerraCall[] {
-  const callInfos: TerraCall[] = [];
-  for (const txInfo of txInfos) {
-    for (const msg of txInfo.tx.body.messages) {
-      if (msg.toData()['@type'] === '/terra.wasm.v1beta1.MsgExecuteContract') {
-        const data = msg.toData() as MsgExecuteContract.Data;
-        const callInfo: TerraCall = {
-          data: data,
-          block: <TerraBlock>{
-            block: blockInfo,
-            txs: txInfos,
-          },
-          tx: txInfo,
+): TerraTransaction[] {
+  const txs: TerraTransaction[] = [];
+  for (let i = 0; i < txInfos.length; i++) {
+    const tx: TerraTransaction = {
+      idx: i,
+      tx: txInfos[i],
+      block: block,
+    };
+    txs.push(tx);
+  }
+  return txs;
+}
+
+export function wrapMsg(
+  block: TerraBlock,
+  txs: TerraTransaction[],
+): TerraMessage[] {
+  const msgs: TerraMessage[] = [];
+  for (const tx of txs) {
+    for (let i = 0; i < tx.tx.tx.body.messages.length; i++) {
+      const msg: TerraMessage = {
+        idx: i,
+        tx: tx,
+        block: block,
+        msg: tx.tx.tx.body.messages[i],
+      };
+      msgs.push(msg);
+    }
+  }
+  return msgs;
+}
+
+export function wrapEvent(
+  block: TerraBlock,
+  txs: TerraTransaction[],
+): TerraEvent[] {
+  const events: TerraEvent[] = [];
+  for (const tx of txs) {
+    for (const log of tx.tx.logs) {
+      const msg_index = log.msg_index;
+      const msg: TerraMessage = {
+        idx: msg_index,
+        tx: tx,
+        block: block,
+        msg: tx.tx.tx.body.messages[msg_index],
+      };
+      for (let i = 0; i < log.events.length; i++) {
+        const event: TerraEvent = {
+          idx: i,
+          msg: msg,
+          tx: tx,
+          block: block,
+          log: log,
+          event: log.events[i],
         };
-        callInfos.push(callInfo);
+        events.push(event);
       }
     }
   }
-  return callInfos;
+
+  return events;
 }
 
 export async function fetchTerraBlocksBatches(
-  api: LCDClient,
+  api: TerraClient,
   blockArray: number[],
 ): Promise<TerraBlockContent[]> {
   const blocks = await fetchTerraBlocksArray(api, blockArray);
@@ -177,23 +209,22 @@ export async function fetchTerraBlocksBatches(
       const txHashes = blockInfo.block.data.txs;
       if (txHashes.length === 0) {
         return <TerraBlockContent>{
-          block: <TerraBlock>{
-            block: blockInfo,
-          },
+          block: wrapBlock(blockInfo, []),
+          transactions: [],
+          messages: [],
           events: [],
-          call: [],
         };
       }
       const txInfos = await getTxInfobyHashes(api, txHashes);
-      const e = getTerraEvents(api, blockInfo, txInfos);
-      const callInfos = getContractExecutionTxInfos(api, blockInfo, txInfos);
+      const block = wrapBlock(blockInfo, txInfos);
+      const txs = wrapTx(block, txInfos);
+      const msgs = wrapMsg(block, txs);
+      const events = wrapEvent(block, txs);
       return <TerraBlockContent>{
-        block: <TerraBlock>{
-          block: blockInfo,
-          txs: txInfos,
-        },
-        events: e,
-        call: callInfos,
+        block: block,
+        transactions: txs,
+        messages: msgs,
+        events: events,
       };
     }),
   );

@@ -11,8 +11,9 @@ import {
   isBlockHandlerProcessor,
   isCustomTerraDs,
   isRuntimeTerraDs,
+  isTransactionHandlerProcessor,
   isEventHandlerProcessor,
-  isCallHandlerProcessor,
+  isMessageHandlerProcessor,
 } from '@subql/common-terra';
 import {
   SubqlTerraCustomDatasource,
@@ -21,12 +22,8 @@ import {
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomHandler,
   TerraRuntimeHandlerInputMap,
-  SubqlTerraDatasource,
-  TerraBlock,
-  TerraEvent,
-  TerraCall,
 } from '@subql/types-terra';
-import { LCDClient, hashToHex } from '@terra-money/terra.js';
+import { hashToHex } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import {
@@ -36,7 +33,7 @@ import {
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { filterEvents, filterCalls } from '../utils/terra-helper';
+import { filterMessages, filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
 import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -447,24 +444,30 @@ export class IndexerTerraManager {
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
     handlers: SubqlTerraRuntimeHandler[],
-    { block, call, events }: TerraBlockContent,
+    { block, events, messages, transactions }: TerraBlockContent,
   ): Promise<void> {
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Block:
           await vm.securedExec(handler.handler, [block]);
           break;
+        case SubqlTerraHandlerKind.Transaction: {
+          for (const transaction of transactions) {
+            await vm.securedExec(handler.handler, [transaction]);
+          }
+          break;
+        }
+        case SubqlTerraHandlerKind.Message: {
+          const filteredMessages = filterMessages(messages, handler.filter);
+          for (const message of filteredMessages) {
+            await vm.securedExec(handler.handler, [message]);
+          }
+          break;
+        }
         case SubqlTerraHandlerKind.Event: {
           const filteredEvents = filterEvents(events, handler.filter);
           for (const e of filteredEvents) {
             await vm.securedExec(handler.handler, [e]);
-          }
-          break;
-        }
-        case SubqlTerraHandlerKind.Call: {
-          const filteredCalls = filterCalls(call, handler.filter);
-          for (const c of filteredCalls) {
-            await vm.securedExec(handler.handler, [c]);
           }
           break;
         }
@@ -476,7 +479,7 @@ export class IndexerTerraManager {
   private async indexBlockForCustomDs(
     ds: SubqlTerraCustomDatasource<string>,
     vm: IndexerSandbox,
-    { block, call, events }: TerraBlockContent,
+    { block, events, messages, transactions }: TerraBlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
@@ -501,14 +504,19 @@ export class IndexerTerraManager {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {
         await processData(processor, handler, [block]);
+      } else if (isTransactionHandlerProcessor(processor)) {
+        for (const tx of transactions) {
+          await processData(processor, handler, [tx]);
+        }
+      } else if (isMessageHandlerProcessor(processor)) {
+        const filteredMessages = filterMessages(messages, processor.baseFilter);
+        for (const message of filteredMessages) {
+          await processData(processor, handler, [message]);
+        }
       } else if (isEventHandlerProcessor(processor)) {
         const filteredEvents = filterEvents(events, processor.baseFilter);
         for (const e of filteredEvents) {
           await processData(processor, handler, [e]);
-        }
-      } else if (isCallHandlerProcessor(processor)) {
-        for (const c of call) {
-          await processData(processor, handler, [c]);
         }
       }
     }
