@@ -22,7 +22,7 @@ import {
 
 import {plainToClass, Transform, Type} from 'class-transformer';
 
-import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
+import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested, ValidateIf} from 'class-validator';
 
 export class TerraMessageFilter implements SubqlTerraMessageFilter {
   @IsString()
@@ -30,6 +30,11 @@ export class TerraMessageFilter implements SubqlTerraMessageFilter {
   @IsOptional()
   @IsObject()
   values?: {[key: string]: string};
+
+  @ValidateIf((o) => o.type === '/terra.wasm.v1beta1.MsgExecuteContract')
+  @IsOptional()
+  @IsString()
+  contractCall?: string;
 }
 
 export class TerraEventFilter implements SubqlTerraEventFilter {

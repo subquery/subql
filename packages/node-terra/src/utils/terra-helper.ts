@@ -9,13 +9,7 @@ import {
   TerraTransaction,
   TerraMessage,
 } from '@subql/types-terra';
-import {
-  BlockInfo,
-  hashToHex,
-  LCDClient,
-  Msg,
-  TxInfo,
-} from '@terra-money/terra.js';
+import { BlockInfo, MsgExecuteContract, TxInfo } from '@terra-money/terra.js';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -36,6 +30,13 @@ function filterMessageData(
         return false;
       }
     }
+  }
+  if (
+    filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
+    filter.contractCall &&
+    !(filter.contractCall in (dataObj as MsgExecuteContract.Data).execute_msg)
+  ) {
+    return false;
   }
   return true;
 }

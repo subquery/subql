@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { UrlWithStringQuery } from 'url';
 import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -17,13 +18,14 @@ import {
   SubqlTerraHandlerKind,
   SubqlTerraEventHandler,
   SubqlTerraEventFilter,
+  SubqlTerraMessageFilter,
+  SubqlTerraMessageHandler,
 } from '@subql/types-terra';
-import { LCDClient } from '@terra-money/terra.js';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
+import { profilerWrap } from '../utils/profiler';
 import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as TerraUtil from '../utils/terra-helper';
@@ -62,6 +64,20 @@ function eventFilterToQueryEntry(
 ): DictionaryQueryEntry {
   return {
     entity: 'events',
+    conditions: [
+      {
+        field: 'type',
+        value: filter.type,
+      },
+    ],
+  };
+}
+
+function messageFilterToQueryEntry(
+  filter: SubqlTerraMessageFilter,
+): DictionaryQueryEntry {
+  return {
+    entity: 'messages',
     conditions: [
       {
         field: 'type',
@@ -153,7 +169,8 @@ export class FetchTerraService implements OnApplicationShutdown {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
             const queryEntry = processor.dictionaryQuery(
-              (handler as SubqlTerraEventHandler).filter,
+              (handler as SubqlTerraEventHandler | SubqlTerraMessageHandler)
+                .filter,
               ds,
             );
             if (queryEntry) {
@@ -166,11 +183,24 @@ export class FetchTerraService implements OnApplicationShutdown {
             handler.kind,
           );
         } else {
-          filterList = [(handler as SubqlTerraEventHandler).filter];
+          filterList = [
+            (handler as SubqlTerraEventHandler | SubqlTerraMessageHandler)
+              .filter,
+          ];
         }
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
+          case SubqlTerraHandlerKind.Message: {
+            for (const filter of filterList as SubqlTerraMessageFilter[]) {
+              if (filter.type !== undefined) {
+                queryEntries.push(messageFilterToQueryEntry(filter));
+              } else {
+                return [];
+              }
+            }
+            break;
+          }
           case SubqlTerraHandlerKind.Event: {
             for (const filter of filterList as SubqlTerraEventFilter[]) {
               if (filter.type !== undefined) {

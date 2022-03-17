@@ -60,6 +60,7 @@ export interface TerraNetwork {
 
 export interface SubqlTerraMessageFilter {
   type: string;
+  contractCall?: string;
   values?: {
     [key: string]: string;
   };
