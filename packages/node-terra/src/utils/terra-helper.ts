@@ -88,7 +88,10 @@ export function filterEvents(
       if (filter.type !== event.event.type) {
         continue;
       }
-      if (!filterMessageData(event.msg, filter.messageFilter)) {
+      if (
+        filter.messageFilter &&
+        !filterMessageData(event.msg, filter.messageFilter)
+      ) {
         continue;
       }
       return true;
