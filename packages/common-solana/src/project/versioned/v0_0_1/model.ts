@@ -84,7 +84,10 @@ export class DeploymentV0_0_1 {
   network: SolanaProjectNetworkDeploymentV0_0_1;
 }
 
-export class ProjectManifestV0_0_1Impl extends ProjectManifestBaseImpl implements SolanaProjectManifestV0_0_1 {
+export class ProjectManifestV0_0_1Impl
+  extends ProjectManifestBaseImpl<DeploymentV0_0_1>
+  implements SolanaProjectManifestV0_0_1
+{
   @Equals('0.0.1')
   specVersion: string;
   @IsString()
