@@ -41,9 +41,24 @@ jobs:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-types-terra
+        with:
+          paths: packages/types-terra
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-common
         with:
           paths: packages/common
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-substrate
+        with:
+          paths: packages/common-substrate
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-terra
+        with:
+          paths: packages/common-terra
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-contract-processors
@@ -59,6 +74,11 @@ jobs:
         id: changed-node
         with:
           paths: packages/node
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node-terra
+        with:
+          paths: packages/node-terra
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-query
@@ -83,11 +103,32 @@ jobs:
           package-path: packages/types
           npm-token: ${{ secrets.NPM_TOKEN }}
 
+      - name: Bump types terra & deploy
+        if: steps.changed-types-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/types-terra
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump common & deploy
         if: steps.changed-common.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/common
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump common substrate & deploy
+        if: steps.changed-common-substrate.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-substrate
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump common terra & deploy
+        if: steps.changed-common-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-terra
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump contract-processors & deploy
@@ -102,6 +143,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/node
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump node terra & deploy
+        if: steps.changed-node-terra.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node-terra
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump query & deploy

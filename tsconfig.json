@@ -19,8 +19,14 @@
     "paths": {
       "@subql/common": ["packages/common/src"],
       "@subql/common/*": ["packages/common/src/*"],
+      "@subql/common-substrate": ["packages/common-substrate/src"],
+      "@subql/common-substrate/*": ["packages/common-substrate/src/*"],
+      "@subql/common-terra": ["packages/common-terra/src"],
+      "@subql/common-terra/*": ["packages/common-terra/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
+      "@subql/types-terra": ["packages/types-terra/src"],
+      "@subql/types-terra/*": ["packages/types-terra/src/*"],
       "@subql/validator": ["packages/validator/src"],
       "@subql/validator/*": ["packages/validator/src/*"]
     },
@@ -29,8 +35,11 @@
   "references": [
     {"path": "packages/cli"},
     {"path": "packages/common"},
+    {"path": "packages/common-substrate"},
+    {"path": "packages/common-terra"},
     {"path": "packages/node"},
     {"path": "packages/types"},
+    {"path": "packages/types-terra"},
     {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],

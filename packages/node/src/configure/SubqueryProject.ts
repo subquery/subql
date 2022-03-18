@@ -3,16 +3,19 @@
 
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
-  ProjectNetworkConfig,
   ReaderFactory,
-  parseProjectManifest,
   ReaderOptions,
-  ProjectManifestV0_0_1Impl,
   Reader,
   buildSchemaFromString,
+} from '@subql/common';
+import {
+  SubstrateProjectNetworkConfig,
+  parseSubstrateProjectManifest,
+  ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
-} from '@subql/common';
+  ProjectManifestV0_3_0Impl,
+} from '@subql/common-substrate';
 import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { pick } from 'lodash';
@@ -27,12 +30,14 @@ export type SubqlProjectDs = SubqlDatasource & {
   mapping: SubqlDatasource['mapping'] & { entryScript: string };
 };
 
-export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & { name: string; };
+export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
+  name: string;
+};
 
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<ProjectNetworkConfig>;
+  network: Partial<SubstrateProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -40,14 +45,17 @@ export class SubqueryProject {
 
   static async create(
     path: string,
-    networkOverrides?: Partial<ProjectNetworkConfig>,
+    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
     const reader = await ReaderFactory.create(path, readerOptions);
     const projectSchema = await reader.getProjectSchema();
-    const manifest = parseProjectManifest(projectSchema);
+    if (projectSchema === undefined) {
+      throw new Error(`Get manifest from project path ${path} failed`);
+    }
+    const manifest = parseSubstrateProjectManifest(projectSchema);
 
     if (manifest.isV0_0_1) {
       return loadProjectFromManifest0_0_1(
@@ -68,7 +76,14 @@ export class SubqueryProject {
         manifest.asV0_2_1,
         reader,
         path,
-        networkOverrides
+        networkOverrides,
+      );
+    } else if (manifest.isV0_3_0) {
+      return loadProjectFromManifest0_3_0(
+        manifest.asV0_3_0,
+        reader,
+        path,
+        networkOverrides,
       );
     }
   }
@@ -78,11 +93,11 @@ async function loadProjectFromManifest0_0_1(
   projectManifest: ProjectManifestV0_0_1Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<ProjectNetworkConfig>,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   return {
     id: path, //user project path as it id for now
-    root: await getProjectRoot(reader, path),
+    root: await getProjectRoot(reader),
     network: {
       ...projectManifest.network,
       ...networkOverrides,
@@ -99,7 +114,7 @@ async function loadProjectFromManifest0_0_1(
       'typesChain',
       'typesSpec',
     ]),
-    templates: []
+    templates: [],
   };
 }
 
@@ -107,9 +122,9 @@ async function loadProjectFromManifest0_2_0(
   projectManifest: ProjectManifestV0_2_0Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<ProjectNetworkConfig>,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
 
   const network = {
     ...projectManifest.network,
@@ -155,21 +170,39 @@ async function loadProjectFromManifest0_2_1(
   projectManifest: ProjectManifestV0_2_1Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<ProjectNetworkConfig>,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader, path);
+  const root = await getProjectRoot(reader);
   const project = await loadProjectFromManifest0_2_0(
     projectManifest,
     reader,
     path,
-    networkOverrides
+    networkOverrides,
   );
 
-  project.templates = (await updateDataSourcesV0_2_0(
-    projectManifest.templates,
+  project.templates = (
+    await updateDataSourcesV0_2_0(projectManifest.templates, reader, root)
+  ).map((ds, index) => ({
+    ...ds,
+    name: projectManifest.templates[index].name,
+  }));
+
+  return project;
+}
+
+async function loadProjectFromManifest0_3_0(
+  projectManifest: ProjectManifestV0_3_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+): Promise<SubqueryProject> {
+  const root = await getProjectRoot(reader);
+  const project = await loadProjectFromManifest0_2_0(
+    projectManifest,
     reader,
-    root,
-  )).map((ds, index) => ({ ...ds, name: projectManifest.templates[index].name}));
+    path,
+    networkOverrides,
+  );
 
   return project;
 }

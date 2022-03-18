@@ -4,20 +4,17 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
   ChainTypes,
   CustomDatasourceV0_2_0,
-  GithubReader,
-  IPFSReader,
   isCustomDs,
   loadChainTypes,
   loadChainTypesFromJs,
-  LocalReader,
   parseChainTypes,
-  Reader,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-} from '@subql/common';
+} from '@subql/common-substrate';
 import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,
@@ -61,9 +58,7 @@ export function getProjectEntry(root: string): string {
 
     return projectEntryCache[pkgPath];
   } catch (err) {
-    throw new Error(
-      `can not find package.json within directory ${this.option.root}`,
-    );
+    throw new Error(`can not find package.json within directory ${root}`);
   }
 }
 
@@ -237,11 +232,8 @@ async function makeTempDir(): Promise<string> {
   return fs.promises.mkdtemp(`${tmpDir}${sep}`);
 }
 
-export async function getProjectRoot(
-  reader: Reader,
-  path: string,
-): Promise<string> {
-  if (reader instanceof LocalReader) return path;
+export async function getProjectRoot(reader: Reader): Promise<string> {
+  if (reader instanceof LocalReader) return reader.root;
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }

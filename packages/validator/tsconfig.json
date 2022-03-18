@@ -7,5 +7,5 @@
     "noImplicitAny": true
   },
   "include": ["src/**/*"],
-  "references": [{"path": "../common"}]
+  "references": [{"path": "../common"}, {"path": "../common-substrate"}, {"path": "../common-terra"}]
 }

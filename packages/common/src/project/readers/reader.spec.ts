@@ -24,15 +24,15 @@ describe('ReaderFactory', () => {
   });
 
   it('should return the IPFS Reader for a CID v0', async () => {
-    const loc = 'QmYyCCSaHLpPvZmex5ExHGdW7mavKYeiixVEyvNGwD1LLw';
-    const reader = await ReaderFactory.create(loc, {ipfs: 'https://ipfs.thechainhub.com/api/v0'});
+    const loc = 'ipfs://QmYyCCSaHLpPvZmex5ExHGdW7mavKYeiixVEyvNGwD1LLw';
+    const reader = await ReaderFactory.create(loc, {});
 
     expect(reader instanceof IPFSReader).toBeTruthy();
   });
 
   it('should return the IPFS Reader for a CID v1', async () => {
-    const loc = 'bafybeie56fq7db5adfyt3afqwhje6pq2m77gn5ik6pg75bioger6kzjn6a';
-    const reader = await ReaderFactory.create(loc, {ipfs: 'https://ipfs.thechainhub.com/api/v0'});
+    const loc = 'ipfs://bafybeie56fq7db5adfyt3afqwhje6pq2m77gn5ik6pg75bioger6kzjn6a';
+    const reader = await ReaderFactory.create(loc, {});
     expect(reader instanceof IPFSReader).toBeTruthy();
   });
 
@@ -40,5 +40,15 @@ describe('ReaderFactory', () => {
     const reader = await ReaderFactory.create(tarPath);
     const finalPath = reader.root;
     expect(fs.existsSync(finalPath)).toBeTruthy();
+  });
+
+  it('throw error if getProjectRootAndManifest path not exist', async () => {
+    await expect(() => ReaderFactory.create('path/not/exist')).rejects.toThrow(/unknown location/);
+  });
+
+  it('throw error if ipfs path is not valid', async () => {
+    await expect(() => ReaderFactory.create('ipfs://notValid', {})).rejects.toThrow(
+      /IPFS project path CID is not valid/
+    );
   });
 });

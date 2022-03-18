@@ -32,6 +32,16 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
+          package-path: packages/common-substrate
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/common-terra
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
           package-path: packages/contract-processors
           repo-token: ${{ secrets.REPO_TOKEN }}
 
@@ -42,12 +52,22 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
+          package-path: packages/node-terra
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
           package-path: packages/query
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/types
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/types-terra
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release

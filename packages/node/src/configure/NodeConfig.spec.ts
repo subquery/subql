@@ -14,7 +14,6 @@ describe('NodeConfig', () => {
       subquery: '../../../../subql-example/extrinsics',
       subqueryName: 'extrinsics',
     });
-    expect(config.configDir).toBeTruthy();
   });
 
   it('support read from json', () => {
@@ -26,7 +25,6 @@ describe('NodeConfig', () => {
       subquery: '../../../../subql-example/extrinsics',
       subqueryName: 'extrinsics',
     });
-    expect(config.configDir).toBeTruthy();
   });
 
   it('throw error for unknown configs', () => {

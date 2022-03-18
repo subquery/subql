@@ -1,0 +1,25 @@
+{
+  "name": "@subql/types-terra",
+  "version": "0.1.0",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Naveen Veluswamy",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "/dist"
+  ],
+  "peerDependencies": {
+    "@terra-money/terra.js": "^3.0.1"
+  },
+  "devDependencies": {
+    "@terra-money/terra.js": "^3.0.1",
+    "@types/app-module-path": "^2.2.0"
+  },
+  "stableVersion": "0.0.1"
+}

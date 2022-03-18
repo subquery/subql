@@ -13,15 +13,14 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
-  loadProjectManifest,
-  ProjectManifestVersioned,
-  isCustomDs,
 } from '@subql/common';
+import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
+import {loadTerraProjectManifest} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
 
-const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
+let MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
@@ -191,12 +190,22 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  const manifest = loadProjectManifest(projectPath);
+  let manifest;
+  try {
+    console.log('Loading substrate manifest...');
+    manifest = loadSubstrateProjectManifest(projectPath);
+    await generateDatasourceTemplates(projectPath, manifest);
+  } catch (e) {
+    console.log('Loading substrate manifest failed');
+    console.log('Loading terra manifest...');
+    manifest = loadTerraProjectManifest(projectPath);
+    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
+  }
 
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
   await generateEnums(projectPath, path.join(projectPath, manifest.schema));
-  await generateDatasourceTemplates(projectPath, manifest);
+
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {
       await renderTemplate(TYPES_INDEX_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `index.ts`), {
@@ -269,7 +278,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 
 export async function generateDatasourceTemplates(
   projectPath: string,
-  projectManifest: ProjectManifestVersioned
+  projectManifest: SubstrateProjectManifestVersioned
 ): Promise<void> {
   if (!projectManifest.isV0_2_1) return;
 

@@ -22,6 +22,7 @@ services:
       DB_DATABASE: postgres
       DB_HOST: postgres
       DB_POST: 5432
+      SUBQL_ACCESS_TOKEN: ${SUBQL_ACCESS_TOKEN}
     command:
       - yarn
       - test:all

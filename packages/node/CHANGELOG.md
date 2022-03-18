@@ -6,6 +6,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.2] - 2022-03-15
+### Fixed
+- Fix unable able fetch with small batch size issue (#847)
+
+## [0.30.1] - 2022-03-10
+### Fixed
+- Fix enum sort order (#844)
+
+## [0.30.0] - 2022-03-01
+### Changed
+- Update imports, as substrate related components now will be imported from `subql/common-substrate`. (#781)
+
+## [0.29.1] - 2022-02-23
+### Fixed
+- Fix get default subquery name (#820)
+
+## [0.29.0] - 2022-02-23
+### Changed
+- Update Polkadot/api to 7.9.1 (#815)
+- Support node indexing from a manifest file (#800)
+
 ## [0.28.2] - 2022-02-16
 ### Changed
 - Update Polkadot/api to 7.8.1 ,in order to resolve previous release issue (#806)
@@ -416,7 +437,12 @@ Priority: high for projects use dictionary
 ### Changed
 - bump @polkadot/api to 3.1.1
 
-[Unreleased]: https://github.com/subquery/subql/compare/node/0.28.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node/0.30.1...HEAD
+[0.30.1]: https://github.com/subquery/subql/compare/node/0.30.0...node/0.30.1
+[0.30.0]: https://github.com/subquery/subql/compare/node/0.29.1...node/0.30.0
+[0.29.1]: https://github.com/subquery/subql/compare/node/0.29.0...node/0.29.1
+[0.29.0]: https://github.com/subquery/subql/compare/node/0.28.2...node/0.29.1
+[0.28.2]: https://github.com/subquery/subql/compare/node/0.28.1...node/0.28.2
 [0.28.1]: https://github.com/subquery/subql/compare/node/0.28.0...node/0.28.1
 [0.28.0]: https://github.com/subquery/subql/compare/node/0.27.2...node/0.28.0
 [0.27.2]: https://github.com/subquery/subql/compare/node/0.27.1...node/0.27.2

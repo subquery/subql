@@ -1,6 +1,6 @@
 {
   "name": "@subql/node",
-  "version": "0.28.2",
+  "version": "0.30.3-0",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -24,14 +24,16 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.2.6",
     "@nestjs/schedule": "^1.0.2",
-    "@polkadot/api": "7.8.1",
+    "@polkadot/api": "7.12.1",
     "@subql/common": "workspace:*",
+    "@subql/common-substrate": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
     "@subql/x-vm2": "^3.9.3-0.1.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.7",
+    "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
     "merkle-tools": "^1.4.1",
     "parse-json": "^6.0.2",
@@ -53,7 +55,6 @@
     "@types/jest": "^27.4.0",
     "@types/lodash": "^4.14.178",
     "@types/pino": "^6.3.12",
-    "@types/sequelize": "^4.28.11",
     "@types/supertest": "^2.0.11",
     "@types/tar": "^6.1.1",
     "@types/yargs": "^16.0.4",
@@ -64,5 +65,6 @@
   "files": [
     "/dist",
     "/bin"
-  ]
+  ],
+  "stableVersion": "0.30.2"
 }

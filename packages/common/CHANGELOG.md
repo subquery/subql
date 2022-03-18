@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.19.0] - 2021-03-01
+### Changed
+- Moved substrate components to `@subql/common-substrate`
+
+## [0.18.0] - 2021-02-24
+### Fixed 
+- Fix function call from calling itself (#808)
+### Changed
+- Update readers to support reader project from its manifest file (#800)
+
 ## [0.17.0] - 2021-02-09
 ### Added
 - Add manifest v0.2.1 to support dynamic data source

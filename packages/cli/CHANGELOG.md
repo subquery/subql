@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.22.0] - 2022-03-01
+### Added
+- Support terra in command line, add terra template (#781)
+
+## [0.21.0] - 2022-02-24
+### Added
+- Support cli publish from a manifest file (#800)
+
 ## [0.20.1] - 2022-02-15
 ### Fixed
 - Patch release with @subql/validator version bump, in order to fix validation issue. 
