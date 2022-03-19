@@ -14,7 +14,8 @@
     {"path": "../common"},
     {"path": "../common-substrate"},
     {"path": "../common-terra"},
-    {"path": "../validator"}
+    {"path": "../validator"},
+    {"path": "../common-solana"}
   ],
   "include": ["src/**/*"]
 }
