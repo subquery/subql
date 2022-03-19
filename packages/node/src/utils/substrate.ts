@@ -125,6 +125,22 @@ export function filterBlock(
     : undefined;
 }
 
+export function filterExtrinsic(
+  { block, extrinsic, success }: SubstrateExtrinsic,
+  filter: SubqlCallFilter,
+): boolean {
+  return (
+    (filter.specVersion === undefined ||
+      block.specVersion === undefined ||
+      checkSpecRange(filter.specVersion, block.specVersion)) &&
+    (filter.module === undefined ||
+      extrinsic.method.section === filter.module) &&
+    (filter.method === undefined ||
+      extrinsic.method.method === filter.method) &&
+    (filter.success === undefined || success === filter.success)
+  );
+}
+
 export function filterExtrinsics(
   extrinsics: SubstrateExtrinsic[],
   filterOrFilters: SubqlCallFilter | SubqlCallFilter[] | undefined,
@@ -137,18 +153,21 @@ export function filterExtrinsics(
   }
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  return extrinsics.filter(({ block, extrinsic, success }) =>
-    filters.find(
-      (filter) =>
-        (filter.specVersion === undefined ||
-          block.specVersion === undefined ||
-          checkSpecRange(filter.specVersion, block.specVersion)) &&
-        (filter.module === undefined ||
-          extrinsic.method.section === filter.module) &&
-        (filter.method === undefined ||
-          extrinsic.method.method === filter.method) &&
-        (filter.success === undefined || success === filter.success),
-    ),
+  return extrinsics.filter((extrinsic) =>
+    filters.find((filter) => filterExtrinsic(extrinsic, filter)),
+  );
+}
+
+export function filterEvent(
+  { block, event }: SubstrateEvent,
+  filter: SubqlEventFilter,
+): boolean {
+  return (
+    (filter.specVersion === undefined ||
+      block.specVersion === undefined ||
+      checkSpecRange(filter.specVersion, block.specVersion)) &&
+    (filter.module ? event.section === filter.module : true) &&
+    (filter.method ? event.method === filter.method : true)
   );
 }
 
@@ -164,15 +183,8 @@ export function filterEvents(
   }
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  return events.filter(({ block, event }) =>
-    filters.find(
-      (filter) =>
-        (filter.specVersion === undefined ||
-          block.specVersion === undefined ||
-          checkSpecRange(filter.specVersion, block.specVersion)) &&
-        (filter.module ? event.section === filter.module : true) &&
-        (filter.method ? event.method === filter.method : true),
-    ),
+  return events.filter((event) =>
+    filters.find((filter) => filterEvent(event, filter)),
   );
 }
 
