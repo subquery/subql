@@ -8,8 +8,10 @@
     "outDir": "./dist"
   },
   "references": [
-    {"path": "../common"},
-    {"path": "../types"}
+    { "path": "../common" },
+    { "path": "../types" },
+    { "path": "../common-solana" },
+    { "path": "../types-solana" }
   ],
   "include": ["src/**/*"]
 }
