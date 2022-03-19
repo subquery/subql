@@ -6,7 +6,9 @@ import {
   Connection,
   RpcResponseAndContext,
   SignatureStatus,
+  TransactionResponse,
 } from '@solana/web3.js';
+import { SubqlSolanaTransactionFilter } from 'packages/types-solana/dist';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
@@ -55,4 +57,31 @@ export async function fetchSolanaBlocksBatches(
       },
     } as unknown as BlockContent;
   });
+}
+
+export function filterTransaction(
+  transactions: TransactionResponse[],
+  filters?: SubqlSolanaTransactionFilter,
+): TransactionResponse[] {
+  if (!filters || (filters instanceof Array && filters.length === 0)) {
+    return transactions;
+  }
+  const filtersArray = filters instanceof Array ? filters : [filters];
+  const filteredTransactions = transactions.filter(({ meta }: any) =>
+    filtersArray.find(
+      (filter) =>
+        (filter.programId || filter.status) &&
+        meta &&
+        (filter.programId
+          ? meta.logMessages &&
+            !!meta.logMessages.find((msg) =>
+              msg.match(new RegExp(filter.programId)),
+            )
+          : true) &&
+        (filter.status
+          ? Object.prototype.hasOwnProperty.call(meta.status, filter.status)
+          : true),
+    ),
+  );
+  return filteredTransactions;
 }

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { hexToU8a } from '@polkadot/util';
+// import { hexToU8a } from '@polkadot/util';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types-solana';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
@@ -28,9 +28,11 @@ import {
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 //import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 //import { PoiService } from './poi.service';
-//import { StoreOperations } from './StoreOperations';
+import { StoreOperations } from './StoreOperations';
+import { OperationType } from './types';
+
 const logger = getLogger('store');
-const NULL_MERKEL_ROOT = hexToU8a('0x00');
+// const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 interface IndexField {
   entityName: string;
@@ -47,7 +49,7 @@ export class StoreService {
   private modelsRelations: GraphQLModelsRelationsEnums;
   //private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
-  //private operationStack: StoreOperations;
+  private operationStack: StoreOperations;
 
   constructor(
     private sequelize: Sequelize,
@@ -219,7 +221,7 @@ export class StoreService {
     }
   }
 
-  setTransaction(tx: Transaction) {
+  setTransaction(tx: Transaction): void {
     this.tx = tx;
     tx.afterCommit(() => (this.tx = undefined));
     //if (this.config.proofOfIndex) {
@@ -371,6 +373,18 @@ export class StoreService {
         //if (this.config.proofOfIndex) {
         //this.operationStack.put(OperationType.Set, entity, data);
         //}
+      },
+      bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
+        const model = this.sequelize.model(entity);
+        assert(model, `model ${entity} not exists`);
+        await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
+          transaction: this.tx,
+        });
+        if (this.config.proofOfIndex) {
+          for (const item of data) {
+            this.operationStack.put(OperationType.Set, entity, item);
+          }
+        }
       },
       remove: async (entity: string, id: string): Promise<void> => {
         const model = this.sequelize.model(entity);

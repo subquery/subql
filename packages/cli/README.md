@@ -100,7 +100,7 @@ Initialize a scaffold subquery project
 ```
 USAGE
   $ subql init [PROJECTNAME]
-
+  (For Solana & Terra, use: $ subql init [PROJECTNAME] --specVersion 0.3.0)
 ARGUMENTS
   PROJECTNAME  Give the starter project name
 
@@ -109,7 +109,7 @@ OPTIONS
   -l, --location=location    local folder to create the project in
   --install-dependencies     Install dependencies as well
   --npm                      Force using NPM instead of yarn, only works with `install-dependencies` flag
-  --specVersion=0.0.1|0.2.0  [default: 0.2.0] The spec version to be used by the project
+  --specVersion=0.0.1|0.2.0|0.3.0  [default: 0.2.0] The spec version to be used by the project
 ```
 
 _See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v0.21.1-0/lib/commands/init.js)_

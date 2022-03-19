@@ -1,11 +1,19 @@
-type StarterEntity @entity {
+type Block @entity {
   id: ID! #id is a required field
-  field1: Int!
+  slot: Int!
+}
 
-  field2: String #filed2 is an optional field
-  field3: BigInt
+type Transaction @entity {
+  id: ID! #id is a required field
+  blockHash: String
 
-  field4: Date
+  blockHeight: Int
 
-  field5: Boolean
+  slot: BigInt
+
+  signature: String
+
+  programId: [String]
+
+  status: String
 }

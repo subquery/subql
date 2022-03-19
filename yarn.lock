@@ -4828,7 +4828,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-solana@workspace:packages/common-solana":
+"@subql/common-solana@workspace:*, @subql/common-solana@workspace:packages/common-solana":
   version: 0.0.0-use.local
   resolution: "@subql/common-solana@workspace:packages/common-solana"
   dependencies:
@@ -4952,7 +4952,9 @@ __metadata:
     "@polkadot/api": 7.8.1
     "@solana/web3.js": ^1.35.0
     "@subql/common": "workspace:*"
+    "@subql/common-solana": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/types-solana": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0

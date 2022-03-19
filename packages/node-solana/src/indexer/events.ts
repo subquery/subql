@@ -13,6 +13,7 @@ export enum IndexerEvent {
   UsingDictionary = 'using_dictionary',
   SkipDictionary = 'skip_dictionary',
   Ready = 'ready',
+  Started = 'indexer_started',
 }
 
 export interface ProcessBlockPayload {

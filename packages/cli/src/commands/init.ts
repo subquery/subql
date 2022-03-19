@@ -69,7 +69,7 @@ export default class Init extends Command {
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: Flags.string({
       required: false,
-      options: ['0.0.1', '0.2.0'],
+      options: ['0.0.1', '0.2.0', '0.3.0'],
       default: '0.2.0',
       description: 'The spec version to be used by the project',
     }),
@@ -122,6 +122,17 @@ export default class Init extends Command {
     if (templates.length === 0) {
       useCustomTemplate = true;
     }
+
+    const solanaTemplate = {
+      name: 'subql-solana-starter',
+      description: 'Starter Solana project for subquery',
+      remote: 'https://github.com/sotatek-dev/subql-solana-starter.git',
+      branch: 'master',
+      network: 'Solana',
+      specVersion: '0.3.0',
+    } as Template;
+
+    templates.push(solanaTemplate);
 
     if (!useCustomTemplate) {
       const networks = uniq(templates.map(({network}) => network)).sort();

@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Connection } from '@solana/web3.js';
+import { Connection, TransactionResponse } from '@solana/web3.js';
 import { getAllEntitiesRelations } from '@subql/common';
 import {
   SubqlSolanaCustomDatasource,
@@ -23,6 +23,7 @@ import { SubquerySolanaProject } from '../configure/project.model';
 import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { filterTransaction } from '../utils/solana-helper';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -130,6 +131,7 @@ export class IndexerSolanaManager {
     }
     //TODO: implement POI
     logger.info(`startHeight ${startHeight}`);
+    this.eventEmitter.emit(IndexerEvent.Started, { height: startHeight });
     void this.fetchService.startLoop(startHeight).catch((err) => {
       logger.error(err, 'failed to fetch block');
       // FIXME: retry before exit
@@ -351,20 +353,24 @@ export class IndexerSolanaManager {
     handlers: SubqlSolanaRuntimeHandler[],
     { block }: BlockContent,
   ): Promise<void> {
-    const solanaBlock: SolanaBlock = {
-      block: block as any,
-    };
-
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlSolanaHandlerKind.Block:
-          await vm.securedExec(handler.handler, [solanaBlock]);
+          await vm.securedExec(handler.handler, [block]);
           break;
-        case SubqlSolanaHandlerKind.Transaction:
-          for (const tx of block.block.transactions) {
+        case SubqlSolanaHandlerKind.Transaction: {
+          const filteredTransactions = filterTransaction(
+            block.block.transactions as TransactionResponse[],
+            handler.filter,
+          );
+          const { blockHeight, parentSlot }: any = block.block;
+          for (const tx of filteredTransactions as any) {
+            tx.blockHeight = blockHeight;
+            tx.slot = parentSlot + 1;
             await vm.securedExec(handler.handler, [tx]);
           }
           break;
+        }
         default:
       }
     }

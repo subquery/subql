@@ -43,7 +43,7 @@ export interface DictionaryQueryEntry {
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
     name,
-    gqlType: 'String!',
+    gqlType: cond.field === 'programId' ? 'JSON' : 'String!',
     value: cond.value,
   };
 }
@@ -65,15 +65,26 @@ function extractVars(
         and: i.map((j, innerIdx) => {
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
+          //The 'programId' field is an array, so we use the 'contains' in this case
+          if (j.field === 'programId') {
+            return { [sanitizeArgField(j.field)]: { contains: `$${v.name}` } };
+          }
           return { [sanitizeArgField(j.field)]: { equalTo: `$${v.name}` } };
         }),
       };
     } else if (i.length === 1) {
       const v = extractVar(`${entity}_${outerIdx}_0`, i[0]);
       gqlVars.push(v);
-      filter.or[outerIdx] = {
-        [sanitizeArgField(i[0].field)]: { equalTo: `$${v.name}` },
-      };
+      //The 'programId' field is an array, so we use the 'contains' in this case
+      if (i[0].field === 'programId') {
+        filter.or[outerIdx] = {
+          [sanitizeArgField(i[0].field)]: { contains: `$${v.name}` },
+        };
+      } else {
+        filter.or[outerIdx] = {
+          [sanitizeArgField(i[0].field)]: { equalTo: `$${v.name}` },
+        };
+      }
     }
   });
   return [gqlVars, filter];
@@ -92,13 +103,13 @@ function buildDictQueryFragment(
     project: [
       {
         entity: 'nodes',
-        project: ['blockHeight'],
+        project: ['slot blockHeight'],
       },
     ],
     args: {
       filter: {
         ...filter,
-        blockHeight: {
+        slot: {
           greaterThanOrEqualTo: `"${startBlock}"`,
           lessThan: `"${queryEndBlock}"`,
         },
@@ -157,10 +168,16 @@ export class DictionaryService implements OnApplicationShutdown {
     );
 
     try {
-      const resp = await this.client.query({
-        query: gql(query),
-        variables,
-      });
+      const resp = await this.client
+        .query({
+          query: gql(query),
+          variables,
+        })
+        .catch((err) => {
+          // console.log(`=====`, err.networkError.result.errors)
+          logger.warn(err, `failed to query dictionary`);
+          return undefined;
+        });
       const blockHeightSet = new Set<number>();
       //const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
@@ -171,8 +188,8 @@ export class DictionaryService implements OnApplicationShutdown {
           resp.data[entity].nodes.length >= 0
         ) {
           for (const node of resp.data[entity].nodes) {
-            blockHeightSet.add(Number(node.blockHeight));
-            entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
+            blockHeightSet.add(Number(node.slot));
+            entityEndBlock[entity] = Number(node.slot); //last added event blockHeight
           }
         }
       }
@@ -221,7 +238,7 @@ export class DictionaryService implements OnApplicationShutdown {
     const nodes: GqlNode[] = [
       {
         entity: '_metadata',
-        project: ['lastProcessedHeight', 'chainId'],
+        project: ['lastProcessedHeight', 'targetHeight'],
       },
       //{
       //  entity: 'specVersions',

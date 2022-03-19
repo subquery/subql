@@ -83,6 +83,22 @@ export class FetchService implements OnApplicationShutdown {
           return [];
         }
         switch (baseHandlerKind) {
+          case SubqlSolanaHandlerKind.Transaction: {
+            if (handler.filter && Object.keys(handler.filter).length > 0) {
+              const conditions = [];
+              for (const field in handler.filter) {
+                conditions.push({
+                  field,
+                  value: handler.filter[field],
+                });
+              }
+              queryEntries.push({
+                entity: 'transactions',
+                conditions,
+              });
+            }
+            break;
+          }
           default:
         }
       }
@@ -187,6 +203,7 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
+      //the dictionary is used when the .yaml file has 'dictionary' & 'filter'
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         try {

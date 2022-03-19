@@ -68,4 +68,12 @@ export class BenchmarkService {
   handleTargetBlock(blockPayload: TargetBlockPayload) {
     this.targetHeight = blockPayload.height;
   }
+
+  @OnEvent(IndexerEvent.Started)
+  handleStartedIndexer(blockPayload: TargetBlockPayload) {
+    if (!this.lastRegisteredHeight || !this.lastRegisteredTimestamp) {
+      this.lastRegisteredHeight = blockPayload.height - 1;
+      this.lastRegisteredTimestamp = Date.now();
+    }
+  }
 }

@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlSolanaDatasource} from '@subql/types-Solana';
+import {SubqlSolanaDatasource} from '@subql/types-solana';
 import {plainToClass} from 'class-transformer';
 import {ISolanaProjectManifest} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
