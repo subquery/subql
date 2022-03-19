@@ -242,21 +242,6 @@ export async function codegen(projectPath: string): Promise<void> {
     default:
       throw new Error('unknown datasource kind!');
   }
-  // try {
-  //   console.log('Loading substrate manifest...');
-  //   manifest = loadSubstrateProjectManifest(projectPath);
-  //   await generateDatasourceTemplates(projectPath, manifest);
-  // } catch (e) {
-  //   try {
-  //     console.log('Loading substrate manifest failed');
-  //     console.log('Loading terra manifest...');
-  // manifest = loadTerraProjectManifest(projectPath);
-  //     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
-  //   } catch (e) {
-  //     console.log('loading solana manifest....');
-  //     manifest = loadSolanaProjectManifest(projectPath);
-  //   }
-  // }
 
   await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
   await generateModels(projectPath, path.join(projectPath, manifest.schema));
