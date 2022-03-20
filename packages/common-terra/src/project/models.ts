@@ -15,15 +15,34 @@ import {
   CustomDataSourceAsset,
   SubqlTerraBlockHandler,
   SubqlTerraEventHandler,
+  SubqlTerraMessageFilter,
+  SubqlTerraTransactionHandler,
+  SubqlTerraMessageHandler,
 } from '@subql/types-terra';
 
 import {plainToClass, Transform, Type} from 'class-transformer';
 
-import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested} from 'class-validator';
+import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested, ValidateIf} from 'class-validator';
+
+export class TerraMessageFilter implements SubqlTerraMessageFilter {
+  @IsString()
+  type: string;
+  @IsOptional()
+  @IsObject()
+  values?: {[key: string]: string};
+
+  @ValidateIf((o) => o.type === '/terra.wasm.v1beta1.MsgExecuteContract')
+  @IsOptional()
+  @IsString()
+  contractCall?: string;
+}
 
 export class TerraEventFilter implements SubqlTerraEventFilter {
   @IsString()
   type: string;
+  @IsOptional()
+  @Type(() => TerraMessageFilter)
+  messageFilter?: SubqlTerraMessageFilter;
 }
 
 export class TerraBlockHandler implements SubqlTerraBlockHandler {
@@ -31,6 +50,24 @@ export class TerraBlockHandler implements SubqlTerraBlockHandler {
   kind: SubqlTerraHandlerKind.Block;
   @IsString()
   handler: string;
+}
+
+export class TerraTransactionHandler implements SubqlTerraTransactionHandler {
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Transaction]})
+  kind: SubqlTerraHandlerKind.Transaction;
+  @IsString()
+  handler: string;
+}
+
+export class TerraMessageHandler implements SubqlTerraMessageHandler {
+  @IsEnum(SubqlTerraHandlerKind, {groups: [SubqlTerraHandlerKind.Message]})
+  kind: SubqlTerraHandlerKind.Message;
+  @IsString()
+  handler: string;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => TerraMessageFilter)
+  filter?: TerraMessageFilter;
 }
 
 export class TerraEventHandler implements SubqlTerraEventHandler {
@@ -61,6 +98,10 @@ export class TerraMapping implements SubqlTerraMapping {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Event:
           return plainToClass(TerraEventHandler, handler);
+        case SubqlTerraHandlerKind.Message:
+          return plainToClass(TerraMessageHandler, handler);
+        case SubqlTerraHandlerKind.Transaction:
+          return plainToClass(TerraTransactionHandler, handler);
         case SubqlTerraHandlerKind.Block:
           return plainToClass(TerraBlockHandler, handler);
         default:

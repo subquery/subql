@@ -1,7 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BlockInfo, EventsByType, LCDClient} from '@terra-money/terra.js';
+import {LCDClient} from '@terra-money/terra.js';
+import {TerraBlock, TerraTransaction, TerraMessage, TerraEvent} from './interfaces';
 
 export interface FileReference {
   file: string;
@@ -13,20 +14,27 @@ export type Processor<O = any> = FileReference & {options?: O};
 
 export enum SubqlTerraDatasourceKind {
   Runtime = 'terra/Runtime',
+  Custom = 'terra/Custom',
 }
 
 export enum SubqlTerraHandlerKind {
   Block = 'terra/BlockHandler',
+  Transaction = 'terra/TransactionHandler',
+  Message = 'terra/MessageHandler',
   Event = 'terra/EventHandler',
 }
 
 export type TerraRuntimeHandlerInputMap = {
-  [SubqlTerraHandlerKind.Block]: BlockInfo;
-  [SubqlTerraHandlerKind.Event]: EventsByType;
+  [SubqlTerraHandlerKind.Block]: TerraBlock;
+  [SubqlTerraHandlerKind.Transaction]: TerraTransaction;
+  [SubqlTerraHandlerKind.Message]: TerraMessage;
+  [SubqlTerraHandlerKind.Event]: TerraEvent;
 };
 
 type TerraRuntimeFilterMap = {
   [SubqlTerraHandlerKind.Block]: {};
+  [SubqlTerraHandlerKind.Transaction]: {};
+  [SubqlTerraHandlerKind.Message]: SubqlTerraMessageFilter;
   [SubqlTerraHandlerKind.Event]: SubqlTerraEventFilter;
 };
 
@@ -50,15 +58,35 @@ export interface TerraNetwork {
   chainId: string;
 }
 
-export interface SubqlTerraEventFilter {
-  type?: string;
+export interface SubqlTerraMessageFilter {
+  type: string;
+  contractCall?: string;
+  values?: {
+    [key: string]: string;
+  };
 }
 
-export type SubqlTerraHandlerFilter = SubqlTerraEventFilter;
+export interface SubqlTerraEventFilter {
+  type: string;
+  messageFilter?: SubqlTerraMessageFilter;
+}
+
+export type SubqlTerraHandlerFilter = SubqlTerraEventFilter | SubqlTerraMessageFilter;
 
 export interface SubqlTerraBlockHandler {
   handler: string;
   kind: SubqlTerraHandlerKind.Block;
+}
+
+export interface SubqlTerraTransactionHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Transaction;
+}
+
+export interface SubqlTerraMessageHandler {
+  handler: string;
+  kind: SubqlTerraHandlerKind.Message;
+  filter?: SubqlTerraMessageFilter;
 }
 
 export interface SubqlTerraEventHandler {
@@ -73,7 +101,11 @@ export interface SubqlTerraCustomHandler<K extends string = string, F = Record<s
   filter?: F;
 }
 
-export type SubqlTerraRuntimeHandler = SubqlTerraBlockHandler | SubqlTerraEventHandler;
+export type SubqlTerraRuntimeHandler =
+  | SubqlTerraBlockHandler
+  | SubqlTerraTransactionHandler
+  | SubqlTerraMessageHandler
+  | SubqlTerraEventHandler;
 
 export type SubqlTerraHandler = SubqlTerraRuntimeHandler | SubqlTerraCustomHandler;
 
@@ -125,7 +157,7 @@ export interface SubqlTerraDatasourceProcessor<
   validate(ds: DS, assets: Record<string, string>): void;
   dsFilterProcessor(ds: DS, api: LCDClient): boolean;
   handlerProcessors: {
-    [kind: string]: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, DS>;
+    [kind: string]: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown, DS>;
   };
 }
 

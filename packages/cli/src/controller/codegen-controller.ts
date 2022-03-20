@@ -13,9 +13,10 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
+  loadFromJsonOrYaml,
 } from '@subql/common';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
-import {loadTerraProjectManifest} from '@subql/common-terra';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
@@ -190,7 +191,8 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  let manifest;
+  let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+
   try {
     console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
@@ -202,9 +204,11 @@ export async function codegen(projectPath: string): Promise<void> {
     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
   }
 
-  await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
-  await generateModels(projectPath, path.join(projectPath, manifest.schema));
-  await generateEnums(projectPath, path.join(projectPath, manifest.schema));
+  const schemaPath = path.join(projectPath, manifest.schema);
+
+  await generateJsonInterfaces(projectPath, schemaPath);
+  await generateModels(projectPath, schemaPath);
+  await generateEnums(projectPath, schemaPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {

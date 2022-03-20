@@ -1,8 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Entity } from '@subql/types';
-import { Block, BlockID, BlockInfo, EventsByType } from '@terra-money/terra.js';
+import {
+  TerraBlock,
+  TerraEvent,
+  Entity,
+  TerraTransaction,
+  TerraMessage,
+} from '@subql/types-terra';
+import { BlockID, EventsByType } from '@terra-money/terra.js';
 
 export interface TerraBlockEvent {
   events: EventsByType[];
@@ -10,8 +16,10 @@ export interface TerraBlockEvent {
 }
 
 export interface TerraBlockContent {
-  block: BlockInfo;
-  events: EventsByType[];
+  block: TerraBlock;
+  transactions: TerraTransaction[];
+  messages: TerraMessage[];
+  events: TerraEvent[];
 }
 
 export enum OperationType {
