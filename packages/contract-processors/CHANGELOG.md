@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.4] - 2022-03-22
+### Added
+- Add support for EIP2930 transactions (#854)
+
 ## [0.5.3] - 2022-02-28
 ### Added
 - Support frontier evm processor (#812)
