@@ -471,6 +471,12 @@ export class IndexerManager {
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
+    // Run initialization events
+    const initEvents = events.filter((evt) => !evt.phase.isInitialization);
+    for (const event of initEvents) {
+      await this.indexEvent(event, dataSources, getVM);
+    }
+
     for (const extrinsic of extrinsics) {
       await this.indexExtrinsic(extrinsic, dataSources, getVM);
 
@@ -484,9 +490,9 @@ export class IndexerManager {
       }
     }
 
-    // Run handlers for events without extrinsics
-    const remainingEvents = events.filter((evt) => !evt.extrinsic);
-    for (const event of remainingEvents) {
+    // Run finalization events
+    const finalizeEvents = events.filter((evt) => !evt.phase.isFinalization);
+    for (const event of finalizeEvents) {
       await this.indexEvent(event, dataSources, getVM);
     }
   }
