@@ -25,7 +25,7 @@ import PgAllRows from 'graphile-build-pg/node8plus/plugins/PgAllRows';
 import PgColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgColumnsPlugin';
 import PgColumnDeprecationPlugin from 'graphile-build-pg/node8plus/plugins/PgColumnDeprecationPlugin';
 import PgForwardRelationPlugin from 'graphile-build-pg/node8plus/plugins/PgForwardRelationPlugin';
-import PgRowByUniqueConstraint from 'graphile-build-pg/node8plus/plugins/PgRowByUniqueConstraint';
+// import PgRowByUniqueConstraint from 'graphile-build-pg/node8plus/plugins/PgRowByUniqueConstraint';
 import PgComputedColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgComputedColumnsPlugin';
 import PgQueryProceduresPlugin from 'graphile-build-pg/node8plus/plugins/PgQueryProceduresPlugin';
 import PgOrderAllColumnsPlugin from 'graphile-build-pg/node8plus/plugins/PgOrderAllColumnsPlugin';
@@ -50,6 +50,9 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
+import blockHeightPlugin from './blockHeightPlugin';
+import virtualPrimaryKeyPlugin from './virtualPrimaryKeyPlugin';
+import PgRowByUniqueConstraint from './PgRowByUniqueConstraint';
 
 /* eslint-enable */
 
@@ -81,7 +84,7 @@ export const pgDefaultPlugins = [
   PgColumnDeprecationPlugin,
   PgForwardRelationPlugin,
   PgBackwardRelationPlugin,
-  PgRowByUniqueConstraint,
+  // PgRowByUniqueConstraint,
   PgComputedColumnsPlugin,
   PgQueryProceduresPlugin,
   PgOrderAllColumnsPlugin,
@@ -105,6 +108,9 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
+  blockHeightPlugin, // For handle table versioned query
+  virtualPrimaryKeyPlugin, // For handle generated primary key
+  PgRowByUniqueConstraint, // Modified version of 'graphile-build-pg/node8plus/plugins/PgRowByUniqueConstraint'
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
