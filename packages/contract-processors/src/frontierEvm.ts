@@ -364,8 +364,8 @@ const CallProcessor: SecondLayerHandlerProcessor<
       call = {
         ...baseCall,
         chainId: eip2930tx.chainId.toNumber(),
-        gasPrice: BigNumber.from(eip2930tx.gasPrice.toHex()),
-        gasLimit: BigNumber.from(eip2930tx.gasLimit.toHex()),
+        gasPrice: BigNumber.from(eip2930tx.gasPrice.toBigInt()),
+        gasLimit: BigNumber.from(eip2930tx.gasLimit.toBigInt()),
         s: eip2930tx.s.toHex(),
         r: eip2930tx.r.toHex(),
         type: 1,

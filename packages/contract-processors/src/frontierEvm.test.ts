@@ -128,7 +128,7 @@ const erc20MiniAbi = `[
     }
 ]`;
 
-describe.skip('FrontierDS', () => {
+describe('FrontierDS', () => {
   jest.setTimeout(1000000);
 
   let api: ApiPromise;
@@ -715,6 +715,7 @@ describe.skip('FrontierDS', () => {
         // Signature values
         expect(call.r).toBeDefined();
         expect(call.s).toBeDefined();
+        expect(call.v).toBeDefined();
       });
     });
   });
