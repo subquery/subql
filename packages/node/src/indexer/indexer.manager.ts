@@ -99,37 +99,37 @@ export class IndexerManager {
         isUpgraded ? block.block.header.parentHash : undefined,
       );
 
-      // // Run dynamic data sources, must be after predefined datasources
-      // // FIXME if any new dynamic datasources are created here they wont be run for the current block
-      // for (const ds of await this.dynamicDsService.getDynamicDatasources()) {
-      //   await this.indexBlockForDs(ds, blockContent, apiAt, blockHeight, tx);
-      // }
+      const datasources = this.filteredDataSources.concat(
+        ...(await this.dynamicDsService.getDynamicDatasources()),
+      );
 
       await this.indexBlockData(
         blockContent,
-        this.filteredDataSources,
+        datasources,
         (ds: SubqlProjectDs) => {
           const vm = this.sandboxService.getDsProcessor(ds, apiAt);
 
           // Inject function to create ds into vm
           vm.freeze(
-            (templateName: string, args?: Record<string, unknown>) =>
-              this.dynamicDsService.createDynamicDatasource(
+            async (templateName: string, args?: Record<string, unknown>) => {
+              const newDs = await this.dynamicDsService.createDynamicDatasource(
                 {
                   templateName,
                   args,
                   startBlock: blockHeight,
                 },
                 tx,
-              ),
+              );
+
+              // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
+              datasources.push(newDs);
+            },
             'createDynamicDatasource',
           );
 
           return vm;
         },
       );
-
-      // TODO how to handle dynamic data sources
 
       await this.storeService.setMetadataBatch(
         [
