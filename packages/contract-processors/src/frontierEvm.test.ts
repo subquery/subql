@@ -129,7 +129,7 @@ const erc20MiniAbi = `[
 ]`;
 
 describe.skip('FrontierDS', () => {
-  jest.setTimeout(10000);
+  jest.setTimeout(1000000);
 
   let api: ApiPromise;
 
@@ -141,9 +141,9 @@ describe.skip('FrontierDS', () => {
     });
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     delete (global as any).logger;
-    return api?.disconnect();
+    await api?.disconnect();
   }, 30000);
 
   describe('FilterValidator', () => {
@@ -685,6 +685,38 @@ describe.skip('FrontierDS', () => {
       });
 
       // TOOD find a EIP1159 transaction to write a test against
+
+      it('can transform a legacy transaction post EIP2930', async () => {
+        api = await ApiPromise.create({
+          provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
+          typesBundle: typesBundleDeprecated as any,
+        });
+
+        const blockNumber = 1479105;
+        const [{extrinsics}] = await fetchBlocks(api, blockNumber, blockNumber);
+
+        //https://moonriver.subscan.io/tx/0x7a4c3eb237f49c53363e5ee77b3b4855c7a816b9d8545296bf75495d97394548
+
+        const call = (await processor.transformer(extrinsics[5], baseDS, api, {})) as FrontierEvmCall;
+
+        expect(call.hash).toBe('0x7a4c3eb237f49c53363e5ee77b3b4855c7a816b9d8545296bf75495d97394548');
+        expect(call.from).toBe('0x63c41b22f7812f5149e474746564d5010c7e839d');
+        expect(call.to).toBe('0x4a436073552044d5f2f49b176853ad3ad473d9d6');
+
+        expect(call.nonce).toBe(1);
+        expect(call.data).toBe(
+          '0x095ea7b300000000000000000000000037f9a9436f5db1ac9e346eaab482f138da0d8749ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'
+        );
+        expect(call.blockNumber).toBe(blockNumber);
+        expect(call.success).toBeTruthy();
+        expect(call.gasLimit.toString()).toBe('47281');
+        expect(call.gasPrice.toString()).toBe('1000000000');
+
+        // Signature values
+        expect(call.r).toBeDefined();
+        expect(call.s).toBeDefined();
+        // expect(call.v).toBeDefined(); v is undefined
+      });
     });
   });
 });

@@ -310,9 +310,12 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
     const rawTx = (tx as TransactionV2).isEip1559
       ? (tx as TransactionV2).asEip1559
+      : (tx as TransactionV2).isEip2930
+      ? (tx as TransactionV2).asEip2930
       : (tx as TransactionV2).isLegacy
       ? (tx as TransactionV2).asLegacy
       : (tx as EthTransaction);
+
     let from, hash, to, success;
     try {
       const executionEvent = getExecutionEvent(original);
@@ -354,6 +357,18 @@ const CallProcessor: SecondLayerHandlerProcessor<
         s: eip1559tx.s.toHex(),
         r: eip1559tx.r.toHex(),
         type: 2,
+      };
+    } else if ((tx as TransactionV2).isEip2930) {
+      const eip2930tx = (tx as TransactionV2).asEip2930;
+
+      call = {
+        ...baseCall,
+        chainId: eip2930tx.chainId.toNumber(),
+        gasPrice: BigNumber.from(eip2930tx.gasPrice.toBigInt()),
+        gasLimit: BigNumber.from(eip2930tx.gasLimit.toBigInt()),
+        s: eip2930tx.s.toHex(),
+        r: eip2930tx.r.toHex(),
+        type: 1,
       };
     } else {
       const legacyTx = (tx as TransactionV2).isLegacy ? (tx as TransactionV2).asLegacy : (tx as EthTransaction);
@@ -398,10 +413,11 @@ const CallProcessor: SecondLayerHandlerProcessor<
 
       const rawTx = (tx as TransactionV2).isEip1559
         ? (tx as TransactionV2).asEip1559
+        : (tx as TransactionV2).isEip2930
+        ? (tx as TransactionV2).asEip2930
         : (tx as TransactionV2).isLegacy
         ? (tx as TransactionV2).asLegacy
         : (tx as EthTransaction);
-
       // if `to` is null then we handle contract creation
       if (
         (ds.processor?.options?.address && !stringNormalizedEq(ds.processor.options.address, to)) ||
