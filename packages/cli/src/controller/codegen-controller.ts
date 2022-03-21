@@ -18,10 +18,12 @@ import {
 
 import {loadSolanaProjectManifest} from '@subql/common-solana';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
+
 import {loadTerraProjectManifest} from '@subql/common-terra';
 import {SubqlDatasourceKind} from '@subql/types';
 import {SubqlSolanaDatasourceKind} from '@subql/types-solana';
 import {SubqlTerraDatasourceKind} from '@subql/types-terra';
+
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
@@ -220,6 +222,7 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
+
   let manifest;
   const kind = loadProjectKind(projectPath);
 
@@ -229,7 +232,6 @@ export async function codegen(projectPath: string): Promise<void> {
       manifest = loadSubstrateProjectManifest(projectPath);
       await generateDatasourceTemplates(projectPath, manifest);
       break;
-
     case SubqlSolanaDatasourceKind.Runtime:
       console.log('loading solana manifest....');
       manifest = loadSolanaProjectManifest(projectPath);
@@ -241,11 +243,14 @@ export async function codegen(projectPath: string): Promise<void> {
       break;
     default:
       throw new Error('unknown datasource kind!');
+
   }
 
-  await generateJsonInterfaces(projectPath, path.join(projectPath, manifest.schema));
-  await generateModels(projectPath, path.join(projectPath, manifest.schema));
-  await generateEnums(projectPath, path.join(projectPath, manifest.schema));
+  const schemaPath = path.join(projectPath, manifest.schema);
+
+  await generateJsonInterfaces(projectPath, schemaPath);
+  await generateModels(projectPath, schemaPath);
+  await generateEnums(projectPath, schemaPath);
 
   if (exportTypes.interfaces || exportTypes.models || exportTypes.enums || exportTypes.datasources) {
     try {

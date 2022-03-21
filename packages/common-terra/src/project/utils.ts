@@ -24,6 +24,18 @@ export function isBlockHandlerProcessor<E>(
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Block;
 }
 
+export function isTransactionHandlerProcessor<E>(
+  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>
+): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Transaction, unknown, E> {
+  return hp.baseHandlerKind === SubqlTerraHandlerKind.Transaction;
+}
+
+export function isMessageHandlerProcessor<E>(
+  hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>
+): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Message, unknown, E> {
+  return hp.baseHandlerKind === SubqlTerraHandlerKind.Message;
+}
+
 export function isEventHandlerProcessor<E>(
   hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>
 ): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, unknown, E> {

@@ -1,24 +1,79 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SubqlTerraEventFilter } from '@subql/types-terra';
 import {
-  BlockInfo,
-  EventsByType,
-  hashToHex,
-  TxInfo,
-  TxLog,
-} from '@terra-money/terra.js';
+  SubqlTerraEventFilter,
+  SubqlTerraMessageFilter,
+  TerraBlock,
+  TerraEvent,
+  TerraTransaction,
+  TerraMessage,
+} from '@subql/types-terra';
+import { BlockInfo, MsgExecuteContract, TxInfo } from '@terra-money/terra.js';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
 
+function filterMessageData(
+  data: TerraMessage,
+  filter: SubqlTerraMessageFilter,
+): boolean {
+  const dataObj = data.msg.toData();
+  if (filter.type !== dataObj['@type']) {
+    return false;
+  }
+  if (filter.values) {
+    for (const key in filter.values) {
+      if (!(key in dataObj) || filter.values[key] !== dataObj[key]) {
+        return false;
+      }
+    }
+  }
+  if (
+    filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
+    filter.contractCall &&
+    !(filter.contractCall in (dataObj as MsgExecuteContract.Data).execute_msg)
+  ) {
+    return false;
+  }
+  return true;
+}
+
+export function filterMessages(
+  messages: TerraMessage[],
+  filterOrFilters?:
+    | SubqlTerraMessageFilter
+    | SubqlTerraMessageFilter[]
+    | undefined,
+): TerraMessage[] {
+  if (
+    !filterOrFilters ||
+    (filterOrFilters instanceof Array && filterOrFilters.length === 0)
+  ) {
+    return messages;
+  }
+
+  const filters =
+    filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
+
+  const filteredMessages = messages.filter((message) => {
+    for (const filter of filters) {
+      if (!filterMessageData(message, filter)) {
+        continue;
+      }
+      return true;
+    }
+    return false;
+  });
+  return filteredMessages;
+}
+
 export function filterEvents(
-  events: EventsByType[],
+  events: TerraEvent[],
   filterOrFilters?: SubqlTerraEventFilter | SubqlTerraEventFilter[] | undefined,
-): EventsByType[] {
+): TerraEvent[] {
   if (
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
@@ -28,19 +83,21 @@ export function filterEvents(
 
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  const filteredEvents = [];
-  events.forEach((event) => {
-    const fe = {};
-    filters.forEach((filter) => {
-      if (filter.type in event) {
-        fe[filter.type] = event[filter.type];
+  const filteredEvents = events.filter((event) => {
+    for (const filter of filters) {
+      if (filter.type !== event.event.type) {
+        continue;
       }
-    });
-    if (Object.keys(fe).length !== 0) {
-      filteredEvents.push(fe);
+      if (
+        filter.messageFilter &&
+        !filterMessageData(event.msg, filter.messageFilter)
+      ) {
+        continue;
+      }
+      return true;
     }
+    return false;
   });
-  console.log(filteredEvents);
   return filteredEvents;
 }
 
@@ -71,18 +128,71 @@ export async function getTxInfobyHashes(
   );
 }
 
-export async function getEventsByTypeFromBlock(
-  api: TerraClient,
-  blockInfo: BlockInfo,
-): Promise<EventsByType[]> {
-  const txHashes = blockInfo.block.data.txs;
-  if (txHashes.length === 0) {
-    return [];
+export function wrapBlock(block: BlockInfo, txs: TxInfo[]): TerraBlock {
+  return {
+    block: block,
+    txs: txs,
+  };
+}
+
+export function wrapTx(
+  block: TerraBlock,
+  txInfos: TxInfo[],
+): TerraTransaction[] {
+  return txInfos.map((txInfo, idx) => ({
+    idx,
+    tx: txInfo,
+    block,
+  }));
+}
+
+export function wrapMsg(
+  block: TerraBlock,
+  txs: TerraTransaction[],
+): TerraMessage[] {
+  const msgs: TerraMessage[] = [];
+  for (const tx of txs) {
+    for (let i = 0; i < tx.tx.tx.body.messages.length; i++) {
+      const msg: TerraMessage = {
+        idx: i,
+        tx: tx,
+        block: block,
+        msg: tx.tx.tx.body.messages[i],
+      };
+      msgs.push(msg);
+    }
   }
-  const txInfos = await getTxInfobyHashes(api, txHashes);
-  const txLogs = txInfos.map((txInfo) => txInfo.logs);
-  const txLogsFlat = ([] as TxLog[]).concat(...txLogs);
-  const events = txLogsFlat.map((txLog) => txLog.eventsByType);
+  return msgs;
+}
+
+export function wrapEvent(
+  block: TerraBlock,
+  txs: TerraTransaction[],
+): TerraEvent[] {
+  const events: TerraEvent[] = [];
+  for (const tx of txs) {
+    for (const log of tx.tx.logs) {
+      const msg_index = log.msg_index;
+      const msg: TerraMessage = {
+        idx: msg_index,
+        tx: tx,
+        block: block,
+        msg: tx.tx.tx.body.messages[msg_index],
+      };
+      for (let i = 0; i < log.events.length; i++) {
+        const event: TerraEvent = {
+          idx: i,
+          msg: msg,
+          tx: tx,
+          block: block,
+          log: log,
+          event: log.events[i],
+        };
+        events.push(event);
+      }
+    }
+  }
+
   return events;
 }
 
@@ -92,12 +202,27 @@ export async function fetchTerraBlocksBatches(
 ): Promise<TerraBlockContent[]> {
   const blocks = await fetchTerraBlocksArray(api, blockArray);
   return Promise.all(
-    blocks.map(
-      async (blockInfo) =>
-        <TerraBlockContent>{
-          block: blockInfo,
-          events: await getEventsByTypeFromBlock(api, blockInfo),
-        },
-    ),
+    blocks.map(async (blockInfo) => {
+      const txHashes = blockInfo.block.data.txs;
+      if (txHashes.length === 0) {
+        return <TerraBlockContent>{
+          block: wrapBlock(blockInfo, []),
+          transactions: [],
+          messages: [],
+          events: [],
+        };
+      }
+      const txInfos = await getTxInfobyHashes(api, txHashes);
+      const block = wrapBlock(blockInfo, txInfos);
+      const txs = wrapTx(block, txInfos);
+      const msgs = wrapMsg(block, txs);
+      const events = wrapEvent(block, txs);
+      return <TerraBlockContent>{
+        block: block,
+        transactions: txs,
+        messages: msgs,
+        events: events,
+      };
+    }),
   );
 }

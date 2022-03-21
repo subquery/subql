@@ -2,15 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getAllEntitiesRelations } from '@subql/common';
+import { getAllEntitiesRelations, buildSchemaFromFile } from '@subql/common';
 import {
   isBlockHandlerProcessor,
   isCustomTerraDs,
   isRuntimeTerraDs,
+  isTransactionHandlerProcessor,
   isEventHandlerProcessor,
+  isMessageHandlerProcessor,
 } from '@subql/common-terra';
 import {
   SubqlTerraCustomDatasource,
@@ -19,8 +22,6 @@ import {
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomHandler,
   TerraRuntimeHandlerInputMap,
-  TerraBlock,
-  TerraEvent,
 } from '@subql/types-terra';
 import { hashToHex } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
@@ -29,10 +30,10 @@ import {
   SubqueryTerraProject,
   SubqlTerraProjectDs,
 } from '../configure/terraproject.model';
-import { SubqueryRepo } from '../entities';
+import { SubqueryModel, SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import { filterEvents } from '../utils/terra-helper';
+import { filterMessages, filterEvents } from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
 import { ApiTerraService, TerraClient } from './apiterra.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -58,6 +59,7 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerTerraManager {
   private api: TerraClient;
+  private subqueryState: SubqueryModel;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlTerraProjectDs[];
 
@@ -111,7 +113,7 @@ export class IndexerTerraManager {
   @profiler(argv.profiler)
   async indexBlock(blockContent: TerraBlockContent): Promise<void> {
     const { block } = blockContent;
-    const blockHeight = +block.block.header.height;
+    const blockHeight = +block.block.block.header.height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
       timestamp: Date.now(),
@@ -142,7 +144,7 @@ export class IndexerTerraManager {
       if (this.nodeConfig.proofOfIndex) {
         const operationHash = this.storeService.getOperationMerkleRoot();
         //check if operation is null, then poi will not be insert
-        const blockHash = hashToHex(block.block_id.hash);
+        const blockHash = hashToHex(block.block.block_id.hash);
         const blockHashBytes = new Uint8Array(
           blockHash.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)),
         );
@@ -163,7 +165,7 @@ export class IndexerTerraManager {
       throw e;
     }
     await tx.commit();
-    this.fetchService.latestProcessed(+block.block.header.height);
+    this.fetchService.latestProcessed(+block.block.block.header.height);
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
@@ -442,25 +444,30 @@ export class IndexerTerraManager {
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
     handlers: SubqlTerraRuntimeHandler[],
-    { block, events }: TerraBlockContent,
+    { block, events, messages, transactions }: TerraBlockContent,
   ): Promise<void> {
-    const terraBlock: TerraBlock = {
-      block: block,
-    };
-
     for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlTerraHandlerKind.Block:
-          await vm.securedExec(handler.handler, [terraBlock]);
+          await vm.securedExec(handler.handler, [block]);
           break;
+        case SubqlTerraHandlerKind.Transaction: {
+          for (const transaction of transactions) {
+            await vm.securedExec(handler.handler, [transaction]);
+          }
+          break;
+        }
+        case SubqlTerraHandlerKind.Message: {
+          const filteredMessages = filterMessages(messages, handler.filter);
+          for (const message of filteredMessages) {
+            await vm.securedExec(handler.handler, [message]);
+          }
+          break;
+        }
         case SubqlTerraHandlerKind.Event: {
           const filteredEvents = filterEvents(events, handler.filter);
           for (const e of filteredEvents) {
-            const terraEvent: TerraEvent = {
-              event: e,
-              block: block,
-            };
-            await vm.securedExec(handler.handler, [terraEvent]);
+            await vm.securedExec(handler.handler, [e]);
           }
           break;
         }
@@ -472,11 +479,10 @@ export class IndexerTerraManager {
   private async indexBlockForCustomDs(
     ds: SubqlTerraCustomDatasource<string>,
     vm: IndexerSandbox,
-    { block, events }: TerraBlockContent,
+    { block, events, messages, transactions }: TerraBlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
-
     const processData = async <K extends SubqlTerraHandlerKind>(
       processor: SecondLayerTerraHandlerProcessor<K, unknown, unknown>,
       handler: SubqlTerraCustomHandler<string>,
@@ -489,7 +495,6 @@ export class IndexerTerraManager {
             processor.transformer(data, ds, this.api.getLCDClient, assets),
           ),
       );
-
       for (const data of transformedData) {
         await vm.securedExec(handler.handler, [data]);
       }
@@ -499,9 +504,20 @@ export class IndexerTerraManager {
       const processor = plugin.handlerProcessors[handler.kind];
       if (isBlockHandlerProcessor(processor)) {
         await processData(processor, handler, [block]);
+      } else if (isTransactionHandlerProcessor(processor)) {
+        for (const tx of transactions) {
+          await processData(processor, handler, [tx]);
+        }
+      } else if (isMessageHandlerProcessor(processor)) {
+        const filteredMessages = filterMessages(messages, processor.baseFilter);
+        for (const message of filteredMessages) {
+          await processData(processor, handler, [message]);
+        }
       } else if (isEventHandlerProcessor(processor)) {
         const filteredEvents = filterEvents(events, processor.baseFilter);
-        await processData(processor, handler, filteredEvents);
+        for (const e of filteredEvents) {
+          await processData(processor, handler, [e]);
+        }
       }
     }
   }

@@ -83,7 +83,7 @@ describe('FetchService', () => {
     const loopPromise = fetchService.startLoop(6684553);
     // eslint-disable-next-line @typescript-eslint/require-await
     fetchService.register(async (content) => {
-      if (Number(content.block.block.header.height) === 6684563) {
+      if (Number(content.block.block.block.header.height) === 6684563) {
         fetchService.onApplicationShutdown();
       }
     });

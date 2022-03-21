@@ -18,6 +18,7 @@ import { Sandbox } from './sandboxterra.service';
 export interface DsPluginSandboxOption {
   root: string;
   entry: string;
+  script: string;
 }
 
 const logger = getLogger('ds-sandbox');
@@ -96,6 +97,7 @@ export class TerraDsProcessorService {
       const sandbox = new TerraDsPluginSandbox({
         root: this.project.root,
         entry: ds.processor.file,
+        script: null,
       });
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();
