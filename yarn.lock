@@ -6066,9 +6066,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-
-"@types/ws@npm:^7.4.4":
-
+"@types/ws@npm:^7.4.0, @types/ws@npm:^7.4.4":
   version: 7.4.7
   resolution: "@types/ws@npm:7.4.7"
   dependencies:
@@ -20091,9 +20089,7 @@ typescript@^4.4.4:
   languageName: node
   linkType: hard
 
-
-"ws@npm:^7.4.5, ws@npm:^7.5.5":
-
+"ws@npm:^5.2.0 || ^6.0.0 || ^7.0.0, ws@npm:^7.4.2, ws@npm:^7.4.5, ws@npm:^7.5.5":
   version: 7.5.7
   resolution: "ws@npm:7.5.7"
   peerDependencies:
