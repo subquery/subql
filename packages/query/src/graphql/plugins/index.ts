@@ -50,6 +50,8 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
+import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
+import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 
 /* eslint-enable */
 
@@ -105,6 +107,8 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
+  PgBlockHeightPlugin,
+  PgRowByVirtualIdPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
