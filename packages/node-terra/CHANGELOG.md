@@ -9,7 +9,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 ## [0.2.0] - 2022-03-22
-### Fixed
+### Added
 - Add contract handling for terra (#848)
 
 ## [0.1.2] - 2022-03-15
