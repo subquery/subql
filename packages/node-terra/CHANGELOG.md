@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-03-22
+### Added
+- Add contract handling for terra (#848)
+
 ## [0.1.2] - 2022-03-15
 ### Fixed
 - Fix unable able fetch with small batch size issue (#847)
@@ -20,5 +24,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/node-terra/0.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql/compare/node-terra/0.2.0...HEAD
+[0.2.0]: https://github.com/subquery/subql/compare/node/0.1.1...node/0.2.0
+[0.1.2]: https://github.com/subquery/subql/compare/node/0.1.1...node/0.1.2
 [0.1.1]: https://github.com/subquery/subql/compare/node/0.1.0...node/0.1.1
