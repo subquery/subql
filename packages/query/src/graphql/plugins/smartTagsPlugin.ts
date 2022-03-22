@@ -8,7 +8,7 @@ export const smartTagsPlugin = makePgSmartTagsPlugin([
   {
     //Rule 1, omit `_metadata` from node
     kind: PgEntityKind.CLASS,
-    match: ({name}: PgEntity) => /_metadata/.test(name),
+    match: ({name}: PgEntity) => /^_metadata$/.test(name),
     tags: {
       omit: true,
     },
@@ -16,7 +16,7 @@ export const smartTagsPlugin = makePgSmartTagsPlugin([
   // Omit _$block_range column
   {
     kind: PgEntityKind.ATTRIBUTE,
-    match: ({name}) => /_\$block_range/.test(name),
+    match: ({name}) => /^_\$block_range$/.test(name),
     tags: {
       omit: true,
     },
@@ -24,7 +24,7 @@ export const smartTagsPlugin = makePgSmartTagsPlugin([
   // Omit _$id column
   {
     kind: PgEntityKind.ATTRIBUTE,
-    match: ({name}) => /_\$id/.test(name),
+    match: ({name}) => /^_\$id$/.test(name),
     tags: {
       omit: true,
     },
