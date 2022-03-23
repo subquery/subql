@@ -68,6 +68,22 @@ function eventFilterToQueryEntry(
       {
         field: 'type',
         value: filter.type,
+        matcher: 'equalTo',
+      },
+      {
+        field: 'msgType',
+        value: filter.messageFilter.type,
+        matcher: 'equalTo',
+      },
+      {
+        field: 'data',
+        value: JSON.stringify(
+          Object.keys(filter.messageFilter.values).map((key) => ({
+            key,
+            value: filter.messageFilter.values[key],
+          })),
+        ),
+        matcher: 'contains',
       },
     ],
   };
@@ -82,6 +98,17 @@ function messageFilterToQueryEntry(
       {
         field: 'type',
         value: filter.type,
+        matcher: 'equalTo',
+      },
+      {
+        field: 'data',
+        value: JSON.stringify(
+          Object.keys(filter.values).map((key) => ({
+            key,
+            value: filter.values[key],
+          })),
+        ),
+        matcher: 'contains',
       },
     ],
   };
