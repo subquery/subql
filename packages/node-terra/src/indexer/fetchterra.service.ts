@@ -20,6 +20,7 @@ import {
   SubqlTerraEventFilter,
   SubqlTerraMessageFilter,
   SubqlTerraMessageHandler,
+  DictionaryQueryCondition,
 } from '@subql/types-terra';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -62,56 +63,66 @@ const fetchBlocksBatches = argv.profiler
 function eventFilterToQueryEntry(
   filter: SubqlTerraEventFilter,
 ): DictionaryQueryEntry {
-  return {
-    entity: 'events',
-    conditions: [
-      {
-        field: 'type',
-        value: filter.type,
-        matcher: 'equalTo',
-      },
-      {
+  const conditions: DictionaryQueryCondition[] = [
+    {
+      field: 'type',
+      value: filter.type,
+      matcher: 'equalTo',
+    },
+  ];
+  if (filter.messageFilter !== undefined) {
+    if (filter.messageFilter.type !== undefined) {
+      conditions.push({
         field: 'msgType',
         value: filter.messageFilter.type,
         matcher: 'equalTo',
-      },
-      {
+      });
+    }
+    if (filter.messageFilter.values !== undefined) {
+      conditions.push({
         field: 'data',
         value: JSON.stringify(
           Object.keys(filter.messageFilter.values).map((key) => ({
-            key,
+            key: key,
             value: filter.messageFilter.values[key],
           })),
         ),
         matcher: 'contains',
-      },
-    ],
+      });
+    }
+  }
+  return {
+    entity: 'events',
+    conditions: conditions,
   };
 }
 
 function messageFilterToQueryEntry(
   filter: SubqlTerraMessageFilter,
 ): DictionaryQueryEntry {
-  return {
-    entity: 'messages',
-    conditions: [
-      {
-        field: 'type',
-        value: filter.type,
-        matcher: 'equalTo',
-      },
-      {
-        field: 'data',
-        value: JSON.stringify(
-          Object.keys(filter.values).map((key) => ({
-            key,
-            value: filter.values[key],
-          })),
-        ),
-        matcher: 'contains',
-      },
-    ],
-  };
+  const conditions: DictionaryQueryCondition[] = [
+    {
+      field: 'type',
+      value: filter.type,
+      matcher: 'equalTo',
+    },
+  ];
+  if (filter.values !== undefined) {
+    conditions.push({
+      field: 'data',
+      value: JSON.stringify(
+        Object.keys(filter.values).map((key) => ({
+          key: key,
+          value: filter.values[key],
+        })),
+      ),
+      matcher: 'contains',
+    });
+    return {
+      entity: 'messages',
+      conditions: conditions,
+    };
+  }
 }
 
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
