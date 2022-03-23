@@ -128,7 +128,7 @@ const erc20MiniAbi = `[
     }
 ]`;
 
-describe('FrontierDS', () => {
+describe.skip('FrontierDS', () => {
   jest.setTimeout(10000);
 
   let api: ApiPromise;
@@ -136,7 +136,7 @@ describe('FrontierDS', () => {
   beforeAll(async () => {
     (global as any).logger = getLogger('FrontierTests');
     api = await ApiPromise.create({
-      provider: new WsProvider('wss://wss.api.moonriver.moonbeam.network'),
+      provider: new WsProvider('wss://moonriver.api.onfinality.io/public-ws'),
       typesBundle: typesBundleDeprecated as any,
     });
   });
@@ -617,7 +617,7 @@ describe('FrontierDS', () => {
         expect(call.hash).toBe(undefined);
         expect(call.to).toBe(undefined);
         expect(call.from).toBe(undefined);
-      }, 40000);
+      }, 400000);
 
       //Interface of transaction is EthTransaction, this was always the case pre EIP1559
       it('can transform an EthTransaction', async () => {

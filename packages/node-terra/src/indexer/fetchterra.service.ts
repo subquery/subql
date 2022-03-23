@@ -334,7 +334,7 @@ export class FetchTerraService implements OnApplicationShutdown {
 
   async startLoop(initBlockHeight: number): Promise<void> {
     if (isUndefined(this.latestProcessedHeight)) {
-      this.latestProcessedHeight = initBlockHeight;
+      this.latestProcessedHeight = initBlockHeight - 1;
     }
     await Promise.all([
       this.fillNextBlockBuffer(initBlockHeight),
@@ -353,11 +353,11 @@ export class FetchTerraService implements OnApplicationShutdown {
 
       scaledBatchSize = Math.max(
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        MINIMUM_BATCH_SIZE,
+        Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
 
       if (
-        this.blockNumberBuffer.freeSize < this.nodeConfig.batchSize ||
+        this.blockNumberBuffer.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
       ) {
         await delay(1);
@@ -369,7 +369,7 @@ export class FetchTerraService implements OnApplicationShutdown {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
             queryEndBlock,
-            this.nodeConfig.batchSize,
+            scaledBatchSize,
             this.dictionaryQueryEntries,
           );
           if (
