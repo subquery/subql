@@ -67,8 +67,8 @@ function extractVars(
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
           return {
-            [sanitizeArgField(i[0].field)]: {
-              [i[0].matcher || 'equalTo']: `$${v.name}`,
+            [sanitizeArgField(j.field)]: {
+              [j.matcher || 'equalTo']: `$${v.name}`,
             },
           };
         }),
