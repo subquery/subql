@@ -38,19 +38,30 @@ export default (builder: SchemaBuilder): void => {
   });
 
   // get the data of the preferred blockHeight
-  builder.hook('GraphQLObjectType:fields:field', (field, {pgSql: sql}, {addArgDataGenerator}) => {
+  builder.hook('GraphQLObjectType:fields:field', (field, {pgSql: sql}, context) => {
+    const {
+      addArgDataGenerator,
+      scope: {isRootQuery},
+    } = context;
+
     addArgDataGenerator(function blockHeight({blockHeight, nodeId}: {blockHeight?: bigint; nodeId?: string}) {
       // ignore `blockHeight` if `nodeId` was provided
       if (nodeId || !sql) return;
 
       return {
         pgQuery: (queryBuilder: QueryBuilder) => {
-          const blockHeightValue = blockHeight ?? queryBuilder.context.args?.blockHeight ?? 9223372036854775807n;
-          queryBuilder.context.args = {blockHeight: blockHeightValue};
+          const maxBigInt = 9223372036854775807n;
+
+          if (isRootQuery && blockHeight) {
+            queryBuilder.context.args = {blockHeight: blockHeight}; // if `blockHeight` was provided at root query, use it as default
+          } else if (isRootQuery) {
+            queryBuilder.context.args = {blockHeight: maxBigInt}; // reset default blockHeight to maxBigInt
+          }
 
           queryBuilder.where(
             sql.fragment`${queryBuilder.getTableAlias()}.${sql.identifier(blockHeightField)} @> ${sql.value(
-              blockHeightValue
+              // if user provided `blockHeight` at specific field, override default with it
+              blockHeight ?? queryBuilder.context.args.blockHeight
             )}::bigint`
           );
         },
