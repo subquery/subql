@@ -43,9 +43,11 @@ export default (builder: SchemaBuilder): void => {
       // ignore `blockHeight` if `nodeId` was provided
       if (nodeId || !sql) return;
 
-      const blockHeightValue = blockHeight ?? 9223372036854775807n;
       return {
         pgQuery: (queryBuilder: QueryBuilder) => {
+          const blockHeightValue = blockHeight ?? queryBuilder.context.args?.blockHeight ?? 9223372036854775807n;
+          queryBuilder.context.args = {blockHeight: blockHeightValue};
+
           queryBuilder.where(
             sql.fragment`${queryBuilder.getTableAlias()}.${sql.identifier(blockHeightField)} @> ${sql.value(
               blockHeightValue

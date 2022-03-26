@@ -109,9 +109,10 @@ export default (builder, {subscriptions}) => {
                       );
                       const {text, values} = sql.compile(query);
 
-                      // remove generated primary key from `where` clause
+                      // remove generated primary key from `where` clause and replace foreign key with `id`
                       const pkRegex = new RegExp(`\\([^'"]+('|")${primaryKey}('|") = NULL[^(]*`);
-                      const formattedText = text.replace(pkRegex, '');
+                      const vidRegex = new RegExp(`(__local_[\\d]+__\\.)"${primaryKey}"`, 'g');
+                      const formattedText = text.replace(pkRegex, '').replace(vidRegex, (_, local) => `${local}"id"`);
 
                       if (debugSql.enabled) debugSql(formattedText);
                       const {
