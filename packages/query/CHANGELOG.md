@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.13.0] - 2022-02-09
+### Added
+- Add GraphQL subscription support (#846)
+
 ## [0.12.0] - 2022-02-09
 ### Added 
 - Add `dynamicDatasources` in metadata (#773)

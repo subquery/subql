@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.23.0] - 2022-03-22
+### Added
+- Use `TerraProjectManifestVersioned` to support terra contract handling (#848)
+
 ## [0.22.0] - 2022-03-01
 ### Added
 - Support terra in command line, add terra template (#781)

@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-terra",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -19,6 +19,5 @@
   },
   "devDependencies": {
     "@types/app-module-path": "^2.2.0"
-  },
-  "stableVersion": "0.0.1"
+  }
 }

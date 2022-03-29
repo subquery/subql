@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.1] - 2022-03-23
+### Fixed
+- Fix subscription notification trigger name invalid issue(#862)
+
+## [0.31.0] - 2022-03-22
+### Changed
+- Update Polkadot/api to 7.12.1 (#849)
+### Added
+- Add Notification Trigger in order to support GraphQL subscription (#846)
+
 ## [0.30.2] - 2022-03-15
 ### Fixed
 - Fix unable able fetch with small batch size issue (#847)
