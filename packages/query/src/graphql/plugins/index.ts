@@ -53,6 +53,9 @@ import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 
+import {getYargsOption} from '../../yargs';
+const {argv} = getYargsOption();
+
 /* eslint-enable */
 
 export const defaultPlugins = [
@@ -107,8 +110,6 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
-  PgBlockHeightPlugin,
-  PgRowByVirtualIdPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
@@ -129,5 +130,9 @@ const plugins = [
     };
   }, true),
 ];
+
+if (argv['experimental-historical']) {
+  plugins.push(PgBlockHeightPlugin, PgRowByVirtualIdPlugin);
+}
 
 export {plugins};
