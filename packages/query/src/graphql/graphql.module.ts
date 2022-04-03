@@ -61,7 +61,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       dynamicJson: true,
     };
 
-    if (argv.unsafe) {
+    if (argv.subscription) {
       const pluginHook = makePluginHook([PgPubSub]);
       // Must be called manually to init PgPubSub since we're using Apollo Server and not postgraphile
       options = pluginHook('postgraphile:options', options, {pgPool: this.pgPool});
@@ -91,7 +91,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       debug: this.config.get('NODE_ENV') !== 'production',
     });
 
-    if (argv.unsafe) {
+    if (argv.subscription) {
       // TODO: Replace subscriptions-transport-ws with graphql-ws when support is added to graphql-playground
       SubscriptionServer.create({schema, execute, subscribe}, {server: httpServer, path: '/'});
     }

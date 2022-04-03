@@ -140,7 +140,7 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
-    if (argv.unsafe) {
+    if (argv.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
     for (const model of this.modelsRelations.models) {
@@ -162,7 +162,7 @@ export class StoreService {
         schema,
         indexes,
       });
-      if (argv.unsafe) {
+      if (argv.subscription) {
         extraQueries.push(
           createNotifyTrigger(schema, sequelizeModel.tableName),
         );

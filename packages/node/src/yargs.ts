@@ -47,6 +47,12 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Allows usage of any built-in module within the sandbox',
     },
+    subscription: {
+      demandOption: false,
+      describe: 'Enable subscription by create notification triggers',
+      type: 'boolean',
+      default: false,
+    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',
