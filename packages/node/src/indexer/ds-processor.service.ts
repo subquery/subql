@@ -11,7 +11,7 @@ import {
   SubqlDatasourceProcessor,
   SubqlNetworkFilter,
 } from '@subql/types';
-import { VMScript } from '@subql/x-vm2';
+import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandbox.service';

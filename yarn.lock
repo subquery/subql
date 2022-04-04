@@ -4892,7 +4892,6 @@ __metadata:
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
     "@polkadot/util": ^8
-    "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
     "@types/js-yaml": ^4.0.5
@@ -4948,7 +4947,6 @@ __metadata:
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
-    "@subql/x-vm2": ^3.9.3-0.1.0
     "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -4975,6 +4973,7 @@ __metadata:
     supertest: ^6.1.6
     tar: ^6.1.11
     typescript: ^4.4.4
+    vm2: 3.9.9
     yargs: ^16.2.0
   bin:
     subql-node-terra: ./bin/run
@@ -4998,7 +4997,6 @@ __metadata:
     "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
-    "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -5025,6 +5023,7 @@ __metadata:
     supertest: ^6.2.2
     tar: ^6.1.11
     typescript: ^4.4.4
+    vm2: ^3.9.9
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
@@ -5122,15 +5121,6 @@ __metadata:
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
   checksum: e7286aee9ae657c6952bc7e753253ca80a6f7ce4f12987b4a528b7c8acdedb2e4225484930fb21b2a130a1f11ad95846725de84b18c87ac8cb812b4071cf47c8
-  languageName: node
-  linkType: hard
-
-"@subql/x-vm2@npm:^3.9.3-0.1.0":
-  version: 3.9.3-0.1.0
-  resolution: "@subql/x-vm2@npm:3.9.3-0.1.0"
-  bin:
-    vm2: bin/vm2
-  checksum: 00dab297b1088714c86ae37a619d670c2899772bd632bf3fb0404158dfcb4f713aabbf5a8efd33536aac1a14dac4cfcbc180495347918eb75a9aa29b4a0a3bd1
   languageName: node
   linkType: hard
 
@@ -6506,7 +6496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn-walk@npm:^8.1.1":
+"acorn-walk@npm:^8.1.1, acorn-walk@npm:^8.2.0":
   version: 8.2.0
   resolution: "acorn-walk@npm:8.2.0"
   checksum: 1715e76c01dd7b2d4ca472f9c58968516a4899378a63ad5b6c2d668bba8da21a71976c14ec5f5b75f887b6317c4ae0b897ab141c831d741dc76024d8745f1ad1
@@ -19359,6 +19349,18 @@ typescript@^4.4.4:
     remove-trailing-separator: ^1.0.1
     replace-ext: ^1.0.0
   checksum: 1f663973f1362f2d074b554f79ff7673187667082373b3d3e628beb1fc2a7ff33024f10b492fbd8db421a09ea3b7b22c3d3de4a0f0e73ead7b4685af570b906f
+  languageName: node
+  linkType: hard
+
+"vm2@npm:3.9.9, vm2@npm:^3.9.9":
+  version: 3.9.9
+  resolution: "vm2@npm:3.9.9"
+  dependencies:
+    acorn: ^8.7.0
+    acorn-walk: ^8.2.0
+  bin:
+    vm2: bin/vm2
+  checksum: ea4859565668918b53cf8c087bc18e2a9506f9f4ef919528707a6fecf50a110a2a8c48bc0c7a754c9d12b97cd16775f005b2b941e99d3a52aadfaac5ce77e04d
   languageName: node
   linkType: hard
 

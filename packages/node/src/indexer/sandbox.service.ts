@@ -6,8 +6,8 @@ import { Injectable } from '@nestjs/common';
 import { levelFilter } from '@subql/common';
 import { isDatasourceV0_2_0 } from '@subql/common-substrate';
 import { Store, SubqlDatasource } from '@subql/types';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
+import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
@@ -50,9 +50,6 @@ export class Sandbox extends NodeVM {
       merge(DEFAULT_OPTION, {
         require: {
           root: option.root,
-          resolve: (moduleName: string) => {
-            return require.resolve(moduleName, { paths: [option.root] });
-          },
         },
       }),
     );

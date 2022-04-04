@@ -5,8 +5,8 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { levelFilter } from '@subql/common';
 import { SubqlTerraDatasource, Store } from '@subql/types-terra';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
+import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
@@ -49,9 +49,6 @@ export class Sandbox extends NodeVM {
       merge(DEFAULT_OPTION, {
         require: {
           root: option.root,
-          resolve: (moduleName: string) => {
-            return require.resolve(moduleName, { paths: [option.root] });
-          },
         },
       }),
     );
