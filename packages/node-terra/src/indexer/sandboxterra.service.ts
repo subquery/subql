@@ -49,9 +49,9 @@ export class Sandbox extends NodeVM {
       merge(DEFAULT_OPTION, {
         require: {
           root: option.root,
-        },
-        resolve: (moduleName: string) => {
-          return require.resolve(moduleName, { paths: [option.root] });
+          resolve: (moduleName: string) => {
+            return require.resolve(moduleName, { paths: [option.root] });
+          },
         },
       }),
     );
