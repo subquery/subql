@@ -164,6 +164,7 @@ export interface SubqlTerraDatasourceProcessor<
 export interface DictionaryQueryCondition {
   field: string;
   value: string;
+  matcher: string;
 }
 
 export interface DictionaryQueryEntry {
