@@ -51,6 +51,9 @@ export class Sandbox extends NodeVM {
         require: {
           root: option.root,
         },
+        resolve: (moduleName: string) => {
+          return require.resolve(moduleName, { paths: [option.root] });
+        },
       }),
     );
   }
