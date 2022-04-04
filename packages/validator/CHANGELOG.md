@@ -9,7 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-=======
+## [0.5.0] - 2022-04-04
+### Added
+- Add terra project validation (#781)
+
 ## [0.4.5] - 2022-02-24
 ### Changed
 - Bump with subql/common release, as `reader` has been updated.
