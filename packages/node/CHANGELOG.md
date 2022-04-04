@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.0] - 2022-04-04
+### Changed
+- Update to use `vm2`(#869)
+- Update Polkadot/api to 7.14.3 (#866)
+- move subscription to dedicate flag (#867)
+
 ## [0.31.1] - 2022-03-23
 ### Fixed
 - Fix subscription notification trigger name invalid issue(#862)

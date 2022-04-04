@@ -8,7 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [0.13.0] - 2022-02-09
+## [0.14.0] - 2022-04-04
+### Changed
+- move subscription to dedicate flag (#867)
+
+## [0.13.0] - 2022-03-22
 ### Added
 - Add GraphQL subscription support (#846)
 
