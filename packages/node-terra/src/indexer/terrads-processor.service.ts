@@ -10,7 +10,7 @@ import {
   SubqlTerraDatasourceProcessor,
   SubqlTerraDatasource,
 } from '@subql/types-terra';
-import { VMScript } from '@subql/x-vm2';
+import { VMScript } from 'vm2';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandboxterra.service';

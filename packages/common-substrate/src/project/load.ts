@@ -4,9 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
-import {NodeVM, VMScript} from '@subql/x-vm2';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
+import {NodeVM, VMScript} from 'vm2';
 import {ChainTypes} from './models';
 import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 

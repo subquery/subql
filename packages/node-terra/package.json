@@ -29,7 +29,6 @@
     "@subql/common-terra": "workspace:*",
     "@subql/types-terra": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
-    "@subql/x-vm2": "^3.9.3-0.1.0",
     "@terra-money/terra.js": "^3.0.8",
     "@willsoto/nestjs-prometheus": "^4.2.0",
     "app-module-path": "^2.2.0",
@@ -46,6 +45,7 @@
     "sequelize": "^6.15.0",
     "tar": "^6.1.11",
     "typescript": "^4.4.4",
+    "vm2": "3.9.9",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
