@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.19.0",
+  "version": "0.19.1-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -38,5 +38,5 @@
     "@types/pino": "^6.3.12",
     "@types/tar": "^6.1.1"
   },
-  "stableVersion": "0.18.0"
+  "stableVersion": "0.19.0"
 }

@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-terra",
-  "version": "0.2.0",
+  "version": "0.2.1-0",
   "description": "",
   "author": "Naveen Veluswamy",
   "license": "Apache-2.0",
@@ -65,5 +65,6 @@
   "files": [
     "/dist",
     "/bin"
-  ]
+  ],
+  "stableVersion": "0.2.0"
 }
