@@ -12,6 +12,7 @@ import {
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { BlockedQueue } from './BlockedQueue';
 import { NetworkMetadataPayload } from './events';
 const logger = getLogger('api');
 const axios = require('axios');
@@ -64,6 +65,7 @@ export class ApiTerraService {
 }
 
 export class TerraClient {
+  mantlemintHealthOK = false;
   constructor(
     private readonly baseApi: LCDClient,
     private readonly params?: Record<string, string>,
@@ -76,6 +78,19 @@ export class TerraClient {
 
   async blockInfo(height?: number): Promise<BlockInfo> {
     return this.baseApi.tendermint.blockInfo(height, this.params);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
+    const config = {
+      method: 'get',
+      url: `http://54.252.118.231:1318/index/blocks/${height}`,
+    };
+    return axios(config)
+      .then((d) => d.data)
+      .catch((e) => {
+        throw e;
+      });
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
