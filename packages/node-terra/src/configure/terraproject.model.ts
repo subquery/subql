@@ -6,19 +6,15 @@ import {
   ReaderOptions,
   Reader,
   buildSchemaFromString,
+  RunnerSpecs,
 } from '@subql/common';
 import {
-  loadTerraProjectManifest,
   TerraProjectNetworkConfig,
-  TerraProjectManifestVersioned,
-  TerraProjectNetworkV0_3_0,
   ProjectManifestV0_3_0Impl,
   parseTerraProjectManifest,
+  ProjectManifestV1_0_0Impl,
 } from '@subql/common-terra';
-import {
-  SubqlTerraDatasourceKind,
-  SubqlTerraDatasource,
-} from '@subql/types-terra';
+import { SubqlTerraDatasource } from '@subql/types-terra';
 import { GraphQLSchema } from 'graphql';
 import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
 
@@ -37,6 +33,7 @@ export class SubqueryTerraProject {
   dataSources: SubqlTerraProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
+  runner?: RunnerSpecs;
 
   static async create(
     path: string,
@@ -56,12 +53,51 @@ export class SubqueryTerraProject {
         path,
         networkOverrides,
       );
+    } else if (manifest.isV1_0_0) {
+      return loadProjectFromManifest1_0_0(
+        manifest.asV1_0_0,
+        reader,
+        path,
+        networkOverrides,
+      );
     }
   }
 }
 
+type SUPPORT_MANIFEST = ProjectManifestV0_3_0Impl | ProjectManifestV1_0_0Impl;
+
+async function loadProjectFromManifest1_0_0(
+  projectManifest: ProjectManifestV1_0_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<TerraProjectNetworkConfig>,
+): Promise<SubqueryTerraProject> {
+  const project = await loadProjectFromManifestBase(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides,
+  );
+  project.runner = projectManifest.runner;
+  return project;
+}
+
 async function loadProjectFromManifest0_3_0(
   projectManifest: ProjectManifestV0_3_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<TerraProjectNetworkConfig>,
+): Promise<SubqueryTerraProject> {
+  return loadProjectFromManifestBase(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides,
+  );
+}
+
+async function loadProjectFromManifestBase(
+  projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<TerraProjectNetworkConfig>,
