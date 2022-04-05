@@ -145,6 +145,8 @@ export async function migrate(
     data.repository = manifest.asV1_0_0.repository ?? '';
     if (manifest instanceof SubstrateProjectManifestVersioned) {
       data.schema = manifest.isV0_0_1 ? {file: manifest.asV0_0_1.schema} : manifest.asV1_0_0.schema;
+    } else if (manifest instanceof TerraProjectManifestVersioned) {
+      data.schema = manifest.asV1_0_0.schema;
     }
     data.network = {
       chainId: project.chainId,
