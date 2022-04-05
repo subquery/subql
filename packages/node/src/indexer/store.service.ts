@@ -26,6 +26,7 @@ import {
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
+  dropNotifyTrigger,
   getFkConstraint,
   smartTags,
 } from '../utils/sync-helper';
@@ -166,6 +167,8 @@ export class StoreService {
         extraQueries.push(
           createNotifyTrigger(schema, sequelizeModel.tableName),
         );
+      } else {
+        extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
       }
     }
     for (const relation of this.modelsRelations.relations) {
