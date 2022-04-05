@@ -9,7 +9,12 @@ import {
   TerraTransaction,
   TerraMessage,
 } from '@subql/types-terra';
-import { BlockInfo, MsgExecuteContract, TxInfo } from '@terra-money/terra.js';
+import {
+  BlockInfo,
+  Msg,
+  MsgExecuteContract,
+  TxInfo,
+} from '@terra-money/terra.js';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -20,21 +25,21 @@ function filterMessageData(
   data: TerraMessage,
   filter: SubqlTerraMessageFilter,
 ): boolean {
-  const dataObj = data.msg.toData();
-  if (filter.type !== dataObj['@type']) {
+  if (filter.type !== data.msg['@type']) {
     return false;
   }
   if (filter.values) {
     for (const key in filter.values) {
-      if (!(key in dataObj) || filter.values[key] !== dataObj[key]) {
+      if (!(key in data.msg) || filter.values[key] !== data.msg[key]) {
         return false;
       }
     }
   }
+
   if (
     filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
     filter.contractCall &&
-    !(filter.contractCall in (dataObj as MsgExecuteContract.Data).execute_msg)
+    !(filter.contractCall in data.msg.execute_msg)
   ) {
     return false;
   }
@@ -172,7 +177,7 @@ export function wrapEvent(
   const events: TerraEvent[] = [];
   for (const tx of txs) {
     for (const log of tx.tx.logs) {
-      const msg_index = log.msg_index;
+      const msg_index = log.msg_index ?? 0;
       const msg: TerraMessage = {
         idx: msg_index,
         tx: tx,
@@ -212,7 +217,21 @@ export async function fetchTerraBlocksBatches(
           events: [],
         };
       }
-      const txInfos = await getTxInfobyHashes(api, txHashes);
+      let txInfos: TxInfo[];
+
+      try {
+        //const health = await api.mantlemintHealthCheck();
+        //if(health === 'OK') {
+        txInfos = await api.txsByHeightMantlemint(
+          blockInfo.block.header.height,
+        );
+        //} else {
+        //  txInfos = await getTxInfobyHashes(api, txHashes);
+        //}
+      } catch (e) {
+        txInfos = await getTxInfobyHashes(api, txHashes);
+      }
+
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
       const msgs = wrapMsg(block, txs);

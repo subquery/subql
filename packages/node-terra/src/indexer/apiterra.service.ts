@@ -13,8 +13,8 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
 import { NetworkMetadataPayload } from './events';
-
 const logger = getLogger('api');
+const axios = require('axios');
 
 @Injectable()
 export class ApiTerraService {
@@ -38,6 +38,7 @@ export class ApiTerraService {
     this.api = new TerraClient(
       new LCDClient(this.clientConfig),
       this.nodeConfig.networkEndpointParams,
+      network.endpoint,
     );
 
     this.networkMeta = {
@@ -66,6 +67,7 @@ export class TerraClient {
   constructor(
     private readonly baseApi: LCDClient,
     private readonly params?: Record<string, string>,
+    private baseUrl?: string,
   ) {}
 
   async nodeInfo(): Promise<any> {
@@ -78,6 +80,33 @@ export class TerraClient {
 
   async txInfo(hash: string): Promise<TxInfo> {
     return this.baseApi.tx.txInfo(hashToHex(hash), this.params);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async mantlemintHealthCheck(): Promise<string> {
+    const config = {
+      method: 'get',
+      url: 'http://54.252.118.231:1318/health',
+      headers: {},
+    };
+    return axios(config)
+      .then((d) => d.data)
+      .catch((e) => {
+        throw e;
+      });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
+    const config = {
+      method: 'get',
+      url: `http://54.252.118.231:1318/index/tx/by_height/${height}`,
+    };
+    return axios(config)
+      .then((d) => d.data)
+      .catch((e) => {
+        throw e;
+      });
   }
 
   get getLCDClient(): LCDClient {
