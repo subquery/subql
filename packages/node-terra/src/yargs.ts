@@ -115,6 +115,11 @@ export function getYargsOption() {
       type: 'boolean',
       default: false,
     },
+    ipfs: {
+      demandOption: false,
+      describe: 'IPFS gateway endpoint',
+      type: 'string',
+    },
     port: {
       alias: 'p',
       demandOption: false,
