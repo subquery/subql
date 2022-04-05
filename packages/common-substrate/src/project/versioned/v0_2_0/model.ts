@@ -2,8 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {BaseMapping, ProjectManifestBaseImpl} from '@subql/common';
-import {plainToClass, Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
+import {
+  Equals,
+  IsArray,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  validateSync,
+} from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {SubstrateCustomDataSource, SubstrateNetworkFilter} from '../../types';
 import {CustomDatasourceV0_2_0, SubstrateProjectManifestV0_2_0, RuntimeDataSourceV0_2_0} from './types';
@@ -15,6 +24,8 @@ export class FileType {
 
 export class ProjectNetworkDeploymentV0_2_0 {
   @IsString()
+  @IsNotEmpty()
+  @Transform(({value}: TransformFnParams) => value.trim())
   genesisHash: string;
   @ValidateNested()
   @Type(() => FileType)

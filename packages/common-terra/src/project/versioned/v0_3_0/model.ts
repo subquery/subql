@@ -9,8 +9,17 @@ import {
   SubqlTerraRuntimeHandler,
 } from '@subql/types-terra';
 
-import {plainToClass, Type} from 'class-transformer';
-import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
+import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
+import {
+  Equals,
+  IsArray,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+  validateSync,
+} from 'class-validator';
 import yaml from 'js-yaml';
 import {TerraCustomDataSourceBase, TerraRuntimeDataSourceBase, TerraMapping} from '../../models';
 import {CustomDatasourceV0_3_0, TerraProjectManifestV0_3_0, RuntimeDataSourceV0_3_0, SubqlMappingV0_3_0} from './types';
@@ -22,6 +31,8 @@ export class FileTypeV0_3_0 {
 
 export class TerraProjectNetworkDeploymentV0_3_0 {
   @IsString()
+  @IsNotEmpty()
+  @Transform(({value}: TransformFnParams) => value.trim())
   chainId: string;
 }
 
