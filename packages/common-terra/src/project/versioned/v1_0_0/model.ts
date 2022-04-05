@@ -9,10 +9,10 @@ import {
   RunnerSpecs,
   SemverVersionValidator,
 } from '@subql/common';
-import {TerraProjectManifestV1_0_0} from '@subql/common-terra/project';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsObject, IsString, Matches, Validate, ValidateNested, validateSync} from 'class-validator';
 import {DeploymentV0_3_0, ProjectManifestV0_3_0Impl} from '../v0_3_0';
+import {TerraProjectManifestV1_0_0} from '../v1_0_0';
 
 const TERRA_NODE_NAME = `@subql/node-terra`;
 
