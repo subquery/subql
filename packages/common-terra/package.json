@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-terra",
-  "version": "0.1.2-1",
+  "version": "0.1.2-2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -30,5 +30,5 @@
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
   },
-  "stableVersion": "0.1.2-0"
+  "stableVersion": "0.1.2-1"
 }

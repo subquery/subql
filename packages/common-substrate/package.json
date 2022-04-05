@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-substrate",
-  "version": "0.2.1-1",
+  "version": "0.2.1-2",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -32,5 +32,5 @@
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
   },
-  "stableVersion": "0.2.1-0"
+  "stableVersion": "0.2.1-1"
 }
