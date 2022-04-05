@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [0.1.1] - 2022-03-22
 ### Added
 - Add class of `TerraTransactionHandler` and `TerraMessageHandler` in order to support Terra contract handling (#848)
