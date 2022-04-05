@@ -8,7 +8,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
 ## [0.2.0] - 2022-04-04
 ### Changed
 - Update to use `vm2`(#869)
