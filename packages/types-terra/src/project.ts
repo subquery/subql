@@ -138,7 +138,7 @@ export interface SubqlTerraCustomDatasource<
 > extends ISubqlTerraDatasource<M> {
   kind: K;
   assets: Map<string, CustomTerraDataSourceAsset>;
-  processor: Processor<O>;
+  processor?: Processor<O>;
 }
 
 export interface TerraHandlerInputTransformer<

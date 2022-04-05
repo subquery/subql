@@ -15,3 +15,7 @@ export interface ProjectNetworkConfig {
   dictionary?: string;
   //genesisHash?: string;
 }
+
+export interface FileReference {
+  file: string;
+}

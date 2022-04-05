@@ -28,6 +28,7 @@
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
     "rotating-file-stream": "^3.0.2",
+    "semver": "^7.3.5",
     "sequelize": "^6.15.0",
     "tar": "^6.1.11",
     "vm2": "3.9.9"
@@ -37,6 +38,7 @@
     "@types/detect-port": "^1",
     "@types/js-yaml": "^4.0.5",
     "@types/pino": "^6.3.12",
+    "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1"
   },
   "stableVersion": "0.19.1-0"

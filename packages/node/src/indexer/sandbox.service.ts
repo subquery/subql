@@ -4,8 +4,11 @@
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { levelFilter } from '@subql/common';
-import { isDatasourceV0_2_0 } from '@subql/common-substrate';
-import { Store, SubqlDatasource } from '@subql/types';
+import {
+  isDatasourceV0_2_0,
+  SubstrateDataSource,
+} from '@subql/common-substrate';
+import { Store } from '@subql/types';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -136,7 +139,7 @@ export class SandboxService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubqlDatasource): string {
+  private getDataSourceEntry(ds: SubstrateDataSource): string {
     if (isDatasourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {

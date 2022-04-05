@@ -1,19 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ProjectManifestBaseImpl} from '@subql/common';
-import {
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlMapping,
-  SubqlNetworkFilter,
-  SubqlRuntimeHandler,
-} from '@subql/types';
+import {BaseMapping, ProjectManifestBaseImpl} from '@subql/common';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
-import yaml from 'js-yaml';
-import {CustomDataSourceBase, Mapping, RuntimeDataSourceBase} from '../../models';
-import {CustomDatasourceV0_2_0, ProjectManifestV0_2_0, RuntimeDataSourceV0_2_0, SubqlMappingV0_2_0} from './types';
+import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
+import {SubstrateCustomDataSource, SubstrateNetworkFilter} from '../../types';
+import {CustomDatasourceV0_2_0, SubstrateProjectManifestV0_2_0, RuntimeDataSourceV0_2_0} from './types';
 
 export class FileType {
   @IsString()
@@ -38,11 +31,6 @@ export class ProjectNetworkV0_2_0 extends ProjectNetworkDeploymentV0_2_0 {
   dictionary?: string;
 }
 
-export class ProjectMappingV0_2_0 extends Mapping {
-  @IsString()
-  file: string;
-}
-
 function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
   const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
   if (errors?.length) {
@@ -52,26 +40,19 @@ function validateObject(object: any, errorMessage = 'failed to validate object.'
   }
 }
 
-export class RuntimeDataSourceV0_2_0Impl
-  extends RuntimeDataSourceBase<SubqlMappingV0_2_0<SubqlRuntimeHandler>>
-  implements RuntimeDataSourceV0_2_0
-{
-  @Type(() => ProjectMappingV0_2_0)
-  @ValidateNested()
-  mapping: SubqlMappingV0_2_0<SubqlRuntimeHandler>;
-
+export class SubstrateRuntimeDataSourceV0_2_0Impl extends RuntimeDataSourceBase implements RuntimeDataSourceV0_2_0 {
   validate(): void {
     return validateObject(this, 'failed to validate runtime datasource.');
   }
 }
 
-export class CustomDataSourceV0_2_0Impl<
+export class SubstrateCustomDataSourceV0_2_0Impl<
     K extends string = string,
-    T extends SubqlNetworkFilter = SubqlNetworkFilter,
-    M extends SubqlMapping = SubqlMappingV0_2_0<SubqlCustomHandler>
+    T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
+    M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
   >
   extends CustomDataSourceBase<K, T, M>
-  implements SubqlCustomDatasource<K, T, M>
+  implements SubstrateCustomDataSource<K, T, M>
 {
   validate(): void {
     return validateObject(this, 'failed to validate custom datasource.');
@@ -87,10 +68,10 @@ export class DeploymentV0_2_0 {
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => CustomDataSourceV0_2_0Impl, {
+  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
+      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -102,7 +83,7 @@ export class DeploymentV0_2_0 {
 
 export class ProjectManifestV0_2_0Impl<D extends object = DeploymentV0_2_0>
   extends ProjectManifestBaseImpl<D>
-  implements ProjectManifestV0_2_0
+  implements SubstrateProjectManifestV0_2_0
 {
   @Equals('0.2.0')
   specVersion: string;
@@ -119,10 +100,10 @@ export class ProjectManifestV0_2_0Impl<D extends object = DeploymentV0_2_0>
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => CustomDataSourceV0_2_0Impl, {
+  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
+      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'substrate/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

@@ -161,5 +161,5 @@ export class TerraCustomDataSourceBase<
   assets: Map<string, CustomDataSourceAsset>;
   @Type(() => TerraFileReferenceImpl)
   @IsObject()
-  processor: FileReference;
+  processor?: FileReference;
 }

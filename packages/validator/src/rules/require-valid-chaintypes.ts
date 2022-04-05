@@ -15,7 +15,7 @@ export default class RequireValidChainTypes implements Rule {
   async validateSubstrate(schema: SubstrateProjectManifestVersioned, ctx: Context): Promise<boolean> {
     if (schema.isV0_0_1) return true;
 
-    if (schema.isV0_2_0) {
+    if (schema.isV0_2_0 || schema.isV0_2_1 || schema.isV0_3_0 || schema.isV1_0_0) {
       const schemaV0_2_0 = schema.asV0_2_0;
 
       // No chain types to validate

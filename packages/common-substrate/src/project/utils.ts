@@ -3,36 +3,38 @@
 
 import {
   SecondLayerHandlerProcessor,
-  SubqlCustomDatasource,
-  SubqlDatasource,
-  SubqlDatasourceKind,
-  SubqlHandlerKind,
-  SubqlNetworkFilter,
-  SubqlRuntimeDatasource,
-} from '@subql/types';
+  SubstrateCustomDataSource,
+  SubstrateDataSource,
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeDataSource,
+} from './types';
 
-export function isBlockHandlerProcessor<T extends SubqlNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlHandlerKind.Block, T, E> {
-  return hp.baseHandlerKind === SubqlHandlerKind.Block;
+export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, T, E> {
+  return hp.baseHandlerKind === SubstrateHandlerKind.Block;
 }
 
-export function isEventHandlerProcessor<T extends SubqlNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlHandlerKind.Event, T, E> {
-  return hp.baseHandlerKind === SubqlHandlerKind.Event;
+export function isEventHandlerProcessor<T extends SubstrateNetworkFilter, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, T, E> {
+  return hp.baseHandlerKind === SubstrateHandlerKind.Event;
 }
 
-export function isCallHandlerProcessor<T extends SubqlNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubqlHandlerKind.Call, T, E> {
-  return hp.baseHandlerKind === SubqlHandlerKind.Call;
+export function isCallHandlerProcessor<T extends SubstrateNetworkFilter, E>(
+  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
+): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, T, E> {
+  return hp.baseHandlerKind === SubstrateHandlerKind.Call;
 }
 
-export function isCustomDs<F extends SubqlNetworkFilter>(ds: SubqlDatasource): ds is SubqlCustomDatasource<string, F> {
-  return ds.kind !== SubqlDatasourceKind.Runtime && !!(ds as SubqlCustomDatasource<string, F>).processor;
+export function isCustomDs<F extends SubstrateNetworkFilter>(
+  ds: SubstrateDataSource
+): ds is SubstrateCustomDataSource<string, F> {
+  return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDataSource<string, F>).processor;
 }
 
-export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
-  return ds.kind === SubqlDatasourceKind.Runtime;
+export function isRuntimeDs(ds: SubstrateDataSource): ds is SubstrateRuntimeDataSource {
+  return ds.kind === SubstrateDatasourceKind.Runtime;
 }

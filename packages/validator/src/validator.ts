@@ -44,7 +44,6 @@ export class Validator {
     let schema;
     try {
       schema = parseSubstrateProjectManifest(rawSchema);
-
       if (schema.isV0_0_1) {
         reports.push({
           name: 'package-json-file',
@@ -54,7 +53,13 @@ export class Validator {
         });
       }
     } catch (e) {
-      schema = parseTerraProjectManifest(rawSchema);
+      console.warn(`Try to load as Substrate project failed, will try to load as Terra project.`);
+      try {
+        schema = parseTerraProjectManifest(rawSchema);
+      } catch (e) {
+        console.error(`Load Terra project failed, please check the manifest file.`);
+        throw e;
+      }
     }
 
     const ctx: Context = {

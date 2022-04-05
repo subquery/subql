@@ -15,16 +15,14 @@ import {
   isCustomDs,
   isRuntimeDs,
   SubstrateProjectNetworkConfig,
-} from '@subql/common-substrate';
-import {
-  RuntimeHandlerInputMap,
+  SubstrateCustomDataSource,
+  SubstrateCustomHandler,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeHandler,
+  SubstrateRuntimeHandlerInputMap,
   SecondLayerHandlerProcessor,
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlHandlerKind,
-  SubqlNetworkFilter,
-  SubqlRuntimeHandler,
-} from '@subql/types';
+} from '@subql/common-substrate';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -341,6 +339,7 @@ export class IndexerManager {
       'chain',
       'specName',
       'genesisHash',
+      'chainId',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -362,7 +361,26 @@ export class IndexerManager {
       const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
-
+    if (this.project.runner) {
+      await Promise.all([
+        metadataRepo.upsert({
+          key: 'runnerNode',
+          value: this.project.runner.node.name,
+        }),
+        metadataRepo.upsert({
+          key: 'runnerNodeVersion',
+          value: this.project.runner.node.version,
+        }),
+        metadataRepo.upsert({
+          key: 'runnerQuery',
+          value: this.project.runner.query.name,
+        }),
+        metadataRepo.upsert({
+          key: 'runnerQueryVersion',
+          value: this.project.runner.query.version,
+        }),
+      ]);
+    }
     if (!keyValue.genesisHash) {
       if (project) {
         await metadataRepo.upsert({
@@ -376,9 +394,8 @@ export class IndexerManager {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
         // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
-        (this.project.network.genesisHash ?? genesisHash) ===
-          keyValue.genesisHash,
-        'Specified project manifest genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
+        (this.project.network.chainId ?? genesisHash) === keyValue.genesisHash,
+        'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
 
@@ -458,17 +475,17 @@ export class IndexerManager {
 
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
-    handlers: SubqlRuntimeHandler[],
+    handlers: SubstrateRuntimeHandler[],
     { block, events, extrinsics }: BlockContent,
   ): Promise<void> {
     for (const handler of handlers) {
       switch (handler.kind) {
-        case SubqlHandlerKind.Block:
+        case SubstrateHandlerKind.Block:
           if (SubstrateUtil.filterBlock(block, handler.filter)) {
             await vm.securedExec(handler.handler, [block]);
           }
           break;
-        case SubqlHandlerKind.Call: {
+        case SubstrateHandlerKind.Call: {
           const filteredExtrinsics = SubstrateUtil.filterExtrinsics(
             extrinsics,
             handler.filter,
@@ -478,7 +495,7 @@ export class IndexerManager {
           }
           break;
         }
-        case SubqlHandlerKind.Event: {
+        case SubstrateHandlerKind.Event: {
           const filteredEvents = SubstrateUtil.filterEvents(
             events,
             handler.filter,
@@ -494,17 +511,17 @@ export class IndexerManager {
   }
 
   private async indexBlockForCustomDs(
-    ds: SubqlCustomDatasource<string, SubqlNetworkFilter>,
+    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
     vm: IndexerSandbox,
     { block, events, extrinsics }: BlockContent,
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
 
-    const processData = async <K extends SubqlHandlerKind>(
+    const processData = async <K extends SubstrateHandlerKind>(
       processor: SecondLayerHandlerProcessor<K, unknown, unknown>,
-      handler: SubqlCustomHandler<string, Record<string, unknown>>,
-      filteredData: RuntimeHandlerInputMap[K][],
+      handler: SubstrateCustomHandler,
+      filteredData: SubstrateRuntimeHandlerInputMap[K][],
     ): Promise<void> => {
       const transformedData = await Promise.all(
         filteredData

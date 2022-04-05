@@ -5,11 +5,13 @@ import {SubqlTerraDatasource} from '@subql/types-terra';
 import {plainToClass} from 'class-transformer';
 import {ITerraProjectManifest} from '../types';
 import {ProjectManifestV0_3_0Impl} from './v0_3_0';
+import {ProjectManifestV1_0_0Impl} from './v1_0_0';
 
 export type VersionedProjectManifest = {specVersion: string};
 
 const SUPPORTED_VERSIONS = {
   '0.3.0': ProjectManifestV0_3_0Impl,
+  '1.0.0': ProjectManifestV1_0_0Impl,
 };
 
 type Versions = keyof typeof SUPPORTED_VERSIONS;
@@ -18,6 +20,10 @@ type ProjectManifestImpls = InstanceType<typeof SUPPORTED_VERSIONS[Versions]>;
 
 export function manifestIsV0_3_0(manifest: ITerraProjectManifest): manifest is ProjectManifestV0_3_0Impl {
   return manifest.specVersion === '0.3.0';
+}
+
+export function manifestIsV1_0_0(manifest: ITerraProjectManifest): manifest is ProjectManifestV1_0_0Impl {
+  return manifest.specVersion === '1.0.0';
 }
 
 export class TerraProjectManifestVersioned implements ITerraProjectManifest {
@@ -41,6 +47,14 @@ export class TerraProjectManifestVersioned implements ITerraProjectManifest {
 
   get asV0_3_0(): ProjectManifestV0_3_0Impl {
     return this._impl as ProjectManifestV0_3_0Impl;
+  }
+
+  get isV1_0_0(): boolean {
+    return this.specVersion === '1.0.0';
+  }
+
+  get asV1_0_0(): ProjectManifestV1_0_0Impl {
+    return this._impl as ProjectManifestV1_0_0Impl;
   }
 
   toDeployment(): string | undefined {

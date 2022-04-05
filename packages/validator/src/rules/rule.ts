@@ -8,6 +8,7 @@ import {RequireCodegenScript} from './require-codegen-script';
 import {RequireCustomDsValidation} from './require-custom-ds-validation';
 import RequireValidChainTypes from './require-valid-chaintypes';
 import {RequireValidManifest} from './require-valid-manifest';
+import {RequireValidRunner} from './require-valid-runner';
 
 export enum RuleType {
   PackageJSON = 'packageJSON',
@@ -29,4 +30,5 @@ export const commonRules: Rule[] = [
   new RequireValidManifest(),
   new RequireValidChainTypes(),
   new RequireCustomDsValidation(),
+  new RequireValidRunner(),
 ];

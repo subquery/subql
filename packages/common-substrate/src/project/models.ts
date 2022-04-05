@@ -2,25 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
-import {
-  CustomDataSourceAsset,
-  FileReference,
-  SubqlBlockFilter,
-  SubqlBlockHandler,
-  SubqlCallFilter,
-  SubqlCallHandler,
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlDatasourceKind,
-  SubqlEventFilter,
-  SubqlEventHandler,
-  SubqlHandler,
-  SubqlHandlerKind,
-  SubqlMapping,
-  SubqlNetworkFilter,
-  SubqlRuntimeDatasource,
-  SubqlRuntimeHandler,
-} from '@subql/types';
+
+import {BaseMapping, FileReference} from '@subql/common';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -33,15 +16,32 @@ import {
   IsObject,
   ValidateNested,
 } from 'class-validator';
+import {
+  SubstrateCustomDataSourceAsset,
+  SubstrateBlockFilter,
+  SubstrateBlockHandler,
+  SubstrateCallFilter,
+  SubstrateCallHandler,
+  SubstrateCustomHandler,
+  SubstrateDatasourceKind,
+  SubstrateEventFilter,
+  SubstrateEventHandler,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeDataSource,
+  SubstrateRuntimeHandler,
+  SubstrateRuntimeHandlerFilter,
+  SubstrateCustomDataSource,
+} from './types';
 
-export class BlockFilter implements SubqlBlockFilter {
+export class BlockFilter implements SubstrateBlockFilter {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(2)
   specVersion?: [number, number];
 }
 
-export class EventFilter extends BlockFilter implements SubqlEventFilter {
+export class EventFilter extends BlockFilter implements SubstrateEventFilter {
   @IsOptional()
   @IsString()
   module?: string;
@@ -68,46 +68,46 @@ export class ChainTypes implements RegisteredTypes {
   typesSpec?: Record<string, RegistryTypes>;
 }
 
-export class CallFilter extends EventFilter implements SubqlCallFilter {
+export class CallFilter extends EventFilter implements SubstrateCallFilter {
   @IsOptional()
   @IsBoolean()
   success?: boolean;
 }
 
-export class BlockHandler implements SubqlBlockHandler {
+export class BlockHandler implements SubstrateBlockHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => BlockFilter)
-  filter?: SubqlBlockFilter;
-  @IsEnum(SubqlHandlerKind, {groups: [SubqlHandlerKind.Block]})
-  kind: SubqlHandlerKind.Block;
+  filter?: SubstrateBlockFilter;
+  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Block]})
+  kind: SubstrateHandlerKind.Block;
   @IsString()
   handler: string;
 }
 
-export class CallHandler implements SubqlCallHandler {
+export class CallHandler implements SubstrateCallHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => CallFilter)
-  filter?: SubqlCallFilter;
-  @IsEnum(SubqlHandlerKind, {groups: [SubqlHandlerKind.Call]})
-  kind: SubqlHandlerKind.Call;
+  filter?: SubstrateCallFilter;
+  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Call]})
+  kind: SubstrateHandlerKind.Call;
   @IsString()
   handler: string;
 }
 
-export class EventHandler implements SubqlEventHandler {
+export class EventHandler implements SubstrateEventHandler {
   @IsOptional()
   @ValidateNested()
   @Type(() => EventFilter)
-  filter?: SubqlEventFilter;
-  @IsEnum(SubqlHandlerKind, {groups: [SubqlHandlerKind.Event]})
-  kind: SubqlHandlerKind.Event;
+  filter?: SubstrateEventFilter;
+  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Event]})
+  kind: SubstrateHandlerKind.Event;
   @IsString()
   handler: string;
 }
 
-export class CustomHandler implements SubqlCustomHandler {
+export class CustomHandler implements SubstrateCustomHandler {
   @IsString()
   kind: string;
   @IsString()
@@ -117,16 +117,16 @@ export class CustomHandler implements SubqlCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class Mapping implements SubqlMapping {
+export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler> {
   @Transform((params) => {
-    const handlers: SubqlHandler[] = params.value;
+    const handlers: SubstrateRuntimeHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubqlHandlerKind.Event:
+        case SubstrateHandlerKind.Event:
           return plainToClass(EventHandler, handler);
-        case SubqlHandlerKind.Call:
+        case SubstrateHandlerKind.Call:
           return plainToClass(CallHandler, handler);
-        case SubqlHandlerKind.Block:
+        case SubstrateHandlerKind.Block:
           return plainToClass(BlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
@@ -135,10 +135,12 @@ export class Mapping implements SubqlMapping {
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubqlHandler[];
+  handlers: SubstrateRuntimeHandler[];
+  @IsString()
+  file: string;
 }
 
-export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
+export class CustomMapping implements BaseMapping<Record<string, unknown>, SubstrateCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
@@ -147,25 +149,25 @@ export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
   file: string;
 }
 
-export class SubqlNetworkFilterImpl implements SubqlNetworkFilter {
+export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
   @IsString()
   @IsOptional()
   specName?: string;
 }
 
-export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
-  @IsEnum(SubqlDatasourceKind, {groups: [SubqlDatasourceKind.Runtime]})
-  kind: SubqlDatasourceKind.Runtime;
-  @Type(() => Mapping)
+export class RuntimeDataSourceBase implements SubstrateRuntimeDataSource {
+  @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
+  kind: SubstrateDatasourceKind.Runtime;
+  @Type(() => RuntimeMapping)
   @ValidateNested()
-  mapping: M;
+  mapping: RuntimeMapping;
   @IsOptional()
   @IsInt()
   startBlock?: number;
   @IsOptional()
   @ValidateNested()
   @Type(() => SubqlNetworkFilterImpl)
-  filter?: SubqlNetworkFilter;
+  filter?: SubstrateNetworkFilter;
 }
 
 export class FileReferenceImpl implements FileReference {
@@ -173,18 +175,8 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
-export class Processor<O = any> extends FileReferenceImpl {
-  @IsOptional()
-  @IsObject()
-  options?: O;
-}
-
-export class CustomDataSourceBase<
-  K extends string,
-  T extends SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
-  O = any
-> implements SubqlCustomDatasource<K, T, M, O>
+export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFilter, M extends CustomMapping, O = any>
+  implements SubstrateCustomDataSource<K, T, O>
 {
   @IsString()
   kind: K;
@@ -196,7 +188,7 @@ export class CustomDataSourceBase<
   startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, CustomDataSourceAsset>;
+  assets: Map<string, SubstrateCustomDataSourceAsset>;
   @Type(() => FileReferenceImpl)
   @IsObject()
   processor: FileReference;

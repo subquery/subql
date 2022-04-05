@@ -14,13 +14,11 @@ import {
   parseChainTypes,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
+  SubstrateRuntimeHandler,
+  SubstrateCustomHandler,
+  SubstrateHandler,
+  SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import {
-  SubqlRuntimeHandler,
-  SubqlCustomHandler,
-  SubqlHandler,
-  SubqlHandlerKind,
-} from '@subql/types';
 import yaml from 'js-yaml';
 import tar from 'tar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
@@ -63,14 +61,14 @@ export function getProjectEntry(root: string): string {
 }
 
 export function isBaseHandler(
-  handler: SubqlHandler,
-): handler is SubqlRuntimeHandler {
-  return Object.values<string>(SubqlHandlerKind).includes(handler.kind);
+  handler: SubstrateHandler,
+): handler is SubstrateRuntimeHandler {
+  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
 }
 
-export function isCustomHandler<K extends string, F>(
-  handler: SubqlHandler,
-): handler is SubqlCustomHandler<K, F> {
+export function isCustomHandler(
+  handler: SubstrateHandler,
+): handler is SubstrateCustomHandler {
   return !isBaseHandler(handler);
 }
 

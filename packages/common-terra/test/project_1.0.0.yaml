@@ -1,0 +1,33 @@
+specVersion: '1.0.0'
+
+name: 'subqlstarter-terra'
+version: '0.0.0'
+description: ''
+repository: 'https://github.com/developerinprogress/subqlstarter-terra'
+runner:
+  node:
+    name: '@subql/node-terra'
+    version: 0.28.0
+  query:
+    name: '@subql/query'
+    version: ^0.12.0
+
+schema:
+  file: './schema.graphql'
+
+network:
+  endpoint: 'https://terra.stakesystems.io'
+  chainId: 'columbus-5'
+
+dataSources:
+  - kind: terra/Runtime
+    startBlock: 6694554
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleBlock
+          kind: terra/BlockHandler
+        - handler: handleEvent
+          kind: terra/EventHandler
+          filter:
+            type: transfer

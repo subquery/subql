@@ -6,3 +6,4 @@ export * from './require-build-script';
 export * from './require-codegen-script';
 export * from './require-cli-dep';
 export * from './require-valid-manifest';
+export * from './require-valid-runner';
