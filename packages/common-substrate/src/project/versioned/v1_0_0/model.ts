@@ -9,10 +9,11 @@ import {
   RunnerSpecs,
   SemverVersionValidator,
 } from '@subql/common';
-import {plainToClass, Transform, Type} from 'class-transformer';
+import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
   IsArray,
+  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
@@ -60,6 +61,8 @@ export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
 }
 
 export class ProjectNetworkDeploymentV1_0_0 {
+  @IsNotEmpty()
+  @Transform(({value}: TransformFnParams) => value.trim())
   @IsString()
   chainId: string;
   @ValidateNested()
