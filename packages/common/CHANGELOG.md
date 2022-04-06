@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.21.0] - 2021-04-06
+### Add
+- Add types for manifest 1.0.0 (#845)
 
 ## [0.20.0] - 2021-04-04
 ### Changed

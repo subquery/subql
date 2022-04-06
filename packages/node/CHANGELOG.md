@@ -6,7 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-
+## [0.33.0] - 2022-04-06
+### Added
+- Add support for handle manifest 1.0.0 (#845)
 
 ## [0.32.0] - 2022-04-04
 ### Changed
