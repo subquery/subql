@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-04-06
+### Added
+- Add support for handle manifest 1.0.0 (#845)
+- Support use custom ipfs gateway (#881)
 
 ## [0.3.0] - 2022-04-04
 ### Changed

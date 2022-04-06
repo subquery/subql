@@ -8,7 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-
+## [0.24.0] - 2022-04-06
+### Added
+- Add support for manifest 1.0.0, migrate will now upgrade project to 1.0.0 (#845)
 
 ## [0.23.0] - 2022-03-22
 ### Added
