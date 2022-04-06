@@ -18,6 +18,11 @@ export function getYargsOption() {
       describe: 'Name of the subquery project',
       type: 'string',
     },
+    mantlemint: {
+      demandOption: false,
+      describe: 'Mantlemint endpoint URL',
+      type: 'string',
+    },
     config: {
       alias: 'c',
       demandOption: false,

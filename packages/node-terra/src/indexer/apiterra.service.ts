@@ -12,7 +12,9 @@ import {
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
+
 const logger = getLogger('api');
 const axios = require('axios');
 
@@ -38,13 +40,14 @@ export class ApiTerraService {
     this.api = new TerraClient(
       new LCDClient(this.clientConfig),
       this.nodeConfig.networkEndpointParams,
-      network.endpoint,
+      argv('mantlemint') as string,
     );
 
     try {
-      const mantlemintHealth = await this.api.mantlemintHealthCheck();
-      this.api.mantlemintHealthOK = mantlemintHealth === 'OK';
+      this.api.mantlemintHealthOK = await this.api.mantlemintHealthCheck();
+      logger.info('mantlemint health check done...');
     } catch (e) {
+      logger.info('mantlemint health check failed...');
       this.api.mantlemintHealthOK = false;
     }
 
@@ -75,7 +78,7 @@ export class TerraClient {
   constructor(
     private readonly baseApi: LCDClient,
     private readonly params?: Record<string, string>,
-    private baseUrl?: string,
+    private mantlemintURL?: string,
   ) {}
 
   async nodeInfo(): Promise<any> {
@@ -90,7 +93,7 @@ export class TerraClient {
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
     const config = {
       method: 'get',
-      url: `${this.baseUrl}:1318/index/blocks/${height}`,
+      url: `${this.mantlemintURL}/index/blocks/${height}`,
     };
     return axios(config)
       .then((d) => d.data)
@@ -104,24 +107,28 @@ export class TerraClient {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async mantlemintHealthCheck(): Promise<string> {
+  async mantlemintHealthCheck(): Promise<boolean> {
+    logger.info(this.mantlemintURL);
+    if (!this.mantlemintURL) {
+      return false;
+    }
     const config = {
       method: 'get',
-      url: `${this.baseUrl}:1318/health`,
-      headers: {},
+      url: `${this.mantlemintURL}/health`,
     };
-    return axios(config)
+    const health = axios(config)
       .then((d) => d.data)
       .catch((e) => {
         throw e;
       });
+    return health === 'OK';
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
     const config = {
       method: 'get',
-      url: `${this.baseUrl}:1318/index/tx/by_height/${height}`,
+      url: `${this.mantlemintURL}/index/tx/by_height/${height}`,
     };
     return axios(config)
       .then((d) => d.data)
