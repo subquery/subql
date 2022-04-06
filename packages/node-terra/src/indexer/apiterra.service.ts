@@ -12,7 +12,6 @@ import {
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
-import { BlockedQueue } from './BlockedQueue';
 import { NetworkMetadataPayload } from './events';
 const logger = getLogger('api');
 const axios = require('axios');
@@ -41,6 +40,13 @@ export class ApiTerraService {
       this.nodeConfig.networkEndpointParams,
       network.endpoint,
     );
+
+    try {
+      const mantlemintHealth = await this.api.mantlemintHealthCheck();
+      this.api.mantlemintHealthOK = mantlemintHealth === 'OK';
+    } catch (e) {
+      this.api.mantlemintHealthOK = false;
+    }
 
     this.networkMeta = {
       chainId: network.chainId,
@@ -84,7 +90,7 @@ export class TerraClient {
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
     const config = {
       method: 'get',
-      url: `http://54.252.118.231:1318/index/blocks/${height}`,
+      url: `${this.baseUrl}:1318/index/blocks/${height}`,
     };
     return axios(config)
       .then((d) => d.data)
@@ -101,7 +107,7 @@ export class TerraClient {
   async mantlemintHealthCheck(): Promise<string> {
     const config = {
       method: 'get',
-      url: 'http://54.252.118.231:1318/health',
+      url: `${this.baseUrl}:1318/health`,
       headers: {},
     };
     return axios(config)
@@ -115,7 +121,7 @@ export class TerraClient {
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
     const config = {
       method: 'get',
-      url: `http://54.252.118.231:1318/index/tx/by_height/${height}`,
+      url: `${this.baseUrl}:1318/index/tx/by_height/${height}`,
     };
     return axios(config)
       .then((d) => d.data)

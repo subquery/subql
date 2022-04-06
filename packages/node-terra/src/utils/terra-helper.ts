@@ -109,11 +109,11 @@ export function filterEvents(
 async function getBlockByHeight(api: TerraClient, height: number) {
   let blockInfo: BlockInfo;
   try {
-    //if(api.mantlemintHealthOK)
-    blockInfo = await api.blockInfoMantlemint(height);
-    //} else {
-    //  txInfos = await api.blockInfo(height);
-    //}
+    if (api.mantlemintHealthOK) {
+      blockInfo = await api.blockInfoMantlemint(height);
+    } else {
+      blockInfo = await api.blockInfo(height);
+    }
   } catch (e) {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
@@ -213,12 +213,6 @@ export async function fetchTerraBlocksBatches(
   api: TerraClient,
   blockArray: number[],
 ): Promise<TerraBlockContent[]> {
-  try {
-    const mantlemintHealth = await api.mantlemintHealthCheck();
-    api.mantlemintHealthOK = mantlemintHealth === 'OK';
-  } catch (e) {
-    api.mantlemintHealthOK = false;
-  }
   const blocks = await fetchTerraBlocksArray(api, blockArray);
   return Promise.all(
     blocks.map(async (blockInfo) => {
@@ -232,13 +226,14 @@ export async function fetchTerraBlocksBatches(
         };
       }
 
-      //if(api.mantlemintHealthOK) {
-      const txInfos = await api.txsByHeightMantlemint(
-        blockInfo.block.header.height,
-      );
-      //} else {
-      //  txInfos = await getTxInfobyHashes(api, txHashes);
-      //}
+      let txInfos: TxInfo[];
+      if (api.mantlemintHealthOK) {
+        txInfos = await api.txsByHeightMantlemint(
+          blockInfo.block.header.height,
+        );
+      } else {
+        txInfos = await getTxInfobyHashes(api, txHashes);
+      }
 
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
