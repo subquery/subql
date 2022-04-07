@@ -86,27 +86,40 @@ export class TerraClient {
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
+    if (this.mantlemintHealthOK && height) {
+      return this.blockInfoMantlemint(height);
+    }
     return this.baseApi.tendermint.blockInfo(height, this.params);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
     const config = {
       method: 'get',
       url: `${this.mantlemintURL}/index/blocks/${height}`,
     };
-    return axios(config)
-      .then((d) => d.data)
-      .catch((e) => {
-        throw e;
-      });
+
+    const { data } = await axios(config);
+    return data;
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
     return this.baseApi.tx.txInfo(hashToHex(hash), this.params);
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
+  async getTxInfobyHashes(
+    txHashes: string[],
+    height: string,
+  ): Promise<TxInfo[]> {
+    if (this.mantlemintHealthOK) {
+      return this.txsByHeightMantlemint(height);
+    }
+    return Promise.all(
+      txHashes.map(async (hash) => {
+        return this.txInfo(hash);
+      }),
+    );
+  }
+
   async mantlemintHealthCheck(): Promise<boolean> {
     logger.info(this.mantlemintURL);
     if (!this.mantlemintURL) {
@@ -116,25 +129,17 @@ export class TerraClient {
       method: 'get',
       url: `${this.mantlemintURL}/health`,
     };
-    const health = axios(config)
-      .then((d) => d.data)
-      .catch((e) => {
-        throw e;
-      });
-    return health === 'OK';
+    const { data } = await axios(config);
+    return data === 'OK';
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
     const config = {
       method: 'get',
       url: `${this.mantlemintURL}/index/tx/by_height/${height}`,
     };
-    return axios(config)
-      .then((d) => d.data)
-      .catch((e) => {
-        throw e;
-      });
+    const { data } = await axios(config);
+    return data;
   }
 
   get getLCDClient(): LCDClient {

@@ -39,7 +39,7 @@ function filterMessageData(
   if (
     filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
     filter.contractCall &&
-    !(filter.contractCall in data.msg.execute_msg)
+    !(filter.contractCall in (data.msg as MsgExecuteContract).execute_msg)
   ) {
     return false;
   }
@@ -109,11 +109,7 @@ export function filterEvents(
 async function getBlockByHeight(api: TerraClient, height: number) {
   let blockInfo: BlockInfo;
   try {
-    if (api.mantlemintHealthOK) {
-      blockInfo = await api.blockInfoMantlemint(height);
-    } else {
-      blockInfo = await api.blockInfo(height);
-    }
+    blockInfo = await api.blockInfo(height);
   } catch (e) {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
@@ -217,7 +213,7 @@ export async function fetchTerraBlocksBatches(
   return Promise.all(
     blocks.map(async (blockInfo) => {
       const txHashes = blockInfo.block.data.txs;
-      if (txHashes.length === 0) {
+      if (txHashes === null || txHashes.length === 0) {
         return <TerraBlockContent>{
           block: wrapBlock(blockInfo, []),
           transactions: [],
@@ -226,15 +222,10 @@ export async function fetchTerraBlocksBatches(
         };
       }
 
-      let txInfos: TxInfo[];
-      if (api.mantlemintHealthOK) {
-        txInfos = await api.txsByHeightMantlemint(
-          blockInfo.block.header.height,
-        );
-      } else {
-        txInfos = await getTxInfobyHashes(api, txHashes);
-      }
-
+      const txInfos = await api.getTxInfobyHashes(
+        txHashes,
+        blockInfo.block.header.height,
+      );
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
       const msgs = wrapMsg(block, txs);
