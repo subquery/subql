@@ -15,6 +15,7 @@
     "declaration": true,
     "sourceMap": true,
     "inlineSources": true,
+    "noImplicitThis": true,
     "composite": true,
     "paths": {
       "@subql/common": ["packages/common/src"],
