@@ -50,6 +50,11 @@ import {GetMetadataPlugin} from './GetMetadataPlugin';
 import {smartTagsPlugin} from './smartTagsPlugin';
 import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
+import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
+import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
+
+import {getYargsOption} from '../../yargs';
+const {argv} = getYargsOption();
 
 /* eslint-enable */
 
@@ -125,5 +130,9 @@ const plugins = [
     };
   }, true),
 ];
+
+if (argv['experimental-historical']) {
+  plugins.push(PgBlockHeightPlugin, PgRowByVirtualIdPlugin);
+}
 
 export {plugins};

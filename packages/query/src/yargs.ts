@@ -66,6 +66,11 @@ export function getYargsOption() {
       describe: 'The port the service will bind to',
       type: 'number',
     },
+    'experimental-historical': {
+      demandOption: false,
+      describe: 'Add block height argument to queries for fetching historical state of entities',
+      type: 'boolean',
+    },
   });
 }
 
