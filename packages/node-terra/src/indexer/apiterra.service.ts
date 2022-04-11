@@ -100,8 +100,7 @@ export class TerraClient {
     }
     const config = {
       method: 'get',
-url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`
-
+      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
       timeout: argv('node-timeout'),
     };
 
