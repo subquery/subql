@@ -127,6 +127,12 @@ export function getYargsOption() {
       type: 'number',
       default: 3000,
     },
+    'node-timeout': {
+      demandOption: false,
+      describe: 'The timeout value for API requests',
+      type: 'number',
+      default: 30000,
+    },
   });
 }
 

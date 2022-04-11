@@ -14,6 +14,7 @@ import {
   Msg,
   MsgExecuteContract,
   TxInfo,
+  TxLog,
 } from '@terra-money/terra.js';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
@@ -180,7 +181,7 @@ export function wrapEvent(
 ): TerraEvent[] {
   const events: TerraEvent[] = [];
   for (const tx of txs) {
-    for (const log of tx.tx.logs) {
+    for (const log of tx.tx.logs as TxLog[]) {
       const msg_index = log.msg_index ?? 0;
       const msg: TerraMessage = {
         idx: msg_index,

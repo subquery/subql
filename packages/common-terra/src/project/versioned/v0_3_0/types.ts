@@ -31,6 +31,7 @@ export interface TerraProjectManifestV0_3_0 extends ITerraProjectManifest {
     endpoint?: string;
     dictionary?: string;
     chainId: string;
+    mantlemint?: string;
   };
 
   dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];

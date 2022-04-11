@@ -39,8 +39,9 @@ export class ApiTerraService {
 
     this.api = new TerraClient(
       new LCDClient(this.clientConfig),
+      network.endpoint,
       this.nodeConfig.networkEndpointParams,
-      argv('mantlemint') as string,
+      network.mantlemint,
     );
 
     try {
@@ -77,19 +78,36 @@ export class TerraClient {
   mantlemintHealthOK = false;
   constructor(
     private readonly baseApi: LCDClient,
+    private tendermintURL: string,
     private readonly params?: Record<string, string>,
     private mantlemintURL?: string,
   ) {}
 
   async nodeInfo(): Promise<any> {
-    return this.baseApi.tendermint.nodeInfo(this.params);
+    const config = {
+      method: 'get',
+      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/node_info`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data;
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
     if (this.mantlemintHealthOK && height) {
       return this.blockInfoMantlemint(height);
     }
-    return this.baseApi.tendermint.blockInfo(height, this.params);
+    const config = {
+      method: 'get',
+      url: height
+        ? `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/${height}`
+        : `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/latest`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data;
   }
 
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
@@ -103,7 +121,14 @@ export class TerraClient {
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    return this.baseApi.tx.txInfo(hashToHex(hash), this.params);
+    const config = {
+      method: 'get',
+      url: `${this.tendermintURL}/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data.tx_response;
   }
 
   async getTxInfobyHashes(
@@ -121,7 +146,6 @@ export class TerraClient {
   }
 
   async mantlemintHealthCheck(): Promise<boolean> {
-    logger.info(this.mantlemintURL);
     if (!this.mantlemintURL) {
       return false;
     }

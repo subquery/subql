@@ -8,4 +8,5 @@ export type ITerraProjectManifest = IProjectManifest<SubqlTerraDatasource>;
 
 export interface TerraProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
+  mantlemint?: string;
 }

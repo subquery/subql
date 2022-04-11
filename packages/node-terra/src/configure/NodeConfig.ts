@@ -5,7 +5,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { loadFromJsonOrYaml } from '@subql/common';
-import { last } from 'lodash';
+import { last, StringNullableChain } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { getLogger } from '../utils/logger';
 import { assign } from '../utils/object';
@@ -23,6 +23,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
+  readonly networkMantlemint?: string;
   readonly networkEndpointParams?: Record<string, string>;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
@@ -107,6 +108,10 @@ export class NodeConfig implements IConfig {
 
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get networkMantlemint(): string | undefined {
+    return this._config.networkMantlemint;
   }
 
   get networkEndpointParams(): Record<string, string> | undefined {
