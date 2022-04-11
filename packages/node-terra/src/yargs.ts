@@ -18,6 +18,11 @@ export function getYargsOption() {
       describe: 'Name of the subquery project',
       type: 'string',
     },
+    mantlemint: {
+      demandOption: false,
+      describe: 'Mantlemint endpoint URL',
+      type: 'string',
+    },
     config: {
       alias: 'c',
       demandOption: false,
@@ -126,6 +131,12 @@ export function getYargsOption() {
       describe: 'The port the service will bind to',
       type: 'number',
       default: 3000,
+    },
+    'node-timeout': {
+      demandOption: false,
+      describe: 'The timeout value for API requests',
+      type: 'number',
+      default: 30000,
     },
   });
 }

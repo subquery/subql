@@ -12,9 +12,11 @@ import {
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
 
 const logger = getLogger('api');
+const axios = require('axios');
 
 @Injectable()
 export class ApiTerraService {
@@ -37,8 +39,18 @@ export class ApiTerraService {
 
     this.api = new TerraClient(
       new LCDClient(this.clientConfig),
+      network.endpoint,
       this.nodeConfig.networkEndpointParams,
+      network.mantlemint,
     );
+
+    try {
+      this.api.mantlemintHealthOK = await this.api.mantlemintHealthCheck();
+      logger.info('mantlemint health check done...');
+    } catch (e) {
+      logger.info('mantlemint health check failed...');
+      this.api.mantlemintHealthOK = false;
+    }
 
     this.networkMeta = {
       chainId: network.chainId,
@@ -63,21 +75,93 @@ export class ApiTerraService {
 }
 
 export class TerraClient {
+  mantlemintHealthOK = false;
   constructor(
     private readonly baseApi: LCDClient,
+    private tendermintURL: string,
     private readonly params?: Record<string, string>,
+    private mantlemintURL?: string,
   ) {}
 
   async nodeInfo(): Promise<any> {
-    return this.baseApi.tendermint.nodeInfo(this.params);
+    const config = {
+      method: 'get',
+      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/node_info`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data;
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
-    return this.baseApi.tendermint.blockInfo(height, this.params);
+    if (this.mantlemintHealthOK && height) {
+      return this.blockInfoMantlemint(height);
+    }
+    const config = {
+      method: 'get',
+      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data;
+  }
+
+  async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
+    const config = {
+      method: 'get',
+      url: `${this.mantlemintURL}/index/blocks/${height}`,
+    };
+
+    const { data } = await axios(config);
+    return data;
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    return this.baseApi.tx.txInfo(hashToHex(hash), this.params);
+    const config = {
+      method: 'get',
+      url: `${this.tendermintURL}/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
+      timeout: argv('node-timeout'),
+    };
+
+    const { data } = await axios(config);
+    return data.tx_response;
+  }
+
+  async getTxInfobyHashes(
+    txHashes: string[],
+    height: string,
+  ): Promise<TxInfo[]> {
+    if (this.mantlemintHealthOK) {
+      return this.txsByHeightMantlemint(height);
+    }
+    return Promise.all(
+      txHashes.map(async (hash) => {
+        return this.txInfo(hash);
+      }),
+    );
+  }
+
+  async mantlemintHealthCheck(): Promise<boolean> {
+    if (!this.mantlemintURL) {
+      return false;
+    }
+    const config = {
+      method: 'get',
+      url: `${this.mantlemintURL}/health`,
+    };
+    const { data } = await axios(config);
+    return data === 'OK';
+  }
+
+  async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
+    const config = {
+      method: 'get',
+      url: `${this.mantlemintURL}/index/tx/by_height/${height}`,
+    };
+    const { data } = await axios(config);
+    return data;
   }
 
   get getLCDClient(): LCDClient {

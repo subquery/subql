@@ -9,7 +9,13 @@ import {
   TerraTransaction,
   TerraMessage,
 } from '@subql/types-terra';
-import { BlockInfo, MsgExecuteContract, TxInfo } from '@terra-money/terra.js';
+import {
+  BlockInfo,
+  Msg,
+  MsgExecuteContract,
+  TxInfo,
+  TxLog,
+} from '@terra-money/terra.js';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -20,21 +26,21 @@ function filterMessageData(
   data: TerraMessage,
   filter: SubqlTerraMessageFilter,
 ): boolean {
-  const dataObj = data.msg.toData();
-  if (filter.type !== dataObj['@type']) {
+  if (filter.type !== data.msg['@type']) {
     return false;
   }
   if (filter.values) {
     for (const key in filter.values) {
-      if (!(key in dataObj) || filter.values[key] !== dataObj[key]) {
+      if (!(key in data.msg) || filter.values[key] !== data.msg[key]) {
         return false;
       }
     }
   }
+
   if (
     filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
     filter.contractCall &&
-    !(filter.contractCall in (dataObj as MsgExecuteContract.Data).execute_msg)
+    !(filter.contractCall in (data.msg as MsgExecuteContract).execute_msg)
   ) {
     return false;
   }
@@ -102,10 +108,14 @@ export function filterEvents(
 }
 
 async function getBlockByHeight(api: TerraClient, height: number) {
-  return api.blockInfo(height).catch((e) => {
+  let blockInfo: BlockInfo;
+  try {
+    blockInfo = await api.blockInfo(height);
+  } catch (e) {
     logger.error(`failed to fetch Block ${height}`);
     throw e;
-  });
+  }
+  return blockInfo;
 }
 
 export async function fetchTerraBlocksArray(
@@ -171,8 +181,8 @@ export function wrapEvent(
 ): TerraEvent[] {
   const events: TerraEvent[] = [];
   for (const tx of txs) {
-    for (const log of tx.tx.logs) {
-      const msg_index = log.msg_index;
+    for (const log of tx.tx.logs as TxLog[]) {
+      const msg_index = log.msg_index ?? 0;
       const msg: TerraMessage = {
         idx: msg_index,
         tx: tx,
@@ -204,7 +214,7 @@ export async function fetchTerraBlocksBatches(
   return Promise.all(
     blocks.map(async (blockInfo) => {
       const txHashes = blockInfo.block.data.txs;
-      if (txHashes.length === 0) {
+      if (txHashes === null || txHashes.length === 0) {
         return <TerraBlockContent>{
           block: wrapBlock(blockInfo, []),
           transactions: [],
@@ -212,7 +222,11 @@ export async function fetchTerraBlocksBatches(
           events: [],
         };
       }
-      const txInfos = await getTxInfobyHashes(api, txHashes);
+
+      const txInfos = await api.getTxInfobyHashes(
+        txHashes,
+        blockInfo.block.header.height,
+      );
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
       const msgs = wrapMsg(block, txs);

@@ -45,6 +45,9 @@ export class TerraProjectNetworkV0_3_0 extends TerraProjectNetworkDeploymentV0_3
   @IsString()
   @IsOptional()
   genesisHash?: string;
+  @IsString()
+  @IsOptional()
+  mantlemint?: string;
 }
 
 export class TerraProjectMappingV0_3_0 extends TerraMapping {
