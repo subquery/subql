@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.5.1] - 2022-04-13
+### Changed
+- Renamed `mantlemint` cli flag to `network-mantlemint` and fix overwriting project endpoint (#889)
+
 ## [0.5.0] - 2022-04-12
 ### Added
 - Support for mantlemint endpoint (#885)
