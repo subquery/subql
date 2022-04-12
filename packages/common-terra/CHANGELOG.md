@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-04-12
+### Added
+- `network.mantlemint` option to manifest to specify a mantlemint endpoint (#885)
+
 ## [0.2.0] - 2022-04-06
 ### Added
 - Add manifest 1.0.0 (#845)
