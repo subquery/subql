@@ -18,11 +18,6 @@ export function getYargsOption() {
       describe: 'Name of the subquery project',
       type: 'string',
     },
-    mantlemint: {
-      demandOption: false,
-      describe: 'Mantlemint endpoint URL',
-      type: 'string',
-    },
     config: {
       alias: 'c',
       demandOption: false,
@@ -77,6 +72,11 @@ export function getYargsOption() {
       type: 'array',
       describe:
         'Key value of api parameters passed to terra rpc. e.g. --network-endpoint-param "api_key: <your-api-key>"',
+    },
+    'network-mantlemint': {
+      demandOption: false,
+      describe: 'Mantlemint endpoint URL',
+      type: 'string',
     },
     'output-fmt': {
       demandOption: false,
