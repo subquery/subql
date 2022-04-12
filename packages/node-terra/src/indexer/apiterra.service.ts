@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import http from 'http';
+import https from 'https';
 import { Injectable } from '@nestjs/common';
 import {
   BlockInfo,
@@ -9,6 +11,7 @@ import {
   LCDClientConfig,
   TxInfo,
 } from '@terra-money/terra.js';
+import axios, { AxiosInstance } from 'axios';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
@@ -16,7 +19,6 @@ import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
 
 const logger = getLogger('api');
-const axios = require('axios');
 
 @Injectable()
 export class ApiTerraService {
@@ -29,7 +31,6 @@ export class ApiTerraService {
     private nodeConfig: NodeConfig,
   ) {}
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async init(): Promise<ApiTerraService> {
     const { network } = this.project;
     this.clientConfig = {
@@ -46,7 +47,9 @@ export class ApiTerraService {
 
     try {
       this.api.mantlemintHealthOK = await this.api.mantlemintHealthCheck();
-      logger.info('mantlemint health check done...');
+      logger.info(
+        `mantlemint health check done... enabled: ${this.api.mantlemintHealthOK}`,
+      );
     } catch (e) {
       logger.info('mantlemint health check failed...');
       this.api.mantlemintHealthOK = false;
@@ -76,21 +79,44 @@ export class ApiTerraService {
 
 export class TerraClient {
   mantlemintHealthOK = false;
+
+  private _lcdConnection: AxiosInstance;
+  private _mantlemintConnection: AxiosInstance;
+
   constructor(
     private readonly baseApi: LCDClient,
     private tendermintURL: string,
     private readonly params?: Record<string, string>,
     private mantlemintURL?: string,
-  ) {}
+  ) {
+    const httpAgent = new http.Agent({ keepAlive: true });
+    const httpsAgent = new https.Agent({ keepAlive: true });
+
+    this._lcdConnection = axios.create({
+      httpAgent,
+      httpsAgent,
+      timeout: argv('node-timeout') as number,
+      baseURL: this.tendermintURL,
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (this.mantlemintURL) {
+      this._mantlemintConnection = axios.create({
+        baseURL: this.mantlemintURL,
+        headers: {
+          Accept: 'application/json',
+        },
+      });
+    }
+  }
 
   async nodeInfo(): Promise<any> {
-    const config = {
-      method: 'get',
-      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/node_info`,
-      timeout: argv('node-timeout'),
-    };
-
-    const { data } = await axios(config);
+    const { data } = await this._lcdConnection.get(
+      `/cosmos/base/tendermint/v1beta1/node_info`,
+      this.params,
+    );
     return data;
   }
 
@@ -98,35 +124,20 @@ export class TerraClient {
     if (this.mantlemintHealthOK && height) {
       return this.blockInfoMantlemint(height);
     }
-    const config = {
-      method: 'get',
-      url: `${this.tendermintURL}/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
-      timeout: argv('node-timeout'),
-    };
 
-    const { data } = await axios(config);
-    return data;
-  }
-
-  async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
-    const config = {
-      method: 'get',
-      url: `${this.mantlemintURL}/index/blocks/${height}`,
-    };
-
-    const { data } = await axios(config);
+    const { data } = await this._lcdConnection.get(
+      `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
+      this.params,
+    );
     return data;
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    const config = {
-      method: 'get',
-      url: `${this.tendermintURL}/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
-      timeout: argv('node-timeout'),
-    };
-
-    const { data } = await axios(config);
-    return data.tx_response;
+    const { data } = await this._lcdConnection.get(
+      `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
+      this.params,
+    );
+    return TxInfo.fromData(data.tx_response);
   }
 
   async getTxInfobyHashes(
@@ -144,23 +155,25 @@ export class TerraClient {
   }
 
   async mantlemintHealthCheck(): Promise<boolean> {
-    if (!this.mantlemintURL) {
+    if (!this.mantlemintURL || !this._mantlemintConnection) {
       return false;
     }
-    const config = {
-      method: 'get',
-      url: `${this.mantlemintURL}/health`,
-    };
-    const { data } = await axios(config);
+
+    const { data } = await this._mantlemintConnection.get('/health');
     return data === 'OK';
   }
 
+  async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
+    const { data } = await this._mantlemintConnection.get(
+      `/index/blocks/${height}`,
+    );
+    return data;
+  }
+
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
-    const config = {
-      method: 'get',
-      url: `${this.mantlemintURL}/index/tx/by_height/${height}`,
-    };
-    const { data } = await axios(config);
+    const { data } = await this._mantlemintConnection.get(
+      `/index/tx/by_height/${height}`,
+    );
     return data;
   }
 
