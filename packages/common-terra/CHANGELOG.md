@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+### Added
+- `network.mantlemint` option to manifest to specify a mantlemint endpoint (#885)
 
 ## [0.2.0] - 2022-04-06
 ### Added

@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Changed
+- Update @subql/common-terra to allow specifying a mantlemint endpoint (#885)
+
 ## [0.24.0] - 2022-04-06
 ### Added
 - Add support for manifest 1.0.0, migrate will now upgrade project to 1.0.0 (#845)

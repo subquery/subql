@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Support for mantlemint endpoint (#885)
+- Configuring a timeout for terra node requests (#885)
+- Keep Terra node connections alive (#886)
+
 ## [0.4.0] - 2022-04-06
 ### Added
 - Add support for handle manifest 1.0.0 (#845)
