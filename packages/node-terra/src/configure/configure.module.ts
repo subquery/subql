@@ -126,6 +126,7 @@ export class ConfigureModule {
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,
+            mantlemint: config.networkMantlemint,
           },
           isNil,
         ),
