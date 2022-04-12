@@ -69,8 +69,8 @@ export default class Init extends Command {
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: Flags.string({
       required: false,
-      options: ['0.0.1', '0.2.0'],
-      default: '0.2.0',
+      options: ['0.0.1', '0.2.0', '1.0.0'],
+      default: '1.0.0',
       description: 'The spec version to be used by the project',
     }),
   };
