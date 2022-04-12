@@ -81,7 +81,7 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
 
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
+  const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0 | ProjectManifestV1_0_0;
   return [
     currentProject.specVersion,
     currentProject.repository,
