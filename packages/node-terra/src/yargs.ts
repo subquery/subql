@@ -136,7 +136,7 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'The timeout value for API requests',
       type: 'number',
-      default: 30000,
+      default: 300000,
     },
   });
 }
