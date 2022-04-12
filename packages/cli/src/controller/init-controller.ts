@@ -5,13 +5,13 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestV0_2_0} from '@subql/common';
+import {ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
 import {ProjectManifestV0_0_1} from '@subql/common-substrate';
 import axios from 'axios';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import git from 'simple-git';
-import {isProjectSpecV0_2_0, ProjectSpecBase} from '../types';
+import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 
 const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
 
@@ -133,16 +133,20 @@ async function prepareManifest(projectPath: string, project: ProjectSpecBase): P
   //load and write manifest(project.yaml)
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0;
+  const data = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0 | ProjectManifestV1_0_0;
   data.description = project.description ?? data.description;
   data.repository = project.repository ?? '';
 
   data.network.endpoint = project.endpoint;
 
-  if (isProjectSpecV0_2_0(project)) {
+  if (isProjectSpecV1_0_0(project)) {
+    (data as ProjectManifestV1_0_0).version = project.version;
+    (data as ProjectManifestV1_0_0).name = project.name;
+    (data as ProjectManifestV1_0_0).network.chainId = project.chainId;
+  } else if (isProjectSpecV0_2_0(project)) {
     (data as ProjectManifestV0_2_0).version = project.version;
     (data as ProjectManifestV0_2_0).name = project.name;
-    data.network.genesisHash = project.genesisHash;
+    (data as ProjectManifestV0_2_0).network.genesisHash = project.genesisHash;
   }
 
   const newYaml = yaml.dump(data);
