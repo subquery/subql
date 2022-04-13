@@ -67,10 +67,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;`;
 
+export function dropNotifyTrigger(schema: string, table: string): string {
+  return `DROP TRIGGER IF EXISTS "${schema}_${table}_notify_trigger"
+    ON "${schema}"."${table}";`;
+}
+
+export function getNotifyTriggers(): string {
+  return `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
+          WHERE trigger_name = :triggerName`;
+}
 export function createNotifyTrigger(schema: string, table: string): string {
   return `
-DROP TRIGGER IF EXISTS "${schema}_${table}_notify_trigger"
-    ON "${schema}"."${table}";
 CREATE TRIGGER "${schema}_${table}_notify_trigger"
     AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."${table}"

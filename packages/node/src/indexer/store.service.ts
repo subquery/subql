@@ -7,7 +7,7 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
-import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
+import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
 import {
   CreationAttributes,
   Model,
@@ -26,7 +26,9 @@ import {
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
+  dropNotifyTrigger,
   getFkConstraint,
+  getNotifyTriggers,
   smartTags,
 } from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
@@ -39,9 +41,11 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
+
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const { argv } = getYargsOption();
+const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
 interface IndexField {
   entityName: string;
@@ -50,6 +54,10 @@ interface IndexField {
   type: string;
 }
 
+interface NotifyTriggerPayload {
+  triggerName: string;
+  eventManipulation: string;
+}
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -163,9 +171,24 @@ export class StoreService {
         indexes,
       });
       if (argv.subscription) {
-        extraQueries.push(
-          createNotifyTrigger(schema, sequelizeModel.tableName),
-        );
+        const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
+        const triggers = await this.sequelize.query(getNotifyTriggers(), {
+          replacements: { triggerName },
+          type: QueryTypes.SELECT,
+        });
+        // Triggers not been found
+        if (triggers.length === 0) {
+          extraQueries.push(
+            createNotifyTrigger(schema, sequelizeModel.tableName),
+          );
+        } else {
+          this.validateNotifyTriggers(
+            triggerName,
+            triggers as NotifyTriggerPayload[],
+          );
+        }
+      } else {
+        extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
       }
     }
     for (const relation of this.modelsRelations.relations) {
@@ -235,6 +258,24 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+  }
+
+  validateNotifyTriggers(
+    triggerName: string,
+    triggers: NotifyTriggerPayload[],
+  ) {
+    if (triggers.length !== NotifyTriggerManipulationType.length) {
+      throw new Error(
+        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
+      );
+    }
+    triggers.map((t) => {
+      if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
+        throw new Error(
+          `Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`,
+        );
+      }
+    });
   }
 
   enumNameToHash(enumName: string): string {
