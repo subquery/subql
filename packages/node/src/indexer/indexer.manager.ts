@@ -56,7 +56,7 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: ApiPromise;
-  private prevSpecVersion?: number;
+  // private prevSpecVersion?: number;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
 
@@ -121,12 +121,10 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      const isUpgraded = block.specVersion !== this.prevSpecVersion;
       // if parentBlockHash injected, which means we need to check runtime upgrade
       const apiAt = await this.apiService.getPatchedApi(
         block.block.hash,
         block.block.header.number.unwrap().toNumber(),
-        isUpgraded ? block.block.header.parentHash : undefined,
       );
 
       // Run predefined data sources
@@ -168,7 +166,6 @@ export class IndexerManager {
     }
     await tx.commit();
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
-    this.prevSpecVersion = block.specVersion;
     if (this.nodeConfig.proofOfIndex) {
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }

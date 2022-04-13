@@ -14,6 +14,7 @@ import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
+import { SpecVersionService } from './SpecVersions.service';
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -52,7 +53,12 @@ async function createFetchService(
   project = testSubqueryProject(),
   batchSize = 5,
 ): Promise<FetchService> {
-  const apiService = new ApiService(project, new EventEmitter2());
+  const specVersionService = new SpecVersionService();
+  const apiService = new ApiService(
+    project,
+    specVersionService,
+    new EventEmitter2(),
+  );
   await apiService.init();
   const dictionaryService = new DictionaryService(project);
   const dsPluginService = new DsProcessorService(project);
@@ -62,6 +68,7 @@ async function createFetchService(
     project,
     dictionaryService,
     dsPluginService,
+    specVersionService,
     new EventEmitter2(),
   );
 }

@@ -15,6 +15,7 @@ import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { FetchService } from './fetch.service';
+import { SpecVersionService } from './SpecVersions.service';
 
 jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
@@ -98,6 +99,7 @@ const mockDictionaryRet: Dictionary = {
   },
   //simulate after last process height update to 1000
   batchBlocks: [1000],
+  specVersions: {},
 };
 
 const mockDictionaryNoBatches: Dictionary = {
@@ -114,6 +116,7 @@ const mockDictionaryNoBatches: Dictionary = {
     rowCountEstimate: [{ table: '', estimate: 0 }],
   },
   batchBlocks: [],
+  specVersions: {},
 };
 
 const mockDictionaryBatches: Dictionary = {
@@ -130,6 +133,7 @@ const mockDictionaryBatches: Dictionary = {
     rowCountEstimate: [{ table: '', estimate: 0 }],
   },
   batchBlocks: [14000, 14200, 14300, 14500, 14600, 14700, 14800, 14900],
+  specVersions: {},
 };
 
 function mockDictionaryService(
@@ -224,6 +228,7 @@ function createFetchService(
     project,
     dictionaryService,
     new DsProcessorService(project),
+    new SpecVersionService(),
     new EventEmitter2(),
   );
 }
@@ -342,6 +347,7 @@ describe('FetchService', () => {
       project,
       dictionaryService,
       dsPluginService,
+      new SpecVersionService(),
       eventEmitter,
     );
 
@@ -405,6 +411,7 @@ describe('FetchService', () => {
       project,
       dictionaryService,
       dsPluginService,
+      new SpecVersionService(),
       eventEmitter,
     );
     await fetchService.init();
@@ -462,6 +469,7 @@ describe('FetchService', () => {
       project,
       dictionaryService,
       dsPluginService,
+      new SpecVersionService(),
       eventEmitter,
     );
     const nextEndBlockHeightSpy = jest.spyOn(

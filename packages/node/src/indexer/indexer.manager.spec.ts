@@ -20,6 +20,7 @@ import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { SandboxService } from './sandbox.service';
+import { SpecVersionService } from './SpecVersions.service';
 import { StoreService } from './store.service';
 
 jest.mock('sequelize', () => {
@@ -126,8 +127,9 @@ function testSubqueryProject_2(): SubqueryProject {
 function createIndexerManager(project: SubqueryProject): IndexerManager {
   const sequilize = new Sequelize();
   const eventEmitter = new EventEmitter2();
+  const specVersionService = new SpecVersionService();
 
-  const apiService = new ApiService(project, eventEmitter);
+  const apiService = new ApiService(project, specVersionService, eventEmitter);
   const dictionaryService = new DictionaryService(project);
 
   const dsPluginService = new DsProcessorService(project);
@@ -137,6 +139,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     project,
     dictionaryService,
     dsPluginService,
+    specVersionService,
     eventEmitter,
   );
   const poiService = new PoiService(nodeConfig, project, sequilize);

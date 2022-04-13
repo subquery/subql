@@ -62,6 +62,7 @@ describe('DictionaryService', () => {
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
+      startBlock,
       batchSize,
       HAPPY_PATH_CONDITIONS,
     );
@@ -80,6 +81,7 @@ describe('DictionaryService', () => {
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
+      startBlock,
       batchSize,
       HAPPY_PATH_CONDITIONS,
     );
@@ -95,6 +97,7 @@ describe('DictionaryService', () => {
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
+      1,
       batchSize,
       HAPPY_PATH_CONDITIONS,
     );
@@ -111,6 +114,7 @@ describe('DictionaryService', () => {
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
+      startBlock,
       batchSize,
       [
         {
@@ -134,6 +138,7 @@ describe('DictionaryService', () => {
     const dic = await dictionaryService.getDictionary(
       startBlock,
       endBlock,
+      1,
       batchSize,
       [
         {

@@ -16,12 +16,12 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { getYargsOption } from '../yargs';
+import { SpecVersionMap } from './SpecVersions.service';
 
 export type Dictionary = {
   _metadata: MetaData;
   batchBlocks: number[];
-  //TODO
-  // specVersions: number[];
+  specVersions: SpecVersionMap;
 };
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
@@ -124,6 +124,7 @@ export class DictionaryService implements OnApplicationShutdown {
    *
    * @param startBlock
    * @param queryEndBlock this block number will limit the max query range, increase dictionary query speed
+   * @param lastSpecVersionBlock this is the last block we have a known spec version for
    * @param batchSize
    * @param conditions
    */
@@ -132,15 +133,19 @@ export class DictionaryService implements OnApplicationShutdown {
   async getDictionary(
     startBlock: number,
     queryEndBlock: number,
+    lastSpecVersionBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[],
   ): Promise<Dictionary> {
     const { query, variables } = this.dictionaryQuery(
       startBlock,
       queryEndBlock,
+      lastSpecVersionBlock,
       batchSize,
       conditions,
     );
+
+    // logger.warn(`DICT QUERY ${query}, ${JSON.stringify(variables)}`)
 
     try {
       const resp = await this.client.query({
@@ -148,7 +153,7 @@ export class DictionaryService implements OnApplicationShutdown {
         variables,
       });
       const blockHeightSet = new Set<number>();
-      const specVersionBlockHeightSet = new Set<number>();
+      const specVersions: SpecVersionMap = {};
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
         if (
@@ -164,7 +169,7 @@ export class DictionaryService implements OnApplicationShutdown {
       }
       if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
         for (const node of resp.data.specVersions.nodes) {
-          specVersionBlockHeightSet.add(Number(node.blockHeight));
+          specVersions[node.blockHeight] = node.id;
         }
       }
       const _metadata = resp.data._metadata;
@@ -176,11 +181,12 @@ export class DictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
-      //TODO
+
       // const specVersions = Array.from(specVersionBlockHeightSet);
       return {
         _metadata,
         batchBlocks,
+        specVersions,
       };
     } catch (err) {
       logger.warn(err, `failed to fetch dictionary result`);
@@ -191,6 +197,7 @@ export class DictionaryService implements OnApplicationShutdown {
   private dictionaryQuery(
     startBlock: number,
     queryEndBlock: number,
+    lastSpecVersionBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[],
   ): GqlQuery {
@@ -217,6 +224,15 @@ export class DictionaryService implements OnApplicationShutdown {
             project: ['id', 'blockHeight'],
           },
         ],
+        args: {
+          filter: {
+            blockHeight: {
+              greaterThanEqualTo: `${lastSpecVersionBlock}`,
+            },
+          },
+          last: batchSize,
+          orderBy: 'BLOCK_HEIGHT_ASC',
+        },
       },
     ];
     for (const entity of Object.keys(mapped)) {

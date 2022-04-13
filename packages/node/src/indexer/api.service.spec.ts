@@ -8,6 +8,7 @@ import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { SpecVersionService } from './SpecVersions.service';
 
 jest.mock('@polkadot/api', () => {
   const ApiPromise = jest.fn();
@@ -69,9 +70,19 @@ function testSubqueryProject(): SubqueryProject {
 }
 
 describe('ApiService', () => {
+  let specVersionService: SpecVersionService;
+
+  beforeEach(() => {
+    specVersionService = new SpecVersionService();
+  });
+
   it('read custom types from project manifest', async () => {
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2());
+    const apiService = new ApiService(
+      project,
+      specVersionService,
+      new EventEmitter2(),
+    );
     await apiService.init();
     expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint);
     expect(ApiPromise.create).toHaveBeenCalledWith({
@@ -87,7 +98,11 @@ describe('ApiService', () => {
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
-    const apiService = new ApiService(project, new EventEmitter2());
+    const apiService = new ApiService(
+      project,
+      specVersionService,
+      new EventEmitter2(),
+    );
 
     await expect(apiService.init()).rejects.toThrow();
   });

@@ -35,6 +35,10 @@ import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
+import {
+  getSpecVersionBlockNumbers,
+  SpecVersionService,
+} from './SpecVersions.service';
 import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
@@ -119,7 +123,6 @@ export class FetchService implements OnApplicationShutdown {
   private blockBuffer: BlockedQueue<BlockContent>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
-  private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
@@ -130,6 +133,7 @@ export class FetchService implements OnApplicationShutdown {
     private project: SubqueryProject,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
+    private specVersionService: SpecVersionService,
     private eventEmitter: EventEmitter2,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
@@ -364,16 +368,18 @@ export class FetchService implements OnApplicationShutdown {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
             queryEndBlock,
+            this.specVersionService.lastQueriedHeight,
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
-          //TODO
-          // const specVersionMap = dictionary.specVersions;
           if (
             dictionary &&
             this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
-            const { batchBlocks } = dictionary;
+            const { batchBlocks, specVersions } = dictionary;
+
+            // Update the spec versions map
+            this.specVersionService.addSpecVersions(specVersions);
             if (batchBlocks.length === 0) {
               this.setLatestBufferedHeight(
                 Math.min(
@@ -419,13 +425,10 @@ export class FetchService implements OnApplicationShutdown {
       }
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const metadataChanged = await this.fetchMeta(
-        bufferBlocks[bufferBlocks.length - 1],
-      );
       const blocks = await fetchBlocksBatches(
         this.api,
         bufferBlocks,
-        metadataChanged ? undefined : this.parentSpecVersion,
+        this.useDictionary ? this.specVersionService.specVersions : undefined,
       );
       logger.info(
         `fetch block [${bufferBlocks[0]},${
@@ -441,19 +444,36 @@ export class FetchService implements OnApplicationShutdown {
 
   @profiler(argv.profiler)
   async fetchMeta(height: number): Promise<boolean> {
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
-      Math.max(height - 1, 0),
-    );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
-    const specVersion = runtimeVersion.specVersion.toNumber();
-    if (this.parentSpecVersion !== specVersion) {
+    if (!this.useDictionary) {
+      const parentBlockNumber = height - 1;
+      const parentBlockHash = await this.api.rpc.chain.getBlockHash(
+        Math.max(parentBlockNumber, 0),
+      );
+      const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
+        parentBlockHash,
+      );
+      const specVersion = runtimeVersion.specVersion.toNumber();
+
+      const parentSpecVersion = this.specVersionService.getSpecVersion(
+        parentBlockNumber - 1,
+      );
+
+      if (parentSpecVersion !== specVersion) {
+        const blockHash = await this.api.rpc.chain.getBlockHash(height);
+        await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+
+        this.specVersionService.addSpecVersions({
+          [parentBlockNumber]: specVersion,
+        });
+        return true;
+      }
+      return false;
+    } else if (this.specVersionService.specVersions[height]) {
       const blockHash = await this.api.rpc.chain.getBlockHash(height);
       await SubstrateUtil.prefetchMetadata(this.api, blockHash);
-      this.parentSpecVersion = specVersion;
       return true;
     }
+
     return false;
   }
 
@@ -470,7 +490,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private dictionaryValidation(
-    { _metadata: metaData }: Dictionary,
+    { _metadata: metaData, specVersions }: Dictionary,
     startBlockHeight: number,
   ): boolean {
     if (metaData.genesisHash !== this.api.genesisHash.toString()) {
@@ -489,6 +509,16 @@ export class FetchService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
     }
+
+    if (
+      Math.min(...getSpecVersionBlockNumbers(specVersions)) > startBlockHeight
+    ) {
+      logger.warn(`Spec versions not within correct range`);
+
+      // TODO disable
+    }
+
+    // TODO validate spec versions
     return true;
   }
 

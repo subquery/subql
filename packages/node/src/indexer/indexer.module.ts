@@ -15,6 +15,7 @@ import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { SandboxService } from './sandbox.service';
+import { SpecVersionService } from './SpecVersions.service';
 import { StoreService } from './store.service';
 
 @Module({
@@ -26,13 +27,18 @@ import { StoreService } from './store.service';
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
+        specVersionService: SpecVersionService,
         eventEmitter: EventEmitter2,
       ) => {
-        const apiService = new ApiService(project, eventEmitter);
+        const apiService = new ApiService(
+          project,
+          specVersionService,
+          eventEmitter,
+        );
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject, EventEmitter2],
+      inject: [SubqueryProject, SpecVersionService, EventEmitter2],
     },
     FetchService,
     BenchmarkService,
@@ -42,6 +48,7 @@ import { StoreService } from './store.service';
     DynamicDsService,
     PoiService,
     MmrService,
+    SpecVersionService,
   ],
   exports: [StoreService],
 })

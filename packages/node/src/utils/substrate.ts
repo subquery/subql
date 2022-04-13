@@ -21,6 +21,7 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
+import { SpecVersionMap } from '../indexer/SpecVersions.service';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 const logger = getLogger('fetch');
@@ -210,7 +211,7 @@ export async function fetchBlocks(
     const events = blockEvents[idx];
     const parentSpecVersion = overallSpecVer
       ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
+      : runtimeVersions[idx];
 
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
@@ -311,38 +312,73 @@ export async function fetchEventsRange(
 export async function fetchRuntimeVersionRange(
   api: ApiPromise,
   hashs: BlockHash[],
-): Promise<RuntimeVersion[]> {
-  return Promise.all(
-    hashs.map((hash) =>
-      api.rpc.state.getRuntimeVersion(hash).catch((e) => {
+): Promise<number[]> {
+  logger.warn('fetchRuntimeVersionRange');
+
+  const fn = (hash: BlockHash) =>
+    api.rpc.state
+      .getRuntimeVersion(hash)
+      .then((runtimeVersion) => runtimeVersion.specVersion.toNumber())
+      .catch((e) => {
         logger.error(`failed to fetch RuntimeVersion at block ${hash}`);
         throw e;
-      }),
-    ),
+      });
+
+  if (hashs.length <= 2) {
+    return Promise.all(hashs.map((hash) => fn(hash)));
+  }
+
+  const last = hashs.pop();
+  const [first, ...rest] = hashs;
+
+  const [firstVersion, lastVersion] = await Promise.all([fn(first), fn(last)]);
+
+  if (firstVersion === lastVersion) {
+    return [firstVersion, ...rest.map(() => firstVersion), lastVersion];
+  }
+
+  logger.warn(`Runtime version changed, fetching for whole batch`);
+
+  return Promise.all([
+    firstVersion,
+    ...rest.map((hash) => fn(hash)),
+    lastVersion,
+  ]);
+}
+
+export function getSpecVersion(
+  specVersions: SpecVersionMap,
+  blockNumber: number,
+): number | undefined {
+  const specVersionBlock = Math.max(
+    ...Object.keys(specVersions)
+      .map((key) => parseInt(key, 10))
+      .filter((key) => key <= blockNumber),
   );
+
+  return specVersions[specVersionBlock];
 }
 
 export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray: number[],
-  overallSpecVer?: number,
-  // specVersionMap?: number[],
+  specVersionMap?: SpecVersionMap,
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    overallSpecVer
+    specVersionMap
       ? undefined
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
+    const specVersion = specVersionMap
+      ? getSpecVersion(specVersionMap, block.block.header.number.toNumber())
+      : runtimeVersions[idx];
+    const wrappedBlock = wrapBlock(block, events.toArray(), specVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
     return {
