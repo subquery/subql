@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { UrlWithStringQuery } from 'url';
 import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -20,6 +19,7 @@ import {
   SubqlTerraEventFilter,
   SubqlTerraMessageFilter,
   SubqlTerraMessageHandler,
+  DictionaryQueryEntry,
   DictionaryQueryCondition,
 } from '@subql/types-terra';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
@@ -35,7 +35,6 @@ import { ApiTerraService, TerraClient } from './apiterra.service';
 import { BlockedQueue } from './BlockedQueue';
 import {
   TerraDictionary,
-  DictionaryQueryEntry,
   TerraDictionaryService,
 } from './dictionaryterra.service';
 import { IndexerEvent } from './events';
@@ -81,12 +80,10 @@ function eventFilterToQueryEntry(
     if (filter.messageFilter.values !== undefined) {
       conditions.push({
         field: 'data',
-        value: JSON.stringify(
-          Object.keys(filter.messageFilter.values).map((key) => ({
-            key: key,
-            value: filter.messageFilter.values[key],
-          })),
-        ),
+        value: Object.keys(filter.messageFilter.values).map((key) => ({
+          key: key,
+          value: filter.messageFilter.values[key],
+        })),
         matcher: 'contains',
       });
     }
@@ -110,12 +107,10 @@ function messageFilterToQueryEntry(
   if (filter.values !== undefined) {
     conditions.push({
       field: 'data',
-      value: JSON.stringify(
-        Object.keys(filter.values).map((key) => ({
-          key: key,
-          value: filter.values[key],
-        })),
-      ),
+      value: Object.keys(filter.values).map((key) => ({
+        key: key,
+        value: filter.values[key],
+      })),
       matcher: 'contains',
     });
     return {
@@ -436,7 +431,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     startBlockHeight: number,
   ): Promise<boolean> {
     const nodeInfo = await this.api.nodeInfo();
-    if (metaData.chainId !== nodeInfo.default_node_info.network) {
+    if (metaData.chain !== nodeInfo.default_node_info.network) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {

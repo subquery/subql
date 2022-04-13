@@ -16,6 +16,10 @@ import {
   GqlVar,
   TerraMetaData,
 } from '@subql/common';
+import {
+  DictionaryQueryCondition,
+  DictionaryQueryEntry,
+} from '@subql/types-terra';
 import fetch from 'node-fetch';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
@@ -30,21 +34,10 @@ export type TerraDictionary = {
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
 
-interface DictionaryQueryCondition {
-  field: string;
-  value: string;
-  matcher: string; // defaults to equal to
-}
-
-export interface DictionaryQueryEntry {
-  entity: string;
-  conditions: DictionaryQueryCondition[];
-}
-
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
     name,
-    gqlType: 'String!',
+    gqlType: typeof cond.value === 'string' ? 'String!' : 'JSON!',
     value: cond.value,
   };
 }
@@ -169,25 +162,15 @@ export class TerraDictionaryService implements OnApplicationShutdown {
         variables,
       });
       const blockHeightSet = new Set<number>();
-      //const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
-        if (
-          //entity !== 'specVersions' &&
-          entity !== '_metadata' &&
-          resp.data[entity].nodes.length >= 0
-        ) {
+        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
             entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
           }
         }
       }
-      //if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
-      //  for (const node of resp.data.specVersions.nodes) {
-      //    specVersionBlockHeightSet.add(Number(node.blockHeight));
-      //  }
-      //}
       const _metadata = resp.data._metadata;
       const endBlock = Math.min(
         ...Object.values(entityEndBlock).map((height) =>
@@ -197,8 +180,6 @@ export class TerraDictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
-      //TODO
-      // const specVersions = Array.from(specVersionBlockHeightSet);
       return {
         _metadata,
         batchBlocks,
@@ -228,17 +209,8 @@ export class TerraDictionaryService implements OnApplicationShutdown {
     const nodes: GqlNode[] = [
       {
         entity: '_metadata',
-        project: ['lastProcessedHeight', 'chainId'],
+        project: ['lastProcessedHeight', 'chain'],
       },
-      //{
-      //  entity: 'specVersions',
-      //  project: [
-      //    {
-      //      entity: 'nodes',
-      //      project: ['id', 'blockHeight'],
-      //    },
-      //  ],
-      //},
     ];
     for (const entity of Object.keys(mapped)) {
       const [pVars, node] = buildDictQueryFragment(
