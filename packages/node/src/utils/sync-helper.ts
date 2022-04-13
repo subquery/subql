@@ -72,9 +72,12 @@ export function dropNotifyTrigger(schema: string, table: string): string {
     ON "${schema}"."${table}";`;
 }
 
+export function getNotifyTriggers(schema: string, table: string): string {
+  return `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
+          WHERE trigger_name = '${schema}_${table}_notify_trigger'`;
+}
 export function createNotifyTrigger(schema: string, table: string): string {
   return `
-${dropNotifyTrigger(schema, table)}
 CREATE TRIGGER "${schema}_${table}_notify_trigger"
     AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."${table}"

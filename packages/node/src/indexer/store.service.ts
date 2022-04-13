@@ -22,6 +22,7 @@ import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import { camelCaseObjectKey } from '../utils/object';
 import {
+  getNotifyTriggers,
   commentConstraintQuery,
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
@@ -43,6 +44,7 @@ import { OperationType } from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const { argv } = getYargsOption();
+const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
 interface IndexField {
   entityName: string;
@@ -51,6 +53,10 @@ interface IndexField {
   type: string;
 }
 
+interface NotifyTriggerPayload {
+  triggerName: string;
+  eventManipulation: string;
+}
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -164,9 +170,22 @@ export class StoreService {
         indexes,
       });
       if (argv.subscription) {
-        extraQueries.push(
-          createNotifyTrigger(schema, sequelizeModel.tableName),
+        const [triggers] = await this.sequelize.query(
+          getNotifyTriggers(schema, sequelizeModel.tableName),
         );
+
+        // Triggers not been found
+        if (triggers.length === 0) {
+          extraQueries.push(
+            createNotifyTrigger(schema, sequelizeModel.tableName),
+          );
+        } else {
+          const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
+          this.validateNotifyTriggers(
+            triggerName,
+            triggers as NotifyTriggerPayload[],
+          );
+        }
       } else {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
       }
@@ -238,6 +257,24 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+  }
+
+  validateNotifyTriggers(
+    triggerName: string,
+    triggers: NotifyTriggerPayload[],
+  ) {
+    if (triggers.length !== NotifyTriggerManipulationType.length) {
+      throw new Error(
+        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
+      );
+    }
+    triggers.map((t) => {
+      if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
+        throw new Error(
+          `Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`,
+        );
+      }
+    });
   }
 
   enumNameToHash(enumName: string): string {
