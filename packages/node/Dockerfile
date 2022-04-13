@@ -1,14 +1,24 @@
-# production images
-FROM node:16 as builder
-ARG RELEASE_VERSION
-ENTRYPOINT ["subql-node"]
-RUN npm i -g --unsafe-perm @subql/node@${RELEASE_VERSION}
+FROM node:14 as builder
+WORKDIR /workdir
 
-FROM node:16-alpine
+
+
+COPY . .
+RUN yarn install
+
+
+RUN yarn workspace @subql/node build
+
+# production images
+FROM node:14-alpine
 ENV TZ utc
 
-RUN apk add --no-cache tini git curl
-COPY --from=builder /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN apk add --no-cache tini
+ENTRYPOINT ["/sbin/tini", "--", "node", "./dist/main.js"]
 
-ENTRYPOINT ["/sbin/tini", "--", "/usr/local/lib/node_modules/@subql/node/bin/run"]
+WORKDIR /workdir
+COPY --from=builder /workdir .
+
+
+WORKDIR /workdir/packages/node
 CMD ["-f","/app"]

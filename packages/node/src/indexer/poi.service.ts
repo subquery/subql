@@ -16,6 +16,7 @@ export class PoiService implements OnApplicationShutdown {
   private latestPoiBlockHash: Uint8Array;
   private poiRepo: PoiRepo;
   private schema: string;
+  private offsetEnsured: false;
   private latestPoiBlock: ProofOfIndex;
 
   constructor(

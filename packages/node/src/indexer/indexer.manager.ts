@@ -14,7 +14,6 @@ import {
   isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
-  SubstrateProjectNetworkConfig,
   SubstrateCustomDataSource,
   SubstrateCustomHandler,
   SubstrateHandlerKind,
@@ -59,6 +58,7 @@ export class IndexerManager {
   private prevSpecVersion?: number;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
+  private blockOffset: number;
 
   constructor(
     private storeService: StoreService,
@@ -170,6 +170,14 @@ export class IndexerManager {
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
     this.prevSpecVersion = block.specVersion;
     if (this.nodeConfig.proofOfIndex) {
+      if (this.blockOffset === undefined) {
+        await this.metadataRepo.upsert({
+          key: 'blockOffset',
+          value: blockHeight - 1,
+        });
+        this.blockOffset = blockHeight - 1;
+        logger.info(`set blockoffset ${this.blockOffset}`);
+      }
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
     }
   }
@@ -182,6 +190,13 @@ export class IndexerManager {
     await this.initDbSchema(schema);
     this.metadataRepo = await this.ensureMetadata(schema);
     this.dynamicDsService.init(this.metadataRepo);
+
+    const blockOffset = await this.metadataRepo.findOne({
+      where: { key: 'blockOffset' },
+    });
+    if (blockOffset !== null && blockOffset.value !== null) {
+      this.blockOffset = Number(blockOffset.value);
+    }
 
     if (this.nodeConfig.proofOfIndex) {
       await Promise.all([
@@ -216,6 +231,7 @@ export class IndexerManager {
     this.fetchService.register((block) => this.indexBlock(block));
 
     if (this.nodeConfig.proofOfIndex) {
+      await this.mmrService.ensureStartHeight();
       void this.mmrService.syncFileBaseFromPoi().catch((err) => {
         logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
@@ -355,12 +371,6 @@ export class IndexerManager {
 
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
-    // blockOffset and genesisHash should only have been created once, never updated.
-    // If blockOffset is changed, will require re-index and re-sync poi.
-    if (!keyValue.blockOffset) {
-      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
-    }
     if (this.project.runner) {
       await Promise.all([
         metadataRepo.upsert({
