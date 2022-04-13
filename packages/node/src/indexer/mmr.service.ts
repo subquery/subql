@@ -53,7 +53,7 @@ export class MmrService implements OnApplicationShutdown {
     // For example, start indexing from block 5, the offset is 4.
     // Which means, the 1st leaf of mmr present 5th indexing block data
     this.blockOffset = await this.awaitFetchBlockOffsetFromDb();
-    this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
   }
 
   async ensureStartHeight() {
@@ -153,6 +153,9 @@ export class MmrService implements OnApplicationShutdown {
       logger.info(
         `estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight} === nextLeafIndex ${nextLeafIndex}`,
       );
+      logger.info(
+        `await this.fileBasedMmr.append(newLeaf ${newLeaf}, estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight});`,
+      );
       await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
       mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
     } else {
@@ -235,12 +238,12 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  ensureFileBasedMmr(projectMmrPath: string) {
+  async ensureFileBasedMmr(projectMmrPath: string) {
     let fileBasedDb: FileBasedDb;
     if (fs.existsSync(projectMmrPath)) {
-      fileBasedDb = FileBasedDb.open(projectMmrPath);
+      fileBasedDb = await FileBasedDb.open(projectMmrPath);
     } else {
-      fileBasedDb = FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
+      fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
     }
     this.fileBasedMmr = new MMR(keccak256FlyHash, fileBasedDb);
   }

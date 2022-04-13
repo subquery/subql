@@ -5012,7 +5012,7 @@ __metadata:
     "@subql/common": latest
     "@subql/common-substrate": latest
     "@subql/types": latest
-    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
+    "@subql/x-merkle-mountain-range": "file:.yalc/@subql/x-merkle-mountain-range"
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -5133,6 +5133,21 @@ __metadata:
     package-json-type: ^1.0.3
   languageName: unknown
   linkType: soft
+
+"@subql/x-merkle-mountain-range@file:.yalc/@subql/x-merkle-mountain-range::locator=%40subql%2Fnode%40workspace%3Apackages%2Fnode":
+  version: 2.0.0-0.1.2
+  resolution: "@subql/x-merkle-mountain-range@file:.yalc/@subql/x-merkle-mountain-range#.yalc/@subql/x-merkle-mountain-range::hash=b7a6f6&locator=%40subql%2Fnode%40workspace%3Apackages%2Fnode"
+  dependencies:
+    bignumber.js: ^8.1.1
+    buffer: ^5.4.3
+    js-sha3: ^0.8.0
+    level: ^6.0.0
+    rlp: ^2.2.3
+    semaphore-async-await: ^1.5.1
+    sha.js: ^2.4.11
+  checksum: 62f70cce302dd2785b2781a4fec3b0f95ced32c1a3b1ea1223ffbb5ef5d4fa243de4bf7e86c207fb504340ae9b9015e16f8703626457a4799a2b9dd18c3eb245
+  languageName: node
+  linkType: hard
 
 "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1":
   version: 2.0.0-0.1.1
