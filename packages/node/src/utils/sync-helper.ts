@@ -72,9 +72,9 @@ export function dropNotifyTrigger(schema: string, table: string): string {
     ON "${schema}"."${table}";`;
 }
 
-export function getNotifyTriggers(schema: string, table: string): string {
+export function getNotifyTriggers(): string {
   return `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
-          WHERE trigger_name = '${schema}_${table}_notify_trigger'`;
+          WHERE trigger_name = :triggerName`;
 }
 export function createNotifyTrigger(schema: string, table: string): string {
   return `

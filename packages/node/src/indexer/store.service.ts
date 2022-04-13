@@ -7,7 +7,7 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
-import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
+import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
 import {
   CreationAttributes,
   Model,
@@ -22,13 +22,13 @@ import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import { camelCaseObjectKey } from '../utils/object';
 import {
-  getNotifyTriggers,
   commentConstraintQuery,
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
   dropNotifyTrigger,
   getFkConstraint,
+  getNotifyTriggers,
   smartTags,
 } from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
@@ -41,6 +41,7 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
+
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const { argv } = getYargsOption();
@@ -170,17 +171,17 @@ export class StoreService {
         indexes,
       });
       if (argv.subscription) {
-        const [triggers] = await this.sequelize.query(
-          getNotifyTriggers(schema, sequelizeModel.tableName),
-        );
-
+        const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
+        const triggers = await this.sequelize.query(getNotifyTriggers(), {
+          replacements: { triggerName },
+          type: QueryTypes.SELECT,
+        });
         // Triggers not been found
         if (triggers.length === 0) {
           extraQueries.push(
             createNotifyTrigger(schema, sequelizeModel.tableName),
           );
         } else {
-          const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
           this.validateNotifyTriggers(
             triggerName,
             triggers as NotifyTriggerPayload[],
