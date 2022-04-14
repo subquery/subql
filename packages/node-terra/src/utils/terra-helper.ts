@@ -26,7 +26,7 @@ function filterMessageData(
   data: TerraMessage,
   filter: SubqlTerraMessageFilter,
 ): boolean {
-  if (filter.type !== data.msg['@type']) {
+  if (filter.type !== data.msg.toData()['@type']) {
     return false;
   }
   if (filter.values) {
