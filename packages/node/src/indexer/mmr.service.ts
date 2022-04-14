@@ -115,7 +115,6 @@ export class MmrService implements OnApplicationShutdown {
       if (blockOffset === null) {
         await delay(MMR_AWAIT_TIME);
       }
-      logger.info(`get the offset value ${blockOffset.value}`);
       return Number(blockOffset.value);
     }
   }
@@ -130,15 +129,8 @@ export class MmrService implements OnApplicationShutdown {
     }
     // The estimate mmr leaf index from provided poi block height
     const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
-    logger.info(
-      `    const estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight} = poiBlock.id ${poiBlock.id} - this.blockOffset - 1;`,
-    );
     // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
     const nextLeafIndex = await this.fileBasedMmr.getLeafLength();
-    logger.info(
-      `const nextLeafIndex ${nextLeafIndex} = await this.fileBasedMmr.getLeafLength()`,
-    );
-
     // For example, current provided poi block id is 8, offset is 0, and current mmr have 7 blocks mmr stored in file based mmr
     // In addition, the last block 7 is at mmr index position 6.
     // estLeafIndexByBlockHeight is 7, means we expect block 8 mmr data to be stored in mmr at index position 7.
@@ -150,21 +142,11 @@ export class MmrService implements OnApplicationShutdown {
 
     if (estLeafIndexByBlockHeight === nextLeafIndex) {
       // new leaf will be append at mmr index 7
-      logger.info(
-        `estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight} === nextLeafIndex ${nextLeafIndex}`,
-      );
-      logger.info(
-        `await this.fileBasedMmr.append(newLeaf ${newLeaf}, estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight});`,
-      );
       await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
       mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
     } else {
-      logger.error(
-        `estLeafIndexByBlockHeight ${estLeafIndexByBlockHeight} !== nextLeafIndex ${nextLeafIndex}`,
-      );
       throw new Error(`Poi block height and mmr height mismatch`);
     }
-    logger.info(`updatePoiMmrRoot, block ${poiBlock.id}, ${u8aToHex(mmrRoot)}`);
     await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
@@ -195,26 +177,14 @@ export class MmrService implements OnApplicationShutdown {
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
-            logger.info(
-              `let i = this.nextMmrBlockHeight ${this.nextMmrBlockHeight}; i < block.id ${block.id}; i++`,
-            );
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
               await this.fileBasedMmr.append(DEFAULT_LEAF);
               const mmrRoot = await this.fileBasedMmr.getRoot(
                 i - this.blockOffset - 1,
               );
-
-              logger.info(
-                `filebase mmr at block height ${i}, : ${u8aToHex(mmrRoot)}`,
-              );
-
               this.nextMmrBlockHeight = i + 1;
             }
-            logger.info(
-              `finish append default leaf, current filebased mmr length(block height) ${await this.fileBasedMmr.getLeafLength()}`,
-            );
           }
-          logger.info(`await this.appendMmrNode(block); ${block.id}`);
           await this.appendMmrNode(block);
         }
       } else {
@@ -252,7 +222,6 @@ export class MmrService implements OnApplicationShutdown {
     const deleteBlockHeight = blockHeight
       ? blockHeight - this.blockOffset - 1
       : 0;
-    logger.info(`this.fileBasedMmr.delete(${deleteBlockHeight})`);
     await this.fileBasedMmr.delete(
       blockHeight ? blockHeight - this.blockOffset - 1 : 0,
     ); //if next start block we want it be 5000, then we have to delete(4999)
