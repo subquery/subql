@@ -23,7 +23,7 @@ export type TerraMetaData = {
   lastProcessedHeight: number;
   lastProcessedTimestamp: number;
   targetHeight: number;
-  chainId: string;
+  chain: string; // Was a bug in the dictionary, should have been chainId
   indexerHealthy: boolean;
   indexerNodeVersion: string;
   queryNodeVersion: string;

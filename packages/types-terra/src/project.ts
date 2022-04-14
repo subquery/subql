@@ -163,8 +163,8 @@ export interface SubqlTerraDatasourceProcessor<
 
 export interface DictionaryQueryCondition {
   field: string;
-  value: string;
-  matcher: string;
+  value: string | Record<string, string> | Array<Record<string, string>>;
+  matcher?: string; // defaults to "equalTo", use "contains" for JSON
 }
 
 export interface DictionaryQueryEntry {
