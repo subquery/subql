@@ -1,0 +1,3 @@
+undecided:
+  - "@subql/common"
+  - "@subql/types-terra"
