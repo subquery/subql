@@ -14,7 +14,7 @@ import { TerraDictionaryService } from './dictionaryterra.service';
 import { FetchTerraService } from './fetchterra.service';
 import { TerraDsProcessorService } from './terrads-processor.service';
 
-const ENDPOINT = 'https://terra.stakesystems.io';
+const ENDPOINT = 'https://terra-columbus-5.beta.api.onfinality.io';
 const CHAIN_ID = 'columbus-5';
 
 function testTerraProject(): SubqueryTerraProject {
