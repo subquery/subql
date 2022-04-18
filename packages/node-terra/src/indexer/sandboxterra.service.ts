@@ -129,9 +129,9 @@ export class SandboxTerraService {
       this.processorCache[entry] = processor;
     }
     /* Disable api because we cannot set to a point in time */
-    // processor.freeze(this.apiService.getApi(), 'api');
+    // processor.freeze(this.apiService.getApi().LCDClient, 'api');
     if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi(), 'unsafeApi');
+      processor.freeze(this.apiService.getApi().LCDClient, 'unsafeApi');
     }
     return processor;
   }

@@ -174,6 +174,7 @@ export class TerraClient {
     const { data } = await this._mantlemintConnection.get(
       `/index/tx/by_height/${height}`,
     );
+    // Changes are to cover minor differences between mantlemint and LCD
     return data.map((d) => {
       d.logs = d.logs.map((log) => {
         log.log = log.log ?? '';
@@ -185,7 +186,7 @@ export class TerraClient {
     });
   }
 
-  get getLCDClient(): LCDClient {
+  get LCDClient(): LCDClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
   }
