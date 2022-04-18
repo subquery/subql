@@ -22,7 +22,7 @@ import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
 
-function filterMessageData(
+export function filterMessageData(
   data: TerraMessage,
   filter: SubqlTerraMessageFilter,
 ): boolean {
@@ -184,12 +184,11 @@ export function wrapEvent(
   const events: TerraEvent[] = [];
   for (const tx of txs) {
     for (const log of tx.tx.logs as TxLog[]) {
-      const msg_index = log.msg_index ?? 0;
       const msg: TerraMessage = {
-        idx: msg_index,
+        idx: log.msg_index,
         tx: tx,
         block: block,
-        msg: tx.tx.tx.body.messages[msg_index],
+        msg: tx.tx.tx.body.messages[log.msg_index],
       };
       for (let i = 0; i < log.events.length; i++) {
         const event: TerraEvent = {

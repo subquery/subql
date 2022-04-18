@@ -174,7 +174,15 @@ export class TerraClient {
     const { data } = await this._mantlemintConnection.get(
       `/index/tx/by_height/${height}`,
     );
-    return data;
+    return data.map((d) => {
+      d.logs.map((log) => {
+        log.log = log.log ?? '';
+        log.msg_index = log.msg_index ?? 0;
+        return log;
+      });
+      d.timestamp = d.timestamp.replace(/\.\d+/, '');
+      return TxInfo.fromData(d);
+    });
   }
 
   get getLCDClient(): LCDClient {
