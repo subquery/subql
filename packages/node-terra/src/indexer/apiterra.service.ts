@@ -186,7 +186,7 @@ export class TerraClient {
     });
   }
 
-  get getLCDClient(): LCDClient {
+  get LCDClient(): LCDClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
   }

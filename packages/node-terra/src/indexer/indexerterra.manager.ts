@@ -414,7 +414,7 @@ export class IndexerTerraManager {
       if (isCustomTerraDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api.getLCDClient);
+          .dsFilterProcessor(ds, this.api.LCDClient);
       } else {
         return true;
       }
@@ -492,7 +492,7 @@ export class IndexerTerraManager {
         filteredData
           .filter((data) => processor.filterProcessor(handler.filter, data, ds))
           .map((data) =>
-            processor.transformer(data, ds, this.api.getLCDClient, assets),
+            processor.transformer(data, ds, this.api.LCDClient, assets),
           ),
       );
       for (const data of transformedData) {
