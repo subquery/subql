@@ -175,7 +175,7 @@ export class TerraClient {
       `/index/tx/by_height/${height}`,
     );
     return data.map((d) => {
-      d.logs.map((log) => {
+      d.logs = d.logs.map((log) => {
         log.log = log.log ?? '';
         log.msg_index = log.msg_index ?? 0;
         return log;
