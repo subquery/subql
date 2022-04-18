@@ -180,7 +180,7 @@ export class TerraClient {
         log.msg_index = log.msg_index ?? 0;
         return log;
       });
-      d.timestamp = d.timestamp.replace(/\.\d+/, '');
+      d.timestamp = d.timestamp ? d.timestamp.replace(/\.\d+/, '') : '';
       return TxInfo.fromData(d);
     });
   }
