@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.3.1] - 2022-04-19
+### Updated
+- Fix dictionary queries (#893)
+
 ## [0.3.0] - 2022-04-06
 ### Changed
 - Update project type in order support terra manifest 1.0.0 (#845)
