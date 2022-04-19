@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.5.2] - 2022-04-19
+### Fixed
+- Dictionary queries, invalid response (#893)
+- Fix injecting wrong api object to sandbox (#896)
+- Parse TxInfo from mantlemint (#897)
+
 ## [0.5.1] - 2022-04-13
 ### Changed
 - Renamed `mantlemint` cli flag to `network-mantlemint` and fix overwriting project endpoint (#889)
