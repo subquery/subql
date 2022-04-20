@@ -59,6 +59,7 @@ export class IndexerManager {
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
   private blockOffset: number;
+  private schema: string;
 
   constructor(
     private storeService: StoreService,
@@ -158,8 +159,19 @@ export class IndexerManager {
             await this.poiService.getLatestPoiBlockHash(),
             this.project.id,
           );
+          if (this.blockOffset === undefined) {
+            await this.metadataRepo.upsert(
+              {
+                key: 'blockOffset',
+                value: blockHeight - 1,
+              },
+              { transaction: tx },
+            );
+            this.setBlockOffset(blockHeight - 1);
+          }
           poiBlockHash = poiBlock.hash;
           await this.storeService.setPoi(poiBlock, { transaction: tx });
+          this.poiService.setLatestPoiBlockHash(poiBlockHash);
         }
       }
     } catch (e) {
@@ -169,40 +181,25 @@ export class IndexerManager {
     await tx.commit();
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
     this.prevSpecVersion = block.specVersion;
-    if (this.nodeConfig.proofOfIndex) {
-      if (this.blockOffset === undefined) {
-        await this.metadataRepo.upsert({
-          key: 'blockOffset',
-          value: blockHeight - 1,
-        });
-        this.blockOffset = blockHeight - 1;
-        logger.info(`set blockoffset ${this.blockOffset}`);
-      }
-      this.poiService.setLatestPoiBlockHash(poiBlockHash);
-    }
   }
 
   async start(): Promise<void> {
     await this.dsProcessorService.validateProjectCustomDatasources();
     await this.fetchService.init();
     this.api = this.apiService.getApi();
-    const schema = await this.ensureProject();
-    await this.initDbSchema(schema);
-    this.metadataRepo = await this.ensureMetadata(schema);
+    this.schema = await this.ensureProject();
+    await this.initDbSchema();
+    this.metadataRepo = await this.ensureMetadata();
     this.dynamicDsService.init(this.metadataRepo);
 
-    const blockOffset = await this.metadataRepo.findOne({
-      where: { key: 'blockOffset' },
-    });
-    if (blockOffset !== null && blockOffset.value !== null) {
-      this.blockOffset = Number(blockOffset.value);
-    }
-
     if (this.nodeConfig.proofOfIndex) {
-      await Promise.all([
-        this.poiService.init(schema),
-        this.mmrService.init(schema),
-      ]);
+      const blockOffset = await this.metadataRepo.findOne({
+        where: { key: 'blockOffset' },
+      });
+      if (blockOffset !== null && blockOffset.value !== null) {
+        this.setBlockOffset(Number(blockOffset.value));
+      }
+      await Promise.all([this.poiService.init(this.schema)]);
     }
 
     let startHeight: number;
@@ -229,14 +226,17 @@ export class IndexerManager {
     });
     this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
+  }
 
-    if (this.nodeConfig.proofOfIndex) {
-      await this.mmrService.ensureStartHeight();
-      void this.mmrService.syncFileBaseFromPoi().catch((err) => {
+  private setBlockOffset(offset: number): void {
+    this.blockOffset = offset;
+    logger.info(`set blockoffset to ${offset}`);
+    void this.mmrService
+      .syncFileBaseFromPoi(this.schema, this.blockOffset)
+      .catch((err) => {
         logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
       });
-    }
   }
 
   private async ensureProject(): Promise<string> {
@@ -330,14 +330,14 @@ export class IndexerManager {
     return schema;
   }
 
-  private async initDbSchema(schema: string): Promise<void> {
+  private async initDbSchema(): Promise<void> {
     const graphqlSchema = this.project.schema;
     const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, schema);
+    await this.storeService.init(modelsRelations, this.schema);
   }
 
-  private async ensureMetadata(schema: string): Promise<MetadataRepo> {
-    const metadataRepo = MetadataFactory(this.sequelize, schema);
+  private async ensureMetadata(): Promise<MetadataRepo> {
+    const metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
     const project = await this.subqueryRepo.findOne({
       where: { name: this.nodeConfig.subqueryName },

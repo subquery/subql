@@ -4808,27 +4808,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-substrate@npm:latest":
-  version: 0.3.0
-  resolution: "@subql/common-substrate@npm:0.3.0"
-  dependencies:
-    "@polkadot/util": ^8
-    "@subql/common": 0.21.0
-    "@subql/types": 0.14.0
-    bn.js: 4.11.6
-    class-transformer: 0.4.0
-    class-validator: ^0.13.2
-    flatted: ^3.2.2
-    graphql: ^15.7.2
-    graphql-tag: ^2.12.5
-    js-yaml: ^4.1.0
-    pino: ^6.13.3
-    reflect-metadata: ^0.1.13
-    sequelize: ^6.6.2
-  checksum: 67f1a6e4b7829946a2c83424429588c6427dde7e5b1aea6fde2cbb5409848289901abdc534aadfd50c30aed1e51592b2aea797a77ec81f151724f3594263a686
-  languageName: node
-  linkType: hard
-
 "@subql/common-substrate@workspace:*, @subql/common-substrate@workspace:packages/common-substrate":
   version: 0.0.0-use.local
   resolution: "@subql/common-substrate@workspace:packages/common-substrate"
@@ -4873,7 +4852,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@0.21.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -4905,33 +4884,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:latest":
-  version: 0.21.0
-  resolution: "@subql/common@npm:0.21.0"
-  dependencies:
-    "@polkadot/util": ^8
-    ansi-styles: ^6.1.0
-    bn.js: 5.2.0
-    chalk: ^4.1.2
-    class-transformer: 0.5.1
-    class-validator: ^0.13.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    ipfs-http-client: ^52.0.3
-    js-yaml: ^4.1.0
-    pino: ^6.13.3
-    reflect-metadata: ^0.1.13
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.5
-    sequelize: ^6.15.0
-    tar: ^6.1.11
-    vm2: 3.9.9
-  checksum: afd6af40dd648403df9d340a2dc6d13561545a75e647136917e5f808d36c0c45c06a17bbf0c6b3f8f93f29e46c119df0f0814df7d2af50afd3d2a894b7284894
-  languageName: node
-  linkType: hard
-
 "@subql/contract-processors@workspace:packages/contract-processors":
   version: 0.0.0-use.local
   resolution: "@subql/contract-processors@workspace:packages/contract-processors"
@@ -4962,7 +4914,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
-    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -5009,10 +4961,10 @@ __metadata:
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
     "@polkadot/api": 7.14.3
-    "@subql/common": latest
-    "@subql/common-substrate": latest
-    "@subql/types": latest
-    "@subql/x-merkle-mountain-range": "file:.yalc/@subql/x-merkle-mountain-range"
+    "@subql/common": "workspace:*"
+    "@subql/common-substrate": "workspace:*"
+    "@subql/types": "workspace:*"
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -5100,7 +5052,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types@0.14.0, @subql/types@workspace:*, @subql/types@workspace:packages/types":
+"@subql/types@workspace:*, @subql/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@subql/types@workspace:packages/types"
   dependencies:
@@ -5110,15 +5062,6 @@ __metadata:
     "@polkadot/api": ^7
   languageName: unknown
   linkType: soft
-
-"@subql/types@npm:latest":
-  version: 0.14.0
-  resolution: "@subql/types@npm:0.14.0"
-  peerDependencies:
-    "@polkadot/api": ^7
-  checksum: f926b588de1b903014c0da384dfce4b4ad423673b63a7821fcf1357c529ee55b34da8111787115da0aaab8c5f8ea0d3ef19540aad047ae13b30c033dd54c4014
-  languageName: node
-  linkType: hard
 
 "@subql/validator@workspace:*, @subql/validator@workspace:packages/validator":
   version: 0.0.0-use.local
@@ -5134,9 +5077,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/x-merkle-mountain-range@file:.yalc/@subql/x-merkle-mountain-range::locator=%40subql%2Fnode%40workspace%3Apackages%2Fnode":
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2":
   version: 2.0.0-0.1.2
-  resolution: "@subql/x-merkle-mountain-range@file:.yalc/@subql/x-merkle-mountain-range#.yalc/@subql/x-merkle-mountain-range::hash=b7a6f6&locator=%40subql%2Fnode%40workspace%3Apackages%2Fnode"
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
   dependencies:
     bignumber.js: ^8.1.1
     buffer: ^5.4.3
@@ -5145,22 +5088,7 @@ __metadata:
     rlp: ^2.2.3
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
-  checksum: 62f70cce302dd2785b2781a4fec3b0f95ced32c1a3b1ea1223ffbb5ef5d4fa243de4bf7e86c207fb504340ae9b9015e16f8703626457a4799a2b9dd18c3eb245
-  languageName: node
-  linkType: hard
-
-"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1":
-  version: 2.0.0-0.1.1
-  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1"
-  dependencies:
-    bignumber.js: ^8.1.1
-    buffer: ^5.4.3
-    js-sha3: ^0.8.0
-    level: ^6.0.0
-    rlp: ^2.2.3
-    semaphore-async-await: ^1.5.1
-    sha.js: ^2.4.11
-  checksum: e7286aee9ae657c6952bc7e753253ca80a6f7ce4f12987b4a528b7c8acdedb2e4225484930fb21b2a130a1f11ad95846725de84b18c87ac8cb812b4071cf47c8
+  checksum: 732eaa8441be71806dd197be6c5811f43bb14a3bc615c7d1be44a638b43ea53a5229d10edff12cf0ceec4ee9ca05938ce3a973dcdf31ce57e12cc30258342429
   languageName: node
   linkType: hard
 
