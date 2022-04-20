@@ -6,7 +6,7 @@ import Pino from 'pino';
 import {Store} from './interfaces';
 
 declare global {
-  const api: LCDClient;
+  const apiUnsafe: LCDClient | undefined; //requires --unsafe flag to be defined
   const logger: Pino.Logger;
   const store: Store;
 }

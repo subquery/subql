@@ -4,6 +4,7 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { isCustomTerraDs, isRuntimeTerraDs } from '@subql/common-terra';
+import { SubqlTerraHandlerKind } from '@subql/types-terra';
 import { Transaction } from 'sequelize/types';
 import {
   SubqlTerraProjectDs,
@@ -131,7 +132,24 @@ export class DynamicDsService {
         };
         await this.dsProcessorService.validateCustomDs([dsObj]);
       } else if (isRuntimeTerraDs(dsObj)) {
-        // XXX add any modifications to the ds here
+        dsObj.mapping.handlers = dsObj.mapping.handlers.map((handler) => {
+          switch (handler.kind) {
+            case SubqlTerraHandlerKind.Message:
+              handler.filter = {
+                ...handler.filter,
+                ...params.args,
+              };
+              break;
+            case SubqlTerraHandlerKind.Event:
+              handler.filter.messageFilter = {
+                ...handler.filter.messageFilter,
+                ...params.args,
+              };
+              break;
+            default:
+          }
+          return handler;
+        });
       }
 
       return dsObj;
