@@ -47,7 +47,7 @@ const getBaseConfig = (
 });
 
 export async function typescriptBuildCheck(projectDir: string): Promise<void> {
-  await new Promise(() => {
+  await new Promise((resolve) => {
     childProcess.exec('tsc --noEmit', {cwd: projectDir}, (error, stdout, stderr) => {
       if (error) {
         // we want to hide the actual error log with message 'tsc --noEmit' here
@@ -55,6 +55,7 @@ export async function typescriptBuildCheck(projectDir: string): Promise<void> {
         console.error(`Project build check failed: \n${stdout}`);
         process.exit(1);
       }
+      resolve(true);
     });
   });
 }
