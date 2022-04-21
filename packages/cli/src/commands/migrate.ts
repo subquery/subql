@@ -8,7 +8,7 @@ import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/co
 import {migrate, prepare} from '../controller/migrate-controller';
 
 export default class Migrate extends Command {
-  static description = 'Migrate Subquery project manifest v0.0.1 to v0.2.0';
+  static description = 'Migrate Subquery project manifest to v1.0.0';
 
   static flags = {
     force: Flags.boolean({char: 'f'}),

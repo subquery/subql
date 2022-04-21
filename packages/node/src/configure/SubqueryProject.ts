@@ -38,6 +38,10 @@ export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
   name: string;
 };
 
+const NOT_SUPPORT = (name: string) => () => {
+  throw new Error(`Manifest specVersion ${name}() is not supported`);
+};
+
 export class SubqueryProject {
   id: string;
   root: string;
@@ -63,12 +67,7 @@ export class SubqueryProject {
     const manifest = parseSubstrateProjectManifest(projectSchema);
 
     if (manifest.isV0_0_1) {
-      return loadProjectFromManifest0_0_1(
-        manifest.asV0_0_1,
-        reader,
-        path,
-        networkOverrides,
-      );
+      NOT_SUPPORT('0.0.1');
     } else if (manifest.isV0_2_0 || manifest.isV0_3_0) {
       return loadProjectFromManifestBase(
         manifest.asV0_2_0,
@@ -99,35 +98,6 @@ export interface SubqueryProjectNetwork {
   endpoint?: string;
   dictionary?: string;
   chaintypes?: FileType;
-}
-
-async function loadProjectFromManifest0_0_1(
-  projectManifest: ProjectManifestV0_0_1Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  return {
-    id: path, //user project path as it id for now
-    root: await getProjectRoot(reader),
-    network: {
-      ...projectManifest.network,
-      ...networkOverrides,
-    },
-    dataSources: await updateDataSourcesV0_0_1(
-      projectManifest.dataSources,
-      reader,
-    ),
-    schema: buildSchemaFromString(await reader.getFile(projectManifest.schema)),
-    chainTypes: pick<RegisteredTypes>(projectManifest.network, [
-      'types',
-      'typesAlias',
-      'typesBundle',
-      'typesChain',
-      'typesSpec',
-    ]),
-    templates: [],
-  };
 }
 
 function processChainId(network: any): SubqueryProjectNetwork {

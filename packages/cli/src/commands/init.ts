@@ -10,6 +10,7 @@ import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
 import {uniq} from 'lodash';
+import {lt} from 'semver';
 import {
   fetchTemplates,
   Template,
@@ -21,9 +22,9 @@ import {
 } from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
 import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
-
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
+const RECOMMEND_VERSION = '1.0.0';
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
   return (_: any, input: string) => {
@@ -69,8 +70,8 @@ export default class Init extends Command {
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: Flags.string({
       required: false,
-      options: ['0.0.1', '0.2.0', '1.0.0'],
-      default: '1.0.0',
+      options: ['0.2.0', '1.0.0'],
+      default: RECOMMEND_VERSION,
       description: 'The spec version to be used by the project',
     }),
   };
@@ -85,11 +86,11 @@ export default class Init extends Command {
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
 
-    if (flags.specVersion === '0.0.1') {
+    if (lt(flags.specVersion, RECOMMEND_VERSION)) {
       this.log(
-        `${chalk.yellow(
-          'WARNING'
-        )} Using specVersion v0.0.1 is deprecated and in the future will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion v0.2.0`
+        `${chalk.yellow('WARNING')} Using specVersion ${
+          flags.specVersion
+        } is deprecated and in the future will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion ${RECOMMEND_VERSION}`
       );
     }
 
