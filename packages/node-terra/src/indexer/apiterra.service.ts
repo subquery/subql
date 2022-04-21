@@ -112,12 +112,22 @@ export class TerraClient {
     }
   }
 
+  private disableMantlemint() {
+    logger.warn('Mantlemint returning invalid responses, disabling');
+    this.mantlemintHealthOK = false;
+  }
+
   async nodeInfo(): Promise<any> {
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/base/tendermint/v1beta1/node_info`,
-      this.params,
-    );
-    return data;
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/base/tendermint/v1beta1/node_info`,
+        this.params,
+      );
+      return data;
+    } catch (e) {
+      logger.warn(`Faile dto get node info ${e}`);
+      throw e;
+    }
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
@@ -129,6 +139,7 @@ export class TerraClient {
       `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
       this.params,
     );
+
     return data;
   }
 
@@ -164,10 +175,21 @@ export class TerraClient {
   }
 
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
-    const { data } = await this._mantlemintConnection.get(
-      `/index/blocks/${height}`,
-    );
-    return data;
+    try {
+      const { data } = await this._mantlemintConnection.get(
+        `/index/blocks/${height}`,
+      );
+      return data;
+    } catch (e) {
+      // Mantlemint can lag behind the network, at that point we disable it and switch to LCD
+      // https://github.com/terra-money/mantlemint/blob/e019308386a23ba4ed405285ca151967ee21623c/indexer/block/client.go#L20-L21
+      if (e.response.status === 400) {
+        this.disableMantlemint();
+        return this.blockInfo(height);
+      } else {
+        throw e;
+      }
+    }
   }
 
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {

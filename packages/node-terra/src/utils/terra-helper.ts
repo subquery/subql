@@ -127,19 +127,6 @@ export async function fetchTerraBlocksArray(
   );
 }
 
-export async function getTxInfobyHashes(
-  api: TerraClient,
-  txHashes: string[],
-): Promise<TxInfo[]> {
-  return Promise.all(
-    txHashes.map(async (hash) => {
-      return api.txInfo(hash);
-    }),
-  ).catch((e) => {
-    throw new Error(`Failed to fetch block transactions: ${e.message}`);
-  });
-}
-
 export function wrapBlock(block: BlockInfo, txs: TxInfo[]): TerraBlock {
   return {
     block: block,
