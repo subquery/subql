@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import childProcess from 'child_process';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 
@@ -44,6 +45,19 @@ const getBaseConfig = (
     libraryTarget: 'commonjs',
   },
 });
+
+export async function typescriptBuildCheck(projectDir: string): Promise<void> {
+  await new Promise(() => {
+    childProcess.exec('tsc --noEmit', {cwd: projectDir}, (error, stdout, stderr) => {
+      if (error) {
+        // we want to hide the actual error log with message 'tsc --noEmit' here
+        // instead printout stdout info
+        console.error(`Project build check failed: \n${stdout}`);
+        process.exit(1);
+      }
+    });
+  });
+}
 
 export async function runWebpack(
   buildEntries: Configuration['entry'],
