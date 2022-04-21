@@ -11,10 +11,11 @@ import {
   LCDClientConfig,
   TxInfo,
 } from '@terra-money/terra.js';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { delay } from '../utils/promise';
 import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
 
@@ -112,12 +113,22 @@ export class TerraClient {
     }
   }
 
+  private disableMantlemint() {
+    logger.warn('Mantlemint returning invalid responses, disabling');
+    this.mantlemintHealthOK = false;
+  }
+
   async nodeInfo(): Promise<any> {
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/base/tendermint/v1beta1/node_info`,
-      this.params,
-    );
-    return data;
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/base/tendermint/v1beta1/node_info`,
+        this.params,
+      );
+      return data;
+    } catch (e) {
+      logger.warn(`Faile dto get node info ${e}`);
+      throw e;
+    }
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
@@ -125,19 +136,41 @@ export class TerraClient {
       return this.blockInfoMantlemint(height);
     }
 
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
-      this.params,
-    );
-    return data;
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
+        this.params,
+      );
+      return data;
+    } catch (e) {
+      if ((e as AxiosError).response.status === 400) {
+        logger.error(`block ${height} unavailable to fetch, retrying...`);
+        await delay(1);
+        return this.blockInfo(height);
+      } else {
+        logger.info('here');
+        throw e;
+      }
+    }
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
-      this.params,
-    );
-    return TxInfo.fromData(data.tx_response);
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
+        this.params,
+      );
+      return TxInfo.fromData(data.tx_response);
+    } catch (e) {
+      if ((e as AxiosError).response.status === 400) {
+        logger.error(`tx ${hash} unavailable to fetch, retrying...`);
+        await delay(1);
+        return this.txInfo(hash);
+      } else {
+        logger.info('here');
+        throw e;
+      }
+    }
   }
 
   async getTxInfobyHashes(
@@ -164,10 +197,21 @@ export class TerraClient {
   }
 
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
-    const { data } = await this._mantlemintConnection.get(
-      `/index/blocks/${height}`,
-    );
-    return data;
+    try {
+      const { data } = await this._mantlemintConnection.get(
+        `/index/blocks/${height}`,
+      );
+      return data;
+    } catch (e) {
+      // Mantlemint can lag behind the network, at that point we disable it and switch to LCD
+      // https://github.com/terra-money/mantlemint/blob/e019308386a23ba4ed405285ca151967ee21623c/indexer/block/client.go#L20-L21
+      if (e.response.status === 400) {
+        this.disableMantlemint();
+        return this.blockInfo(height);
+      } else {
+        throw e;
+      }
+    }
   }
 
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {

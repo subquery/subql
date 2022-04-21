@@ -3,8 +3,13 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { isCustomTerraDs, isRuntimeTerraDs } from '@subql/common-terra';
-import { SubqlTerraHandlerKind } from '@subql/types-terra';
+import {
+  isCustomTerraDs,
+  isRuntimeTerraDs,
+  TerraRuntimeDataSourceBase,
+} from '@subql/common-terra';
+import { SubqlTerraHandlerKind, SubqlTerraMapping } from '@subql/types-terra';
+import { plainToClass } from 'class-transformer';
 import { Transaction } from 'sequelize/types';
 import {
   SubqlTerraProjectDs,
@@ -151,7 +156,6 @@ export class DynamicDsService {
           return handler;
         });
       }
-
       return dsObj;
     } catch (e) {
       throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);
