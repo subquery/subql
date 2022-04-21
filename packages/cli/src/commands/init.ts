@@ -69,7 +69,7 @@ export default class Init extends Command {
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
     specVersion: Flags.string({
       required: false,
-      options: ['0.0.1', '0.2.0', '1.0.0'],
+      options: ['0.2.0', '1.0.0'],
       default: '1.0.0',
       description: 'The spec version to be used by the project',
     }),
@@ -84,15 +84,6 @@ export default class Init extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
-
-    if (flags.specVersion === '0.0.1') {
-      this.log(
-        `${chalk.yellow(
-          'WARNING'
-        )} Using specVersion v0.0.1 is deprecated and in the future will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion v0.2.0`
-      );
-    }
-
     const project = {} as ProjectSpecBase;
     const location = flags.location ? path.resolve(flags.location) : process.cwd();
 
