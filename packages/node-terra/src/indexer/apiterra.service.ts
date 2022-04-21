@@ -167,7 +167,6 @@ export class TerraClient {
         await delay(1);
         return this.txInfo(hash);
       } else {
-        logger.info('here');
         throw e;
       }
     }
