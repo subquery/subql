@@ -119,16 +119,11 @@ export class TerraClient {
   }
 
   async nodeInfo(): Promise<any> {
-    try {
-      const { data } = await this._lcdConnection.get(
-        `/cosmos/base/tendermint/v1beta1/node_info`,
-        this.params,
-      );
-      return data;
-    } catch (e) {
-      logger.warn(`Faile dto get node info ${e}`);
-      throw e;
-    }
+    const { data } = await this._lcdConnection.get(
+      `/cosmos/base/tendermint/v1beta1/node_info`,
+      this.params,
+    );
+    return data;
   }
 
   async blockInfo(height?: number): Promise<BlockInfo> {
@@ -144,11 +139,10 @@ export class TerraClient {
       return data;
     } catch (e) {
       if ((e as AxiosError).response.status === 400) {
-        logger.error(`block ${height} unavailable to fetch, retrying...`);
+        logger.info(`block ${height} unavailable to fetch, retrying...`);
         await delay(1);
         return this.blockInfo(height);
       } else {
-        logger.info('here');
         throw e;
       }
     }
@@ -163,11 +157,10 @@ export class TerraClient {
       return TxInfo.fromData(data.tx_response);
     } catch (e) {
       if ((e as AxiosError).response.status === 400) {
-        logger.error(`tx ${hash} unavailable to fetch, retrying...`);
+        logger.info(`tx ${hash} unavailable to fetch, retrying...`);
         await delay(1);
         return this.txInfo(hash);
       } else {
-        logger.info('here');
         throw e;
       }
     }
@@ -205,10 +198,11 @@ export class TerraClient {
     } catch (e) {
       // Mantlemint can lag behind the network, at that point we disable it and switch to LCD
       // https://github.com/terra-money/mantlemint/blob/e019308386a23ba4ed405285ca151967ee21623c/indexer/block/client.go#L20-L21
-      if (e.response.status === 400) {
+      if ((e as AxiosError).response.status === 400) {
         this.disableMantlemint();
         return this.blockInfo(height);
       } else {
+        logger.info(`Error data: ${(e as AxiosError).response.data}`);
         throw e;
       }
     }
