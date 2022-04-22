@@ -11,10 +11,11 @@ import {
   LCDClientConfig,
   TxInfo,
 } from '@terra-money/terra.js';
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';
+import { delay } from '../utils/promise';
 import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
 
@@ -135,20 +136,41 @@ export class TerraClient {
       return this.blockInfoMantlemint(height);
     }
 
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
-      this.params,
-    );
-
-    return data;
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
+        this.params,
+      );
+      return data;
+    } catch (e) {
+      if ((e as AxiosError).response.status === 400) {
+        logger.error(`block ${height} unavailable to fetch, retrying...`);
+        await delay(1);
+        return this.blockInfo(height);
+      } else {
+        logger.info('here');
+        throw e;
+      }
+    }
   }
 
   async txInfo(hash: string): Promise<TxInfo> {
-    const { data } = await this._lcdConnection.get(
-      `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
-      this.params,
-    );
-    return TxInfo.fromData(data.tx_response);
+    try {
+      const { data } = await this._lcdConnection.get(
+        `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
+        this.params,
+      );
+      return TxInfo.fromData(data.tx_response);
+    } catch (e) {
+      if ((e as AxiosError).response.status === 400) {
+        logger.error(`tx ${hash} unavailable to fetch, retrying...`);
+        await delay(1);
+        return this.txInfo(hash);
+      } else {
+        logger.info('here');
+        throw e;
+      }
+    }
   }
 
   async getTxInfobyHashes(
