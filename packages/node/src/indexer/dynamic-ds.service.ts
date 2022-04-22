@@ -38,7 +38,7 @@ export class DynamicDsService {
   async createDynamicDatasource(
     params: DatasourceParams,
     tx: Transaction,
-  ): Promise<void> {
+  ): Promise<SubqlProjectDs> {
     try {
       const ds = await this.getDatasource(params);
 
@@ -50,6 +50,8 @@ export class DynamicDsService {
 
       if (!this._datasources) this._datasources = [];
       this._datasources.push(ds);
+
+      return ds;
     } catch (e) {
       logger.error(e.message);
       process.exit(1);
