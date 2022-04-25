@@ -4914,7 +4914,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
-    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -4964,7 +4964,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
-    "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
+    "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
     "@types/jest": ^27.4.0
@@ -5077,9 +5077,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1":
-  version: 2.0.0-0.1.1
-  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.1"
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2":
+  version: 2.0.0-0.1.2
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
   dependencies:
     bignumber.js: ^8.1.1
     buffer: ^5.4.3
@@ -5088,7 +5088,7 @@ __metadata:
     rlp: ^2.2.3
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
-  checksum: e7286aee9ae657c6952bc7e753253ca80a6f7ce4f12987b4a528b7c8acdedb2e4225484930fb21b2a130a1f11ad95846725de84b18c87ac8cb812b4071cf47c8
+  checksum: 732eaa8441be71806dd197be6c5811f43bb14a3bc615c7d1be44a638b43ea53a5229d10edff12cf0ceec4ee9ca05938ce3a973dcdf31ce57e12cc30258342429
   languageName: node
   linkType: hard
 
