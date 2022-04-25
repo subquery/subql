@@ -19,6 +19,9 @@ import { delay } from '../utils/promise';
 import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: packageVersion } = require('../../package.json');
+
 const logger = getLogger('api');
 
 @Injectable()
@@ -100,6 +103,7 @@ export class TerraClient {
       baseURL: this.tendermintURL,
       headers: {
         Accept: 'application/json',
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
       },
     });
 
@@ -108,6 +112,7 @@ export class TerraClient {
         baseURL: this.mantlemintURL,
         headers: {
           Accept: 'application/json',
+          'User-Agent': `SubQuery-Node ${packageVersion}`,
         },
       });
     }
