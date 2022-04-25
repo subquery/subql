@@ -78,7 +78,7 @@ export class DeploymentV1_0_0 extends DeploymentV0_3_0 {
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'substrate/Runtime'}],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'terra/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -92,7 +92,7 @@ export class ProjectManifestV1_0_0Impl extends ProjectManifestV0_3_0Impl impleme
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'substrate/Runtime'}],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'terra/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

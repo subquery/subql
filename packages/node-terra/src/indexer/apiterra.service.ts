@@ -204,7 +204,7 @@ export class TerraClient {
     } catch (e) {
       // Mantlemint can lag behind the network, at that point we disable it and switch to LCD
       // https://github.com/terra-money/mantlemint/blob/e019308386a23ba4ed405285ca151967ee21623c/indexer/block/client.go#L20-L21
-      if (e.response.status === 400) {
+      if ((e as AxiosError).response.status === 400) {
         this.disableMantlemint();
         return this.blockInfo(height);
       } else {

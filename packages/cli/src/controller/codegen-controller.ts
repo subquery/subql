@@ -285,9 +285,7 @@ export async function generateDatasourceTemplates(
   projectPath: string,
   projectManifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
 ): Promise<void> {
-  try {
-    projectManifest = projectManifest as SubstrateProjectManifestVersioned;
-    projectManifest.validate();
+  if (projectManifest instanceof SubstrateProjectManifestVersioned) {
     if (!projectManifest.isV0_2_1) return;
 
     const manifest = projectManifest.asV0_2_1;
@@ -306,16 +304,14 @@ export async function generateDatasourceTemplates(
       console.error(e);
       throw new Error(`Unable to generate datasource template constructors`);
     }
-  } catch (e) {
-    projectManifest = projectManifest as TerraProjectManifestVersioned;
-    if (!projectManifest.isV1_0_0) return;
+  } else {
     const manifest = projectManifest.asV1_0_0;
     if (!manifest.templates?.length) return;
 
     try {
       const props = manifest.templates.map((t) => ({
         name: t.name,
-        args: isCustomTerraDs(t) ? 'Record<string, unknown>' : undefined,
+        args: 'Record<string, unknown>',
       }));
       await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
         props,

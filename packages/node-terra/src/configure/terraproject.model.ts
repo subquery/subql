@@ -72,6 +72,8 @@ async function loadProjectFromManifest1_0_0(
   path: string,
   networkOverrides?: Partial<TerraProjectNetworkConfig>,
 ): Promise<SubqueryTerraProject> {
+  const root = await getProjectRoot(reader, path);
+
   const project = await loadProjectFromManifestBase(
     projectManifest,
     reader,
@@ -79,6 +81,13 @@ async function loadProjectFromManifest1_0_0(
     networkOverrides,
   );
   project.runner = projectManifest.runner;
+  project.templates = (
+    await updateDataSourcesV0_3_0(projectManifest.templates, reader, root)
+  ).map((ds, index) => ({
+    ...ds,
+    name: projectManifest.templates[index].name,
+  }));
+
   return project;
 }
 
