@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.34.0] - 2022-04-26
+### Changed
+- Remove notify trigger if subscription disabled (#882)
+- Drop support for manifest v0.0.1 (#900)
+- Process block content in time secquence rather than ds/handler order (#853)
+### Fixed
+- Fixed the mmr inconsistent value issue, remove redundant code,  and set `blockOffset` value to the first store operation blockHeight -1 (#894)
+
 ## [0.33.0] - 2022-04-06
 ### Added
 - Add support for handle manifest 1.0.0 (#845)

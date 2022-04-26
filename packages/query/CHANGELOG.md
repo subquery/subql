@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.15.0] - 2022-04-26
+### Added
+- Add support for querying historical state (#859)
+
 ## [0.14.1] - 2022-04-04
 ### Changed
 - Bump with `subql/common`

@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.26.0] - 2022-04-26
+### Added
+- Add manifest specVersion 1.0.0 template to `subql init` command  (#888)
+### Changed
+- Drop support for manifest 0.0.1 templates (#900)
+
 ## [0.25.0] - 2022-04-12
 ### Changed
 - Update @subql/common-terra to allow specifying a mantlemint endpoint (#885)
