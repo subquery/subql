@@ -46,20 +46,6 @@ const getBaseConfig = (
   },
 });
 
-export async function typescriptBuildCheck(projectDir: string): Promise<void> {
-  await new Promise((resolve) => {
-    childProcess.exec('tsc --noEmit', {cwd: projectDir}, (error, stdout, stderr) => {
-      if (error) {
-        // we want to hide the actual error log with message 'tsc --noEmit' here
-        // instead printout stdout info
-        console.error(`Project build check failed: \n${stdout}`);
-        process.exit(1);
-      }
-      resolve(true);
-    });
-  });
-}
-
 export async function runWebpack(
   buildEntries: Configuration['entry'],
   projectDir: string,
@@ -83,7 +69,7 @@ export async function runWebpack(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors[0].details);
+        reject(info.errors[0].message);
         return;
       }
 
