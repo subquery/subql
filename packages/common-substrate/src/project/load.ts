@@ -73,7 +73,7 @@ export function parseChainTypes(raw: unknown): ChainTypes {
   }
 }
 
-export function loadChainTypesFromJs(filePath: string, requireRoot?: string) {
+export function loadChainTypesFromJs(filePath: string, requireRoot?: string): unknown {
   const {base, ext} = path.parse(filePath);
   const root = requireRoot ?? path.dirname(filePath);
   const vm = new NodeVM({

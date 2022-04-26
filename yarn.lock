@@ -4828,6 +4828,7 @@ __metadata:
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
     sequelize: ^6.6.2
+    vm2: ^3.9.9
   languageName: unknown
   linkType: soft
 
@@ -4864,6 +4865,7 @@ __metadata:
     "@types/semver": ^7.3.9
     "@types/tar": ^6.1.1
     ansi-styles: ^6.1.0
+    axios: ^0.27.1
     bn.js: 5.2.0
     chalk: ^4.1.2
     class-transformer: 0.5.1
@@ -4880,7 +4882,6 @@ __metadata:
     semver: ^7.3.5
     sequelize: ^6.15.0
     tar: ^6.1.11
-    vm2: 3.9.9
   languageName: unknown
   linkType: soft
 
@@ -7163,6 +7164,16 @@ __metadata:
   dependencies:
     follow-redirects: ^1.14.8
   checksum: d7a8b898f4157bedeb2e06c03b16133b91b354c041205bea732ce58b7a21f373d22057b0eea0d482838145ce6ff482b359750d9bcb8dd19d45e3928e3c65c280
+  languageName: node
+  linkType: hard
+
+"axios@npm:^0.27.1":
+  version: 0.27.1
+  resolution: "axios@npm:0.27.1"
+  dependencies:
+    follow-redirects: ^1.14.9
+    form-data: ^4.0.0
+  checksum: 0da3131125429fcaeb5057c9b7249699c59d48a053d8aaa897089c96e5fa623cf2cf9c3ae36c307235dab495ab7409c87ffbd9b77407624a21403571a492c771
   languageName: node
   linkType: hard
 
@@ -10581,7 +10592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.14.8":
+"follow-redirects@npm:^1.14.8, follow-redirects@npm:^1.14.9":
   version: 1.14.9
   resolution: "follow-redirects@npm:1.14.9"
   peerDependenciesMeta:

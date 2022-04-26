@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {parseChainTypes, loadChainTypesFromJs} from './load';
+import {parseChainTypes} from './load';
 
 const projectsDir = path.join(__dirname, '../../test');
 
