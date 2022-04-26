@@ -11,6 +11,7 @@ import {
   loadSubstrateProjectManifest,
 } from '@subql/common-substrate';
 import {loadTerraProjectManifest, TerraProjectManifestVersioned} from '@subql/common-terra';
+import {classToPlain} from 'class-transformer';
 import {cli} from 'cli-ux';
 import inquirer from 'inquirer';
 import yaml from 'js-yaml';
@@ -115,16 +116,6 @@ export async function prepare(
   return [project, chainTypesRelativePath];
 }
 
-function getDefaultNodeNameFromManifest(
-  manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
-): string {
-  if (manifest instanceof SubstrateProjectManifestVersioned) {
-    return SUBSTRATE_NODE_NAME;
-  } else if (manifest instanceof TerraProjectManifestVersioned) {
-    return TERRA_NODE_NAME;
-  }
-}
-
 export async function migrate(
   projectPath: string,
   project: ProjectSpecV1_0_0,
@@ -163,10 +154,10 @@ export async function migrate(
       ? (data.templates = manifest.asV1_0_0.templates)
       : delete data.templates;
 
-    const newYaml = yaml.dump(data);
+    const newYaml = yaml.dump(classToPlain(data));
     await fs.promises.writeFile(manifestV1_0_0, newYaml, 'utf8');
   } catch (e) {
-    throw new Error(`Fail to create manifest : ${e}`);
+    throw new Error(`Failed to create manifest : ${e}`);
   }
   //validate before backup and conversion
   try {
