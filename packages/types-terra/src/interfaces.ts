@@ -48,3 +48,5 @@ export interface TerraEvent<M extends Msg = Msg> {
 }
 
 export type TerraContractMessage = TerraMessage<WasmMsg>;
+
+export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
