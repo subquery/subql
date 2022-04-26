@@ -96,21 +96,22 @@ export async function prepare(
         await createChainTypes(projectV1Network, projectChainTypesPath, ext);
       }
     }
-  }
-
-  //Patch manifest here
-  for (const dataSource of manifest.asV1_0_0.dataSources) {
-    dataSource.mapping.file = await cli.prompt(
-      `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
-      {
-        default: jsonProjectData.main.toString().startsWith('./') ? jsonProjectData.main : `./${jsonProjectData.main}`,
-        required: true,
-      }
-    );
-    delete dataSource.name;
-    const handlers = dataSource.mapping.handlers;
-    delete dataSource.mapping.handlers; // adjust position
-    dataSource.mapping.handlers = handlers;
+    //Patch manifest here
+    for (const dataSource of manifest.asV1_0_0.dataSources) {
+      dataSource.mapping.file = await cli.prompt(
+        `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
+        {
+          default: jsonProjectData.main.toString().startsWith('./')
+            ? jsonProjectData.main
+            : `./${jsonProjectData.main}`,
+          required: true,
+        }
+      );
+      delete dataSource.name;
+      const handlers = dataSource.mapping.handlers;
+      delete dataSource.mapping.handlers; // adjust position
+      dataSource.mapping.handlers = handlers;
+    }
   }
   return [project, chainTypesRelativePath];
 }
