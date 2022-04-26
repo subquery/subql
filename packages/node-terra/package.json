@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.1.2",
     "@nestjs/schedule": "^1.0.1",
-    "@polkadot/util-crypto": "8.6.1",
+    "@polkadot/util-crypto": "9.0.1",
     "@subql/common": "workspace:*",
     "@subql/common-terra": "workspace:*",
     "@subql/types-terra": "workspace:*",
