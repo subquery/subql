@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import childProcess from 'child_process';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 
@@ -68,7 +69,7 @@ export async function runWebpack(
       if (stats.hasErrors()) {
         const info = stats.toJson();
 
-        reject(info.errors[0].details);
+        reject(info.errors[0].message);
         return;
       }
 

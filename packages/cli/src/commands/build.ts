@@ -4,7 +4,6 @@
 import {lstatSync, readFileSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import cli from 'cli-ux';
 import {runWebpack} from '../controller/build-controller';
 
 export default class Build extends Command {
@@ -52,10 +51,9 @@ export default class Build extends Command {
           delete buildEntries[i];
         }
       }
-
-      cli.action.start('Building and packing code');
+      this.log('Building and packing code ...');
       await runWebpack(buildEntries, directory, outputDir, isDev, true);
-      cli.action.stop();
+      this.log('Done!');
     } catch (e) {
       this.error(e);
     }
