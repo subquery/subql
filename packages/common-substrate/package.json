@@ -25,7 +25,8 @@
     "js-yaml": "^4.1.0",
     "pino": "^6.13.3",
     "reflect-metadata": "^0.1.13",
-    "sequelize": "^6.6.2"
+    "sequelize": "^6.6.2",
+    "vm2": "^3.9.9"
   },
   "devDependencies": {
     "@types/bn.js": "4.11.6",
