@@ -1,6 +1,6 @@
 {
   "name": "@subql/common",
-  "version": "0.21.1",
+  "version": "0.21.2-0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -41,5 +41,5 @@
     "@types/semver": "^7.3.9",
     "@types/tar": "^6.1.1"
   },
-  "stableVersion": "0.21.0"
+  "stableVersion": "0.21.1"
 }
