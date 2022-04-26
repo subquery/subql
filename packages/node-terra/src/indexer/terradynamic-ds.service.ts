@@ -7,9 +7,11 @@ import {
   isCustomTerraDs,
   isRuntimeTerraDs,
   TerraRuntimeDataSourceBase,
+  TerraRuntimeDataSourceV0_3_0Impl,
 } from '@subql/common-terra';
 import { SubqlTerraHandlerKind, SubqlTerraMapping } from '@subql/types-terra';
 import { plainToClass } from 'class-transformer';
+import { validateSync } from 'class-validator';
 import { Transaction } from 'sequelize/types';
 import {
   SubqlTerraProjectDs,
@@ -156,6 +158,11 @@ export class DynamicDsService {
           return handler;
         });
       }
+      const ds: TerraRuntimeDataSourceV0_3_0Impl = plainToClass(
+        TerraRuntimeDataSourceV0_3_0Impl,
+        dsObj,
+      );
+      validateSync(ds);
       return dsObj;
     } catch (e) {
       throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);
