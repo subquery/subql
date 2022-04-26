@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.5.3] - 2022-04-26
+### Fixed
+- Handle being fully synced with terra (#904)
+
 ## [0.5.2] - 2022-04-19
 ### Fixed
 - Dictionary queries, invalid response (#893)
