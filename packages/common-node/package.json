@@ -1,0 +1,22 @@
+{
+  "name": "@subql/common-node",
+  "version": "0.14.0",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "@subql/common": "workspace:*",
+    "@subql/types": "workspace:*"
+  }
+}
