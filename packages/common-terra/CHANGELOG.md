@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-04-27
+### Added
+- Support for Terra dynamic datasources (#899)
+
 ## [0.3.0] - 2022-04-12
 ### Added
 - `network.mantlemint` option to manifest to specify a mantlemint endpoint (#885)

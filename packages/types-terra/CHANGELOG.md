@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-04-27
+### Added
+- Support for dynamic datasources (#899)
+### Fixed
+- Global export for unsafeApi (#899)
+
 ## [0.3.1] - 2022-04-19
 ### Updated
 - Fix dictionary queries (#893)
