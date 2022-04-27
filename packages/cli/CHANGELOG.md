@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.26.1] - 2022-04-27
+### Added
+- Support for Terra dynamic datasources (#899)
+### Changed
+- Output build errors (#901)
+
 ## [0.26.0] - 2022-04-26
 ### Added
 - Add manifest specVersion 1.0.0 template to `subql init` command  (#888)
