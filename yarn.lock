@@ -4942,6 +4942,7 @@ __metadata:
     graphile-build-pg: ^4.12.2
     graphile-utils: ^4.12.2
     graphql: ^15.8.0
+    graphql-query-complexity: ^0.11.0
     lodash: ^4.17.21
     nodemon: ^2.0.15
     pg: ^8.7.1
@@ -11191,6 +11192,17 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"graphql-query-complexity@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "graphql-query-complexity@npm:0.11.0"
+  dependencies:
+    lodash.get: ^4.4.2
+  peerDependencies:
+    graphql: ^14.6.0 || ^15.0.0 || ^16.0.0
+  checksum: 7086c26f39eda9e2b4a538e6619486819dd65a48f319ea0bad732712875d86169c10a1a570bab00b3c82440dc6c083e2bff11334e950911b08a8b15cee82823f
+  languageName: node
+  linkType: hard
+
 "graphql-subscriptions@npm:^1.1.0":
   version: 1.2.1
   resolution: "graphql-subscriptions@npm:1.2.1"
@@ -13774,6 +13786,13 @@ fsevents@~2.3.1:
   version: 4.0.8
   resolution: "lodash.debounce@npm:4.0.8"
   checksum: a3f527d22c548f43ae31c861ada88b2637eb48ac6aa3eb56e82d44917971b8aa96fbb37aa60efea674dc4ee8c42074f90f7b1f772e9db375435f6c83a19b3bc6
+  languageName: node
+  linkType: hard
+
+"lodash.get@npm:^4.4.2":
+  version: 4.4.2
+  resolution: "lodash.get@npm:4.4.2"
+  checksum: e403047ddb03181c9d0e92df9556570e2b67e0f0a930fcbbbd779370972368f5568e914f913e93f3b08f6d492abc71e14d4e9b7a18916c31fa04bd2306efe545
   languageName: node
   linkType: hard
 

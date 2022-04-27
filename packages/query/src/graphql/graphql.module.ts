@@ -21,6 +21,7 @@ import {PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
+import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
@@ -80,6 +81,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         pgClient: this.pgPool,
       },
       plugins: [
+        queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
         ApolloServerPluginCacheControl({
           defaultMaxAge: 5,
           calculateHttpHeaders: true,
