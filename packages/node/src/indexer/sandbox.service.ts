@@ -3,12 +3,12 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/common';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-substrate';
 import { Store } from '@subql/types';
+import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';

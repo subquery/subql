@@ -4,6 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
+import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
+import {loadTerraProjectManifest, TerraProjectManifestVersioned, isCustomTerraDs} from '@subql/common-terra';
 import {
   getAllEntitiesRelations,
   getAllJsonObjects,
@@ -13,10 +15,7 @@ import {
   GraphQLJsonFieldType,
   GraphQLEntityIndex,
   getAllEnums,
-  loadFromJsonOrYaml,
-} from '@subql/common';
-import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
-import {loadTerraProjectManifest, TerraProjectManifestVersioned, isCustomTerraDs} from '@subql/common-terra';
+} from '@subql/utils';
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';

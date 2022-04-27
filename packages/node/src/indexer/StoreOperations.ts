@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
-import { getTypeByScalarName } from '@subql/common';
-import { GraphQLModelsType } from '@subql/common/graphql/types';
 import { Entity } from '@subql/types';
+import { getTypeByScalarName, GraphQLModelsType } from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import { OperationEntity, OperationType } from './types';
 
@@ -68,7 +67,7 @@ export class StoreOperations {
     this.merkleTools.resetTree();
   }
 
-  makeOperationMerkleTree() {
+  makeOperationMerkleTree(): void {
     this.merkleTools.makeTree();
   }
 
@@ -82,7 +81,7 @@ export class StoreOperations {
     }
   }
 
-  getOperationLeafCount() {
+  getOperationLeafCount(): any {
     return this.merkleTools.getLeafCount();
   }
 }

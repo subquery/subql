@@ -15,6 +15,7 @@
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "workspace:*",
+    "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.1.0",
     "@types/inquirer": "^8.2.0",

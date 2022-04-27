@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {LoggerService} from '@nestjs/common';
-import {Logger} from '@subql/common';
+import {Logger} from '@subql/utils';
 import Pino from 'pino';
 import {argv} from '../yargs';
 
@@ -20,7 +20,7 @@ export function getLogger(category: string): Pino.Logger {
 export class NestLogger implements LoggerService {
   private logger = logger.getLogger('nestjs');
 
-  error(message: any, trace?: string) {
+  error(message: any, trace?: string): void {
     if (trace) {
       this.logger.error({trace}, message);
     } else {

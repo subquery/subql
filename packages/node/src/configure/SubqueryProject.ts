@@ -6,14 +6,12 @@ import {
   ReaderFactory,
   ReaderOptions,
   Reader,
-  buildSchemaFromString,
   RunnerSpecs,
   validateSemver,
 } from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
   ProjectManifestV0_3_0Impl,
@@ -21,12 +19,11 @@ import {
   FileType,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-substrate';
+import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
-import { pick } from 'lodash';
 import {
   getChainTypes,
   getProjectRoot,
-  updateDataSourcesV0_0_1,
   updateDataSourcesV0_2_0,
 } from '../utils/project';
 
@@ -185,22 +182,6 @@ async function loadProjectFromManifest0_2_1(
     ...ds,
     name: projectManifest.templates[index].name,
   }));
-
-  return project;
-}
-
-async function loadProjectFromManifest0_3_0(
-  projectManifest: ProjectManifestV0_3_0Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-  );
 
   return project;
 }

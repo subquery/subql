@@ -2,11 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import path from 'path';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getAllEntitiesRelations, buildSchemaFromFile } from '@subql/common';
 import {
   isBlockHandlerProcessor,
   isCustomTerraDs,
@@ -23,6 +21,7 @@ import {
   SubqlTerraCustomHandler,
   TerraRuntimeHandlerInputMap,
 } from '@subql/types-terra';
+import { getAllEntitiesRelations } from '@subql/utils';
 import { hashToHex } from '@terra-money/terra.js';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
