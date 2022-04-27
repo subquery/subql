@@ -8,9 +8,10 @@ import {getComplexity, simpleEstimator} from 'graphql-query-complexity';
 export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComplexity: number}): ApolloServerPlugin {
   return {
     requestDidStart: () => {
+      let complexity: number;
       return {
         didResolveOperation({document, request}) {
-          const complexity = getComplexity({
+          complexity = getComplexity({
             schema: options.schema,
             query: request.operationName ? separateOperations(document)[request.operationName] : document,
             variables: request.variables,
@@ -21,6 +22,10 @@ export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComple
               `Sorry, too complicated query! Current ${complexity} is over ${options.maxComplexity} that is the max allowed complexity.`
             );
           }
+        },
+        willSendResponse({response}) {
+          response.http.headers.append('query-complexity', complexity);
+          response.http.headers.append('max-query-complexity', options.maxComplexity);
         },
       };
     },
