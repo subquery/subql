@@ -3,7 +3,7 @@
 
 import type {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {separateOperations, GraphQLSchema} from 'graphql';
-import {getComplexity, simpleEstimator, fieldExtensionsEstimator} from 'graphql-query-complexity';
+import {getComplexity, simpleEstimator} from 'graphql-query-complexity';
 
 export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComplexity: number}): ApolloServerPlugin {
   return {
