@@ -4778,6 +4778,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/validator": "workspace:*"
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
@@ -4849,6 +4850,7 @@ __metadata:
     "@types/pino": ^6.3.12
     "@types/semver": ^7.3.9
     "@types/tar": ^6.1.1
+    axios: ^0.27.2
     class-transformer: 0.5.1
     class-validator: ^0.13.2
     js-yaml: ^4.1.0
@@ -4887,6 +4889,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
@@ -4937,6 +4940,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -4986,6 +4990,7 @@ __metadata:
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
     "@subql/common": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@types/express": ^4.17.13
     "@types/express-pino-logger": ^4.0.3
     "@types/jest": ^27.4.0
@@ -5036,7 +5041,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/utils@workspace:packages/utils":
+"@subql/utils@workspace:*, @subql/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@subql/utils@workspace:packages/utils"
   dependencies:
@@ -7168,6 +7173,16 @@ __metadata:
     follow-redirects: ^1.14.9
     form-data: ^4.0.0
   checksum: 0da3131125429fcaeb5057c9b7249699c59d48a053d8aaa897089c96e5fa623cf2cf9c3ae36c307235dab495ab7409c87ffbd9b77407624a21403571a492c771
+  languageName: node
+  linkType: hard
+
+"axios@npm:^0.27.2":
+  version: 0.27.2
+  resolution: "axios@npm:0.27.2"
+  dependencies:
+    follow-redirects: ^1.14.9
+    form-data: ^4.0.0
+  checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
   languageName: node
   linkType: hard
 
