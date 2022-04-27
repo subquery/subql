@@ -1,0 +1,25 @@
+{
+  "name": "@subql/types-avalanche",
+  "version": "0.14.0",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b"
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "peerDependencies": {
+    "@polkadot/api": "^7"
+  },
+  "devDependencies": {
+    "@polkadot/api": "^7",
+    "@types/app-module-path": "^2.2.0"
+  }
+}
