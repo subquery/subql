@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.6.1] - 2022-04-27
+### Fixed
+- Running projects without templates (#924)
+
 ## [0.6.0] - 2022-04-27
 ### Added
 - Support for Terra dynamic datasources (#899)
