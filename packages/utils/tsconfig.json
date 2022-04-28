@@ -5,7 +5,7 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist",
+    "outDir": "dist",
     "noImplicitAny": true,
     "noImplicitThis": true
   },

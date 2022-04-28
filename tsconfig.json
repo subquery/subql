@@ -36,6 +36,7 @@
   },
   "references": [
     {"path": "packages/cli"},
+    {"path": "packages/utils"},
     {"path": "packages/common"},
     {"path": "packages/common-substrate"},
     {"path": "packages/common-terra"},
