@@ -5,3 +5,4 @@ export * from './api.service';
 export * from './logger';
 export * from './yargs';
 export * from './profiler';
+export * from './events';
