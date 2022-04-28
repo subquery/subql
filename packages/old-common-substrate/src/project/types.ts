@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {IProjectManifest, ProjectNetworkConfig} from '@subql/common-avalanche';
-import {SubqlDatasource} from '@subql/types-avalanche';
+import {SubqlDatasource} from '@subql/types';
 
 export type ISubstrateProjectManifest = IProjectManifest<SubqlDatasource>;
 

@@ -12,7 +12,7 @@ import {
   BlockWrapper,
   Store,
   SubqlDatasource,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';

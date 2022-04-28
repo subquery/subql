@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { OnEvent } from '@nestjs/event-emitter';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
 import {
   BestBlockPayload,
   EventPayload,
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from '../indexer/events';
+} from '@subql/common-node';
+import { InjectMetric } from '@willsoto/nestjs-prometheus';
+import { Gauge } from 'prom-client';
 
 export class MetricEventListener {
   private skipDictionaryCount = 0;

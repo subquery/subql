@@ -11,7 +11,7 @@ import {
   SubqlHandlerKind,
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import detectPort from 'detect-port';
 
 export function isBlockHandlerProcessor<T extends SubqlNetworkFilter, E>(

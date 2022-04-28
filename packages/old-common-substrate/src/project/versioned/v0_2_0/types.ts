@@ -11,7 +11,7 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import {ISubstrateProjectManifest} from '../../types';
 
 export interface SubqlMappingV0_2_0<T extends SubqlHandler> extends SubqlMapping<T> {

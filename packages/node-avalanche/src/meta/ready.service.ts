@@ -3,7 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EventPayload, IndexerEvent } from '../indexer/events';
+import { EventPayload, IndexerEvent } from '@subql/common-node';
 
 @Injectable()
 export class ReadyService {

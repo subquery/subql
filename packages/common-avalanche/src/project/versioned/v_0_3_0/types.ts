@@ -10,7 +10,7 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import {IProjectManifest} from '../../types';
 import {isRuntimeDs} from '../../utils';
 

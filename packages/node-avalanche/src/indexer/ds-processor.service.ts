@@ -11,7 +11,7 @@ import {
   SubqlDatasource,
   SubqlDatasourceProcessor,
   SubqlNetworkFilter,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { VMScript } from '@subql/x-vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { Sandbox } from './sandbox.service';

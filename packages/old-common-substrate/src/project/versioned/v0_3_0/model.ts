@@ -7,7 +7,7 @@ import {
   SubqlMapping,
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsString, ValidateNested, validateSync} from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';

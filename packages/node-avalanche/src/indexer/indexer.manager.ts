@@ -19,6 +19,7 @@ import {
   ApiService,
   getLogger,
   getYargsOption,
+  IndexerEvent,
   profiler,
 } from '@subql/common-node';
 import {
@@ -34,7 +35,7 @@ import {
   SubqlRuntimeDatasource,
   AvalancheTransaction,
   AvalancheEvent,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -43,7 +44,6 @@ import { SubqueryRepo } from '../entities';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';

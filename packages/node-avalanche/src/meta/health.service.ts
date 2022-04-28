@@ -4,12 +4,12 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { NodeConfig } from '../configure/NodeConfig';
 import {
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from '../indexer/events';
+} from '@subql/common-node';
+import { NodeConfig } from '../configure/NodeConfig';
 import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;
