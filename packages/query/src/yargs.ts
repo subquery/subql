@@ -70,7 +70,6 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Level of query complexity',
       type: 'number',
-      default: 10,
     },
     'experimental-historical': {
       demandOption: false,
