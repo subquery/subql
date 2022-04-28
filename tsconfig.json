@@ -42,6 +42,7 @@
     {"path": "packages/node"},
     {"path": "packages/types"},
     {"path": "packages/types-terra"},
+    {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],
