@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { u8aToHex, numberToU8a } from '@polkadot/util';
-import { GraphQLJsonFieldType } from '@subql/common/graphql/types';
+import { u8aToHex } from '@polkadot/util';
+import { GraphQLJsonFieldType } from '@subql/utils';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
 

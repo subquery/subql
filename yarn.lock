@@ -4717,6 +4717,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/validator": "workspace:*"
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
@@ -4751,23 +4752,15 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-substrate@workspace:packages/common-substrate"
   dependencies:
-    "@polkadot/util": ^8
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
-    bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.2
-    flatted: ^3.2.2
-    graphql: ^15.7.2
-    graphql-tag: ^2.12.5
     js-yaml: ^4.1.0
-    pino: ^6.13.3
     reflect-metadata: ^0.1.13
-    sequelize: ^6.6.2
-    vm2: ^3.9.9
   languageName: unknown
   linkType: soft
 
@@ -4779,16 +4772,10 @@ __metadata:
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
-    bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.2
-    flatted: ^3.2.2
-    graphql: ^15.7.2
-    graphql-tag: ^2.12.5
     js-yaml: ^4.1.0
-    pino: ^6.13.3
     reflect-metadata: ^0.1.13
-    sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
 
@@ -4796,31 +4783,18 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
-    "@polkadot/util": ^8
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
     "@types/js-yaml": ^4.0.5
     "@types/pino": ^6.3.12
     "@types/semver": ^7.3.9
     "@types/tar": ^6.1.1
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    bn.js: 5.2.0
-    chalk: ^4.1.2
+    axios: ^0.27.2
     class-transformer: 0.5.1
     class-validator: ^0.13.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
-    pino: ^6.13.3
     reflect-metadata: ^0.1.13
-    rotating-file-stream: ^3.0.2
     semver: ^7.3.5
-    sequelize: ^6.15.0
-    tar: ^6.1.11
   languageName: unknown
   linkType: soft
 
@@ -4854,6 +4828,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/types-terra": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@terra-money/terra.js": ^3.0.8
     "@types/app-module-path": ^2.2.0
@@ -4904,6 +4879,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -4953,6 +4929,7 @@ __metadata:
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
     "@subql/common": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@types/express": ^4.17.13
     "@types/express-pino-logger": ^4.0.3
     "@types/jest": ^27.4.0
@@ -5000,6 +4977,28 @@ __metadata:
     "@types/app-module-path": ^2.2.0
   peerDependencies:
     "@polkadot/api": ^8
+  languageName: unknown
+  linkType: soft
+
+"@subql/utils@workspace:*, @subql/utils@workspace:packages/utils":
+  version: 0.0.0-use.local
+  resolution: "@subql/utils@workspace:packages/utils"
+  dependencies:
+    "@polkadot/util": ^8
+    "@types/semver": ^7
+    ansi-styles: ^6.1.0
+    axios: ^0.27.1
+    chalk: ^4.1.2
+    detect-port: ^1.3.0
+    flatted: ^3.2.5
+    graphql: ^15.8.0
+    graphql-tag: ^2.12.6
+    ipfs-http-client: ^52.0.3
+    pino: ^6.13.3
+    rotating-file-stream: ^3.0.2
+    semver: ^7.3.7
+    sequelize: ^6.15.0
+    tar: ^6.1.11
   languageName: unknown
   linkType: soft
 
@@ -5751,7 +5750,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:^7.3.9":
+"@types/semver@npm:^7, @types/semver@npm:^7.3.9":
   version: 7.3.9
   resolution: "@types/semver@npm:7.3.9"
   checksum: 60bfcfdfa7f937be2c6f4b37ddb6714fb0f27b05fe4cbdfdd596a97d35ed95d13ee410efdd88e72a66449d0384220bf20055ab7d6b5df10de4990fbd20e5cbe0
@@ -7116,6 +7115,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:^0.27.2":
+  version: 0.27.2
+  resolution: "axios@npm:0.27.2"
+  dependencies:
+    follow-redirects: ^1.14.9
+    form-data: ^4.0.0
+  checksum: 38cb7540465fe8c4102850c4368053c21683af85c5fdf0ea619f9628abbcb59415d1e22ebc8a6390d2bbc9b58a9806c874f139767389c862ec9b772235f06854
+  languageName: node
+  linkType: hard
+
 "babel-jest@npm:^27.4.6, babel-jest@npm:^27.5.1":
   version: 27.5.1
   resolution: "babel-jest@npm:27.5.1"
@@ -7421,20 +7430,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bn.js@npm:4.11.6":
-  version: 4.11.6
-  resolution: "bn.js@npm:4.11.6"
-  checksum: db23047bf06fdf9cf74401c8e76bca9f55313c81df382247d2c753868b368562e69171716b81b7038ada8860af18346fd4bcd1cf9d4963f923fe8e54e61cb58a
-  languageName: node
-  linkType: hard
-
-"bn.js@npm:5.2.0, bn.js@npm:^5.2.0":
-  version: 5.2.0
-  resolution: "bn.js@npm:5.2.0"
-  checksum: 6117170393200f68b35a061ecbf55d01dd989302e7b3c798a3012354fa638d124f0b2f79e63f77be5556be80322a09c40339eda6413ba7468524c0b6d4b4cb7a
-  languageName: node
-  linkType: hard
-
 "bn.js@npm:^4.11.1, bn.js@npm:^4.11.8, bn.js@npm:^4.12.0":
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
@@ -7446,6 +7441,13 @@ __metadata:
   version: 4.11.9
   resolution: "bn.js@npm:4.11.9"
   checksum: 59b67623585ca568f81bc0a00b215cd09ab75cbf632c73fcbe6a19c207ea7a510684e61becad6cdfcc678f716792f49de5a70fc057465e4e5e79f13d81291171
+  languageName: node
+  linkType: hard
+
+"bn.js@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "bn.js@npm:5.2.0"
+  checksum: 6117170393200f68b35a061ecbf55d01dd989302e7b3c798a3012354fa638d124f0b2f79e63f77be5556be80322a09c40339eda6413ba7468524c0b6d4b4cb7a
   languageName: node
   linkType: hard
 
@@ -10514,7 +10516,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.2.2, flatted@npm:^3.2.5":
+"flatted@npm:^3.2.5":
   version: 3.2.5
   resolution: "flatted@npm:3.2.5"
   checksum: 3c436e9695ccca29620b4be5671dd72e5dd0a7500e0856611b7ca9bd8169f177f408c3b9abfa78dfe1493ee2d873e2c119080a8a9bee4e1a186a9e60ca6c89f1
@@ -11222,7 +11224,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.12.5, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -11256,7 +11258,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"graphql@npm:^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0, graphql@npm:^15.7.2, graphql@npm:^15.8.0":
+"graphql@npm:^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0, graphql@npm:^15.8.0":
   version: 15.8.0
   resolution: "graphql@npm:15.8.0"
   checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
@@ -17231,6 +17233,17 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"semver@npm:^7.3.7":
+  version: 7.3.7
+  resolution: "semver@npm:7.3.7"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 2fa3e877568cd6ce769c75c211beaed1f9fce80b28338cadd9d0b6c40f2e2862bafd62c19a6cff42f3d54292b7c623277bcab8816a2b5521cf15210d43e75232
+  languageName: node
+  linkType: hard
+
 "send@npm:0.17.2":
   version: 0.17.2
   resolution: "send@npm:0.17.2"
@@ -17296,46 +17309,6 @@ fsevents@~2.3.1:
     tedious:
       optional: true
   checksum: 3103cf79279b5e8bdfaefbf239c6c6cbed40c2805ced64a85ac2f450f2f554eb89b880edc79f88d8b4257065b57e90e8e0ddd678f4ceb8e267608b9588df720f
-  languageName: node
-  linkType: hard
-
-"sequelize@npm:^6.6.2":
-  version: 6.16.2
-  resolution: "sequelize@npm:6.16.2"
-  dependencies:
-    "@types/debug": ^4.1.7
-    debug: ^4.3.3
-    dottie: ^2.0.2
-    inflection: ^1.13.1
-    lodash: ^4.17.21
-    moment: ^2.29.1
-    moment-timezone: ^0.5.34
-    pg-connection-string: ^2.5.0
-    retry-as-promised: ^5.0.0
-    semver: ^7.3.5
-    sequelize-pool: ^7.1.0
-    toposort-class: ^1.0.1
-    uuid: ^8.3.2
-    validator: ^13.7.0
-    wkx: ^0.5.0
-  peerDependenciesMeta:
-    ibm_db:
-      optional: true
-    mariadb:
-      optional: true
-    mysql2:
-      optional: true
-    pg:
-      optional: true
-    pg-hstore:
-      optional: true
-    snowflake-sdk:
-      optional: true
-    sqlite3:
-      optional: true
-    tedious:
-      optional: true
-  checksum: 43799f8bcc9b608fe941d890bae19c62dfb028267baa5facdbed15a74ea1418c8c135d059522a5952d673b74e2399b48e95a9307d25fccf1c2a30703800174a7
   languageName: node
   linkType: hard
 

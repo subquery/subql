@@ -7,7 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getAllEntitiesRelations } from '@subql/common';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -25,6 +24,7 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
+import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -590,7 +590,10 @@ export class IndexerManager {
     ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
     data: SubstrateRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
-    baseFilter: (data: SubstrateRuntimeHandlerInputMap[K], baseFilter: any) => boolean,
+    baseFilter: (
+      data: SubstrateRuntimeHandlerInputMap[K],
+      baseFilter: any,
+    ) => boolean,
   ): SubstrateCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
 

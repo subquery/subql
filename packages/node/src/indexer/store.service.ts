@@ -5,8 +5,8 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { GraphQLModelsRelationsEnums } from '@subql/common/graphql/types';
 import { Entity, Store } from '@subql/types';
+import { GraphQLModelsRelationsEnums } from '@subql/utils';
 import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
 import {
   CreationAttributes,

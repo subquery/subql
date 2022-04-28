@@ -6,7 +6,7 @@ import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
-import {NodeVM, VMScript} from 'vm2';
+// import {NodeVM, VMScript} from 'vm2';
 import {ChainTypes} from './models';
 import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
@@ -14,23 +14,6 @@ export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectMan
   const projectManifest = new SubstrateProjectManifestVersioned(raw as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
-}
-
-export function loadChainTypes(file: string, projectRoot: string): unknown {
-  const {ext} = path.parse(file);
-  const filePath = path.resolve(projectRoot, file);
-  if (fs.existsSync(filePath)) {
-    if (ext === '.js' || ext === '.cjs') {
-      //load can be self contained js file, or js depend on node_module which will require project root
-      return loadChainTypesFromJs(filePath, projectRoot);
-    } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
-      return loadFromJsonOrYaml(filePath);
-    } else {
-      throw new Error(`Extension ${ext} not supported`);
-    }
-  } else {
-    throw new Error(`Load from file ${file} not exist`);
-  }
 }
 
 export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
@@ -71,39 +54,4 @@ export function parseChainTypes(raw: unknown): ChainTypes {
   } else {
     throw new Error(`chainTypes is not valid`);
   }
-}
-
-export function loadChainTypesFromJs(filePath: string, requireRoot?: string): unknown {
-  const {base, ext} = path.parse(filePath);
-  const root = requireRoot ?? path.dirname(filePath);
-  const vm = new NodeVM({
-    console: 'redirect',
-    wasm: false,
-    sandbox: {},
-    require: {
-      context: 'sandbox',
-      external: true,
-      builtin: ['path'],
-      root: root,
-      resolve: (moduleName: string) => {
-        return require.resolve(moduleName, {paths: [root]});
-      },
-    },
-    wrapper: 'commonjs',
-    sourceExtensions: ['js', 'cjs'],
-  });
-  let rawContent: unknown;
-  try {
-    const script = new VMScript(
-      `module.exports = require('${filePath}').default;`,
-      path.join(root, 'sandbox')
-    ).compile();
-    rawContent = vm.run(script) as unknown;
-  } catch (err) {
-    throw new Error(`\n NodeVM error: ${err}`);
-  }
-  if (rawContent === undefined) {
-    throw new Error(`There was no default export found from required ${base} file`);
-  }
-  return rawContent;
 }
