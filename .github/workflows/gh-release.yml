@@ -72,5 +72,10 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
+          package-path: packages/utils
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
+      - uses: ./.github/actions/create-release
+        with:
           package-path: packages/validator
           repo-token: ${{ secrets.REPO_TOKEN }}
