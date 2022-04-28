@@ -3,14 +3,9 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
-import {
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-  AlgorandBlock,
-  AvalancheBlock,
-  AvalancheTransaction,
-} from './interfaces';
+import { AlgorandBlock } from './algorand';
+import { AvalancheBlock, AvalancheTransaction } from './avalanche';
+import { SubstrateBlock, SubstrateEvent, SubstrateExtrinsic } from './substrate';
 
 export enum SubqlDatasourceKind {
   Runtime = 'substrate/Runtime',
@@ -18,9 +13,9 @@ export enum SubqlDatasourceKind {
 }
 
 export enum SubqlHandlerKind {
-  Block = 'BlockHandler',
-  Call = 'CallHandler',
-  Event = 'EventHandler',
+  Block = 'substrate/BlockHandler',
+  Call = 'substrate/CallHandler',
+  Event = 'substrate/EventHandler',
 }
 
 export type RuntimeHandlerInputMap = {
