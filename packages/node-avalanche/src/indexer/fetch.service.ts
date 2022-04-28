@@ -23,7 +23,7 @@ import {
   DictionaryQueryEntry,
   ApiWrapper,
   BlockWrapper,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';

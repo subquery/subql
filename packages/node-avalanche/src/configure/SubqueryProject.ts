@@ -16,7 +16,7 @@ import {
   ProjectManifestV0_2_1Impl,
   ProjectManifestV0_3_0Impl,
 } from '@subql/old-common-substrate';
-import { SubqlDatasource } from '@subql/types-avalanche';
+import { SubqlDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { pick } from 'lodash';
 import {

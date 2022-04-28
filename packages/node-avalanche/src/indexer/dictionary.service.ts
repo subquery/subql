@@ -20,7 +20,7 @@ import { getLogger, getYargsOption, profiler } from '@subql/common-node';
 import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
 

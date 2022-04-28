@@ -5113,7 +5113,7 @@ __metadata:
     "@subql/common-avalanche": "workspace:*"
     "@subql/common-node": "workspace:*"
     "@subql/old-common-substrate": "workspace:*"
-    "@subql/types-avalanche": "workspace:*"
+    "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0
@@ -5260,7 +5260,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^8
     "@subql/common-avalanche": "workspace:*"
-    "@subql/types-avalanche": "workspace:*"
+    "@subql/types": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -5320,17 +5320,6 @@ __metadata:
     yargs: ^16.2.0
   bin:
     subql-query: ./bin/run
-  languageName: unknown
-  linkType: soft
-
-"@subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
-  version: 0.0.0-use.local
-  resolution: "@subql/types-avalanche@workspace:packages/types-avalanche"
-  dependencies:
-    "@polkadot/api": ^7
-    "@types/app-module-path": ^2.2.0
-  peerDependencies:
-    "@polkadot/api": ^7
   languageName: unknown
   linkType: soft
 

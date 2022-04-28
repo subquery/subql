@@ -20,7 +20,7 @@ import {
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,

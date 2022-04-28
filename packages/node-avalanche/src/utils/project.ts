@@ -26,7 +26,7 @@ import {
   SubqlCustomHandler,
   SubqlHandler,
   SubqlHandlerKind,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import yaml from 'js-yaml';
 import tar from 'tar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
