@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Injectable} from '@nestjs/common';
-import {NetworkMetadataPayload, ApiWrapper} from '@subql/types-avalanche';
+import {ApiWrapper} from '@subql/types-avalanche';
+import { NetworkMetadataPayload } from './events';
 
 @Injectable()
 export abstract class ApiService {

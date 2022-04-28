@@ -3,15 +3,15 @@
 
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { getLogger } from '@subql/common-node';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import { delay } from '../utils/promise';
 import {
+  getLogger,
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from './events';
+} from '@subql/common-node';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import { delay } from '../utils/promise';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
