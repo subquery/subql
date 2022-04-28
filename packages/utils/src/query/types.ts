@@ -28,3 +28,13 @@ export type TerraMetaData = {
   indexerNodeVersion: string;
   queryNodeVersion: string;
 };
+
+export type CosmosMetaData = {
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: number;
+  targetHeight: number;
+  chain: string; // Was a bug in the dictionary, should have been chainId
+  indexerHealthy: boolean;
+  indexerNodeVersion: string;
+  queryNodeVersion: string;
+};

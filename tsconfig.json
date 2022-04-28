@@ -39,9 +39,11 @@
     {"path": "packages/common"},
     {"path": "packages/common-substrate"},
     {"path": "packages/common-terra"},
+    {"path": "packages/common-cosmos"},
     {"path": "packages/node"},
     {"path": "packages/types"},
     {"path": "packages/types-terra"},
+    {"path": "packages/types-cosmos"},
     {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],

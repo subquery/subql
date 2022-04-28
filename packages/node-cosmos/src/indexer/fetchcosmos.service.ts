@@ -7,39 +7,39 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
   isRuntimeDataSourceV0_3_0,
-  isCustomTerraDs,
-  isRuntimeTerraDs,
-} from '@subql/common-terra';
+  isCustomCosmosDs,
+  isRuntimeCosmosDs,
+} from '@subql/common-cosmos';
 import {
-  SubqlTerraDatasource,
-  SubqlTerraHandler,
-  SubqlTerraHandlerFilter,
-  SubqlTerraHandlerKind,
-  SubqlTerraEventHandler,
-  SubqlTerraEventFilter,
-  SubqlTerraMessageFilter,
-  SubqlTerraMessageHandler,
+  SubqlCosmosDatasource,
+  SubqlCosmosHandler,
+  SubqlCosmosHandlerFilter,
+  SubqlCosmosHandlerKind,
+  SubqlCosmosEventHandler,
+  SubqlCosmosEventFilter,
+  SubqlCosmosMessageFilter,
+  SubqlCosmosMessageHandler,
   DictionaryQueryEntry,
   DictionaryQueryCondition,
-} from '@subql/types-terra';
+} from '@subql/types-cosmos';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
+import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryTerraProject } from '../configure/terraproject.model';
+import * as CosmosUtil from '../utils/cosmos-helper';
 import { getLogger } from '../utils/logger';
 import { profilerWrap } from '../utils/profiler';
-import { isBaseTerraHandler, isCustomTerraHandler } from '../utils/project';
+import { isBaseCosmosHandler, isCustomCosmosHandler } from '../utils/project';
 import { delay } from '../utils/promise';
-import * as TerraUtil from '../utils/terra-helper';
 import { getYargsOption } from '../yargs';
-import { ApiTerraService, TerraClient } from './apiterra.service';
+import { ApiCosmosService, CosmosClient } from './apicosmos.service';
 import { BlockedQueue } from './BlockedQueue';
+import { CosmosDsProcessorService } from './cosmosds-processor.service';
 import {
-  TerraDictionary,
-  TerraDictionaryService,
-} from './dictionaryterra.service';
+  CosmosDictionary,
+  CosmosDictionaryService,
+} from './dictionarycosmos.service';
 import { IndexerEvent } from './events';
-import { TerraDsProcessorService } from './terrads-processor.service';
-import { TerraBlockContent } from './types';
+import { CosmosBlockContent } from './types';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
@@ -53,14 +53,14 @@ const { argv } = getYargsOption();
 
 const fetchBlocksBatches = argv.profiler
   ? profilerWrap(
-      TerraUtil.fetchTerraBlocksBatches,
-      'TerraUtil',
-      'fetchTerraBlocksBatches',
+      CosmosUtil.fetchCosmosBlocksBatches,
+      'CosmosUtil',
+      'fetchCosmosBlocksBatches',
     )
-  : TerraUtil.fetchTerraBlocksBatches;
+  : CosmosUtil.fetchCosmosBlocksBatches;
 
 function eventFilterToQueryEntry(
-  filter: SubqlTerraEventFilter,
+  filter: SubqlCosmosEventFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
     {
@@ -95,7 +95,7 @@ function eventFilterToQueryEntry(
 }
 
 function messageFilterToQueryEntry(
-  filter: SubqlTerraMessageFilter,
+  filter: SubqlCosmosMessageFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
     {
@@ -146,11 +146,11 @@ function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
 }
 
 @Injectable()
-export class FetchTerraService implements OnApplicationShutdown {
+export class FetchCosmosService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
-  private blockBuffer: BlockedQueue<TerraBlockContent>;
+  private blockBuffer: BlockedQueue<CosmosBlockContent>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private useDictionary: boolean;
@@ -158,14 +158,14 @@ export class FetchTerraService implements OnApplicationShutdown {
   private batchSizeScale: number;
 
   constructor(
-    private apiService: ApiTerraService,
+    private apiService: ApiCosmosService,
     private nodeConfig: NodeConfig,
-    private project: SubqueryTerraProject,
-    private dictionaryService: TerraDictionaryService,
-    private dsProcessorService: TerraDsProcessorService,
+    private project: SubqueryCosmosProject,
+    private dictionaryService: CosmosDictionaryService,
+    private dsProcessorService: CosmosDsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.blockBuffer = new BlockedQueue<TerraBlockContent>(
+    this.blockBuffer = new BlockedQueue<CosmosBlockContent>(
       this.nodeConfig.batchSize * 3,
     );
     this.blockNumberBuffer = new BlockedQueue<number>(
@@ -178,7 +178,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): TerraClient {
+  get api(): CosmosClient {
     return this.apiService.getApi();
   }
 
@@ -189,20 +189,20 @@ export class FetchTerraService implements OnApplicationShutdown {
       isRuntimeDataSourceV0_3_0(ds),
     );
     for (const ds of dataSources) {
-      const plugin = isCustomTerraDs(ds)
+      const plugin = isCustomCosmosDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        if (baseHandlerKind === SubqlTerraHandlerKind.Block) {
+        if (baseHandlerKind === SubqlCosmosHandlerKind.Block) {
           return [];
         }
-        let filterList: SubqlTerraHandlerFilter[];
-        if (isCustomTerraDs(ds)) {
+        let filterList: SubqlCosmosHandlerFilter[];
+        if (isCustomCosmosDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
             const queryEntry = processor.dictionaryQuery(
-              (handler as SubqlTerraEventHandler | SubqlTerraMessageHandler)
+              (handler as SubqlCosmosEventHandler | SubqlCosmosMessageHandler)
                 .filter,
               ds,
             );
@@ -211,21 +211,21 @@ export class FetchTerraService implements OnApplicationShutdown {
               continue;
             }
           }
-          filterList = this.getBaseHandlerFilters<SubqlTerraHandlerFilter>(
+          filterList = this.getBaseHandlerFilters<SubqlCosmosHandlerFilter>(
             ds,
             handler.kind,
           );
         } else {
           filterList = [
-            (handler as SubqlTerraEventHandler | SubqlTerraMessageHandler)
+            (handler as SubqlCosmosEventHandler | SubqlCosmosMessageHandler)
               .filter,
           ];
         }
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubqlTerraHandlerKind.Message: {
-            for (const filter of filterList as SubqlTerraMessageFilter[]) {
+          case SubqlCosmosHandlerKind.Message: {
+            for (const filter of filterList as SubqlCosmosMessageFilter[]) {
               if (filter.type !== undefined) {
                 queryEntries.push(messageFilterToQueryEntry(filter));
               } else {
@@ -234,8 +234,8 @@ export class FetchTerraService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubqlTerraHandlerKind.Event: {
-            for (const filter of filterList as SubqlTerraEventFilter[]) {
+          case SubqlCosmosHandlerKind.Event: {
+            for (const filter of filterList as SubqlCosmosEventFilter[]) {
               if (filter.type !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
@@ -258,7 +258,7 @@ export class FetchTerraService implements OnApplicationShutdown {
     );
   }
 
-  register(next: (value: TerraBlockContent) => Promise<void>): () => void {
+  register(next: (value: CosmosBlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
       while (!stopper && !this.isShutdown) {
@@ -274,7 +274,7 @@ export class FetchTerraService implements OnApplicationShutdown {
           } catch (e) {
             logger.error(
               e,
-              `failed to index block at height ${block.block.block.block.header.height.toString()} ${
+              `failed to index block at height ${block.block.block.header.height.toString()} ${
                 e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
               }`,
             );
@@ -319,10 +319,7 @@ export class FetchTerraService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedBlock = await this.api.blockInfo();
-      const currentFinalizedHeight = parseInt(
-        finalizedBlock.block.header.height,
-      );
+      const currentFinalizedHeight = await this.api.finalisedHeight();
       logger.info(currentFinalizedHeight.toString());
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
@@ -428,11 +425,11 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   private async dictionaryValidation(
-    { _metadata: metaData }: TerraDictionary,
+    { _metadata: metaData }: CosmosDictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const nodeInfo = await this.api.nodeInfo();
-    if (metaData.chain !== nodeInfo.default_node_info.network) {
+    const chain = await this.api.chainId();
+    if (metaData.chain !== chain) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -485,12 +482,12 @@ export class FetchTerraService implements OnApplicationShutdown {
   }
 
   private getBaseHandlerKind(
-    ds: SubqlTerraDatasource,
-    handler: SubqlTerraHandler,
-  ): SubqlTerraHandlerKind {
-    if (isRuntimeTerraDs(ds) && isBaseTerraHandler(handler)) {
+    ds: SubqlCosmosDatasource,
+    handler: SubqlCosmosHandler,
+  ): SubqlCosmosHandlerKind {
+    if (isRuntimeCosmosDs(ds) && isBaseCosmosHandler(handler)) {
       return handler.kind;
-    } else if (isCustomTerraDs(ds) && isCustomTerraHandler(handler)) {
+    } else if (isCustomCosmosDs(ds) && isCustomCosmosHandler(handler)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const baseHandler =
         plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
@@ -503,11 +500,11 @@ export class FetchTerraService implements OnApplicationShutdown {
     }
   }
 
-  private getBaseHandlerFilters<T extends SubqlTerraHandlerFilter>(
-    ds: SubqlTerraDatasource,
+  private getBaseHandlerFilters<T extends SubqlCosmosHandlerFilter>(
+    ds: SubqlCosmosDatasource,
     handlerKind: string,
   ): T[] {
-    if (isCustomTerraDs(ds)) {
+    if (isCustomCosmosDs(ds)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const processor = plugin.handlerProcessors[handlerKind];
       return processor.baseFilter instanceof Array
