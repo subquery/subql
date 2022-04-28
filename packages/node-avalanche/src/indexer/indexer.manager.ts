@@ -19,6 +19,7 @@ import {
   ApiService,
   getLogger,
   getYargsOption,
+  IndexerEvent,
   profiler,
 } from '@subql/common-node';
 import {
@@ -43,7 +44,6 @@ import { SubqueryRepo } from '../entities';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';

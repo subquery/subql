@@ -5,7 +5,7 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
+import { ApiService, getYargsOption, getLogger, IndexerEvent } from '@subql/common-node';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -32,7 +32,6 @@ import { delay } from '../utils/promise';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
-import { IndexerEvent } from './events';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
