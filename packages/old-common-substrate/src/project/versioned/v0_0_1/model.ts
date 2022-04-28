@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ProjectManifestBaseImpl} from '@subql/common-avalanche';
-import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types-avalanche';
+import {SubqlMapping, SubqlRuntimeHandler} from '@subql/types';
 import {Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import {RuntimeDataSourceBase, ChainTypes} from '../../models';

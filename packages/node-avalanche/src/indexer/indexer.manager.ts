@@ -35,7 +35,7 @@ import {
   SubqlRuntimeDatasource,
   AvalancheTransaction,
   AvalancheEvent,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
 import { NodeConfig } from '../configure/NodeConfig';

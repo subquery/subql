@@ -9,7 +9,7 @@ import {
   SubqlHandlerKind,
   SubqlNetworkFilter,
   SubqlRuntimeDatasource,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 
 export function isBlockHandlerProcessor<T extends SubqlNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubqlHandlerKind, T, unknown>

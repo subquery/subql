@@ -3,22 +3,30 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
-import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
+import {
+  SubstrateBlock,
+  SubstrateEvent,
+  SubstrateExtrinsic,
+  AlgorandBlock,
+  AvalancheBlock,
+  AvalancheTransaction,
+} from './interfaces';
 
 export enum SubqlDatasourceKind {
   Runtime = 'substrate/Runtime',
+  AvalancheRuntime = 'avalanche/Runtime',
 }
 
 export enum SubqlHandlerKind {
-  Block = 'substrate/BlockHandler',
-  Call = 'substrate/CallHandler',
-  Event = 'substrate/EventHandler',
+  Block = 'BlockHandler',
+  Call = 'CallHandler',
+  Event = 'EventHandler',
 }
 
 export type RuntimeHandlerInputMap = {
-  [SubqlHandlerKind.Block]: SubstrateBlock;
+  [SubqlHandlerKind.Block]: SubstrateBlock | AlgorandBlock | AvalancheBlock;
   [SubqlHandlerKind.Event]: SubstrateEvent;
-  [SubqlHandlerKind.Call]: SubstrateExtrinsic;
+  [SubqlHandlerKind.Call]: SubstrateExtrinsic | AvalancheTransaction;
 };
 
 type RuntimeFilterMap = {
@@ -58,6 +66,8 @@ export interface SubqlEventFilter extends SubqlBaseHandlerFilter {
 
 export interface SubqlCallFilter extends SubqlEventFilter {
   success?: boolean;
+  from?: string;
+  to?: string;
 }
 
 export interface SubqlBlockHandler {
@@ -105,6 +115,7 @@ interface ISubqlDatasource<M extends SubqlMapping, F extends SubqlNetworkFilter 
 export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
   extends ISubqlDatasource<M> {
   kind: SubqlDatasourceKind.Runtime;
+  assets?: Map<string, {file: string}>;
 }
 
 export interface SubqlNetworkFilter {

@@ -23,7 +23,7 @@ import {
   AvalancheCallFilter,
   AvalancheResult,
   SubqlDatasource,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';

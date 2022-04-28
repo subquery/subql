@@ -8,7 +8,7 @@ import {
   SubqlMapping,
   SubqlNetworkFilter,
   SubqlRuntimeHandler,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import {plainToClass, Type} from 'class-transformer';
 import {Equals, IsArray, IsObject, IsOptional, IsString, ValidateNested, validateSync} from 'class-validator';
 import yaml from 'js-yaml';

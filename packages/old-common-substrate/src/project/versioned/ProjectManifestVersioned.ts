@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlDatasource} from '@subql/types-avalanche';
+import {SubqlDatasource} from '@subql/types';
 import {plainToClass} from 'class-transformer';
 import {ISubstrateProjectManifest} from '../types';
 import {ProjectManifestV0_0_1Impl} from './v0_0_1';
