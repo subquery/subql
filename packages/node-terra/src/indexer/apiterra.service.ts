@@ -18,7 +18,6 @@ import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
-
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -143,7 +142,7 @@ export class TerraClient {
       );
       return data;
     } catch (e) {
-      if ((e as AxiosError).response.status === 400) {
+      if (axios.isAxiosError(e) && e.response.status === 400) {
         logger.info(`block ${height} unavailable to fetch, retrying...`);
         await delay(1);
         return this.blockInfo(height);
@@ -161,7 +160,7 @@ export class TerraClient {
       );
       return TxInfo.fromData(data.tx_response);
     } catch (e) {
-      if ((e as AxiosError).response.status === 400) {
+      if (axios.isAxiosError(e) && e.response.status === 400) {
         logger.info(`tx ${hash} unavailable to fetch, retrying...`);
         await delay(1);
         return this.txInfo(hash);
@@ -203,7 +202,7 @@ export class TerraClient {
     } catch (e) {
       // Mantlemint can lag behind the network, at that point we disable it and switch to LCD
       // https://github.com/terra-money/mantlemint/blob/e019308386a23ba4ed405285ca151967ee21623c/indexer/block/client.go#L20-L21
-      if ((e as AxiosError).response.status === 400) {
+      if (axios.isAxiosError(e) && e.response.status === 400) {
         this.disableMantlemint();
         return this.blockInfo(height);
       } else {
