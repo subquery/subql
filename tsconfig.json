@@ -17,6 +17,8 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
+      "@subql/utils": ["packages/utils/src"],
+      "@subql/utils/*": ["packages/utils/src/*"],
       "@subql/common": ["packages/common/src"],
       "@subql/common/*": ["packages/common/src/*"],
       "@subql/common-substrate": ["packages/common-substrate/src"],
