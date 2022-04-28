@@ -10,7 +10,8 @@
   "references": [
     { "path": "../common" },
     { "path": "../common-substrate" },
-    { "path": "../types" }
+    { "path": "../types" },
+    { "path": "../utils" }
   ],
   "include": ["src/**/*"]
 }
