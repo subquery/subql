@@ -86,6 +86,11 @@ jobs:
           paths: packages/query
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-utils
+        with:
+          paths: packages/utils
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-validator
         with:
           paths: packages/validator
@@ -96,6 +101,13 @@ jobs:
         run: yarn workspaces foreach run build
 
       #Add remove-stable-version
+      - name: Bump utils & deploy
+        if: steps.changed-utils.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/utils
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
       - name: Bump types & deploy
         if: steps.changed-types.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
