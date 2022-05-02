@@ -5,7 +5,7 @@ import {ApiPromise} from '@polkadot/api';
 import {ApiDecoration} from '@polkadot/api/types';
 import { AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction } from './algorand';
 import { AvalancheBlock, AvalancheBlockWrapper, AvalancheCallFilter, AvalancheEvent, AvalancheEventFilter, AvalancheTransaction } from './avalanche';
-import {SubqlCallFilter, SubqlEventFilter, SubqlDatasource} from './project';
+import {SubqlCallFilter, SubqlEventFilter} from './project';
 import { SubstrateBlock, SubstrateBlockWrapper, SubstrateEvent, SubstrateExtrinsic } from './substrate';
 
 export interface Entity {
@@ -41,8 +41,8 @@ export interface BlockWrapper<
   blockHeight: number;
   specVersion?: number;
   hash: string;
-  calls?: (filters?: CF | CF[], ds?: SubqlDatasource) => C[];
-  events?: (filters?: EF | EF[], ds?: SubqlDatasource) => E[];
+  calls?: (filters?: CF | CF[], ds?: any) => C[];
+  events?: (filters?: EF | EF[], ds?: any) => E[];
 }
 
 export interface ApiWrapper<

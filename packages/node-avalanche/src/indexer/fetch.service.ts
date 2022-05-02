@@ -5,7 +5,12 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ApiService, getYargsOption, getLogger, IndexerEvent } from '@subql/common-node';
+import {
+  ApiService,
+  getYargsOption,
+  getLogger,
+  IndexerEvent,
+} from '@subql/common-node';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
