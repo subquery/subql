@@ -5418,7 +5418,7 @@ __metadata:
     "@polkadot/api": 7.12.1
     "@subql/common-avalanche": "workspace:*"
     "@subql/common-node": "workspace:*"
-    "@subql/old-common-substrate": "workspace:*"
+    "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
@@ -5555,29 +5555,6 @@ __metadata:
     yargs: ^16.2.0
   bin:
     subql-node: ./bin/run
-  languageName: unknown
-  linkType: soft
-
-"@subql/old-common-substrate@workspace:*, @subql/old-common-substrate@workspace:packages/old-common-substrate":
-  version: 0.0.0-use.local
-  resolution: "@subql/old-common-substrate@workspace:packages/old-common-substrate"
-  dependencies:
-    "@polkadot/util": ^8
-    "@subql/common-avalanche": "workspace:*"
-    "@subql/types": "workspace:*"
-    "@types/bn.js": 4.11.6
-    "@types/js-yaml": ^4.0.4
-    "@types/pino": ^6.3.12
-    bn.js: 4.11.6
-    class-transformer: 0.4.0
-    class-validator: ^0.13.1
-    flatted: ^3.2.2
-    graphql: ^15.7.2
-    graphql-tag: ^2.12.5
-    js-yaml: ^4.1.0
-    pino: ^6.13.3
-    reflect-metadata: ^0.1.13
-    sequelize: ^6.6.2
   languageName: unknown
   linkType: soft
 
@@ -8971,7 +8948,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"class-validator@npm:^0.13.1, class-validator@npm:^0.13.2":
+"class-validator@npm:^0.13.2":
   version: 0.13.2
   resolution: "class-validator@npm:0.13.2"
   dependencies:

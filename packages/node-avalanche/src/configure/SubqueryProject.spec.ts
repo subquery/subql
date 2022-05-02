@@ -7,16 +7,10 @@ import { SubqueryProject } from './SubqueryProject';
 
 describe('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
-    let projectDirV0_0_1: string;
-
     let projectDirV0_2_0: string;
     let projectDirV0_3_0: string;
 
     beforeEach(() => {
-      projectDirV0_0_1 = path.resolve(
-        __dirname,
-        '../../test/projectFixture/v0.0.1',
-      );
       projectDirV0_2_0 = path.resolve(
         __dirname,
         '../../test/projectFixture/v0.2.0',
@@ -26,14 +20,6 @@ describe('SubqueryProject', () => {
         __dirname,
         '../../test/projectFixture/v0.3.0',
       );
-    });
-    it('convert 0.0.1 to project object', () => {
-      expect(() => SubqueryProject.create(projectDirV0_0_1)).not.toThrow();
-    });
-
-    it('load 0.0.1 chain types', async () => {
-      const project = await SubqueryProject.create(projectDirV0_0_1, undefined);
-      console.log(project.chainTypes);
     });
 
     it('convert local 0.2.0 manifest to project object', async () => {

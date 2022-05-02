@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { IProjectManifest } from '@subql/common';
 import {
   SubqlCustomDatasource,
   SubqlCustomHandler,
@@ -11,7 +12,6 @@ import {
   SubqlRuntimeDatasource,
   SubqlRuntimeHandler,
 } from '@subql/types';
-import {IProjectManifest} from '../../types';
 import {isRuntimeDs} from '../../utils';
 
 export interface SubqlMappingV0_3_0<T extends SubqlHandler> extends SubqlMapping<T> {

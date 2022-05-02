@@ -9,7 +9,6 @@ import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getAllEntitiesRelations } from '@subql/common';
 import {
   isCustomDs,
-  isRuntimeDs,
   isRuntimeDataSourceV0_3_0,
 } from '@subql/common-avalanche';
 import {
@@ -99,10 +98,7 @@ export class IndexerManager {
         ),
       'createDynamicDatasource',
     );
-
-    if (isRuntimeDs(ds)) {
-      await this.indexBlockForRuntimeDs(vm, ds, blockContent);
-    }
+      await this.indexBlockForRuntimeDs(vm, ds.mapping.handlers, blockContent);
   }
 
   @profiler(argv.profiler)
@@ -404,8 +400,6 @@ export class IndexerManager {
       process.exit(1);
     }
     // perform filter for custom ds
-    filteredDs = filteredDs.filter((ds) => !isCustomDs(ds));
-
     if (!filteredDs.length) {
       logger.error(`Did not find any datasources with associated processor`);
       process.exit(1);
@@ -436,45 +430,35 @@ export class IndexerManager {
 
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
-    ds: SubqlRuntimeDatasource,
+    handlers,
     blockContent: BlockWrapper,
   ): Promise<void> {
-    for (const handler of ds.mapping.handlers) {
+    for (const handler of handlers) {
       switch (handler.kind) {
         case SubqlHandlerKind.Block:
           await vm.securedExec(handler.handler, [blockContent]);
           break;
         case SubqlHandlerKind.Call: {
-          let filteredCalls = blockContent.calls(handler.filter, ds);
-          if (
-            isRuntimeDataSourceV0_3_0(ds)) {
-            filteredCalls = await Promise.all(
+          let filteredCalls = blockContent.calls(handler.filter);
+            filteredCalls = 
               filteredCalls.map((call) =>
                 (this.api as AvalancheApi).parseTransaction(
                   call as AvalancheTransaction,
-                  ds,
                 ),
-              ),
             );
-          }
           for (const e of filteredCalls) {
             await vm.securedExec(handler.handler, [e]);
           }
           break;
         }
         case SubqlHandlerKind.Event: {
-          let filteredEvents = blockContent.events(handler.filter, ds);
-          if (
-            isRuntimeDataSourceV0_3_0(ds)) {
-            filteredEvents = await Promise.all(
+          let filteredEvents = blockContent.events(handler.filter);
+            filteredEvents = 
               filteredEvents.map((event) =>
                 (this.api as AvalancheApi).parseEvent(
                   event as AvalancheEvent,
-                  ds,
                 ),
-              ),
             );
-          }
           for (const e of filteredEvents) {
             await vm.securedExec(handler.handler, [e]);
           }
