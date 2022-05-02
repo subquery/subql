@@ -189,49 +189,15 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return this.contractInterfaces[abiName];
   }
 
-  async parseEvent<T extends AvalancheResult = AvalancheResult>(
+   parseEvent<T extends AvalancheResult = AvalancheResult>(
     event: AvalancheEvent,
-    ds: RuntimeDataSourceV0_3_0,
-  ): Promise<AvalancheEvent<T>> {
-    try {
-      if (!ds?.options?.abi) {
+  ): AvalancheEvent<T> {
         return event as AvalancheEvent<T>;
-      }
-
-      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
-      return {
-        ...event,
-        args: iface?.parseLog(event).args as T,
-      };
-    } catch (e) {
-      logger.warn(`Failed to parse event data: ${e.message}`);
-      return event as AvalancheEvent<T>;
     }
-  }
-
-  async parseTransaction<T extends AvalancheResult = AvalancheResult>(
+  parseTransaction<T extends AvalancheResult = AvalancheResult>(
     transaction: AvalancheTransaction,
-    ds: RuntimeDataSourceV0_3_0,
-  ): Promise<AvalancheTransaction<T>> {
-    try {
-      if (!ds?.options?.abi) {
+  ): AvalancheTransaction<T> {
         return transaction as AvalancheTransaction<T>;
-      }
-
-      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
-      return {
-        ...transaction,
-        args: iface?.decodeFunctionData(
-          iface.getFunction(hexDataSlice(transaction.input, 0, 4)),
-          transaction.input,
-        ) as T,
-      };
-    } catch (e) {
-      logger.warn(`Failed to parse transaction data: ${e.message}`);
-      return transaction as AvalancheTransaction<T>;
-    }
   }
 }
 
@@ -255,53 +221,36 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
 
   calls(
     filter?: AvalancheCallFilter,
-    ds?: SubqlDatasource,
   ): AvalancheTransaction[] {
     if (!filter) {
       return this.block.transactions;
     }
 
-    let address: string | undefined;
-    if (isRuntimeDataSourceV0_3_0(ds)) {
-      address = ds?.options?.address;
-    }
-
     return this.block.transactions.filter((t) =>
-      this.filterCallProcessor(t, filter, address),
+      this.filterCallProcessor(t, filter),
     );
   }
 
   events(
     filter?: AvalancheEventFilter,
-    ds?: SubqlDatasource,
   ): AvalancheEvent[] {
     if (!filter) {
       return this._logs;
     }
 
-    let address: string | undefined;
-    if (isRuntimeDataSourceV0_3_0(ds)) {
-      address = ds?.options?.address;
-    }
-
     return this._logs.filter((log) =>
-      this.filterEventsProcessor(log, filter, address),
+      this.filterEventsProcessor(log, filter),
     );
   }
 
   private filterCallProcessor(
     transaction: AvalancheTransaction,
     filter: AvalancheCallFilter,
-    address?: string,
   ): boolean {
     if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
       return false;
     }
     if (filter.from && !stringNormalizedEq(filter.from, transaction.from)) {
-      return false;
-    }
-
-    if (address && !filter.to && !stringNormalizedEq(address, transaction.to)) {
       return false;
     }
 
@@ -318,12 +267,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   private filterEventsProcessor(
     log: AvalancheEvent,
     filter: AvalancheEventFilter,
-    address?: string,
   ): boolean {
-    if (address && !stringNormalizedEq(address, log.address)) {
-      return false;
-    }
-
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
         const topic = filter.topics[i];
