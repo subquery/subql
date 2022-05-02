@@ -11,7 +11,7 @@ import {
   isNull,
 } from '@polkadot/util';
 import { getTypeByScalarName } from '@subql/common-avalanche';
-import { GraphQLModelsType } from '@subql/common/graphql/types';
+import { GraphQLModelsType } from '@subql/common-avalanche/graphql/types';
 import { ModelAttributes, ModelAttributeColumnOptions } from 'sequelize';
 
 export function modelsTypeToModelAttributes(
