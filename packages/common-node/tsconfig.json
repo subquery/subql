@@ -5,6 +5,6 @@
     "rootDir": "src",
     "outDir": "dist"
   },
-  "references": [{"path": "../common-avalanche"}, {"path": "../types"}, {"path": "../common"}],
+  "references": [{"path": "../types"}, {"path": "../common"}],
   "include": ["src/**/*"]
 }

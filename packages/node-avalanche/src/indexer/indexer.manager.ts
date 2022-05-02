@@ -8,10 +8,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getAllEntitiesRelations } from '@subql/common';
 import {
-  isCustomDs,
-  isRuntimeDataSourceV0_3_0,
-} from '@subql/common-avalanche';
-import {
   ApiService,
   getLogger,
   getYargsOption,
@@ -22,7 +18,6 @@ import {
   SubqlHandlerKind,
   ApiWrapper,
   BlockWrapper,
-  SubqlRuntimeDatasource,
   AvalancheTransaction,
   AvalancheEvent,
 } from '@subql/types';
