@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+### Fixed
+- Handle undefined filters (#929)
+### Changed
+- Update polkadot 8.2.1 (#910)
 
 ## [0.34.0] - 2022-04-26
 ### Changed

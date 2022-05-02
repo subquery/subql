@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.7.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+### Changed
+- Update polkadot 8.2.1 (#910)
+### Fixed
+- Fix AxiosError type check (#943)
 
 ## [0.6.1] - 2022-04-27
 ### Fixed
