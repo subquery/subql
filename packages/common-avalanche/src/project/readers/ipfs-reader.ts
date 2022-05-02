@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {u8aConcat} from '@polkadot/util';
+import {IPFS_NODE_ENDPOINT} from '@subql/common';
 import IPFS from 'ipfs-http-client';
 import yaml from 'js-yaml';
 import {IPackageJson} from 'package-json-type';
-import {IPFS_NODE_ENDPOINT} from '../../constants';
 import {Reader} from './reader';
 
 const CIDv0 = new RegExp(/Qm[1-9A-Za-z]{44}[^OIl]/i);

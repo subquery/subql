@@ -4,7 +4,8 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common-avalanche';
+import {IPFS_REGEX} from '@subql/common';
+import { getProjectRootAndManifest } from '@subql/common-avalanche';
 import { getYargsOption, getLogger, setLevel } from '@subql/common-node';
 import { SubstrateProjectNetworkConfig } from '@subql/old-common-substrate';
 import { camelCase, last, omitBy, isNil } from 'lodash';

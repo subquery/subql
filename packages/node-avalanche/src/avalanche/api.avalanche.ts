@@ -7,10 +7,6 @@ import { hexDataSlice } from '@ethersproject/bytes';
 import {
   isRuntimeDataSourceV0_3_0,
   RuntimeDataSourceV0_3_0,
-  eventToTopic,
-  functionToSighash,
-  hexStringEq,
-  stringNormalizedEq,
 } from '@subql/common-avalanche';
 import { getLogger } from '@subql/common-node';
 import {
@@ -27,6 +23,7 @@ import {
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
+import { eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq } from '../utils/string';
 
 type AvalancheOptions = {
   ip: string;

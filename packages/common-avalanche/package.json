@@ -14,6 +14,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@polkadot/util": "^8",
+    "@subql/common": "workspace:*",
     "@subql/x-vm2": "^3.9.3-0.1.0",
     "ansi-styles": "^6.1.0",
     "bn.js": "5.2.0",
