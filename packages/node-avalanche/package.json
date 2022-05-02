@@ -25,7 +25,7 @@
     "@nestjs/platform-express": "^8.2.6",
     "@nestjs/schedule": "^1.0.2",
     "@polkadot/api": "7.12.1",
-    "@subql/common-avalanche": "workspace:*",
+    "@subql/common": "workspace:*",
     "@subql/common-node": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/types": "workspace:*",

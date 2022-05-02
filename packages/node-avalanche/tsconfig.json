@@ -8,7 +8,7 @@
     "outDir": "./dist"
   },
   "references": [
-    { "path": "../common-avalanche" },
+    { "path": "../common" },
     { "path": "../common-node" },
     { "path": "../common-substrate" },
     { "path": "../types" }

@@ -1,13 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
-import { hexDataSlice } from '@ethersproject/bytes';
-import {
-  isRuntimeDataSourceV0_3_0,
-  RuntimeDataSourceV0_3_0,
-} from '@subql/common-avalanche';
 import { getLogger } from '@subql/common-node';
 import {
   ApiWrapper,
@@ -18,7 +12,6 @@ import {
   AvalancheEventFilter,
   AvalancheCallFilter,
   AvalancheResult,
-  SubqlDatasource,
 } from '@subql/types';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
@@ -33,26 +26,6 @@ type AvalancheOptions = {
 };
 
 const logger = getLogger('api.avalanche');
-
-async function loadAssets(
-  ds: RuntimeDataSourceV0_3_0,
-): Promise<Record<string, string>> {
-  if (!ds.assets) {
-    return {};
-  }
-
-  const res: Record<string, string> = {};
-
-  for (const [name, { file }] of ds.assets) {
-    try {
-      res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
-    } catch (e) {
-      throw new Error(`Failed to load datasource asset ${file}`);
-    }
-  }
-
-  return res;
-}
 
 export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   private client: Avalanche;
@@ -268,6 +241,9 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     log: AvalancheEvent,
     filter: AvalancheEventFilter,
   ): boolean {
+    if (filter.address && !stringNormalizedEq(filter.address, log.address)) {
+      return false;
+    }
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
         const topic = filter.topics[i];
