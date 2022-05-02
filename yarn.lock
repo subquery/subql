@@ -5305,6 +5305,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/common-node@workspace:packages/common-node"
   dependencies:
+    "@subql/common": "workspace:*"
     "@subql/common-avalanche": "workspace:*"
     "@subql/types": "workspace:*"
   languageName: unknown

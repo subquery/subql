@@ -6,11 +6,8 @@ import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
+import { getAllEntitiesRelations } from '@subql/common';
 import {
-  getAllEntitiesRelations,
-  isBlockHandlerProcessor,
-  isCallHandlerProcessor,
-  isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
   isRuntimeDataSourceV0_3_0,
@@ -23,15 +20,9 @@ import {
   profiler,
 } from '@subql/common-node';
 import {
-  RuntimeHandlerInputMap,
-  SecondLayerHandlerProcessor,
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
   SubqlHandlerKind,
-  SubqlNetworkFilter,
   ApiWrapper,
   BlockWrapper,
-  SubstrateBlock,
   SubqlRuntimeDatasource,
   AvalancheTransaction,
   AvalancheEvent,
