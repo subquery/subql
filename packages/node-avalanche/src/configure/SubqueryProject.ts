@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RegisteredTypes } from '@polkadot/types/types';
+import { buildSchemaFromString } from '@subql/common';
 import {
   ReaderFactory,
   ReaderOptions,
   Reader,
-  buildSchemaFromString,
 } from '@subql/common-avalanche';
 import {
   SubstrateProjectNetworkConfig,

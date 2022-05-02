@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {LoggerService} from '@nestjs/common';
-import {Logger} from '@subql/common-avalanche';
+import {Logger} from '@subql/common';
 import Pino from 'pino';
 import {argv} from './yargs';
 

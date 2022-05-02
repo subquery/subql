@@ -15,7 +15,7 @@ import {
   GqlQuery,
   GqlVar,
   MetaData,
-} from '@subql/common-avalanche';
+} from '@subql/common';
 import { getLogger, getYargsOption, profiler } from '@subql/common-node';
 import {
   DictionaryQueryCondition,
