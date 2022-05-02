@@ -87,6 +87,8 @@ export interface SubstrateRuntimeDataSource
   extends BaseDataSource<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler> {
   kind: SubstrateDatasourceKind.Runtime;
   filter?: SubstrateNetworkFilter; //keep network filter for v0.0.1
+  options?: any;
+  assets?: any;
 }
 
 export type Processor<O = any> = FileReference & {options?: O};

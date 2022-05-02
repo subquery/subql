@@ -1,8 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
+import { hexDataSlice } from '@ethersproject/bytes';
 import { getLogger } from '@subql/common-node';
+import {
+  isRuntimeDataSourceV0_2_0,
+  RuntimeDataSourceV0_2_0,
+  SubstrateDataSource,
+} from '@subql/common-substrate';
 import {
   ApiWrapper,
   AvalancheBlock,
@@ -16,7 +23,12 @@ import {
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
-import { eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq } from '../utils/string';
+import {
+  eventToTopic,
+  functionToSighash,
+  hexStringEq,
+  stringNormalizedEq,
+} from '../utils/string';
 
 type AvalancheOptions = {
   ip: string;
@@ -26,6 +38,26 @@ type AvalancheOptions = {
 };
 
 const logger = getLogger('api.avalanche');
+
+async function loadAssets(
+  ds: RuntimeDataSourceV0_2_0,
+): Promise<Record<string, string>> {
+  if (!ds.assets) {
+    return {};
+  }
+
+  const res: Record<string, string> = {};
+
+  for (const [name, { file }] of ds.assets) {
+    try {
+      res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
+    } catch (e) {
+      throw new Error(`Failed to load datasource asset ${file}`);
+    }
+  }
+
+  return res;
+}
 
 export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   private client: Avalanche;
@@ -162,15 +194,47 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return this.contractInterfaces[abiName];
   }
 
-   parseEvent<T extends AvalancheResult = AvalancheResult>(
+  async parseEvent<T extends AvalancheResult = AvalancheResult>(
     event: AvalancheEvent,
-  ): AvalancheEvent<T> {
+    ds: RuntimeDataSourceV0_2_0,
+  ): Promise<AvalancheEvent<T>> {
+    try {
+      if (!ds?.options?.abi) {
         return event as AvalancheEvent<T>;
+      }
+      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
+
+      return {
+        ...event,
+        args: iface?.parseLog(event).args as T,
+      };
+    } catch (e) {
+      logger.warn(`Failed to parse event data: ${e.message}`);
+      return event as AvalancheEvent<T>;
     }
-  parseTransaction<T extends AvalancheResult = AvalancheResult>(
+  }
+
+  async parseTransaction<T extends AvalancheResult = AvalancheResult>(
     transaction: AvalancheTransaction,
-  ): AvalancheTransaction<T> {
-        return transaction as AvalancheTransaction<T>;
+    ds: RuntimeDataSourceV0_2_0,
+  ): Promise<AvalancheTransaction<T> | AvalancheTransaction> {
+    try {
+      if (!ds?.options?.abi) {
+        return transaction as AvalancheTransaction;
+      }
+      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
+
+      return {
+        ...transaction,
+        args: iface?.decodeFunctionData(
+          iface.getFunction(hexDataSlice(transaction.input, 0, 4)),
+          transaction.input,
+        ) as T,
+      };
+    } catch (e) {
+      logger.warn(`Failed to parse transaction data: ${e.message}`);
+      return transaction as AvalancheTransaction<T>;
+    }
   }
 }
 
@@ -194,31 +258,44 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
 
   calls(
     filter?: AvalancheCallFilter,
+    ds?: SubstrateDataSource,
   ): AvalancheTransaction[] {
     if (!filter) {
       return this.block.transactions;
     }
 
+    let address: string | undefined;
+    if (isRuntimeDataSourceV0_2_0(ds)) {
+      address = ds?.options?.address;
+    }
+
     return this.block.transactions.filter((t) =>
-      this.filterCallProcessor(t, filter),
+      this.filterCallProcessor(t, filter, address),
     );
   }
 
   events(
     filter?: AvalancheEventFilter,
+    ds?: SubstrateDataSource,
   ): AvalancheEvent[] {
     if (!filter) {
       return this._logs;
     }
 
+    let address: string | undefined;
+    if (isRuntimeDataSourceV0_2_0(ds)) {
+      address = ds?.options?.address;
+    }
+
     return this._logs.filter((log) =>
-      this.filterEventsProcessor(log, filter),
+      this.filterEventsProcessor(log, filter, address),
     );
   }
 
   private filterCallProcessor(
     transaction: AvalancheTransaction,
     filter: AvalancheCallFilter,
+    address?: string,
   ): boolean {
     if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
       return false;
@@ -226,24 +303,27 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     if (filter.from && !stringNormalizedEq(filter.from, transaction.from)) {
       return false;
     }
-
+    if (address && !filter.to && !stringNormalizedEq(address, transaction.to)) {
+      return false;
+    }
     if (
       filter.function &&
       transaction.input.indexOf(functionToSighash(filter.function)) !== 0
     ) {
       return false;
     }
-
     return true;
   }
 
   private filterEventsProcessor(
     log: AvalancheEvent,
     filter: AvalancheEventFilter,
+    address?: string,
   ): boolean {
-    if (filter.address && !stringNormalizedEq(filter.address, log.address)) {
+    if (address && !stringNormalizedEq(address, log.address)) {
       return false;
     }
+
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
         const topic = filter.topics[i];
