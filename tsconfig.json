@@ -33,8 +33,6 @@
       "@subql/old-common-substrate/*": ["packages/old-common-substrate/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
-      "@subql/types-avalanche": ["packages/types-avalanche/src"],
-      "@subql/types-avalanche/*": ["packages/types-avalanche/src/*"],
       "@subql/types-terra": ["packages/types-terra/src"],
       "@subql/types-terra/*": ["packages/types-terra/src/*"],
       "@subql/validator": ["packages/validator/src"],
@@ -52,7 +50,6 @@
     {"path": "packages/node"},
     {"path": "packages/old-common-substrate"},
     {"path": "packages/types"},
-    {"path": "packages/types-avalanche"},
     {"path": "packages/types-terra"},
     {"path": "packages/utils"},
     {"path": "packages/validator"}
