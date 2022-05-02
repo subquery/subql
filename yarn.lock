@@ -5275,6 +5275,7 @@ __metadata:
   resolution: "@subql/common-avalanche@workspace:packages/common-avalanche"
   dependencies:
     "@polkadot/util": ^8
+    "@subql/common": "workspace:*"
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
