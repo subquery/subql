@@ -14,6 +14,7 @@ import {
   IndexerEvent,
   profiler,
 } from '@subql/common-node';
+import { SubstrateRuntimeDataSource } from '@subql/common-substrate';
 import {
   SubqlHandlerKind,
   ApiWrapper,
@@ -93,7 +94,7 @@ export class IndexerManager {
         ),
       'createDynamicDatasource',
     );
-      await this.indexBlockForRuntimeDs(vm, ds.mapping.handlers, blockContent);
+    await this.indexBlockForRuntimeDs(vm, ds, blockContent);
   }
 
   @profiler(argv.profiler)
@@ -425,35 +426,39 @@ export class IndexerManager {
 
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
-    handlers,
+    ds: SubqlProjectDs,
     blockContent: BlockWrapper,
   ): Promise<void> {
-    for (const handler of handlers) {
+    for (const handler of ds.mapping.handlers) {
       switch (handler.kind) {
         case SubqlHandlerKind.Block:
           await vm.securedExec(handler.handler, [blockContent]);
           break;
         case SubqlHandlerKind.Call: {
-          let filteredCalls = blockContent.calls(handler.filter);
-            filteredCalls = 
-              filteredCalls.map((call) =>
-                (this.api as AvalancheApi).parseTransaction(
-                  call as AvalancheTransaction,
-                ),
-            );
+          let filteredCalls = blockContent.calls(handler.filter, ds);
+          filteredCalls = await Promise.all(
+            filteredCalls.map((call) =>
+              (this.api as AvalancheApi).parseTransaction(
+                call as AvalancheTransaction,
+                ds as SubstrateRuntimeDataSource,
+              ),
+            ),
+          );
           for (const e of filteredCalls) {
             await vm.securedExec(handler.handler, [e]);
           }
           break;
         }
         case SubqlHandlerKind.Event: {
-          let filteredEvents = blockContent.events(handler.filter);
-            filteredEvents = 
-              filteredEvents.map((event) =>
-                (this.api as AvalancheApi).parseEvent(
-                  event as AvalancheEvent,
-                ),
-            );
+          let filteredEvents = blockContent.events(handler.filter, ds);
+          filteredEvents = await Promise.all(
+            filteredEvents.map((event) =>
+              (this.api as AvalancheApi).parseEvent(
+                event as AvalancheEvent,
+                ds as SubstrateRuntimeDataSource,
+              ),
+            ),
+          );
           for (const e of filteredEvents) {
             await vm.securedExec(handler.handler, [e]);
           }
