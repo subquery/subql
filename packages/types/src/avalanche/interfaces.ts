@@ -11,6 +11,7 @@ export interface AvalancheCallFilter {
 
 export interface AvalancheEventFilter {
   topics?: Array<string | null | undefined>;
+  address?: string;
 }
 
 export interface AvalancheResult extends ReadonlyArray<any> {
