@@ -45,10 +45,9 @@ async function loadAssets(
   if (!ds.assets) {
     return {};
   }
-
   const res: Record<string, string> = {};
 
-  for (const [name, { file }] of ds.assets) {
+  for (const [name, { file }] of Object.entries(ds.assets)) {
     try {
       res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
     } catch (e) {
@@ -203,7 +202,6 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
         return event as AvalancheEvent<T>;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
       return {
         ...event,
         args: iface?.parseLog(event).args as T,
