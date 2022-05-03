@@ -16,7 +16,7 @@
     "/dist"
   ],
   "dependencies": {
-    "@subql/common-avalanche": "workspace:*",
+    "@subql/common": "workspace:*",
     "@subql/types": "workspace:*"
   }
 }

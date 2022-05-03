@@ -4,15 +4,12 @@
 import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
-import {
-  isRuntimeDataSourceV0_3_0,
-  RuntimeDataSourceV0_3_0,
-  eventToTopic,
-  functionToSighash,
-  hexStringEq,
-  stringNormalizedEq,
-} from '@subql/common-avalanche';
 import { getLogger } from '@subql/common-node';
+import {
+  isRuntimeDataSourceV0_2_0,
+  RuntimeDataSourceV0_2_0,
+  SubstrateDataSource,
+} from '@subql/common-substrate';
 import {
   ApiWrapper,
   AvalancheBlock,
@@ -22,11 +19,16 @@ import {
   AvalancheEventFilter,
   AvalancheCallFilter,
   AvalancheResult,
-  SubqlDatasource,
 } from '@subql/types';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
+import {
+  eventToTopic,
+  functionToSighash,
+  hexStringEq,
+  stringNormalizedEq,
+} from '../utils/string';
 
 type AvalancheOptions = {
   ip: string;
@@ -38,15 +40,14 @@ type AvalancheOptions = {
 const logger = getLogger('api.avalanche');
 
 async function loadAssets(
-  ds: RuntimeDataSourceV0_3_0,
+  ds: RuntimeDataSourceV0_2_0,
 ): Promise<Record<string, string>> {
   if (!ds.assets) {
     return {};
   }
-
   const res: Record<string, string> = {};
 
-  for (const [name, { file }] of ds.assets) {
+  for (const [name, { file }] of Object.entries(ds.assets)) {
     try {
       res[name] = await fs.promises.readFile(file, { encoding: 'utf8' });
     } catch (e) {
@@ -194,15 +195,13 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
   async parseEvent<T extends AvalancheResult = AvalancheResult>(
     event: AvalancheEvent,
-    ds: RuntimeDataSourceV0_3_0,
+    ds: RuntimeDataSourceV0_2_0,
   ): Promise<AvalancheEvent<T>> {
     try {
       if (!ds?.options?.abi) {
         return event as AvalancheEvent<T>;
       }
-
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
       return {
         ...event,
         args: iface?.parseLog(event).args as T,
@@ -215,13 +214,12 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
   async parseTransaction<T extends AvalancheResult = AvalancheResult>(
     transaction: AvalancheTransaction,
-    ds: RuntimeDataSourceV0_3_0,
-  ): Promise<AvalancheTransaction<T>> {
+    ds: RuntimeDataSourceV0_2_0,
+  ): Promise<AvalancheTransaction<T> | AvalancheTransaction> {
     try {
       if (!ds?.options?.abi) {
-        return transaction as AvalancheTransaction<T>;
+        return transaction as AvalancheTransaction;
       }
-
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
 
       return {
@@ -258,14 +256,14 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
 
   calls(
     filter?: AvalancheCallFilter,
-    ds?: SubqlDatasource,
+    ds?: SubstrateDataSource,
   ): AvalancheTransaction[] {
     if (!filter) {
       return this.block.transactions;
     }
 
     let address: string | undefined;
-    if (isRuntimeDataSourceV0_3_0(ds)) {
+    if (isRuntimeDataSourceV0_2_0(ds)) {
       address = ds?.options?.address;
     }
 
@@ -276,14 +274,14 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
 
   events(
     filter?: AvalancheEventFilter,
-    ds?: SubqlDatasource,
+    ds?: SubstrateDataSource,
   ): AvalancheEvent[] {
     if (!filter) {
       return this._logs;
     }
 
     let address: string | undefined;
-    if (isRuntimeDataSourceV0_3_0(ds)) {
+    if (isRuntimeDataSourceV0_2_0(ds)) {
       address = ds?.options?.address;
     }
 
@@ -303,18 +301,15 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     if (filter.from && !stringNormalizedEq(filter.from, transaction.from)) {
       return false;
     }
-
     if (address && !filter.to && !stringNormalizedEq(address, transaction.to)) {
       return false;
     }
-
     if (
       filter.function &&
       transaction.input.indexOf(functionToSighash(filter.function)) !== 0
     ) {
       return false;
     }
-
     return true;
   }
 

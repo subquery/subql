@@ -5,14 +5,23 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ApiService, getYargsOption, getLogger, IndexerEvent } from '@subql/common-node';
+import {
+  ApiService,
+  getYargsOption,
+  getLogger,
+  IndexerEvent,
+} from '@subql/common-node';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
   isCustomDs,
   isRuntimeDs,
   isRuntimeDataSourceV0_3_0,
-} from '@subql/old-common-substrate';
+  SubstrateDataSource,
+  SubstrateHandler,
+  SubstrateHandlerKind,
+  SubstrateRuntimeHandlerFilter,
+} from '@subql/common-substrate';
 import {
   SubqlCallFilter,
   SubqlEventFilter,
@@ -172,9 +181,9 @@ export class FetchService implements OnApplicationShutdown {
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubqlHandlerKind.Block:
+          case SubstrateHandlerKind.Block:
             return [];
-          case SubqlHandlerKind.Call: {
+          case SubstrateHandlerKind.Call: {
             for (const filter of filterList as SubqlCallFilter[]) {
               if (filter.module !== undefined && filter.method !== undefined) {
                 queryEntries.push(callFilterToQueryEntry(filter));
@@ -184,7 +193,7 @@ export class FetchService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubqlHandlerKind.Event: {
+          case SubstrateHandlerKind.Event: {
             for (const filter of filterList as SubqlEventFilter[]) {
               if (filter.module !== undefined && filter.method !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
@@ -453,9 +462,9 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private getBaseHandlerKind(
-    ds: SubqlDatasource,
-    handler: SubqlHandler,
-  ): SubqlHandlerKind {
+    ds: SubstrateDataSource,
+    handler: SubstrateHandler,
+  ): SubstrateHandlerKind {
     if (isRuntimeDs(ds) && isBaseHandler(handler)) {
       return handler.kind;
     } else if (isCustomDs(ds) && isCustomHandler(handler)) {
@@ -471,8 +480,8 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private getBaseHandlerFilters<T extends SubqlHandlerFilter>(
-    ds: SubqlDatasource,
+  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
+    ds: SubstrateDataSource,
     handlerKind: string,
   ): T[] {
     if (isCustomDs(ds)) {

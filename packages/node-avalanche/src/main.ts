@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { findAvailablePort } from '@subql/common-avalanche';
+import { findAvailablePort } from '@subql/common';
 import { getYargsOption, getLogger, NestLogger } from '@subql/common-node';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';

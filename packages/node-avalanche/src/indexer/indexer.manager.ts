@@ -6,15 +6,7 @@ import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import {
-  getAllEntitiesRelations,
-  isBlockHandlerProcessor,
-  isCallHandlerProcessor,
-  isEventHandlerProcessor,
-  isCustomDs,
-  isRuntimeDs,
-  isRuntimeDataSourceV0_3_0,
-} from '@subql/common-avalanche';
+import { getAllEntitiesRelations } from '@subql/common';
 import {
   ApiService,
   getLogger,
@@ -22,17 +14,11 @@ import {
   IndexerEvent,
   profiler,
 } from '@subql/common-node';
+import { SubstrateRuntimeDataSource } from '@subql/common-substrate';
 import {
-  RuntimeHandlerInputMap,
-  SecondLayerHandlerProcessor,
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
   SubqlHandlerKind,
-  SubqlNetworkFilter,
   ApiWrapper,
   BlockWrapper,
-  SubstrateBlock,
-  SubqlRuntimeDatasource,
   AvalancheTransaction,
   AvalancheEvent,
 } from '@subql/types';
@@ -108,10 +94,7 @@ export class IndexerManager {
         ),
       'createDynamicDatasource',
     );
-
-    if (isRuntimeDs(ds)) {
-      await this.indexBlockForRuntimeDs(vm, ds, blockContent);
-    }
+    await this.indexBlockForRuntimeDs(vm, ds, blockContent);
   }
 
   @profiler(argv.profiler)
@@ -413,8 +396,6 @@ export class IndexerManager {
       process.exit(1);
     }
     // perform filter for custom ds
-    filteredDs = filteredDs.filter((ds) => !isCustomDs(ds));
-
     if (!filteredDs.length) {
       logger.error(`Did not find any datasources with associated processor`);
       process.exit(1);
@@ -445,7 +426,7 @@ export class IndexerManager {
 
   private async indexBlockForRuntimeDs(
     vm: IndexerSandbox,
-    ds: SubqlRuntimeDatasource,
+    ds: SubqlProjectDs,
     blockContent: BlockWrapper,
   ): Promise<void> {
     for (const handler of ds.mapping.handlers) {
@@ -455,17 +436,14 @@ export class IndexerManager {
           break;
         case SubqlHandlerKind.Call: {
           let filteredCalls = blockContent.calls(handler.filter, ds);
-          if (
-            isRuntimeDataSourceV0_3_0(ds)) {
-            filteredCalls = await Promise.all(
-              filteredCalls.map((call) =>
-                (this.api as AvalancheApi).parseTransaction(
-                  call as AvalancheTransaction,
-                  ds,
-                ),
+          filteredCalls = await Promise.all(
+            filteredCalls.map((call) =>
+              (this.api as AvalancheApi).parseTransaction(
+                call as AvalancheTransaction,
+                ds as SubstrateRuntimeDataSource,
               ),
-            );
-          }
+            ),
+          );
           for (const e of filteredCalls) {
             await vm.securedExec(handler.handler, [e]);
           }
@@ -473,17 +451,14 @@ export class IndexerManager {
         }
         case SubqlHandlerKind.Event: {
           let filteredEvents = blockContent.events(handler.filter, ds);
-          if (
-            isRuntimeDataSourceV0_3_0(ds)) {
-            filteredEvents = await Promise.all(
-              filteredEvents.map((event) =>
-                (this.api as AvalancheApi).parseEvent(
-                  event as AvalancheEvent,
-                  ds,
-                ),
+          filteredEvents = await Promise.all(
+            filteredEvents.map((event) =>
+              (this.api as AvalancheApi).parseEvent(
+                event as AvalancheEvent,
+                ds as SubstrateRuntimeDataSource,
               ),
-            );
-          }
+            ),
+          );
           for (const e of filteredEvents) {
             await vm.securedExec(handler.handler, [e]);
           }

@@ -4,7 +4,7 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { getLogger } from '@subql/common-node';
-import { isCustomDs, isRuntimeDs } from '@subql/old-common-substrate';
+import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';

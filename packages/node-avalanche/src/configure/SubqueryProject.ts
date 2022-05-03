@@ -7,31 +7,36 @@ import {
   ReaderOptions,
   Reader,
   buildSchemaFromString,
-} from '@subql/common-avalanche';
+  RunnerSpecs,
+  validateSemver,
+} from '@subql/common';
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  ProjectManifestV0_0_1Impl,
   ProjectManifestV0_2_0Impl,
   ProjectManifestV0_2_1Impl,
   ProjectManifestV0_3_0Impl,
-} from '@subql/old-common-substrate';
-import { SubqlDatasource } from '@subql/types';
+  SubstrateDataSource,
+  FileType,
+  ProjectManifestV1_0_0Impl,
+} from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
-import { pick } from 'lodash';
 import {
   getChainTypes,
   getProjectRoot,
-  updateDataSourcesV0_0_1,
   updateDataSourcesV0_2_0,
 } from '../utils/project';
 
-export type SubqlProjectDs = SubqlDatasource & {
-  mapping: SubqlDatasource['mapping'] & { entryScript: string };
+export type SubqlProjectDs = SubstrateDataSource & {
+  mapping: SubstrateDataSource['mapping'] & { entryScript: string };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
   name: string;
+};
+
+const NOT_SUPPORT = (name: string) => () => {
+  throw new Error(`Manifest specVersion ${name}() is not supported`);
 };
 
 export class SubqueryProject {
@@ -42,6 +47,7 @@ export class SubqueryProject {
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
+  runner?: RunnerSpecs;
 
   static async create(
     path: string,
@@ -58,14 +64,9 @@ export class SubqueryProject {
     const manifest = parseSubstrateProjectManifest(projectSchema);
 
     if (manifest.isV0_0_1) {
-      return loadProjectFromManifest0_0_1(
-        manifest.asV0_0_1,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV0_2_0) {
-      return loadProjectFromManifest0_2_0(
+      NOT_SUPPORT('0.0.1');
+    } else if (manifest.isV0_2_0 || manifest.isV0_3_0) {
+      return loadProjectFromManifestBase(
         manifest.asV0_2_0,
         reader,
         path,
@@ -78,9 +79,9 @@ export class SubqueryProject {
         path,
         networkOverrides,
       );
-    } else if (manifest.isV0_3_0) {
-      return loadProjectFromManifest0_3_0(
-        manifest.asV0_3_0,
+    } else if (manifest.isV1_0_0) {
+      return loadProjectFromManifest1_0_0(
+        manifest.asV1_0_0,
         reader,
         path,
         networkOverrides,
@@ -89,50 +90,45 @@ export class SubqueryProject {
   }
 }
 
-async function loadProjectFromManifest0_0_1(
-  projectManifest: ProjectManifestV0_0_1Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  return {
-    id: path, //user project path as it id for now
-    root: await getProjectRoot(reader),
-    network: {
-      ...projectManifest.network,
-      ...networkOverrides,
-    },
-    dataSources: await updateDataSourcesV0_0_1(
-      projectManifest.dataSources,
-      reader,
-    ),
-    schema: buildSchemaFromString(await reader.getFile(projectManifest.schema)),
-    chainTypes: pick<RegisteredTypes>(projectManifest.network, [
-      'types',
-      'typesAlias',
-      'typesBundle',
-      'typesChain',
-      'typesSpec',
-    ]),
-    templates: [],
-  };
+export interface SubqueryProjectNetwork {
+  chainId: string;
+  endpoint?: string;
+  dictionary?: string;
+  chaintypes?: FileType;
 }
 
-async function loadProjectFromManifest0_2_0(
-  projectManifest: ProjectManifestV0_2_0Impl,
+function processChainId(network: any): SubqueryProjectNetwork {
+  if (network.chainId && network.genesisHash) {
+    throw new Error('Please only provide one of chainId and genesisHash');
+  } else if (network.genesisHash && !network.chainId) {
+    network.chainId = network.genesisHash;
+  }
+  delete network.genesisHash;
+  return network;
+}
+
+type SUPPORT_MANIFEST =
+  | ProjectManifestV0_2_0Impl
+  | ProjectManifestV0_2_1Impl
+  | ProjectManifestV0_3_0Impl
+  | ProjectManifestV1_0_0Impl;
+
+async function loadProjectFromManifestBase(
+  projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
 
-  const network = {
+  const network = processChainId({
     ...projectManifest.network,
     ...networkOverrides,
-  };
+  });
+
   if (!network.endpoint) {
     throw new Error(
-      `Network endpoint must be provided for network. genesisHash="${network.genesisHash}"`,
+      `Network endpoint must be provided for network. chainId="${network.chainId}"`,
     );
   }
 
@@ -173,7 +169,7 @@ async function loadProjectFromManifest0_2_1(
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
-  const project = await loadProjectFromManifest0_2_0(
+  const project = await loadProjectFromManifestBase(
     projectManifest,
     reader,
     path,
@@ -196,13 +192,35 @@ async function loadProjectFromManifest0_3_0(
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader);
-  const project = await loadProjectFromManifest0_2_0(
+  const project = await loadProjectFromManifestBase(
     projectManifest,
     reader,
     path,
     networkOverrides,
   );
 
+  return project;
+}
+
+const { version: packageVersion } = require('../../package.json');
+
+async function loadProjectFromManifest1_0_0(
+  projectManifest: ProjectManifestV1_0_0Impl,
+  reader: Reader,
+  path: string,
+  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+): Promise<SubqueryProject> {
+  const project = await loadProjectFromManifestBase(
+    projectManifest,
+    reader,
+    path,
+    networkOverrides,
+  );
+  project.runner = projectManifest.runner;
+  if (!validateSemver(packageVersion, project.runner.node.version)) {
+    throw new Error(
+      `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
+    );
+  }
   return project;
 }

@@ -3,16 +3,13 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/common-avalanche';
+import { levelFilter } from '@subql/common';
 import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
-import { isDatasourceV0_2_0 } from '@subql/old-common-substrate';
 import {
-  ApiAt,
-  ApiWrapper,
-  BlockWrapper,
-  Store,
-  SubqlDatasource,
-} from '@subql/types';
+  isDatasourceV0_2_0,
+  SubstrateDataSource,
+} from '@subql/common-substrate';
+import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -162,7 +159,7 @@ export class SandboxService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubqlDatasource): string {
+  private getDataSourceEntry(ds: SubstrateDataSource): string {
     if (isDatasourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {

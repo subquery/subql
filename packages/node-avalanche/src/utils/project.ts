@@ -4,29 +4,21 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
-  GithubReader,
-  IPFSReader,
-  LocalReader,
-  Reader,
-} from '@subql/common-avalanche';
+import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
   ChainTypes,
   CustomDatasourceV0_2_0,
   isCustomDs,
-  isRuntimeDataSourceV0_3_0,
   loadChainTypes,
   loadChainTypesFromJs,
   parseChainTypes,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-} from '@subql/old-common-substrate';
-import {
-  SubqlRuntimeHandler,
-  SubqlCustomHandler,
-  SubqlHandler,
-  SubqlHandlerKind,
-} from '@subql/types';
+  SubstrateRuntimeHandler,
+  SubstrateCustomHandler,
+  SubstrateHandler,
+  SubstrateHandlerKind,
+} from '@subql/common-substrate';
 import yaml from 'js-yaml';
 import tar from 'tar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
@@ -69,14 +61,14 @@ export function getProjectEntry(root: string): string {
 }
 
 export function isBaseHandler(
-  handler: SubqlHandler,
-): handler is SubqlRuntimeHandler {
-  return Object.values<string>(SubqlHandlerKind).includes(handler.kind);
+  handler: SubstrateHandler,
+): handler is SubstrateRuntimeHandler {
+  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
 }
 
-export function isCustomHandler<K extends string, F>(
-  handler: SubqlHandler,
-): handler is SubqlCustomHandler<K, F> {
+export function isCustomHandler(
+  handler: SubstrateHandler,
+): handler is SubstrateCustomHandler {
   return !isBaseHandler(handler);
 }
 
@@ -112,6 +104,21 @@ export async function updateDataSourcesV0_2_0(
         root,
         entryScript,
       );
+      if (dataSource.assets) {
+        for (const [, asset] of Object.entries(dataSource.assets)) {
+          if (reader instanceof LocalReader) {
+            asset.file = path.resolve(root, asset.file);
+          } else {
+            const res = await reader.getFile(asset.file);
+            const outputPath = path.resolve(
+              root,
+              asset.file.replace('ipfs://', ''),
+            );
+            await fs.promises.writeFile(outputPath, res as string);
+            asset.file = outputPath;
+          }
+        }
+      }
       if (isCustomDs(dataSource)) {
         if (dataSource.processor) {
           dataSource.processor.file = await updateProcessor(
@@ -139,22 +146,7 @@ export async function updateDataSourcesV0_2_0(
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
         };
-      } else if (isRuntimeDataSourceV0_3_0(dataSource)) {
-        if (dataSource.assets) {
-          for (const [, asset] of dataSource.assets) {
-            if (reader instanceof LocalReader) {
-              asset.file = path.resolve(root, asset.file);
-            } else {
-              const res = await reader.getFile(asset.file);
-              const outputPath = path.resolve(
-                root,
-                asset.file.replace('ipfs://', ''),
-              );
-              await fs.promises.writeFile(outputPath, res as string);
-              asset.file = outputPath;
-            }
-          }
-        }
+      } else {
         return {
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
