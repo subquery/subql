@@ -3,11 +3,13 @@
 
 import http from 'http';
 import https from 'https';
+import { Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
   StargateClient,
   StargateClientOptions,
+  defaultRegistryTypes,
 } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance, AxiosError } from 'axios';
@@ -40,11 +42,8 @@ export class ApiCosmosService {
     this.clientConfig = {};
     const client = await StargateClient.connect(network.endpoint);
 
-    this.api = new CosmosClient(
-      client,
-      network.endpoint,
-      this.nodeConfig.networkEndpointParams,
-    );
+    const registry = new Registry(defaultRegistryTypes);
+    this.api = new CosmosClient(client, registry);
 
     this.networkMeta = {
       chainId: network.chainId,
@@ -53,6 +52,7 @@ export class ApiCosmosService {
     const chainId = await this.api.chainId();
 
     if (network.chainId !== chainId) {
+      logger.info(chainId);
       const err = new Error(
         `The given chainId does not match with client: "${network.chainId}"`,
       );
@@ -69,41 +69,10 @@ export class ApiCosmosService {
 }
 
 export class CosmosClient {
-  mantlemintHealthOK = false;
-
-  private _lcdConnection: AxiosInstance;
-  private _mantlemintConnection: AxiosInstance;
-
   constructor(
     private readonly baseApi: StargateClient,
-    private tendermintURL: string,
-    private readonly params?: Record<string, string>,
-    private mantlemintURL?: string,
-  ) {
-    const httpAgent = new http.Agent({ keepAlive: true });
-    const httpsAgent = new https.Agent({ keepAlive: true });
-
-    this._lcdConnection = axios.create({
-      httpAgent,
-      httpsAgent,
-      timeout: argv('node-timeout') as number,
-      baseURL: this.tendermintURL,
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': `SubQuery-Node ${packageVersion}`,
-      },
-    });
-
-    if (this.mantlemintURL) {
-      this._mantlemintConnection = axios.create({
-        baseURL: this.mantlemintURL,
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': `SubQuery-Node ${packageVersion}`,
-        },
-      });
-    }
-  }
+    private registry: Registry,
+  ) {}
 
   async chainId(): Promise<string> {
     return this.baseApi.getChainId();
@@ -119,6 +88,15 @@ export class CosmosClient {
 
   async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
     return this.baseApi.searchTx({ height: height });
+  }
+
+  decodeMsg(msg: any) {
+    try {
+      return this.registry.decode(msg);
+    } catch (e) {
+      logger.error(e);
+      return {};
+    }
   }
 
   get StargateClient(): StargateClient {

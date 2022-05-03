@@ -14,6 +14,7 @@
     {"path": "../common"},
     {"path": "../common-substrate"},
     {"path": "../common-terra"},
+    {"path": "../common-cosmos"},
     {"path": "../utils"},
     {"path": "../validator"}
   ],

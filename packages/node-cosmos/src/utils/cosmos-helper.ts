@@ -22,7 +22,7 @@ export function filterMessageData(
   data: CosmosMessage,
   filter: SubqlCosmosMessageFilter,
 ): boolean {
-  if (filter.type !== data.msg.toData()['@type']) {
+  if (filter.type !== data.msg.typeUrl) {
     return false;
   }
   if (filter.values) {
@@ -144,15 +144,20 @@ export function wrapTx(
 export function wrapMsg(
   block: CosmosBlock,
   txs: CosmosTransaction[],
+  api: CosmosClient,
 ): CosmosMessage[] {
   const msgs: CosmosMessage[] = [];
   for (const tx of txs) {
     for (let i = 0; i < tx.decodedTx.body.messages.length; i++) {
+      const decodedMsg = api.decodeMsg(tx.decodedTx.body.messages[i]);
       const msg: CosmosMessage = {
         idx: i,
         tx: tx,
         block: block,
-        msg: tx.decodedTx.body.messages[i],
+        msg: {
+          typeUrl: tx.decodedTx.body.messages[i].typeUrl,
+          ...decodedMsg,
+        },
       };
       msgs.push(msg);
     }
@@ -163,15 +168,28 @@ export function wrapMsg(
 export function wrapEvent(
   block: CosmosBlock,
   txs: CosmosTransaction[],
+  api: CosmosClient,
 ): CosmosEvent[] {
   const events: CosmosEvent[] = [];
   for (const tx of txs) {
-    for (const log of parseRawLog(tx.tx.rawLog) as Log[]) {
+    let logs: Log[];
+    try {
+      logs = parseRawLog(tx.tx.rawLog) as Log[];
+    } catch (e) {
+      continue;
+    }
+    for (const log of logs) {
+      const decodedMsg = api.decodeMsg(
+        tx.decodedTx.body.messages[log.msg_index],
+      );
       const msg: CosmosMessage = {
         idx: log.msg_index,
         tx: tx,
         block: block,
-        msg: tx.decodedTx.body.messages[log.msg_index],
+        msg: {
+          typeUrl: tx.decodedTx.body.messages[log.msg_index],
+          ...decodedMsg,
+        },
       };
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
@@ -210,8 +228,8 @@ export async function fetchCosmosBlocksBatches(
       const txInfos = await api.txInfoByHeight(blockInfo.header.height);
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
-      const msgs = wrapMsg(block, txs);
-      const events = wrapEvent(block, txs);
+      const msgs = wrapMsg(block, txs, api);
+      const events = wrapEvent(block, txs, api);
       return <CosmosBlockContent>{
         block: block,
         transactions: txs,

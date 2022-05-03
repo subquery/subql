@@ -84,7 +84,7 @@ export class DeploymentV0_3_0 {
   @Type(() => CosmosCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: CosmosRuntimeDataSourceV0_3_0Impl, name: 'Cosmos/Runtime'}],
+      subTypes: [{value: CosmosRuntimeDataSourceV0_3_0Impl, name: 'cosmos/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -116,7 +116,7 @@ export class ProjectManifestV0_3_0Impl
   @Type(() => CosmosCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: CosmosRuntimeDataSourceV0_3_0Impl, name: 'Cosmos/Runtime'}],
+      subTypes: [{value: CosmosRuntimeDataSourceV0_3_0Impl, name: 'cosmos/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

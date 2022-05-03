@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
+import {CosmosProjectManifestVersioned, loadCosmosProjectManifest} from '@subql/common-cosmos';
 import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
 import {loadTerraProjectManifest, TerraProjectManifestVersioned, isCustomTerraDs} from '@subql/common-terra';
 import {
@@ -190,18 +191,26 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+  let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned | CosmosProjectManifestVersioned;
 
   try {
     console.log('Loading substrate manifest...');
     manifest = loadSubstrateProjectManifest(projectPath);
     await generateDatasourceTemplates(projectPath, manifest);
   } catch (e) {
-    console.log('Loading substrate manifest failed');
-    console.log('Loading terra manifest...');
-    manifest = loadTerraProjectManifest(projectPath);
-    await generateDatasourceTemplates(projectPath, manifest);
-    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
+    try {
+      console.log('Loading substrate manifest failed');
+      console.log('Loading terra manifest...');
+      manifest = loadTerraProjectManifest(projectPath);
+      await generateDatasourceTemplates(projectPath, manifest);
+      MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
+    } catch (e) {
+      console.log('Loading terra manifest failed');
+      console.log('Loading cosmos manifest...');
+      manifest = loadCosmosProjectManifest(projectPath);
+      await generateDatasourceTemplates(projectPath, manifest);
+      MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/cosmosmodel.ts.ejs');
+    }
   }
 
   const schemaPath = path.join(projectPath, manifest.schema);
@@ -282,7 +291,7 @@ export async function generateModels(projectPath: string, schema: string): Promi
 
 export async function generateDatasourceTemplates(
   projectPath: string,
-  projectManifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
+  projectManifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned | CosmosProjectManifestVersioned
 ): Promise<void> {
   if (projectManifest instanceof SubstrateProjectManifestVersioned) {
     if (!projectManifest.isV0_2_1) return;
