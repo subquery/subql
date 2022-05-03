@@ -13,6 +13,7 @@ import {plainToClass, Transform, TransformFnParams, Type} from 'class-transforme
 import {
   Equals,
   IsArray,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -39,9 +40,10 @@ import {
 import {SubstrateProjectManifestV1_0_0} from './types';
 
 const SUBSTRATE_NODE_NAME = `@subql/node`;
+const AVALANCHE_NODE_NAME = `@subql/node-avalanche`;
 
 export class SubstrateRunnerNodeImpl implements NodeSpec {
-  @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
+  @IsIn([SUBSTRATE_NODE_NAME, AVALANCHE_NODE_NAME], {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}' or '${AVALANCHE_NODE_NAME}'`})
   name: string;
   @IsString()
   @Validate(SemverVersionValidator)
