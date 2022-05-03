@@ -36,3 +36,8 @@ export interface NetworkMetadataPayload {
   specName: string;
   genesisHash: string;
 }
+
+export interface MmrPayload {
+  id: number;
+  value: Uint8Array;
+}

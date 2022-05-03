@@ -15,7 +15,12 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
+import {
+  PoiFactory,
+  PoiModel,
+  PoiRepo,
+  ProofOfIndex,
+} from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
@@ -29,7 +34,6 @@ const MMR_AWAIT_TIME = 2;
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
-  private blockOffset: number;
   private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
@@ -61,40 +65,32 @@ export class MmrService implements OnApplicationShutdown {
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this.nextMmrBlockHeight = fileBasedMmrLeafLength + blockOffset + 1;
     // The first Poi in database with null mmr value.
-    const poiWithoutMmr = await this.getFirstPoiWithoutMmr();
+    // const poiWithoutMmr = await this.getFirstPoiWithoutMmr();
     // The latest poi record in database with mmr value
     const latestPoiWithMmr = await this.getLatestPoiWithMmr();
-    // If can not find the latest record with mmr, then start from the poi without mmr
-    // See discussion (https://github.com/subquery/subql/pull/600)
-    // This can be undefined as poi table is not ready
-    let poiStartHeight: number;
-    poiStartHeight = latestPoiWithMmr?.id
-      ? latestPoiWithMmr?.id
-      : poiWithoutMmr?.id;
-    if (latestPoiWithMmr && poiWithoutMmr) {
-      // Handle if a missing mmr in a record
-      if (poiWithoutMmr.id < latestPoiWithMmr.id) {
-        poiStartHeight = poiWithoutMmr.id;
-      }
-    }
-    // Compare and reset values
-    if (poiStartHeight && poiStartHeight < this.nextMmrBlockHeight) {
-      // Reset file based mmr according to poi table start block height
-      await this.resetFileBasedMmr(blockOffset, poiStartHeight);
-    } else if (!poiStartHeight && fileBasedMmrLeafLength > 0) {
-      // If poi table is not ready, but file based db have mmr already, reset file based db.
-      await this.resetFileBasedMmr(blockOffset);
+    if (latestPoiWithMmr) {
+      // The latestPoiWithMmr its mmr value in filebase db
+      const latestPoiFilebaseMmrValue = await this.fileBasedMmr.getRoot(
+        latestPoiWithMmr.id - blockOffset - 1,
+      );
+      this.validatePoiMmr(latestPoiWithMmr, latestPoiFilebaseMmrValue);
     }
     logger.info(
       `file based database MMR start with block height ${this.nextMmrBlockHeight}`,
     );
-
+    //TODO,
+    // 加入lastPoiBlockHeight 到metadata表
+    // query metadata 获得 lastPoiBlockHeight 和 lastProcessedBlockHeight
+    // 对比这两个值
+    // 如果lastProcessedBlockHeight 100 高于lastPoiBlockHeight 80
+    // 那么就可以写 80-100 之间的空mmr
     while (!this.isShutdown) {
       const poiBlocks = await this.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
+              console.log(`append default leaf for block ${i}`);
               await this.fileBasedMmr.append(DEFAULT_LEAF);
               this.nextMmrBlockHeight = i + 1;
             }
@@ -102,6 +98,30 @@ export class MmrService implements OnApplicationShutdown {
           await this.appendMmrNode(block, blockOffset);
         }
       } else {
+        const keys = ['lastProcessedHeight', 'lastPoiHeight'] as const;
+
+        const entries = await this.metadataRepo.findAll({
+          where: {
+            key: keys,
+          },
+        });
+        const keyValue = entries.reduce((arr, curr) => {
+          arr[curr.key] = curr.value;
+          return arr;
+        }, {} as { [key in typeof keys[number]]: string | boolean | number });
+
+        if (keyValue.lastProcessedHeight > keyValue.lastPoiHeight) {
+          console.log(
+            `this.nextMmrBlockHeight ${this.nextMmrBlockHeight}, lastProcessedHeight ${keyValue.lastProcessedHeight}, lastPoiHeight ${keyValue.lastPoiHeight}`,
+          );
+
+          const lastPoiFilebaseMmr = await this.fileBasedMmr.getRoot(
+            (keyValue.lastPoiHeight as number) - blockOffset - 1,
+          );
+
+          console.log(`lastPoiFilebaseMmr ${u8aToHex(lastPoiFilebaseMmr)}`);
+        }
+
         await delay(MMR_AWAIT_TIME);
       }
     }
@@ -125,21 +145,27 @@ export class MmrService implements OnApplicationShutdown {
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
 
+  validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array) {
+    if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
+      throw new Error(
+        `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(
+          poiWithMmr.mmrRoot,
+        )} not same as filebased mmr: ${u8aToHex(mmrValue)}`,
+      );
+    } else {
+      logger.info(
+        `CHECKING : Poi block height ${poiWithMmr.id}, Poi mmr is same as file based mmr`, //remove for debug
+      );
+    }
+  }
+
   async updatePoiMmrRoot(id: number, mmrValue: Uint8Array): Promise<void> {
     const poiBlock = await this.poiRepo.findByPk(id);
     if (poiBlock.mmrRoot === null) {
       poiBlock.mmrRoot = mmrValue;
       await poiBlock.save();
-    } else if (!u8aEq(poiBlock.mmrRoot, mmrValue)) {
-      throw new Error(
-        `Poi block height ${id}, Poi mmr ${u8aToHex(
-          poiBlock.mmrRoot,
-        )} not same as filebased mmr: ${u8aToHex(mmrValue)}`,
-      );
-    } else if (u8aEq(poiBlock.mmrRoot, mmrValue)) {
-      logger.info(
-        `CHECKING : Poi block height ${id}, Poi mmr is same as file based mmr`, //remove for debug
-      );
+    } else {
+      this.validatePoiMmr(poiBlock, mmrValue);
     }
   }
 
