@@ -130,7 +130,6 @@ export class ConfigureModule {
           ipfs: config.ipfs,
         },
       ).catch((err) => {
-        console.log(err)
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
