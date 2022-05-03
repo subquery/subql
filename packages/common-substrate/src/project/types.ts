@@ -88,7 +88,7 @@ export interface SubstrateRuntimeDataSource
   kind: SubstrateDatasourceKind.Runtime;
   filter?: SubstrateNetworkFilter; //keep network filter for v0.0.1
   options?: any;
-  assets?: any;
+  assets?: Map<string, FileReference>;
 }
 
 export type Processor<O = any> = FileReference & {options?: O};
