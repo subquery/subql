@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getAllEntitiesRelations } from '@subql/common';
+import { SubstrateRuntimeDataSource, SubstrateHandlerKind } from '@subql/common-avalanche';
 import {
   ApiService,
   getLogger,
@@ -14,9 +15,7 @@ import {
   IndexerEvent,
   profiler,
 } from '@subql/common-node';
-import { SubstrateRuntimeDataSource } from '@subql/common-substrate';
 import {
-  SubqlHandlerKind,
   ApiWrapper,
   BlockWrapper,
   AvalancheTransaction,
@@ -431,10 +430,10 @@ export class IndexerManager {
   ): Promise<void> {
     for (const handler of ds.mapping.handlers) {
       switch (handler.kind) {
-        case SubqlHandlerKind.Block:
+        case SubstrateHandlerKind.Block:
           await vm.securedExec(handler.handler, [blockContent.block]);
           break;
-        case SubqlHandlerKind.Call: {
+        case SubstrateHandlerKind.Call: {
           let filteredCalls = blockContent.calls(handler.filter, ds);
           filteredCalls = await Promise.all(
             filteredCalls.map((call) =>
@@ -449,7 +448,7 @@ export class IndexerManager {
           }
           break;
         }
-        case SubqlHandlerKind.Event: {
+        case SubstrateHandlerKind.Event: {
           let filteredEvents = blockContent.events(handler.filter, ds);
           filteredEvents = await Promise.all(
             filteredEvents.map((event) =>

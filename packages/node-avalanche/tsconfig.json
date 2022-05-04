@@ -10,7 +10,7 @@
   "references": [
     { "path": "../common" },
     { "path": "../common-node" },
-    { "path": "../common-substrate" },
+    { "path": "../common-avalanche" },
     { "path": "../types" }
   ],
   "include": ["src/**/*"]

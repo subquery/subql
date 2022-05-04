@@ -9,7 +9,7 @@ import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_2_0,
   SubstrateDataSource,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
 import {
   ApiWrapper,
   AvalancheBlock,

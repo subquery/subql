@@ -19,7 +19,7 @@ import {
   SubstrateDataSource,
   FileType,
   ProjectManifestV1_0_0Impl,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
 import { GraphQLSchema } from 'graphql';
 import {
   getChainTypes,
