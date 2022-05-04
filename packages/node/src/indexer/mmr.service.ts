@@ -4,32 +4,20 @@
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
-import {
-  MMR,
-  FileBasedDb,
-  keccak256FlyHash,
-} from '@subql/x-merkle-mountain-range';
+import { DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME } from '@subql/common';
+import { MMR } from '@subql/x-merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
+import { ensureFileBasedMmr } from '../utils/mmr';
 import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import {
-  PoiFactory,
-  PoiModel,
-  PoiRepo,
-  ProofOfIndex,
-} from './entities/Poi.entity';
+import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
-const DEFAULT_WORD_SIZE = 32;
-const DEFAULT_LEAF = Buffer.from(
-  '0000000000000000000000000000000000000000000000000000000000000001',
-  'hex',
-);
+
 const DEFAULT_FETCH_RANGE = 100;
-const MMR_AWAIT_TIME = 2;
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
@@ -57,7 +45,7 @@ export class MmrService implements OnApplicationShutdown {
   ): Promise<void> {
     this.metadataRepo = MetadataFactory(this.sequelize, schema);
     this.poiRepo = PoiFactory(this.sequelize, schema);
-    await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this.fileBasedMmr = await ensureFileBasedMmr(this.nodeConfig.mmrPath);
 
     // The file based database current leaf length
     const fileBasedMmrLeafLength = await this.fileBasedMmr.getLeafLength();
@@ -95,7 +83,9 @@ export class MmrService implements OnApplicationShutdown {
               this.nextMmrBlockHeight = i + 1;
             }
           }
+
           await this.appendMmrNode(block, blockOffset);
+          console.log(`append leaf for block ${block.id}`);
         }
       } else {
         const keys = ['lastProcessedHeight', 'lastPoiHeight'] as const;
@@ -112,8 +102,23 @@ export class MmrService implements OnApplicationShutdown {
 
         if (keyValue.lastProcessedHeight > keyValue.lastPoiHeight) {
           console.log(
-            `this.nextMmrBlockHeight ${this.nextMmrBlockHeight}, lastProcessedHeight ${keyValue.lastProcessedHeight}, lastPoiHeight ${keyValue.lastPoiHeight}`,
+            `this.nextMmrBlockHeight ${this.nextMmrBlockHeight},lastPoiHeight ${keyValue.lastPoiHeight}, lastProcessedHeight ${keyValue.lastProcessedHeight}`,
           );
+          // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
+          if (
+            this.nextMmrBlockHeight > Number(keyValue.lastPoiHeight) &&
+            this.nextMmrBlockHeight < Number(keyValue.lastProcessedHeight)
+          ) {
+            for (
+              let i = this.nextMmrBlockHeight;
+              i <= Number(keyValue.lastProcessedHeight);
+              i++
+            ) {
+              console.log(`~ append default leaf for block ${i}`);
+              await this.fileBasedMmr.append(DEFAULT_LEAF);
+              this.nextMmrBlockHeight = i + 1;
+            }
+          }
 
           const lastPoiFilebaseMmr = await this.fileBasedMmr.getRoot(
             (keyValue.lastPoiHeight as number) - blockOffset - 1,
@@ -180,17 +185,6 @@ export class MmrService implements OnApplicationShutdown {
     } else {
       return [];
     }
-  }
-
-  async ensureFileBasedMmr(projectMmrPath: string) {
-    this.projectMmrPath = projectMmrPath;
-    let fileBasedDb: FileBasedDb;
-    if (fs.existsSync(projectMmrPath)) {
-      fileBasedDb = await FileBasedDb.open(projectMmrPath);
-    } else {
-      fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
-    }
-    this.fileBasedMmr = new MMR(keccak256FlyHash, fileBasedDb);
   }
 
   async resetFileBasedMmr(

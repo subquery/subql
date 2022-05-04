@@ -6,18 +6,27 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
+import { NodeConfig } from '../configure/NodeConfig';
 import { IndexerModule } from '../indexer/indexer.module';
+import { ensureFileBasedMmr } from '../utils/mmr';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
+import { MmrQueryController } from './mmrQuery.controller';
+import { MmrQueryService } from './mmrQuery.service';
 import { ReadyController } from './ready.controller';
 import { ReadyService } from './ready.service';
 
 @Module({
   imports: [PrometheusModule.register(), IndexerModule],
-  controllers: [MetaController, HealthController, ReadyController],
+  controllers: [
+    MetaController,
+    HealthController,
+    ReadyController,
+    MmrQueryController,
+  ],
   providers: [
     MetricEventListener,
     makeGaugeProvider({
@@ -60,9 +69,18 @@ import { ReadyService } from './ready.service';
       name: 'subql_indexer_skip_dictionary_count',
       help: 'The number of times indexer been skip use dictionary',
     }),
+    {
+      provide: MmrQueryService,
+      useFactory: async (nodeConfig: NodeConfig) => {
+        await ensureFileBasedMmr(nodeConfig.mmrPath);
+        return new MmrQueryService(nodeConfig);
+      },
+      inject: [NodeConfig],
+    },
     MetaService,
     HealthService,
     ReadyService,
+    MmrQueryService,
   ],
 })
 export class MetaModule {}

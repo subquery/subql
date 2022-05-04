@@ -38,6 +38,6 @@ export interface NetworkMetadataPayload {
 }
 
 export interface MmrPayload {
-  id: number;
+  leafIndex: number;
   value: Uint8Array;
 }
