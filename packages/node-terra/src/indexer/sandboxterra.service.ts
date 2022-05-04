@@ -3,8 +3,8 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/common';
 import { SubqlTerraDatasource, Store } from '@subql/types-terra';
+import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';

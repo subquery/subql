@@ -5,13 +5,10 @@
     "sourceMap": true,
     "tsBuildInfoFile": "dist/.tsbuildinfo",
     "rootDir": "src",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "noImplicitAny": true,
+    "noImplicitThis": true
   },
-  "references": [
-    { "path": "../common" },
-    { "path": "../common-substrate" },
-    { "path": "../types" },
-    { "path": "../utils" }
-  ],
+  "references": [{"path": "../types"}],
   "include": ["src/**/*"]
 }

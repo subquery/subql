@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "0.26.1",
+  "version": "0.27.0",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -15,6 +15,7 @@
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "workspace:*",
+    "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.1.0",
     "@types/inquirer": "^8.2.0",

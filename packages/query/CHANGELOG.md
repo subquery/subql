@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.16.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+- Allow set query-complexity for query (#923)
+
 ## [0.15.0] - 2022-04-26
 ### Added
 - Add support for querying historical state (#859)

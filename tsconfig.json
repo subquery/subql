@@ -17,6 +17,8 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
+      "@subql/utils": ["packages/utils/src"],
+      "@subql/utils/*": ["packages/utils/src/*"],
       "@subql/common": ["packages/common/src"],
       "@subql/common/*": ["packages/common/src/*"],
       "@subql/common-avalanche": ["packages/common-avalanche/src"],
@@ -46,6 +48,7 @@
     {"path": "packages/node"},
     {"path": "packages/types"},
     {"path": "packages/types-terra"},
+    {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],

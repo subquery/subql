@@ -1,9 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import {URL} from 'url';
-import {MetaData, TableEstimate} from '@subql/common';
+import {MetaData} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';

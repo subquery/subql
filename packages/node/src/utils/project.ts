@@ -4,13 +4,18 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
+import {
+  GithubReader,
+  IPFSReader,
+  LocalReader,
+  Reader,
+  loadFromJsonOrYaml,
+} from '@subql/common';
 import {
   ChainTypes,
   CustomDatasourceV0_2_0,
   isCustomDs,
-  loadChainTypes,
-  loadChainTypesFromJs,
+  // loadChainTypesFromJs,
   parseChainTypes,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
@@ -21,6 +26,7 @@ import {
 } from '@subql/common-substrate';
 import yaml from 'js-yaml';
 import tar from 'tar';
+import { NodeVM, VMScript } from 'vm2';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
@@ -235,4 +241,61 @@ export async function getProjectRoot(reader: Reader): Promise<string> {
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }
+}
+
+export function loadChainTypes(file: string, projectRoot: string): unknown {
+  const { ext } = path.parse(file);
+  const filePath = path.resolve(projectRoot, file);
+  if (fs.existsSync(filePath)) {
+    if (ext === '.js' || ext === '.cjs') {
+      //load can be self contained js file, or js depend on node_module which will require project root
+      return loadChainTypesFromJs(filePath, projectRoot);
+    } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
+      return loadFromJsonOrYaml(filePath);
+    } else {
+      throw new Error(`Extension ${ext} not supported`);
+    }
+  } else {
+    throw new Error(`Load from file ${file} not exist`);
+  }
+}
+
+export function loadChainTypesFromJs(
+  filePath: string,
+  requireRoot?: string,
+): unknown {
+  const { base, ext } = path.parse(filePath);
+  const root = requireRoot ?? path.dirname(filePath);
+  const vm = new NodeVM({
+    console: 'redirect',
+    wasm: false,
+    sandbox: {},
+    require: {
+      context: 'sandbox',
+      external: true,
+      builtin: ['path'],
+      root: root,
+      resolve: (moduleName: string) => {
+        return require.resolve(moduleName, { paths: [root] });
+      },
+    },
+    wrapper: 'commonjs',
+    sourceExtensions: ['js', 'cjs'],
+  });
+  let rawContent: unknown;
+  try {
+    const script = new VMScript(
+      `module.exports = require('${filePath}').default;`,
+      path.join(root, 'sandbox'),
+    ).compile();
+    rawContent = vm.run(script) as unknown;
+  } catch (err) {
+    throw new Error(`\n NodeVM error: ${err}`);
+  }
+  if (rawContent === undefined) {
+    throw new Error(
+      `There was no default export found from required ${base} file`,
+    );
+  }
+  return rawContent;
 }

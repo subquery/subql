@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-terra",
-  "version": "0.6.1",
+  "version": "0.7.0",
   "description": "",
   "author": "Naveen Veluswamy",
   "license": "Apache-2.0",
@@ -24,10 +24,11 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.1.2",
     "@nestjs/schedule": "^1.0.1",
-    "@polkadot/util-crypto": "8.6.1",
+    "@polkadot/util-crypto": "9.0.1",
     "@subql/common": "workspace:*",
     "@subql/common-terra": "workspace:*",
     "@subql/types-terra": "workspace:*",
+    "@subql/utils": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.2",
     "@terra-money/terra.js": "^3.0.8",
     "@willsoto/nestjs-prometheus": "^4.2.0",
@@ -65,6 +66,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "0.6.0"
+  ]
 }

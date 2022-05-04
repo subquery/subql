@@ -28,6 +28,7 @@ module.exports = {
     'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/node-terra/src/**/*.ts',
+    'packages/utils/src/**/*.ts',
     'packages/validator/src/**/*.ts',
   ],
 
@@ -97,6 +98,8 @@ module.exports = {
     '^@subql/common-terra/(.*)$': '<rootDir>/packages/common-terra/src/$1',
     '^@subql/common': '<rootDir>/packages/common/src',
     '^@subql/common/(.*)$': '<rootDir>/packages/common/src/$1',
+    '^@subql/utils': '<rootDir>/packages/utils/src',
+    '^@subql/utils/(.*)$': '<rootDir>/packages/utils/src/$1',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.27.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+
 ## [0.26.1] - 2022-04-27
 ### Added
 - Support for Terra dynamic datasources (#899)

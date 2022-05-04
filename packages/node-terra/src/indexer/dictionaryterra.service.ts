@@ -10,16 +10,16 @@ import {
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
+  DictionaryQueryCondition,
+  DictionaryQueryEntry,
+} from '@subql/types-terra';
+import {
   buildQuery,
   GqlNode,
   GqlQuery,
   GqlVar,
   TerraMetaData,
-} from '@subql/common';
-import {
-  DictionaryQueryCondition,
-  DictionaryQueryEntry,
-} from '@subql/types-terra';
+} from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { getLogger } from '../utils/logger';

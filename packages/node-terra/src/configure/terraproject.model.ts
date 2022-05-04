@@ -5,7 +5,6 @@ import {
   ReaderFactory,
   ReaderOptions,
   Reader,
-  buildSchemaFromString,
   RunnerSpecs,
 } from '@subql/common';
 import {
@@ -15,6 +14,7 @@ import {
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-terra';
 import { SubqlTerraDatasource } from '@subql/types-terra';
+import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
 

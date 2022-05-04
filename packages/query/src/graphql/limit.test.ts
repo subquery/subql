@@ -7,6 +7,16 @@ import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {plugins} from './plugins';
 
+jest.mock('../yargs', () => {
+  const original = jest.requireActual('../yargs');
+  return {
+    ...original,
+    getYargsOption: jest.fn().mockImplementation(() => {
+      return {argv: {name: 'test'}};
+    }),
+  };
+});
+
 describe('query limits', () => {
   const dbSchema = 'subquery_1';
 

@@ -10,7 +10,8 @@
   "references": [
     { "path": "../common" },
     { "path": "../common-terra" },
-    { "path": "../types-terra" }
+    { "path": "../types-terra" },
+    { "path": "../utils" }
   ],
   "include": ["src/**/*"]
 }

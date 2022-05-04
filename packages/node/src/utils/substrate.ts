@@ -127,8 +127,9 @@ export function filterBlock(
 
 export function filterExtrinsic(
   { block, extrinsic, success }: SubstrateExtrinsic,
-  filter: SubqlCallFilter,
+  filter?: SubqlCallFilter,
 ): boolean {
+  if (!filter) return true;
   return (
     (filter.specVersion === undefined ||
       block.specVersion === undefined ||
@@ -160,8 +161,9 @@ export function filterExtrinsics(
 
 export function filterEvent(
   { block, event }: SubstrateEvent,
-  filter: SubqlEventFilter,
+  filter?: SubqlEventFilter,
 ): boolean {
+  if (!filter) return true;
   return (
     (filter.specVersion === undefined ||
       block.specVersion === undefined ||

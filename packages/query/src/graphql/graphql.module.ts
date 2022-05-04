@@ -21,6 +21,7 @@ import {PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
+import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
@@ -74,20 +75,26 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
 
     const schema = builder.buildSchema();
+
+    const apolloServerPlugins = [
+      ApolloServerPluginCacheControl({
+        defaultMaxAge: 5,
+        calculateHttpHeaders: true,
+      }),
+      this.config.get('playground')
+        ? ApolloServerPluginLandingPageGraphQLPlayground()
+        : ApolloServerPluginLandingPageDisabled(),
+    ];
+    //If query-complexity is set then use plugin, otherwise not add
+    if (argv['query-complexity'] !== undefined) {
+      apolloServerPlugins.push(queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}));
+    }
     const server = new ApolloServer({
       schema,
       context: {
         pgClient: this.pgPool,
       },
-      plugins: [
-        ApolloServerPluginCacheControl({
-          defaultMaxAge: 5,
-          calculateHttpHeaders: true,
-        }),
-        this.config.get('playground')
-          ? ApolloServerPluginLandingPageGraphQLPlayground()
-          : ApolloServerPluginLandingPageDisabled(),
-      ],
+      plugins: apolloServerPlugins,
       debug: this.config.get('NODE_ENV') !== 'production',
     });
 
