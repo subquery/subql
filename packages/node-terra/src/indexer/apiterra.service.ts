@@ -92,8 +92,8 @@ export class TerraClient {
     private readonly params?: Record<string, string>,
     private mantlemintURL?: string,
   ) {
-    const httpAgent = new http.Agent({ keepAlive: true });
-    const httpsAgent = new https.Agent({ keepAlive: true });
+    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
+    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 
     this._lcdConnection = axios.create({
       httpAgent,
