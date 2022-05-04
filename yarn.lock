@@ -3987,7 +3987,6 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@polkadot/api": 7.12.1
     "@subql/common": "workspace:*"
     "@subql/common-avalanche": "workspace:*"
     "@subql/common-node": "workspace:*"
