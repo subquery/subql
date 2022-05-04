@@ -11,7 +11,7 @@ import {
   SubstrateDataSource,
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';

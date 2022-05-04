@@ -18,7 +18,7 @@ import {
   SubstrateCustomHandler,
   SubstrateHandler,
   SubstrateHandlerKind,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
 import yaml from 'js-yaml';
 import tar from 'tar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';

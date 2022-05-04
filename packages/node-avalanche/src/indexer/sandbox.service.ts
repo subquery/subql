@@ -8,7 +8,7 @@ import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
 import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
