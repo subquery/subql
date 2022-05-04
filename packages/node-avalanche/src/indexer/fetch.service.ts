@@ -6,12 +6,6 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
-  ApiService,
-  getYargsOption,
-  getLogger,
-  IndexerEvent,
-} from '@subql/common-node';
-import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
   isCustomDs,
@@ -21,13 +15,16 @@ import {
   SubstrateHandler,
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
-} from '@subql/common-substrate';
+} from '@subql/common-avalanche';
+import {
+  ApiService,
+  getYargsOption,
+  getLogger,
+  IndexerEvent,
+} from '@subql/common-node';
 import {
   SubqlCallFilter,
   SubqlEventFilter,
-  SubqlHandlerKind,
-  SubqlHandler,
-  SubqlDatasource,
   SubqlHandlerFilter,
   DictionaryQueryEntry,
   ApiWrapper,

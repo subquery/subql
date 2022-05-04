@@ -6,7 +6,7 @@ import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { getLogger, getYargsOption, setLevel } from '@subql/common-node';
-import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
+import { SubstrateProjectNetworkConfig } from '@subql/common-avalanche';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './SubqueryProject';
