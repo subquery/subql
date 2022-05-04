@@ -1,4 +1,0 @@
-undecided:
-  - "@subql/contract-processors"
-  - "@subql/node"
-  - "@subql/types"

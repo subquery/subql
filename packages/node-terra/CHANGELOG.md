@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.7.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+### Changed
+- Update polkadot/util-crypto to the latest (#910)
+### Fixed
+- Fix AxiosError type check (#943)
+- Limit terra max connections (#964)
 
 ## [0.6.1] - 2022-04-27
 ### Fixed
