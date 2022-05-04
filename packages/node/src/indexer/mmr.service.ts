@@ -93,24 +93,20 @@ export class MmrService implements OnApplicationShutdown {
           arr[curr.key] = curr.value;
           return arr;
         }, {} as { [key in typeof keys[number]]: string | boolean | number });
-
-        if (keyValue.lastProcessedHeight > keyValue.lastPoiHeight) {
-          // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
-          if (
-            this.nextMmrBlockHeight > Number(keyValue.lastPoiHeight) &&
-            this.nextMmrBlockHeight < Number(keyValue.lastProcessedHeight)
+        // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
+        if (
+          this.nextMmrBlockHeight > Number(keyValue.lastPoiHeight) &&
+          this.nextMmrBlockHeight <= Number(keyValue.lastProcessedHeight)
+        ) {
+          for (
+            let i = this.nextMmrBlockHeight;
+            i <= Number(keyValue.lastProcessedHeight);
+            i++
           ) {
-            for (
-              let i = this.nextMmrBlockHeight;
-              i <= Number(keyValue.lastProcessedHeight);
-              i++
-            ) {
-              await this.fileBasedMmr.append(DEFAULT_LEAF);
-              this.nextMmrBlockHeight = i + 1;
-            }
+            await this.fileBasedMmr.append(DEFAULT_LEAF);
+            this.nextMmrBlockHeight = i + 1;
           }
         }
-
         await delay(MMR_AWAIT_TIME);
       }
     }
@@ -196,6 +192,11 @@ export class MmrService implements OnApplicationShutdown {
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {
     const leafIndex = blockHeight - this.blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Parameter blockHeight must greater equal to ${this.blockOffset + 1} `,
+      );
+    }
     const value = await this.fileBasedMmr.getRoot(leafIndex);
     return { leafIndex, blockHeight: blockHeight, value };
   }
