@@ -15,6 +15,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 - Update polkadot 8.2.1 (#910)
 ### Fixed
 - Fix AxiosError type check (#943)
+- Limit terra max connections (#964)
 
 ## [0.6.1] - 2022-04-27
 ### Fixed
