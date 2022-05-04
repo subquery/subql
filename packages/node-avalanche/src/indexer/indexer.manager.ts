@@ -432,7 +432,7 @@ export class IndexerManager {
     for (const handler of ds.mapping.handlers) {
       switch (handler.kind) {
         case SubqlHandlerKind.Block:
-          await vm.securedExec(handler.handler, [blockContent]);
+          await vm.securedExec(handler.handler, [blockContent.block]);
           break;
         case SubqlHandlerKind.Call: {
           let filteredCalls = blockContent.calls(handler.filter, ds);
