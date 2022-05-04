@@ -43,6 +43,6 @@ import { StoreService } from './store.service';
     PoiService,
     MmrService,
   ],
-  exports: [StoreService],
+  exports: [StoreService, MmrService],
 })
 export class IndexerModule {}

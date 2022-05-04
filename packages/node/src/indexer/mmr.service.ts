@@ -5,16 +5,19 @@ import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
 import { DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME } from '@subql/common';
-import { MMR } from '@subql/x-merkle-mountain-range';
+import {
+  MMR,
+  FileBasedDb,
+  keccak256FlyHash,
+} from '@subql/x-merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { ensureFileBasedMmr } from '../utils/mmr';
 import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-
+import { MmrPayload } from './events';
 const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
@@ -27,7 +30,7 @@ export class MmrService implements OnApplicationShutdown {
   private poiRepo: PoiRepo;
   // This is the next block height that suppose to calculate its mmr value
   private nextMmrBlockHeight: number;
-  private projectMmrPath: string;
+  private blockOffset: number;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -45,7 +48,8 @@ export class MmrService implements OnApplicationShutdown {
   ): Promise<void> {
     this.metadataRepo = MetadataFactory(this.sequelize, schema);
     this.poiRepo = PoiFactory(this.sequelize, schema);
-    this.fileBasedMmr = await ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    this.blockOffset = blockOffset;
 
     // The file based database current leaf length
     const fileBasedMmrLeafLength = await this.fileBasedMmr.getLeafLength();
@@ -64,32 +68,22 @@ export class MmrService implements OnApplicationShutdown {
       this.validatePoiMmr(latestPoiWithMmr, latestPoiFilebaseMmrValue);
     }
     logger.info(
-      `file based database MMR start with block height ${this.nextMmrBlockHeight}`,
+      `file based database MMR start with next block height at ${this.nextMmrBlockHeight}`,
     );
-    //TODO,
-    // 加入lastPoiBlockHeight 到metadata表
-    // query metadata 获得 lastPoiBlockHeight 和 lastProcessedBlockHeight
-    // 对比这两个值
-    // 如果lastProcessedBlockHeight 100 高于lastPoiBlockHeight 80
-    // 那么就可以写 80-100 之间的空mmr
     while (!this.isShutdown) {
       const poiBlocks = await this.getPoiBlocksByRange(this.nextMmrBlockHeight);
       if (poiBlocks.length !== 0) {
         for (const block of poiBlocks) {
           if (this.nextMmrBlockHeight < block.id) {
             for (let i = this.nextMmrBlockHeight; i < block.id; i++) {
-              console.log(`append default leaf for block ${i}`);
               await this.fileBasedMmr.append(DEFAULT_LEAF);
               this.nextMmrBlockHeight = i + 1;
             }
           }
-
-          await this.appendMmrNode(block, blockOffset);
-          console.log(`append leaf for block ${block.id}`);
+          await this.appendMmrNode(block);
         }
       } else {
         const keys = ['lastProcessedHeight', 'lastPoiHeight'] as const;
-
         const entries = await this.metadataRepo.findAll({
           where: {
             key: keys,
@@ -101,9 +95,6 @@ export class MmrService implements OnApplicationShutdown {
         }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
         if (keyValue.lastProcessedHeight > keyValue.lastPoiHeight) {
-          console.log(
-            `this.nextMmrBlockHeight ${this.nextMmrBlockHeight},lastPoiHeight ${keyValue.lastPoiHeight}, lastProcessedHeight ${keyValue.lastProcessedHeight}`,
-          );
           // this.nextMmrBlockHeight means block before nextMmrBlockHeight-1 already exist in filebase mmr
           if (
             this.nextMmrBlockHeight > Number(keyValue.lastPoiHeight) &&
@@ -114,17 +105,10 @@ export class MmrService implements OnApplicationShutdown {
               i <= Number(keyValue.lastProcessedHeight);
               i++
             ) {
-              console.log(`~ append default leaf for block ${i}`);
               await this.fileBasedMmr.append(DEFAULT_LEAF);
               this.nextMmrBlockHeight = i + 1;
             }
           }
-
-          const lastPoiFilebaseMmr = await this.fileBasedMmr.getRoot(
-            (keyValue.lastPoiHeight as number) - blockOffset - 1,
-          );
-
-          console.log(`lastPoiFilebaseMmr ${u8aToHex(lastPoiFilebaseMmr)}`);
         }
 
         await delay(MMR_AWAIT_TIME);
@@ -132,17 +116,14 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  async appendMmrNode(
-    poiBlock: ProofOfIndex,
-    blockOffset: number,
-  ): Promise<void> {
+  async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
     const newLeaf = poiBlock.hash;
     if (newLeaf.length !== DEFAULT_WORD_SIZE) {
       throw new Error(
         `Append Mmr failed, input data length should be ${DEFAULT_WORD_SIZE}`,
       );
     }
-    const estLeafIndexByBlockHeight = poiBlock.id - blockOffset - 1;
+    const estLeafIndexByBlockHeight = poiBlock.id - this.blockOffset - 1;
     // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
     await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
     const mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
@@ -187,17 +168,6 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  async resetFileBasedMmr(
-    blockOffset: number,
-    blockHeight?: number,
-  ): Promise<void> {
-    await this.fileBasedMmr.delete(
-      blockHeight ? blockHeight - blockOffset - 1 : 0,
-    );
-    this.nextMmrBlockHeight = Math.max(blockHeight, 1);
-    logger.info(`Reset mmr start from block height ${this.nextMmrBlockHeight}`);
-  }
-
   async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
     const poiBlock = await this.poiRepo.findOne({
       order: [['id', 'DESC']],
@@ -212,5 +182,28 @@ export class MmrService implements OnApplicationShutdown {
       where: { mmrRoot: { [Op.eq]: null } },
     });
     return poiBlock;
+  }
+
+  async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
+    let fileBasedDb: FileBasedDb;
+    if (fs.existsSync(projectMmrPath)) {
+      fileBasedDb = await FileBasedDb.open(projectMmrPath);
+    } else {
+      fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
+    }
+    return new MMR(keccak256FlyHash, fileBasedDb);
+  }
+
+  async getMmr(blockHeight: number): Promise<MmrPayload> {
+    const leafIndex = blockHeight - this.blockOffset - 1;
+    const value = await this.fileBasedMmr.getRoot(leafIndex);
+    return { leafIndex, blockHeight: blockHeight, value };
+  }
+
+  async getLatestMmr(): Promise<MmrPayload> {
+    // latest leaf index need fetch from .db, as original method will use cache
+    const leafIndex = (await this.fileBasedMmr.db.getLeafLength()) - 1;
+    const value = await this.fileBasedMmr.getRoot(leafIndex);
+    return { leafIndex, blockHeight: leafIndex + this.blockOffset + 1, value };
   }
 }

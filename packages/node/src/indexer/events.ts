@@ -39,5 +39,6 @@ export interface NetworkMetadataPayload {
 
 export interface MmrPayload {
   leafIndex: number;
+  blockHeight: number;
   value: Uint8Array;
 }

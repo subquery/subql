@@ -18,10 +18,10 @@ const logger = getLogger('mmrs');
 export class MmrQueryController {
   constructor(private mmrService: MmrQueryService) {}
 
-  @Get(':id')
+  @Get(':blockHeight')
   async getMmr(@Param() params) {
     try {
-      return this.mmrService.getMmr(params.id);
+      return this.mmrService.getMmr(params.blockHeight);
     } catch (e) {
       logger.error(e.message);
       throw new HttpException(
