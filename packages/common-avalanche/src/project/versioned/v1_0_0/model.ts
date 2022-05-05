@@ -38,10 +38,10 @@ import {
 } from '../v0_2_1';
 import {SubstrateProjectManifestV1_0_0} from './types';
 
-const SUBSTRATE_NODE_NAME = `@subql/node`;
+const AVALANCHE_NODE_NAME = `@subql/node-avalanche`;
 
 export class SubstrateRunnerNodeImpl implements NodeSpec {
-  @Equals(SUBSTRATE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${SUBSTRATE_NODE_NAME}'`})
+  @Equals(AVALANCHE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${AVALANCHE_NODE_NAME}'`})
   name: string;
   @IsString()
   @Validate(SemverVersionValidator)

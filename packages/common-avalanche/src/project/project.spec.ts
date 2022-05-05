@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {RunnerQueryBaseModel, validateSemver} from '@subql/common';
+import {RunnerQueryBaseModel} from '@subql/common';
 import {validateSync} from 'class-validator';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {loadSubstrateProjectManifest} from './load';

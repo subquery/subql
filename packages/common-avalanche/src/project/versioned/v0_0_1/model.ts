@@ -20,9 +20,7 @@ import {
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
   SubstrateProjectNetworkConfig,
-  SubstrateRuntimeDataSource,
   SubstrateRuntimeHandler,
-  SubstrateRuntimeHandlerFilter,
 } from '../../types';
 import {ManifestV0_0_1Mapping, ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 

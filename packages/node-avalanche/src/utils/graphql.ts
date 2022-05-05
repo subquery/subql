@@ -10,8 +10,8 @@ import {
   isBuffer,
   isNull,
 } from '@polkadot/util';
-import { getTypeByScalarName } from '@subql/common';
-import { GraphQLModelsType } from '@subql/common/graphql/types';
+import { getTypeByScalarName } from '@subql/utils';
+import { GraphQLModelsType } from '@subql/utils/graphql/types';
 import { ModelAttributes, ModelAttributeColumnOptions } from 'sequelize';
 
 export function modelsTypeToModelAttributes(
