@@ -3,13 +3,13 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/utils';
-import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-avalanche';
+import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
+import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
