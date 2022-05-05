@@ -1,0 +1,81 @@
+name: "Prerelease"
+on:
+  push:
+    branches:
+      - avalanche
+    paths-ignore:
+      - '.github/workflows/**'
+
+jobs:
+  pre-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: 'Block Concurrent Executions'
+        uses: softprops/turnstyle@v1
+        with:
+          poll-interval-seconds: 10
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+
+  Bump-Prerelease-Publish:
+    name: Bump-Prerelease-Publish
+    needs: pre-ci
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+          token: ${{ secrets.REPO_TOKEN }}
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-common-avalanche
+        with:
+          paths: packages/common-avalanche
+
+      - uses: marceloprado/has-changed-path@v1
+        id: changed-node-avalanche
+        with:
+          paths: packages/node-avalanche
+
+      - run: yarn
+
+      - name: build
+        run: yarn workspaces foreach run build
+
+      #Add remove-stable-version
+
+      # - name: Bump types avalanche & deploy
+      #   if: steps.changed-types-avalanche.outputs.changed == 'true'
+      #   uses: ./.github/actions/create-prerelease
+      #   with:
+      #     package-path: packages/types-avalanche
+      #     npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump common avalanche & deploy
+        if: steps.changed-common-avalanche.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-avalanche
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump node avalanche & deploy
+        if: steps.changed-node-avalanche.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node-avalanche
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Commit changes
+        uses: EndBug/add-and-commit@v5
+        with:
+          message: '[SKIP CI] Prerelease'
+        env:
+          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
