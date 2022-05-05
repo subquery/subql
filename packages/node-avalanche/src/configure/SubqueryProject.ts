@@ -6,7 +6,6 @@ import {
   ReaderFactory,
   ReaderOptions,
   Reader,
-  buildSchemaFromString,
   RunnerSpecs,
   validateSemver,
 } from '@subql/common';
@@ -20,6 +19,7 @@ import {
   FileType,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-avalanche';
+import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 import {
   getChainTypes,
