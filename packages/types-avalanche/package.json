@@ -1,6 +1,6 @@
 {
-  "name": "@subql/common-node",
-  "version": "0.14.0",
+  "name": "@subql/types-avalanche",
+  "version": "0.15.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -15,9 +15,11 @@
     "src/global.d.ts",
     "/dist"
   ],
-  "dependencies": {
-    "@subql/common": "workspace:*",
-    "@subql/types-avalanche": "workspace:*",
-    "@subql/utils": "workspace:*"
+  "peerDependencies": {
+    "@polkadot/api": "^8"
+  },
+  "devDependencies": {
+    "@polkadot/api": "^8",
+    "@types/app-module-path": "^2.2.0"
   }
 }

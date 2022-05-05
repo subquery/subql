@@ -20,7 +20,7 @@ import {
   BlockWrapper,
   AvalancheTransaction,
   AvalancheEvent,
-} from '@subql/types';
+} from '@subql/types-avalanche';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
 import { NodeConfig } from '../configure/NodeConfig';
