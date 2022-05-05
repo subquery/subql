@@ -32,5 +32,5 @@ export interface EventPayload<T> {
 }
 
 export interface NetworkMetadataPayload {
-  chainId: string;
+  chain: string;
 }
