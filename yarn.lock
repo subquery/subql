@@ -4000,6 +4000,7 @@ __metadata:
   dependencies:
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/utils": "workspace:*"
   languageName: unknown
   linkType: soft
 
