@@ -30,7 +30,7 @@
     "@subql/types-terra": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.2",
-    "@terra-money/terra.js": "^3.0.8",
+    "@terra-money/terra.js": "3.0.8",
     "@willsoto/nestjs-prometheus": "^4.2.0",
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.7",
