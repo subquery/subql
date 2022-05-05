@@ -9,7 +9,7 @@ import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-avalanche';
-import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
+import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
