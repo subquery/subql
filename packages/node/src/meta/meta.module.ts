@@ -13,7 +13,6 @@ import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 import { MmrQueryController } from './mmrQuery.controller';
-import { MmrQueryService } from './mmrQuery.service';
 import { ReadyController } from './ready.controller';
 import { ReadyService } from './ready.service';
 
@@ -70,7 +69,6 @@ import { ReadyService } from './ready.service';
     MetaService,
     HealthService,
     ReadyService,
-    MmrQueryService,
   ],
 })
 export class MetaModule {}

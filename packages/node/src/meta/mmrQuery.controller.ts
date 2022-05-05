@@ -9,28 +9,22 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { MmrService } from '../indexer/mmr.service';
 import { getLogger } from '../utils/logger';
-import { MmrQueryService } from './mmrQuery.service';
 
 const logger = getLogger('mmrs');
 
 @Controller('mmrs')
 export class MmrQueryController {
-  constructor(private mmrService: MmrQueryService) {}
+  constructor(private mmrService: MmrService) {}
 
   @Get(':blockHeight')
   async getMmr(@Param() params) {
     try {
-      return this.mmrService.getMmr(params.blockHeight);
+      // add await, otherwise error been skipped
+      return await this.mmrService.getMmr(params.blockHeight);
     } catch (e) {
-      logger.error(e.message);
-      throw new HttpException(
-        {
-          status: HttpStatus.INTERNAL_SERVER_ERROR,
-          error: e.message,
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      this.httpError(e);
     }
   }
 
@@ -38,17 +32,23 @@ export class MmrQueryController {
   async getLatestMmr(@Query() query) {
     if (query.latest) {
       try {
-        return this.mmrService.getLatestMmr();
+        return await this.mmrService.getLatestMmr();
       } catch (e) {
-        logger.error(e.message);
-        throw new HttpException(
-          {
-            status: HttpStatus.INTERNAL_SERVER_ERROR,
-            error: e.message,
-          },
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
+        this.httpError(e);
       }
+    } else {
+      this.httpError(new Error(`query not supported`));
     }
+  }
+
+  httpError(e: Error) {
+    logger.error(e.message);
+    throw new HttpException(
+      {
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: e.message,
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 }

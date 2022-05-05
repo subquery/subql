@@ -56,8 +56,6 @@ export class MmrService implements OnApplicationShutdown {
     // However, when initialization we pick the previous block for file db and poi mmr validation
     // if mmr leaf length 0 ensure the next block height to be processed min is 1.
     this.nextMmrBlockHeight = fileBasedMmrLeafLength + blockOffset + 1;
-    // The first Poi in database with null mmr value.
-    // const poiWithoutMmr = await this.getFirstPoiWithoutMmr();
     // The latest poi record in database with mmr value
     const latestPoiWithMmr = await this.getLatestPoiWithMmr();
     if (latestPoiWithMmr) {
