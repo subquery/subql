@@ -40,7 +40,6 @@ async function bootstrap() {
       logger: debug ? new NestLogger() : false,
     });
     await app.init();
-    console.log('SubQL Node is running on port', port);
     const indexerManager = app.get(IndexerManager);
     await indexerManager.start();
     await app.listen(port);
