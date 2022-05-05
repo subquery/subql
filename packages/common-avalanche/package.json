@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-avalanche",
-  "version": "0.3.1",
+  "version": "0.0.1",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
