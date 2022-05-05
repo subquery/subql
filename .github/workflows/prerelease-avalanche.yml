@@ -3,8 +3,8 @@ on:
   push:
     branches:
       - avalanche
-    paths-ignore:
-      - '.github/workflows/**'
+    # paths-ignore:
+    #   - '.github/workflows/**'
 
 jobs:
   pre-ci:
