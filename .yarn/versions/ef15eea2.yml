@@ -1,4 +1,0 @@
-undecided:
-  - "@subql/node"
-  - "@subql/node-terra"
-  - "@subql/query"
