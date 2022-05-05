@@ -22,6 +22,7 @@ export interface Template {
   branch: string;
   network: string;
   specVersion: string;
+  family: string;
 }
 
 export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise<Template[]> {
