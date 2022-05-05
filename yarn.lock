@@ -3881,6 +3881,7 @@ __metadata:
     "@subql/common-avalanche": "workspace:*"
     "@subql/common-node": "workspace:*"
     "@subql/types": "workspace:*"
+    "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0

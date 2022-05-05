@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
-import { getTypeByScalarName } from '@subql/common';
-import { GraphQLModelsType } from '@subql/common/graphql/types';
+import { getTypeByScalarName } from '@subql/utils';
+import { GraphQLModelsType } from '@subql/utils/graphql/types';
 import { Entity } from '@subql/types';
 import MerkleTools from 'merkle-tools';
 import { OperationEntity, OperationType } from './types';

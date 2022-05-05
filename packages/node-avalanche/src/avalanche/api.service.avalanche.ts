@@ -28,9 +28,9 @@ export class AvalancheApiService extends ApiService {
       token: network.token,
       chainName: network.chainName,
     });
-
+    console.log('AvalancheApiService initialized');
     await this.api.init();
-
+console.log('avalanche api service init');
     this.networkMeta = {
       chain: this.api.getRuntimeChain(),
       specName: this.api.getSpecName(),

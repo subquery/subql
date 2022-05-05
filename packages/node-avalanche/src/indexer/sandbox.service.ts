@@ -3,7 +3,7 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { levelFilter } from '@subql/common';
+import { levelFilter } from '@subql/utils';
 import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import {
   isDatasourceV0_2_0,
