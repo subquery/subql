@@ -307,7 +307,6 @@ export class TerraSafeApi implements ITerraSafeApi {
     const { data } = await preferredConnection.get(
       `/terra/wasm/v1beta1/contracts/${contractAddress}`,
     );
-    logger.info(JSON.stringify(data));
     return <ContractInfo>{
       code_id: Number.parseInt(data.contract_info.code_id),
       address: data.contract_info.address,
