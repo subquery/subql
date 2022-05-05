@@ -17,6 +17,7 @@
   ],
   "dependencies": {
     "@subql/common": "workspace:*",
-    "@subql/types": "workspace:*"
+    "@subql/types": "workspace:*",
+    "@subql/utils": "workspace:*"
   }
 }
