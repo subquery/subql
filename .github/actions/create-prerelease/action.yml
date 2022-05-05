@@ -19,7 +19,7 @@ runs:
       shell: bash
 
     - working-directory: ${{ inputs.package-path }}
-      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn version prerelease && yarn npm publish --access public --tag dev      
+      run: echo "Changes exist in ${{ inputs.package-path }}" && yarn version prerelease && yarn npm publish --access public --tag avalanche
       env:
         NPM_TOKEN: ${{ inputs.npm-token }}
       shell: bash
