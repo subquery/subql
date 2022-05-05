@@ -3865,9 +3865,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/node-all@workspace:packages/node-avalanche":
+"@subql/node-avalanche@workspace:packages/node-avalanche":
   version: 0.0.0-use.local
-  resolution: "@subql/node-all@workspace:packages/node-avalanche"
+  resolution: "@subql/node-avalanche@workspace:packages/node-avalanche"
   dependencies:
     "@apollo/client": 3.5.8
     "@nestjs/common": ^8.2.6
