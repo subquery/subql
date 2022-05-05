@@ -70,48 +70,53 @@ export async function prepare(
   }
   project.chainId = await cli.prompt('Please provide Chain ID', {default: genesisHash ?? null, required: true});
 
-  if (manifest instanceof SubstrateProjectManifestVersioned && manifest.isV0_0_1) {
-    const projectV1Network = manifest.asV0_0_1.network;
-    if (
-      projectV1Network.types ||
-      projectV1Network.typesAlias ||
-      projectV1Network.typesBundle ||
-      projectV1Network.typesChain ||
-      projectV1Network.typesSpec
-    ) {
-      chainTypesRelativePath = await cli.prompt('Please provide network chain types path', {
-        default: './types.json',
-        required: true,
-      });
-      const {ext} = path.parse(chainTypesRelativePath);
-      if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
-        throw new Error(`Extension ${ext} not supported`);
-      }
-      const projectChainTypesPath = path.join(location, chainTypesRelativePath);
-      //check if the file path is exist, if not create one
-      if (fs.existsSync(projectChainTypesPath)) {
-        if (await cli.confirm(`${projectChainTypesPath} already exist, do you want override it [Y/N]`)) {
+  if (manifest instanceof SubstrateProjectManifestVersioned) {
+    if (manifest.isV0_0_1) {
+      const projectV1Network = manifest.asV0_0_1.network;
+      if (
+        projectV1Network.types ||
+        projectV1Network.typesAlias ||
+        projectV1Network.typesBundle ||
+        projectV1Network.typesChain ||
+        projectV1Network.typesSpec
+      ) {
+        chainTypesRelativePath = await cli.prompt('Please provide network chain types path', {
+          default: './types.json',
+          required: true,
+        });
+        const {ext} = path.parse(chainTypesRelativePath);
+        if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+          throw new Error(`Extension ${ext} not supported`);
+        }
+        const projectChainTypesPath = path.join(location, chainTypesRelativePath);
+        //check if the file path is exist, if not create one
+        if (fs.existsSync(projectChainTypesPath)) {
+          if (await cli.confirm(`${projectChainTypesPath} already exist, do you want override it [Y/N]`)) {
+            await createChainTypes(projectV1Network, projectChainTypesPath, ext);
+          }
+        } else {
           await createChainTypes(projectV1Network, projectChainTypesPath, ext);
         }
-      } else {
-        await createChainTypes(projectV1Network, projectChainTypesPath, ext);
       }
-    }
-    //Patch manifest here
-    for (const dataSource of manifest.asV1_0_0.dataSources) {
-      dataSource.mapping.file = await cli.prompt(
-        `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
-        {
-          default: jsonProjectData.main.toString().startsWith('./')
-            ? jsonProjectData.main
-            : `./${jsonProjectData.main}`,
-          required: true,
-        }
-      );
-      delete dataSource.name;
-      const handlers = dataSource.mapping.handlers;
-      delete dataSource.mapping.handlers; // adjust position
-      dataSource.mapping.handlers = handlers;
+      //Patch manifest here
+      for (const dataSource of manifest.asV1_0_0.dataSources) {
+        dataSource.mapping.file = await cli.prompt(
+          `Please provide relative entry path for dataSource ${dataSource.name}'s mapping `,
+          {
+            default: jsonProjectData.main.toString().startsWith('./')
+              ? jsonProjectData.main
+              : `./${jsonProjectData.main}`,
+            required: true,
+          }
+        );
+        delete dataSource.name;
+        const handlers = dataSource.mapping.handlers;
+        delete dataSource.mapping.handlers; // adjust position
+        dataSource.mapping.handlers = handlers;
+      }
+    } else {
+      // handle chainTypes path as v0.2.0
+      chainTypesRelativePath = manifest.asV0_2_0.network.chaintypes.file;
     }
   }
   return [project, chainTypesRelativePath];
