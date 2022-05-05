@@ -59,7 +59,7 @@ export class ApiTerraService {
     }
 
     this.networkMeta = {
-      chainId: network.chainId,
+      chain: network.chainId,
     };
 
     const nodeInfo = await this.api.nodeInfo();

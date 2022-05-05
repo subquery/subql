@@ -346,7 +346,7 @@ export class IndexerTerraManager {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    const { chainId } = this.apiService.networkMeta;
+    const { chain } = this.apiService.networkMeta;
 
     // blockOffset and genesisHash should only have been created once, never updated.
     // If blockOffset is changed, will require re-index and re-sync poi.
@@ -355,8 +355,8 @@ export class IndexerTerraManager {
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
-    if (keyValue.chain !== chainId) {
-      await metadataRepo.upsert({ key: 'chain', value: chainId });
+    if (keyValue.chain !== chain) {
+      await metadataRepo.upsert({ key: 'chain', value: chain });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
