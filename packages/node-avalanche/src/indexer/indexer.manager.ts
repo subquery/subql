@@ -6,7 +6,6 @@ import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getAllEntitiesRelations } from '@subql/utils';
 import { SubstrateRuntimeDataSource, SubstrateHandlerKind } from '@subql/common-avalanche';
 import {
   ApiService,
@@ -21,6 +20,7 @@ import {
   AvalancheTransaction,
   AvalancheEvent,
 } from '@subql/types-avalanche';
+import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
 import { NodeConfig } from '../configure/NodeConfig';

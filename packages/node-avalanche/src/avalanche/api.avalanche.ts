@@ -4,12 +4,12 @@
 import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
-import { getLogger } from '@subql/common-node';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-avalanche';
+import { getLogger } from '@subql/common-node';
 import {
   ApiWrapper,
   AvalancheBlock,
