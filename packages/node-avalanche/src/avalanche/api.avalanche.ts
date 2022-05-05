@@ -19,7 +19,7 @@ import {
   AvalancheEventFilter,
   AvalancheCallFilter,
   AvalancheResult,
-} from '@subql/types';
+} from '@subql/types-avalanche';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';

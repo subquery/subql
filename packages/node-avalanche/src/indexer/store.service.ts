@@ -7,7 +7,7 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { getLogger, getYargsOption } from '@subql/common-node';
 import { GraphQLModelsRelationsEnums } from '@subql/utils/graphql/types';
-import { Entity, Store } from '@subql/types';
+import { Entity, Store } from '@subql/types-avalanche';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
   CreationAttributes,

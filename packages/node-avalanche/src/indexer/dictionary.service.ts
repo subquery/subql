@@ -11,7 +11,7 @@ import {
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import { getLogger, getYargsOption, profiler } from '@subql/common-node';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types-avalanche';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
 
