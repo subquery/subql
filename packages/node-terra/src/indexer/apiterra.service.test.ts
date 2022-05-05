@@ -5,6 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { GraphQLSchema } from 'graphql';
+import { pairwise } from 'rxjs';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
 import { ApiTerraService } from './apiterra.service';
@@ -73,5 +74,65 @@ describe('ApiTerraSevice', () => {
     const blockInfoLcd = await api.blockInfo(TEST_BLOCKNUMBER);
     const blockInfoMantlemint = await api.blockInfoMantlemint(TEST_BLOCKNUMBER);
     expect(blockInfoLcd).toMatchObject(blockInfoMantlemint);
+  });
+
+  it('get code info', async () => {
+    const api = await apiService.getSafeApi(7378872);
+    const codeInfo = await api.codeInfo(2755);
+    const realCodeInfo = {
+      code_id: '2755',
+      code_hash: 'kzISYzSxvpJJeux06p8ReQfrZ5itc3GVAnubLlpCooc=',
+      creator: 'terra17vl3radw43hlzu0ls793k0ep4gp2alxn44cef0',
+    };
+    expect(codeInfo).toMatchObject(realCodeInfo);
+  });
+
+  it('get contract info', async () => {
+    const api = await apiService.getSafeApi(7378872);
+    const contractInfo = await api.contractInfo(
+      'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
+    );
+    const realContractInfo = {
+      address: 'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
+      creator: 'terra16eey0m7w6gn7ekq944nzaw5uzjxe0retuv89ta',
+      admin: 'terra16eey0m7w6gn7ekq944nzaw5uzjxe0retuv89ta',
+      code_id: '2319',
+      init_msg: {
+        whitelist: ['terra199z7u9qd5md097cn0wunq7dw3h5tzuwkt8e5ye'],
+        min_auction_duration_ms: 600000,
+        max_auction_duration_ms: 31536000000,
+      },
+    };
+    expect(contractInfo).toMatchObject(realContractInfo);
+  });
+
+  it('query contract', async () => {
+    const api = await apiService.getSafeApi(7378872);
+    const queryResult = await api.contractQuery(
+      'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
+      { auction_details_by_id: { auction_id: 4391 } },
+    );
+    const realQueryResult = {
+      auction_id: 4391,
+      creator: 'terra1ycuw9fkecs9c4r9sza8xwev32gfpe4wsdanfe8',
+      end_timestamp: 1650812416162,
+      reserved_price: {
+        native: [
+          {
+            denom: 'uluna',
+            amount: '4206900',
+          },
+        ],
+      },
+      nft_infos: [
+        {
+          token_id: '52',
+          contract_address: 'terra1htnwk8wcaqlgc9jvfzztgdekhlpvfzdv76cq88',
+        },
+      ],
+      best_bid: null,
+      bids: [],
+    };
+    expect(queryResult).toMatchObject(realQueryResult);
   });
 });

@@ -84,7 +84,7 @@ export class IndexerTerraManager {
     blockHeight: number,
     tx: Transaction,
   ): Promise<void> {
-    const vm = this.sandboxService.getDsProcessor(ds);
+    const vm = await this.sandboxService.getDsProcessor(ds, blockHeight);
 
     // Inject function to create ds into vm
     vm.freeze(

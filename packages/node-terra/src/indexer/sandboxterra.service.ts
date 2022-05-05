@@ -114,7 +114,10 @@ export class SandboxTerraService {
     private readonly project: SubqueryTerraProject,
   ) {}
 
-  getDsProcessor(ds: SubqlTerraDatasource): IndexerSandbox {
+  async getDsProcessor(
+    ds: SubqlTerraDatasource,
+    height: number,
+  ): Promise<IndexerSandbox> {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
@@ -129,7 +132,8 @@ export class SandboxTerraService {
       this.processorCache[entry] = processor;
     }
     /* Disable api because we cannot set to a point in time */
-    // processor.freeze(this.apiService.getApi().LCDClient, 'api');
+    const api = await this.apiService.getSafeApi(height);
+    processor.freeze(api, 'api');
     if (argv.unsafe) {
       processor.freeze(this.apiService.getApi().LCDClient, 'unsafeApi');
     }

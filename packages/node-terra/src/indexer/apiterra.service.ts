@@ -4,8 +4,12 @@
 import http from 'http';
 import https from 'https';
 import { Injectable } from '@nestjs/common';
+import { ITerraSafeApi } from '@subql/types-terra';
 import {
+  AccAddress,
   BlockInfo,
+  CodeInfo,
+  ContractInfo,
   hashToHex,
   LCDClient,
   LCDClientConfig,
@@ -73,6 +77,18 @@ export class ApiTerraService {
     }
 
     return this;
+  }
+
+  async getSafeApi(height): Promise<TerraSafeApi> {
+    const { network } = this.project;
+    const api = new TerraSafeApi(
+      network.endpoint,
+      height,
+      this.nodeConfig.networkEndpointParams,
+      network.mantlemint,
+    );
+    api.mantlemintHealthOK = await api.mantlemintHealthCheck();
+    return api;
   }
 
   getApi(): TerraClient {
@@ -231,5 +247,101 @@ export class TerraClient {
   get LCDClient(): LCDClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
+  }
+}
+
+export class TerraSafeApi implements ITerraSafeApi {
+  private _lcdConnection: AxiosInstance;
+  private _mantlemintConnection: AxiosInstance;
+  mantlemintHealthOK = false;
+
+  constructor(
+    private tendermintURL: string,
+    private height: number,
+    private readonly params?: Record<string, string>,
+    private mantlemintURL?: string,
+  ) {
+    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
+    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+
+    this._lcdConnection = axios.create({
+      httpAgent,
+      httpsAgent,
+      timeout: argv('node-timeout') as number,
+      baseURL: this.tendermintURL,
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
+      },
+    });
+
+    if (this.mantlemintURL) {
+      this._mantlemintConnection = axios.create({
+        baseURL: this.mantlemintURL,
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': `SubQuery-Node ${packageVersion}`,
+        },
+      });
+    }
+  }
+
+  async codeInfo(codeID: number): Promise<CodeInfo> {
+    const preferredConnection = this.mantlemintHealthOK
+      ? this._mantlemintConnection
+      : this._lcdConnection;
+    const { data } = await preferredConnection.get(
+      `/terra/wasm/v1beta1/codes/${codeID}`,
+    );
+    return <CodeInfo>{
+      code_id: Number.parseInt(data.code_info.code_id),
+      code_hash: data.code_info.code_hash,
+      creator: data.code_info.creator,
+    };
+  }
+
+  async contractInfo(contractAddress: string): Promise<ContractInfo> {
+    const preferredConnection = this.mantlemintHealthOK
+      ? this._mantlemintConnection
+      : this._lcdConnection;
+    const { data } = await preferredConnection.get(
+      `/terra/wasm/v1beta1/contracts/${contractAddress}`,
+    );
+    logger.info(JSON.stringify(data));
+    return <ContractInfo>{
+      code_id: Number.parseInt(data.contract_info.code_id),
+      address: data.contract_info.address,
+      creator: data.contract_info.creator,
+      admin:
+        data.contract_info.admin !== '' ? data.contract_info.admin : undefined,
+      init_msg: data.contract_info.init_msg,
+    };
+  }
+
+  async contractQuery<T>(contractAddress: string, query: Object): Promise<T> {
+    const preferredConnection = this.mantlemintHealthOK
+      ? this._mantlemintConnection
+      : this._lcdConnection;
+    const { data } = await preferredConnection.get(
+      `/terra/wasm/v1beta1/contracts/${contractAddress}/store`,
+      {
+        params: {
+          height: this.height,
+          query_msg: Buffer.from(JSON.stringify(query), 'utf-8').toString(
+            'base64',
+          ),
+        },
+      },
+    );
+    return data.query_result;
+  }
+
+  async mantlemintHealthCheck(): Promise<boolean> {
+    if (!this.mantlemintURL || !this._mantlemintConnection) {
+      return false;
+    }
+
+    const { data } = await this._mantlemintConnection.get('/health');
+    return data === 'OK';
   }
 }
