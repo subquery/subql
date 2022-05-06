@@ -23,7 +23,7 @@
     "moonbeam-types-bundle": "^2.0.4"
   },
   "peerDependencies": {
-    "@polkadot/api": "^9"
+    "@polkadot/api": "^8"
   },
   "stableVersion": "0.6.0"
 }
