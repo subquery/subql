@@ -12,7 +12,7 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@polkadot/util": "^8",
+    "@polkadot/util": "^9",
     "ansi-styles": "^6.1.0",
     "axios": "^0.27.1",
     "chalk": "^4.1.2",
