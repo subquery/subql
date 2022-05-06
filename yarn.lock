@@ -4768,7 +4768,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/utils@workspace:packages/utils"
   dependencies:
-    "@polkadot/util": ^8
+    "@polkadot/util": ^9
     "@types/semver": ^7
     ansi-styles: ^6.1.0
     axios: ^0.27.1
