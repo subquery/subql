@@ -4591,7 +4591,7 @@ __metadata:
     ethers: ^5.5.4
     moonbeam-types-bundle: ^2.0.4
   peerDependencies:
-    "@polkadot/api": ^9
+    "@polkadot/api": ^8
   languageName: unknown
   linkType: soft
 
