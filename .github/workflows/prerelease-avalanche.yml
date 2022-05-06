@@ -62,18 +62,18 @@ jobs:
 
       #Add remove-stable-version
 
-      - name: Bump common node & deploy
-        if: steps.changed-common-node.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/common-node
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
       - name: Bump types avalanche & deploy
         if: steps.changed-types-avalanche.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types-avalanche
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump common node & deploy
+        if: steps.changed-common-node.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/common-node
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump common avalanche & deploy
