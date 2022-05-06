@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-node",
-  "version": "0.0.3-0",
+  "version": "0.0.3",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -19,6 +19,5 @@
     "@subql/common": "workspace:*",
     "@subql/types-avalanche": "workspace:*",
     "@subql/utils": "workspace:*"
-  },
-  "stableVersion": "0.0.2"
+  }
 }
