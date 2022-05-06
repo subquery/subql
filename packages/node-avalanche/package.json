@@ -67,6 +67,9 @@
     "nodemon": "^2.0.15",
     "supertest": "^6.2.2"
   },
+  "resolutions": {
+    "@polkadot/util": "^9"
+  },
   "files": [
     "/dist",
     "/bin"
