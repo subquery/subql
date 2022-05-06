@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.1] - 2022-05-06
+### Changed
+- Bump with `@subql/utils`
+
 ## [0.35.0] - 2022-05-02
 ### Added
 - Add utils package (#928)
