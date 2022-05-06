@@ -20,9 +20,9 @@
     "ethers": "^5.5.4"
   },
   "devDependencies": {
-    "moonbeam-types-bundle": "^2.0.3"
+    "moonbeam-types-bundle": "^2.0.4"
   },
   "peerDependencies": {
-    "@polkadot/api": "^8"
+    "@polkadot/api": "^9"
   }
 }
