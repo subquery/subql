@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.7.1] - 2022-05-06
+### Fixed
+- make metadata chain name consistent (#972)
+
 ## [0.7.0] - 2022-05-02
 ### Added
 - Add utils package (#928)
