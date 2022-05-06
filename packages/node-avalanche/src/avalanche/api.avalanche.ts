@@ -149,10 +149,17 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
           ],
           '/ext/bc/C/rpc',
         );
-        return new AvalancheBlockWrapped(
-          (await block_promise).data.result,
-          (await logs_promise).data.result,
-        );
+        const block = (await block_promise).data.result;
+        block.difficulty = parseInt(block.difficulty, 16);
+        block.gasLimit = parseInt(block.gasLimit, 16);
+        block.gasUsed = parseInt(block.gasUsed, 16);
+        block.number = parseInt(block.number, 16);
+        block.size = parseInt(block.size, 16);
+        block.timestamp = parseInt(block.timestamp, 16);
+        block.totalDifficulty = parseInt(block.totalDifficulty, 16);
+        console.log(block);
+        const logs = (await logs_promise).data.result;
+        return new AvalancheBlockWrapped(block, logs);
       }),
     );
   }
@@ -247,7 +254,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   }
 
   get blockHeight(): number {
-    return parseInt(this.block.number);
+    return this.block.number;
   }
 
   get hash(): string {
