@@ -5007,7 +5007,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-avalanche@workspace:*, @subql/common-avalanche@workspace:packages/common-avalanche":
+"@subql/common-avalanche@0.0.3-0, @subql/common-avalanche@workspace:packages/common-avalanche":
   version: 0.0.0-use.local
   resolution: "@subql/common-avalanche@workspace:packages/common-avalanche"
   dependencies:
@@ -5031,7 +5031,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-node@workspace:*, @subql/common-node@workspace:packages/common-node":
+"@subql/common-node@npm:0.0.4-0":
+  version: 0.0.4-0
+  resolution: "@subql/common-node@npm:0.0.4-0"
+  dependencies:
+    "@subql/common": 0.22.0
+    "@subql/types-avalanche": 0.0.3-0
+    "@subql/utils": 0.0.1-0
+  checksum: 851cd055911038f0dfa3475037736512fc3296d681e9518d2df23fa87f506ce5671874e75310342baedcdc8cbdfe20b905cc478cf077b2df7458cbcef29d882b
+  languageName: node
+  linkType: hard
+
+"@subql/common-node@workspace:packages/common-node":
   version: 0.0.0-use.local
   resolution: "@subql/common-node@workspace:packages/common-node"
   dependencies:
@@ -5072,7 +5083,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@workspace:*, @subql/common@workspace:packages/common":
+"@subql/common@0.22.0, @subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
   resolution: "@subql/common@workspace:packages/common"
   dependencies:
@@ -5117,11 +5128,11 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": "workspace:*"
-    "@subql/common-avalanche": "workspace:*"
-    "@subql/common-node": "workspace:*"
-    "@subql/types-avalanche": "workspace:*"
-    "@subql/utils": "workspace:*"
+    "@subql/common": 0.22.0
+    "@subql/common-avalanche": 0.0.3-0
+    "@subql/common-node": 0.0.4-0
+    "@subql/types-avalanche": 0.0.3-0
+    "@subql/utils": 0.1.0
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0
@@ -5308,7 +5319,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
+"@subql/types-avalanche@0.0.3-0, @subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
   version: 0.0.0-use.local
   resolution: "@subql/types-avalanche@workspace:packages/types-avalanche"
   dependencies:
@@ -5340,7 +5351,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/utils@workspace:*, @subql/utils@workspace:packages/utils":
+"@subql/utils@0.1.0, @subql/utils@workspace:*, @subql/utils@workspace:packages/utils":
   version: 0.0.0-use.local
   resolution: "@subql/utils@workspace:packages/utils"
   dependencies:
@@ -5361,6 +5372,28 @@ __metadata:
     tar: ^6.1.11
   languageName: unknown
   linkType: soft
+
+"@subql/utils@npm:0.0.1-0":
+  version: 0.0.1-0
+  resolution: "@subql/utils@npm:0.0.1-0"
+  dependencies:
+    "@polkadot/util": ^8
+    ansi-styles: ^6.1.0
+    axios: ^0.27.1
+    chalk: ^4.1.2
+    detect-port: ^1.3.0
+    flatted: ^3.2.5
+    graphql: ^15.8.0
+    graphql-tag: ^2.12.6
+    ipfs-http-client: ^52.0.3
+    pino: ^6.13.3
+    rotating-file-stream: ^3.0.2
+    semver: ^7.3.7
+    sequelize: ^6.15.0
+    tar: ^6.1.11
+  checksum: 9a37b3a84bd829c0d142ab6e7994533025aa44ac1ddadd35a5d0866be07e9ae1be1318bd258d0aa433b783cefd5b35891172d8545b67cc73a938efb8129fa7da
+  languageName: node
+  linkType: hard
 
 "@subql/validator@workspace:*, @subql/validator@workspace:packages/validator":
   version: 0.0.0-use.local
