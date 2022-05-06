@@ -4119,7 +4119,7 @@ __metadata:
     typescript: ^4.4.4
     yargs: ^16.2.0
   bin:
-    subql-node: ./bin/run
+    subql-node-avalanche: ./bin/run
   languageName: unknown
   linkType: soft
 
