@@ -90,6 +90,7 @@ export class IndexerManager {
     });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
+    this.storeService.setBlockHeight(blockHeight);
 
     let poiBlockHash: Uint8Array;
     try {

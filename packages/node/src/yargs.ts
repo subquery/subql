@@ -140,6 +140,11 @@ export function getYargsOption() {
       describe: 'The port the service will bind to',
       type: 'number',
     },
+    'experimental-historical': {
+      demandOption: false,
+      describe: 'Keep track of and store historical state entities',
+      type: 'boolean',
+    },
   });
 }
 

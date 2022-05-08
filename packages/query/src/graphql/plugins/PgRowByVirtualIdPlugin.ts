@@ -4,7 +4,7 @@
 import {Plugin} from 'graphile-build';
 
 // Copied from graphile-build-pg/node8plus/plugins/PgRowByUniqueConstraint.ts
-// Modified to overwrite hidden column _$id primary key with id column
+// Modified to overwrite hidden column _id primary key with id column
 export const PgRowByVirtualIdPlugin: Plugin = (builder) => {
   builder.hook('GraphQLObjectType:fields', (fields, build, context) => {
     const {
@@ -45,8 +45,8 @@ export const PgRowByVirtualIdPlugin: Plugin = (builder) => {
               return;
             }
             const keys = constraint.keyAttributes;
-            // Only for _$id primary key
-            if (keys.length !== 1 || keys[0].name !== '_$id') {
+            // Only for _id primary key
+            if (keys.length !== 1 || keys[0].name !== '_id') {
               return;
             }
             const fieldName = inflection.rowByUniqueKeys(keys, table, constraint);
