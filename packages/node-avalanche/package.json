@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-avalanche",
-  "version": "0.0.5-1",
+  "version": "0.0.5-2",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -27,7 +27,7 @@
     "@subql/common": "0.22.0",
     "@subql/common-avalanche": "0.0.3-0",
     "@subql/common-node": "0.0.4-0",
-    "@subql/types-avalanche": "0.0.3-0",
+    "@subql/types-avalanche": "0.0.3-1",
     "@subql/utils": "0.1.0",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
     "@subql/x-vm2": "^3.9.3-0.1.0",
@@ -74,5 +74,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "0.0.5-0"
+  "stableVersion": "0.0.5-1"
 }
