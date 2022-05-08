@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BlockWrapper } from '../interfaces';
+import {BlockWrapper} from '../interfaces';
 
 export interface AvalancheCallFilter {
   from?: string;
@@ -19,7 +19,7 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
-  difficulty: string;
+  difficulty: number;
   extraData: string;
   gasLimit: string;
   gasUsed: string;
@@ -28,14 +28,14 @@ export type AvalancheBlock = {
   miner: string;
   mixHash: string;
   nonce: string;
-  number: string;
+  number: number;
   parentHash: string;
   receiptsRoot: string;
   sha3Uncles: string;
-  size: string;
+  size: number;
   stateRoot: string;
-  timestamp: string;
-  totalDifficulty: string;
+  timestamp: number;
+  totalDifficulty: number;
   transactions: AvalancheTransaction[];
   transactionsRoot: string;
   uncles: string[];
