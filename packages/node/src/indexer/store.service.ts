@@ -368,7 +368,7 @@ export class StoreService {
       },
     });
     sequelizeModel.addHook('beforeFind', (options) => {
-      options.where.__block_range = {
+      options.where['__block_range'] = {
         [Op.contains]: this.blockHeight as any,
       };
     });
