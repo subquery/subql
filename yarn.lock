@@ -3891,7 +3891,7 @@ __metadata:
     "@subql/common": 0.22.0
     "@subql/common-avalanche": 0.0.3-0
     "@subql/common-node": 0.0.4-0
-    "@subql/types-avalanche": 0.0.3-0
+    "@subql/types-avalanche": 0.0.3-1
     "@subql/utils": 0.1.0
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
@@ -4079,7 +4079,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-avalanche@0.0.3-0, @subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
+"@subql/types-avalanche@0.0.3-1, @subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
   version: 0.0.0-use.local
   resolution: "@subql/types-avalanche@workspace:packages/types-avalanche"
   dependencies:
@@ -4089,6 +4089,15 @@ __metadata:
     "@polkadot/api": ^8
   languageName: unknown
   linkType: soft
+
+"@subql/types-avalanche@npm:0.0.3-0":
+  version: 0.0.3-0
+  resolution: "@subql/types-avalanche@npm:0.0.3-0"
+  peerDependencies:
+    "@polkadot/api": ^8
+  checksum: bbac8b83fb42ddee4ba33eaebae9250f62b12692fb1829eea2a6058715c822bf86478e52b898f51050c25abe1c783cd7f015c3035aceaa64a4eede141fb7b8e4
+  languageName: node
+  linkType: hard
 
 "@subql/types-terra@workspace:*, @subql/types-terra@workspace:packages/types-terra":
   version: 0.0.0-use.local
