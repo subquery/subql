@@ -78,7 +78,7 @@ describe('ApiTerraSevice', () => {
 
   it('get code info', async () => {
     const api = apiService.getSafeApi(7378872);
-    const codeInfo = await api.codeInfo(2755);
+    const codeInfo = await api.wasm.codeInfo(2755);
     const realCodeInfo = {
       code_id: '2755',
       code_hash: 'kzISYzSxvpJJeux06p8ReQfrZ5itc3GVAnubLlpCooc=',
@@ -89,7 +89,7 @@ describe('ApiTerraSevice', () => {
 
   it('get contract info', async () => {
     const api = apiService.getSafeApi(7378872);
-    const contractInfo = await api.contractInfo(
+    const contractInfo = await api.wasm.contractInfo(
       'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
     );
     const realContractInfo = {
@@ -108,7 +108,7 @@ describe('ApiTerraSevice', () => {
 
   it('query contract', async () => {
     const api = apiService.getSafeApi(7378872);
-    const queryResult = await api.contractQuery(
+    const queryResult = await api.wasm.contractQuery(
       'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
       { auction_details_by_id: { auction_id: 4391 } },
     );

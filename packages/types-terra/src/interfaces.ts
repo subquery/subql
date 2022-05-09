@@ -1,7 +1,18 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BlockInfo, Event, TxInfo, TxLog, Msg, WasmMsg, CodeInfo, AccAddress, ContractInfo} from '@terra-money/terra.js';
+import {
+  BlockInfo,
+  Event,
+  TxInfo,
+  TxLog,
+  Msg,
+  WasmMsg,
+  CodeInfo,
+  AccAddress,
+  ContractInfo,
+  WasmAPI,
+} from '@terra-money/terra.js';
 
 export interface Entity {
   id: string;
@@ -51,8 +62,12 @@ export type TerraContractMessage = TerraMessage<WasmMsg>;
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
 
-export interface ITerraSafeApi {
+export interface ISafeWasmApi {
   codeInfo(codeID: number): Promise<CodeInfo>;
   contractInfo(contractAddress: string): Promise<ContractInfo>;
   contractQuery<T>(contractAddress: string, query: Object): Promise<T>;
+}
+
+export interface ITerraSafeApi {
+  wasm: ISafeWasmApi;
 }
