@@ -7,7 +7,7 @@ import {Store, DynamicDatasourceCreator, ITerraSafeApi} from './interfaces';
 
 declare global {
   const apiUnsafe: LCDClient | undefined; //requires --unsafe flag to be defined
-  const api: ITerraSafeApi;
+  const api: Partial<LCDClient>;
   const logger: Pino.Logger;
   const store: Store;
   const createDynamicDatasource: DynamicDatasourceCreator;
