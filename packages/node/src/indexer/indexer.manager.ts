@@ -483,7 +483,7 @@ export class IndexerManager {
     await this.indexBlockContent(block, dataSources, getVM);
 
     // Run initialization events
-    const initEvents = events.filter((evt) => !evt.phase.isInitialization);
+    const initEvents = events.filter((evt) => evt.phase.isInitialization);
     for (const event of initEvents) {
       await this.indexEvent(event, dataSources, getVM);
     }
@@ -502,7 +502,7 @@ export class IndexerManager {
     }
 
     // Run finalization events
-    const finalizeEvents = events.filter((evt) => !evt.phase.isFinalization);
+    const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
     for (const event of finalizeEvents) {
       await this.indexEvent(event, dataSources, getVM);
     }
