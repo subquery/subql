@@ -79,7 +79,7 @@ export class ApiTerraService {
     return this;
   }
 
-  async getSafeApi(height): Promise<TerraSafeApi> {
+  getSafeApi(height): TerraSafeApi {
     const { network } = this.project;
     const api = new TerraSafeApi(
       network.endpoint,
@@ -87,7 +87,7 @@ export class ApiTerraService {
       this.nodeConfig.networkEndpointParams,
       network.mantlemint,
     );
-    api.mantlemintHealthOK = await api.mantlemintHealthCheck();
+    api.mantlemintHealthOK = this.api.mantlemintHealthOK;
     return api;
   }
 
