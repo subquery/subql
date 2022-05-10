@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.29.0] - 2022-05-11
+### Changed
+- remove use manifest in codegen (#1001)
+
 ## [0.28.0] - 2022-05-06
 ### Fixed
 - Fix migrate missing chain types (#975)

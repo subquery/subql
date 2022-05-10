@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-05-11
+### Added
+- Add test for project with ds processor assets (#1000)
+- Add method to check templates is Substrate ds (#1001)
+
 ## [0.4.0] - 2022-05-02
 ### Added
 - Add utils package (#928)

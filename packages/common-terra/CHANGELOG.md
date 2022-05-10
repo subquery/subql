@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.6.0] - 2022-05-11
+### Added
+- Add method to check templates is Terra ds (#1001)
+
 ## [0.5.0] - 2022-05-02
 ### Added
 - Add utils package (#928)

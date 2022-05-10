@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.23.0] - 2022-05-11
+### Fixed
+- Fix toDeployment with ds processor assets (#1000)
+### Added
+- Add method to get path for manifest and schema, in order improve cli codegen (#1001)
+
 ## [0.22.0] - 2022-05-02
 ### Added
 - Add utils package (#928)
