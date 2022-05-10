@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {classToPlain} from 'class-transformer';
 import {Allow, IsString, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 
@@ -17,7 +18,8 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   abstract readonly deployment: D;
 
   toDeployment(): string {
-    return yaml.dump(this.deployment, {
+    // classToPlain fixes Map type with assets fields
+    return yaml.dump(classToPlain(this.deployment), {
       sortKeys: true,
       condenseFlow: true,
     });
