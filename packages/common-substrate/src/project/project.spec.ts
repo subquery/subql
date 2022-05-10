@@ -92,4 +92,10 @@ describe('project.yaml', () => {
       loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.0_invalid_custom_ds.yaml'))
     ).toThrow();
   });
+
+  it('can convert project with assets to deployment', () => {
+    const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+    expect(manifest.isV1_0_0).toBeTruthy();
+    expect(() => manifest.toDeployment()).not.toThrow();
+  });
 });
