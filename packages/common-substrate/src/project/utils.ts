@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-substrate/project/versioned';
+import {gte} from 'semver';
 import {
   SecondLayerHandlerProcessor,
   SubstrateCustomDataSource,
@@ -37,4 +39,11 @@ export function isCustomDs<F extends SubstrateNetworkFilter>(
 
 export function isRuntimeDs(ds: SubstrateDataSource): ds is SubstrateRuntimeDataSource {
   return ds.kind === SubstrateDatasourceKind.Runtime;
+}
+
+export function isSubstrateTemplates(
+  templatesData: any,
+  specVersion: string
+): templatesData is (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[] {
+  return (isRuntimeDs(templatesData[0]) || isCustomDs(templatesData[0])) && gte(specVersion, '0.2.1');
 }
