@@ -10,6 +10,7 @@ import {
   SubqlTerraHandlerKind,
   SubqlTerraRuntimeDatasource,
 } from '@subql/types-terra';
+import {gte} from 'semver';
 
 export function isCustomTerraDs(ds: SubqlTerraDatasource): ds is SubqlTerraCustomDatasource<string> {
   return ds.kind !== SubqlTerraDatasourceKind.Runtime && !!(ds as SubqlTerraCustomDatasource<string>).processor;
@@ -47,5 +48,5 @@ export function isTerraTemplates(
   templatesData: any,
   specVersion: string
 ): templatesData is (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[] {
-  return (isRuntimeTerraDs(templatesData[0]) || isCustomTerraDs(templatesData[0])) && specVersion === '1.0.0';
+  return (isRuntimeTerraDs(templatesData[0]) || isCustomTerraDs(templatesData[0])) && gte(specVersion, '1.0.0');
 }

@@ -302,7 +302,7 @@ export async function generateDatasourceTemplates(
     }));
     MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
   } else {
-    throw new Error(`Unsupported templates`);
+    throw new Error(`Generated datasource templates failed: unsupported templates`);
   }
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {

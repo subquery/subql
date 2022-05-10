@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-substrate/project/versioned';
+import {gte} from 'semver';
 import {
   SecondLayerHandlerProcessor,
   SubstrateCustomDataSource,
@@ -44,8 +45,5 @@ export function isSubstrateTemplates(
   templatesData: any,
   specVersion: string
 ): templatesData is (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[] {
-  return (
-    (isRuntimeDs(templatesData[0]) || isCustomDs(templatesData[0])) &&
-    (specVersion === '0.2.1' || specVersion === '1.0.0')
-  );
+  return (isRuntimeDs(templatesData[0]) || isCustomDs(templatesData[0])) && gte(specVersion, '0.2.1');
 }
