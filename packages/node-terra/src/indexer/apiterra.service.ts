@@ -17,6 +17,7 @@ import {
   WasmAPI,
   WasmParams,
 } from '@terra-money/terra.js';
+import { APIParams } from '@terra-money/terra.js/dist/client/lcd/APIRequester';
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
@@ -267,7 +268,7 @@ export class TerraSafeApi implements ITerraSafeApi {
   }
 }
 
-class SafeWasmApi implements ISafeWasmApi {
+class SafeWasmApi {
   constructor(
     private preferredConnection: AxiosInstance,
     private height: number,
@@ -310,5 +311,17 @@ class SafeWasmApi implements ISafeWasmApi {
       },
     );
     return data.query_result;
+  }
+
+  async parameters(params: APIParams = {}): Promise<WasmParams> {
+    const { data } = await this.preferredConnection.get(
+      `/terra/wasm/v1beta1/params`,
+      params,
+    );
+    return <WasmParams>{
+      max_contract_size: Number.parseInt(data.max_contract_size),
+      max_contract_gas: Number.parseInt(data.max_contract_gas),
+      max_contract_msg_size: Number.parseInt(data.max_contract_msg_size),
+    };
   }
 }

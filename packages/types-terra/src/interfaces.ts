@@ -62,11 +62,7 @@ export type TerraContractMessage = TerraMessage<WasmMsg>;
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
 
-export interface ISafeWasmApi {
-  codeInfo(codeID: number): Promise<CodeInfo>;
-  contractInfo(contractAddress: string): Promise<ContractInfo>;
-  contractQuery<T>(contractAddress: string, query: Object): Promise<T>;
-}
+export type ISafeWasmApi = Omit<InstanceType<typeof WasmAPI>, 'c'>;
 
 export interface ITerraSafeApi {
   wasm: ISafeWasmApi;
