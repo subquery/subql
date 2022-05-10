@@ -4,8 +4,18 @@
 import fs from 'fs';
 import path from 'path';
 import {promisify} from 'util';
-import {loadSubstrateProjectManifest, SubstrateProjectManifestVersioned, isCustomDs} from '@subql/common-substrate';
-import {loadTerraProjectManifest, TerraProjectManifestVersioned, isCustomTerraDs} from '@subql/common-terra';
+import {getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
+import {
+  isCustomDs,
+  isSubstrateTemplates,
+  RuntimeDatasourceTemplate as SubstrateDsTemplate,
+  CustomDatasourceTemplate as SubstrateCustomDsTemplate,
+} from '@subql/common-substrate';
+import {
+  isTerraTemplates,
+  RuntimeDatasourceTemplate as TerraDsTemplate,
+  CustomDatasourceTemplate as TerraCustomDsTemplate,
+} from '@subql/common-terra';
 import {
   getAllEntitiesRelations,
   getAllJsonObjects,
@@ -20,6 +30,7 @@ import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
 
+type TemplateKind = SubstrateDsTemplate | SubstrateCustomDsTemplate | TerraDsTemplate | TerraCustomDsTemplate;
 let MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
@@ -190,21 +201,14 @@ export async function codegen(projectPath: string): Promise<void> {
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  let manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
-
-  try {
-    console.log('Loading substrate manifest...');
-    manifest = loadSubstrateProjectManifest(projectPath);
-    await generateDatasourceTemplates(projectPath, manifest);
-  } catch (e) {
-    console.log('Loading substrate manifest failed');
-    console.log('Loading terra manifest...');
-    manifest = loadTerraProjectManifest(projectPath);
-    await generateDatasourceTemplates(projectPath, manifest);
-    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
+  const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath)) as {
+    specVersion: string;
+    templates?: TemplateKind[];
+  };
+  if (plainManifest.templates && plainManifest.templates.length !== 0) {
+    await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
   }
-
-  const schemaPath = path.join(projectPath, manifest.schema);
+  const schemaPath = getSchemaPath(projectPath);
 
   await generateJsonInterfaces(projectPath, schemaPath);
   await generateModels(projectPath, schemaPath);
@@ -282,46 +286,32 @@ export async function generateModels(projectPath: string, schema: string): Promi
 
 export async function generateDatasourceTemplates(
   projectPath: string,
-  projectManifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
+  specVersion: string,
+  templates: TemplateKind[]
 ): Promise<void> {
-  if (projectManifest instanceof SubstrateProjectManifestVersioned) {
-    if (!projectManifest.isV0_2_1) return;
-
-    const manifest = projectManifest.asV0_2_1;
-    if (!manifest.templates?.length) return;
-    try {
-      const props = manifest.templates.map((t) => ({
-        name: t.name,
-        args: isCustomDs(t) ? 'Record<string, unknown>' : undefined,
-      }));
-      await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
-        props,
-      });
-
-      exportTypes.datasources = true;
-    } catch (e) {
-      console.error(e);
-      throw new Error(`Unable to generate datasource template constructors`);
-    }
+  let props;
+  if (isSubstrateTemplates(templates, specVersion)) {
+    props = templates.map((t) => ({
+      name: t.name,
+      args: isCustomDs(t) ? 'Record<string, unknown>' : undefined,
+    }));
+  } else if (isTerraTemplates(templates, specVersion)) {
+    props = templates.map((t) => ({
+      name: t.name,
+      args: 'Record<string, unknown>',
+    }));
+    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
   } else {
-    const manifest = projectManifest.asV1_0_0;
-    if (!manifest.templates?.length) return;
-
-    try {
-      const props = manifest.templates.map((t) => ({
-        name: t.name,
-        args: 'Record<string, unknown>',
-      }));
-      await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
-        props,
-      });
-
-      exportTypes.datasources = true;
-    } catch (e) {
-      console.error(e);
-      throw new Error(`Unable to generate datasource template constructors`);
-    }
+    throw new Error(`Unsupported templates`);
   }
-
+  try {
+    await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
+      props,
+    });
+    exportTypes.datasources = true;
+  } catch (e) {
+    console.error(e);
+    throw new Error(`Unable to generate datasource template constructors`);
+  }
   console.log(`* Datasource template constructors generated !`);
 }

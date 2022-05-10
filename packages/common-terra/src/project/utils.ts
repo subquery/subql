@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-terra/project/versioned';
 import {
   SecondLayerTerraHandlerProcessor,
   SubqlTerraCustomDatasource,
@@ -40,4 +41,11 @@ export function isEventHandlerProcessor<E>(
   hp: SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind, unknown, unknown>
 ): hp is SecondLayerTerraHandlerProcessor<SubqlTerraHandlerKind.Event, unknown, E> {
   return hp.baseHandlerKind === SubqlTerraHandlerKind.Event;
+}
+
+export function isTerraTemplates(
+  templatesData: any,
+  specVersion: string
+): templatesData is (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[] {
+  return (isRuntimeTerraDs(templatesData[0]) || isCustomTerraDs(templatesData[0])) && specVersion === '1.0.0';
 }
