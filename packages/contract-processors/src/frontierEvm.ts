@@ -197,7 +197,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
         baseFilter.find((filter) => filter.module === evt.event.section && filter.method === evt.event.method)
       ) ?? [];
 
-    assert(!!original.extrinsic, "Evem event doesn't have an extrinsic");
+    assert(!!original.extrinsic, "EVM event doesn't have an extrinsic");
     const {hash} = getExecutionEvent(original.extrinsic); // shouldn't fail here
 
     const log: FrontierEvmEvent = {
@@ -369,7 +369,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
         ...baseCall,
 
         gasPrice: BigNumber.from(legacyTx.gasPrice.toBigInt()),
-        chainId: -1, // Unkown
+        chainId: -1, // Unkonwn
 
         r: legacyTx.signature.r.toHex(),
         s: legacyTx.signature.s.toHex(),
