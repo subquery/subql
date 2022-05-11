@@ -5077,12 +5077,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@terra-money/terra.js@npm:^3.0.8":
-  version: 3.0.8
-  resolution: "@terra-money/terra.js@npm:3.0.8"
+"@terra-money/terra.js@npm:^3.0.11":
+  version: 3.0.11
+  resolution: "@terra-money/terra.js@npm:3.0.11"
   dependencies:
     "@terra-money/terra.proto": ^0.1.7
-    axios: ^0.24.0
+    axios: ^0.26.1
     bech32: ^2.0.0
     bip32: ^2.0.6
     bip39: ^3.0.3
@@ -5094,7 +5094,7 @@ __metadata:
     tmp: ^0.2.1
     utf-8-validate: ^5.0.5
     ws: ^7.5.5
-  checksum: 1b0dd3258441e0f65f6ab5136e0d92afa6ee1d77de34f225c0ad465045b1573d48d3371f65378cd8216b641a160110c39c922ce54443f8e6440c78108b5a4dd9
+  checksum: f651433e4f1613daa826c74e44885f66c505f0ff2874a162fab996c388c6c52e22798ce5236fd8a4f349f7808c2dc708081c94bd02d0d1a917e1ac04c566256b
   languageName: node
   linkType: hard
 
@@ -7103,6 +7103,15 @@ __metadata:
   dependencies:
     follow-redirects: ^1.14.8
   checksum: d7a8b898f4157bedeb2e06c03b16133b91b354c041205bea732ce58b7a21f373d22057b0eea0d482838145ce6ff482b359750d9bcb8dd19d45e3928e3c65c280
+  languageName: node
+  linkType: hard
+
+"axios@npm:^0.26.1":
+  version: 0.26.1
+  resolution: "axios@npm:0.26.1"
+  dependencies:
+    follow-redirects: ^1.14.8
+  checksum: d9eb58ff4bc0b36a04783fc9ff760e9245c829a5a1052ee7ca6013410d427036b1d10d04e7380c02f3508c5eaf3485b1ae67bd2adbfec3683704745c8d7a6e1a
   languageName: node
   linkType: hard
 
