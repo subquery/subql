@@ -80,7 +80,7 @@ describe('ApiTerraSevice', () => {
     const api = apiService.getSafeApi(7378872);
     const codeInfo = await api.wasm.codeInfo(2755);
     const realCodeInfo = {
-      code_id: '2755',
+      code_id: 2755,
       code_hash: 'kzISYzSxvpJJeux06p8ReQfrZ5itc3GVAnubLlpCooc=',
       creator: 'terra17vl3radw43hlzu0ls793k0ep4gp2alxn44cef0',
     };
@@ -96,7 +96,7 @@ describe('ApiTerraSevice', () => {
       address: 'terra19wka0vfl493ajupk6dm0g8hsa0nfls0m4vq7zw',
       creator: 'terra16eey0m7w6gn7ekq944nzaw5uzjxe0retuv89ta',
       admin: 'terra16eey0m7w6gn7ekq944nzaw5uzjxe0retuv89ta',
-      code_id: '2319',
+      code_id: 2319,
       init_msg: {
         whitelist: ['terra199z7u9qd5md097cn0wunq7dw3h5tzuwkt8e5ye'],
         min_auction_duration_ms: 600000,
