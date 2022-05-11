@@ -25,6 +25,7 @@ const SUBSTRATE_NODE_NAME = '@subql/node';
 const TERRA_NODE_NAME = '@subql/node-terra';
 const DEFAULT_QUERY_NAME = '@subql/query';
 
+// eslint-disable-next-line complexity
 export async function prepare(
   location: string,
   manifest: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned
@@ -116,7 +117,9 @@ export async function prepare(
       }
     } else {
       // handle chainTypes path as v0.2.0
-      chainTypesRelativePath = manifest.asV0_2_0.network.chaintypes.file;
+      if (manifest.asV0_2_0.network.chaintypes) {
+        chainTypesRelativePath = manifest.asV0_2_0.network.chaintypes.file;
+      }
     }
   }
   return [project, chainTypesRelativePath];
