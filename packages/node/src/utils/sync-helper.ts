@@ -73,19 +73,20 @@ export function addTagsToForeignKeyMap(
   tableKeys.set(foreignKey, foreignKeyTags);
 }
 
+export const BTREE_GIST_EXTENSION_QUERY = `CREATE EXTENSION IF NOT EXISTS btree_gist;`;
+
 export function createExcludeConstraintQuery(
   schema: string,
   table: string,
-): string[] {
-  return [
-    `CREATE EXTENSION IF NOT EXISTS btree_gist`,
-    `ALTER TABLE "${schema}"."${table}" DROP CONSTRAINT IF EXISTS ${getExcludeConstraint(
-      table,
-    )}`,
-    `ALTER TABLE "${schema}"."${table}" ADD CONSTRAINT ${getExcludeConstraint(
-      table,
-    )} EXCLUDE USING gist (id WITH =, _block_range WITH &&)`,
-  ];
+): string {
+  const constraint = getExcludeConstraint(table);
+  return `DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = '${constraint}') THEN
+        ALTER TABLE "${schema}"."${table}" ADD CONSTRAINT ${constraint} EXCLUDE USING gist (id WITH =, _block_range WITH &&);
+      END IF;
+    END;
+    $$`;
 }
 
 export function createUniqueIndexQuery(

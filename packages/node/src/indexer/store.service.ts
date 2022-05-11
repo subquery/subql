@@ -9,11 +9,13 @@ import { Entity, Store } from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLRelationsType,
+  IndexType,
 } from '@subql/utils';
 import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
 import {
   CreationAttributes,
   DataTypes,
+  IndexesOptions,
   Model,
   ModelAttributeColumnOptions,
   ModelAttributes,
@@ -43,11 +45,13 @@ import {
   getVirtualFkTag,
   addTagsToForeignKeyMap,
   createExcludeConstraintQuery,
+  BTREE_GIST_EXTENSION_QUERY,
 } from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
 import {
   Metadata,
   MetadataFactory,
+  MetadataModel,
   MetadataRepo,
 } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
@@ -95,7 +99,7 @@ export class StoreService {
   ): Promise<void> {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
-    this.historical = argv['experimental-historical'];
+    this.historical = !!argv['experimental-historical'];
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -112,6 +116,9 @@ export class StoreService {
 
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
+    if (this.historical) {
+      await this.sequelize.query(BTREE_GIST_EXTENSION_QUERY);
+    }
 
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
@@ -179,6 +186,7 @@ export class StoreService {
       }
       if (this.historical) {
         this.addIdAndBlockRangeAttributes(attributes);
+        this.addBlockRangeColumnToIndexes(indexes);
       }
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
@@ -192,7 +200,7 @@ export class StoreService {
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(
-          ...createExcludeConstraintQuery(schema, sequelizeModel.tableName),
+          createExcludeConstraintQuery(schema, sequelizeModel.tableName),
         );
       }
       if (argv.subscription) {
@@ -290,11 +298,41 @@ export class StoreService {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
+    this.checkHistoricalState();
 
     await this.sequelize.sync();
+    this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+  }
+
+  async checkHistoricalState() {
+    let historicalStateEnabled: MetadataModel | null = null;
+    try {
+      historicalStateEnabled = await this.metaDataRepo.findByPk(
+        'historicalStateEnabled',
+      );
+    } catch (e: any) {
+      // ignored
+    }
+    assert(
+      !historicalStateEnabled ||
+        historicalStateEnabled.value === this.historical,
+      "Option 'experimental-historical' cannot be changed after starting indexing",
+    );
+  }
+
+  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]) {
+    indexes.forEach((index) => {
+      if (index.using === IndexType.GIN) {
+        return;
+      }
+      index.fields.push('_block_range');
+      index.using = IndexType.GIST;
+      // GIST does not support unique indexes
+      index.unique = false;
+    });
   }
 
   private addRelationToMap(
@@ -345,7 +383,7 @@ export class StoreService {
     }
   }
 
-  private addIdAndBlockRangeAttributes(
+  addIdAndBlockRangeAttributes(
     attributes: ModelAttributes<Model<any, any>, any>,
   ): void {
     (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
@@ -368,6 +406,7 @@ export class StoreService {
       },
     });
     sequelizeModel.addHook('beforeFind', (options) => {
+      // eslint-disable-next-line
       options.where['__block_range'] = {
         [Op.contains]: this.blockHeight as any,
       };
