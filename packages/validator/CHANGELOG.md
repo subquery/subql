@@ -9,6 +9,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-11
+- Major release
+
 ## [0.6.0] - 2022-04-06
 ### Added
 - Add validation to support manifest 1.0.0, add rules for runner (#845)
