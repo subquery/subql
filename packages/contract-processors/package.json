@@ -21,7 +21,6 @@
     "ethers": "^5.5.4"
   },
   "devDependencies": {
-    "@acala-network/types": "^4.1.1",
     "moonbeam-types-bundle": "^2.0.4"
   },
   "peerDependencies": {

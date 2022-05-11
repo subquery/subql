@@ -1,22 +1,25 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {getPartialTransactionReceipt} from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
+import assert from 'assert';
+import {
+  getPartialTransactionReceipt,
+  PartialLog,
+} from '@acala-network/eth-providers/lib/utils/transactionReceiptHelper';
 import {Interface, Result} from '@ethersproject/abi';
 import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
 import {BigNumber} from '@ethersproject/bignumber';
 import {hexDataSlice} from '@ethersproject/bytes';
-import {ApiPromise} from '@polkadot/api';
 import {
-  SubqlDatasourceProcessor,
-  SubqlCustomDatasource,
-  SubqlHandlerKind,
-  SubqlNetworkFilter,
+  SubstrateDatasourceProcessor,
+  SubstrateCustomDatasource,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
   SubstrateEvent,
   SecondLayerHandlerProcessor,
   SubstrateExtrinsic,
-  SubqlCustomHandler,
-  SubqlMapping,
+  SubstrateCustomHandler,
+  SubstrateMapping,
   DictionaryQueryEntry,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
@@ -36,10 +39,10 @@ const DUMMY_TX_HASH = '0x6666666666666666666666666666666666666666666666666666666
 
 type TopicFilter = string | null | undefined;
 
-export type AcalaEvmDatasource = SubqlCustomDatasource<
+export type AcalaEvmDatasource = SubstrateCustomDatasource<
   'substrate/AcalaEvm',
-  SubqlNetworkFilter,
-  SubqlMapping<SubqlCustomHandler>,
+  SubstrateNetworkFilter,
+  SubstrateMapping<SubstrateCustomHandler>,
   AcalaEvmProcessorOptions
 >;
 
@@ -127,9 +130,9 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
 
 const contractInterfaces: Record<string, Interface> = {};
 
-function buildInterface(ds: AcalaEvmDatasource, assets: Record<string, string>): Interface | undefined {
+function buildInterface(ds: AcalaEvmDatasource, assets?: Record<string, string>): Interface | undefined {
   const abi = ds.processor?.options?.abi;
-  if (!abi) {
+  if (!abi || !assets) {
     return;
   }
 
@@ -141,7 +144,17 @@ function buildInterface(ds: AcalaEvmDatasource, assets: Record<string, string>):
   if (!contractInterfaces[abi]) {
     // Constructing the interface validates the ABI
     try {
-      contractInterfaces[abi] = new Interface(assets[abi]);
+      let abiObj = JSON.parse(assets[abi]);
+
+      /*
+       * Allows parsing JSON artifacts as well as ABIs
+       * https://trufflesuite.github.io/artifact-updates/background.html#what-are-artifacts
+       */
+      if (!Array.isArray(abiObj) && abiObj.abi) {
+        abiObj = abiObj.abi;
+      }
+
+      contractInterfaces[abi] = new Interface(abiObj);
     } catch (e) {
       (global as any).logger.error(`Unable to parse ABI: ${e.message}`);
       throw new Error('ABI is invalid');
@@ -151,66 +164,82 @@ function buildInterface(ds: AcalaEvmDatasource, assets: Record<string, string>):
   return contractInterfaces[abi];
 }
 
+function logMatchesTopics(log: PartialLog, topics: AcalaEvmEventFilter['topics']): boolean {
+  // Follows bloom filters https://docs.ethers.io/v5/concepts/events/#events--filters
+
+  if (!topics) return true;
+
+  for (let i = 0; i < Math.min(topics.length, 4); i++) {
+    const topic = topics[i];
+    if (!topic) {
+      continue;
+    }
+    if (!hexStringEq(eventToTopic(topic), log.topics[i])) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function findLogs(filter: AcalaEvmEventFilter | undefined, input: SubstrateEvent): PartialLog[] {
+  const receipt = getPartialTransactionReceipt(input);
+
+  if (!filter?.topics) {
+    return receipt.logs;
+  }
+
+  return receipt.logs.filter((log) => logMatchesTopics(log, filter.topics));
+}
+
 const EventProcessor: SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Event,
+  SubstrateHandlerKind.Event,
   AcalaEvmEventFilter,
   AcalaEvmEvent,
   AcalaEvmDatasource
 > = {
   baseFilter: [{module: 'evm', method: 'Executed'}], // TODO executed failed
-  baseHandlerKind: SubqlHandlerKind.Event,
+  baseHandlerKind: SubstrateHandlerKind.Event,
   // eslint-disable-next-line @typescript-eslint/require-await
-  async transformer(
-    original: SubstrateEvent,
-    ds: AcalaEvmDatasource,
-    api: ApiPromise,
-    assets: Record<string, string>
-  ): Promise<AcalaEvmEvent> {
-    const receipt = getPartialTransactionReceipt(original);
-    // XXX what if there is more than one log
-    const partialLog = receipt.logs[0];
+  async transformer({assets, ds, filter, input: original}): Promise<AcalaEvmEvent[]> {
+    // Acala EVM has all the logs in one substrate event, we need to process all the matching events.
+    const partialLogs = findLogs(filter, original);
+    assert(partialLogs.length > 0, 'No matching logs');
 
-    const log: AcalaEvmEvent = {
-      ...partialLog,
-      blockNumber: original.block.block.header.number.toNumber(),
-      blockHash: original.block.hash.toHex(),
-      blockTimestamp: original.block.timestamp,
-      transactionIndex: original.extrinsic?.idx ?? -1,
-      transactionHash: original.extrinsic?.extrinsic.hash.toHex() ?? DUMMY_TX_HASH,
-    };
+    return partialLogs.map((partialLog) => {
+      const log: AcalaEvmEvent = {
+        ...partialLog,
+        blockNumber: original.block.block.header.number.toNumber(),
+        blockHash: original.block.hash.toHex(),
+        blockTimestamp: original.block.timestamp,
+        transactionIndex: original.extrinsic?.idx ?? -1,
+        transactionHash: original.extrinsic?.extrinsic.hash.toHex() ?? DUMMY_TX_HASH,
+      };
 
-    try {
-      const iface = buildInterface(ds, assets);
+      try {
+        const iface = buildInterface(ds, assets);
 
-      log.args = iface?.parseLog(log).args;
-    } catch (e) {
-      // TODO setup ts config with global defs
-      (global as any).logger?.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
-    }
+        log.args = iface?.parseLog(log).args;
+      } catch (e) {
+        // TODO setup ts config with global defs
+        (global as any).logger?.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
+      }
 
-    return log;
+      return log;
+    });
   },
-  filterProcessor(filter: AcalaEvmEventFilter | undefined, input: SubstrateEvent, ds: AcalaEvmDatasource): boolean {
+  filterProcessor({ds, filter, input}): boolean {
     const receipt = getPartialTransactionReceipt(input);
 
     if (ds.processor?.options?.address && !stringNormalizedEq(ds.processor.options.address, receipt.to?.toString())) {
       return false;
     }
 
-    // Follows bloom filters https://docs.ethers.io/v5/concepts/events/#events--filters
-    if (filter?.topics) {
-      for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
-        const topic = filter.topics[i];
-        if (!topic) {
-          continue;
-        }
-
-        // XXXX what if there is more than one log
-        if (!hexStringEq(eventToTopic(topic), receipt.logs[0].topics[i])) {
-          return false;
-        }
-      }
+    if (receipt.logs.length > 1) {
+      (global as any).logger?.warn(`Receipt logs greater than 1, received: ${receipt.logs.length}`);
     }
+
+    if (!findLogs(filter, input).length) return false;
 
     return true;
   },
@@ -224,7 +253,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Acala event filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: AcalaEvmEventFilter, ds: AcalaEvmDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: AcalaEvmEventFilter, ds: AcalaEvmDatasource): DictionaryQueryEntry | undefined {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmLogs',
       conditions: [],
@@ -251,20 +280,15 @@ const EventProcessor: SecondLayerHandlerProcessor<
 };
 
 const CallProcessor: SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Call,
+  SubstrateHandlerKind.Call,
   AcalaEvmCallFilter,
   AcalaEvmCall,
   AcalaEvmDatasource
 > = {
   baseFilter: [{module: 'evm', method: 'ethCall'}],
-  baseHandlerKind: SubqlHandlerKind.Call,
+  baseHandlerKind: SubstrateHandlerKind.Call,
   // eslint-disable-next-line @typescript-eslint/require-await
-  async transformer(
-    original: SubstrateExtrinsic,
-    ds: AcalaEvmDatasource,
-    api: ApiPromise,
-    assets: Record<string, string>
-  ): Promise<AcalaEvmCall> {
+  async transformer({assets, ds, input: original}): Promise<[AcalaEvmCall]> {
     const [tx, input, value, gasLimit] = original.extrinsic.method.args;
 
     const {from, to} = getExecutionEvent(original);
@@ -298,9 +322,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
       (global as any).logger?.warn(`Unable to parse call arguments, will be omitted from result`);
     }
 
-    return call;
+    return [call];
   },
-  filterProcessor(filter: AcalaEvmCallFilter | undefined, input: SubstrateExtrinsic, ds: AcalaEvmDatasource): boolean {
+  filterProcessor({ds, filter, input}): boolean {
     try {
       const {from, to} = getExecutionEvent(input);
 
@@ -334,7 +358,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Acala call filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: AcalaEvmCallFilter, ds: AcalaEvmDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: AcalaEvmCallFilter, ds: AcalaEvmDatasource): DictionaryQueryEntry | undefined {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmTransactions',
       conditions: [],
@@ -353,9 +377,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-export const AcalaDatasourcePlugin: SubqlDatasourceProcessor<
+export const AcalaDatasourcePlugin: SubstrateDatasourceProcessor<
   'substrate/AcalaEvm',
-  SubqlNetworkFilter,
+  SubstrateNetworkFilter,
   AcalaEvmDatasource
 > = {
   kind: 'substrate/AcalaEvm',

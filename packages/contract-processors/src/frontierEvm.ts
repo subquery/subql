@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import '@polkadot/api-augment';
 import {Interface, Result} from '@ethersproject/abi';
 import {Log, TransactionResponse} from '@ethersproject/abstract-provider';
@@ -9,15 +10,14 @@ import {hexDataSlice} from '@ethersproject/bytes';
 import {ApiPromise} from '@polkadot/api';
 import {TransactionV2, EthTransaction, EvmLog, ExitReason} from '@polkadot/types/interfaces';
 import {
-  SubqlDatasourceProcessor,
-  SubqlCustomDatasource,
-  SubqlHandlerKind,
-  SubqlNetworkFilter,
-  SubstrateEvent,
+  SubstrateDatasourceProcessor,
+  SubstrateCustomDatasource,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
   SecondLayerHandlerProcessor,
   SubstrateExtrinsic,
-  SubqlCustomHandler,
-  SubqlMapping,
+  SubstrateCustomHandler,
+  SubstrateMapping,
   DictionaryQueryEntry,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
@@ -34,10 +34,10 @@ import {eventToTopic, functionToSighash, hexStringEq, stringNormalizedEq} from '
 
 type TopicFilter = string | null | undefined;
 
-export type FrontierEvmDatasource = SubqlCustomDatasource<
+export type FrontierEvmDatasource = SubstrateCustomDatasource<
   'substrate/FrontierEvm',
-  SubqlNetworkFilter,
-  SubqlMapping<SubqlCustomHandler>,
+  SubstrateNetworkFilter,
+  SubstrateMapping<SubstrateCustomHandler>,
   FrontierEvmProcessorOptions
 >;
 
@@ -50,7 +50,11 @@ export interface FrontierEvmCallFilter {
   function?: string;
 }
 
-export type FrontierEvmEvent<T extends Result = Result> = Log & {args?: T; blockTimestamp: Date};
+export type FrontierEvmEvent<T extends Result = Result> = Omit<Log, 'blockHash'> & {
+  args?: T;
+  blockTimestamp: Date;
+  blockHash: string | undefined;
+};
 export type FrontierEvmCall<T extends Result = Result> = Omit<TransactionResponse, 'wait' | 'confirmations'> & {
   args?: T;
   success: boolean;
@@ -127,7 +131,7 @@ function getExecutionEvent(extrinsic: SubstrateExtrinsic): ExecutionEvent {
   };
 }
 
-async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promise<string> {
+async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promise<string | undefined> {
   return undefined;
 
   // This is too expensive to call for each call/event, we need to find a more efficient approach
@@ -140,9 +144,9 @@ async function getEtheruemBlockHash(api: ApiPromise, blockNumber: number): Promi
 
 const contractInterfaces: Record<string, Interface> = {};
 
-function buildInterface(ds: FrontierEvmDatasource, assets: Record<string, string>): Interface | undefined {
+function buildInterface(ds: FrontierEvmDatasource, assets?: Record<string, string>): Interface | undefined {
   const abi = ds.processor?.options?.abi;
-  if (!abi) {
+  if (!abi || !assets) {
     return;
   }
 
@@ -175,19 +179,14 @@ function buildInterface(ds: FrontierEvmDatasource, assets: Record<string, string
 }
 
 const EventProcessor: SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Event,
+  SubstrateHandlerKind.Event,
   FrontierEvmEventFilter,
   FrontierEvmEvent,
   FrontierEvmDatasource
 > = {
   baseFilter: [{module: 'evm', method: 'Log'}],
-  baseHandlerKind: SubqlHandlerKind.Event,
-  async transformer(
-    original: SubstrateEvent,
-    ds: FrontierEvmDatasource,
-    api: ApiPromise,
-    assets: Record<string, string>
-  ): Promise<FrontierEvmEvent> {
+  baseHandlerKind: SubstrateHandlerKind.Event,
+  async transformer({api, assets, ds, input: original}): Promise<[FrontierEvmEvent]> {
     const [eventData] = original.event.data;
 
     const baseFilter = Array.isArray(EventProcessor.baseFilter)
@@ -198,6 +197,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
         baseFilter.find((filter) => filter.module === evt.event.section && filter.method === evt.event.method)
       ) ?? [];
 
+    assert(!!original.extrinsic, "Evem event doesn't have an extrinsic");
     const {hash} = getExecutionEvent(original.extrinsic); // shouldn't fail here
 
     const log: FrontierEvmEvent = {
@@ -220,13 +220,9 @@ const EventProcessor: SecondLayerHandlerProcessor<
       (global as any).logger.warn(`Unable to parse log arguments, will be omitted from result: ${e.message}`);
     }
 
-    return log;
+    return [log];
   },
-  filterProcessor(
-    filter: FrontierEvmEventFilter | undefined,
-    input: SubstrateEvent,
-    ds: FrontierEvmDatasource
-  ): boolean {
+  filterProcessor({ds, filter, input}): boolean {
     const [eventData] = input.event.data;
     const rawEvent = eventData as EvmLog;
 
@@ -263,7 +259,7 @@ const EventProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Frontier event filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: FrontierEvmEventFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierEvmEventFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry | undefined {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmLogs',
       conditions: [],
@@ -293,19 +289,14 @@ const EventProcessor: SecondLayerHandlerProcessor<
 };
 
 const CallProcessor: SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Call,
+  SubstrateHandlerKind.Call,
   FrontierEvmCallFilter,
   FrontierEvmCall,
   FrontierEvmDatasource
 > = {
   baseFilter: [{module: 'ethereum', method: 'transact'}],
-  baseHandlerKind: SubqlHandlerKind.Call,
-  async transformer(
-    original: SubstrateExtrinsic,
-    ds: FrontierEvmDatasource,
-    api: ApiPromise,
-    assets: Record<string, string>
-  ): Promise<FrontierEvmCall> {
+  baseHandlerKind: SubstrateHandlerKind.Call,
+  async transformer({api, assets, ds, input: original}): Promise<[FrontierEvmCall]> {
     const [tx] = original.extrinsic.method.args as [TransactionV2 | EthTransaction];
 
     const rawTx = (tx as TransactionV2).isEip1559
@@ -324,6 +315,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
       hash = executionEvent.hash;
       success = executionEvent.status.isSucceed;
     } catch (e) {
+      // TODO find an example of this
       success = false;
     }
 
@@ -377,7 +369,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
         ...baseCall,
 
         gasPrice: BigNumber.from(legacyTx.gasPrice.toBigInt()),
-        chainId: undefined,
+        chainId: -1, // Unkown
 
         r: legacyTx.signature.r.toHex(),
         s: legacyTx.signature.s.toHex(),
@@ -395,13 +387,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
       (global as any).logger.warn(`Unable to parse call arguments, will be omitted from result`);
     }
 
-    return call;
+    return [call];
   },
-  filterProcessor(
-    filter: FrontierEvmCallFilter | undefined,
-    input: SubstrateExtrinsic,
-    ds: FrontierEvmDatasource
-  ): boolean {
+  filterProcessor({ds, filter, input}): boolean {
     try {
       const {from, to} = getExecutionEvent(input);
 
@@ -446,7 +434,7 @@ const CallProcessor: SecondLayerHandlerProcessor<
       throw new Error(`Invalid Frontier Evm call filter.\n${errorMsgs}`);
     }
   },
-  dictionaryQuery(filter: FrontierEvmCallFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry {
+  dictionaryQuery(filter: FrontierEvmCallFilter, ds: FrontierEvmDatasource): DictionaryQueryEntry | undefined {
     const queryEntry: DictionaryQueryEntry = {
       entity: 'evmTransactions',
       conditions: [],
@@ -465,9 +453,9 @@ const CallProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-export const FrontierEvmDatasourcePlugin: SubqlDatasourceProcessor<
+export const FrontierEvmDatasourcePlugin: SubstrateDatasourceProcessor<
   'substrate/FrontierEvm',
-  SubqlNetworkFilter,
+  SubstrateNetworkFilter,
   FrontierEvmDatasource
 > = {
   kind: 'substrate/FrontierEvm',

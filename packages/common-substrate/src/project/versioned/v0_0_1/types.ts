@@ -4,13 +4,13 @@
 import {RegisteredTypes} from '@polkadot/types/types';
 import {BaseMapping, IProjectManifest} from '@subql/common';
 import {
-  SubstrateProjectNetworkConfig,
-  SubstrateRuntimeDataSource,
+  SubstrateRuntimeDatasource,
   SubstrateNetworkFilter,
   SubstrateRuntimeHandlerFilter,
   SubstrateRuntimeHandler,
   SubstrateDatasourceKind,
-} from '../../types';
+} from '@subql/types';
+import {SubstrateProjectNetworkConfig} from '../../types';
 
 export type ProjectNetworkConfigV0_0_1 = SubstrateProjectNetworkConfig & RegisteredTypes;
 
@@ -21,7 +21,7 @@ export type ProjectNetworkConfigV0_0_1 = SubstrateProjectNetworkConfig & Registe
 
 export type ManifestV0_0_1Mapping = Omit<BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler>, 'file'>;
 
-export interface RuntimeDataSourceV0_0_1 extends Omit<SubstrateRuntimeDataSource, 'mapping'> {
+export interface RuntimeDataSourceV0_0_1 extends Omit<SubstrateRuntimeDatasource, 'mapping'> {
   name: string;
   filter?: SubstrateNetworkFilter;
   kind: SubstrateDatasourceKind.Runtime;

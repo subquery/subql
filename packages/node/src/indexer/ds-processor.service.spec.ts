@@ -3,13 +3,13 @@
 
 import path from 'path';
 import { isCustomDs } from '@subql/common-substrate';
-import { SubqlCustomDatasource } from '@subql/types';
+import { SubstrateCustomDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 
 function getTestProject(
-  extraDataSources?: SubqlCustomDatasource[],
+  extraDataSources?: SubstrateCustomDatasource[],
 ): SubqueryProject {
   return {
     network: {
@@ -51,11 +51,12 @@ describe('DsProcessorService', () => {
   });
 
   it('can catch an invalid datasource kind', async () => {
-    const badDs: SubqlCustomDatasource<string, any> = {
+    const badDs: SubstrateCustomDatasource<string, any> = {
       kind: 'substrate/invalid',
       processor: { file: 'contract-processors/dist/jsonfy.js' },
       assets: new Map([]),
       mapping: {
+        file: '',
         handlers: [],
       },
     };

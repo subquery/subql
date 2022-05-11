@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {typesBundle} from '@acala-network/types';
+// import {typesBundle} from '@acala-network/types';
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {getLogger} from '@subql/node/src/utils/logger';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
@@ -16,6 +16,7 @@ const baseDS: AcalaEvmDatasource = {
     file: '',
   },
   mapping: {
+    file: '',
     handlers: [
       {
         kind: 'substrate/AcalaEvmCall',
@@ -37,7 +38,7 @@ describe('AcalaDS', () => {
     (global as any).logger = getLogger('MoonbeamTests');
     api = await ApiPromise.create({
       provider: new WsProvider(MANDALA_ENDPOINT),
-      typesBundle: typesBundle as any,
+      // typesBundle: typesBundle as any,
     });
   });
 
@@ -56,106 +57,135 @@ describe('AcalaDS', () => {
 
       it('filters matching address', () => {
         expect(
-          processor.filterProcessor({}, event, {
-            processor: {options: {address: '0x0e696947a06550def604e82c26fd9e493e576337'}},
-          } as AcalaEvmDatasource)
+          processor.filterProcessor({
+            filter: {},
+            input: event,
+            ds: {
+              processor: {options: {address: '0x0e696947a06550def604e82c26fd9e493e576337'}},
+            } as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor({}, event, {
-            processor: {options: {address: '0x0000000000000000000000000000000000000000'}},
-          } as AcalaEvmDatasource)
+          processor.filterProcessor({
+            filter: {},
+            input: event,
+            ds: {
+              processor: {options: {address: '0x0000000000000000000000000000000000000000'}},
+            } as AcalaEvmDatasource,
+          })
         ).toBeFalsy();
       });
 
       it('filters topics', () => {
         expect(
-          processor.filterProcessor(
-            {topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']},
-            event,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {},
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
+        ).toBeTruthy();
+        expect(
+          processor.filterProcessor({
+            filter: {topics: ['0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef']},
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {topics: ['Transfer(address indexed from, address indexed to, uint256 value)']},
-            event,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {topics: ['Transfer(address indexed from, address indexed to, uint256 value)']},
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {topics: ['Transfer(address from, address to, uint256 value)']},
-            event,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {topics: ['Transfer(address from, address to, uint256 value)']},
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {topics: ['0x6bd193ee6d2104f14f94e2ca6efefae561a4334b']},
-            event,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {topics: ['0x6bd193ee6d2104f14f94e2ca6efefae561a4334b']},
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeFalsy();
       });
 
       it('filters multiple topics', () => {
         expect(
-          processor.filterProcessor(
-            {
+          processor.filterProcessor({
+            filter: {
               topics: [
                 'Transfer(address from, address to, uint256 value)',
                 '0x00000000000000000000000090f8bf6a479f320ead074411a4b0e7944ea8c9c1',
               ],
             },
-            event,
-            {} as AcalaEvmDatasource
-          )
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {
+          processor.filterProcessor({
+            filter: {
               topics: [
                 'Transfer(address from, address to, uint256 value)',
                 '0x00000000000000000000000090f8bf6a479f320ead074411a4b0e7944ea8c9c1',
                 '0x0000000000000000000000002932516d9564cb799dda2c16559cad5b8357a0d6',
               ],
             },
-            event,
-            {} as AcalaEvmDatasource
-          )
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {
+          processor.filterProcessor({
+            filter: {
               topics: [
                 'Transfer(address from, address to, uint256 value)',
                 null,
                 '0x0000000000000000000000002932516d9564cb799dda2c16559cad5b8357a0d6',
               ],
             },
-            event,
-            {} as AcalaEvmDatasource
-          )
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor(
-            {
+          processor.filterProcessor({
+            filter: {
               topics: [
                 'Transfer(address from, address to, uint256 value)',
                 '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1',
                 '0x2932516d9564cb799dda2c16559cad5b8357a0d6',
               ],
             },
-            event,
-            {} as AcalaEvmDatasource
-          )
+            input: event,
+            ds: {} as AcalaEvmDatasource,
+          })
+        ).toBeTruthy();
+      });
+
+      it('filters with multiple events', async () => {
+        const blockNumber = 1066694;
+        const [{events}] = await fetchBlocks(api, blockNumber, blockNumber);
+        const evt = events[12];
+
+        expect(
+          processor.filterProcessor({
+            filter: {topics: ['0x7835cd24e2804ab5cb4f4a613f38e83f9c79ca4b42b58beef4faf77de9e50c35']},
+            input: evt,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
       });
     });
@@ -167,7 +197,7 @@ describe('AcalaDS', () => {
         const blockNumber = 1016071;
         const [{events}] = await fetchBlocks(api, blockNumber, blockNumber);
 
-        const event = (await processor.transformer(events[12], baseDS, api, {})) as AcalaEvmEvent;
+        const [event] = (await processor.transformer({input: events[12], ds: baseDS, api})) as [AcalaEvmEvent];
 
         expect(event.address).toBe('0x02887684a79593677d7f076c84043b94cbe01fea');
         expect(event.transactionIndex).toBe(2);
@@ -183,6 +213,21 @@ describe('AcalaDS', () => {
         // expect(event.args.from).toBe('0x4467a4b51f507083cccbf06dd28097848506d56b');
         // expect(event.args.to).toBe('0xf884c8774b09b3302f98e38C944eB352264024F8');
         // expect(event.args.value.toString()).toBe('0');
+      });
+
+      it('can transform relevant logs', async () => {
+        const blockNumber = 1066694;
+        const [{events}] = await fetchBlocks(api, blockNumber, blockNumber);
+        const evt = events[12];
+
+        const transformed = (await processor.transformer({
+          input: evt,
+          ds: baseDS,
+          filter: {topics: ['0x7835cd24e2804ab5cb4f4a613f38e83f9c79ca4b42b58beef4faf77de9e50c35']},
+          api,
+        })) as AcalaEvmEvent[];
+
+        expect(transformed.length).toEqual(1);
       });
     });
   });
@@ -204,49 +249,57 @@ describe('AcalaDS', () => {
 
       it('filters matching address', () => {
         expect(
-          processor.filterProcessor({}, extrinsic, {
-            processor: {options: {address: '0x02887684a79593677d7f076c84043b94cbe01fea'}},
-          } as AcalaEvmDatasource)
+          processor.filterProcessor({
+            filter: {},
+            input: extrinsic,
+            ds: {
+              processor: {options: {address: '0x02887684a79593677d7f076c84043b94cbe01fea'}},
+            } as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
 
         expect(
-          processor.filterProcessor({}, extrinsic, {
-            processor: {options: {address: '0x0000000000000000000000000000000000000000'}},
-          } as AcalaEvmDatasource)
+          processor.filterProcessor({
+            filter: {},
+            input: extrinsic,
+            ds: {
+              processor: {options: {address: '0x0000000000000000000000000000000000000000'}},
+            } as AcalaEvmDatasource,
+          })
         ).toBeFalsy();
       });
 
       it('can filter from', () => {
         expect(
-          processor.filterProcessor(
-            {from: '0x4467a4b51f507083cccbf06dd28097848506d56b'},
-            extrinsic,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {from: '0x4467a4b51f507083cccbf06dd28097848506d56b'},
+            input: extrinsic,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
         expect(
-          processor.filterProcessor(
-            {from: '0x0000000000000000000000000000000000000000'},
-            extrinsic,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {from: '0x0000000000000000000000000000000000000000'},
+            input: extrinsic,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeFalsy();
       });
 
       it('can filter function with signature', () => {
         expect(
-          processor.filterProcessor(
-            {function: 'setValue(string key, uint128 value, uint128 timestamp)'},
-            extrinsic,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {function: 'setValue(string key, uint128 value, uint128 timestamp)'},
+            input: extrinsic,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeTruthy();
         expect(
-          processor.filterProcessor(
-            {function: 'transfer(address to, address from)'},
-            extrinsic,
-            {} as AcalaEvmDatasource
-          )
+          processor.filterProcessor({
+            filter: {function: 'transfer(address to, address from)'},
+            input: extrinsic,
+            ds: {} as AcalaEvmDatasource,
+          })
         ).toBeFalsy();
       });
     });
@@ -258,7 +311,7 @@ describe('AcalaDS', () => {
         const blockNumber = 1016071;
         const [{extrinsics}] = await fetchBlocks(api, blockNumber, blockNumber);
 
-        const call = (await processor.transformer(extrinsics[2], baseDS, api, {})) as AcalaEvmCall;
+        const [call] = (await processor.transformer({input: extrinsics[2], ds: baseDS, api})) as [AcalaEvmCall];
 
         expect(call.from).toBe('0x4467a4b51f507083cccbf06dd28097848506d56b');
         expect(call.to).toBe('0x02887684a79593677d7f076c84043b94cbe01fea');
@@ -284,7 +337,7 @@ describe('AcalaDS', () => {
         const blockNumber = 965354;
         const [{extrinsics}] = await fetchBlocks(api, blockNumber, blockNumber);
 
-        const call = (await processor.transformer(extrinsics[2], baseDS, api, {})) as AcalaEvmCall;
+        const [call] = (await processor.transformer({input: extrinsics[2], ds: baseDS, api})) as [AcalaEvmCall];
 
         expect(call.from).toBe('0x70997970c51812dc3a010c7d01b50e0d17dc79c8');
         expect(call.to).toBe('0x29803effe29eb4b24008fd75a6bbcb7a23724888');

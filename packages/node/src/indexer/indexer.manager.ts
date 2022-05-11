@@ -609,7 +609,11 @@ export class IndexerManager {
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
 
-        return processor.filterProcessor(handler.filter, data, ds);
+        return processor.filterProcessor({
+          filter: handler.filter,
+          input: data,
+          ds,
+        });
       });
   }
 
@@ -623,14 +627,17 @@ export class IndexerManager {
     const assets = await this.dsProcessorService.getAssets(ds);
 
     const processor = plugin.handlerProcessors[handler.kind];
-    const transformedExtrinsic = await processor.transformer(
-      data,
+    const transformedData = await processor.transformer({
+      input: data,
       ds,
-      this.api,
+      filter: handler.filter,
+      api: this.api,
       assets,
-    );
+    });
 
-    return vm.securedExec(handler.handler, [transformedExtrinsic]);
+    await Promise.all(
+      transformedData.map((data) => vm.securedExec(handler.handler, [data])),
+    );
   }
 }
 

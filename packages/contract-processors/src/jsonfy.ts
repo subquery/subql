@@ -3,17 +3,17 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {
-  SubqlDatasourceProcessor,
-  SubqlCustomDatasource,
-  SubqlHandlerKind,
-  SubqlNetworkFilter,
-  SubstrateEvent,
-  SubqlEventFilter,
+  SubstrateDatasourceProcessor,
+  SubstrateCustomDatasource,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateEventFilter,
+  SecondLayerHandlerProcessor,
 } from '@subql/types';
 
-export type JsonfyDatasource = SubqlCustomDatasource<'substrate/Jsonfy'>;
+export type JsonfyDatasource = SubstrateCustomDatasource<'substrate/Jsonfy'>;
 
-export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy', SubqlNetworkFilter> = {
+export const JsonfyDatasourcePlugin: SubstrateDatasourceProcessor<'substrate/Jsonfy', SubstrateNetworkFilter> = {
   kind: 'substrate/Jsonfy',
   validate(ds: JsonfyDatasource): void {
     return;
@@ -22,14 +22,22 @@ export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy'
     return true;
   },
   handlerProcessors: {
-    'substrate/JsonfyEvent': {
+    'substrate/JsonfyEvent': <
+      SecondLayerHandlerProcessor<
+        SubstrateHandlerKind.Event,
+        SubstrateEventFilter,
+        Record<string, unknown>,
+        JsonfyDatasource
+      >
+    >{
       baseFilter: [],
-      baseHandlerKind: SubqlHandlerKind.Event,
+      baseHandlerKind: SubstrateHandlerKind.Event,
       // eslint-disable-next-line @typescript-eslint/require-await
-      async transformer(original: SubstrateEvent, ds: JsonfyDatasource): Promise<Record<string, unknown>> {
-        return JSON.parse(JSON.stringify(original.toJSON()));
+      async transformer({input: original}): Promise<[Record<string, unknown>]> {
+        return [JSON.parse(JSON.stringify(original.toJSON()))];
       },
-      filterProcessor(filter: SubqlEventFilter, input: SubstrateEvent, ds: JsonfyDatasource) {
+      filterProcessor({filter, input}) {
+        if (!filter) return true;
         return (
           filter.module &&
           input.event.section === filter.module &&
@@ -37,7 +45,7 @@ export const JsonfyDatasourcePlugin: SubqlDatasourceProcessor<'substrate/Jsonfy'
           input.event.method === filter.method
         );
       },
-      filterValidator(filter: SubqlEventFilter): void {
+      filterValidator(filter: SubstrateEventFilter): void {
         return;
       },
     },

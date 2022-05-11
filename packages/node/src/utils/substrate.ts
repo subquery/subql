@@ -13,9 +13,9 @@ import {
 } from '@polkadot/types/interfaces';
 import {
   SpecVersionRange,
-  SubqlBlockFilter,
-  SubqlCallFilter,
-  SubqlEventFilter,
+  SubstrateBlockFilter,
+  SubstrateCallFilter,
+  SubstrateEventFilter,
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -115,7 +115,7 @@ function checkSpecRange(
 
 export function filterBlock(
   block: SubstrateBlock,
-  filter?: SubqlBlockFilter,
+  filter?: SubstrateBlockFilter,
 ): SubstrateBlock | undefined {
   if (!filter) return block;
   return filter.specVersion === undefined ||
@@ -127,7 +127,7 @@ export function filterBlock(
 
 export function filterExtrinsic(
   { block, extrinsic, success }: SubstrateExtrinsic,
-  filter?: SubqlCallFilter,
+  filter?: SubstrateCallFilter,
 ): boolean {
   if (!filter) return true;
   return (
@@ -144,7 +144,7 @@ export function filterExtrinsic(
 
 export function filterExtrinsics(
   extrinsics: SubstrateExtrinsic[],
-  filterOrFilters: SubqlCallFilter | SubqlCallFilter[] | undefined,
+  filterOrFilters: SubstrateCallFilter | SubstrateCallFilter[] | undefined,
 ): SubstrateExtrinsic[] {
   if (
     !filterOrFilters ||
@@ -161,7 +161,7 @@ export function filterExtrinsics(
 
 export function filterEvent(
   { block, event }: SubstrateEvent,
-  filter?: SubqlEventFilter,
+  filter?: SubstrateEventFilter,
 ): boolean {
   if (!filter) return true;
   return (
@@ -175,7 +175,7 @@ export function filterEvent(
 
 export function filterEvents(
   events: SubstrateEvent[],
-  filterOrFilters?: SubqlEventFilter | SubqlEventFilter[] | undefined,
+  filterOrFilters?: SubstrateEventFilter | SubstrateEventFilter[] | undefined,
 ): SubstrateEvent[] {
   if (
     !filterOrFilters ||

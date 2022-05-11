@@ -4,12 +4,12 @@
 import {Result} from '@ethersproject/abi';
 import {
   SecondLayerHandlerProcessor,
-  SubqlCustomDatasource,
-  SubqlCustomHandler,
-  SubqlDatasourceProcessor,
-  SubqlHandlerKind,
-  SubqlMapping,
-  SubqlNetworkFilter,
+  SubstrateCustomDatasource,
+  SubstrateCustomHandler,
+  SubstrateDatasourceProcessor,
+  SubstrateHandlerKind,
+  SubstrateMapping,
+  SubstrateNetworkFilter,
 } from '@subql/types';
 import FrontierEvmDatasourcePlugin, {
   FrontierEvmCall,
@@ -24,30 +24,30 @@ export type MoonbeamEvent<T extends Result = Result> = FrontierEvmEvent<T>;
 export type MoonbeamEventFilter = FrontierEvmEventFilter;
 export type MoonbeamCallFilter = FrontierEvmCallFilter;
 
-export type MoonbeamDatasource = SubqlCustomDatasource<
+export type MoonbeamDatasource = SubstrateCustomDatasource<
   'substrate/Moonbeam',
-  SubqlNetworkFilter,
-  SubqlMapping<SubqlCustomHandler>,
+  SubstrateNetworkFilter,
+  SubstrateMapping<SubstrateCustomHandler>,
   FrontierEvmProcessorOptions
 >;
 
 type MoonbeamEventSecondLayerHandlerProcessor = SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Event,
+  SubstrateHandlerKind.Event,
   MoonbeamEventFilter,
   MoonbeamEvent,
   MoonbeamDatasource
 >;
 
 type MoonbeamCallSecondLayerHandlerProcessor = SecondLayerHandlerProcessor<
-  SubqlHandlerKind.Call,
+  SubstrateHandlerKind.Call,
   MoonbeamCallFilter,
   MoonbeamCall,
   MoonbeamDatasource
 >;
 
-export const MoonbeamDatasourcePlugin: SubqlDatasourceProcessor<
+export const MoonbeamDatasourcePlugin: SubstrateDatasourceProcessor<
   'substrate/Moonbeam',
-  SubqlNetworkFilter,
+  SubstrateNetworkFilter,
   MoonbeamDatasource
 > = {
   kind: 'substrate/Moonbeam',

@@ -109,7 +109,7 @@ export class DsProcessorService {
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
       } catch (e) {
-        logger.error(`not supported ds @${ds.kind}`);
+        logger.error(e, `not supported ds @${ds.kind}`);
         throw e;
       }
     }
