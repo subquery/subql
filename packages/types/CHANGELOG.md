@@ -9,6 +9,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-11
+- Major release
+
 ## [0.15.0] - 2022-05-02
 ### Changed
 - Update polkadot 8.2.1 (#910)

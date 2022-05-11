@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "0.16.1",
+  "version": "1.0.0",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
