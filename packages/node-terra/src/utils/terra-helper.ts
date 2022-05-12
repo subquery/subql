@@ -40,14 +40,20 @@ export function filterMessageData(
 
   if (
     filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
-    filter.contractCall &&
-    typeof (data.msg as MsgExecuteContract).execute_msg === 'object' &&
-    !(
-      filter.contractCall in
-      ((data.msg as MsgExecuteContract).execute_msg as object)
-    )
+    filter.contractCall
   ) {
-    return false;
+    const execute_msg = (data.msg as MsgExecuteContract).execute_msg;
+    if (
+      typeof execute_msg === 'object' &&
+      !(filter.contractCall in execute_msg)
+    ) {
+      return false;
+    } else if (
+      typeof execute_msg === 'string' &&
+      execute_msg !== filter.contractCall
+    ) {
+      return false;
+    }
   }
   return true;
 }
