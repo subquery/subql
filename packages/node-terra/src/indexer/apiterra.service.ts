@@ -4,13 +4,20 @@
 import http from 'http';
 import https from 'https';
 import { Injectable } from '@nestjs/common';
+import { ISafeWasmApi, ITerraSafeApi } from '@subql/types-terra';
 import {
+  AccAddress,
   BlockInfo,
+  CodeInfo,
+  ContractInfo,
   hashToHex,
   LCDClient,
   LCDClientConfig,
   TxInfo,
+  WasmAPI,
+  WasmParams,
 } from '@terra-money/terra.js';
+import { APIParams } from '@terra-money/terra.js/dist/client/lcd/APIRequester';
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryTerraProject } from '../configure/terraproject.model';
@@ -18,6 +25,7 @@ import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { argv } from '../yargs';
 import { NetworkMetadataPayload } from './events';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -75,6 +83,16 @@ export class ApiTerraService {
     return this;
   }
 
+  getSafeApi(height): TerraSafeApi {
+    const api = new TerraSafeApi(
+      this.api.lcdConnection,
+      height,
+      this.api.mantlemintHealthOK,
+      this.api.mantlemintConnection,
+    );
+    return api;
+  }
+
   getApi(): TerraClient {
     return this.api;
   }
@@ -83,8 +101,8 @@ export class ApiTerraService {
 export class TerraClient {
   mantlemintHealthOK = false;
 
-  private _lcdConnection: AxiosInstance;
-  private _mantlemintConnection: AxiosInstance;
+  lcdConnection: AxiosInstance;
+  mantlemintConnection: AxiosInstance;
 
   constructor(
     private readonly baseApi: LCDClient,
@@ -95,7 +113,7 @@ export class TerraClient {
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 
-    this._lcdConnection = axios.create({
+    this.lcdConnection = axios.create({
       httpAgent,
       httpsAgent,
       timeout: argv('node-timeout') as number,
@@ -107,7 +125,7 @@ export class TerraClient {
     });
 
     if (this.mantlemintURL) {
-      this._mantlemintConnection = axios.create({
+      this.mantlemintConnection = axios.create({
         baseURL: this.mantlemintURL,
         headers: {
           Accept: 'application/json',
@@ -123,7 +141,7 @@ export class TerraClient {
   }
 
   async nodeInfo(): Promise<any> {
-    const { data } = await this._lcdConnection.get(
+    const { data } = await this.lcdConnection.get(
       `/cosmos/base/tendermint/v1beta1/node_info`,
       this.params,
     );
@@ -136,7 +154,7 @@ export class TerraClient {
     }
 
     try {
-      const { data } = await this._lcdConnection.get(
+      const { data } = await this.lcdConnection.get(
         `/cosmos/base/tendermint/v1beta1/blocks/${height ?? 'latest'}`,
         this.params,
       );
@@ -154,7 +172,7 @@ export class TerraClient {
 
   async txInfo(hash: string): Promise<TxInfo> {
     try {
-      const { data } = await this._lcdConnection.get(
+      const { data } = await this.lcdConnection.get(
         `/cosmos/tx/v1beta1/txs/${hashToHex(hash)}`,
         this.params,
       );
@@ -185,17 +203,17 @@ export class TerraClient {
   }
 
   async mantlemintHealthCheck(): Promise<boolean> {
-    if (!this.mantlemintURL || !this._mantlemintConnection) {
+    if (!this.mantlemintURL || !this.mantlemintConnection) {
       return false;
     }
 
-    const { data } = await this._mantlemintConnection.get('/health');
+    const { data } = await this.mantlemintConnection.get('/health');
     return data === 'OK';
   }
 
   async blockInfoMantlemint(height?: number): Promise<BlockInfo> {
     try {
-      const { data } = await this._mantlemintConnection.get(
+      const { data } = await this.mantlemintConnection.get(
         `/index/blocks/${height}`,
       );
       return data;
@@ -213,7 +231,7 @@ export class TerraClient {
   }
 
   async txsByHeightMantlemint(height: string): Promise<TxInfo[]> {
-    const { data } = await this._mantlemintConnection.get(
+    const { data } = await this.mantlemintConnection.get(
       `/index/tx/by_height/${height}`,
     );
     // Changes are to cover minor differences between mantlemint and LCD
@@ -231,5 +249,79 @@ export class TerraClient {
   get LCDClient(): LCDClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
+  }
+}
+
+export class TerraSafeApi implements ITerraSafeApi {
+  preferredConnection: AxiosInstance;
+  wasm: SafeWasmApi;
+  constructor(
+    private _lcdConnection: AxiosInstance,
+    private height: number,
+    mantlmintHealthOK: boolean,
+    private _mantlemintConnection?: AxiosInstance,
+  ) {
+    this.preferredConnection = mantlmintHealthOK
+      ? this._mantlemintConnection
+      : this._lcdConnection;
+    this.wasm = new SafeWasmApi(this.preferredConnection, this.height);
+  }
+}
+
+class SafeWasmApi {
+  constructor(
+    private preferredConnection: AxiosInstance,
+    private height: number,
+  ) {}
+  async codeInfo(codeID: number): Promise<CodeInfo> {
+    const { data } = await this.preferredConnection.get(
+      `/terra/wasm/v1beta1/codes/${codeID}`,
+    );
+    return <CodeInfo>{
+      code_id: Number.parseInt(data.code_info.code_id),
+      code_hash: data.code_info.code_hash,
+      creator: data.code_info.creator,
+    };
+  }
+
+  async contractInfo(contractAddress: string): Promise<ContractInfo> {
+    const { data } = await this.preferredConnection.get(
+      `/terra/wasm/v1beta1/contracts/${contractAddress}`,
+    );
+    return <ContractInfo>{
+      code_id: Number.parseInt(data.contract_info.code_id),
+      address: data.contract_info.address,
+      creator: data.contract_info.creator,
+      admin:
+        data.contract_info.admin !== '' ? data.contract_info.admin : undefined,
+      init_msg: data.contract_info.init_msg,
+    };
+  }
+
+  async contractQuery<T>(contractAddress: string, query: Object): Promise<T> {
+    const { data } = await this.preferredConnection.get(
+      `/terra/wasm/v1beta1/contracts/${contractAddress}/store`,
+      {
+        params: {
+          height: this.height,
+          query_msg: Buffer.from(JSON.stringify(query), 'utf-8').toString(
+            'base64',
+          ),
+        },
+      },
+    );
+    return data.query_result;
+  }
+
+  async parameters(params: APIParams = {}): Promise<WasmParams> {
+    const { data } = await this.preferredConnection.get(
+      `/terra/wasm/v1beta1/params`,
+      params,
+    );
+    return <WasmParams>{
+      max_contract_size: Number.parseInt(data.max_contract_size),
+      max_contract_gas: Number.parseInt(data.max_contract_gas),
+      max_contract_msg_size: Number.parseInt(data.max_contract_msg_size),
+    };
   }
 }

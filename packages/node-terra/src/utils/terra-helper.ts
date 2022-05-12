@@ -16,6 +16,7 @@ import {
   TxInfo,
   TxLog,
 } from '@terra-money/terra.js';
+import { strict } from 'yargs';
 import { TerraClient } from '../indexer/apiterra.service';
 import { TerraBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -39,10 +40,20 @@ export function filterMessageData(
 
   if (
     filter.type === '/terra.wasm.v1beta1.MsgExecuteContract' &&
-    filter.contractCall &&
-    !(filter.contractCall in (data.msg as MsgExecuteContract).execute_msg)
+    filter.contractCall
   ) {
-    return false;
+    const execute_msg = (data.msg as MsgExecuteContract).execute_msg;
+    if (
+      typeof execute_msg === 'object' &&
+      !(filter.contractCall in execute_msg)
+    ) {
+      return false;
+    } else if (
+      typeof execute_msg === 'string' &&
+      execute_msg !== filter.contractCall
+    ) {
+      return false;
+    }
   }
   return true;
 }
