@@ -30,6 +30,7 @@ export const JsonfyDatasourcePlugin: SubstrateDatasourceProcessor<'substrate/Jso
         JsonfyDatasource
       >
     >{
+      specVersion: '1.0.0',
       baseFilter: [],
       baseHandlerKind: SubstrateHandlerKind.Event,
       // eslint-disable-next-line @typescript-eslint/require-await
