@@ -34,7 +34,11 @@ import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { DsProcessorService } from './ds-processor.service';
+import {
+  asSecondLayerHandlerProcessor_1_0_0,
+  DsProcessorService,
+  isSecondLayerHandlerProcessor_0_0_0,
+} from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
@@ -607,13 +611,20 @@ export class IndexerManager {
         return false;
       })
       .filter((handler) => {
-        const processor = plugin.handlerProcessors[handler.kind];
+        const processor = asSecondLayerHandlerProcessor_1_0_0(
+          plugin.handlerProcessors[handler.kind],
+        );
 
-        return processor.filterProcessor({
-          filter: handler.filter,
-          input: data,
-          ds,
-        });
+        try {
+          return processor.filterProcessor({
+            filter: handler.filter,
+            input: data,
+            ds,
+          });
+        } catch (e) {
+          logger.error(e, 'Failed to run ds processer filter.');
+          throw e;
+        }
       });
   }
 
@@ -626,14 +637,22 @@ export class IndexerManager {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
 
-    const processor = plugin.handlerProcessors[handler.kind];
-    const transformedData = await processor.transformer({
-      input: data,
-      ds,
-      filter: handler.filter,
-      api: this.api,
-      assets,
-    });
+    const processor = asSecondLayerHandlerProcessor_1_0_0(
+      plugin.handlerProcessors[handler.kind],
+    );
+
+    const transformedData = await processor
+      .transformer({
+        input: data,
+        ds,
+        filter: handler.filter,
+        api: this.api,
+        assets,
+      })
+      .catch((e) => {
+        logger.error(e, 'Failed to transform data with ds processor.');
+        throw e;
+      });
 
     await Promise.all(
       transformedData.map((data) => vm.securedExec(handler.handler, [data])),

@@ -14,11 +14,11 @@ import {
   SubstrateCustomDatasource,
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
-  SecondLayerHandlerProcessor,
   SubstrateExtrinsic,
   SubstrateCustomHandler,
   SubstrateMapping,
   DictionaryQueryEntry,
+  SecondLayerHandlerProcessor_1_0_0,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
 import {
@@ -178,12 +178,13 @@ function buildInterface(ds: FrontierEvmDatasource, assets?: Record<string, strin
   return contractInterfaces[abi];
 }
 
-const EventProcessor: SecondLayerHandlerProcessor<
+const EventProcessor: SecondLayerHandlerProcessor_1_0_0<
   SubstrateHandlerKind.Event,
   FrontierEvmEventFilter,
   FrontierEvmEvent,
   FrontierEvmDatasource
 > = {
+  specVersion: '1.0.0',
   baseFilter: [{module: 'evm', method: 'Log'}],
   baseHandlerKind: SubstrateHandlerKind.Event,
   async transformer({api, assets, ds, input: original}): Promise<[FrontierEvmEvent]> {
@@ -288,12 +289,13 @@ const EventProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-const CallProcessor: SecondLayerHandlerProcessor<
+const CallProcessor: SecondLayerHandlerProcessor_1_0_0<
   SubstrateHandlerKind.Call,
   FrontierEvmCallFilter,
   FrontierEvmCall,
   FrontierEvmDatasource
 > = {
+  specVersion: '1.0.0',
   baseFilter: [{module: 'ethereum', method: 'transact'}],
   baseHandlerKind: SubstrateHandlerKind.Call,
   async transformer({api, assets, ds, input: original}): Promise<[FrontierEvmCall]> {

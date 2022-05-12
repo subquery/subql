@@ -4,9 +4,20 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {getLogger} from '@subql/node/src/utils/logger';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
-import {SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
+import {
+  SecondLayerHandlerProcessor_1_0_0,
+  SubstrateEvent,
+  SubstrateExtrinsic,
+  SubstrateHandlerKind,
+} from '@subql/types';
 import {typesBundleDeprecated} from 'moonbeam-types-bundle';
-import FrontierEvmDatasourcePlugin, {FrontierEvmCall, FrontierEvmDatasource, FrontierEvmEvent} from './frontierEvm';
+import FrontierEvmDatasourcePlugin, {
+  FrontierEvmCall,
+  FrontierEvmCallFilter,
+  FrontierEvmDatasource,
+  FrontierEvmEvent,
+  FrontierEvmEventFilter,
+} from './frontierEvm';
 
 const erc20MiniAbi = `[
     {
@@ -195,7 +206,14 @@ describe('FrontierDS', () => {
 
   describe('FilterProcessor', () => {
     describe('FrontierEvmEvent', () => {
-      const processor = FrontierEvmDatasourcePlugin.handlerProcessors['substrate/FrontierEvmEvent'];
+      const processor = FrontierEvmDatasourcePlugin.handlerProcessors[
+        'substrate/FrontierEvmEvent'
+      ] as SecondLayerHandlerProcessor_1_0_0<
+        SubstrateHandlerKind.Event,
+        any /*FrontierEvmEventFilter*/, // Disable to fix compiler error, tests don't have strictNullChecks enabled
+        FrontierEvmEvent,
+        FrontierEvmDatasource
+      >;
       let log: SubstrateEvent;
 
       beforeAll(async () => {
@@ -207,9 +225,11 @@ describe('FrontierDS', () => {
       it('filters just a matching address', () => {
         expect(
           processor.filterProcessor({
-            filter: {address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'},
+            filter: {},
             input: log,
-            ds: {} as FrontierEvmDatasource,
+            ds: {
+              processor: {options: {address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'}},
+            } as FrontierEvmDatasource,
           })
         ).toBeTruthy();
       });
@@ -334,7 +354,14 @@ describe('FrontierDS', () => {
     });
 
     describe('FrontierEvmCall', () => {
-      const processor = FrontierEvmDatasourcePlugin.handlerProcessors['substrate/FrontierEvmCall'];
+      const processor = FrontierEvmDatasourcePlugin.handlerProcessors[
+        'substrate/FrontierEvmCall'
+      ] as SecondLayerHandlerProcessor_1_0_0<
+        SubstrateHandlerKind.Call,
+        FrontierEvmCallFilter,
+        FrontierEvmCall,
+        FrontierEvmDatasource
+      >;
 
       let transaction: SubstrateExtrinsic;
 
@@ -483,7 +510,14 @@ describe('FrontierDS', () => {
     };
 
     describe('FrontierEvmEvents', () => {
-      const processor = FrontierEvmDatasourcePlugin.handlerProcessors['substrate/FrontierEvmEvent'];
+      const processor = FrontierEvmDatasourcePlugin.handlerProcessors[
+        'substrate/FrontierEvmEvent'
+      ] as SecondLayerHandlerProcessor_1_0_0<
+        SubstrateHandlerKind.Event,
+        FrontierEvmEventFilter,
+        FrontierEvmEvent,
+        FrontierEvmDatasource
+      >;
 
       it('can transform an event', async () => {
         // https://moonriver.subscan.io/block/717200
@@ -519,7 +553,14 @@ describe('FrontierDS', () => {
     });
 
     describe('FrontierEvmCalls', () => {
-      const processor = FrontierEvmDatasourcePlugin.handlerProcessors['substrate/FrontierEvmCall'];
+      const processor = FrontierEvmDatasourcePlugin.handlerProcessors[
+        'substrate/FrontierEvmCall'
+      ] as SecondLayerHandlerProcessor_1_0_0<
+        SubstrateHandlerKind.Call,
+        FrontierEvmCallFilter,
+        FrontierEvmCall,
+        FrontierEvmDatasource
+      >;
 
       it('can transform a contract tx', async () => {
         // https://moonriver.subscan.io/block/717200

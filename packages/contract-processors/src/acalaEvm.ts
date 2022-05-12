@@ -16,11 +16,11 @@ import {
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
   SubstrateEvent,
-  SecondLayerHandlerProcessor,
   SubstrateExtrinsic,
   SubstrateCustomHandler,
   SubstrateMapping,
   DictionaryQueryEntry,
+  SecondLayerHandlerProcessor_1_0_0,
 } from '@subql/types';
 import {plainToClass} from 'class-transformer';
 import {
@@ -192,12 +192,13 @@ function findLogs(filter: AcalaEvmEventFilter | undefined, input: SubstrateEvent
   return receipt.logs.filter((log) => logMatchesTopics(log, filter.topics));
 }
 
-const EventProcessor: SecondLayerHandlerProcessor<
+const EventProcessor: SecondLayerHandlerProcessor_1_0_0<
   SubstrateHandlerKind.Event,
   AcalaEvmEventFilter,
   AcalaEvmEvent,
   AcalaEvmDatasource
 > = {
+  specVersion: '1.0.0',
   baseFilter: [{module: 'evm', method: 'Executed'}], // TODO executed failed
   baseHandlerKind: SubstrateHandlerKind.Event,
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -279,12 +280,13 @@ const EventProcessor: SecondLayerHandlerProcessor<
   },
 };
 
-const CallProcessor: SecondLayerHandlerProcessor<
+const CallProcessor: SecondLayerHandlerProcessor_1_0_0<
   SubstrateHandlerKind.Call,
   AcalaEvmCallFilter,
   AcalaEvmCall,
   AcalaEvmDatasource
 > = {
+  specVersion: '1.0.0',
   baseFilter: [{module: 'evm', method: 'ethCall'}],
   baseHandlerKind: SubstrateHandlerKind.Call,
   // eslint-disable-next-line @typescript-eslint/require-await

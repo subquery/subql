@@ -5,9 +5,20 @@
 import {ApiPromise, WsProvider} from '@polkadot/api';
 import {getLogger} from '@subql/node/src/utils/logger';
 import {fetchBlocks} from '@subql/node/src/utils/substrate';
-import {SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
+import {
+  SecondLayerHandlerProcessor_1_0_0,
+  SubstrateEvent,
+  SubstrateExtrinsic,
+  SubstrateHandlerKind,
+} from '@subql/types';
 
-import AcalaEvmDatasourcePlugin, {AcalaEvmCall, AcalaEvmDatasource, AcalaEvmEvent} from './acalaEvm';
+import AcalaEvmDatasourcePlugin, {
+  AcalaEvmCall,
+  AcalaEvmCallFilter,
+  AcalaEvmDatasource,
+  AcalaEvmEvent,
+  AcalaEvmEventFilter,
+} from './acalaEvm';
 
 const baseDS: AcalaEvmDatasource = {
   kind: 'substrate/AcalaEvm',
@@ -43,7 +54,14 @@ describe('AcalaDS', () => {
   });
 
   describe('AcalaEvmEvent', () => {
-    const processor = AcalaEvmDatasourcePlugin.handlerProcessors['substrate/AcalaEvmEvent'];
+    const processor = AcalaEvmDatasourcePlugin.handlerProcessors[
+      'substrate/AcalaEvmEvent'
+    ] as SecondLayerHandlerProcessor_1_0_0<
+      SubstrateHandlerKind.Event,
+      any /*AcalaEvmEventFilter*/, // Disable to fix compiler error, tests don't have strictNullChecks enabled
+      AcalaEvmEvent,
+      AcalaEvmDatasource
+    >;
 
     describe('Filtering', () => {
       let event: SubstrateEvent;
@@ -233,7 +251,14 @@ describe('AcalaDS', () => {
   });
 
   describe('AcalaEvmCall', () => {
-    const processor = AcalaEvmDatasourcePlugin.handlerProcessors['substrate/AcalaEvmCall'];
+    const processor = AcalaEvmDatasourcePlugin.handlerProcessors[
+      'substrate/AcalaEvmCall'
+    ] as SecondLayerHandlerProcessor_1_0_0<
+      SubstrateHandlerKind.Call,
+      AcalaEvmCallFilter,
+      AcalaEvmCall,
+      AcalaEvmDatasource
+    >;
 
     describe('Filtering', () => {
       let extrinsic: SubstrateExtrinsic;

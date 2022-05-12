@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-substrate/project/versioned';
-import {gte} from 'semver';
 import {
   SecondLayerHandlerProcessor,
   SubstrateCustomDatasource,
@@ -12,6 +11,7 @@ import {
   SubstrateNetworkFilter,
   SubstrateRuntimeDatasource,
 } from '@subql/types';
+import {gte} from 'semver';
 
 export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
