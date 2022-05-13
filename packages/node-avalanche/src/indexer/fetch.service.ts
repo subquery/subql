@@ -7,10 +7,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
   isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_0_1,
   isCustomDs,
   isRuntimeDs,
-  isRuntimeDataSourceV0_3_0,
   SubstrateDataSource,
   SubstrateHandler,
   SubstrateHandlerKind,
@@ -23,12 +21,11 @@ import {
   IndexerEvent,
 } from '@subql/common-node';
 import {
-  SubqlCallFilter,
-  SubqlEventFilter,
-  SubqlHandlerFilter,
   DictionaryQueryEntry,
   ApiWrapper,
   BlockWrapper,
+  AvalancheEventFilter,
+  AvalancheCallFilter,
 } from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -50,30 +47,52 @@ const MINIMUM_BATCH_SIZE = 5;
 const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
-  filter: SubqlEventFilter,
+  filter: AvalancheEventFilter,
 ): DictionaryQueryEntry {
+  const conditions = [];
+  if (filter.address) {
+    conditions.push({
+      field: 'address',
+      value: filter.address,
+    });
+  }
+  if (filter.topics) {
+    conditions.push({
+      field: 'topics',
+      value: filter.topics,
+    });
+  }
   return {
     entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'event',
-        value: filter.method,
-      },
-    ],
+    conditions,
   };
 }
 
-function callFilterToQueryEntry(filter: SubqlCallFilter): DictionaryQueryEntry {
+function callFilterToQueryEntry(
+  filter: AvalancheCallFilter,
+): DictionaryQueryEntry {
+  const conditions = [];
+  if (filter.from) {
+    conditions.push({
+      field: 'from',
+      value: filter.from,
+    });
+  }
+  if (filter.to) {
+    conditions.push({
+      field: 'to',
+      value: filter.to,
+    });
+  }
+  if (filter.function) {
+    conditions.push({
+      field: 'function',
+      value: filter.function,
+    });
+  }
   return {
-    entity: 'extrinsics',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'call',
-        value: filter.method,
-      },
-    ],
+    entity: 'transactions',
+    conditions,
   };
 }
 
@@ -144,13 +163,8 @@ export class FetchService implements OnApplicationShutdown {
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter(
-      (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.getSpecName(),
+    const dataSources = this.project.dataSources.filter((ds) =>
+      isRuntimeDataSourceV0_2_0(ds),
     );
     for (const ds of dataSources) {
       const plugin = isCustomDs(ds)
@@ -158,7 +172,7 @@ export class FetchService implements OnApplicationShutdown {
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubqlHandlerFilter[];
+        let filterList: SubstrateRuntimeHandlerFilter[];
         if (isCustomDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
@@ -168,10 +182,11 @@ export class FetchService implements OnApplicationShutdown {
               continue;
             }
           }
-          filterList = this.getBaseHandlerFilters<SubqlHandlerFilter>(
-            ds,
-            handler.kind,
-          );
+          filterList =
+            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
+              ds,
+              handler.kind,
+            );
         } else {
           filterList = [handler.filter];
         }
@@ -181,8 +196,12 @@ export class FetchService implements OnApplicationShutdown {
           case SubstrateHandlerKind.Block:
             return [];
           case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as SubqlCallFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+            for (const filter of filterList as AvalancheCallFilter[]) {
+              if (
+                filter.from !== undefined ||
+                filter.to !== undefined ||
+                filter.function
+              ) {
                 queryEntries.push(callFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -191,8 +210,8 @@ export class FetchService implements OnApplicationShutdown {
             break;
           }
           case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as SubqlEventFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+            for (const filter of filterList as AvalancheEventFilter[]) {
+              if (filter.address || filter.topics) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -351,8 +370,6 @@ export class FetchService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
-          //TODO
-          // const specVersionMap = dictionary.specVersions;
           if (
             dictionary &&
             this.dictionaryValidation(dictionary, startBlockHeight)
@@ -477,7 +494,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
+  private getBaseHandlerFilters<T>(
     ds: SubstrateDataSource,
     handlerKind: string,
   ): T[] {
