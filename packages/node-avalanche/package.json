@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-avalanche",
-  "version": "0.0.5-3",
+  "version": "0.0.5-4",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -74,5 +74,5 @@
     "/dist",
     "/bin"
   ],
-  "stableVersion": "0.0.5-2"
+  "stableVersion": "0.0.5-3"
 }
