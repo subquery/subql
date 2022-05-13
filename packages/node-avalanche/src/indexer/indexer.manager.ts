@@ -6,7 +6,10 @@ import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { SubstrateRuntimeDataSource, SubstrateHandlerKind } from '@subql/common-avalanche';
+import {
+  SubstrateRuntimeDataSource,
+  SubstrateHandlerKind,
+} from '@subql/common-avalanche';
 import {
   ApiService,
   getLogger,
@@ -431,7 +434,7 @@ export class IndexerManager {
     for (const handler of ds.mapping.handlers) {
       switch (handler.kind) {
         case SubstrateHandlerKind.Block:
-          await vm.securedExec(handler.handler, [blockContent.block]);
+          await vm.securedExec(handler.handler, [blockContent]);
           break;
         case SubstrateHandlerKind.Call: {
           let filteredCalls = blockContent.calls(handler.filter, ds);

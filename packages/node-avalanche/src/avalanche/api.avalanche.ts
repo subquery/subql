@@ -157,7 +157,6 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
         block.size = parseInt(block.size, 16);
         block.timestamp = parseInt(block.timestamp, 16);
         block.totalDifficulty = parseInt(block.totalDifficulty, 16);
-        console.log(block);
         const logs = (await logs_promise).data.result;
         return new AvalancheBlockWrapped(block, logs);
       }),

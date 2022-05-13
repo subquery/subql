@@ -21,8 +21,6 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 export type Dictionary = {
   _metadata: MetaData;
   batchBlocks: number[];
-  //TODO
-  // specVersions: number[];
 };
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
@@ -149,23 +147,13 @@ export class DictionaryService implements OnApplicationShutdown {
         variables,
       });
       const blockHeightSet = new Set<number>();
-      const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
-        if (
-          entity !== 'specVersions' &&
-          entity !== '_metadata' &&
-          resp.data[entity].nodes.length >= 0
-        ) {
+        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
-            entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
+            entityEndBlock[entity] = Number(node.blockHeight);
           }
-        }
-      }
-      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
-        for (const node of resp.data.specVersions.nodes) {
-          specVersionBlockHeightSet.add(Number(node.blockHeight));
         }
       }
       const _metadata = resp.data._metadata;
@@ -177,8 +165,6 @@ export class DictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
-      //TODO
-      // const specVersions = Array.from(specVersionBlockHeightSet);
       return {
         _metadata,
         batchBlocks,
@@ -209,15 +195,6 @@ export class DictionaryService implements OnApplicationShutdown {
       {
         entity: '_metadata',
         project: ['lastProcessedHeight', 'genesisHash'],
-      },
-      {
-        entity: 'specVersions',
-        project: [
-          {
-            entity: 'nodes',
-            project: ['id', 'blockHeight'],
-          },
-        ],
       },
     ];
     for (const entity of Object.keys(mapped)) {
