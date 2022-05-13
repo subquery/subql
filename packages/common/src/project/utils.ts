@@ -44,8 +44,8 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   return project;
 }
 
-export function validateSemver(current: string, required: string) {
-  return satisfies(current, required);
+export function validateSemver(current: string, required: string): boolean {
+  return satisfies(current, required, {includePrerelease: true});
 }
 
 export class SemverVersionValidator implements ValidatorConstraintInterface {
