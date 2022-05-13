@@ -18,6 +18,7 @@ import {
   SubqlCosmosMessageFilter,
   SubqlCosmosTransactionHandler,
   SubqlCosmosMessageHandler,
+  CustomModule,
 } from '@subql/types-cosmos';
 
 import {plainToClass, Transform, Type} from 'class-transformer';
@@ -130,11 +131,22 @@ export class CosmosRuntimeDataSourceBase<M extends SubqlCosmosMapping<SubqlCosmo
   mapping: M;
   @IsInt()
   startBlock: number;
+  @Type(() => CosmosCustomModuleImpl)
+  @ValidateNested({each: true})
+  chainTypes: Map<string, CustomModule>;
 }
 
 export class CosmosFileReferenceImpl implements FileReference {
   @IsString()
   file: string;
+}
+
+export class CosmosCustomModuleImpl implements CustomModule {
+  @IsString()
+  file: string;
+  @IsArray()
+  @Type(() => String)
+  messages: string[];
 }
 
 export class CosmosCustomDataSourceBase<
@@ -157,4 +169,7 @@ export class CosmosCustomDataSourceBase<
   @Type(() => CosmosFileReferenceImpl)
   @IsObject()
   processor?: FileReference;
+  @Type(() => CosmosCustomModuleImpl)
+  @ValidateNested({each: true})
+  chainTypes: Map<string, CustomModule>;
 }

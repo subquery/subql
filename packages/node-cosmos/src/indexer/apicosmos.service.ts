@@ -1,9 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import http from 'http';
-import https from 'https';
-import { Registry } from '@cosmjs/proto-signing';
+import path from 'path';
+import { GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
@@ -12,14 +11,16 @@ import {
   defaultRegistryTypes,
 } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { Client } from 'pg';
-import { textChangeRangeIsUnchanged } from 'typescript';
-import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
+
+import { load } from 'protobufjs';
+import {
+  SubqlCosmosProjectDs,
+  SubqueryCosmosProject,
+} from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
 import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
-import { argv } from '../yargs';
+
+import { CosmosDsProcessorService } from './cosmosds-processor.service';
 import { NetworkMetadataPayload } from './events';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -31,7 +32,7 @@ export class ApiCosmosService {
   private api: CosmosClient;
   private clientConfig: StargateClientOptions;
   networkMeta: NetworkMetadataPayload;
-
+  dsProcessor: CosmosDsProcessorService;
   constructor(
     protected project: SubqueryCosmosProject,
     private nodeConfig: NodeConfig,
@@ -43,6 +44,12 @@ export class ApiCosmosService {
     const client = await StargateClient.connect(network.endpoint);
 
     const registry = new Registry(defaultRegistryTypes);
+    for (const ds of this.project.dataSources) {
+      const chaintypes = await this.getChainType(ds);
+      for (const typeurl in chaintypes) {
+        registry.register(typeurl, chaintypes[typeurl]);
+      }
+    }
     this.api = new CosmosClient(client, registry);
 
     this.networkMeta = {
@@ -65,6 +72,30 @@ export class ApiCosmosService {
 
   getApi(): CosmosClient {
     return this.api;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getChainType(
+    ds: SubqlCosmosProjectDs,
+  ): Promise<Record<string, GeneratedType>> {
+    if (!ds.chainTypes) {
+      return {};
+    }
+
+    const res: Record<string, GeneratedType> = {};
+    for (const packages of ds.chainTypes) {
+      const packageName = packages[0];
+      const file = packages[1].file;
+      const messages = packages[1].messages;
+      load(path.join(this.project.root, file), function (err, root) {
+        if (err) throw err;
+        for (const msg of messages) {
+          const msgObj = root.lookupType(`${packageName}.${msg}`);
+          res[`/${packageName}.${msg}`] = msgObj;
+        }
+      });
+    }
+    return res;
   }
 }
 

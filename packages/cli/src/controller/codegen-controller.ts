@@ -29,6 +29,8 @@ const ENUM_TEMPLATE_PATH = path.resolve(__dirname, '../template/enum.ts.ejs');
 const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/datasource-templates.ts.ejs');
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
+const CODEC_OUT_DIR = 'src/codec';
+
 const exportTypes = {
   models: false,
   interfaces: false,

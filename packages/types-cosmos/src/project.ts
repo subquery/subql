@@ -8,6 +8,11 @@ export interface FileReference {
   file: string;
 }
 
+export interface CustomModule {
+  file: string;
+  messages: string[];
+}
+
 export type CustomDataSourceAsset = FileReference;
 
 export type Processor<O = any> = FileReference & {options?: O};
@@ -124,6 +129,7 @@ export interface SubqlCosmosRuntimeDatasource<
   M extends SubqlCosmosMapping<SubqlCosmosRuntimeHandler> = SubqlCosmosMapping<SubqlCosmosRuntimeHandler>
 > extends ISubqlCosmosDatasource<M> {
   kind: SubqlCosmosDatasourceKind.Runtime;
+  chainTypes: Map<string, CustomModule>;
 }
 
 export type SubqlCosmosDatasource = SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource;
@@ -137,6 +143,7 @@ export interface SubqlCosmosCustomDatasource<
 > extends ISubqlCosmosDatasource<M> {
   kind: K;
   assets: Map<string, CustomCosmosDataSourceAsset>;
+  chainTypes: Map<string, CustomModule>;
   processor?: Processor<O>;
 }
 

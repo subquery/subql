@@ -15,7 +15,7 @@
     "/dist"
   ],
   "peerDependencies": {
-    "@cosmjs/stargate": "latest'"
+    "@cosmjs/stargate": "*"
   },
   "devDependencies": {
     "@types/app-module-path": "^2.2.0"

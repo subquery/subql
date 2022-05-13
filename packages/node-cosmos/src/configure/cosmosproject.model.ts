@@ -13,13 +13,17 @@ import {
   parseCosmosProjectManifest,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-cosmos';
-import { SubqlCosmosDatasource } from '@subql/types-cosmos';
+import {
+  CustomDataSourceAsset,
+  SubqlCosmosDatasource,
+} from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
 
 export type SubqlCosmosProjectDs = SubqlCosmosDatasource & {
   mapping: SubqlCosmosDatasource['mapping'] & { entryScript: string };
+  chainTypes: SubqlCosmosDatasource['chainTypes'];
 };
 
 export type SubqlProjectDsTemplate = Omit<
@@ -37,7 +41,6 @@ export class SubqueryCosmosProject {
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
   runner?: RunnerSpecs;
-
   static async create(
     path: string,
     networkOverrides?: Partial<CosmosProjectNetworkConfig>,
