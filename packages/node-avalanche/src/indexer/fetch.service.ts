@@ -6,7 +6,6 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
-  isRuntimeDataSourceV0_2_0,
   isCustomDs,
   isRuntimeDs,
   SubstrateDataSource,
@@ -32,6 +31,7 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
+import { eventToTopic, functionToSighash } from '../utils/string';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -53,17 +53,21 @@ function eventFilterToQueryEntry(
   if (filter.address) {
     conditions.push({
       field: 'address',
-      value: filter.address,
+      value: filter.address.toLowerCase(),
     });
   }
   if (filter.topics) {
-    conditions.push({
-      field: 'topics',
-      value: filter.topics,
-    });
+    for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
+      const topic = filter.topics[i];
+      if (!topic) {
+        continue;
+      }
+      const field = `topics${i}`;
+      conditions.push({ field, value: eventToTopic(topic) });
+    }
   }
   return {
-    entity: 'events',
+    entity: 'evmLogs',
     conditions,
   };
 }
@@ -75,23 +79,23 @@ function callFilterToQueryEntry(
   if (filter.from) {
     conditions.push({
       field: 'from',
-      value: filter.from,
+      value: filter.from.toLowerCase(),
     });
   }
   if (filter.to) {
     conditions.push({
       field: 'to',
-      value: filter.to,
+      value: filter.to.toLowerCase(),
     });
   }
   if (filter.function) {
     conditions.push({
-      field: 'function',
-      value: filter.function,
+      field: 'func',
+      value: functionToSighash(filter.function),
     });
   }
   return {
-    entity: 'transactions',
+    entity: 'evmTransactions',
     conditions,
   };
 }
@@ -163,36 +167,14 @@ export class FetchService implements OnApplicationShutdown {
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter((ds) =>
-      isRuntimeDataSourceV0_2_0(ds),
-    );
+    const dataSources = this.project.dataSources;
     for (const ds of dataSources) {
-      const plugin = isCustomDs(ds)
-        ? this.dsProcessorService.getDsProcessor(ds)
-        : undefined;
       for (const handler of ds.mapping.handlers) {
-        const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
         let filterList: SubstrateRuntimeHandlerFilter[];
-        if (isCustomDs(ds)) {
-          const processor = plugin.handlerProcessors[handler.kind];
-          if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(handler.filter, ds);
-            if (queryEntry) {
-              queryEntries.push(queryEntry);
-              continue;
-            }
-          }
-          filterList =
-            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
-              ds,
-              handler.kind,
-            );
-        } else {
-          filterList = [handler.filter];
-        }
+        filterList = [handler.filter];
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
-        switch (baseHandlerKind) {
+        switch (handler.kind) {
           case SubstrateHandlerKind.Block:
             return [];
           case SubstrateHandlerKind.Call: {
@@ -473,39 +455,5 @@ export class FetchService implements OnApplicationShutdown {
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
       value: this.blockNumberBuffer.size,
     });
-  }
-
-  private getBaseHandlerKind(
-    ds: SubstrateDataSource,
-    handler: SubstrateHandler,
-  ): SubstrateHandlerKind {
-    if (isRuntimeDs(ds) && isBaseHandler(handler)) {
-      return handler.kind;
-    } else if (isCustomDs(ds) && isCustomHandler(handler)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const baseHandler =
-        plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
-      if (!baseHandler) {
-        throw new Error(
-          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
-        );
-      }
-      return baseHandler;
-    }
-  }
-
-  private getBaseHandlerFilters<T>(
-    ds: SubstrateDataSource,
-    handlerKind: string,
-  ): T[] {
-    if (isCustomDs(ds)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const processor = plugin.handlerProcessors[handlerKind];
-      return processor.baseFilter instanceof Array
-        ? (processor.baseFilter as T[])
-        : ([processor.baseFilter] as T[]);
-    } else {
-      throw new Error(`expect custom datasource here`);
-    }
   }
 }
