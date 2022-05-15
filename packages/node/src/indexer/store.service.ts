@@ -628,13 +628,28 @@ group by
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
+        const attributes = data as unknown as CreationAttributes<Model>;
         if (this.historical) {
-          await this.markAsDeleted(model, data.id);
-          await model.create(data as unknown as CreationAttributes<Model>, {
+          // If entity was already saved in current block, update that entity instead
+          const [updatedRows, _] = await model.update(attributes, {
+            hooks: false,
             transaction: this.tx,
+            where: this.sequelize.and(
+              { id: data.id },
+              this.sequelize.where(
+                this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+                this.blockHeight,
+              ),
+            ),
           });
+          if (updatedRows < 1) {
+            await this.markAsDeleted(model, data.id);
+            await model.create(attributes, {
+              transaction: this.tx,
+            });
+          }
         } else {
-          await model.upsert(data as unknown as CreationAttributes<Model>, {
+          await model.upsert(attributes, {
             transaction: this.tx,
           });
         }
