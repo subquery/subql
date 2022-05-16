@@ -36,7 +36,6 @@ You'll also use our custom-built GraphQL query service [`@subql/query`](https://
 * [`@subql/cli`](packages/cli)
 * [`@subql/node`](packages/node)
 * [`@subql/query`](packages/query)
-* [`@subql/contract-processors`](packages/contract-processors)
 * [`@subql/common`](packages/common)
 * [`@subql/types`](packages/types)
 * [`@subql/validator`](packages/validator)

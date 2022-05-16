@@ -25,7 +25,6 @@ module.exports = {
     'packages/common/src/**/*.ts',
     'packages/common-substrate/src/**/*.ts',
     'packages/common-terra/src/**/*.ts',
-    'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/node-terra/src/**/*.ts',
     'packages/utils/src/**/*.ts',

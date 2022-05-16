@@ -155,8 +155,11 @@ type SecondLayerHandlerProcessorArray<
 export interface SubstrateDatasourceProcessor<
   K extends string,
   F extends SubstrateNetworkFilter,
-  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>>,
-  DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>
+  DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>,
+  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
+    string,
+    SecondLayerHandlerProcessorArray<K, F, any, DS>
+  >
 > {
   kind: K;
   validate(ds: DS, assets: Record<string, string>): void;
