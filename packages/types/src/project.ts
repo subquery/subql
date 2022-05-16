@@ -121,17 +121,16 @@ export interface SubstrateCustomDatasource<
 
 export interface HandlerInputTransformer_0_0_0<
   T extends SubstrateHandlerKind,
-  U,
-  F,
+  E,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > {
-  (input: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<U>; //  | SubstrateBuiltinDataSource
+  (input: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
 }
 
 export interface HandlerInputTransformer_1_0_0<
   T extends SubstrateHandlerKind,
-  U,
   F,
+  E,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > {
   (params: {
@@ -140,18 +139,29 @@ export interface HandlerInputTransformer_1_0_0<
     filter?: F;
     api: ApiPromise;
     assets?: Record<string, string>;
-  }): Promise<U[]>; //  | SubstrateBuiltinDataSource
+  }): Promise<E[]>; //  | SubstrateBuiltinDataSource
 }
+
+type SecondLayerHandlerProcessorArray<
+  K extends string,
+  F extends SubstrateNetworkFilter,
+  T,
+  DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>
+> =
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, DS>;
 
 export interface SubstrateDatasourceProcessor<
   K extends string,
   F extends SubstrateNetworkFilter,
+  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>>,
   DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>
 > {
   kind: K;
   validate(ds: DS, assets: Record<string, string>): void;
   dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
-  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubstrateHandlerKind, unknown, unknown, DS>};
+  handlerProcessors: P;
 }
 
 export interface DictionaryQueryCondition {
@@ -183,7 +193,7 @@ export interface SecondLayerHandlerProcessor_0_0_0<
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: undefined;
-  transformer: HandlerInputTransformer_0_0_0<K, E, F, DS>;
+  transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
   filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
 }
 
@@ -194,7 +204,7 @@ export interface SecondLayerHandlerProcessor_1_0_0<
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
-  transformer: HandlerInputTransformer_1_0_0<K, E, F, DS>;
+  transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
   filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap[K]; ds: DS}) => boolean;
 }
 
