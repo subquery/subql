@@ -38,7 +38,19 @@ export interface NetworkMetadataPayload {
 }
 
 export interface MmrPayload {
-  leafIndex: number;
-  blockHeight: number;
-  value: Uint8Array;
+  offset: number;
+  height: number;
+  hash: string; //the node hash
+  mmrRoot: string;
+}
+
+export interface MmrProof {
+  digest: string;
+  leafLength: number;
+  nodes: MmrNode[];
+}
+
+export interface MmrNode {
+  node: string;
+  hash: string;
 }

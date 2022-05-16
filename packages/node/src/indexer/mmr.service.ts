@@ -17,7 +17,7 @@ import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-import { MmrPayload } from './events';
+import { MmrPayload, MmrProof } from './events';
 const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
@@ -112,6 +112,7 @@ export class MmrService implements OnApplicationShutdown {
 
   async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
     const newLeaf = poiBlock.hash;
+    console.log(newLeaf);
     if (newLeaf.length !== DEFAULT_WORD_SIZE) {
       throw new Error(
         `Append Mmr failed, input data length should be ${DEFAULT_WORD_SIZE}`,
@@ -195,14 +196,50 @@ export class MmrService implements OnApplicationShutdown {
         `Parameter blockHeight must greater equal to ${this.blockOffset + 1} `,
       );
     }
-    const value = await this.fileBasedMmr.getRoot(leafIndex);
-    return { leafIndex, blockHeight: blockHeight, value };
+    const [mmrResponse, node] = await Promise.all([
+      this.fileBasedMmr.getRoot(leafIndex),
+      this.fileBasedMmr.get(leafIndex),
+    ]);
+    return {
+      offset: this.blockOffset,
+      height: blockHeight,
+      mmrRoot: u8aToHex(mmrResponse),
+      hash: u8aToHex(node),
+    };
   }
 
   async getLatestMmr(): Promise<MmrPayload> {
     // latest leaf index need fetch from .db, as original method will use cache
-    const leafIndex = (await this.fileBasedMmr.db.getLeafLength()) - 1;
-    const value = await this.fileBasedMmr.getRoot(leafIndex);
-    return { leafIndex, blockHeight: leafIndex + this.blockOffset + 1, value };
+    const blockHeight =
+      (await this.fileBasedMmr.db.getLeafLength()) + this.blockOffset;
+    return this.getMmr(blockHeight);
+  }
+
+  async getLatestMmrProof(): Promise<MmrProof> {
+    // latest leaf index need fetch from .db, as original method will use cache
+    const blockHeight =
+      (await this.fileBasedMmr.db.getLeafLength()) + this.blockOffset;
+    return this.getMmrProof(blockHeight);
+  }
+
+  async getMmrProof(blockHeight: number): Promise<MmrProof> {
+    const leafIndex = blockHeight - this.blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Parameter blockHeight must greater equal to ${this.blockOffset + 1} `,
+      );
+    }
+    const mmrProof = await this.fileBasedMmr.getProof([leafIndex]);
+    const nodes = Object.entries(mmrProof.db.nodes).map(([key, data]) => {
+      return {
+        node: key,
+        hash: u8aToHex(data as Uint8Array),
+      };
+    });
+    return {
+      digest: mmrProof.digest.name,
+      leafLength: mmrProof.db.leafLength,
+      nodes,
+    };
   }
 }

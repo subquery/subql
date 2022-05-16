@@ -1,54 +1,38 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Param, UseFilters } from '@nestjs/common';
 import { MmrService } from '../indexer/mmr.service';
 import { getLogger } from '../utils/logger';
+import { MmrExceptionsFilter } from '../utils/mmr-exception.filter';
 
-const logger = getLogger('mmrs');
+const mmrExceptionsFilter = new MmrExceptionsFilter();
 
 @Controller('mmrs')
 export class MmrQueryController {
   constructor(private mmrService: MmrService) {}
 
+  @Get('latest')
+  @UseFilters(mmrExceptionsFilter)
+  async getLatestMmr(@Param() params) {
+    // eslint-disable-next-line no-return-await
+    return this.mmrService.getLatestMmr();
+  }
+
+  @Get('latest/proof')
+  async getLatestMmrProof(@Param() params) {
+    return this.mmrService.getLatestMmrProof();
+  }
+
   @Get(':blockHeight')
+  @UseFilters(mmrExceptionsFilter)
   async getMmr(@Param() params) {
-    try {
-      // add await, otherwise error been skipped
-      return await this.mmrService.getMmr(params.blockHeight);
-    } catch (e) {
-      this.httpError(e);
-    }
+    // eslint-disable-next-line no-return-await
+    return this.mmrService.getMmr(params.blockHeight);
   }
 
-  @Get()
-  async getLatestMmr(@Query() query) {
-    if (query.latest) {
-      try {
-        return await this.mmrService.getLatestMmr();
-      } catch (e) {
-        this.httpError(e);
-      }
-    } else {
-      this.httpError(new Error(`query not supported`));
-    }
-  }
-
-  httpError(e: Error) {
-    logger.error(e.message);
-    throw new HttpException(
-      {
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: e.message,
-      },
-      HttpStatus.INTERNAL_SERVER_ERROR,
-    );
+  @Get(':blockHeight/proof')
+  async getMmrProof(@Param() params) {
+    return this.mmrService.getMmrProof(params.blockHeight);
   }
 }
