@@ -19,7 +19,7 @@ function getTestProject(
     dataSources: [
       {
         kind: 'substrate/Jsonfy',
-        processor: { file: 'contract-processors/dist/jsonfy.js' },
+        processor: { file: 'test/jsonfy.js' },
         startBlock: 1,
         mapping: {
           entryScript: '',
@@ -29,7 +29,7 @@ function getTestProject(
       ...extraDataSources,
     ] as any,
     id: 'test',
-    root: path.resolve(__dirname, '../../../'),
+    root: path.resolve(__dirname, '../../'),
     schema: new GraphQLSchema({}),
     templates: [],
   };
