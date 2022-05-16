@@ -112,7 +112,6 @@ export class MmrService implements OnApplicationShutdown {
 
   async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
     const newLeaf = poiBlock.hash;
-    console.log(newLeaf);
     if (newLeaf.length !== DEFAULT_WORD_SIZE) {
       throw new Error(
         `Append Mmr failed, input data length should be ${DEFAULT_WORD_SIZE}`,
