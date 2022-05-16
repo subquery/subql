@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
@@ -11,6 +12,14 @@ import {
   defaultRegistryTypes,
 } from '@cosmjs/stargate';
 import { Injectable } from '@nestjs/common';
+import {
+  MsgClearAdmin,
+  MsgExecuteContract,
+  MsgInstantiateContract,
+  MsgMigrateContract,
+  MsgStoreCode,
+  MsgUpdateAdmin,
+} from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
 import { load } from 'protobufjs';
 import {
@@ -41,9 +50,18 @@ export class ApiCosmosService {
   async init(): Promise<ApiCosmosService> {
     const { network } = this.project;
     this.clientConfig = {};
-    const client = await StargateClient.connect(network.endpoint);
+    const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
+      ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
+      ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
+      ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
+      ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
+      ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
+      ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
+    ];
 
-    const registry = new Registry(defaultRegistryTypes);
+    const client = await CosmWasmClient.connect(network.endpoint);
+
+    const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
     for (const ds of this.project.dataSources) {
       const chaintypes = await this.getChainType(ds);
       for (const typeurl in chaintypes) {
@@ -57,9 +75,7 @@ export class ApiCosmosService {
     };
 
     const chainId = await this.api.chainId();
-
     if (network.chainId !== chainId) {
-      logger.info(chainId);
       const err = new Error(
         `The given chainId does not match with client: "${network.chainId}"`,
       );
@@ -101,7 +117,7 @@ export class ApiCosmosService {
 
 export class CosmosClient {
   constructor(
-    private readonly baseApi: StargateClient,
+    private readonly baseApi: CosmWasmClient,
     private registry: Registry,
   ) {}
 
@@ -130,7 +146,7 @@ export class CosmosClient {
     }
   }
 
-  get StargateClient(): StargateClient {
+  get StargateClient(): CosmWasmClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
   }

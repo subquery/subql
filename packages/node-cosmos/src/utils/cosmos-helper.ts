@@ -90,6 +90,7 @@ export function filterEvents(
         filter.messageFilter &&
         !filterMessageData(event.msg, filter.messageFilter)
       ) {
+        console.log(event.msg.msg.typeUrl);
         continue;
       }
       return true;
@@ -187,7 +188,7 @@ export function wrapEvent(
         tx: tx,
         block: block,
         msg: {
-          typeUrl: tx.decodedTx.body.messages[log.msg_index],
+          typeUrl: tx.decodedTx.body.messages[log.msg_index].typeUrl,
           ...decodedMsg,
         },
       };

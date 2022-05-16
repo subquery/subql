@@ -320,7 +320,6 @@ export class FetchCosmosService implements OnApplicationShutdown {
     }
     try {
       const currentFinalizedHeight = await this.api.finalisedHeight();
-      logger.info(currentFinalizedHeight.toString());
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {

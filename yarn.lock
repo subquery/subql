@@ -2194,6 +2194,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@cosmjs/cosmwasm-stargate@npm:^0.28.4":
+  version: 0.28.4
+  resolution: "@cosmjs/cosmwasm-stargate@npm:0.28.4"
+  dependencies:
+    "@cosmjs/amino": 0.28.4
+    "@cosmjs/crypto": 0.28.4
+    "@cosmjs/encoding": 0.28.4
+    "@cosmjs/math": 0.28.4
+    "@cosmjs/proto-signing": 0.28.4
+    "@cosmjs/stargate": 0.28.4
+    "@cosmjs/tendermint-rpc": 0.28.4
+    "@cosmjs/utils": 0.28.4
+    cosmjs-types: ^0.4.0
+    long: ^4.0.0
+    pako: ^2.0.2
+    protobufjs: ~6.10.2
+  checksum: 6b1142c45f6dc130385889d4bd4e2fc13bde3ef431f649f88e019871b961a01eb92af5d60d3f97c407e6d25aeb62e6baf5cdbb366b8e5d5ae009a7231cee40b9
+  languageName: node
+  linkType: hard
+
 "@cosmjs/crypto@npm:0.28.4":
   version: 0.28.4
   resolution: "@cosmjs/crypto@npm:0.28.4"
@@ -2267,7 +2287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/stargate@npm:^0.28.4":
+"@cosmjs/stargate@npm:0.28.4, @cosmjs/stargate@npm:^0.28.4":
   version: 0.28.4
   resolution: "@cosmjs/stargate@npm:0.28.4"
   dependencies:
@@ -15812,7 +15832,7 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
-"pako@npm:^2.0.4":
+"pako@npm:^2.0.2, pako@npm:^2.0.4":
   version: 2.0.4
   resolution: "pako@npm:2.0.4"
   checksum: 82b9b0b99dd830c9103856a6dbd10f0cb2c8c32b9768184727ea381a99666de9a47a069d2e6efe6acf09336f363956b50835c196ef9311b34b7274d420eb0d88
@@ -18339,6 +18359,7 @@ fsevents@~2.3.1:
   dependencies:
     "@actions/core": ^1.6.0
     "@babel/preset-env": ^7.16.11
+    "@cosmjs/cosmwasm-stargate": ^0.28.4
     "@cosmjs/proto-signing": ^0.28.4
     "@cosmjs/stargate": ^0.28.4
     "@octokit/request": ^5.6.3
