@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-avalanche",
-  "version": "0.0.3-1",
+  "version": "0.0.3-2",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -22,5 +22,5 @@
     "@polkadot/api": "^8",
     "@types/app-module-path": "^2.2.0"
   },
-  "stableVersion": "0.0.3-0"
+  "stableVersion": "0.0.3-1"
 }
