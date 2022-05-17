@@ -298,10 +298,10 @@ export class StoreService {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
-    this.checkHistoricalState();
+    await this.checkHistoricalState();
 
     await this.sequelize.sync();
-    this.setMetadata('historicalStateEnabled', this.historical);
+    await this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
