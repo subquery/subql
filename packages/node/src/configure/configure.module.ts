@@ -65,7 +65,7 @@ export function validDbSchemaName(name: string): boolean {
     }
     if (!flag1) {
       logger.error(
-        `Invalid schema name '${name}', schema name must start with a letter or underscore, 
+        `Invalid schema name '${name}', schema name must start with a letter or underscore,
          be less than 63 bytes and must contain only valid alphanumeric characters (can include characters '_-/')`,
       );
     }
@@ -90,8 +90,10 @@ function warnDeprecations() {
 @Module({})
 export class ConfigureModule {
   static register(): DynamicModule {
+    logger.info(`config start`);
     const yargsOptions = getYargsOption();
     const { argv } = yargsOptions;
+    logger.info(`config argv ${JSON.stringify(argv)}`);
     let config: NodeConfig;
     if (argv.config) {
       config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
@@ -101,6 +103,7 @@ export class ConfigureModule {
           'Subquery path is missing neither in cli options nor in config file',
         );
         yargsOptions.showHelp();
+        logger.info('config exit');
         process.exit(1);
       }
 
@@ -110,6 +113,7 @@ export class ConfigureModule {
     }
 
     if (!validDbSchemaName(config.dbSchema)) {
+      logger.info('config exit 115');
       process.exit(1);
     }
 
@@ -118,6 +122,7 @@ export class ConfigureModule {
     }
 
     const project = async () => {
+      logger.info('load project start');
       const p = await SubqueryProject.create(
         argv.subquery,
         omitBy<SubstrateProjectNetworkConfig>(
@@ -134,9 +139,10 @@ export class ConfigureModule {
         logger.error(err, 'Create Subquery project from given path failed!');
         process.exit(1);
       });
+      logger.info('load project done');
       return p;
     };
-
+    logger.info('config done');
     return {
       module: ConfigureModule,
       providers: [

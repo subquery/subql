@@ -3220,6 +3220,50 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/microservices@npm:^8.2.6":
+  version: 8.4.5
+  resolution: "@nestjs/microservices@npm:8.4.5"
+  dependencies:
+    iterare: 1.2.1
+    json-socket: 0.3.0
+    tslib: 2.4.0
+  peerDependencies:
+    "@grpc/grpc-js": "*"
+    "@nestjs/common": ^8.0.0
+    "@nestjs/core": ^8.0.0
+    "@nestjs/websockets": ^8.0.0
+    amqp-connection-manager: "*"
+    amqplib: "*"
+    cache-manager: "*"
+    kafkajs: "*"
+    mqtt: "*"
+    nats: "*"
+    redis: "*"
+    reflect-metadata: ^0.1.12
+    rxjs: ^7.1.0
+  peerDependenciesMeta:
+    "@grpc/grpc-js":
+      optional: true
+    "@nestjs/websockets":
+      optional: true
+    amqp-connection-manager:
+      optional: true
+    amqplib:
+      optional: true
+    cache-manager:
+      optional: true
+    kafkajs:
+      optional: true
+    mqtt:
+      optional: true
+    nats:
+      optional: true
+    redis:
+      optional: true
+  checksum: 0a2ed9b249399eb8943cc0e7fcac3744ce542e42946aa8ad7962a78e8daf031826d2160bffcad7b3c4e8b2cf1257f5e1d500a6fff9efc7f66bd54d2b21fb4f22
+  languageName: node
+  linkType: hard
+
 "@nestjs/platform-express@npm:^8.1.2":
   version: 8.3.1
   resolution: "@nestjs/platform-express@npm:8.3.1"
@@ -4654,6 +4698,7 @@ __metadata:
     "@nestjs/common": ^8.2.6
     "@nestjs/core": ^8.2.6
     "@nestjs/event-emitter": ^1.0.0
+    "@nestjs/microservices": ^8.2.6
     "@nestjs/platform-express": ^8.2.6
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
@@ -13102,6 +13147,13 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"json-socket@npm:0.3.0":
+  version: 0.3.0
+  resolution: "json-socket@npm:0.3.0"
+  checksum: 43e112523547c26a7f54259ac2cc222276d59a619d4d467554d8903f4d56752fd5ed6e23f27b14767dbe55bf0d8eab98640e0c09825fdf329cb8257e38eb6a45
+  languageName: node
+  linkType: hard
+
 "json-stable-stringify-without-jsonify@npm:^1.0.1":
   version: 1.0.1
   resolution: "json-stable-stringify-without-jsonify@npm:1.0.1"
@@ -18426,6 +18478,13 @@ fsevents@~2.3.1:
   version: 2.3.1
   resolution: "tslib@npm:2.3.1"
   checksum: de17a98d4614481f7fcb5cd53ffc1aaf8654313be0291e1bfaee4b4bb31a20494b7d218ff2e15017883e8ea9626599b3b0e0229c18383ba9dce89da2adf15cb9
+  languageName: node
+  linkType: hard
+
+"tslib@npm:2.4.0":
+  version: 2.4.0
+  resolution: "tslib@npm:2.4.0"
+  checksum: 8c4aa6a3c5a754bf76aefc38026134180c053b7bd2f81338cb5e5ebf96fefa0f417bff221592bf801077f5bf990562f6264fecbc42cd3309b33872cb6fc3b113
   languageName: node
   linkType: hard
 

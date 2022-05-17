@@ -78,7 +78,9 @@ export class IndexerManager {
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
-  ) {}
+  ) {
+    logger.info('indexer manager start');
+  }
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
@@ -430,7 +432,7 @@ export class IndexerManager {
     filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
     if (filteredDs.length === 0) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight}
          or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
