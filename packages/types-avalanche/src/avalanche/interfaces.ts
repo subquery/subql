@@ -19,10 +19,10 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
-  difficulty: BigInt;
+  difficulty: bigint;
   extraData: string;
-  gasLimit: BigInt;
-  gasUsed: BigInt;
+  gasLimit: bigint;
+  gasUsed: bigint;
   hash: string;
   logsBloom: string;
   miner: string;
@@ -32,10 +32,10 @@ export type AvalancheBlock = {
   parentHash: string;
   receiptsRoot: string;
   sha3Uncles: string;
-  size: BigInt;
+  size: bigint;
   stateRoot: string;
-  timestamp: BigInt;
-  totalDifficulty: BigInt;
+  timestamp: bigint;
+  totalDifficulty: bigint;
   transactions: AvalancheTransaction[];
   transactionsRoot: string;
   uncles: string[];
