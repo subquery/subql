@@ -23,7 +23,7 @@ import {
   DictionaryQueryEntry,
   ApiWrapper,
   BlockWrapper,
-  AvalancheEventFilter,
+  AvalancheLogFilter,
   AvalancheCallFilter,
 } from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
@@ -47,7 +47,7 @@ const MINIMUM_BATCH_SIZE = 5;
 const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
-  filter: AvalancheEventFilter,
+  filter: AvalancheLogFilter,
 ): DictionaryQueryEntry {
   const conditions = [];
   if (filter.address) {
@@ -192,7 +192,7 @@ export class FetchService implements OnApplicationShutdown {
             break;
           }
           case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as AvalancheEventFilter[]) {
+            for (const filter of filterList as AvalancheLogFilter[]) {
               if (filter.address || filter.topics) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {

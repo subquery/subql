@@ -9,7 +9,7 @@ export interface AvalancheCallFilter {
   function?: string;
 }
 
-export interface AvalancheEventFilter {
+export interface AvalancheLogFilter {
   topics?: Array<string | null | undefined>;
   address?: string;
 }
@@ -19,10 +19,10 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
-  difficulty: number;
+  difficulty: BigInt;
   extraData: string;
-  gasLimit: string;
-  gasUsed: string;
+  gasLimit: BigInt;
+  gasUsed: BigInt;
   hash: string;
   logsBloom: string;
   miner: string;
@@ -32,10 +32,10 @@ export type AvalancheBlock = {
   parentHash: string;
   receiptsRoot: string;
   sha3Uncles: string;
-  size: number;
+  size: BigInt;
   stateRoot: string;
-  timestamp: number;
-  totalDifficulty: number;
+  timestamp: BigInt;
+  totalDifficulty: BigInt;
   transactions: AvalancheTransaction[];
   transactionsRoot: string;
   uncles: string[];
@@ -59,7 +59,7 @@ export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = 
   args?: T;
 };
 
-export type AvalancheEvent<T extends AvalancheResult = AvalancheResult> = {
+export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   logIndex: string;
   blockNumber: string;
   blockHash: string;
@@ -72,12 +72,6 @@ export type AvalancheEvent<T extends AvalancheResult = AvalancheResult> = {
 };
 
 export interface AvalancheBlockWrapper
-  extends BlockWrapper<
-    AvalancheBlock,
-    AvalancheTransaction,
-    AvalancheEvent,
-    AvalancheCallFilter,
-    AvalancheEventFilter
-  > {
+  extends BlockWrapper<AvalancheBlock, AvalancheTransaction, AvalancheLog, AvalancheCallFilter, AvalancheLogFilter> {
   getTransactions: (filters?: string[]) => Record<string, any>;
 }

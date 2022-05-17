@@ -13,7 +13,7 @@ export enum SubstrateDatasourceKind {
 export enum SubstrateHandlerKind {
   Block = 'avalanche/BlockHandler',
   Call = 'avalanche/TransactionHandler',
-  Event = 'avalanche/EventHandler',
+  Event = 'avalanche/LogHandler',
 }
 
 export type SubstrateRuntimeHandlerInputMap = {

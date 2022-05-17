@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BlockWrapper } from '../interfaces';
+import {BlockWrapper} from '../interfaces';
 
 export interface AvalancheCallFilter {
   from?: string;
@@ -9,7 +9,7 @@ export interface AvalancheCallFilter {
   function?: string;
 }
 
-export interface AvalancheEventFilter {
+export interface AvalancheLogFilter {
   topics?: Array<string | null | undefined>;
   address?: string;
 }
@@ -59,7 +59,7 @@ export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = 
   args?: T;
 };
 
-export type AvalancheEvent<T extends AvalancheResult = AvalancheResult> = {
+export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   logIndex: string;
   blockNumber: string;
   blockHash: string;
@@ -72,12 +72,6 @@ export type AvalancheEvent<T extends AvalancheResult = AvalancheResult> = {
 };
 
 export interface AvalancheBlockWrapper
-  extends BlockWrapper<
-    AvalancheBlock,
-    AvalancheTransaction,
-    AvalancheEvent,
-    AvalancheCallFilter,
-    AvalancheEventFilter
-  > {
+  extends BlockWrapper<AvalancheBlock, AvalancheTransaction, AvalancheLog, AvalancheCallFilter, AvalancheLogFilter> {
   getTransactions: (filters?: string[]) => Record<string, any>;
 }

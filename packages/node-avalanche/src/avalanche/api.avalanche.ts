@@ -13,16 +13,17 @@ import { getLogger } from '@subql/common-node';
 import {
   ApiWrapper,
   AvalancheBlock,
-  AvalancheEvent,
+  AvalancheLog,
   AvalancheBlockWrapper,
   AvalancheTransaction,
-  AvalancheEventFilter,
+  AvalancheLogFilter,
   AvalancheCallFilter,
   AvalancheResult,
 } from '@subql/types-avalanche';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
+import { BigNumber } from 'ethers';
 import {
   eventToTopic,
   functionToSighash,
@@ -150,13 +151,16 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
           '/ext/bc/C/rpc',
         );
         const block = (await block_promise).data.result;
-        block.difficulty = parseInt(block.difficulty, 16);
-        block.gasLimit = parseInt(block.gasLimit, 16);
-        block.gasUsed = parseInt(block.gasUsed, 16);
-        block.number = parseInt(block.number, 16);
-        block.size = parseInt(block.size, 16);
-        block.timestamp = parseInt(block.timestamp, 16);
-        block.totalDifficulty = parseInt(block.totalDifficulty, 16);
+        block.difficulty = BigNumber.from(block.difficulty).toBigInt();
+        block.gasLimit = BigNumber.from(block.gasLimit).toBigInt();
+        block.gasUsed = BigNumber.from(block.gasUsed).toBigInt();
+        block.number = BigNumber.from(block.number).toNumber();
+        block.size = BigNumber.from(block.size).toBigInt();
+        block.timestamp = BigNumber.from(block.timestamp).toBigInt();
+        block.totalDifficulty = BigNumber.from(
+          block.totalDifficulty,
+        ).toBigInt();
+
         const logs = (await logs_promise).data.result;
         return new AvalancheBlockWrapped(block, logs);
       }),
@@ -200,12 +204,12 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   }
 
   async parseEvent<T extends AvalancheResult = AvalancheResult>(
-    event: AvalancheEvent,
+    event: AvalancheLog,
     ds: RuntimeDataSourceV0_2_0,
-  ): Promise<AvalancheEvent<T>> {
+  ): Promise<AvalancheLog<T>> {
     try {
       if (!ds?.options?.abi) {
-        return event as AvalancheEvent<T>;
+        return event as AvalancheLog<T>;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
       return {
@@ -214,7 +218,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       };
     } catch (e) {
       logger.warn(`Failed to parse event data: ${e.message}`);
-      return event as AvalancheEvent<T>;
+      return event as AvalancheLog<T>;
     }
   }
 
@@ -243,10 +247,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 }
 
 export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
-  constructor(
-    private _block: AvalancheBlock,
-    private _logs: AvalancheEvent[],
-  ) {}
+  constructor(private _block: AvalancheBlock, private _logs: AvalancheLog[]) {}
 
   get block(): AvalancheBlock {
     return this._block;
@@ -279,9 +280,9 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   }
 
   events(
-    filter?: AvalancheEventFilter,
+    filter?: AvalancheLogFilter,
     ds?: SubstrateDataSource,
-  ): AvalancheEvent[] {
+  ): AvalancheLog[] {
     if (!filter) {
       return this._logs;
     }
@@ -320,8 +321,8 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   }
 
   private filterEventsProcessor(
-    log: AvalancheEvent,
-    filter: AvalancheEventFilter,
+    log: AvalancheLog,
+    filter: AvalancheLogFilter,
     address?: string,
   ): boolean {
     if (address && !stringNormalizedEq(address, log.address)) {

@@ -21,7 +21,7 @@ import {
   ApiWrapper,
   BlockWrapper,
   AvalancheTransaction,
-  AvalancheEvent,
+  AvalancheLog,
 } from '@subql/types-avalanche';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
@@ -456,7 +456,7 @@ export class IndexerManager {
           filteredEvents = await Promise.all(
             filteredEvents.map((event) =>
               (this.api as AvalancheApi).parseEvent(
-                event as AvalancheEvent,
+                event as AvalancheLog,
                 ds as SubstrateRuntimeDataSource,
               ),
             ),

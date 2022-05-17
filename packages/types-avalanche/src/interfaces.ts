@@ -3,10 +3,17 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {ApiDecoration} from '@polkadot/api/types';
-import { AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction } from './algorand';
-import { AvalancheBlock, AvalancheBlockWrapper, AvalancheCallFilter, AvalancheEvent, AvalancheEventFilter, AvalancheTransaction } from './avalanche';
+import {AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction} from './algorand';
+import {
+  AvalancheBlock,
+  AvalancheBlockWrapper,
+  AvalancheCallFilter,
+  AvalancheLog,
+  AvalancheLogFilter,
+  AvalancheTransaction,
+} from './avalanche';
 import {SubqlCallFilter, SubqlEventFilter} from './project';
-import { SubstrateBlock, SubstrateBlockWrapper, SubstrateEvent, SubstrateExtrinsic } from './substrate';
+import {SubstrateBlock, SubstrateBlockWrapper, SubstrateEvent, SubstrateExtrinsic} from './substrate';
 
 export interface Entity {
   id: string;
@@ -33,9 +40,9 @@ export interface BlockWrapper<
     | SubstrateExtrinsic
     | AlgorandTransaction
     | AvalancheTransaction,
-  E extends SubstrateEvent | AlgorandEvent | AvalancheEvent = SubstrateEvent | AlgorandEvent | AvalancheEvent,
+  E extends SubstrateEvent | AlgorandEvent | AvalancheLog = SubstrateEvent | AlgorandEvent | AvalancheLog,
   CF extends SubqlCallFilter | AvalancheCallFilter = SubqlCallFilter | AvalancheCallFilter,
-  EF extends SubqlEventFilter | AvalancheEventFilter = SubqlEventFilter | AvalancheEventFilter
+  EF extends SubqlEventFilter | AvalancheLogFilter = SubqlEventFilter | AvalancheLogFilter
 > {
   block: B;
   blockHeight: number;
