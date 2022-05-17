@@ -191,7 +191,7 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
       {
         kind: 'substrate/Jsonfy',
         processor: {
-          file: 'contract-processors/dist/jsonfy.js',
+          file: 'test/jsonfy.js',
         },
         startBlock: 1,
         mapping: {
@@ -207,7 +207,7 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
     ] as any,
     id: 'test',
     schema: new GraphQLSchema({}),
-    root: path.resolve(__dirname, '../../../'),
+    root: path.resolve(__dirname, '../../'),
     templates: [],
   };
 }
