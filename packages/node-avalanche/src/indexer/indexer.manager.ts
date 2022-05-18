@@ -452,16 +452,16 @@ export class IndexerManager {
           break;
         }
         case SubstrateHandlerKind.Event: {
-          let filteredEvents = blockContent.events(handler.filter, ds);
-          filteredEvents = await Promise.all(
-            filteredEvents.map((event) =>
-              (this.api as AvalancheApi).parseEvent(
-                event as AvalancheLog,
+          let filteredLogs = blockContent.events(handler.filter, ds);
+          filteredLogs = await Promise.all(
+            filteredLogs.map((log) =>
+              (this.api as AvalancheApi).parseLog(
+                log as AvalancheLog,
                 ds as SubstrateRuntimeDataSource,
               ),
             ),
           );
-          for (const e of filteredEvents) {
+          for (const e of filteredLogs) {
             await vm.securedExec(handler.handler, [e]);
           }
           break;

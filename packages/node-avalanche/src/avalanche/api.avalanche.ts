@@ -251,13 +251,13 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     newReceipt.contractAddress = receipt.contractAddress;
     newReceipt.cumulativeGasUsed = BigNumber.from(
       receipt.cumulativeGasUsed,
-    ).toNumber();
+    ).toBigInt();
     newReceipt.effectiveGasPrice = BigNumber.from(
       receipt.effectiveGasPrice,
-    ).toNumber();
+    ).toBigInt();
     newReceipt.from = receipt.from;
-    newReceipt.gasUsed = BigNumber.from(receipt.gasUsed).toNumber();
-    newReceipt.logs = receipt.logs;
+    newReceipt.gasUsed = BigNumber.from(receipt.gasUsed).toBigInt();
+    newReceipt.logs = receipt.logs.map((log) => formatLog(log));
     newReceipt.logsBloom = receipt.logsBloom;
     newReceipt.status = Boolean(BigNumber.from(receipt.status).toNumber());
     newReceipt.to = receipt.to;
@@ -301,22 +301,22 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return this.contractInterfaces[abiName];
   }
 
-  async parseEvent<T extends AvalancheResult = AvalancheResult>(
-    event: AvalancheLog,
+  async parseLog<T extends AvalancheResult = AvalancheResult>(
+    log: AvalancheLog,
     ds: RuntimeDataSourceV0_2_0,
-  ): Promise<AvalancheLog<T>> {
+  ): Promise<AvalancheLog<T> | AvalancheLog> {
     try {
       if (!ds?.options?.abi) {
-        return event as AvalancheLog<T>;
+        return log;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
       return {
-        ...event,
-        args: iface?.parseLog(event).args as T,
+        ...log,
+        args: iface?.parseLog(log).args as T,
       };
     } catch (e) {
-      logger.warn(`Failed to parse event data: ${e.message}`);
-      return event as AvalancheLog<T>;
+      logger.warn(`Failed to parse log data: ${e.message}`);
+      return log;
     }
   }
 
@@ -329,7 +329,6 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
         return transaction as AvalancheTransaction;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
       return {
         ...transaction,
         args: iface?.decodeFunctionData(
@@ -342,6 +341,23 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       return transaction as AvalancheTransaction<T>;
     }
   }
+}
+
+function formatLog(
+  log: AvalancheLog<AvalancheResult> | AvalancheLog,
+): AvalancheLog<AvalancheResult> | AvalancheLog {
+  const newLog = {} as AvalancheLog<AvalancheResult>;
+  newLog.address = log.address;
+  newLog.topics = log.topics;
+  newLog.data = log.data;
+  newLog.blockNumber = BigNumber.from(log.blockNumber).toNumber();
+  newLog.transactionHash = log.transactionHash;
+  newLog.transactionIndex = BigNumber.from(log.transactionIndex).toNumber();
+  newLog.blockHash = log.blockHash;
+  newLog.logIndex = BigNumber.from(log.logIndex).toNumber();
+  newLog.removed = log.removed;
+  newLog.args = log.args;
+  return newLog;
 }
 
 export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
@@ -390,9 +406,10 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
       address = ds?.options?.address;
     }
 
-    return this._logs.filter((log) =>
+    const logs = this._logs.filter((log) =>
       this.filterEventsProcessor(log, filter, address),
     );
+    return logs.map((log) => formatLog(log));
   }
 
   private filterCallProcessor(

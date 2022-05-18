@@ -75,9 +75,9 @@ export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   data: string;
   blockNumber: number;
   transactionHash: string;
-  transactionIndex: string;
+  transactionIndex: number;
   blockHash: string;
-  logIndex: string;
+  logIndex: number;
   removed: boolean;
   args?: T;
 };
@@ -86,10 +86,10 @@ export type AvalancheReceipt = {
   blockHash: string;
   blockNumber: number;
   contractAddress: string;
-  cumulativeGasUsed: number;
-  effectiveGasPrice: number;
+  cumulativeGasUsed: bigint;
+  effectiveGasPrice: bigint;
   from: string;
-  gasUsed: number;
+  gasUsed: bigint;
   logs: AvalancheLog[];
   logsBloom: string;
   status: boolean;
