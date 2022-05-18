@@ -19,8 +19,12 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
+  baseFeePerGas: bigint;
+  blockExtraData: string;
+  blockGasCost: bigint;
   difficulty: bigint;
-  extraData: string;
+  extDataGasUsed: string;
+  extDataHash: string;
   gasLimit: bigint;
   gasUsed: bigint;
   hash: string;
@@ -43,35 +47,62 @@ export type AvalancheBlock = {
 
 export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = {
   blockHash: string;
-  blockNumber: string;
+  blockNumber: number;
   from: string;
-  gas: string;
-  gasPrice: string;
+  gas: bigint;
+  gasPrice: bigint;
   hash: string;
   input: string;
-  nonce: string;
+  nonce: bigint;
   to: string;
-  transactionIndex: string;
-  value: string;
-  v: string;
+  transactionIndex: bigint;
+  value: bigint;
+  type: string;
+  v: bigint;
   r: string;
   s: string;
+  receipt: AvalancheReceipt;
+  accessList?: string[];
+  chainId?: string;
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
   args?: T;
 };
 
 export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
-  logIndex: string;
-  blockNumber: string;
-  blockHash: string;
+  address: string;
+  topics: string[];
+  data: string;
+  blockNumber: number;
   transactionHash: string;
   transactionIndex: string;
-  address: string;
-  data: string;
-  topics: string[];
+  blockHash: string;
+  logIndex: string;
+  removed: boolean;
   args?: T;
 };
 
-export interface AvalancheBlockWrapper
-  extends BlockWrapper<AvalancheBlock, AvalancheTransaction, AvalancheLog, AvalancheCallFilter, AvalancheLogFilter> {
-  getTransactions: (filters?: string[]) => Record<string, any>;
-}
+export type AvalancheReceipt = {
+  blockHash: string;
+  blockNumber: number;
+  contractAddress: string;
+  cumulativeGasUsed: number;
+  effectiveGasPrice: number;
+  from: string;
+  gasUsed: number;
+  logs: AvalancheLog[];
+  logsBloom: string;
+  status: boolean;
+  to: string;
+  transactionHash: string;
+  transactionIndex: number;
+  type: string;
+};
+
+export type AvalancheBlockWrapper = BlockWrapper<
+  AvalancheBlock,
+  AvalancheTransaction,
+  AvalancheLog,
+  AvalancheCallFilter,
+  AvalancheLogFilter
+>;

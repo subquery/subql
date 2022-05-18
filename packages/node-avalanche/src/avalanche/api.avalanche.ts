@@ -18,6 +18,7 @@ import {
   AvalancheTransaction,
   AvalancheLogFilter,
   AvalancheCallFilter,
+  AvalancheReceipt,
   AvalancheResult,
 } from '@subql/types-avalanche';
 import { Avalanche } from 'avalanche';
@@ -150,18 +151,26 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
           ],
           '/ext/bc/C/rpc',
         );
-        const block = (await block_promise).data.result;
-        block.difficulty = BigNumber.from(block.difficulty).toBigInt();
-        block.gasLimit = BigNumber.from(block.gasLimit).toBigInt();
-        block.gasUsed = BigNumber.from(block.gasUsed).toBigInt();
-        block.number = BigNumber.from(block.number).toNumber();
-        block.size = BigNumber.from(block.size).toBigInt();
-        block.timestamp = BigNumber.from(block.timestamp).toBigInt();
-        block.totalDifficulty = BigNumber.from(
-          block.totalDifficulty,
-        ).toBigInt();
-
+        const block = this.formatBlock((await block_promise).data.result);
         const logs = (await logs_promise).data.result;
+        const transactions: AvalancheTransaction[] = new Array(
+          block.transactions.length,
+        );
+        let i = 0;
+        for (const tx of block.transactions) {
+          const transaction = this.formatTransaction(tx);
+          const receipt = (
+            await this.cchain.callMethod(
+              'eth_getTransactionReceipt',
+              [tx.hash],
+              '/ext/bc/C/rpc',
+            )
+          ).data.result;
+          transaction.receipt = this.formatReceipt(receipt);
+          transactions[i] = transaction;
+          i += 1;
+        }
+        block.transactions = transactions;
         return new AvalancheBlockWrapped(block, logs);
       }),
     );
@@ -169,6 +178,96 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
   freezeApi(processor: any): void {
     processor.freeze(this.client, 'api');
+  }
+
+  private formatBlock(block: Record<string, any>): AvalancheBlock {
+    const newBlock = {} as AvalancheBlock;
+    newBlock.baseFeePerGas = BigNumber.from(block.baseFeePerGas).toBigInt();
+    newBlock.blockExtraData = block.extraData;
+    newBlock.blockGasCost = BigNumber.from(block.blockGasCost).toBigInt();
+    newBlock.difficulty = BigNumber.from(block.difficulty).toBigInt();
+    newBlock.extDataGasUsed = block.extDataGasUsed;
+    newBlock.extDataHash = block.extDataHash;
+    newBlock.gasLimit = BigNumber.from(block.gasLimit).toBigInt();
+    newBlock.gasUsed = BigNumber.from(block.gasUsed).toBigInt();
+    newBlock.hash = block.hash;
+    newBlock.logsBloom = block.logsBloom;
+    newBlock.miner = block.miner;
+    newBlock.mixHash = block.mixHash;
+    newBlock.nonce = block.nonce;
+    newBlock.number = BigNumber.from(block.number).toNumber();
+    newBlock.parentHash = block.parentHash;
+    newBlock.receiptsRoot = block.receiptsRoot;
+    newBlock.sha3Uncles = block.sha3Uncles;
+    newBlock.size = BigNumber.from(block.size).toBigInt();
+    newBlock.stateRoot = block.stateRoot;
+    newBlock.timestamp = BigNumber.from(block.timestamp).toBigInt();
+    newBlock.totalDifficulty = BigNumber.from(block.totalDifficulty).toBigInt();
+    newBlock.transactions = block.transactions;
+    newBlock.transactionsRoot = block.transactionsRoot;
+    newBlock.uncles = block.uncles;
+    return newBlock;
+  }
+
+  private formatTransaction(tx: Record<string, any>): AvalancheTransaction {
+    const transaction = {} as AvalancheTransaction;
+    transaction.blockHash = tx.blockHash;
+    transaction.blockNumber = BigNumber.from(tx.blockNumber).toNumber();
+    transaction.from = tx.from;
+    transaction.gas = BigNumber.from(tx.gas).toBigInt();
+    transaction.gasPrice = BigNumber.from(tx.gasPrice).toBigInt();
+    transaction.hash = tx.hash;
+    transaction.input = tx.input;
+    transaction.nonce = BigNumber.from(tx.nonce).toBigInt();
+    transaction.to = tx.to;
+    transaction.transactionIndex = BigNumber.from(
+      tx.transactionIndex,
+    ).toBigInt();
+    transaction.value = BigNumber.from(tx.value).toBigInt();
+    transaction.type = tx.type;
+    transaction.v = BigNumber.from(tx.v).toBigInt();
+    transaction.r = tx.r;
+    transaction.s = tx.s;
+    if (tx.accessList) {
+      transaction.accessList = tx.accessList;
+    }
+    if (tx.chainId) {
+      transaction.chainId = tx.chainId;
+    }
+    if (tx.maxFeePerGas) {
+      transaction.maxFeePerGas = BigNumber.from(tx.maxFeePerGas).toBigInt();
+    }
+    if (tx.maxPriorityFeePerGas) {
+      transaction.maxPriorityFeePerGas = BigNumber.from(
+        tx.maxPriorityFeePerGas,
+      ).toBigInt();
+    }
+    return transaction;
+  }
+
+  private formatReceipt(receipt: Record<string, any>): AvalancheReceipt {
+    const newReceipt = {} as AvalancheReceipt;
+    newReceipt.blockHash = receipt.blockHash;
+    newReceipt.blockNumber = BigNumber.from(receipt.blockNumber).toNumber();
+    newReceipt.contractAddress = receipt.contractAddress;
+    newReceipt.cumulativeGasUsed = BigNumber.from(
+      receipt.cumulativeGasUsed,
+    ).toNumber();
+    newReceipt.effectiveGasPrice = BigNumber.from(
+      receipt.effectiveGasPrice,
+    ).toNumber();
+    newReceipt.from = receipt.from;
+    newReceipt.gasUsed = BigNumber.from(receipt.gasUsed).toNumber();
+    newReceipt.logs = receipt.logs;
+    newReceipt.logsBloom = receipt.logsBloom;
+    newReceipt.status = Boolean(BigNumber.from(receipt.status).toNumber());
+    newReceipt.to = receipt.to;
+    newReceipt.transactionHash = receipt.transactionHash;
+    newReceipt.transactionIndex = BigNumber.from(
+      receipt.transactionIndex,
+    ).toNumber();
+    newReceipt.type = receipt.type;
+    return newReceipt;
   }
 
   private buildInterface(
@@ -342,22 +441,5 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
       }
     }
     return true;
-  }
-
-  /****************************************************/
-  /*           AVALANCHE SPECIFIC METHODS             */
-  /****************************************************/
-
-  getTransactions(filters?: string[]): Record<string, any> {
-    if (!filters) {
-      return this.block.transactions;
-    }
-    return this.block.transactions.map((trx) => {
-      const filteredTrx = {};
-      filters.forEach((filter) => {
-        filteredTrx[filter] = trx[filter];
-      });
-      return filteredTrx;
-    });
   }
 }
