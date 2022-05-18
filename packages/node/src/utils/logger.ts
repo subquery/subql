@@ -27,7 +27,7 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 export class NestLogger implements LoggerService {
   private logger = logger.getLogger('nestjs');
 
-  error(message: any, trace?: string) {
+  error(message: any, trace?: string): void {
     if (trace) {
       this.logger.error({ trace }, message);
     } else {

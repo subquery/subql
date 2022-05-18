@@ -9,13 +9,11 @@ export function getYargsOption() {
   return yargs(hideBin(process.argv)).options({
     subquery: {
       alias: 'f',
-      demandOption: true,
-      default: process.cwd(),
-      describe: 'Local path or IPFS cid of the subquery project',
+      demandOption: false,
+      describe: 'Local path of the subquery project',
       type: 'string',
     },
     'subquery-name': {
-      deprecated: true,
       demandOption: false,
       describe: 'Name of the subquery project',
       type: 'string',
@@ -27,7 +25,6 @@ export function getYargsOption() {
       type: 'string',
     },
     local: {
-      deprecated: true,
       type: 'boolean',
       demandOption: false,
       describe: 'Use local mode',
@@ -37,32 +34,15 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Force clean the database, dropping project schemas and tables',
     },
-    'db-schema': {
-      demandOption: false,
-      describe: 'Db schema name of the project',
-      type: 'string',
-    },
     unsafe: {
       type: 'boolean',
       demandOption: false,
       describe: 'Allows usage of any built-in module within the sandbox',
     },
-    subscription: {
-      demandOption: false,
-      describe: 'Enable subscription by create notification triggers',
-      type: 'boolean',
-      default: false,
-    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',
       type: 'number',
-    },
-    'scale-batch-size': {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'scale batch size based on memory usage',
-      default: false,
     },
     timeout: {
       demandOption: false,
@@ -86,6 +66,17 @@ export function getYargsOption() {
       demandOption: false,
       type: 'string',
       describe: 'Blockchain network endpoint to connect',
+    },
+    'network-endpoint-param': {
+      demandOption: false,
+      type: 'array',
+      describe:
+        'Key value of api parameters passed to terra rpc. e.g. --network-endpoint-param "api_key: <your-api-key>"',
+    },
+    'network-mantlemint': {
+      demandOption: false,
+      describe: 'Mantlemint endpoint URL',
+      type: 'string',
     },
     'output-fmt': {
       demandOption: false,
@@ -139,6 +130,13 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'The port the service will bind to',
       type: 'number',
+      default: 3000,
+    },
+    'node-timeout': {
+      demandOption: false,
+      describe: 'The timeout value for API requests',
+      type: 'number',
+      default: 300000,
     },
   });
 }

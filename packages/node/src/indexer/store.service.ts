@@ -5,9 +5,9 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { Entity, Store } from '@subql/types';
+import { Entity, Store } from '@subql/types-cosmos';
 import { GraphQLModelsRelationsEnums } from '@subql/utils';
-import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
+import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
   CreationAttributes,
   Model,
@@ -23,15 +23,10 @@ import { getLogger } from '../utils/logger';
 import { camelCaseObjectKey } from '../utils/object';
 import {
   commentConstraintQuery,
-  createNotifyTrigger,
-  createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
-  dropNotifyTrigger,
   getFkConstraint,
-  getNotifyTriggers,
   smartTags,
 } from '../utils/sync-helper';
-import { getYargsOption } from '../yargs';
 import {
   Metadata,
   MetadataFactory,
@@ -41,11 +36,8 @@ import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
-
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-const { argv } = getYargsOption();
-const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 
 interface IndexField {
   entityName: string;
@@ -54,10 +46,6 @@ interface IndexField {
   type: string;
 }
 
-interface NotifyTriggerPayload {
-  triggerName: string;
-  eventManipulation: string;
-}
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -147,10 +135,6 @@ export class StoreService {
       });
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
-    const extraQueries = [];
-    if (argv.subscription) {
-      extraQueries.push(createSendNotificationTriggerFunction);
-    }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({ fields, unique, using }) => ({
@@ -161,7 +145,7 @@ export class StoreService {
       if (indexes.length > this.config.indexCountLimit) {
         throw new Error(`too many indexes on entity ${model.name}`);
       }
-      const sequelizeModel = this.sequelize.define(model.name, attributes, {
+      this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
         freezeTableName: false,
@@ -170,27 +154,8 @@ export class StoreService {
         schema,
         indexes,
       });
-      if (argv.subscription) {
-        const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
-        const triggers = await this.sequelize.query(getNotifyTriggers(), {
-          replacements: { triggerName },
-          type: QueryTypes.SELECT,
-        });
-        // Triggers not been found
-        if (triggers.length === 0) {
-          extraQueries.push(
-            createNotifyTrigger(schema, sequelizeModel.tableName),
-          );
-        } else {
-          this.validateNotifyTriggers(
-            triggerName,
-            triggers as NotifyTriggerPayload[],
-          );
-        }
-      } else {
-        extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
-      }
     }
+    const extraQueries = [];
     for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);
@@ -258,24 +223,6 @@ export class StoreService {
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
-  }
-
-  validateNotifyTriggers(
-    triggerName: string,
-    triggers: NotifyTriggerPayload[],
-  ) {
-    if (triggers.length !== NotifyTriggerManipulationType.length) {
-      throw new Error(
-        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
-      );
-    }
-    triggers.map((t) => {
-      if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
-        throw new Error(
-          `Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`,
-        );
-      }
-    });
   }
 
   enumNameToHash(enumName: string): string {

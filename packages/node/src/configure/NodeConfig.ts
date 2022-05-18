@@ -4,15 +4,15 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
-import { last } from 'lodash';
+import { loadFromJsonOrYaml } from '@subql/common-cosmos';
+import { last, StringNullableChain } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { getLogger } from '../utils/logger';
 import { assign } from '../utils/object';
-
 const logger = getLogger('configure');
 
 export interface IConfig {
+  readonly configDir?: string;
   readonly subquery: string;
   readonly subqueryName?: string;
   readonly dbSchema?: string;
@@ -23,6 +23,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
+  readonly networkEndpointParams?: Record<string, string>;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -55,6 +56,8 @@ export class NodeConfig implements IConfig {
     filePath: string,
     configFromArgs?: Partial<IConfig>,
   ): NodeConfig {
+    const fileInfo = path.parse(filePath);
+
     if (!fs.existsSync(filePath)) {
       throw new Error(`Load config from file ${filePath} is not exist`);
     }
@@ -66,7 +69,9 @@ export class NodeConfig implements IConfig {
       throw e;
     }
 
-    const config = assign(configFromFile, configFromArgs) as IConfig;
+    const config = assign(configFromFile, configFromArgs, {
+      configDir: fileInfo.dir,
+    }) as IConfig;
     return new NodeConfig(config);
   }
 
@@ -84,6 +89,10 @@ export class NodeConfig implements IConfig {
     return this._config.subqueryName ?? last(this.subquery.split(path.sep));
   }
 
+  get configDir(): string {
+    return this._config.configDir;
+  }
+
   get localMode(): boolean {
     return this._config.localMode;
   }
@@ -98,6 +107,10 @@ export class NodeConfig implements IConfig {
 
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get networkEndpointParams(): Record<string, string> | undefined {
+    return this._config.networkEndpointParams;
   }
 
   get timeout(): number {

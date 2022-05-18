@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
-import { Entity } from '@subql/types';
+import { Entity } from '@subql/types-cosmos';
 import { getTypeByScalarName, GraphQLModelsType } from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import { OperationEntity, OperationType } from './types';
@@ -81,7 +81,7 @@ export class StoreOperations {
     }
   }
 
-  getOperationLeafCount(): any {
+  getOperationLeafCount(): number {
     return this.merkleTools.getLeafCount();
   }
 }

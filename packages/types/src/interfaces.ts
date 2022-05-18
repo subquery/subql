@@ -1,8 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Extrinsic, EventRecord, SignedBlock} from '@polkadot/types/interfaces';
-
+import {DecodedTxRaw} from '@cosmjs/proto-signing';
+import {Block, IndexedTx} from '@cosmjs/stargate';
+import {Event, Log} from '@cosmjs/stargate/build/logs';
 export interface Entity {
   id: string;
 }
@@ -20,27 +21,32 @@ export interface Store {
   remove(entity: string, id: string): Promise<void>;
 }
 
-export interface SubstrateBlock extends SignedBlock {
-  // parent block's spec version, can be used to decide the correct metadata that should be used for this block.
-  specVersion: number;
-  timestamp: Date;
-  events: EventRecord[];
+export interface CosmosBlock {
+  block: Block;
+  txs: IndexedTx[];
 }
 
-export interface SubstrateExtrinsic {
-  // index in the block
+export interface CosmosTransaction {
   idx: number;
-  extrinsic: Extrinsic;
-  block: SubstrateBlock;
-  events: EventRecord[];
-  success: boolean;
+  block: CosmosBlock;
+  tx: IndexedTx;
+  decodedTx: DecodedTxRaw;
 }
 
-export interface SubstrateEvent extends EventRecord {
-  // index in the block
+export interface CosmosMessage {
   idx: number;
-  extrinsic?: SubstrateExtrinsic;
-  block: SubstrateBlock;
+  block: CosmosBlock;
+  tx: CosmosTransaction;
+  msg: any;
+}
+
+export interface CosmosEvent {
+  idx: number;
+  block: CosmosBlock;
+  tx: CosmosTransaction;
+  msg: CosmosMessage;
+  log: Log;
+  event: Event;
 }
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;

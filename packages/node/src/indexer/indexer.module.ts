@@ -2,46 +2,45 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
+import { NodeConfig } from '../configure/NodeConfig';
 import { DbModule } from '../db/db.module';
-import { ApiService } from './api.service';
+import { ApiCosmosService } from './apicosmos.service';
 import { BenchmarkService } from './benchmark.service';
-import { DictionaryService } from './dictionary.service';
-import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
-import { FetchService } from './fetch.service';
-import { IndexerManager } from './indexer.manager';
+import { CosmosDsProcessorService } from './cosmosds-processor.service';
+import { DynamicDsService } from './cosmosdynamic-ds.service';
+import { CosmosDictionaryService } from './dictionarycosmos.service';
+import { FetchCosmosService } from './fetchcosmos.service';
+import { IndexerCosmosManager } from './indexercosmos.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
-import { SandboxService } from './sandbox.service';
+import { SandboxCosmosService } from './sandboxcosmos.service';
 import { StoreService } from './store.service';
-
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
-    IndexerManager,
+    IndexerCosmosManager,
     StoreService,
     {
-      provide: ApiService,
+      provide: ApiCosmosService,
       useFactory: async (
-        project: SubqueryProject,
-        eventEmitter: EventEmitter2,
+        project: SubqueryCosmosProject,
+        nodeConfig: NodeConfig,
       ) => {
-        const apiService = new ApiService(project, eventEmitter);
+        const apiService = new ApiCosmosService(project, nodeConfig);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject, EventEmitter2],
+      inject: [SubqueryCosmosProject, NodeConfig],
     },
-    FetchService,
+    FetchCosmosService,
     BenchmarkService,
-    DictionaryService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
+    CosmosDictionaryService,
+    SandboxCosmosService,
+    CosmosDsProcessorService,
     PoiService,
     MmrService,
+    DynamicDsService,
   ],
   exports: [StoreService],
 })

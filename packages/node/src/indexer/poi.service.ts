@@ -4,8 +4,8 @@
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { hexToU8a } from '@polkadot/util';
 import { Sequelize } from 'sequelize';
+import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
@@ -16,10 +16,11 @@ export class PoiService implements OnApplicationShutdown {
   private latestPoiBlockHash: Uint8Array;
   private poiRepo: PoiRepo;
   private schema: string;
+  private latestPoiBlock: ProofOfIndex;
 
   constructor(
     protected nodeConfig: NodeConfig,
-    protected project: SubqueryProject,
+    protected project: SubqueryCosmosProject,
     protected sequelize: Sequelize,
   ) {}
 

@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { NestFactory } from '@nestjs/core';
-import { findAvailablePort } from '@subql/common';
+import { findAvailablePort } from '@subql/common-cosmos';
 import { AppModule } from './app.module';
-import { IndexerManager } from './indexer/indexer.manager';
+import { IndexerCosmosManager } from './indexer/indexercosmos.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { getYargsOption } from './yargs';
 
@@ -42,7 +42,7 @@ async function bootstrap() {
     });
     await app.init();
 
-    const indexerManager = app.get(IndexerManager);
+    const indexerManager = app.get(IndexerCosmosManager);
     await indexerManager.start();
     await app.listen(port);
 

@@ -9,25 +9,19 @@ import {
   IPFSReader,
   LocalReader,
   Reader,
-  loadFromJsonOrYaml,
-} from '@subql/common';
+  isCustomCosmosDs,
+  RuntimeDataSourceV0_3_0,
+  CustomDatasourceV0_3_0,
+} from '@subql/common-cosmos';
 import {
-  ChainTypes,
-  CustomDatasourceV0_2_0,
-  isCustomDs,
-  // loadChainTypesFromJs,
-  parseChainTypes,
-  RuntimeDataSourceV0_0_1,
-  RuntimeDataSourceV0_2_0,
-  SubstrateRuntimeHandler,
-  SubstrateCustomHandler,
-  SubstrateHandler,
-  SubstrateHandlerKind,
-} from '@subql/common-substrate';
-import yaml from 'js-yaml';
+  SubqlCosmosCustomDatasource,
+  SubqlCosmosCustomHandler,
+  SubqlCosmosHandler,
+  SubqlCosmosHandlerKind,
+  SubqlCosmosRuntimeHandler,
+} from '@subql/types-cosmos';
 import tar from 'tar';
-import { NodeVM, VMScript } from 'vm2';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { SubqlCosmosProjectDs } from '../configure/cosmosproject.model';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -66,37 +60,23 @@ export function getProjectEntry(root: string): string {
   }
 }
 
-export function isBaseHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateRuntimeHandler {
-  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
+export function isBaseCosmosHandler(
+  handler: SubqlCosmosHandler,
+): handler is SubqlCosmosRuntimeHandler {
+  return Object.values<string>(SubqlCosmosHandlerKind).includes(handler.kind);
 }
 
-export function isCustomHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateCustomHandler {
-  return !isBaseHandler(handler);
+export function isCustomCosmosHandler<K extends string>(
+  handler: SubqlCosmosHandler,
+): handler is SubqlCosmosCustomHandler<K> {
+  return !isBaseCosmosHandler(handler);
 }
 
-export async function updateDataSourcesV0_0_1(
-  _dataSources: RuntimeDataSourceV0_0_1[],
-  reader: Reader,
-): Promise<SubqlProjectDs[]> {
-  // force convert to updated ds
-  const dataSources = _dataSources as SubqlProjectDs[];
-  await Promise.all(
-    dataSources.map(async (ds) => {
-      ds.mapping.entryScript = await loadDataSourceScript(reader);
-    }),
-  );
-  return dataSources;
-}
-
-export async function updateDataSourcesV0_2_0(
-  _dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[],
+export async function updateDataSourcesV0_3_0(
+  _dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[],
   reader: Reader,
   root: string,
-): Promise<SubqlProjectDs[]> {
+): Promise<SubqlCosmosProjectDs[]> {
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
@@ -110,7 +90,7 @@ export async function updateDataSourcesV0_2_0(
         root,
         entryScript,
       );
-      if (isCustomDs(dataSource)) {
+      if (isCustomCosmosDs(dataSource)) {
         if (dataSource.processor) {
           dataSource.processor.file = await updateProcessor(
             reader,
@@ -176,53 +156,11 @@ async function updateProcessor(
   }
 }
 
-export async function getChainTypes(
-  reader: Reader,
-  root: string,
-  file: string,
-): Promise<ChainTypes> {
-  // If the project is load from local, we will direct load them
-  if (reader instanceof LocalReader) {
-    return loadChainTypes(file, root);
-  } else {
-    // If it is stored in ipfs or other resources, we will use the corresponding reader to read the file
-    // Because ipfs not provide extension of the file, it is difficult to determine its format
-    // We will use yaml.load to try to load the script and parse them to supported chain types
-    // if it failed, we will give it another another attempt, and assume the script written in js
-    // we will download it to a temp folder, and load them within sandbox
-    const res = await reader.getFile(file);
-    let raw: unknown;
-    try {
-      raw = yaml.load(res);
-      return parseChainTypes(raw);
-    } catch (e) {
-      const chainTypesPath = `${path.resolve(
-        root,
-        file.replace('ipfs://', ''),
-      )}.js`;
-      await fs.promises.writeFile(chainTypesPath, res);
-      raw = loadChainTypesFromJs(chainTypesPath); //root not required, as it been packed in single js
-      return parseChainTypes(raw);
-    }
-  }
-}
-
 export async function loadDataSourceScript(
   reader: Reader,
   file?: string,
 ): Promise<string> {
   let entry: string;
-  //For RuntimeDataSourceV0_0_1
-  if (!file) {
-    const pkg = await reader.getPkg();
-    if (pkg === undefined) throw new Error('Project package.json is not found');
-    if (pkg.main) {
-      entry = pkg.main.startsWith('./') ? pkg.main : `./${pkg.main}`;
-    } else {
-      entry = './dist';
-    }
-  }
-  //Else get file
   const entryScript = await reader.getFile(file ? file : entry);
   if (entryScript === undefined) {
     throw new Error(`Entry file ${entry} for datasource not exist`);
@@ -236,66 +174,12 @@ async function makeTempDir(): Promise<string> {
   return fs.promises.mkdtemp(`${tmpDir}${sep}`);
 }
 
-export async function getProjectRoot(reader: Reader): Promise<string> {
-  if (reader instanceof LocalReader) return reader.root;
+export async function getProjectRoot(
+  reader: Reader,
+  path: string,
+): Promise<string> {
+  if (reader instanceof LocalReader) return path;
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }
-}
-
-export function loadChainTypes(file: string, projectRoot: string): unknown {
-  const { ext } = path.parse(file);
-  const filePath = path.resolve(projectRoot, file);
-  if (fs.existsSync(filePath)) {
-    if (ext === '.js' || ext === '.cjs') {
-      //load can be self contained js file, or js depend on node_module which will require project root
-      return loadChainTypesFromJs(filePath, projectRoot);
-    } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
-      return loadFromJsonOrYaml(filePath);
-    } else {
-      throw new Error(`Extension ${ext} not supported`);
-    }
-  } else {
-    throw new Error(`Load from file ${file} not exist`);
-  }
-}
-
-export function loadChainTypesFromJs(
-  filePath: string,
-  requireRoot?: string,
-): unknown {
-  const { base, ext } = path.parse(filePath);
-  const root = requireRoot ?? path.dirname(filePath);
-  const vm = new NodeVM({
-    console: 'redirect',
-    wasm: false,
-    sandbox: {},
-    require: {
-      context: 'sandbox',
-      external: true,
-      builtin: ['path'],
-      root: root,
-      resolve: (moduleName: string) => {
-        return require.resolve(moduleName, { paths: [root] });
-      },
-    },
-    wrapper: 'commonjs',
-    sourceExtensions: ['js', 'cjs'],
-  });
-  let rawContent: unknown;
-  try {
-    const script = new VMScript(
-      `module.exports = require('${filePath}').default;`,
-      path.join(root, 'sandbox'),
-    ).compile();
-    rawContent = vm.run(script) as unknown;
-  } catch (err) {
-    throw new Error(`\n NodeVM error: ${err}`);
-  }
-  if (rawContent === undefined) {
-    throw new Error(
-      `There was no default export found from required ${base} file`,
-    );
-  }
-  return rawContent;
 }

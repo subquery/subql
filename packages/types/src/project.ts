@@ -1,161 +1,177 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ApiPromise} from '@polkadot/api';
-import {RegistryTypes} from '@polkadot/types/types';
-import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
-
-export enum SubqlDatasourceKind {
-  Runtime = 'substrate/Runtime',
-}
-
-export enum SubqlHandlerKind {
-  Block = 'substrate/BlockHandler',
-  Call = 'substrate/CallHandler',
-  Event = 'substrate/EventHandler',
-}
-
-export type RuntimeHandlerInputMap = {
-  [SubqlHandlerKind.Block]: SubstrateBlock;
-  [SubqlHandlerKind.Event]: SubstrateEvent;
-  [SubqlHandlerKind.Call]: SubstrateExtrinsic;
-};
-
-type RuntimeFilterMap = {
-  [SubqlHandlerKind.Block]: SubqlNetworkFilter;
-  [SubqlHandlerKind.Event]: SubqlEventFilter;
-  [SubqlHandlerKind.Call]: SubqlCallFilter;
-};
-
-export interface ProjectManifest {
-  specVersion: string;
-  description: string;
-  repository: string;
-
-  schema: string;
-
-  network: {
-    endpoint: string;
-    customTypes?: RegistryTypes;
-  };
-
-  dataSources: SubqlDatasource[];
-}
-
-// [startSpecVersion?, endSpecVersion?] closed range
-export type SpecVersionRange = [number, number];
-
-interface SubqlBaseHandlerFilter {
-  specVersion?: SpecVersionRange;
-}
-
-export type SubqlBlockFilter = SubqlBaseHandlerFilter;
-
-export interface SubqlEventFilter extends SubqlBaseHandlerFilter {
-  module?: string;
-  method?: string;
-}
-
-export interface SubqlCallFilter extends SubqlEventFilter {
-  success?: boolean;
-}
-
-export interface SubqlBlockHandler {
-  handler: string;
-  kind: SubqlHandlerKind.Block;
-  filter?: SubqlBlockFilter;
-}
-
-export interface SubqlCallHandler {
-  handler: string;
-  kind: SubqlHandlerKind.Call;
-  filter?: SubqlCallFilter;
-}
-
-export interface SubqlEventHandler {
-  handler: string;
-  kind: SubqlHandlerKind.Event;
-  filter?: SubqlEventFilter;
-}
-
-export interface SubqlCustomHandler<K extends string = string, F = Record<string, unknown>> {
-  handler: string;
-  kind: K;
-  filter?: F;
-}
-
-export type SubqlRuntimeHandler = SubqlBlockHandler | SubqlCallHandler | SubqlEventHandler;
-
-export type SubqlHandler = SubqlRuntimeHandler | SubqlCustomHandler<string, unknown>;
-
-export type SubqlHandlerFilter = SubqlBlockFilter | SubqlCallFilter | SubqlEventFilter;
-
-export interface SubqlMapping<T extends SubqlHandler = SubqlHandler> {
-  handlers: T[];
-}
-
-interface ISubqlDatasource<M extends SubqlMapping, F extends SubqlNetworkFilter = SubqlNetworkFilter> {
-  name?: string;
-  kind: string;
-  filter?: F;
-  startBlock?: number;
-  mapping: M;
-}
-
-export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
-  extends ISubqlDatasource<M> {
-  kind: SubqlDatasourceKind.Runtime;
-}
-
-export interface SubqlNetworkFilter {
-  specName?: string;
-}
-
-export type SubqlDatasource = SubqlRuntimeDatasource | SubqlCustomDatasource; // | SubqlBuiltinDataSource;
+import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
+import {StargateClient} from '@cosmjs/stargate';
+import {CosmosBlock, CosmosTransaction, CosmosMessage, CosmosEvent} from './interfaces';
 
 export interface FileReference {
   file: string;
+}
+
+export interface CustomModule {
+  file: string;
+  messages: string[];
 }
 
 export type CustomDataSourceAsset = FileReference;
 
 export type Processor<O = any> = FileReference & {options?: O};
 
-export interface SubqlCustomDatasource<
-  K extends string = string,
-  T extends SubqlNetworkFilter = SubqlNetworkFilter,
-  M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>,
-  O = any
-> extends ISubqlDatasource<M, T> {
+export enum SubqlCosmosDatasourceKind {
+  Runtime = 'cosmos/Runtime',
+  Custom = 'cosmos/Custom',
+}
+
+export enum SubqlCosmosHandlerKind {
+  Block = 'cosmos/BlockHandler',
+  Transaction = 'cosmos/TransactionHandler',
+  Message = 'cosmos/MessageHandler',
+  Event = 'cosmos/EventHandler',
+}
+
+export type CosmosRuntimeHandlerInputMap = {
+  [SubqlCosmosHandlerKind.Block]: CosmosBlock;
+  [SubqlCosmosHandlerKind.Transaction]: CosmosTransaction;
+  [SubqlCosmosHandlerKind.Message]: CosmosMessage;
+  [SubqlCosmosHandlerKind.Event]: CosmosEvent;
+};
+
+type CosmosRuntimeFilterMap = {
+  [SubqlCosmosHandlerKind.Block]: {};
+  [SubqlCosmosHandlerKind.Transaction]: {};
+  [SubqlCosmosHandlerKind.Message]: SubqlCosmosMessageFilter;
+  [SubqlCosmosHandlerKind.Event]: SubqlCosmosEventFilter;
+};
+
+export interface CosmosProjectManifest {
+  specVersion: string;
+  description: string;
+  repository: string;
+
+  schema: {
+    file: string;
+  };
+
+  network: CosmosNetwork;
+
+  dataSources: SubqlCosmosDatasource[];
+}
+
+export interface CosmosNetwork {
+  genesisHash: string;
+  endpoint: string;
+  chainId: string;
+}
+
+export interface SubqlCosmosMessageFilter {
+  type: string;
+  values?: {
+    [key: string]: string;
+  };
+}
+
+export interface SubqlCosmosEventFilter {
+  type: string;
+  messageFilter?: SubqlCosmosMessageFilter;
+}
+
+export type SubqlCosmosHandlerFilter = SubqlCosmosEventFilter | SubqlCosmosMessageFilter;
+
+export interface SubqlCosmosBlockHandler {
+  handler: string;
+  kind: SubqlCosmosHandlerKind.Block;
+}
+
+export interface SubqlCosmosTransactionHandler {
+  handler: string;
+  kind: SubqlCosmosHandlerKind.Transaction;
+}
+
+export interface SubqlCosmosMessageHandler {
+  handler: string;
+  kind: SubqlCosmosHandlerKind.Message;
+  filter?: SubqlCosmosMessageFilter;
+}
+
+export interface SubqlCosmosEventHandler {
+  handler: string;
+  kind: SubqlCosmosHandlerKind.Event;
+  filter?: SubqlCosmosEventFilter;
+}
+
+export interface SubqlCosmosCustomHandler<K extends string = string, F = Record<string, unknown>> {
+  handler: string;
   kind: K;
-  assets: Map<string, CustomDataSourceAsset>;
-  processor: Processor<O>;
+  filter?: F;
 }
 
-//export type SubqlBuiltinDataSource = ISubqlDatasource;
+export type SubqlCosmosRuntimeHandler =
+  | SubqlCosmosBlockHandler
+  | SubqlCosmosTransactionHandler
+  | SubqlCosmosMessageHandler
+  | SubqlCosmosEventHandler;
 
-export interface HandlerInputTransformer<
-  T extends SubqlHandlerKind,
+export type SubqlCosmosHandler = SubqlCosmosRuntimeHandler | SubqlCosmosCustomHandler;
+
+export interface SubqlCosmosMapping<T extends SubqlCosmosHandler = SubqlCosmosHandler> {
+  file: string;
+  handlers: T[];
+}
+
+interface ISubqlCosmosDatasource<M extends SubqlCosmosMapping> {
+  name?: string;
+  kind: string;
+  startBlock?: number;
+  mapping: M;
+}
+
+export interface SubqlCosmosRuntimeDatasource<
+  M extends SubqlCosmosMapping<SubqlCosmosRuntimeHandler> = SubqlCosmosMapping<SubqlCosmosRuntimeHandler>
+> extends ISubqlCosmosDatasource<M> {
+  kind: SubqlCosmosDatasourceKind.Runtime;
+  chainTypes: Map<string, CustomModule>;
+}
+
+export type SubqlCosmosDatasource = SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource;
+
+export type CustomCosmosDataSourceAsset = FileReference;
+
+export interface SubqlCosmosCustomDatasource<
+  K extends string = string,
+  M extends SubqlCosmosMapping = SubqlCosmosMapping<SubqlCosmosCustomHandler>,
+  O = any
+> extends ISubqlCosmosDatasource<M> {
+  kind: K;
+  assets: Map<string, CustomCosmosDataSourceAsset>;
+  chainTypes: Map<string, CustomModule>;
+  processor?: Processor<O>;
+}
+
+export interface CosmosHandlerInputTransformer<
+  T extends SubqlCosmosHandlerKind,
   U,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
 > {
-  (original: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets: Record<string, string>): Promise<U>; //  | SubqlBuiltinDataSource
+  (original: CosmosRuntimeHandlerInputMap[T], ds: DS, api: CosmWasmClient, assets: Record<string, string>): Promise<U>; //  | SubqlBuiltinDataSource
 }
 
-export interface SubqlDatasourceProcessor<
+export interface SubqlCosmosDatasourceProcessor<
   K extends string,
-  F extends SubqlNetworkFilter,
-  DS extends SubqlCustomDatasource<K, F> = SubqlCustomDatasource<K, F>
+  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>
 > {
   kind: K;
   validate(ds: DS, assets: Record<string, string>): void;
-  dsFilterProcessor(ds: DS, api: ApiPromise): boolean;
-  handlerProcessors: {[kind: string]: SecondLayerHandlerProcessor<SubqlHandlerKind, unknown, unknown, DS>};
+  dsFilterProcessor(ds: DS, api: CosmWasmClient): boolean;
+  handlerProcessors: {
+    [kind: string]: SecondLayerCosmosHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown, DS>;
+  };
 }
 
 export interface DictionaryQueryCondition {
   field: string;
-  value: string;
+  value: string | Record<string, string> | Array<Record<string, string>>;
+  matcher?: string; // defaults to "equalTo", use "contains" for JSON
 }
 
 export interface DictionaryQueryEntry {
@@ -163,17 +179,16 @@ export interface DictionaryQueryEntry {
   conditions: DictionaryQueryCondition[];
 }
 
-// only allow one custom handler for each baseHandler kind
-export interface SecondLayerHandlerProcessor<
-  K extends SubqlHandlerKind,
+export interface SecondLayerCosmosHandlerProcessor<
+  K extends SubqlCosmosHandlerKind,
   F,
   E,
-  DS extends SubqlCustomDatasource = SubqlCustomDatasource
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
 > {
   baseHandlerKind: K;
-  baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
-  transformer: HandlerInputTransformer<K, E, DS>;
-  filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
+  baseFilter: CosmosRuntimeFilterMap[K] | CosmosRuntimeFilterMap[K][];
+  transformer: CosmosHandlerInputTransformer<K, E, DS>;
+  filterProcessor: (filter: F | undefined, input: CosmosRuntimeHandlerInputMap[K], ds: DS) => boolean;
   filterValidator: (filter: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry;
+  dictionaryQuery: (filter: F, ds: DS) => DictionaryQueryEntry;
 }

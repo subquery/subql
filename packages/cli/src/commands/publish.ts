@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {getProjectRootAndManifest} from '@subql/common';
+import {getProjectRootAndManifest} from '@subql/common-cosmos';
 import {uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 

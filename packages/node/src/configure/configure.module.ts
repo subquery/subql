@@ -4,17 +4,20 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
-import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
+import {
+  getProjectRootAndManifest,
+  IPFS_REGEX,
+  CosmosProjectNetworkConfig,
+} from '@subql/common-cosmos';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
+import { SubqueryCosmosProject } from './cosmosproject.model';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
-import { SubqueryProject } from './SubqueryProject';
-const logger = getLogger('configure');
 
 const YargsNameMapping = {
   local: 'localMode',
+  'network-endpoint-param': 'networkEndpointParams',
 };
 
 type Args = ReturnType<typeof getYargsOption>['argv'];
@@ -30,6 +33,14 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
         throw new Error('Argument `network-registry` is not valid JSON');
       }
     }
+    if (key === 'network-endpoint-param') {
+      value = (value as string[]).reduce((acc, header) => {
+        const [headerKey, headerValue] = header.split(':').map((v) => v.trim());
+        acc[headerKey] = headerValue;
+
+        return acc;
+      }, {});
+    }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
   }, {});
@@ -40,12 +51,9 @@ function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
   return {
     ...config,
     subqueryName:
-      config.subqueryName ??
-      (ipfsMatch
+      config.subqueryName ?? ipfsMatch
         ? config.subquery.replace(IPFS_REGEX, '')
-        : last(
-            getProjectRootAndManifest(config.subquery).root.split(path.sep),
-          )),
+        : last(getProjectRootAndManifest(config.subquery).root.split(path.sep)),
   } as MinConfig;
 }
 
@@ -85,6 +93,7 @@ function warnDeprecations() {
     logger.warn('Note that argument --local has been deprecated');
   }
 }
+const logger = getLogger('configure');
 
 @Global()
 @Module({})
@@ -98,7 +107,7 @@ export class ConfigureModule {
     } else {
       if (!argv.subquery) {
         logger.error(
-          'Subquery path is missing neither in cli options nor in config file',
+          'subquery path is missing neither in cli options nor in config file',
         );
         yargsOptions.showHelp();
         process.exit(1);
@@ -109,18 +118,14 @@ export class ConfigureModule {
       config = new NodeConfig(defaultSubqueryName(yargsToIConfig(argv)));
     }
 
-    if (!validDbSchemaName(config.dbSchema)) {
-      process.exit(1);
-    }
-
     if (config.debug) {
       setLevel('debug');
     }
 
     const project = async () => {
-      const p = await SubqueryProject.create(
+      const p = await SubqueryCosmosProject.create(
         argv.subquery,
-        omitBy<SubstrateProjectNetworkConfig>(
+        omitBy<CosmosProjectNetworkConfig>(
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,
@@ -145,11 +150,11 @@ export class ConfigureModule {
           useValue: config,
         },
         {
-          provide: SubqueryProject,
+          provide: SubqueryCosmosProject,
           useFactory: project,
         },
       ],
-      exports: [NodeConfig, SubqueryProject],
+      exports: [NodeConfig, SubqueryCosmosProject],
     };
   }
 }

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, Flags} from '@oclif/core';
-import {IPFS_NODE_ENDPOINT} from '@subql/common';
+import {IPFS_NODE_ENDPOINT} from '@subql/common-cosmos';
 import {commonRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
 

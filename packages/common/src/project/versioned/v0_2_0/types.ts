@@ -9,16 +9,13 @@ export interface ProjectManifestV0_2_0<D extends object = BaseDataSource> {
   schema: {
     file: string;
   };
+
   network: {
-    genesisHash: string;
     endpoint?: string;
     dictionary?: string;
-    chaintypes?: {
-      file: string;
-    };
+    chainId: string;
   };
   dataSources: D[];
-  specVersion?: string;
   repository?: string;
   description?: string;
 }
