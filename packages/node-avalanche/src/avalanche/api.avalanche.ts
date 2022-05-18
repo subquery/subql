@@ -136,11 +136,15 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   async fetchBlocks(bufferBlocks: number[]): Promise<AvalancheBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
+        // Fetch Block
         const block_promise = this.cchain.callMethod(
           'eth_getBlockByNumber',
           [`0x${num.toString(16)}`, true],
           '/ext/bc/C/rpc',
         );
+        const block = this.formatBlock((await block_promise).data.result);
+
+        // Fetch Block Logs
         const logs_promise = this.cchain.callMethod(
           'eth_getLogs',
           [
@@ -151,12 +155,8 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
           ],
           '/ext/bc/C/rpc',
         );
-        const block = this.formatBlock((await block_promise).data.result);
         const logs = (await logs_promise).data.result;
-        const transactions: AvalancheTransaction[] = new Array(
-          block.transactions.length,
-        );
-        let i = 0;
+        const transactions = [] as AvalancheTransaction<AvalancheResult>[];
         for (const tx of block.transactions) {
           const transaction = this.formatTransaction(tx);
           const receipt = (
@@ -167,8 +167,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
             )
           ).data.result;
           transaction.receipt = this.formatReceipt(receipt);
-          transactions[i] = transaction;
-          i += 1;
+          transactions.push(transaction);
         }
         block.transactions = transactions;
         return new AvalancheBlockWrapped(block, logs);
