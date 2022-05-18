@@ -434,7 +434,7 @@ export class IndexerManager {
     for (const handler of ds.mapping.handlers) {
       switch (handler.kind) {
         case SubstrateHandlerKind.Block:
-          await vm.securedExec(handler.handler, [blockContent]);
+          await vm.securedExec(handler.handler, [blockContent.block]);
           break;
         case SubstrateHandlerKind.Call: {
           let filteredCalls = blockContent.calls(handler.filter, ds);
