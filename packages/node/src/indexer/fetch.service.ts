@@ -37,6 +37,7 @@ import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
+import { WorkerPool } from '../worker/worker.manager';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
@@ -137,6 +138,7 @@ export class FetchService implements OnApplicationShutdown {
   private specVersionMap: SpecVersion[];
   private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
+  private workerPool: WorkerPool;
 
   constructor(
     private apiService: ApiService,
@@ -330,6 +332,11 @@ export class FetchService implements OnApplicationShutdown {
     } else {
       this.specVersionMap = [];
     }
+    this.workerPool = await WorkerPool.create(
+      this.project.network.endpoint,
+      this.apiService.getApi(),
+      argv.workers,
+    );
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -488,6 +495,8 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
       );
 
+      // const takeCount = this.workerPool.poolSize;
+
       if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
         await delay(1);
         continue;
@@ -500,11 +509,16 @@ export class FetchService implements OnApplicationShutdown {
       const specChanged = await this.specChanged(
         bufferBlocks[bufferBlocks.length - 1],
       );
-      const blocks = await fetchBlocksBatches(
-        this.api,
+
+      const blocks = await this.workerPool.fetchBlocks(
         bufferBlocks,
         specChanged ? undefined : this.parentSpecVersion,
       );
+      // const blocks = await fetchBlocksBatches(
+      //   this.api,
+      //   bufferBlocks,
+      //   metadataChanged ? undefined : this.parentSpecVersion,
+      // );
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
