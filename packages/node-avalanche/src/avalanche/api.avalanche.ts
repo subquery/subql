@@ -25,6 +25,7 @@ import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
 import { BigNumber } from 'ethers';
+import { flatten } from 'lodash';
 import {
   eventToTopic,
   functionToSighash,
@@ -144,33 +145,21 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
         );
         const block = this.formatBlock((await block_promise).data.result);
 
-        // Fetch Block Logs
-        const logs_promise = this.cchain.callMethod(
-          'eth_getLogs',
-          [
-            {
-              fromBlock: `0x${num.toString(16)}`,
-              toBlock: `0x${num.toString(16)}`,
-            },
-          ],
-          '/ext/bc/C/rpc',
+        block.transactions = await Promise.all(
+          block.transactions.map(async (tx) => {
+            const transaction = this.formatTransaction(tx);
+            const receipt = (
+              await this.cchain.callMethod(
+                'eth_getTransactionReceipt',
+                [tx.hash],
+                '/ext/bc/C/rpc',
+              )
+            ).data.result;
+            transaction.receipt = this.formatReceipt(receipt);
+            return transaction;
+          }),
         );
-        const logs = (await logs_promise).data.result;
-        const transactions = [] as AvalancheTransaction<AvalancheResult>[];
-        for (const tx of block.transactions) {
-          const transaction = this.formatTransaction(tx);
-          const receipt = (
-            await this.cchain.callMethod(
-              'eth_getTransactionReceipt',
-              [tx.hash],
-              '/ext/bc/C/rpc',
-            )
-          ).data.result;
-          transaction.receipt = this.formatReceipt(receipt);
-          transactions.push(transaction);
-        }
-        block.transactions = transactions;
-        return new AvalancheBlockWrapped(block, logs);
+        return new AvalancheBlockWrapped(block);
       }),
     );
   }
@@ -328,13 +317,13 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       if (!ds?.options?.abi) {
         return transaction as AvalancheTransaction;
       }
-      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
+      const assets = await loadAssets(ds);
+      const iface = this.buildInterface(ds.options.abi, assets);
+      const func = iface.getFunction(hexDataSlice(transaction.input, 0, 4));
+      const args = iface.decodeFunctionData(func, transaction.input) as T;
       return {
         ...transaction,
-        args: iface?.decodeFunctionData(
-          iface.getFunction(hexDataSlice(transaction.input, 0, 4)),
-          transaction.input,
-        ) as T,
+        args,
       };
     } catch (e) {
       logger.warn(`Failed to parse transaction data: ${e.message}`);
@@ -361,7 +350,10 @@ function formatLog(
 }
 
 export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
-  constructor(private _block: AvalancheBlock, private _logs: AvalancheLog[]) {}
+  private _logs: AvalancheLog<AvalancheResult>[] = [];
+  constructor(private _block: AvalancheBlock) {
+    this._logs = flatten(_block.transactions.map((tx) => tx.receipt.logs));
+  }
 
   get block(): AvalancheBlock {
     return this._block;
