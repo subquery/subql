@@ -3,7 +3,7 @@
 
 import {BlockWrapper} from '../interfaces';
 
-export interface AvalancheCallFilter {
+export interface AvalancheTransactionFilter {
   from?: string;
   to?: string;
   function?: string;
@@ -71,7 +71,10 @@ export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   args?: T;
 };
 
-export interface AvalancheBlockWrapper
-  extends BlockWrapper<AvalancheBlock, AvalancheTransaction, AvalancheLog, AvalancheCallFilter, AvalancheLogFilter> {
-  getTransactions: (filters?: string[]) => Record<string, any>;
-}
+export type AvalancheBlockWrapper = BlockWrapper<
+  AvalancheBlock,
+  AvalancheTransaction,
+  AvalancheLog,
+  AvalancheTransactionFilter,
+  AvalancheLogFilter
+>;

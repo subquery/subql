@@ -437,22 +437,25 @@ export class IndexerManager {
           await vm.securedExec(handler.handler, [blockContent.block]);
           break;
         case SubstrateHandlerKind.Call: {
-          let filteredCalls = blockContent.calls(handler.filter, ds);
-          filteredCalls = await Promise.all(
-            filteredCalls.map((call) =>
+          let filteredTransactions = blockContent.transactions(
+            handler.filter,
+            ds,
+          );
+          filteredTransactions = await Promise.all(
+            filteredTransactions.map((tx) =>
               (this.api as AvalancheApi).parseTransaction(
-                call as AvalancheTransaction,
+                tx as AvalancheTransaction,
                 ds as SubstrateRuntimeDataSource,
               ),
             ),
           );
-          for (const e of filteredCalls) {
+          for (const e of filteredTransactions) {
             await vm.securedExec(handler.handler, [e]);
           }
           break;
         }
         case SubstrateHandlerKind.Event: {
-          let filteredLogs = blockContent.events(handler.filter, ds);
+          let filteredLogs = blockContent.logs(handler.filter, ds);
           filteredLogs = await Promise.all(
             filteredLogs.map((log) =>
               (this.api as AvalancheApi).parseLog(

@@ -3,7 +3,7 @@
 
 import {BlockWrapper} from '../interfaces';
 
-export interface AvalancheCallFilter {
+export interface AvalancheTransactionFilter {
   from?: string;
   to?: string;
   function?: string;
@@ -19,15 +19,14 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
-  baseFeePerGas: bigint;
   blockExtraData: string;
-  blockGasCost: bigint;
   difficulty: bigint;
   extDataGasUsed: string;
   extDataHash: string;
   gasLimit: bigint;
   gasUsed: bigint;
   hash: string;
+  logs: AvalancheLog[];
   logsBloom: string;
   miner: string;
   mixHash: string;
@@ -43,6 +42,8 @@ export type AvalancheBlock = {
   transactions: AvalancheTransaction[];
   transactionsRoot: string;
   uncles: string[];
+  baseFeePerGas?: bigint;
+  blockGasCost?: bigint;
 };
 
 export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = {
@@ -103,6 +104,6 @@ export type AvalancheBlockWrapper = BlockWrapper<
   AvalancheBlock,
   AvalancheTransaction,
   AvalancheLog,
-  AvalancheCallFilter,
+  AvalancheTransactionFilter,
   AvalancheLogFilter
 >;
