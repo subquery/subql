@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
+import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
@@ -28,7 +29,6 @@ import {
 } from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
 import { getLogger } from '../utils/logger';
-
 import { CosmosDsProcessorService } from './cosmosds-processor.service';
 import { NetworkMetadataPayload } from './events';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -139,7 +139,11 @@ export class CosmosClient {
 
   decodeMsg(msg: any) {
     try {
-      return this.registry.decode(msg);
+      const decodedMsg = this.registry.decode(msg);
+      if (msg.typeUrl === '/cosmwasm.wasm.v1.MsgExecuteContract') {
+        decodedMsg.msg = JSON.parse(new TextDecoder().decode(decodedMsg.msg));
+      }
+      return decodedMsg;
     } catch (e) {
       logger.error(e);
       return {};

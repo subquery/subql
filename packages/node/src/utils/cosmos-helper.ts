@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { TextDecoder } from 'util';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block, IndexedTx } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
@@ -12,6 +13,7 @@ import {
   CosmosTransaction,
   CosmosMessage,
 } from '@subql/types-cosmos';
+import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { CosmosClient } from '../indexer/apicosmos.service';
 import { CosmosBlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -32,7 +34,13 @@ export function filterMessageData(
       }
     }
   }
-
+  if (
+    filter.type === '/cosmwasm.wasm.v1.MsgExecuteContract' &&
+    filter.contractCall &&
+    !(filter.contractCall in data.msg.msg)
+  ) {
+    return false;
+  }
   return true;
 }
 
@@ -238,4 +246,15 @@ export async function fetchCosmosBlocksBatches(
       };
     }),
   );
+}
+
+const btoa: (bin: string) => string =
+  globalThis.btoa || ((bin) => Buffer.from(bin, 'binary').toString('base64'));
+
+function base64FromBytes(arr: Uint8Array): string {
+  const bin: string[] = [];
+  for (const byte of arr) {
+    bin.push(String.fromCharCode(byte));
+  }
+  return btoa(bin.join(''));
 }

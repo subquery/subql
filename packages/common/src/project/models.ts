@@ -31,6 +31,10 @@ export class CosmosMessageFilter implements SubqlCosmosMessageFilter {
   @IsOptional()
   @IsObject()
   values?: {[key: string]: string};
+  @ValidateIf((o) => o.type === '/cosmwasm.wasm.v1.MsgExecuteContract')
+  @IsOptional()
+  @IsString()
+  contractCall?: string;
 }
 
 export class CosmosEventFilter implements SubqlCosmosEventFilter {

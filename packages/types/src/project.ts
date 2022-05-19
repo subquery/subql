@@ -66,6 +66,7 @@ export interface CosmosNetwork {
 
 export interface SubqlCosmosMessageFilter {
   type: string;
+  contractCall?: string;
   values?: {
     [key: string]: string;
   };
