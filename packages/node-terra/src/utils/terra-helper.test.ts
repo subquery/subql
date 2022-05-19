@@ -48,7 +48,7 @@ const TEST_EVENT_FILTER: SubqlTerraEventFilter = {
 
 jest.setTimeout(100000);
 
-describe('TerraUtils', () => {
+describe.skip('TerraUtils', () => {
   let api: TerraClient;
   let testnetApi: TerraClient;
   beforeAll(() => {

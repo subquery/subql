@@ -140,9 +140,24 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
+      // Need calculate operationHash to ensure correct offset insert all time
+      const operationHash = this.storeService.getOperationMerkleRoot();
+      if (
+        !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
+        this.blockOffset === undefined
+      ) {
+        await this.metadataRepo.upsert(
+          {
+            key: 'blockOffset',
+            value: blockHeight - 1,
+          },
+          { transaction: tx },
+        );
+        this.setBlockOffset(blockHeight - 1);
+      }
+
       if (this.nodeConfig.proofOfIndex) {
-        const operationHash = this.storeService.getOperationMerkleRoot();
-        //check if operation is null, then poi will not be insert
+        //check if operation is null, then poi will not be inserted
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
           const poiBlock = PoiBlock.create(
             blockHeight,
@@ -151,19 +166,13 @@ export class IndexerManager {
             await this.poiService.getLatestPoiBlockHash(),
             this.project.id,
           );
-          if (this.blockOffset === undefined) {
-            await this.metadataRepo.upsert(
-              {
-                key: 'blockOffset',
-                value: blockHeight - 1,
-              },
-              { transaction: tx },
-            );
-            this.setBlockOffset(blockHeight - 1);
-          }
           poiBlockHash = poiBlock.hash;
           await this.storeService.setPoi(poiBlock, { transaction: tx });
           this.poiService.setLatestPoiBlockHash(poiBlockHash);
+          await this.storeService.setMetadataBatch(
+            [{ key: 'lastPoiHeight', value: blockHeight }],
+            { transaction: tx },
+          );
         }
       }
     } catch (e) {
