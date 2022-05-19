@@ -5,11 +5,8 @@ import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
 import { DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME } from '@subql/common';
-import {
-  MMR,
-  FileBasedDb,
-  keccak256FlyHash,
-} from '@subql/x-merkle-mountain-range';
+import { MMR, FileBasedDb } from '@subql/x-merkle-mountain-range';
+import { keccak256 } from 'js-sha3';
 import { Sequelize, Op } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -21,6 +18,9 @@ import { MmrPayload, MmrProof } from './events';
 const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
+
+const keccak256Hash = (...nodeValues) =>
+  Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
@@ -185,7 +185,7 @@ export class MmrService implements OnApplicationShutdown {
     } else {
       fileBasedDb = await FileBasedDb.create(projectMmrPath, DEFAULT_WORD_SIZE);
     }
-    return new MMR(keccak256FlyHash, fileBasedDb);
+    return new MMR(keccak256Hash, fileBasedDb);
   }
 
   async getMmr(blockHeight: number): Promise<MmrPayload> {

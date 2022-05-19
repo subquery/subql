@@ -3,7 +3,6 @@
 
 import { Controller, Get, Param, UseFilters } from '@nestjs/common';
 import { MmrService } from '../indexer/mmr.service';
-import { getLogger } from '../utils/logger';
 import { MmrExceptionsFilter } from '../utils/mmr-exception.filter';
 
 const mmrExceptionsFilter = new MmrExceptionsFilter();
@@ -20,6 +19,7 @@ export class MmrQueryController {
   }
 
   @Get('latest/proof')
+  @UseFilters(mmrExceptionsFilter)
   async getLatestMmrProof(@Param() params) {
     return this.mmrService.getLatestMmrProof();
   }
@@ -32,6 +32,7 @@ export class MmrQueryController {
   }
 
   @Get(':blockHeight/proof')
+  @UseFilters(mmrExceptionsFilter)
   async getMmrProof(@Param() params) {
     return this.mmrService.getMmrProof(params.blockHeight);
   }

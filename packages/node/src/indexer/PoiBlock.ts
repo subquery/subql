@@ -23,7 +23,6 @@ const poiBlockHash = (
       Buffer.from(projectId),
       parentHash,
     ),
-    512, //this 64 bytes in buffer, equal to DEFAULT_WORD_SIZE
   );
 };
 
