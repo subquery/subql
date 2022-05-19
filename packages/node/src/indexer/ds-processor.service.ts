@@ -41,6 +41,7 @@ export function isSecondLayerHandlerProcessor_0_0_0<
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
     | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
 ): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> {
+  // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
   return processor.specVersion === undefined;
 }
 
