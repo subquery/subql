@@ -312,7 +312,7 @@ describe('FetchService', () => {
     //set to a kusama network and use polkadot dictionary
     project.network.endpoint = 'wss://kusama.api.onfinality.io/public-ws';
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
     project.dataSources = [
       {
         name: 'runtime',
