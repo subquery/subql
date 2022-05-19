@@ -1,0 +1,5 @@
+undecided:
+  - "@subql/common-substrate"
+  - "@subql/node"
+  - "@subql/node-terra"
+  - "@subql/types"
