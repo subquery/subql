@@ -64,7 +64,7 @@ async function createFetchService(
   );
 }
 
-describe('FetchService', () => {
+describe.skip('FetchService', () => {
   let fetchService: FetchTerraService;
   //
   // afterEach(() => {

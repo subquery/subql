@@ -35,7 +35,7 @@ function testTerraProject(): SubqueryTerraProject {
 
 jest.setTimeout(200000);
 
-describe('ApiTerraSevice', () => {
+describe.skip('ApiTerraSevice', () => {
   let app: INestApplication;
   let apiService: ApiTerraService;
 
