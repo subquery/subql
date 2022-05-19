@@ -247,14 +247,3 @@ export async function fetchCosmosBlocksBatches(
     }),
   );
 }
-
-const btoa: (bin: string) => string =
-  globalThis.btoa || ((bin) => Buffer.from(bin, 'binary').toString('base64'));
-
-function base64FromBytes(arr: Uint8Array): string {
-  const bin: string[] = [];
-  for (const byte of arr) {
-    bin.push(String.fromCharCode(byte));
-  }
-  return btoa(bin.join(''));
-}
