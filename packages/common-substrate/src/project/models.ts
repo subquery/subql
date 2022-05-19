@@ -4,6 +4,23 @@
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 
 import {BaseMapping, FileReference} from '@subql/common';
+import {
+  CustomDataSourceAsset as SubstrateCustomDataSourceAsset,
+  SubstrateBlockFilter,
+  SubstrateBlockHandler,
+  SubstrateCallFilter,
+  SubstrateCallHandler,
+  SubstrateCustomHandler,
+  SubstrateDatasourceKind,
+  SubstrateEventFilter,
+  SubstrateEventHandler,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeDatasource,
+  SubstrateRuntimeHandler,
+  SubstrateRuntimeHandlerFilter,
+  SubstrateCustomDatasource,
+} from '@subql/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -16,23 +33,6 @@ import {
   IsObject,
   ValidateNested,
 } from 'class-validator';
-import {
-  SubstrateCustomDataSourceAsset,
-  SubstrateBlockFilter,
-  SubstrateBlockHandler,
-  SubstrateCallFilter,
-  SubstrateCallHandler,
-  SubstrateCustomHandler,
-  SubstrateDatasourceKind,
-  SubstrateEventFilter,
-  SubstrateEventHandler,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateRuntimeDataSource,
-  SubstrateRuntimeHandler,
-  SubstrateRuntimeHandlerFilter,
-  SubstrateCustomDataSource,
-} from './types';
 
 export class BlockFilter implements SubstrateBlockFilter {
   @IsOptional()
@@ -155,7 +155,7 @@ export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
   specName?: string;
 }
 
-export class RuntimeDataSourceBase implements SubstrateRuntimeDataSource {
+export class RuntimeDataSourceBase implements SubstrateRuntimeDatasource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
   kind: SubstrateDatasourceKind.Runtime;
   @Type(() => RuntimeMapping)
@@ -176,7 +176,7 @@ export class FileReferenceImpl implements FileReference {
 }
 
 export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFilter, M extends CustomMapping, O = any>
-  implements SubstrateCustomDataSource<K, T, O>
+  implements SubstrateCustomDatasource<K, T, M, O>
 {
   @IsString()
   kind: K;

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {BaseMapping, ProjectManifestBaseImpl} from '@subql/common';
+import {SubstrateCustomDatasource, SubstrateNetworkFilter} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
@@ -14,7 +15,6 @@ import {
   validateSync,
 } from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
-import {SubstrateCustomDataSource, SubstrateNetworkFilter} from '../../types';
 import {CustomDatasourceV0_2_0, SubstrateProjectManifestV0_2_0, RuntimeDataSourceV0_2_0} from './types';
 
 export class FileType {
@@ -63,7 +63,7 @@ export class SubstrateCustomDataSourceV0_2_0Impl<
     M extends BaseMapping<any, any> = BaseMapping<Record<string, unknown>, any>
   >
   extends CustomDataSourceBase<K, T, M>
-  implements SubstrateCustomDataSource<K, T, M>
+  implements SubstrateCustomDatasource<K, T, M>
 {
   validate(): void {
     return validateObject(this, 'failed to validate custom datasource.');

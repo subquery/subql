@@ -9,6 +9,7 @@ import {
   RunnerSpecs,
   SemverVersionValidator,
 } from '@subql/common';
+import {SubstrateRuntimeDatasource} from '@subql/types';
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
 import {
   Equals,
@@ -17,12 +18,10 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  Matches,
   Validate,
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {SubstrateRuntimeDataSource} from '../../types';
 import {
   CustomDatasourceV0_2_0,
   FileType,
@@ -136,7 +135,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubstrateRuntimeDataSource | CustomDatasourceV0_2_0)[];
+  dataSources: (SubstrateRuntimeDatasource | CustomDatasourceV0_2_0)[];
   @Type(() => ProjectNetworkV1_0_0)
   network: ProjectNetworkV1_0_0;
   @IsString()

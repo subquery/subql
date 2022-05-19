@@ -19,7 +19,7 @@ import {
   SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { DictionaryQueryEntry } from '@subql/types';
+import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -171,7 +171,10 @@ export class FetchService implements OnApplicationShutdown {
         if (isCustomDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(handler.filter, ds);
+            const queryEntry = processor.dictionaryQuery(
+              (handler as SubstrateCustomHandler).filter,
+              ds,
+            );
             if (queryEntry) {
               queryEntries.push(queryEntry);
               continue;

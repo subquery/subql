@@ -2,6 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ProjectManifestBaseImpl} from '@subql/common';
+import {
+  SubstrateDatasourceKind,
+  SubstrateHandlerKind,
+  SubstrateNetworkFilter,
+  SubstrateRuntimeHandler,
+} from '@subql/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   Equals,
@@ -15,13 +21,7 @@ import {
   validateSync,
 } from 'class-validator';
 import {ChainTypes, SubqlNetworkFilterImpl, EventHandler, CallHandler, BlockHandler} from '../../models';
-import {
-  SubstrateDatasourceKind,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateProjectNetworkConfig,
-  SubstrateRuntimeHandler,
-} from '../../types';
+import {SubstrateProjectNetworkConfig} from '../../types';
 import {ManifestV0_0_1Mapping, ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
 export class ProjectNetworkV0_0_1 extends ChainTypes implements SubstrateProjectNetworkConfig {

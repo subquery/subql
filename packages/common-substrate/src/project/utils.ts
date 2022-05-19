@@ -2,16 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '@subql/common-substrate/project/versioned';
-import {gte} from 'semver';
 import {
   SecondLayerHandlerProcessor,
-  SubstrateCustomDataSource,
-  SubstrateDataSource,
+  SubstrateCustomDatasource,
+  SubstrateDatasource,
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
-  SubstrateRuntimeDataSource,
-} from './types';
+  SubstrateRuntimeDatasource,
+} from '@subql/types';
+import {gte} from 'semver';
 
 export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
   hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
@@ -32,12 +32,12 @@ export function isCallHandlerProcessor<T extends SubstrateNetworkFilter, E>(
 }
 
 export function isCustomDs<F extends SubstrateNetworkFilter>(
-  ds: SubstrateDataSource
-): ds is SubstrateCustomDataSource<string, F> {
-  return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDataSource<string, F>).processor;
+  ds: SubstrateDatasource
+): ds is SubstrateCustomDatasource<string, F> {
+  return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDatasource<string, F>).processor;
 }
 
-export function isRuntimeDs(ds: SubstrateDataSource): ds is SubstrateRuntimeDataSource {
+export function isRuntimeDs(ds: SubstrateDatasource): ds is SubstrateRuntimeDatasource {
   return ds.kind === SubstrateDatasourceKind.Runtime;
 }
 

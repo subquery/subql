@@ -11,6 +11,12 @@ import {
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
 } from '@subql/common-substrate';
+import {
+  SecondLayerHandlerProcessor_0_0_0,
+  SecondLayerHandlerProcessor_1_0_0,
+  SubstrateCustomDatasource,
+  SubstrateHandlerKind,
+} from '@subql/types';
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -24,6 +30,63 @@ export interface DsPluginSandboxOption {
 }
 
 const logger = getLogger('ds-sandbox');
+
+export function isSecondLayerHandlerProcessor_0_0_0<
+  K extends SubstrateHandlerKind,
+  F,
+  E,
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> {
+  // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
+  return processor.specVersion === undefined;
+}
+
+export function isSecondLayerHandlerProcessor_1_0_0<
+  K extends SubstrateHandlerKind,
+  F,
+  E,
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): processor is SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
+  return processor.specVersion === '1.0.0';
+}
+
+export function asSecondLayerHandlerProcessor_1_0_0<
+  K extends SubstrateHandlerKind,
+  F,
+  E,
+  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+>(
+  processor:
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
+  if (isSecondLayerHandlerProcessor_1_0_0(processor)) {
+    return processor;
+  }
+
+  if (!isSecondLayerHandlerProcessor_0_0_0(processor)) {
+    throw new Error('Unsupported ds processor version');
+  }
+
+  return {
+    ...processor,
+    specVersion: '1.0.0',
+    filterProcessor: (params) =>
+      processor.filterProcessor(params.filter, params.input, params.ds),
+    transformer: (params) =>
+      processor
+        .transformer(params.input, params.ds, params.api, params.assets)
+        .then((res) => [res]),
+  };
+}
 
 export class DsPluginSandbox extends Sandbox {
   constructor(option: DsPluginSandboxOption) {
@@ -109,7 +172,7 @@ export class DsProcessorService {
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
       } catch (e) {
-        logger.error(`not supported ds @${ds.kind}`);
+        logger.error(e, `not supported ds @${ds.kind}`);
         throw e;
       }
     }
