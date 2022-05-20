@@ -7,7 +7,7 @@ import {AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction}
 import {
   AvalancheBlock,
   AvalancheBlockWrapper,
-  AvalancheCallFilter,
+  AvalancheTransactionFilter,
   AvalancheLog,
   AvalancheLogFilter,
   AvalancheTransaction,
@@ -41,7 +41,7 @@ export interface BlockWrapper<
     | AlgorandTransaction
     | AvalancheTransaction,
   E extends SubstrateEvent | AlgorandEvent | AvalancheLog = SubstrateEvent | AlgorandEvent | AvalancheLog,
-  CF extends SubqlCallFilter | AvalancheCallFilter = SubqlCallFilter | AvalancheCallFilter,
+  CF extends SubqlCallFilter | AvalancheTransactionFilter = SubqlCallFilter | AvalancheTransactionFilter,
   EF extends SubqlEventFilter | AvalancheLogFilter = SubqlEventFilter | AvalancheLogFilter
 > {
   block: B;
@@ -49,7 +49,9 @@ export interface BlockWrapper<
   specVersion?: number;
   hash: string;
   calls?: (filters?: CF | CF[], ds?: any) => C[];
+  transactions?: (filters?: CF | CF[], ds?: any) => C[];
   events?: (filters?: EF | EF[], ds?: any) => E[];
+  logs?: (filters?: EF | EF[], ds?: any) => E[];
 }
 
 export interface ApiWrapper<

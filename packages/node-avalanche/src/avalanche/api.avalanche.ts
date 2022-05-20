@@ -4,32 +4,24 @@
 import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
-import {
-  isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_2_0,
-  SubstrateDataSource,
-} from '@subql/common-avalanche';
+import { RuntimeDataSourceV0_2_0 } from '@subql/common-avalanche';
 import { getLogger } from '@subql/common-node';
 import {
   ApiWrapper,
-  AvalancheBlock,
   AvalancheLog,
   AvalancheBlockWrapper,
   AvalancheTransaction,
-  AvalancheLogFilter,
-  AvalancheCallFilter,
   AvalancheResult,
 } from '@subql/types-avalanche';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
-import { BigNumber } from 'ethers';
+import { AvalancheBlockWrapped } from './block.avalanche';
 import {
-  eventToTopic,
-  functionToSighash,
-  hexStringEq,
-  stringNormalizedEq,
-} from '../utils/string';
+  formatBlock,
+  formatReceipt,
+  formatTransaction,
+} from './utils.avalanche';
 
 type AvalancheOptions = {
   ip: string;
@@ -135,34 +127,29 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   async fetchBlocks(bufferBlocks: number[]): Promise<AvalancheBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
+        // Fetch Block
         const block_promise = this.cchain.callMethod(
           'eth_getBlockByNumber',
           [`0x${num.toString(16)}`, true],
           '/ext/bc/C/rpc',
         );
-        const logs_promise = this.cchain.callMethod(
-          'eth_getLogs',
-          [
-            {
-              fromBlock: `0x${num.toString(16)}`,
-              toBlock: `0x${num.toString(16)}`,
-            },
-          ],
-          '/ext/bc/C/rpc',
-        );
-        const block = (await block_promise).data.result;
-        block.difficulty = BigNumber.from(block.difficulty).toBigInt();
-        block.gasLimit = BigNumber.from(block.gasLimit).toBigInt();
-        block.gasUsed = BigNumber.from(block.gasUsed).toBigInt();
-        block.number = BigNumber.from(block.number).toNumber();
-        block.size = BigNumber.from(block.size).toBigInt();
-        block.timestamp = BigNumber.from(block.timestamp).toBigInt();
-        block.totalDifficulty = BigNumber.from(
-          block.totalDifficulty,
-        ).toBigInt();
+        const block = formatBlock((await block_promise).data.result);
 
-        const logs = (await logs_promise).data.result;
-        return new AvalancheBlockWrapped(block, logs);
+        block.transactions = await Promise.all(
+          block.transactions.map(async (tx) => {
+            const transaction = formatTransaction(tx);
+            const receipt = (
+              await this.cchain.callMethod(
+                'eth_getTransactionReceipt',
+                [tx.hash],
+                '/ext/bc/C/rpc',
+              )
+            ).data.result;
+            transaction.receipt = formatReceipt(receipt);
+            return transaction;
+          }),
+        );
+        return new AvalancheBlockWrapped(block);
       }),
     );
   }
@@ -203,22 +190,22 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return this.contractInterfaces[abiName];
   }
 
-  async parseEvent<T extends AvalancheResult = AvalancheResult>(
-    event: AvalancheLog,
+  async parseLog<T extends AvalancheResult = AvalancheResult>(
+    log: AvalancheLog,
     ds: RuntimeDataSourceV0_2_0,
-  ): Promise<AvalancheLog<T>> {
+  ): Promise<AvalancheLog<T> | AvalancheLog> {
     try {
       if (!ds?.options?.abi) {
-        return event as AvalancheLog<T>;
+        return log;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
       return {
-        ...event,
-        args: iface?.parseLog(event).args as T,
+        ...log,
+        args: iface?.parseLog(log).args as T,
       };
     } catch (e) {
-      logger.warn(`Failed to parse event data: ${e.message}`);
-      return event as AvalancheLog<T>;
+      logger.warn(`Failed to parse log data: ${e.message}`);
+      return log;
     }
   }
 
@@ -228,136 +215,19 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   ): Promise<AvalancheTransaction<T> | AvalancheTransaction> {
     try {
       if (!ds?.options?.abi) {
-        return transaction as AvalancheTransaction;
+        return transaction;
       }
-      const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
-
+      const assets = await loadAssets(ds);
+      const iface = this.buildInterface(ds.options.abi, assets);
+      const func = iface.getFunction(hexDataSlice(transaction.input, 0, 4));
+      const args = iface.decodeFunctionData(func, transaction.input) as T;
       return {
         ...transaction,
-        args: iface?.decodeFunctionData(
-          iface.getFunction(hexDataSlice(transaction.input, 0, 4)),
-          transaction.input,
-        ) as T,
+        args,
       };
     } catch (e) {
       logger.warn(`Failed to parse transaction data: ${e.message}`);
-      return transaction as AvalancheTransaction<T>;
+      return transaction;
     }
-  }
-}
-
-export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
-  constructor(private _block: AvalancheBlock, private _logs: AvalancheLog[]) {}
-
-  get block(): AvalancheBlock {
-    return this._block;
-  }
-
-  get blockHeight(): number {
-    return this.block.number;
-  }
-
-  get hash(): string {
-    return this.block.hash;
-  }
-
-  calls(
-    filter?: AvalancheCallFilter,
-    ds?: SubstrateDataSource,
-  ): AvalancheTransaction[] {
-    if (!filter) {
-      return this.block.transactions;
-    }
-
-    let address: string | undefined;
-    if (isRuntimeDataSourceV0_2_0(ds)) {
-      address = ds?.options?.address;
-    }
-
-    return this.block.transactions.filter((t) =>
-      this.filterCallProcessor(t, filter, address),
-    );
-  }
-
-  events(
-    filter?: AvalancheLogFilter,
-    ds?: SubstrateDataSource,
-  ): AvalancheLog[] {
-    if (!filter) {
-      return this._logs;
-    }
-
-    let address: string | undefined;
-    if (isRuntimeDataSourceV0_2_0(ds)) {
-      address = ds?.options?.address;
-    }
-
-    return this._logs.filter((log) =>
-      this.filterEventsProcessor(log, filter, address),
-    );
-  }
-
-  private filterCallProcessor(
-    transaction: AvalancheTransaction,
-    filter: AvalancheCallFilter,
-    address?: string,
-  ): boolean {
-    if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
-      return false;
-    }
-    if (filter.from && !stringNormalizedEq(filter.from, transaction.from)) {
-      return false;
-    }
-    if (address && !filter.to && !stringNormalizedEq(address, transaction.to)) {
-      return false;
-    }
-    if (
-      filter.function &&
-      transaction.input.indexOf(functionToSighash(filter.function)) !== 0
-    ) {
-      return false;
-    }
-    return true;
-  }
-
-  private filterEventsProcessor(
-    log: AvalancheLog,
-    filter: AvalancheLogFilter,
-    address?: string,
-  ): boolean {
-    if (address && !stringNormalizedEq(address, log.address)) {
-      return false;
-    }
-
-    if (filter.topics) {
-      for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
-        const topic = filter.topics[i];
-        if (!topic) {
-          continue;
-        }
-
-        if (!hexStringEq(eventToTopic(topic), log.topics[i])) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  /****************************************************/
-  /*           AVALANCHE SPECIFIC METHODS             */
-  /****************************************************/
-
-  getTransactions(filters?: string[]): Record<string, any> {
-    if (!filters) {
-      return this.block.transactions;
-    }
-    return this.block.transactions.map((trx) => {
-      const filteredTrx = {};
-      filters.forEach((filter) => {
-        filteredTrx[filter] = trx[filter];
-      });
-      return filteredTrx;
-    });
   }
 }

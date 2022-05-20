@@ -24,7 +24,7 @@ import {
   ApiWrapper,
   BlockWrapper,
   AvalancheLogFilter,
-  AvalancheCallFilter,
+  AvalancheTransactionFilter,
 } from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -73,7 +73,7 @@ function eventFilterToQueryEntry(
 }
 
 function callFilterToQueryEntry(
-  filter: AvalancheCallFilter,
+  filter: AvalancheTransactionFilter,
 ): DictionaryQueryEntry {
   const conditions = [];
   if (filter.from) {
@@ -178,7 +178,7 @@ export class FetchService implements OnApplicationShutdown {
           case SubstrateHandlerKind.Block:
             return [];
           case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as AvalancheCallFilter[]) {
+            for (const filter of filterList as AvalancheTransactionFilter[]) {
               if (
                 filter.from !== undefined ||
                 filter.to !== undefined ||

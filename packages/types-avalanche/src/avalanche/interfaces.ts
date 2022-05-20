@@ -3,7 +3,7 @@
 
 import {BlockWrapper} from '../interfaces';
 
-export interface AvalancheCallFilter {
+export interface AvalancheTransactionFilter {
   from?: string;
   to?: string;
   function?: string;
@@ -19,11 +19,14 @@ export interface AvalancheResult extends ReadonlyArray<any> {
 }
 
 export type AvalancheBlock = {
+  blockExtraData: string;
   difficulty: bigint;
-  extraData: string;
+  extDataGasUsed: string;
+  extDataHash: string;
   gasLimit: bigint;
   gasUsed: bigint;
   hash: string;
+  logs: AvalancheLog[];
   logsBloom: string;
   miner: string;
   mixHash: string;
@@ -39,39 +42,68 @@ export type AvalancheBlock = {
   transactions: AvalancheTransaction[];
   transactionsRoot: string;
   uncles: string[];
+  baseFeePerGas?: bigint;
+  blockGasCost?: bigint;
 };
 
 export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = {
   blockHash: string;
-  blockNumber: string;
+  blockNumber: number;
   from: string;
-  gas: string;
-  gasPrice: string;
+  gas: bigint;
+  gasPrice: bigint;
   hash: string;
   input: string;
-  nonce: string;
+  nonce: bigint;
   to: string;
-  transactionIndex: string;
-  value: string;
-  v: string;
+  transactionIndex: bigint;
+  value: bigint;
+  type: string;
+  v: bigint;
   r: string;
   s: string;
+  receipt: AvalancheReceipt;
+  accessList?: string[];
+  chainId?: string;
+  maxFeePerGas?: bigint;
+  maxPriorityFeePerGas?: bigint;
   args?: T;
 };
 
 export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
-  logIndex: string;
-  blockNumber: string;
-  blockHash: string;
-  transactionHash: string;
-  transactionIndex: string;
   address: string;
-  data: string;
   topics: string[];
+  data: string;
+  blockNumber: number;
+  transactionHash: string;
+  transactionIndex: number;
+  blockHash: string;
+  logIndex: number;
+  removed: boolean;
   args?: T;
 };
 
-export interface AvalancheBlockWrapper
-  extends BlockWrapper<AvalancheBlock, AvalancheTransaction, AvalancheLog, AvalancheCallFilter, AvalancheLogFilter> {
-  getTransactions: (filters?: string[]) => Record<string, any>;
-}
+export type AvalancheReceipt = {
+  blockHash: string;
+  blockNumber: number;
+  contractAddress: string;
+  cumulativeGasUsed: bigint;
+  effectiveGasPrice: bigint;
+  from: string;
+  gasUsed: bigint;
+  logs: AvalancheLog[];
+  logsBloom: string;
+  status: boolean;
+  to: string;
+  transactionHash: string;
+  transactionIndex: number;
+  type: string;
+};
+
+export type AvalancheBlockWrapper = BlockWrapper<
+  AvalancheBlock,
+  AvalancheTransaction,
+  AvalancheLog,
+  AvalancheTransactionFilter,
+  AvalancheLogFilter
+>;
