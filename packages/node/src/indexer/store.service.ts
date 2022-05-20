@@ -99,7 +99,7 @@ export class StoreService {
   ): Promise<void> {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
-    this.historical = !!argv['experimental-historical'];
+    this.historical = await this.getHistoricalStateEnabled();
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -298,7 +298,6 @@ export class StoreService {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
-    await this.checkHistoricalState();
 
     await this.sequelize.sync();
     await this.setMetadata('historicalStateEnabled', this.historical);
@@ -307,20 +306,24 @@ export class StoreService {
     }
   }
 
-  async checkHistoricalState() {
-    let historicalStateEnabled: MetadataModel | null = null;
+  async getHistoricalStateEnabled(): Promise<boolean> {
+    let enabled = true;
     try {
-      historicalStateEnabled = await this.metaDataRepo.findByPk(
-        'historicalStateEnabled',
+      // Throws if _metadata doesn't exist (first startup)
+      const result = await this.sequelize.query(
+        `SELECT value FROM "${this.schema}"."_metadata" WHERE key = 'historicalStateEnabled'`,
+        { type: QueryTypes.SELECT },
       );
+      if (result.length > 0) {
+        enabled = result[0].value;
+      } else {
+        enabled = false;
+      }
     } catch (e: any) {
-      // ignored
+      enabled = !argv['disable-historical'];
     }
-    assert(
-      !historicalStateEnabled ||
-        historicalStateEnabled.value === this.historical,
-      "Option 'experimental-historical' cannot be changed after starting indexing",
-    );
+    logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
+    return enabled;
   }
 
   addBlockRangeColumnToIndexes(indexes: IndexesOptions[]) {
