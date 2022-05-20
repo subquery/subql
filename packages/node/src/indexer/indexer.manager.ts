@@ -6,6 +6,7 @@ import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
+import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -62,7 +63,6 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: ApiPromise;
-  private prevSpecVersion?: number;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
   private blockOffset: number;
@@ -98,13 +98,10 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      const isUpgraded = block.specVersion !== this.prevSpecVersion;
-      // if parentBlockHash injected, which means we need to check runtime upgrade
-      const apiAt = await this.apiService.getPatchedApi(
-        block.block.hash,
-        block.block.header.number.unwrap().toNumber(),
-        isUpgraded ? block.block.header.parentHash : undefined,
-      );
+
+      // Injected runtimeVersion from fetch service might be outdated
+      const runtimeVersion = await this.fetchService.getRuntimeVersion(block);
+      const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
 
       this.filteredDataSources = this.filterDataSources(
         block.block.header.number.toNumber(),
@@ -190,7 +187,6 @@ export class IndexerManager {
     }
     await tx.commit();
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
-    this.prevSpecVersion = block.specVersion;
   }
 
   async start(): Promise<void> {

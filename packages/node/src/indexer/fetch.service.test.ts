@@ -10,6 +10,7 @@ import {
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -256,7 +257,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
     //set dictionary to a different network
     project.network.dictionary =
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot';
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
     project.dataSources = [
       {
         name: 'runtime',
@@ -354,5 +355,163 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
+  }, 500000);
+
+  it('use dictionary and specVersionMap to get block specVersion', async () => {
+    const batchSize = 5;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+
+    fetchService = await createFetchService(project, batchSize);
+    await fetchService.init();
+    (fetchService as any).useDictionary = true;
+    const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
+    const specVersion = await fetchService.getSpecVersion(8638105);
+    expect(getSpecFromMapSpy).toBeCalledTimes(1);
+  }, 500000);
+
+  it('use api to get block specVersion when blockHeight out of specVersionMap', async () => {
+    const batchSize = 5;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+
+    fetchService = await createFetchService(project, batchSize);
+    await fetchService.init();
+    (fetchService as any).useDictionary = true;
+    const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
+    const getSpecFromApiSpy = jest.spyOn(fetchService, 'getSpecFromApi');
+
+    // current last specVersion 9190, we should always use api for check next spec
+
+    await expect(fetchService.getSpecVersion(90156860)).rejects.toThrow();
+    // It checked with dictionary specVersionMap once, and fall back to use api method
+    expect(getSpecFromMapSpy).toBeCalledTimes(1);
+    // this large blockHeight should be thrown
+    expect(getSpecFromApiSpy).toBeCalledTimes(1);
+  }, 500000);
+
+  it('only fetch SpecVersion from dictionary once', async () => {
+    const batchSize = 5;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    // make sure use dictionary is true
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: SubstrateHandlerKind.Event,
+              filter: { module: 'staking', method: 'Reward' },
+            },
+          ],
+        },
+      },
+    ];
+
+    fetchService = await createFetchService(project, batchSize);
+    const dictionaryService = (fetchService as any).dictionaryService;
+    const getSpecVersionSpy = jest.spyOn(dictionaryService, 'getSpecVersion');
+
+    await fetchService.init();
+
+    await fetchService.getSpecVersion(8638105);
+    await fetchService.getSpecVersion(8638200);
+
+    expect(getSpecVersionSpy).toBeCalledTimes(1);
+  }, 500000);
+
+  it('update specVersionMap once when specVersion map is out', async () => {
+    const batchSize = 5;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: SubstrateHandlerKind.Event,
+              filter: { module: 'staking', method: 'Reward' },
+            },
+          ],
+        },
+      },
+    ];
+
+    fetchService = await createFetchService(project, batchSize);
+    await fetchService.init();
+
+    (fetchService as any).latestFinalizedHeight = 10437859;
+    //mock specVersion map
+    (fetchService as any).specVersionMap = [
+      { id: '9180', start: 9738718, end: 10156856 },
+    ];
+    const spec = await fetchService.getSpecVersion(10337859);
+    const specVersionMap = (fetchService as any).specVersionMap;
+    // If the last finalized block specVersion are same,  we expect it will update the specVersion map
+    expect(specVersionMap[specVersionMap.length - 1].id).toBe('9190');
+  }, 500000);
+
+  it('prefetch meta for different specVersion range', async () => {
+    const batchSize = 5;
+    const project = testSubqueryProject();
+    //set dictionary to a different network
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: SubstrateHandlerKind.Event,
+              filter: { module: 'staking', method: 'Reward' },
+            },
+          ],
+        },
+      },
+    ];
+
+    fetchService = await createFetchService(project, batchSize);
+    await fetchService.init();
+
+    (fetchService as any).latestFinalizedHeight = 10437859;
+    //mock specVersion map
+    (fetchService as any).specVersionMap = [
+      { id: '9140', start: 8115870, end: 8638103 },
+      { id: '9151', start: 8638104, end: 9280180 },
+      { id: '9170', start: 9280180, end: 9738717 },
+      { id: '9180', start: 9738718, end: 10156856 },
+      { id: '9190', start: 10156857, end: 10437859 },
+    ];
+    const getPrefechMetaSpy = jest.spyOn(SubstrateUtil, 'prefetchMetadata');
+    (fetchService as any).parentSpecVersion = 9140;
+    await fetchService.prefetchMeta(9738720); // in 9180
+    // Should be called 91151,9170,9180
+    expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
 });
