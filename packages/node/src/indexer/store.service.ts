@@ -315,7 +315,8 @@ export class StoreService {
         { type: QueryTypes.SELECT },
       );
       if (result.length > 0) {
-        enabled = result[0].value;
+        // eslint-disable-next-line
+        enabled = result[0]['value'];
       } else {
         enabled = false;
       }
@@ -634,7 +635,7 @@ group by
         const attributes = data as unknown as CreationAttributes<Model>;
         if (this.historical) {
           // If entity was already saved in current block, update that entity instead
-          const [updatedRows, _] = await model.update(attributes, {
+          const [updatedRows] = await model.update(attributes, {
             hooks: false,
             transaction: this.tx,
             where: this.sequelize.and(
