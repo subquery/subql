@@ -110,6 +110,8 @@ const plugins = [
   smartTagsPlugin,
   GetMetadataPlugin,
   PgAggregationPlugin,
+  PgBlockHeightPlugin,
+  PgRowByVirtualIdPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
@@ -130,9 +132,5 @@ const plugins = [
     };
   }, true),
 ];
-
-if (argv['experimental-historical']) {
-  plugins.push(PgBlockHeightPlugin, PgRowByVirtualIdPlugin);
-}
 
 export {plugins};
