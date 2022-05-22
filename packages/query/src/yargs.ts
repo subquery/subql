@@ -71,11 +71,6 @@ export function getYargsOption() {
       describe: 'Level of query complexity',
       type: 'number',
     },
-    'experimental-historical': {
-      demandOption: false,
-      describe: 'Add block height argument to queries for fetching historical state of entities',
-      type: 'boolean',
-    },
   });
 }
 

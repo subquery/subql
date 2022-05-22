@@ -6,11 +6,21 @@ import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { Entity, Store } from '@subql/types';
-import { GraphQLModelsRelationsEnums } from '@subql/utils';
+import {
+  GraphQLModelsRelationsEnums,
+  GraphQLRelationsType,
+  IndexType,
+} from '@subql/utils';
 import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
 import {
   CreationAttributes,
+  DataTypes,
+  IndexesOptions,
   Model,
+  ModelAttributeColumnOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
   QueryTypes,
   Sequelize,
   Transaction,
@@ -22,6 +32,7 @@ import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import { camelCaseObjectKey } from '../utils/object';
 import {
+  commentTableQuery,
   commentConstraintQuery,
   createNotifyTrigger,
   createSendNotificationTriggerFunction,
@@ -29,12 +40,18 @@ import {
   dropNotifyTrigger,
   getFkConstraint,
   getNotifyTriggers,
+  SmartTags,
   smartTags,
+  getVirtualFkTag,
+  addTagsToForeignKeyMap,
+  createExcludeConstraintQuery,
+  BTREE_GIST_EXTENSION_QUERY,
 } from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
 import {
   Metadata,
   MetadataFactory,
+  MetadataModel,
   MetadataRepo,
 } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
@@ -67,6 +84,8 @@ export class StoreService {
   private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
+  private blockHeight: number;
+  private historical: boolean;
 
   constructor(
     private sequelize: Sequelize,
@@ -80,6 +99,7 @@ export class StoreService {
   ): Promise<void> {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
+    this.historical = await this.getHistoricalStateEnabled();
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -96,6 +116,9 @@ export class StoreService {
 
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
+    if (this.historical) {
+      await this.sequelize.query(BTREE_GIST_EXTENSION_QUERY);
+    }
 
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
@@ -161,6 +184,10 @@ export class StoreService {
       if (indexes.length > this.config.indexCountLimit) {
         throw new Error(`too many indexes on entity ${model.name}`);
       }
+      if (this.historical) {
+        this.addIdAndBlockRangeAttributes(attributes);
+        this.addBlockRangeColumnToIndexes(indexes);
+      }
       const sequelizeModel = this.sequelize.define(model.name, attributes, {
         underscored: true,
         comment: model.description,
@@ -170,6 +197,12 @@ export class StoreService {
         schema,
         indexes,
       });
+      if (this.historical) {
+        this.addScopeAndBlockHeightHooks(sequelizeModel);
+        extraQueries.push(
+          createExcludeConstraintQuery(schema, sequelizeModel.tableName),
+        );
+      }
       if (argv.subscription) {
         const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
@@ -191,9 +224,14 @@ export class StoreService {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
       }
     }
+    const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
     for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);
       const relatedModel = this.sequelize.model(relation.to);
+      if (this.historical) {
+        this.addRelationToMap(relation, foreignKeyMap, model, relatedModel);
+        continue;
+      }
       switch (relation.type) {
         case 'belongsTo': {
           model.belongsTo(relatedModel, { foreignKey: relation.foreignKey });
@@ -249,15 +287,142 @@ export class StoreService {
           throw new Error('Relation type is not supported');
       }
     }
+    foreignKeyMap.forEach((keys, tableName) => {
+      const comment = Array.from(keys.values())
+        .map((tags) => smartTags(tags, '|'))
+        .join('\n');
+      const query = commentTableQuery(`"${schema}"."${tableName}"`, comment);
+      extraQueries.push(query);
+    });
     if (this.config.proofOfIndex) {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
     await this.sequelize.sync();
+    await this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
+  }
+
+  async getHistoricalStateEnabled(): Promise<boolean> {
+    let enabled = true;
+    try {
+      // Throws if _metadata doesn't exist (first startup)
+      const result = await this.sequelize.query(
+        `SELECT value FROM "${this.schema}"."_metadata" WHERE key = 'historicalStateEnabled'`,
+        { type: QueryTypes.SELECT },
+      );
+      if (result.length > 0) {
+        // eslint-disable-next-line
+        enabled = result[0]['value'];
+      } else {
+        enabled = false;
+      }
+    } catch (e: any) {
+      enabled = !argv['disable-historical'];
+    }
+    logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
+    return enabled;
+  }
+
+  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]) {
+    indexes.forEach((index) => {
+      if (index.using === IndexType.GIN) {
+        return;
+      }
+      index.fields.push('_block_range');
+      index.using = IndexType.GIST;
+      // GIST does not support unique indexes
+      index.unique = false;
+    });
+  }
+
+  private addRelationToMap(
+    relation: GraphQLRelationsType,
+    foreignKeys: Map<string, Map<string, SmartTags>>,
+    model: ModelStatic<any>,
+    relatedModel: ModelStatic<any>,
+  ) {
+    switch (relation.type) {
+      case 'belongsTo': {
+        addTagsToForeignKeyMap(
+          foreignKeys,
+          model.tableName,
+          relation.foreignKey,
+          {
+            foreignKey: getVirtualFkTag(
+              relation.foreignKey,
+              relatedModel.tableName,
+            ),
+          },
+        );
+        break;
+      }
+      case 'hasOne': {
+        addTagsToForeignKeyMap(
+          foreignKeys,
+          relatedModel.tableName,
+          relation.foreignKey,
+          {
+            singleForeignFieldName: relation.fieldName,
+          },
+        );
+        break;
+      }
+      case 'hasMany': {
+        addTagsToForeignKeyMap(
+          foreignKeys,
+          relatedModel.tableName,
+          relation.foreignKey,
+          {
+            foreignFieldName: relation.fieldName,
+          },
+        );
+        break;
+      }
+      default:
+        throw new Error('Relation type is not supported');
+    }
+  }
+
+  addIdAndBlockRangeAttributes(
+    attributes: ModelAttributes<Model<any, any>, any>,
+  ): void {
+    (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
+    attributes.__id = {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      allowNull: false,
+      primaryKey: true,
+    } as ModelAttributeColumnOptions;
+    attributes.__block_range = {
+      type: DataTypes.RANGE(DataTypes.BIGINT),
+      allowNull: false,
+    } as ModelAttributeColumnOptions;
+  }
+
+  private addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>): void {
+    sequelizeModel.addScope('defaultScope', {
+      attributes: {
+        exclude: ['__id', '__block_range'],
+      },
+    });
+    sequelizeModel.addHook('beforeFind', (options) => {
+      // eslint-disable-next-line
+      options.where['__block_range'] = {
+        [Op.contains]: this.blockHeight as any,
+      };
+    });
+    sequelizeModel.addHook('beforeValidate', (attributes, options) => {
+      attributes.__block_range = [this.blockHeight, null];
+    });
+    sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
+      instances.forEach((item) => {
+        item.__block_range = [this.blockHeight, null];
+      });
+    });
   }
 
   validateNotifyTriggers(
@@ -288,6 +453,10 @@ export class StoreService {
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
+  }
+
+  setBlockHeight(blockHeight: number): void {
+    this.blockHeight = blockHeight;
   }
 
   async setMetadataBatch(
@@ -379,6 +548,28 @@ group by
     return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
 
+  private async markAsDeleted(model: ModelStatic<any>, id: string) {
+    return model.update(
+      {
+        __block_range: this.sequelize.fn(
+          'int8range',
+          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+          this.blockHeight,
+        ),
+      },
+      {
+        hooks: false,
+        transaction: this.tx,
+        where: {
+          id: id,
+          __block_range: {
+            [Op.contains]: this.blockHeight as any,
+          },
+        },
+      },
+    );
+  }
+
   getStore(): Store {
     return {
       get: async (entity: string, id: string): Promise<Entity | undefined> => {
@@ -441,9 +632,31 @@ group by
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        await model.upsert(data as unknown as CreationAttributes<Model>, {
-          transaction: this.tx,
-        });
+        const attributes = data as unknown as CreationAttributes<Model>;
+        if (this.historical) {
+          // If entity was already saved in current block, update that entity instead
+          const [updatedRows] = await model.update(attributes, {
+            hooks: false,
+            transaction: this.tx,
+            where: this.sequelize.and(
+              { id: data.id },
+              this.sequelize.where(
+                this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+                this.blockHeight,
+              ),
+            ),
+          });
+          if (updatedRows < 1) {
+            await this.markAsDeleted(model, data.id);
+            await model.create(attributes, {
+              transaction: this.tx,
+            });
+          }
+        } else {
+          await model.upsert(attributes, {
+            transaction: this.tx,
+          });
+        }
         if (this.config.proofOfIndex) {
           this.operationStack.put(OperationType.Set, entity, data);
         }
@@ -463,7 +676,11 @@ group by
       remove: async (entity: string, id: string): Promise<void> => {
         const model = this.sequelize.model(entity);
         assert(model, `model ${entity} not exists`);
-        await model.destroy({ where: { id }, transaction: this.tx });
+        if (this.historical) {
+          await this.markAsDeleted(model, id);
+        } else {
+          await model.destroy({ where: { id }, transaction: this.tx });
+        }
         if (this.config.proofOfIndex) {
           this.operationStack.put(OperationType.Remove, entity, id);
         }
