@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "1.0.0",
+  "version": "1.0.1-0",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
@@ -68,5 +68,6 @@
     "@types/yargs": "^16.0.4",
     "nodemon": "^2.0.15",
     "typescript": "^4.4.4"
-  }
+  },
+  "stableVersion": "1.0.0"
 }
