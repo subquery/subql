@@ -10,7 +10,7 @@ import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
 import {uniq} from 'lodash';
-import {lt} from 'semver';
+import {lt, gte} from 'semver';
 import {
   fetchTemplates,
   Template,
@@ -21,7 +21,7 @@ import {
   prepare,
 } from '../controller/init-controller';
 import {getGenesisHash} from '../jsonrpc';
-import {ProjectSpecBase, ProjectSpecV0_2_0} from '../types';
+import {ProjectSpecBase, ProjectSpecV0_2_0, ProjectSpecV1_0_0} from '../types';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const RECOMMEND_VERSION = '1.0.0';
@@ -193,7 +193,6 @@ export default class Init extends Command {
   // observe templates, if no option left or manually select use custom templates
   async observeTemplates(templates: Template[], flags: any): Promise<void> {
     if (templates.length === 0) {
-      console.log(`!!!!!! use custom`);
       const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
       this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
       await this.setupProject(flags);
@@ -224,7 +223,11 @@ export default class Init extends Command {
     //TODO, only substrate family project should fetch its genesis hash, keep it this way for now
     if (this.networkFamily === NETWORK_FAMILIES.Substrate && flags.specVersion !== '0.0.1') {
       cli.action.start('Fetching network genesis hash');
-      (this.project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(this.project.endpoint);
+      if (gte(flags.specVersion, '1.0.0')) {
+        (this.project as ProjectSpecV1_0_0).chainId = await getGenesisHash(this.project.endpoint);
+      } else {
+        (this.project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(this.project.endpoint);
+      }
       cli.action.stop();
     }
 
