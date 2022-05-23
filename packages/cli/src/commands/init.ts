@@ -225,8 +225,9 @@ export default class Init extends Command {
       cli.action.start('Fetching network genesis hash');
       if (gte(flags.specVersion, '1.0.0')) {
         (this.project as ProjectSpecV1_0_0).chainId = await getGenesisHash(this.project.endpoint);
+      } else {
+        (this.project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(this.project.endpoint);
       }
-      (this.project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(this.project.endpoint);
       cli.action.stop();
     }
 
