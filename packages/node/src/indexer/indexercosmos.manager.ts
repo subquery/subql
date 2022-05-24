@@ -84,7 +84,7 @@ export class IndexerCosmosManager {
     blockHeight: number,
     tx: Transaction,
   ): Promise<void> {
-    const vm = this.sandboxService.getDsProcessor(ds, blockHeight);
+    const vm = this.sandboxService.getDsProcessor(ds);
 
     // Inject function to create ds into vm
     vm.freeze(
@@ -346,7 +346,7 @@ export class IndexerCosmosManager {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    const { chain } = this.apiService.networkMeta;
+    const { chainId } = this.apiService.networkMeta;
 
     // blockOffset and genesisHash should only have been created once, never updated.
     // If blockOffset is changed, will require re-index and re-sync poi.
@@ -355,8 +355,8 @@ export class IndexerCosmosManager {
       await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
     }
 
-    if (keyValue.chain !== chain) {
-      await metadataRepo.upsert({ key: 'chain', value: chain });
+    if (keyValue.chain !== chainId) {
+      await metadataRepo.upsert({ key: 'chain', value: chainId });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {

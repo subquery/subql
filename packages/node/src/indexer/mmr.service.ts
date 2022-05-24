@@ -16,6 +16,7 @@ import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
+import { MmrPayload, MmrProof } from './events';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;
@@ -220,5 +221,59 @@ export class MmrService implements OnApplicationShutdown {
       where: { mmrRoot: { [Op.eq]: null } },
     });
     return poiBlock;
+  }
+
+  async getMmr(blockHeight: number): Promise<MmrPayload> {
+    const leafIndex = blockHeight - this.blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Parameter blockHeight must greater equal to ${this.blockOffset + 1} `,
+      );
+    }
+    const [mmrResponse, node] = await Promise.all([
+      this.fileBasedMmr.getRoot(leafIndex),
+      this.fileBasedMmr.get(leafIndex),
+    ]);
+    return {
+      offset: this.blockOffset,
+      height: blockHeight,
+      mmrRoot: u8aToHex(mmrResponse),
+      hash: u8aToHex(node),
+    };
+  }
+
+  async getLatestMmr(): Promise<MmrPayload> {
+    // latest leaf index need fetch from .db, as original method will use cache
+    const blockHeight =
+      (await this.fileBasedMmr.db.getLeafLength()) + this.blockOffset;
+    return this.getMmr(blockHeight);
+  }
+
+  async getLatestMmrProof(): Promise<MmrProof> {
+    // latest leaf index need fetch from .db, as original method will use cache
+    const blockHeight =
+      (await this.fileBasedMmr.db.getLeafLength()) + this.blockOffset;
+    return this.getMmrProof(blockHeight);
+  }
+
+  async getMmrProof(blockHeight: number): Promise<MmrProof> {
+    const leafIndex = blockHeight - this.blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Parameter blockHeight must greater equal to ${this.blockOffset + 1} `,
+      );
+    }
+    const mmrProof = await this.fileBasedMmr.getProof([leafIndex]);
+    const nodes = Object.entries(mmrProof.db.nodes).map(([key, data]) => {
+      return {
+        node: key,
+        hash: u8aToHex(data as Uint8Array),
+      };
+    });
+    return {
+      digest: mmrProof.digest.name,
+      leafLength: mmrProof.db.leafLength,
+      nodes,
+    };
   }
 }
