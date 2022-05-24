@@ -8,6 +8,17 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-11
+- Major release
+
+## [0.16.1] - 2022-05-06
+### Changed
+- Bump with `@subql/utils`
+
+## [0.16.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+- Allow set query-complexity for query (#923)
 
 ## [0.15.0] - 2022-04-26
 ### Added

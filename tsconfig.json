@@ -3,6 +3,7 @@
     "module": "commonjs",
     "target": "es2017",
     "noImplicitAny": false,
+    "noImplicitThis": true,
     "moduleResolution": "node",
     "outDir": "dist",
     "baseUrl": ".",

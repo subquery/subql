@@ -34,3 +34,21 @@ export interface EventPayload<T> {
 export interface NetworkMetadataPayload {
   chainId: string;
 }
+
+export interface MmrPayload {
+  offset: number;
+  height: number;
+  hash: string; //the node hash
+  mmrRoot: string;
+}
+
+export interface MmrProof {
+  digest: string;
+  leafLength: number;
+  nodes: MmrNode[];
+}
+
+export interface MmrNode {
+  node: string;
+  hash: string;
+}

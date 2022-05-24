@@ -8,6 +8,26 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-11
+- Major release
+
+## [0.35.2] - 2022-05-10
+Priority: High. Fixes events being handled multiple times, issue was introduced in 0.34.0
+
+### Fixed
+- Events being handled multiple times (#994)
+
+## [0.35.1] - 2022-05-06
+### Changed
+- Bump with `@subql/utils`
+
+## [0.35.0] - 2022-05-02
+### Added
+- Add utils package (#928)
+### Fixed
+- Handle undefined filters (#929)
+### Changed
+- Update polkadot 8.2.1 (#910)
 
 ## [0.6.1] - 2022-04-27
 ### Fixed

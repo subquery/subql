@@ -138,6 +138,11 @@ export function getYargsOption() {
       type: 'number',
       default: 300000,
     },
+    'disable-historical': {
+      demandOption: false,
+      describe: 'Disable storing historical state entities',
+      type: 'boolean',
+    },
   });
 }
 

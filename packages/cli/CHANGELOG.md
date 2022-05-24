@@ -8,6 +8,24 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-05-11
+- Major release
+### Fixed
+- fix undefined file under chainTypes (#1010)
+
+## [0.29.0] - 2022-05-11
+### Changed
+- remove use manifest in codegen (#1001)
+
+## [0.28.0] - 2022-05-06
+### Fixed
+- Fix migrate missing chain types (#975)
+### Changed
+- Refactor init command and add network family (#979)
+
+## [0.27.0] - 2022-05-02
+### Added
+- Add utils package (#928)
 
 ## [0.26.1] - 2022-04-27
 ### Added

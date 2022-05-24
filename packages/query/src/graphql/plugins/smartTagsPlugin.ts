@@ -13,18 +13,18 @@ export const smartTagsPlugin = makePgSmartTagsPlugin([
       omit: true,
     },
   },
-  // Omit _$block_range column
+  // Omit _block_range column
   {
     kind: PgEntityKind.ATTRIBUTE,
-    match: ({name}) => /^_\$block_range$/.test(name),
+    match: ({name}) => /^_block_range$/.test(name),
     tags: {
       omit: true,
     },
   },
-  // Omit _$id column
+  // Omit _id column
   {
     kind: PgEntityKind.ATTRIBUTE,
-    match: ({name}) => /^_\$id$/.test(name),
+    match: ({name}) => /^_id$/.test(name),
     tags: {
       omit: true,
     },

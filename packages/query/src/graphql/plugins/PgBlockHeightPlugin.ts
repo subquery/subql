@@ -6,7 +6,7 @@ import {QueryBuilder} from 'graphile-build-pg';
 import {GraphQLString} from 'graphql';
 
 export const PgBlockHeightPlugin: Plugin = (builder) => {
-  // Adds blockHeight condition to join clause when joining a table that has _$block_height column
+  // Adds blockHeight condition to join clause when joining a table that has _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field',
     (
@@ -26,8 +26,8 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
         return field;
       }
       if (
-        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_$block_range') &&
-        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_$block_range')
+        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_block_range') &&
+        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_block_range')
       ) {
         return field;
       }
@@ -35,14 +35,14 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
       addArgDataGenerator(() => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
           queryBuilder.where(
-            sql.fragment`${queryBuilder.getTableAlias()}._$block_range @> ${queryBuilder.context.args.blockHeight}`
+            sql.fragment`${queryBuilder.getTableAlias()}._block_range @> ${queryBuilder.context.args.blockHeight}`
           );
         },
       }));
       return field;
     }
   );
-  // Adds blockHeight argument to single entity and connection queries for tables with _$block_height column
+  // Adds blockHeight argument to single entity and connection queries for tables with _block_range column
   builder.hook(
     'GraphQLObjectType:fields:field:args',
     (
@@ -54,8 +54,8 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
         return args;
       }
       if (
-        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_$block_range') &&
-        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_$block_range')
+        !pgFieldIntrospection?.attributes?.some(({name}) => name === '_block_range') &&
+        !pgFieldIntrospection?.class?.attributes?.some(({name}) => name === '_block_range')
       ) {
         return args;
       }
@@ -67,7 +67,7 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
             queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockHeight)}::bigint`};
           }
           queryBuilder.where(
-            sql.fragment`${queryBuilder.getTableAlias()}._$block_range @> ${queryBuilder.context.args.blockHeight}`
+            sql.fragment`${queryBuilder.getTableAlias()}._block_range @> ${queryBuilder.context.args.blockHeight}`
           );
         },
       }));

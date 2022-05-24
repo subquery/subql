@@ -42,6 +42,6 @@ import { StoreService } from './store.service';
     MmrService,
     DynamicDsService,
   ],
-  exports: [StoreService],
+  exports: [StoreService, MmrService],
 })
 export class IndexerModule {}
