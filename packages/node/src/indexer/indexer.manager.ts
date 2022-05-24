@@ -145,23 +145,23 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
-      // Need calculate operationHash to ensure correct offset insert all time
-      const operationHash = this.storeService.getOperationMerkleRoot();
-      if (
-        !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
-        this.blockOffset === undefined
-      ) {
-        await this.metadataRepo.upsert(
-          {
-            key: 'blockOffset',
-            value: blockHeight - 1,
-          },
-          { transaction: tx },
-        );
-        this.setBlockOffset(blockHeight - 1);
-      }
 
       if (this.nodeConfig.proofOfIndex) {
+        // Need calculate operationHash to ensure correct offset insert all time
+        const operationHash = this.storeService.getOperationMerkleRoot();
+        if (
+          !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
+          this.blockOffset === undefined
+        ) {
+          await this.metadataRepo.upsert(
+            {
+              key: 'blockOffset',
+              value: blockHeight - 1,
+            },
+            { transaction: tx },
+          );
+          this.setBlockOffset(blockHeight - 1);
+        }
         //check if operation is null, then poi will not be inserted
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
           const poiBlock = PoiBlock.create(
