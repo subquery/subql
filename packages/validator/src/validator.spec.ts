@@ -8,7 +8,7 @@ describe('Validator', () => {
   let v: Validator;
 
   beforeAll(async () => {
-    const url = 'https://github.com/subquery/tutorials-block-timestamp';
+    const url = 'https://github.com/DeveloperInProgress/cosmos-subql-starter';
     v = await Validator.create(url);
     v.addRule(...commonRules);
   });

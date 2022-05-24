@@ -15,11 +15,11 @@ describe('LocalReader', () => {
 
   it('should return the package json object', async () => {
     const data = await reader.getPkg();
-    expect(data.name).toBe('subquery-starter');
+    expect(data.name).toBe('cosmos-subquery-starter');
   });
 
   it('should return the project schema object', async () => {
     const data: any = await reader.getProjectSchema();
-    expect(data.repository).toBe('https://github.com/subquery/subql-starter');
+    expect(data.repository).toBe('https://github.com/subquery/cosmos-subql-starter');
   });
 });

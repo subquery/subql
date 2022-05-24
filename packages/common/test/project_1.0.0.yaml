@@ -1,12 +1,12 @@
 specVersion: '1.0.0'
 
-name: 'subqlstarter-terra'
+name: 'subqlstarter-cosmos'
 version: '0.0.0'
 description: ''
-repository: 'https://github.com/developerinprogress/subqlstarter-terra'
+repository: 'https://github.com/developerinprogress/cosmos-subql-starter'
 runner:
   node:
-    name: '@subql/node-terra'
+    name: '@subql/node-cosmos'
     version: 0.28.0
   query:
     name: '@subql/query'
@@ -20,14 +20,14 @@ network:
   chainId: 'columbus-5'
 
 dataSources:
-  - kind: terra/Runtime
+  - kind: cosmos/Runtime
     startBlock: 6694554
     mapping:
       file: './dist/index.js'
       handlers:
         - handler: handleBlock
-          kind: terra/BlockHandler
+          kind: cosmos/BlockHandler
         - handler: handleEvent
-          kind: terra/EventHandler
+          kind: cosmos/EventHandler
           filter:
             type: transfer
