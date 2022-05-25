@@ -24,7 +24,7 @@ import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
+import { getLogger, perfLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
@@ -232,6 +232,7 @@ export class FetchService implements OnApplicationShutdown {
     void (async () => {
       while (!stopper && !this.isShutdown) {
         const block = await this.blockBuffer.take();
+        perfLogger(block.block.block.header.number.toNumber()).stop('in queue');
         this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
           value: this.blockBuffer.size,
         });
@@ -434,6 +435,9 @@ export class FetchService implements OnApplicationShutdown {
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
         }], total ${bufferBlocks.length} blocks`,
+      );
+      blocks.map((b: BlockContent) =>
+        perfLogger(b.block.block.header.number.toNumber()).start('in queue'),
       );
       this.blockBuffer.putAll(blocks);
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {

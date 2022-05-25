@@ -22,7 +22,7 @@ import {
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
 import { BlockContent } from '../indexer/types';
-import { getLogger } from './logger';
+import { getLogger, perfLogger } from './logger';
 const logger = getLogger('fetch');
 
 export function wrapBlock(
@@ -277,14 +277,23 @@ async function getBlockByHeight(
   api: ApiPromise,
   height: number,
 ): Promise<SignedBlock> {
-  const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
-    logger.error(`failed to fetch BlockHash ${height}`);
-    throw e;
-  });
-  return api.rpc.chain.getBlock(blockHash).catch((e) => {
-    logger.error(`failed to fetch Block ${blockHash}`);
-    throw e;
-  });
+  const scope = perfLogger(height).start('getBlockHeight()');
+  const blockHash = await scope.measure(
+    'getBlockHash()',
+    api.rpc.chain.getBlockHash(height).catch((e) => {
+      logger.error(`failed to fetch BlockHash ${height}`);
+      throw e;
+    }),
+  );
+  const block = await scope.measure(
+    'getBlockByHash()',
+    api.rpc.chain.getBlock(blockHash).catch((e) => {
+      logger.error(`failed to fetch Block ${blockHash}`);
+      throw e;
+    }),
+  );
+  scope.end();
+  return block;
 }
 
 export async function fetchBlocksRange(
@@ -343,26 +352,36 @@ export async function fetchBlocksBatches(
   // specVersionMap?: number[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
-  const blockHashs = blocks.map((b) => b.block.header.hash);
-  const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
-  const [blockEvents, runtimeVersions] = await Promise.all([
-    fetchEventsRange(api, blockHashs),
-    overallSpecVer
-      ? undefined
-      : fetchRuntimeVersionRange(api, parentBlockHashs),
-  ]);
-  return blocks.map((block, idx) => {
-    const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
-  });
+
+  return Promise.all(
+    blocks.map(async (block, idx) => {
+      const perfLog = perfLogger(block.block.header.number.toNumber());
+
+      const [events, parentSpecVersion] = await perfLog.measure(
+        'events/specVersion',
+        Promise.all([
+          api.query.system.events.at(block.block.header.hash),
+          overallSpecVer ??
+            api.rpc.state
+              .getRuntimeVersion(block.block.header.parentHash)
+              .then((r) => r.specVersion.toNumber()),
+        ]),
+      );
+
+      perfLog.start('wrapBlock');
+      const wrappedBlock = wrapBlock(
+        block,
+        events.toArray(),
+        parentSpecVersion,
+      );
+      const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
+      const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
+      perfLog.stop('wrapBlock');
+      return {
+        block: wrappedBlock,
+        extrinsics: wrappedExtrinsics,
+        events: wrappedEvents,
+      };
+    }),
+  );
 }

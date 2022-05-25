@@ -145,6 +145,13 @@ export function getYargsOption() {
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
+    perf: {
+      demandOption: false,
+      describe:
+        'Performance logging, value is the depth of logging. -1 for everything',
+      type: 'number',
+      default: 0,
+    },
   });
 }
 

@@ -29,7 +29,7 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
-import { getLogger } from '../utils/logger';
+import { getLogger, perfLogger, PerfScope } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
@@ -88,6 +88,7 @@ export class IndexerManager {
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
+    const perfScope = perfLogger(blockHeight).start('indexBlock()');
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
       timestamp: Date.now(),
@@ -100,10 +101,13 @@ export class IndexerManager {
     try {
       const isUpgraded = block.specVersion !== this.prevSpecVersion;
       // if parentBlockHash injected, which means we need to check runtime upgrade
-      const apiAt = await this.apiService.getPatchedApi(
-        block.block.hash,
-        block.block.header.number.unwrap().toNumber(),
-        isUpgraded ? block.block.header.parentHash : undefined,
+      const apiAt = await perfScope.measure(
+        'getPatchedApi',
+        this.apiService.getPatchedApi(
+          block.block.hash,
+          block.block.header.number.unwrap().toNumber(),
+          isUpgraded ? block.block.header.parentHash : undefined,
+        ),
       );
 
       const datasources = this.filteredDataSources.concat(
@@ -136,6 +140,7 @@ export class IndexerManager {
 
           return vm;
         },
+        perfScope,
       );
 
       await this.storeService.setMetadataBatch(
@@ -146,6 +151,7 @@ export class IndexerManager {
         { transaction: tx },
       );
       // Need calculate operationHash to ensure correct offset insert all time
+      perfScope.start('poi/mmr');
       const operationHash = this.storeService.getOperationMerkleRoot();
       if (
         !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
@@ -180,13 +186,19 @@ export class IndexerManager {
           );
         }
       }
+      perfScope.end('poi/mmr');
     } catch (e) {
       await tx.rollback();
       throw e;
     }
-    await tx.commit();
+    await perfScope.measure('commitTx', tx.commit());
     this.fetchService.latestProcessed(block.block.header.number.toNumber());
     this.prevSpecVersion = block.specVersion;
+
+    perfScope.end();
+
+    // We're finnally done with this block, wrap up logger
+    perfLogger(blockHeight).end('Block ');
   }
 
   async start(): Promise<void> {
@@ -493,15 +505,23 @@ export class IndexerManager {
     { block, events, extrinsics }: BlockContent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    perfScope: PerfScope,
   ): Promise<void> {
-    await this.indexBlockContent(block, dataSources, getVM);
+    const innerScope = perfScope.start('indexBlockData()');
+    await innerScope.measure(
+      'block',
+      this.indexBlockContent(block, dataSources, getVM),
+    );
 
     // Run initialization events
+    innerScope.start('initialization events');
     const initEvents = events.filter((evt) => evt.phase.isInitialization);
     for (const event of initEvents) {
       await this.indexEvent(event, dataSources, getVM);
     }
+    innerScope.stop('initialization events');
 
+    innerScope.start('extrinsics and events');
     for (const extrinsic of extrinsics) {
       await this.indexExtrinsic(extrinsic, dataSources, getVM);
 
@@ -514,12 +534,16 @@ export class IndexerManager {
         await this.indexEvent(event, dataSources, getVM);
       }
     }
+    innerScope.stop('extrinsics and events');
 
     // Run finalization events
+    innerScope.start('finalization events');
     const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
     for (const event of finalizeEvents) {
       await this.indexEvent(event, dataSources, getVM);
     }
+    innerScope.stop('finalization events');
+    innerScope.end();
   }
 
   private async indexBlockContent(
