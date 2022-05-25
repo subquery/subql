@@ -14,8 +14,8 @@ import {
   CosmosMessage,
 } from '@subql/types-cosmos';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { CosmosClient } from '../indexer/apicosmos.service';
-import { CosmosBlockContent } from '../indexer/types';
+import { CosmosClient } from '../indexer/api.service';
+import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
@@ -216,16 +216,16 @@ export function wrapEvent(
   return events;
 }
 
-export async function fetchCosmosBlocksBatches(
+export async function fetchBlocksBatches(
   api: CosmosClient,
   blockArray: number[],
-): Promise<CosmosBlockContent[]> {
+): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return Promise.all(
     blocks.map(async (blockInfo) => {
       const txHashes = blockInfo.txs;
       if (txHashes === null || txHashes.length === 0) {
-        return <CosmosBlockContent>{
+        return <BlockContent>{
           block: wrapBlock(blockInfo, []),
           transactions: [],
           messages: [],
@@ -238,7 +238,7 @@ export async function fetchCosmosBlocksBatches(
       const txs = wrapTx(block, txInfos);
       const msgs = wrapMsg(block, txs, api);
       const events = wrapEvent(block, txs, api);
-      return <CosmosBlockContent>{
+      return <BlockContent>{
         block: block,
         transactions: txs,
         messages: msgs,

@@ -13,31 +13,26 @@ import {
   DictionaryQueryCondition,
   DictionaryQueryEntry,
 } from '@subql/types-cosmos';
-import {
-  buildQuery,
-  GqlNode,
-  GqlQuery,
-  GqlVar,
-  CosmosMetaData,
-} from '@subql/utils';
+import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
-import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { getYargsOption } from '../yargs';
 
-export type CosmosDictionary = {
-  _metadata: CosmosMetaData;
+export type Dictionary = {
+  _metadata: MetaData;
   batchBlocks: number[];
+  //TODO
+  // specVersions: number[];
 };
-
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
     name,
-    gqlType: typeof cond.value === 'string' ? 'String!' : 'JSON!',
+    gqlType: 'String!',
     value: cond.value,
   };
 }
@@ -111,11 +106,11 @@ function buildDictQueryFragment(
 }
 
 @Injectable()
-export class CosmosDictionaryService implements OnApplicationShutdown {
+export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
-  constructor(protected project: SubqueryCosmosProject) {
+  constructor(protected project: SubqueryProject) {
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -148,7 +143,7 @@ export class CosmosDictionaryService implements OnApplicationShutdown {
     queryEndBlock: number,
     batchSize: number,
     conditions: DictionaryQueryEntry[],
-  ): Promise<CosmosDictionary> {
+  ): Promise<Dictionary> {
     const { query, variables } = this.dictionaryQuery(
       startBlock,
       queryEndBlock,
@@ -162,6 +157,7 @@ export class CosmosDictionaryService implements OnApplicationShutdown {
         variables,
       });
       const blockHeightSet = new Set<number>();
+      const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
         if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
@@ -169,6 +165,11 @@ export class CosmosDictionaryService implements OnApplicationShutdown {
             blockHeightSet.add(Number(node.blockHeight));
             entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
           }
+        }
+      }
+      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
+        for (const node of resp.data.specVersions.nodes) {
+          specVersionBlockHeightSet.add(Number(node.blockHeight));
         }
       }
       const _metadata = resp.data._metadata;
@@ -180,6 +181,8 @@ export class CosmosDictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
+      //TODO
+      // const specVersions = Array.from(specVersionBlockHeightSet);
       return {
         _metadata,
         batchBlocks,

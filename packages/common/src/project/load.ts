@@ -4,9 +4,18 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
-import {CosmosProjectManifestVersioned, VersionedProjectManifest} from './versioned';
+import {ProjectManifestV0_2_0} from '../project/versioned';
 
-export function loadCosmosProjectManifest(file: string): CosmosProjectManifestVersioned {
+export function loadFromJsonOrYaml(file: string): unknown {
+  const {ext} = path.parse(file);
+  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
+    throw new Error(`Extension ${ext} not supported`);
+  }
+  const rawContent = fs.readFileSync(file, 'utf-8');
+  return yaml.load(rawContent);
+}
+
+export function getManifestPath(file: string): string {
   let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
@@ -19,24 +28,13 @@ export function loadCosmosProjectManifest(file: string): CosmosProjectManifestVe
       throw new Error(`Could not find project manifest under dir ${file}`);
     }
   }
-
-  const doc = loadFromJsonOrYaml(manifestPath);
-  const projectManifest = new CosmosProjectManifestVersioned(doc as VersionedProjectManifest);
-  projectManifest.validate();
-  return projectManifest;
+  return manifestPath;
 }
 
-export function parseCosmosProjectManifest(raw: unknown): CosmosProjectManifestVersioned {
-  const projectManifest = new CosmosProjectManifestVersioned(raw as VersionedProjectManifest);
-  projectManifest.validate();
-  return projectManifest;
-}
-
-export function loadFromJsonOrYaml(file: string): unknown {
-  const {ext} = path.parse(file);
-  if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
-    throw new Error(`Extension ${ext} not supported`);
+export function getSchemaPath(file: string) {
+  const yamlFile = loadFromJsonOrYaml(getManifestPath(file));
+  if ((yamlFile as any).specVersion === '0.0.1') {
+    return path.join(file, (yamlFile as any).schema);
   }
-  const rawContent = fs.readFileSync(file, 'utf-8');
-  return yaml.load(rawContent);
+  return path.join(file, (yamlFile as ProjectManifestV0_2_0).schema.file);
 }

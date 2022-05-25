@@ -1,7 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Reader, ReaderFactory, ReaderOptions, parseCosmosProjectManifest} from '@subql/common-cosmos';
+import {Reader, ReaderFactory, ReaderOptions} from '@subql/common';
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
 

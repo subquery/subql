@@ -4,7 +4,7 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common-cosmos';
+import { loadFromJsonOrYaml } from '@subql/common';
 import { last, StringNullableChain } from 'lodash';
 import { LevelWithSilent } from 'pino';
 import { getLogger } from '../utils/logger';

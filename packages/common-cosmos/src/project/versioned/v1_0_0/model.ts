@@ -1,6 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+  NodeSpec,
+  ProjectManifestBaseImpl,
+  QuerySpec,
+  RunnerQueryBaseModel,
+  RunnerSpecs,
+  SemverVersionValidator,
+} from '@subql/common';
 import {plainToClass, Type} from 'class-transformer';
 import {
   Equals,
@@ -13,7 +21,7 @@ import {
   IsOptional,
   IsArray,
 } from 'class-validator';
-import {SemverVersionValidator} from '../../utils';
+import {RuntimeDatasourceTemplate, CustomDatasourceTemplate} from '../v0_2_1';
 import {
   DeploymentV0_3_0,
   ProjectManifestV0_3_0Impl,
@@ -21,16 +29,6 @@ import {
   CosmosRuntimeDataSourceV0_3_0Impl,
 } from '../v0_3_0';
 import {CosmosProjectManifestV1_0_0} from '../v1_0_0';
-import {NodeSpec, QuerySpec, RunnerSpecs, RuntimeDatasourceTemplate, CustomDatasourceTemplate} from './types';
-
-export class RunnerQueryBaseModel implements QuerySpec {
-  @Equals('@subql/query')
-  name: string;
-  @IsString()
-  @Validate(SemverVersionValidator)
-  // @Matches(RUNNER_REGEX)
-  version: string;
-}
 
 const COSMOS_NODE_NAME = `@subql/node-cosmos`;
 

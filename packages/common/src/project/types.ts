@@ -1,8 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {SubqlCosmosDatasource} from '@subql/types-cosmos';
-
 export interface IProjectManifest<D> {
   specVersion: string;
   description: string;
@@ -20,10 +18,4 @@ export interface ProjectNetworkConfig {
 
 export interface FileReference {
   file: string;
-}
-
-export type ICosmosProjectManifest = IProjectManifest<SubqlCosmosDatasource>;
-
-export interface CosmosProjectNetworkConfig extends ProjectNetworkConfig {
-  chainId?: string;
 }

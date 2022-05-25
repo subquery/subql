@@ -3,22 +3,25 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { SubqlCosmosDatasource, Store } from '@subql/types-cosmos';
+import { SubqlCosmosDataSource } from '@subql/common-cosmos';
+import { Store } from '@subql/types-cosmos';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
-import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
+import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
-import { ApiCosmosService } from './apicosmos.service';
+import { ApiService } from './api.service';
 import { StoreService } from './store.service';
 
 const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
+  script: string;
   root: string;
   entry: string;
 }
@@ -30,12 +33,9 @@ const DEFAULT_OPTION: NodeVMOptions = {
   require: {
     builtin: argv.unsafe
       ? ['*']
-      : ['assert', 'buffer', 'crypto', 'util', 'path'], // No events here without unsafe
+      : ['assert', 'buffer', 'crypto', 'util', 'path'],
     external: true,
     context: 'sandbox',
-    mock: {
-      events: undefined, // Remove events, I think this will cause @Cosmos-money/Cosmos.js to use a js implementation rather than native one
-    },
   },
   wrapper: 'commonjs',
   sourceExtensions: ['js', 'cjs'],
@@ -67,8 +67,7 @@ export class IndexerSandbox extends Sandbox {
     super(
       option,
       new VMScript(
-        `
-      const mappingFunctions = require('${option.entry}');
+        `const mappingFunctions = require('${option.entry}');
       module.exports = mappingFunctions[funcName](...args);
     `,
         path.join(option.root, 'sandbox'),
@@ -78,7 +77,6 @@ export class IndexerSandbox extends Sandbox {
   }
 
   async securedExec(funcName: string, args: unknown[]): Promise<void> {
-    //logger.info(JSON.stringify(args));
     this.setGlobal('args', args);
     this.setGlobal('funcName', funcName);
     try {
@@ -104,39 +102,39 @@ export class IndexerSandbox extends Sandbox {
 }
 
 @Injectable()
-export class SandboxCosmosService {
+export class SandboxService {
   private processorCache: Record<string, IndexerSandbox> = {};
 
   constructor(
-    private readonly apiService: ApiCosmosService,
+    private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryCosmosProject,
+    private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlCosmosDatasource): IndexerSandbox {
+  getDsProcessor(ds: SubqlProjectDs): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
-          entry,
-          root: this.project.root,
+          // api: await this.apiService.getPatchedApi(),
           store: this.storeService.getStore(),
+          root: this.project.root,
+          script: ds.mapping.entryScript,
+          entry,
         },
         this.nodeConfig,
       );
       this.processorCache[entry] = processor;
     }
-    /* Disable api because we cannot set to a point in time */
-    // processor.freeze(this.apiService.getApi().LCDClient, 'api');
     if (argv.unsafe) {
       processor.freeze(this.apiService.getApi().StargateClient, 'unsafeApi');
     }
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubqlCosmosDatasource): string {
-    return ds.mapping.file;
+  private getDataSourceEntry(ds: SubqlCosmosDataSource): string {
+    return getProjectEntry(this.project.root);
   }
 }

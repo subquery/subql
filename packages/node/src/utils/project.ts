@@ -4,24 +4,21 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
-  GithubReader,
-  IPFSReader,
-  LocalReader,
-  Reader,
+  CustomDatasourceV0_2_0,
   isCustomCosmosDs,
-  RuntimeDataSourceV0_3_0,
-  CustomDatasourceV0_3_0,
-} from '@subql/common-cosmos';
-import {
-  SubqlCosmosCustomDatasource,
+  // loadChainTypesFromJs,
+  SubqlCosmosRuntimeHandler,
   SubqlCosmosCustomHandler,
   SubqlCosmosHandler,
   SubqlCosmosHandlerKind,
-  SubqlCosmosRuntimeHandler,
-} from '@subql/types-cosmos';
+  RuntimeDataSourceV0_3_0,
+  CustomDatasourceV0_3_0,
+} from '@subql/common-cosmos';
+import yaml from 'js-yaml';
 import tar from 'tar';
-import { SubqlCosmosProjectDs } from '../configure/cosmosproject.model';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -60,23 +57,23 @@ export function getProjectEntry(root: string): string {
   }
 }
 
-export function isBaseCosmosHandler(
+export function isBaseHandler(
   handler: SubqlCosmosHandler,
 ): handler is SubqlCosmosRuntimeHandler {
   return Object.values<string>(SubqlCosmosHandlerKind).includes(handler.kind);
 }
 
-export function isCustomCosmosHandler<K extends string>(
+export function isCustomHandler(
   handler: SubqlCosmosHandler,
-): handler is SubqlCosmosCustomHandler<K> {
-  return !isBaseCosmosHandler(handler);
+): handler is SubqlCosmosCustomHandler {
+  return !isBaseHandler(handler);
 }
 
 export async function updateDataSourcesV0_3_0(
   _dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[],
   reader: Reader,
   root: string,
-): Promise<SubqlCosmosProjectDs[]> {
+): Promise<SubqlProjectDs[]> {
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
@@ -173,12 +170,8 @@ async function makeTempDir(): Promise<string> {
   const tmpDir = os.tmpdir();
   return fs.promises.mkdtemp(`${tmpDir}${sep}`);
 }
-
-export async function getProjectRoot(
-  reader: Reader,
-  path: string,
-): Promise<string> {
-  if (reader instanceof LocalReader) return path;
+export async function getProjectRoot(reader: Reader): Promise<string> {
+  if (reader instanceof LocalReader) return reader.root;
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }

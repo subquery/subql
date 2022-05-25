@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {ProjectManifestBaseImpl} from '@subql/common';
 import {
   SubqlCosmosCustomDatasource,
   SubqlCosmosCustomHandler,
@@ -20,7 +21,6 @@ import {
   validateSync,
 } from 'class-validator';
 import {CosmosCustomDataSourceBase, CosmosRuntimeDataSourceBase, CosmosMapping} from '../../models';
-import {ProjectManifestBaseImpl} from '../base';
 import {
   CustomDatasourceV0_3_0,
   CosmosProjectManifestV0_3_0,

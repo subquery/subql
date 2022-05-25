@@ -10,6 +10,6 @@
     "outDir": "lib",
     "noImplicitAny": true
   },
-  "references": [{"path": "../common"}, {"path": "../utils"}, {"path": "../validator"}],
+  "references": [{"path": "../common"}, {"path": "../common-cosmos"}, {"path": "../utils"}, {"path": "../validator"}],
   "include": ["src/**/*"]
 }

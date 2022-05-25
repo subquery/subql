@@ -4,16 +4,13 @@
 import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
-import {
-  getProjectRootAndManifest,
-  IPFS_REGEX,
-  CosmosProjectNetworkConfig,
-} from '@subql/common-cosmos';
+import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
+import { CosmosProjectNetworkConfig } from '@subql/common-cosmos';
 import { camelCase, last, omitBy, isNil } from 'lodash';
 import { getLogger, setLevel } from '../utils/logger';
 import { getYargsOption } from '../yargs';
-import { SubqueryCosmosProject } from './cosmosproject.model';
 import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
+import { SubqueryProject } from './SubqueryProject';
 
 const YargsNameMapping = {
   local: 'localMode',
@@ -123,7 +120,7 @@ export class ConfigureModule {
     }
 
     const project = async () => {
-      const p = await SubqueryCosmosProject.create(
+      const p = await SubqueryProject.create(
         argv.subquery,
         omitBy<CosmosProjectNetworkConfig>(
           {
@@ -150,11 +147,11 @@ export class ConfigureModule {
           useValue: config,
         },
         {
-          provide: SubqueryCosmosProject,
+          provide: SubqueryProject,
           useFactory: project,
         },
       ],
-      exports: [NodeConfig, SubqueryCosmosProject],
+      exports: [NodeConfig, SubqueryProject],
     };
   }
 }

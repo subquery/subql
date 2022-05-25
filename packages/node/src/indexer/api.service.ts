@@ -22,14 +22,11 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 
+import { EventEmitter2 } from 'eventemitter2';
 import { load } from 'protobufjs';
-import {
-  SubqlCosmosProjectDs,
-  SubqueryCosmosProject,
-} from '../configure/cosmosproject.model';
-import { NodeConfig } from '../configure/NodeConfig';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { CosmosDsProcessorService } from './cosmosds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { NetworkMetadataPayload } from './events';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -37,17 +34,17 @@ const { version: packageVersion } = require('../../package.json');
 const logger = getLogger('api');
 
 @Injectable()
-export class ApiCosmosService {
+export class ApiService {
   private api: CosmosClient;
   private clientConfig: StargateClientOptions;
   networkMeta: NetworkMetadataPayload;
-  dsProcessor: CosmosDsProcessorService;
+  dsProcessor: DsProcessorService;
   constructor(
-    protected project: SubqueryCosmosProject,
-    private nodeConfig: NodeConfig,
+    protected project: SubqueryProject,
+    private eventEmitter: EventEmitter2,
   ) {}
 
-  async init(): Promise<ApiCosmosService> {
+  async init(): Promise<ApiService> {
     const { network } = this.project;
     this.clientConfig = {};
     const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
@@ -92,7 +89,7 @@ export class ApiCosmosService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getChainType(
-    ds: SubqlCosmosProjectDs,
+    ds: SubqlProjectDs,
   ): Promise<Record<string, GeneratedType>> {
     if (!ds.chainTypes) {
       return {};

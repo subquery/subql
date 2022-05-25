@@ -20,8 +20,8 @@
     "paths": {
       "@subql/utils": ["packages/utils/src"],
       "@subql/utils/*": ["packages/utils/src/*"],
-      "@subql/common-cosmos": ["packages/common/src"],
-      "@subql/common-cosmos/*": ["packages/common/src/*"],
+      "@subql/common-cosmos": ["packages/common-cosmos/src"],
+      "@subql/common-cosmos/*": ["packages/common-cosmos/src/*"],
       "@subql/types-cosmos": ["packages/types/src"],
       "@subql/types-cosmos/*": ["packages/types/src/*"],
       "@subql/validator": ["packages/validator/src"],

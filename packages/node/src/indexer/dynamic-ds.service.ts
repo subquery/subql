@@ -3,25 +3,11 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import {
-  isCustomCosmosDs,
-  isRuntimeCosmosDs,
-  CosmosRuntimeDataSourceBase,
-  CosmosRuntimeDataSourceV0_3_0Impl,
-} from '@subql/common-cosmos';
-import {
-  SubqlCosmosHandlerKind,
-  SubqlCosmosMapping,
-} from '@subql/types-cosmos';
-import { plainToClass } from 'class-transformer';
-import { validateSync } from 'class-validator';
+import { isCustomCosmosDs, isRuntimeCosmosDs } from '@subql/common-cosmos';
 import { Transaction } from 'sequelize/types';
-import {
-  SubqlCosmosProjectDs,
-  SubqueryCosmosProject,
-} from '../configure/cosmosproject.model';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { CosmosDsProcessorService } from './cosmosds-processor.service';
+import { DsProcessorService } from './ds-processor.service';
 import { MetadataRepo } from './entities/Metadata.entity';
 
 const logger = getLogger('dynamic-ds');
@@ -39,20 +25,20 @@ export class DynamicDsService {
   private metaDataRepo: MetadataRepo;
 
   constructor(
-    private readonly dsProcessorService: CosmosDsProcessorService,
-    private readonly project: SubqueryCosmosProject,
+    private readonly dsProcessorService: DsProcessorService,
+    private readonly project: SubqueryProject,
   ) {}
 
   init(metaDataRepo: MetadataRepo): void {
     this.metaDataRepo = metaDataRepo;
   }
 
-  private _datasources: SubqlCosmosProjectDs[];
+  private _datasources: SubqlProjectDs[];
 
   async createDynamicDatasource(
     params: DatasourceParams,
     tx: Transaction,
-  ): Promise<void> {
+  ): Promise<SubqlProjectDs> {
     try {
       const ds = await this.getDatasource(params);
 
@@ -64,13 +50,15 @@ export class DynamicDsService {
 
       if (!this._datasources) this._datasources = [];
       this._datasources.push(ds);
+
+      return ds;
     } catch (e) {
       logger.error(e.message);
       process.exit(1);
     }
   }
 
-  async getDynamicDatasources(): Promise<SubqlCosmosProjectDs[]> {
+  async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
     if (!this._datasources) {
       try {
         const params = await this.getDynamicDatasourceParams();
@@ -114,7 +102,7 @@ export class DynamicDsService {
 
   private async getDatasource(
     params: DatasourceParams,
-  ): Promise<SubqlCosmosProjectDs> {
+  ): Promise<SubqlProjectDs> {
     const template = this.project.templates.find(
       (t) => t.name === params.templateName,
     );
@@ -132,7 +120,7 @@ export class DynamicDsService {
     const dsObj = {
       ...template,
       startBlock: params.startBlock,
-    } as SubqlCosmosProjectDs;
+    } as SubqlProjectDs;
     delete dsObj.name;
     try {
       if (isCustomCosmosDs(dsObj)) {
@@ -142,30 +130,9 @@ export class DynamicDsService {
         };
         await this.dsProcessorService.validateCustomDs([dsObj]);
       } else if (isRuntimeCosmosDs(dsObj)) {
-        dsObj.mapping.handlers = dsObj.mapping.handlers.map((handler) => {
-          switch (handler.kind) {
-            case SubqlCosmosHandlerKind.Message:
-              handler.filter = {
-                ...handler.filter,
-                ...params.args,
-              };
-              break;
-            case SubqlCosmosHandlerKind.Event:
-              handler.filter.messageFilter = {
-                ...handler.filter.messageFilter,
-                ...params.args,
-              };
-              break;
-            default:
-          }
-          return handler;
-        });
+        // XXX add any modifications to the ds here
       }
-      const ds: CosmosRuntimeDataSourceV0_3_0Impl = plainToClass(
-        CosmosRuntimeDataSourceV0_3_0Impl,
-        dsObj,
-      );
-      validateSync(ds);
+
       return dsObj;
     } catch (e) {
       throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);

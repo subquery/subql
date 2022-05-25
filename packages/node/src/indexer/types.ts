@@ -9,7 +9,7 @@ import {
   CosmosMessage,
 } from '@subql/types-cosmos';
 
-export interface CosmosBlockContent {
+export interface BlockContent {
   block: CosmosBlock;
   transactions: CosmosTransaction[];
   messages: CosmosMessage[];

@@ -5,41 +5,42 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
+import { ApiPromise } from '@polkadot/api';
 import {
-  isRuntimeDataSourceV0_3_0,
   isCustomCosmosDs,
   isRuntimeCosmosDs,
+  isRuntimeDataSourceV0_3_0,
+  SubqlCosmosMessageFilter,
+  SubqlCosmosEventFilter,
+  SubqlCosmosHandlerKind,
+  SubqlCosmosHandler,
+  SubqlCosmosDataSource,
+  SubqlCosmosHandlerFilter,
 } from '@subql/common-cosmos';
 import {
-  SubqlCosmosDatasource,
-  SubqlCosmosHandler,
-  SubqlCosmosHandlerFilter,
-  SubqlCosmosHandlerKind,
-  SubqlCosmosEventHandler,
-  SubqlCosmosEventFilter,
-  SubqlCosmosMessageFilter,
-  SubqlCosmosMessageHandler,
   DictionaryQueryEntry,
+  SubqlCosmosCustomHandler,
   DictionaryQueryCondition,
+  SubqlCosmosEventHandler,
+  SubqlCosmosMessageHandler,
+  SubqlCosmosRuntimeHandler,
 } from '@subql/types-cosmos';
+
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
-import { SubqueryCosmosProject } from '../configure/cosmosproject.model';
 import { NodeConfig } from '../configure/NodeConfig';
-import * as CosmosUtil from '../utils/cosmos-helper';
+import { SubqueryProject } from '../configure/SubqueryProject';
+import * as CosmosUtil from '../utils/cosmos';
 import { getLogger } from '../utils/logger';
-import { profilerWrap } from '../utils/profiler';
-import { isBaseCosmosHandler, isCustomCosmosHandler } from '../utils/project';
+import { profiler, profilerWrap } from '../utils/profiler';
+import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import { getYargsOption } from '../yargs';
-import { ApiCosmosService, CosmosClient } from './apicosmos.service';
+import { ApiService, CosmosClient } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import { CosmosDsProcessorService } from './cosmosds-processor.service';
-import {
-  CosmosDictionary,
-  CosmosDictionaryService,
-} from './dictionarycosmos.service';
+import { Dictionary, DictionaryService } from './dictionary.service';
+import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';
-import { CosmosBlockContent } from './types';
+import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
 const BLOCK_TIME_VARIANCE = 5;
@@ -53,11 +54,11 @@ const { argv } = getYargsOption();
 
 const fetchBlocksBatches = argv.profiler
   ? profilerWrap(
-      CosmosUtil.fetchCosmosBlocksBatches,
+      CosmosUtil.fetchBlocksBatches,
       'CosmosUtil',
-      'fetchCosmosBlocksBatches',
+      'fetchBlocksBatches',
     )
-  : CosmosUtil.fetchCosmosBlocksBatches;
+  : CosmosUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
   filter: SubqlCosmosEventFilter,
@@ -119,7 +120,6 @@ function messageFilterToQueryEntry(
     };
   }
 }
-
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
   const memoryData = getHeapStatistics();
   const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
@@ -146,26 +146,28 @@ function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
 }
 
 @Injectable()
-export class FetchCosmosService implements OnApplicationShutdown {
+export class FetchService implements OnApplicationShutdown {
+  private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
-  private blockBuffer: BlockedQueue<CosmosBlockContent>;
+  private blockBuffer: BlockedQueue<BlockContent>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
+  private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
 
   constructor(
-    private apiService: ApiCosmosService,
+    private apiService: ApiService,
     private nodeConfig: NodeConfig,
-    private project: SubqueryCosmosProject,
-    private dictionaryService: CosmosDictionaryService,
-    private dsProcessorService: CosmosDsProcessorService,
+    private project: SubqueryProject,
+    private dictionaryService: DictionaryService,
+    private dsProcessorService: DsProcessorService,
     private eventEmitter: EventEmitter2,
   ) {
-    this.blockBuffer = new BlockedQueue<CosmosBlockContent>(
+    this.blockBuffer = new BlockedQueue<BlockContent>(
       this.nodeConfig.batchSize * 3,
     );
     this.blockNumberBuffer = new BlockedQueue<number>(
@@ -182,6 +184,7 @@ export class FetchCosmosService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
+  // TODO: if custom ds doesn't support dictionary, use baseFilter, if yes, let
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
@@ -194,23 +197,9 @@ export class FetchCosmosService implements OnApplicationShutdown {
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        if (baseHandlerKind === SubqlCosmosHandlerKind.Block) {
-          return [];
-        }
         let filterList: SubqlCosmosHandlerFilter[];
         if (isCustomCosmosDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
-          if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(
-              (handler as SubqlCosmosEventHandler | SubqlCosmosMessageHandler)
-                .filter,
-              ds,
-            );
-            if (queryEntry) {
-              queryEntries.push(queryEntry);
-              continue;
-            }
-          }
           filterList = this.getBaseHandlerFilters<SubqlCosmosHandlerFilter>(
             ds,
             handler.kind,
@@ -258,7 +247,7 @@ export class FetchCosmosService implements OnApplicationShutdown {
     );
   }
 
-  register(next: (value: CosmosBlockContent) => Promise<void>): () => void {
+  register(next: (value: BlockContent) => Promise<void>): () => void {
     let stopper = false;
     void (async () => {
       while (!stopper && !this.isShutdown) {
@@ -299,7 +288,7 @@ export class FetchCosmosService implements OnApplicationShutdown {
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
-  checkBatchScale(): void {
+  checkBatchScale() {
     if (argv['scale-batch-size']) {
       const scale = checkMemoryUsage(
         this.nodeConfig.batchSize,
@@ -375,6 +364,8 @@ export class FetchCosmosService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
+          //TODO
+          // const specVersionMap = dictionary.specVersions;
           if (
             dictionary &&
             (await this.dictionaryValidation(dictionary, startBlockHeight))
@@ -402,12 +393,39 @@ export class FetchCosmosService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+      // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(
         startBlockHeight,
         scaledBatchSize,
       );
       this.blockNumberBuffer.putAll(range(startBlockHeight, endHeight + 1));
       this.setLatestBufferedHeight(endHeight);
+    }
+  }
+
+  async fillBlockBuffer(): Promise<void> {
+    while (!this.isShutdown) {
+      const takeCount = Math.min(
+        this.blockBuffer.freeSize,
+        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
+      );
+
+      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
+        await delay(1);
+        continue;
+      }
+
+      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
+      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
+      logger.info(
+        `fetch block [${bufferBlocks[0]},${
+          bufferBlocks[bufferBlocks.length - 1]
+        }], total ${bufferBlocks.length} blocks`,
+      );
+      this.blockBuffer.putAll(blocks);
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+        value: this.blockBuffer.size,
+      });
     }
   }
 
@@ -424,7 +442,7 @@ export class FetchCosmosService implements OnApplicationShutdown {
   }
 
   private async dictionaryValidation(
-    { _metadata: metaData }: CosmosDictionary,
+    { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
     const chain = await this.api.chainId();
@@ -454,39 +472,13 @@ export class FetchCosmosService implements OnApplicationShutdown {
     });
   }
 
-  async fillBlockBuffer(): Promise<void> {
-    while (!this.isShutdown) {
-      const takeCount = Math.min(
-        this.blockBuffer.freeSize,
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-      );
-
-      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-        await delay(1);
-        continue;
-      }
-
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
-      this.blockBuffer.putAll(blocks);
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
-      });
-    }
-  }
-
   private getBaseHandlerKind(
-    ds: SubqlCosmosDatasource,
+    ds: SubqlCosmosDataSource,
     handler: SubqlCosmosHandler,
   ): SubqlCosmosHandlerKind {
-    if (isRuntimeCosmosDs(ds) && isBaseCosmosHandler(handler)) {
-      return handler.kind;
-    } else if (isCustomCosmosDs(ds) && isCustomCosmosHandler(handler)) {
+    if (isRuntimeCosmosDs(ds) && isBaseHandler(handler)) {
+      return (handler as SubqlCosmosRuntimeHandler).kind;
+    } else if (isCustomCosmosDs(ds) && isCustomHandler(handler)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const baseHandler =
         plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
@@ -500,7 +492,7 @@ export class FetchCosmosService implements OnApplicationShutdown {
   }
 
   private getBaseHandlerFilters<T extends SubqlCosmosHandlerFilter>(
-    ds: SubqlCosmosDatasource,
+    ds: SubqlCosmosDataSource,
     handlerKind: string,
   ): T[] {
     if (isCustomCosmosDs(ds)) {

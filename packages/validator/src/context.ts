@@ -1,7 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {CosmosProjectManifestVersioned, Reader} from '@subql/common-cosmos';
+import {Reader} from '@subql/common';
+import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {IPackageJson} from 'package-json-type';
 
 export interface ContextData {

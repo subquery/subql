@@ -8,6 +8,6 @@
     "outDir": "./dist",
     "lib": ["dom"]
   },
-  "references": [{"path": "../common"}, {"path": "../types"}, {"path": "../utils"}],
+  "references": [{"path": "../common"}, {"path": "../common-cosmos"}, {"path": "../types"}, {"path": "../utils"}],
   "include": ["src/**/*"]
 }

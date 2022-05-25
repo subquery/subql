@@ -3,7 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, parseCosmosProjectManifest} from '@subql/common-cosmos';
+import {ReaderFactory, IPFS_CLUSTER_ENDPOINT} from '@subql/common';
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {FileReference} from '@subql/types-cosmos';
 import axios from 'axios';
 import FormData from 'form-data';

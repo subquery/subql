@@ -149,24 +149,53 @@ export interface SubqlCosmosCustomDatasource<
   processor?: Processor<O>;
 }
 
-export interface CosmosHandlerInputTransformer<
+export interface HandlerInputTransformer_0_0_0<
   T extends SubqlCosmosHandlerKind,
-  U,
+  E,
   DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
 > {
-  (original: CosmosRuntimeHandlerInputMap[T], ds: DS, api: CosmWasmClient, assets: Record<string, string>): Promise<U>; //  | SubqlBuiltinDataSource
+  (input: CosmosRuntimeHandlerInputMap[T], ds: DS, api: CosmWasmClient, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
 }
+
+export interface HandlerInputTransformer_1_0_0<
+  T extends SubqlCosmosHandlerKind,
+  F,
+  E,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+> {
+  (params: {
+    input: CosmosRuntimeHandlerInputMap[T];
+    ds: DS;
+    filter?: F;
+    api: CosmWasmClient;
+    assets?: Record<string, string>;
+  }): Promise<E[]>; //  | SubstrateBuiltinDataSource
+}
+
+export type SecondLayerHandlerProcessorArray<
+  K extends string,
+  F,
+  T,
+  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>
+> =
+  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Block, F, T, DS>
+  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Transaction, F, T, DS>
+  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Message, F, T, DS>
+  | SecondLayerHandlerProcessor<SubqlCosmosHandlerKind.Event, F, T, DS>;
 
 export interface SubqlCosmosDatasourceProcessor<
   K extends string,
-  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>
+  F,
+  DS extends SubqlCosmosCustomDatasource<K> = SubqlCosmosCustomDatasource<K>,
+  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
+    string,
+    SecondLayerHandlerProcessorArray<K, F, any, DS>
+  >
 > {
   kind: K;
   validate(ds: DS, assets: Record<string, string>): void;
   dsFilterProcessor(ds: DS, api: CosmWasmClient): boolean;
-  handlerProcessors: {
-    [kind: string]: SecondLayerCosmosHandlerProcessor<SubqlCosmosHandlerKind, unknown, unknown, DS>;
-  };
+  handlerProcessors: P;
 }
 
 export interface DictionaryQueryCondition {
@@ -180,16 +209,42 @@ export interface DictionaryQueryEntry {
   conditions: DictionaryQueryCondition[];
 }
 
-export interface SecondLayerCosmosHandlerProcessor<
+interface SecondLayerHandlerProcessorBase<
   K extends SubqlCosmosHandlerKind,
   F,
-  E,
   DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
 > {
   baseHandlerKind: K;
   baseFilter: CosmosRuntimeFilterMap[K] | CosmosRuntimeFilterMap[K][];
-  transformer: CosmosHandlerInputTransformer<K, E, DS>;
-  filterProcessor: (filter: F | undefined, input: CosmosRuntimeHandlerInputMap[K], ds: DS) => boolean;
-  filterValidator: (filter: F) => void;
-  dictionaryQuery: (filter: F, ds: DS) => DictionaryQueryEntry;
+  filterValidator: (filter?: F) => void;
+  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
 }
+
+export interface SecondLayerHandlerProcessor_0_0_0<
+  K extends SubqlCosmosHandlerKind,
+  F,
+  E,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+> extends SecondLayerHandlerProcessorBase<K, F, DS> {
+  specVersion: undefined;
+  transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
+  filterProcessor: (filter: F | undefined, input: CosmosRuntimeHandlerInputMap[K], ds: DS) => boolean;
+}
+
+export interface SecondLayerHandlerProcessor_1_0_0<
+  K extends SubqlCosmosHandlerKind,
+  F,
+  E,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+> extends SecondLayerHandlerProcessorBase<K, F, DS> {
+  specVersion: '1.0.0';
+  transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
+  filterProcessor: (params: {filter: F | undefined; input: CosmosRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
+}
+
+export type SecondLayerHandlerProcessor<
+  K extends SubqlCosmosHandlerKind,
+  F,
+  E,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource
+> = SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>;
