@@ -82,11 +82,13 @@ export type SubqlCosmosHandlerFilter = SubqlCosmosEventFilter | SubqlCosmosMessa
 export interface SubqlCosmosBlockHandler {
   handler: string;
   kind: SubqlCosmosHandlerKind.Block;
+  filter?: undefined;
 }
 
 export interface SubqlCosmosTransactionHandler {
   handler: string;
   kind: SubqlCosmosHandlerKind.Transaction;
+  filter?: undefined;
 }
 
 export interface SubqlCosmosMessageHandler {

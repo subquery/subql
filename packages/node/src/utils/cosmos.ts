@@ -14,6 +14,7 @@ import {
   CosmosMessage,
 } from '@subql/types-cosmos';
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+import { filter } from 'lodash';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -62,15 +63,27 @@ export function filterMessages(
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
 
   const filteredMessages = messages.filter((message) => {
-    for (const filter of filters) {
-      if (!filterMessageData(message, filter)) {
-        continue;
-      }
-      return true;
-    }
-    return false;
+    filters.find((filter) => filterMessageData(message, filter));
   });
   return filteredMessages;
+}
+
+export function filterEvent(
+  event: CosmosEvent,
+  filter: SubqlCosmosEventFilter,
+): boolean {
+  if (filter.type !== event.event.type) {
+    return false;
+  }
+
+  if (
+    filter.messageFilter &&
+    !filterMessageData(event.msg, filter.messageFilter)
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export function filterEvents(
@@ -90,19 +103,7 @@ export function filterEvents(
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
   const filteredEvents = events.filter((event) => {
-    for (const filter of filters) {
-      if (filter.type !== event.event.type) {
-        continue;
-      }
-      if (
-        filter.messageFilter &&
-        !filterMessageData(event.msg, filter.messageFilter)
-      ) {
-        continue;
-      }
-      return true;
-    }
-    return false;
+    filters.find((filter) => filterEvent(event, filter));
   });
   return filteredEvents;
 }

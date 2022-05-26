@@ -4,6 +4,8 @@
 import path from 'path';
 import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { fromAscii, toHex } from '@cosmjs/encoding';
+import { Uint53 } from '@cosmjs/math';
 import { GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
@@ -11,7 +13,17 @@ import {
   StargateClient,
   StargateClientOptions,
   defaultRegistryTypes,
+  isSearchByHeightQuery,
+  isSearchBySentFromOrToQuery,
+  isSearchByTagsQuery,
+  SearchTxFilter,
+  SearchTxQuery,
 } from '@cosmjs/stargate';
+import {
+  HttpEndpoint,
+  Tendermint34Client,
+  toRfc3339WithNanoseconds,
+} from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
 import {
   MsgClearAdmin,
@@ -21,7 +33,6 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-
 import { EventEmitter2 } from 'eventemitter2';
 import { load } from 'protobufjs';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -87,6 +98,12 @@ export class ApiService {
     return this.api;
   }
 
+  async getSafeApi(height: number): Promise<CosmosSafeClient> {
+    const { network } = this.project;
+    const client = await CosmosSafeClient.safeConnect(network.endpoint, height);
+    return client;
+  }
+
   // eslint-disable-next-line @typescript-eslint/require-await
   async getChainType(
     ds: SubqlProjectDs,
@@ -150,5 +167,61 @@ export class CosmosClient {
   get StargateClient(): CosmWasmClient {
     /* TODO remove this and wrap all calls to include params */
     return this.baseApi;
+  }
+}
+
+export class CosmosSafeClient extends CosmWasmClient {
+  height: number;
+
+  static async safeConnect(
+    endpoint: string | HttpEndpoint,
+    height: number,
+  ): Promise<CosmosSafeClient> {
+    const tmClient = await Tendermint34Client.connect(endpoint);
+    return new CosmosSafeClient(tmClient, height);
+  }
+
+  constructor(tmClient: Tendermint34Client | undefined, height: number) {
+    super(tmClient);
+    this.height = height;
+  }
+
+  async getBlock(): Promise<Block> {
+    const response = await this.forceGetTmClient().block(this.height);
+    return {
+      id: toHex(response.blockId.hash).toUpperCase(),
+      header: {
+        version: {
+          block: new Uint53(response.block.header.version.block).toString(),
+          app: new Uint53(response.block.header.version.app).toString(),
+        },
+        height: response.block.header.height,
+        chainId: response.block.header.chainId,
+        time: toRfc3339WithNanoseconds(response.block.header.time),
+      },
+      txs: response.block.txs,
+    };
+  }
+
+  async searchTx(): Promise<readonly IndexedTx[]> {
+    const txs: readonly IndexedTx[] = await this.safeTxsQuery(
+      `tx.height=${this.height}`,
+    );
+    return txs;
+  }
+
+  private async safeTxsQuery(query: string): Promise<readonly IndexedTx[]> {
+    const results = await this.forceGetTmClient().txSearchAll({ query: query });
+    return results.txs.map((tx) => {
+      return {
+        height: tx.height,
+        hash: toHex(tx.hash).toUpperCase(),
+        code: tx.result.code,
+        rawLog: tx.result.log || '',
+        tx: tx.tx,
+        gasUsed: tx.result.gasUsed,
+        gasWanted: tx.result.gasWanted,
+      };
+    });
   }
 }

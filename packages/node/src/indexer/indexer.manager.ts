@@ -96,12 +96,9 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      // if parentBlockHash injected, which means we need to check runtime upgrade
-      //const apiAt = await this.apiService.getPatchedApi(
-      //  block.block.hash,
-      //  block.block.header.number.unwrap().toNumber(),
-      //  isUpgraded ? block.block.header.parentHash : undefined,
-      //);
+      const safeApi = await this.apiService.getSafeApi(
+        block.block.header.height,
+      );
 
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
@@ -111,7 +108,7 @@ export class IndexerManager {
         blockContent,
         datasources,
         (ds: SubqlProjectDs) => {
-          const vm = this.sandboxService.getDsProcessor(ds);
+          const vm = this.sandboxService.getDsProcessor(ds, safeApi);
 
           // Inject function to create ds into vm
           vm.freeze(
@@ -529,15 +526,7 @@ export class IndexerManager {
   ): Promise<void> {
     if (isRuntimeCosmosDs(ds)) {
       const handlers = ds.mapping.handlers.filter(
-        (h) =>
-          (h.kind === SubqlCosmosHandlerKind.Message ||
-            h.kind === SubqlCosmosHandlerKind.Event) &&
-          h.kind === kind &&
-          FilterTypeMap[
-            kind as
-              | SubqlCosmosHandlerKind.Message
-              | SubqlCosmosHandlerKind.Event
-          ](data as any, h.filter),
+        (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
 
       for (const handler of handlers) {
@@ -639,6 +628,8 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [SubqlCosmosHandlerKind.Event]: CosmosUtil.filterEvents,
-  [SubqlCosmosHandlerKind.Message]: CosmosUtil.filterMessages,
+  [SubqlCosmosHandlerKind.Block]: () => true,
+  [SubqlCosmosHandlerKind.Transaction]: () => true,
+  [SubqlCosmosHandlerKind.Event]: CosmosUtil.filterEvent,
+  [SubqlCosmosHandlerKind.Message]: CosmosUtil.filterMessageData,
 };

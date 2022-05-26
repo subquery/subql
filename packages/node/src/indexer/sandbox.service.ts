@@ -14,7 +14,7 @@ import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
+import { ApiService, CosmosSafeClient } from './api.service';
 import { StoreService } from './store.service';
 
 const { argv } = getYargsOption();
@@ -112,7 +112,7 @@ export class SandboxService {
     private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs): IndexerSandbox {
+  getDsProcessor(ds: SubqlProjectDs, api: CosmosSafeClient): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
@@ -128,6 +128,7 @@ export class SandboxService {
       );
       this.processorCache[entry] = processor;
     }
+    processor.freeze(api, 'api');
     if (argv.unsafe) {
       processor.freeze(this.apiService.getApi().StargateClient, 'unsafeApi');
     }

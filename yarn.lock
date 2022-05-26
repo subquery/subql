@@ -1655,7 +1655,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/tendermint-rpc@npm:0.28.4":
+"@cosmjs/tendermint-rpc@npm:0.28.4, @cosmjs/tendermint-rpc@npm:^0.28.4":
   version: 0.28.4
   resolution: "@cosmjs/tendermint-rpc@npm:0.28.4"
   dependencies:
@@ -3568,6 +3568,7 @@ __metadata:
   resolution: "@subql/node-cosmos@workspace:packages/node"
   dependencies:
     "@apollo/client": 3.4.16
+    "@cosmjs/tendermint-rpc": ^0.28.4
     "@nestjs/common": ^8.1.2
     "@nestjs/core": ^8.1.2
     "@nestjs/event-emitter": ^1.0.0

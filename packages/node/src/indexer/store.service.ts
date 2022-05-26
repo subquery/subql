@@ -489,12 +489,15 @@ export class StoreService {
   }
 
   getOperationMerkleRoot(): Uint8Array {
-    this.operationStack.makeOperationMerkleTree();
-    const merkelRoot = this.operationStack.getOperationMerkleRoot();
-    if (merkelRoot === null) {
-      return NULL_MERKEL_ROOT;
+    if (this.config.proofOfIndex) {
+      this.operationStack.makeOperationMerkleTree();
+      const merkelRoot = this.operationStack.getOperationMerkleRoot();
+      if (merkelRoot === null) {
+        return NULL_MERKEL_ROOT;
+      }
+      return merkelRoot;
     }
-    return merkelRoot;
+    return NULL_MERKEL_ROOT;
   }
 
   private async getAllIndexFields(schema: string) {
