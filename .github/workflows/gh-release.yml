@@ -22,22 +22,7 @@ jobs:
       #Create github releases
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/cli
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common-substrate
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common-terra
+          package-path: packages/common-cosmos
           repo-token: ${{ secrets.REPO_TOKEN }}
 
       - uses: ./.github/actions/create-release
@@ -47,30 +32,5 @@ jobs:
 
       - uses: ./.github/actions/create-release
         with:
-          package-path: packages/node-terra
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/query
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
           package-path: packages/types
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/types-terra
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/utils
-          repo-token: ${{ secrets.REPO_TOKEN }}
-
-      - uses: ./.github/actions/create-release
-        with:
-          package-path: packages/validator
           repo-token: ${{ secrets.REPO_TOKEN }}

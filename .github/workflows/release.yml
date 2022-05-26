@@ -22,7 +22,7 @@ jobs:
   Build-Publish:
     name: Build-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-cosomos'"
     runs-on: ubuntu-latest
     steps:
       #Check out
@@ -42,54 +42,14 @@ jobs:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types-terra
+        id: changed-common-cosmos
         with:
-          paths: packages/types-terra
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-common
-        with:
-          paths: packages/common
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-common-substrate
-        with:
-          paths: packages/common-substrate
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-common-terra
-        with:
-          paths: packages/common-terra
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-cli
-        with:
-          paths: packages/cli
+          paths: packages/common-cosmos
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
         with:
           paths: packages/node
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-node-terra
-        with:
-          paths: packages/node-terra
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-query
-        with:
-          paths: packages/query
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-utils
-        with:
-          paths: packages/utils
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-validator
-        with:
-          paths: packages/validator
 
       - run: yarn
 
@@ -97,14 +57,6 @@ jobs:
         run: yarn workspaces foreach run build
 
       #Publish to npm and github releases
-      - name: Publish Utils
-        if: steps.changed-utils.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/utils
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
       - name: Publish Types
         if: steps.changed-types.outputs.changed == 'true'
         uses: ./.github/actions/create-release
@@ -113,35 +65,11 @@ jobs:
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish Types Terra
-        if: steps.changed-types-terra.outputs.changed == 'true'
+      - name: Publish Common cosmos
+        if: steps.changed-common-cosmos.outputs.changed == 'true'
         uses: ./.github/actions/create-release
         with:
-          package-path: packages/types-terra
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Common
-        if: steps.changed-common.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Common Substrate
-        if: steps.changed-common-substrate.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common-substrate
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Common Terra
-        if: steps.changed-common-terra.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/common-terra
+          package-path: packages/common-cosmos
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
@@ -150,37 +78,5 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/node
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Node Terra
-        if: steps.changed-node-terra.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/node-terra
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Query
-        if: steps.changed-query.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/query
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Validator
-        if: steps.changed-validator.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/validator
-          repo-token: ${{ secrets.REPO_TOKEN }}
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Publish Cli
-        if: steps.changed-cli.outputs.changed == 'true'
-        uses: ./.github/actions/create-release
-        with:
-          package-path: packages/cli
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
