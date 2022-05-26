@@ -152,6 +152,7 @@ export class WorkerManager {
     // TODO should this use api.at?
     let block: SignedBlock;
     let events: Vec<EventRecord>;
+
     try {
       const api = await this.api.at(blockHash);
       block = api.registry.createType(

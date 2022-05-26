@@ -31,7 +31,7 @@ export type Response<A> = {
 
 export type Encoded = {
   type: string;
-  data: string | Uint8Array; // Hex string
+  data: Uint8Array; // Hex string
 };
 
 export type FetchBlockArgs = {
@@ -63,7 +63,7 @@ parentPort.on('message', async (r: Requests) => {
       );
 
       // Send response
-      parentPort.postMessage(<Response<FetchBlockArgs>>{
+      const res: Response<FetchBlockArgs> = {
         id: r.id,
         args: {
           block: toEncoded(block),
@@ -71,7 +71,12 @@ parentPort.on('message', async (r: Requests) => {
           specVersion,
           blockHash: block.block.hash.toHex(),
         },
-      });
+      };
+
+      parentPort.postMessage(res, [
+        res.args.block.data.buffer,
+        res.args.events.data.buffer,
+      ]);
 
       break;
     }
