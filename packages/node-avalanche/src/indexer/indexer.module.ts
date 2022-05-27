@@ -21,17 +21,7 @@ import { StoreService } from './store.service';
 const ApiServiceProvider = {
   provide: ApiService,
   useFactory: async (project: SubqueryProject) => {
-    const { type } = project.network;
-    let apiService: ApiService;
-    switch (type) {
-      case 'avalanche':
-        apiService = new AvalancheApiService(project);
-        break;
-      default:
-        throw new Error(
-          `Network type doesn't match any of our supported networks. supported: { substrate, algorand, avalanche } actual="${type}`,
-        );
-    }
+    const apiService = new AvalancheApiService(project);
     await apiService.init();
     return apiService;
   },

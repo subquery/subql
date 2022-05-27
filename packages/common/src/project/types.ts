@@ -13,11 +13,7 @@ export interface IProjectManifest<D> {
 export interface ProjectNetworkConfig {
   endpoint: string;
   dictionary?: string;
-  genesisHash?: string;
-  type?: string;
-  token?: string;
-  port?: number;
-  chainName?: string;
+  //genesisHash?: string;
 }
 
 export interface FileReference {
