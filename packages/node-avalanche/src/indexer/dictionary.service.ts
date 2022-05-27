@@ -84,8 +84,8 @@ function buildDictQueryFragment(
       filter: {
         ...filter,
         blockHeight: {
-          greaterThanOrEqualTo: `"${startBlock}"`,
-          lessThan: `"${queryEndBlock}"`,
+          greaterThanOrEqualTo: `${startBlock}`,
+          lessThan: `${queryEndBlock}`,
         },
       },
       orderBy: 'BLOCK_HEIGHT_ASC',
