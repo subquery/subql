@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable } from '@nestjs/common';
-import { ProjectNetworkConfig } from '@subql/common';
+import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
 import { ApiService, getLogger } from '@subql/common-node';
 import { AvalancheApi } from './api.avalanche';
 
@@ -13,7 +13,7 @@ export class AvalancheApiService extends ApiService {
   private _api: AvalancheApi;
 
   async init(): Promise<AvalancheApiService> {
-    let network: Partial<ProjectNetworkConfig>;
+    let network: ProjectNetworkV1_0_0;
     try {
       network = this.project.network;
     } catch (e) {
@@ -22,12 +22,7 @@ export class AvalancheApiService extends ApiService {
     }
     logger.info(JSON.stringify(this.project.network));
 
-    this.api = new AvalancheApi({
-      ip: network.endpoint,
-      port: network.port,
-      token: network.token,
-      chainName: network.chainName,
-    });
+    this.api = new AvalancheApi(network);
     await this.api.init();
     this.networkMeta = {
       chain: this.api.getRuntimeChain(),
@@ -35,12 +30,11 @@ export class AvalancheApiService extends ApiService {
       genesisHash: this.api.getGenesisHash(),
     };
 
-    if (
-      network.genesisHash &&
-      network.genesisHash !== this.networkMeta.genesisHash
-    ) {
+    if (network.chainId !== this.api.getChainId()) {
       const err = new Error(
-        `Network genesisHash doesn't match expected genesisHash. expected="${network.genesisHash}" actual="${this.networkMeta.genesisHash}`,
+        `Network chainId doesn't match expected chainId. expected="${
+          network.chainId
+        }" actual="${this.api.getChainId()}`,
       );
       logger.error(err, err.message);
       throw err;

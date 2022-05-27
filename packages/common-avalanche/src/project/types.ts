@@ -34,6 +34,7 @@ export type ISubstrateProjectManifest = IProjectManifest<SubstrateDataSource | R
 export interface SubstrateProjectNetworkConfig extends ProjectNetworkConfig {
   genesisHash?: string;
   chainId?: string;
+  subnet?: string;
 }
 
 export type SpecVersionRange = [number, number];

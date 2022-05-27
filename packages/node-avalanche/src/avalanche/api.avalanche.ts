@@ -1,7 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import fs from 'fs';
+import url from 'url';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-avalanche';
@@ -23,11 +25,14 @@ import {
   formatTransaction,
 } from './utils.avalanche';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: packageVersion } = require('../../package.json');
+
 type AvalancheOptions = {
-  ip: string;
-  port: number;
-  token: string;
-  chainName: string; // XV | XT | C | P
+  endpoint?: string;
+  token?: string;
+  chainId: string; //'XV' | 'XT' | 'C' | 'P';
+  subnet: string;
 };
 
 const logger = getLogger('api.avalanche');
@@ -59,14 +64,29 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   private baseUrl: string;
   private cchain: EVMAPI;
   private contractInterfaces: Record<string, Interface> = {};
+  private chainId: string;
 
   constructor(private options: AvalancheOptions) {
     this.encoding = 'cb58';
-    this.client = new Avalanche(this.options.ip, this.options.port, 'http');
-    this.client.setAuthToken(this.options.token);
+
+    assert(options.endpoint, 'Network endpoint not provided');
+
+    const { hostname, port, protocol } = url.parse(options.endpoint);
+
+    const protocolStr = protocol.replace(':', '');
+    const portNum = port
+      ? parseInt(port, 10)
+      : protocolStr === 'https'
+      ? 443
+      : 80;
+
+    this.client = new Avalanche(hostname, portNum, protocolStr);
+    if (this.options.token) {
+      this.client.setAuthToken(this.options.token);
+    }
     this.indexApi = this.client.Index();
     this.cchain = this.client.CChain();
-    switch (this.options.chainName) {
+    switch (this.options.subnet) {
       case 'XV':
         this.baseUrl = '/ext/index/X/vtx';
         break;
@@ -85,6 +105,10 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   }
 
   async init(): Promise<void> {
+    this.chainId = await this.client.Info().getNetworkName();
+
+    this.client.setHeader('User-Agent', `SubQuery-Node ${packageVersion}`);
+
     this.genesisBlock = (
       await this.cchain.callMethod(
         'eth_getBlockByNumber',
@@ -94,12 +118,16 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     ).data.result;
   }
 
+  getChainId(): string {
+    return this.chainId;
+  }
+
   getGenesisHash(): string {
     return this.genesisBlock.hash;
   }
 
-  getRuntimeChain(): string {
-    return this.options.chainName;
+  getRuntimeChain(): string /*'XV' | 'XT' | 'C' | 'P'*/ {
+    return this.options.chainId;
   }
 
   getSpecName(): string {
@@ -128,12 +156,13 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
         // Fetch Block
-        const block_promise = this.cchain.callMethod(
+        const block_promise = await this.cchain.callMethod(
           'eth_getBlockByNumber',
           [`0x${num.toString(16)}`, true],
           '/ext/bc/C/rpc',
         );
-        const block = formatBlock((await block_promise).data.result);
+
+        const block = formatBlock(block_promise.data.result);
 
         block.transactions = await Promise.all(
           block.transactions.map(async (tx) => {

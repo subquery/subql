@@ -119,7 +119,7 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryProject.create(
         argv.subquery,
-        omitBy<SubstrateProjectNetworkConfig>(
+        omitBy<Partial<SubstrateProjectNetworkConfig>>(
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,
