@@ -3469,7 +3469,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
-    sequelize: ^6.15.0
+    sequelize: 6.19.0
     supertest: ^6.2.2
     tar: ^6.1.11
     typescript: ^4.4.4
@@ -14549,7 +14549,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.15.0":
+"sequelize@npm:6.19.0, sequelize@npm:^6.15.0":
   version: 6.19.0
   resolution: "sequelize@npm:6.19.0"
   dependencies:
