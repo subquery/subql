@@ -36,6 +36,7 @@ async function establishConnection(
 }
 
 const sequelizeFactory = (option: SequelizeOption) => async () => {
+  logger.info('sequelize new');
   const sequelize = new Sequelize(option);
   const numRetries = 5;
   await establishConnection(sequelize, numRetries);
@@ -46,6 +47,7 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
   }
   const { migrate } = getYargsOption().argv;
   await sequelize.sync({ alter: migrate });
+  logger.info('sequelize DONE');
   return sequelize;
 };
 

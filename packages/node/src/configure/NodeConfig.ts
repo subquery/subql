@@ -107,6 +107,7 @@ export class NodeConfig implements IConfig {
   get debug(): boolean {
     return this._config.debug;
   }
+
   get preferRange(): boolean {
     return this._config.preferRange;
   }

@@ -10,13 +10,14 @@ import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { FetchService } from './fetch.service';
+// import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
+import { WorkerService } from './worker/worker.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
@@ -29,13 +30,14 @@ import { StoreService } from './store.service';
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
       ) => {
+        console.log('XXXXX Indexer start');
         const apiService = new ApiService(project, eventEmitter);
         await apiService.init();
         return apiService;
       },
       inject: [SubqueryProject, EventEmitter2],
     },
-    FetchService,
+    // FetchService,
     BenchmarkService,
     DictionaryService,
     SandboxService,
@@ -44,6 +46,7 @@ import { StoreService } from './store.service';
     PoiService,
     MmrService,
     ProjectService,
+    // WorkerService,
   ],
   exports: [StoreService, MmrService],
 })
