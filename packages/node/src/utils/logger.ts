@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { isMainThread, threadId } from 'node:worker_threads';
 import { LoggerService } from '@nestjs/common';
 import { Logger } from '@subql/utils';
 import Pino from 'pino';
@@ -25,7 +26,9 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 }
 
 export class NestLogger implements LoggerService {
-  private logger = logger.getLogger('nestjs');
+  private logger = logger.getLogger(
+    `nestjs${isMainThread ? '-0' : `-#${threadId}`}`,
+  );
 
   error(message: any, trace?: string) {
     if (trace) {

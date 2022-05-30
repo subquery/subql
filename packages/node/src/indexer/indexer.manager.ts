@@ -38,8 +38,6 @@ import {
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
-import { FetchService } from './fetch.service';
-import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
@@ -60,9 +58,7 @@ export class IndexerManager {
   constructor(
     private storeService: StoreService,
     private apiService: ApiService,
-    private fetchService: FetchService,
     private poiService: PoiService,
-    protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
@@ -72,10 +68,15 @@ export class IndexerManager {
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
-  ) {}
+  ) {
+    logger.info('indexer manager start');
+  }
 
   @profiler(argv.profiler)
-  async indexBlock(blockContent: BlockContent): Promise<void> {
+  async indexBlock(
+    blockContent: BlockContent,
+    runtimeVersion: RuntimeVersion,
+  ): Promise<void> {
     const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
@@ -89,7 +90,6 @@ export class IndexerManager {
     let poiBlockHash: Uint8Array;
     try {
       // Injected runtimeVersion from fetch service might be outdated
-      const runtimeVersion = await this.fetchService.getRuntimeVersion(block);
       const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
 
       this.filteredDataSources = this.filterDataSources(
@@ -172,22 +172,23 @@ export class IndexerManager {
       throw e;
     }
     await tx.commit();
-    this.fetchService.latestProcessed(block.block.header.number.toNumber());
+
+    // this.fetchService.latestProcessed(block.block.header.number.toNumber());
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
-    await this.fetchService.init();
+    // await this.fetchService.init();
 
     this.api = this.apiService.getApi();
-    const startHeight = this.projectService.startHeight;
+    // const startHeight = this.projectService.startHeight;
 
-    void this.fetchService.startLoop(startHeight).catch((err) => {
-      logger.error(err, 'failed to fetch block');
-      // FIXME: retry before exit
-      process.exit(1);
-    });
-    this.fetchService.register((block) => this.indexBlock(block));
+    // void this.fetchService.startLoop(startHeight).catch((err) => {
+    //   logger.error(err, 'failed to fetch block');
+    //   // FIXME: retry before exit
+    //   process.exit(1);
+    // });
+    // this.fetchService.register((block) => this.indexBlock(block));
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
@@ -195,6 +196,7 @@ export class IndexerManager {
     filteredDs = this.project.dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
+
     if (filteredDs.length === 0) {
       logger.error(`Did not find any matching datasouces`);
       process.exit(1);

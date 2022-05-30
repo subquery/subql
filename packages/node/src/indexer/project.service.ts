@@ -78,7 +78,6 @@ export class ProjectService {
       await this.poiService.init(this.schema);
     }
 
-    // TODO parse this to fetch service
     this._startHeight = await this.getStartHeight();
   }
 

@@ -110,6 +110,7 @@ export class ConfigureModule {
     }
 
     if (!validDbSchemaName(config.dbSchema)) {
+      logger.info('config exit 115');
       process.exit(1);
     }
 

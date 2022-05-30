@@ -4,9 +4,10 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigureModule } from './configure/configure.module';
-import { DbModule } from './db/db.module';
-import { FetchModule } from './indexer/fetch.module';
+import { ConfigureModule } from '../../configure/configure.module';
+import { DbModule } from '../../db/db.module';
+import { IndexerModule } from '../indexer.module';
+import { WorkerService } from './worker.service';
 
 @Module({
   imports: [
@@ -20,9 +21,9 @@ import { FetchModule } from './indexer/fetch.module';
     EventEmitterModule.forRoot(),
     ConfigureModule.register(),
     ScheduleModule.forRoot(),
-    FetchModule,
-    // MetaModule, // TODO bring back, not sure how to work with threads
+    IndexerModule,
+    WorkerService,
   ],
   controllers: [],
 })
-export class AppModule {}
+export class WorkerModule {}

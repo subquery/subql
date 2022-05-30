@@ -54,7 +54,6 @@ import {
   MetadataRepo,
 } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
 
@@ -86,11 +85,7 @@ export class StoreService {
   private blockHeight: number;
   private historical: boolean;
 
-  constructor(
-    private sequelize: Sequelize,
-    private config: NodeConfig,
-    private poiService: PoiService,
-  ) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
   async init(
     modelsRelations: GraphQLModelsRelationsEnums,
@@ -334,7 +329,7 @@ export class StoreService {
     return enabled;
   }
 
-  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]) {
+  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
     indexes.forEach((index) => {
       if (index.using === IndexType.GIN) {
         return;
@@ -435,7 +430,7 @@ export class StoreService {
   validateNotifyTriggers(
     triggerName: string,
     triggers: NotifyTriggerPayload[],
-  ) {
+  ): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
         `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
