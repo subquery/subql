@@ -46,11 +46,16 @@ export class BenchmarkService {
         const days = Math.floor(duration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
         logger.info(
-          `${this.blockPerSecond.toFixed(2)} bps, target: #${
-            this.targetHeight
-          }, current: #${
-            this.currentProcessingHeight
-          }, estimate time: ${durationStr}`,
+          this.targetHeight === this.currentProcessingHeight ||
+            isNaN(this.blockPerSecond)
+            ? 'Fully synced, waiting for new blocks'
+            : `${
+                isNaN(this.blockPerSecond)
+                  ? '0'
+                  : this.blockPerSecond.toFixed(2)
+              } bps, target: #${this.targetHeight}, current: #${
+                this.currentProcessingHeight
+              }, estimate time: ${hoursMinsStr ? 'unknown' : durationStr}`,
         );
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;
