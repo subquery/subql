@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-cosmos",
-  "version": "1.0.1-0",
+  "version": "0.0.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",

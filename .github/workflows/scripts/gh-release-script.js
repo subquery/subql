@@ -62,7 +62,7 @@ async function publishRelease(releaseInfo) {
         },
         owner: 'subql',
         name: `[${version}] ${repoName}`,
-        repo: 'subql',
+        repo: 'subql-cosmos',
         tag_name: `${repoTagName[1]}/${version}`,
         body: releaseInfo
     }).catch( err => {
