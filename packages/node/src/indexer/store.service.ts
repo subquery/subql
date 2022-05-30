@@ -51,7 +51,6 @@ import { getYargsOption } from '../yargs';
 import {
   Metadata,
   MetadataFactory,
-  MetadataModel,
   MetadataRepo,
 } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
@@ -114,10 +113,19 @@ export class StoreService {
     }
   }
 
+  // eslint-disable-next-line complexity
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
     if (this.historical) {
-      await this.sequelize.query(BTREE_GIST_EXTENSION_QUERY);
+      try {
+        await this.sequelize.query(BTREE_GIST_EXTENSION_QUERY);
+      } catch (e) {
+        logger.warn(
+          e,
+          'Unable to enable historical data, contact DB admin for support',
+        );
+        this.historical = false;
+      }
     }
 
     for (const e of this.modelsRelations.enums) {
