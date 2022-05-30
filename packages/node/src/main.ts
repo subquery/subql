@@ -42,8 +42,8 @@ async function bootstrap() {
     });
     await app.init();
 
-    const indexerManager = app.get(IndexerManager);
-    await indexerManager.start();
+    // const indexerManager = app.get(IndexerManager);
+    // await indexerManager.start();
     await app.listen(port);
 
     logger.info(`Node started on port: ${port}`);
