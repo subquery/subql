@@ -3,12 +3,12 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';

@@ -9,6 +9,7 @@
   },
   "references": [
     { "path": "../common" },
+    { "path": "../common-node" },
     { "path": "../common-substrate" },
     { "path": "../types" },
     { "path": "../utils" }

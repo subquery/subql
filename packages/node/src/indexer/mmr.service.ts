@@ -4,13 +4,13 @@
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   MMR,
   FileBasedDb,
   keccak256FlyHash,
 } from '@subql/x-merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';

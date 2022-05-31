@@ -3802,7 +3802,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-node@workspace:packages/common-node":
+"@subql/common-node@workspace:*, @subql/common-node@workspace:packages/common-node":
   version: 0.0.0-use.local
   resolution: "@subql/common-node@workspace:packages/common-node"
   dependencies:
@@ -4024,6 +4024,7 @@ __metadata:
     "@nestjs/testing": ^8.2.6
     "@polkadot/api": 8.2.1
     "@subql/common": "workspace:*"
+    "@subql/common-node": "workspace:*"
     "@subql/common-substrate": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"

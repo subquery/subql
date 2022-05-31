@@ -7,6 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -26,7 +27,6 @@ import {
 } from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';

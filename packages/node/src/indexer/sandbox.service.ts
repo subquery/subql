@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
@@ -11,7 +12,6 @@ import { Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';

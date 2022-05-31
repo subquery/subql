@@ -26,6 +26,7 @@
     "@nestjs/schedule": "^1.0.2",
     "@polkadot/api": "8.2.1",
     "@subql/common": "workspace:*",
+    "@subql/common-node": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/types": "workspace:*",
     "@subql/utils": "workspace:*",
