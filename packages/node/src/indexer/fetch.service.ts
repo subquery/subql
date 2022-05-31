@@ -20,7 +20,11 @@ import {
   SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
-import { DictionaryQueryEntry, SubstrateBlock,SubstrateCustomHandler } from '@subql/types';
+import {
+  DictionaryQueryEntry,
+  SubstrateBlock,
+  SubstrateCustomHandler,
+} from '@subql/types';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -274,9 +278,9 @@ export class FetchService implements OnApplicationShutdown {
     });
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
-    if (this.useDictionary) {
-      this.specVersionMap = await this.dictionaryService.getSpecVersion();
-    }
+    this.specVersionMap = this.useDictionary
+      ? await this.dictionaryService.getSpecVersion()
+      : [];
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -475,12 +479,22 @@ export class FetchService implements OnApplicationShutdown {
 
   async getSpecVersion(blockHeight: number): Promise<number> {
     let currentSpecVersion: number;
-    currentSpecVersion = this.getSpecFromMap(blockHeight, this.specVersionMap);
+    // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
+    // therefore instead of check .useDictionary, we check it length before use it.
+    if (this.specVersionMap.length !== 0) {
+      currentSpecVersion = this.getSpecFromMap(
+        blockHeight,
+        this.specVersionMap,
+      );
+    }
     if (currentSpecVersion === undefined) {
       currentSpecVersion = await this.getSpecFromApi(blockHeight);
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
-        this.specVersionMap = await this.dictionaryService.getSpecVersion();
+        const response = await this.dictionaryService.getSpecVersion();
+        if (response !== undefined) {
+          this.specVersionMap = response;
+        }
       }
     }
     return currentSpecVersion;
