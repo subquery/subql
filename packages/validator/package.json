@@ -16,6 +16,7 @@
     "/dist"
   ],
   "dependencies": {
+    "@subql/common": "latest",
     "@subql/common-cosmos": "workspace:*",
     "axios": "^0.24.0",
     "ipfs-http-client": "^52.0.3",

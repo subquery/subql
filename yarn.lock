@@ -3374,6 +3374,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/validator@workspace:packages/validator"
   dependencies:
+    "@subql/common": latest
     "@subql/common-cosmos": "workspace:*"
     "@types/js-yaml": ^4.0.5
     axios: ^0.24.0
