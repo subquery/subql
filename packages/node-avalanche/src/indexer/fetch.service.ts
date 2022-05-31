@@ -20,6 +20,7 @@ import {
   IndexerEvent,
 } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { delay } from '@subql/common-node/utils';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
@@ -29,7 +30,6 @@ import {
 } from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import { eventToTopic, functionToSighash } from '../utils/string';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';

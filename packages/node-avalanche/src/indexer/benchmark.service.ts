@@ -9,9 +9,9 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '@subql/common-node';
+import { delay } from '@subql/common-node/utils';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { delay } from '../utils/promise';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');

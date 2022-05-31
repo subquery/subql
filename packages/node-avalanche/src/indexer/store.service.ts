@@ -7,6 +7,7 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { getLogger, getYargsOption } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { camelCaseObjectKey } from '@subql/common-node/utils';
 import { Entity, Store } from '@subql/types-avalanche';
 import { GraphQLModelsRelationsEnums } from '@subql/utils/graphql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
@@ -20,7 +21,6 @@ import {
   Utils,
 } from 'sequelize';
 import { modelsTypeToModelAttributes } from '../utils/graphql';
-import { camelCaseObjectKey } from '../utils/object';
 import {
   commentConstraintQuery,
   createNotifyTrigger,

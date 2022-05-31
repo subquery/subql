@@ -4,6 +4,7 @@
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { NodeConfig } from '@subql/common-node/configure';
+import { timeout } from '@subql/common-node/utils';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
@@ -15,7 +16,6 @@ import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
-import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { StoreService } from './store.service';

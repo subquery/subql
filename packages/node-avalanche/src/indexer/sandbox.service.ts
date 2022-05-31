@@ -9,13 +9,13 @@ import {
 } from '@subql/common-avalanche';
 import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { timeout } from '@subql/common-node/utils';
 import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
-import { timeout } from '../utils/promise';
 import { StoreService } from './store.service';
 
 const { argv } = getYargsOption();

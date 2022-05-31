@@ -3,10 +3,10 @@
 
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
+import { delay } from '@subql/common-node/utils';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
 import {
   IndexerEvent,
   ProcessBlockPayload,

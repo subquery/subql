@@ -7,6 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { NodeConfig } from '@subql/common-node/configure';
+import { delay } from '@subql/common-node/utils';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -27,7 +28,6 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';

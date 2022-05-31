@@ -5,9 +5,9 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
+import { delay } from '@subql/common-node/utils';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import { ApiService } from './api.service';
 
 const WS_ENDPOINT = 'wss://kusama.api.onfinality.io/public-ws';

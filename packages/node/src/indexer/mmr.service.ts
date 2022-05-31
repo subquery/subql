@@ -5,6 +5,7 @@ import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
 import { NodeConfig } from '@subql/common-node/configure';
+import { delay } from '@subql/common-node/utils';
 import {
   MMR,
   FileBasedDb,
@@ -13,7 +14,6 @@ import {
 import { Sequelize, Op } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
