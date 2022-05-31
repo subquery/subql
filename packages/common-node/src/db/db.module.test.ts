@@ -1,11 +1,11 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { Sequelize } from 'sequelize';
-import { SubqueryRepo } from '../entities';
-import { DbModule } from './db.module';
+import {INestApplication} from '@nestjs/common';
+import {Test} from '@nestjs/testing';
+import {Sequelize} from 'sequelize';
+import {SubqueryRepo} from '../entities';
+import {DbModule} from './db.module';
 
 describe('DbModule', () => {
   let app: INestApplication;

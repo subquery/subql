@@ -4,9 +4,9 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiService } from '@subql/common-node';
+import { DbModule } from '@subql/common-node/db';
 import { AvalancheApiService } from '../avalanche';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { DbModule } from '../db/db.module';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

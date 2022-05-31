@@ -8,3 +8,4 @@ export * from './profiler';
 export * from './events';
 export * from './configure';
 export * from './entities';
+export * from './db';
