@@ -364,9 +364,29 @@ describe('FetchService', () => {
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
 
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: SubstrateHandlerKind.Event,
+              filter: { module: 'staking', method: 'Reward' },
+            },
+          ],
+        },
+      },
+    ];
+
     fetchService = await createFetchService(project, batchSize);
     await fetchService.init();
-    (fetchService as any).useDictionary = true;
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const specVersion = await fetchService.getSpecVersion(8638105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
@@ -379,9 +399,29 @@ describe('FetchService', () => {
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
 
+    project.network.dictionary =
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary';
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleEvent',
+              kind: SubstrateHandlerKind.Event,
+              filter: { module: 'staking', method: 'Reward' },
+            },
+          ],
+        },
+      },
+    ];
+
     fetchService = await createFetchService(project, batchSize);
     await fetchService.init();
-    (fetchService as any).useDictionary = true;
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const getSpecFromApiSpy = jest.spyOn(fetchService, 'getSpecFromApi');
 
