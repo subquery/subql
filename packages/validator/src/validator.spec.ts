@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {commonRules} from './rules';
 import {Validator} from './validator';
-
 describe('Validator', () => {
   let v: Validator;
 

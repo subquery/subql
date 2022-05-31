@@ -22,6 +22,7 @@ module.exports = {
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
     'packages/cli/src/**/*.ts',
+    'packages/common-cosmos/src/**/*.ts',
     'packages/common/src/**/*.ts',
     'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
@@ -89,10 +90,8 @@ module.exports = {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
   moduleNameMapper: {
-    '^@subql/common': '<rootDir>/packages/common/src',
-    '^@subql/common/(.*)$': '<rootDir>/packages/common/src/$1',
-    '^@subql/utils': '<rootDir>/packages/utils/src',
-    '^@subql/utils/(.*)$': '<rootDir>/packages/utils/src/$1',
+    '^@subql/common-cosmos': '<rootDir>/packages/common-cosmos/src',
+    '^@subql/common-cosmos/(.*)$': '<rootDir>/packages/common-cosmos/src/$1',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader

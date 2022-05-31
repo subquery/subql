@@ -41,7 +41,6 @@ export class Validator {
     });
 
     let schema;
-
     try {
       schema = parseCosmosProjectManifest(rawSchema);
     } catch (e) {

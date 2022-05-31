@@ -18,8 +18,6 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
-      "@subql/utils": ["packages/utils/src"],
-      "@subql/utils/*": ["packages/utils/src/*"],
       "@subql/common-cosmos": ["packages/common-cosmos/src"],
       "@subql/common-cosmos/*": ["packages/common-cosmos/src/*"],
       "@subql/types-cosmos": ["packages/types/src"],
@@ -31,10 +29,9 @@
   },
   "references": [
     {"path": "packages/cli"},
-    {"path": "packages/common"},
+    {"path": "packages/common-cosmos"},
     {"path": "packages/node"},
     {"path": "packages/types"},
-    {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],

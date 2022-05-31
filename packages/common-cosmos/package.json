@@ -13,7 +13,7 @@
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "@subql/common": "workspace:*",
+    "@subql/common": "latest",
     "@subql/types-cosmos": "workspace:*",
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.2",
