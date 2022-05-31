@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-05-31
+### Fixed
+- Fix runner error check with pre-release (#1027)
+### Added
+- Add constants for Mmr query api (#968)
+
 ## [1.0.0] - 2022-05-11
 - Major release
 

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.1] - 2022-05-31
+### Fixed
+- Fix cli init duplicate chainId and genesisHash (#1058)
+
 ## [1.0.0] - 2022-05-11
 - Major release
 ### Fixed
