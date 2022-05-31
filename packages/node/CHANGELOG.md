@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-06-01
+### Fixed
+- Fix disabling historical (#1085)
+
 ## [1.1.0] - 2022-05-31
 ### Fixed
 - Move POI logic under option check (#1064)
