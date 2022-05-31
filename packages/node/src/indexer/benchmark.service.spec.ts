@@ -32,12 +32,12 @@ describe('Benchmark service', () => {
     await delay(30);
   });
 
-  it('Handle bps is NaN', async () => {
+  it('Connection dropped', async () => {
     // targetHeight !== currentProcessingHeight
     // BPS === '0'
     // estimate time should display 'unknown'
     // no changes in current
-    (newbenchmarkService as any).currentProcessingHeight = 1208163;
+    (newbenchmarkService as any).currentProcessingHeight = 1209000;
     (newbenchmarkService as any).targetHeight = 1209000;
     (newbenchmarkService as any).lastRegisteredHeight = 1208162;
     (newbenchmarkService as any).currentProcessingTimestamp = 10000;
@@ -48,7 +48,7 @@ describe('Benchmark service', () => {
     await delay(30);
   });
 
-  it('Handle normal bps', async () => {
+  it('Handle normal', async () => {
     (newbenchmarkService as any).currentProcessingHeight = 1208163;
     (newbenchmarkService as any).targetHeight = 1209163;
     (newbenchmarkService as any).lastRegisteredHeight = 1208162;
