@@ -23,27 +23,37 @@ describe('Benchmark service', () => {
 
   (newbenchmarkService as any).currentProcessingHeight = 1208163;
   (newbenchmarkService as any).targetHeight = 1208163;
-  (newbenchmarkService as any).currentProcessingTimestamp = 1208163;
   (newbenchmarkService as any).lastRegisteredHeight = 1208163;
-  (newbenchmarkService as any).lastRegisteredTimestamp = 1208163;
+  (newbenchmarkService as any).lastRegisteredTimestamp = 10000;
+  (newbenchmarkService as any).currentProcessingTimestamp = 10000;
 
   it('handle bps when fully synced', async () => {
-    // targetHeight === currentProcessingHeight
     await newbenchmarkService.benchmark();
     await delay(30);
   });
 
-  it('Nan bps', async () => {
+  it('Handle bps is NaN', async () => {
     // targetHeight !== currentProcessingHeight
     // BPS === '0'
     // estimate time should display 'unknown'
-
-    (newbenchmarkService as any).currentProcessingHeight = 1208161;
-    (newbenchmarkService as any).targetHeight = 1208168;
-    (newbenchmarkService as any).currentProcessingTimestamp = 1208163;
-    (newbenchmarkService as any).lastRegisteredHeight = 1208163;
-    (newbenchmarkService as any).lastRegisteredTimestamp = 1208163;
+    // no changes in current
+    (newbenchmarkService as any).currentProcessingHeight = 1208163;
+    (newbenchmarkService as any).targetHeight = 1209000;
+    (newbenchmarkService as any).lastRegisteredHeight = 1208162;
+    (newbenchmarkService as any).currentProcessingTimestamp = 10000;
+    (newbenchmarkService as any).lastRegisteredTimestamp = 10000;
     // (newbenchmarkService as any).blockPerSecond = 'ABC';
+
+    await newbenchmarkService.benchmark();
+    await delay(30);
+  });
+
+  it('Handle normal bps', async () => {
+    (newbenchmarkService as any).currentProcessingHeight = 1208163;
+    (newbenchmarkService as any).targetHeight = 1209163;
+    (newbenchmarkService as any).lastRegisteredHeight = 1208162;
+    (newbenchmarkService as any).currentProcessingTimestamp = 15000;
+    (newbenchmarkService as any).lastRegisteredTimestamp = 10000;
 
     await newbenchmarkService.benchmark();
     await delay(30);

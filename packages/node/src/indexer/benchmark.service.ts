@@ -35,7 +35,10 @@ export class BenchmarkService {
           this.currentProcessingHeight - this.lastRegisteredHeight;
         const timeDiff =
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
-        this.blockPerSecond = heightDiff / (timeDiff / 1000);
+        this.blockPerSecond =
+          heightDiff === 0 || timeDiff === 0
+            ? 0
+            : heightDiff / (timeDiff / 1000);
 
         const duration = dayjs.duration(
           (this.targetHeight - this.currentProcessingHeight) /
@@ -45,17 +48,16 @@ export class BenchmarkService {
         const hoursMinsStr = duration.format('HH [hours] mm [mins]');
         const days = Math.floor(duration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
+
         logger.info(
-          this.targetHeight === this.currentProcessingHeight ||
-            isNaN(this.blockPerSecond)
+          this.targetHeight === this.lastRegisteredHeight &&
+            this.blockPerSecond === 0
             ? 'Fully synced, waiting for new blocks'
-            : `${
-                isNaN(this.blockPerSecond)
-                  ? '0'
-                  : this.blockPerSecond.toFixed(2)
-              } bps, target: #${this.targetHeight}, current: #${
-                this.currentProcessingHeight
-              }, estimate time: ${hoursMinsStr ? 'unknown' : durationStr}`,
+            : `${this.blockPerSecond.toFixed(2)} bps, target: #${
+                this.targetHeight
+              }, current: #${this.currentProcessingHeight}, estimate time: ${
+                this.blockPerSecond === 0 ? 'unknown' : durationStr
+              }`,
         );
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;
