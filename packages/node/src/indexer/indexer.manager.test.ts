@@ -3,11 +3,11 @@
 
 import { Test } from '@nestjs/testing';
 import { NodeConfig } from '@subql/common-node/configure';
+import { DbModule } from '@subql/common-node/db';
+import { SubqueryRepo } from '@subql/common-node/entities';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { DbModule } from '../db/db.module';
-import { SubqueryRepo } from '../entities';
 import { IndexerManager } from './indexer.manager';
 
 function testSubqueryProject(): SubqueryProject {

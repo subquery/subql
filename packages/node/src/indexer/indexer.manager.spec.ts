@@ -3,6 +3,7 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodeConfig } from '@subql/common-node/configure';
+import { SubqueryFactory } from '@subql/common-node/entities';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -10,7 +11,6 @@ import {
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
