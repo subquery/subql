@@ -7,3 +7,4 @@ export * from './yargs';
 export * from './profiler';
 export * from './events';
 export * from './configure';
+export * from './entities';

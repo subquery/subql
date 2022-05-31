@@ -18,6 +18,7 @@ import {
   profiler,
 } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { SubqueryRepo } from '@subql/common-node/entities';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -28,7 +29,6 @@ import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';

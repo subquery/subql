@@ -8,6 +8,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { NodeConfig } from '@subql/common-node/configure';
+import { SubqueryRepo } from '@subql/common-node/entities';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -28,7 +29,6 @@ import {
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';

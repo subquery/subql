@@ -3,8 +3,8 @@
 
 import { DynamicModule, Global } from '@nestjs/common';
 import { getLogger, getYargsOption } from '@subql/common-node';
+import * as entities from '@subql/common-node/entities';
 import { Sequelize, Options as SequelizeOption } from 'sequelize';
-import * as entities from '../entities';
 import { delay } from '../utils/promise';
 
 export interface DbOption {

@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuildOptions, DataTypes, Model, Sequelize } from 'sequelize';
+import {BuildOptions, DataTypes, Model, Sequelize} from 'sequelize';
 
 interface SubqueryModelAttributes extends SubqueryCreationAttributes {
   id: string;
@@ -68,6 +68,6 @@ export function SubqueryFactory(sequelize: Sequelize): SubqueryRepo {
         allowNull: true,
       },
     },
-    { underscored: true },
+    {underscored: true}
   );
 }
