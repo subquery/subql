@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.5.0] - 2022-05-31
+### Added
+- Add TerraSafeApi (#995)
+
 ## [0.4.0] - 2022-04-27
 ### Added
 - Support for dynamic datasources (#899)
