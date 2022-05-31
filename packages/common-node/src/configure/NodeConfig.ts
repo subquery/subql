@@ -4,11 +4,11 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import { loadFromJsonOrYaml } from '@subql/common';
-import { getLogger } from '@subql/common-node';
-import { last } from 'lodash';
-import { LevelWithSilent } from 'pino';
-import { assign } from '../utils/object';
+import {loadFromJsonOrYaml} from '@subql/common';
+import {getLogger} from '@subql/common-node';
+import {last} from 'lodash';
+import {LevelWithSilent} from 'pino';
+import {assign} from '../utils/object';
 
 const logger = getLogger('configure');
 
@@ -33,8 +33,7 @@ export interface IConfig {
   readonly ipfs?: string;
 }
 
-export type MinConfig = Partial<Omit<IConfig, 'subquery'>> &
-  Pick<IConfig, 'subquery'>;
+export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
 
 const DEFAULT_CONFIG = {
   localMode: false,
@@ -51,10 +50,7 @@ const DEFAULT_CONFIG = {
 export class NodeConfig implements IConfig {
   private readonly _config: IConfig;
 
-  static fromFile(
-    filePath: string,
-    configFromArgs?: Partial<IConfig>,
-  ): NodeConfig {
+  static fromFile(filePath: string, configFromArgs?: Partial<IConfig>): NodeConfig {
     if (!fs.existsSync(filePath)) {
       throw new Error(`Load config from file ${filePath} is not exist`);
     }

@@ -19,6 +19,7 @@ import {
   getLogger,
   IndexerEvent,
 } from '@subql/common-node';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
@@ -27,9 +28,7 @@ import {
   AvalancheTransactionFilter,
 } from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import { eventToTopic, functionToSighash } from '../utils/string';
 import { BlockedQueue } from './BlockedQueue';

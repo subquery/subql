@@ -17,6 +17,7 @@ import {
   IndexerEvent,
   profiler,
 } from '@subql/common-node';
+import { NodeConfig } from '@subql/common-node/configure';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -26,7 +27,6 @@ import {
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
 import { DsProcessorService } from './ds-processor.service';

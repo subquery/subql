@@ -80,8 +80,6 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       ? undefined
       : 9650;
 
-    console.log('portNum', portNum);
-    console.log('protocolStr', protocolStr);
     this.client = new Avalanche(hostname, portNum, protocolStr);
     if (this.options.token) {
       this.client.setAuthToken(this.options.token);

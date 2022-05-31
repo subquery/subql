@@ -9,7 +9,7 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '@subql/common-node';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/common-node/configure';
 import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;

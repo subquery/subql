@@ -3,8 +3,8 @@
 
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { hexToU8a } from '@polkadot/util';
+import { NodeConfig } from '@subql/common-node/configure';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
