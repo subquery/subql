@@ -1,16 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OnEvent } from '@nestjs/event-emitter';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
-import {
-  BestBlockPayload,
-  EventPayload,
-  IndexerEvent,
-  ProcessBlockPayload,
-  TargetBlockPayload,
-} from '../indexer/events';
+import {OnEvent} from '@nestjs/event-emitter';
+import {InjectMetric} from '@willsoto/nestjs-prometheus';
+import {Gauge} from 'prom-client';
+import {BestBlockPayload, EventPayload, IndexerEvent, ProcessBlockPayload, TargetBlockPayload} from '../events';
 
 export class MetricEventListener {
   private skipDictionaryCount = 0;
@@ -35,26 +29,26 @@ export class MetricEventListener {
     @InjectMetric('subql_indexer_using_dictionary')
     private usingDictionaryMetric: Gauge<string>,
     @InjectMetric('subql_indexer_skip_dictionary_count')
-    private skipDictionaryCountMetric: Gauge<string>,
+    private skipDictionaryCountMetric: Gauge<string>
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
-  handleApiConnected({ value }: EventPayload<number>) {
+  handleApiConnected({value}: EventPayload<number>) {
     this.apiConnectedMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.InjectedApiConnected)
-  handleInjectedApiConnected({ value }: EventPayload<number>) {
+  handleInjectedApiConnected({value}: EventPayload<number>) {
     this.injectedApiConnectedMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlockQueueSize)
-  handleBlockQueueSizeMetric({ value }: EventPayload<number>) {
+  handleBlockQueueSizeMetric({value}: EventPayload<number>) {
     this.blockQueueSizeMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlocknumberQueueSize)
-  handleBlocknumberQueueSizeMetric({ value }: EventPayload<number>) {
+  handleBlocknumberQueueSizeMetric({value}: EventPayload<number>) {
     this.blocknumberQueueSizeMetric.set(value);
   }
 
@@ -74,7 +68,7 @@ export class MetricEventListener {
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)
-  handleUsingDictionary({ value }: EventPayload<number>) {
+  handleUsingDictionary({value}: EventPayload<number>) {
     this.usingDictionaryMetric.set(value);
   }
 

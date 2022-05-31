@@ -2,12 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { MetricEventListener } from '@subql/common-node/meta';
 import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { IndexerModule } from '../indexer/indexer.module';
-import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
