@@ -67,7 +67,13 @@ export class ApiService {
       ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
     ];
 
-    const client = await CosmWasmClient.connect(network.endpoint);
+    const endpoint: HttpEndpoint = {
+      url: network.endpoint,
+      headers: {
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
+      },
+    };
+    const client = await CosmWasmClient.connect(endpoint);
 
     const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
     for (const ds of this.project.dataSources) {
@@ -100,7 +106,13 @@ export class ApiService {
 
   async getSafeApi(height: number): Promise<CosmosSafeClient> {
     const { network } = this.project;
-    const client = await CosmosSafeClient.safeConnect(network.endpoint, height);
+    const endpoint: HttpEndpoint = {
+      url: network.endpoint,
+      headers: {
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
+      },
+    };
+    const client = await CosmosSafeClient.safeConnect(endpoint, height);
     return client;
   }
 
