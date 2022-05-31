@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add api to query file based mmr (#968)
 - Experimental feature: Support query by block number (#992)
 ### Changed
-- Remove `contract-processors` and types improvements (#1012)
+Remove `contract-processors` to [subquery/datasource-processors](https://github.com/subquery/datasource-processors), types improvements and support for datasource processors v1.0.0 (#1012)
 
 ## [1.0.0] - 2022-05-11
 - Major release
