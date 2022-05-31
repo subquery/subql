@@ -77,9 +77,11 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     const portNum = port
       ? parseInt(port, 10)
       : protocolStr === 'https'
-      ? 443
-      : 80;
+      ? undefined
+      : 9650;
 
+    console.log('portNum', portNum);
+    console.log('protocolStr', protocolStr);
     this.client = new Avalanche(hostname, portNum, protocolStr);
     if (this.options.token) {
       this.client.setAuthToken(this.options.token);
