@@ -9,6 +9,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { SubqueryRepo } from '../entities';
 import { IndexerManager } from './indexer.manager';
+import { ProjectService } from './project.service';
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -36,6 +37,7 @@ const prepare = async (): Promise<IndexerManager> => {
         useFactory: (
           sequelize: Sequelize,
           project: SubqueryProject,
+          projectService: ProjectService,
           subqueryRepo: SubqueryRepo,
         ) => {
           const indexerManager = new IndexerManager(
@@ -52,10 +54,11 @@ const prepare = async (): Promise<IndexerManager> => {
             undefined,
             subqueryRepo,
             undefined,
+            projectService,
           );
           return indexerManager;
         },
-        inject: [Sequelize, SubqueryProject, 'Subquery'],
+        inject: [Sequelize, SubqueryProject, ProjectService, 'Subquery'],
       },
     ],
     imports: [
