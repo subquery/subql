@@ -85,10 +85,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         ? ApolloServerPluginLandingPageGraphQLPlayground()
         : ApolloServerPluginLandingPageDisabled(),
     ];
-    //If query-complexity is set then use plugin, otherwise not add
-    // if (argv['query-complexity'] !== undefined) {
+
     apolloServerPlugins.push(queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}));
-    // }
+
     const server = new ApolloServer({
       schema,
       context: {
