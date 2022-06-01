@@ -142,6 +142,7 @@ export function getYargsOption() {
     },
     'disable-historical': {
       demandOption: false,
+      default: true,
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },

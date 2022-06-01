@@ -8,6 +8,20 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-06-01
+### Fixed
+- Fix disabling historical (#1085)
+- Fix benchmark logging (#1083)
+
+## [1.1.0] - 2022-05-31
+### Fixed
+- Move POI logic under option check (#1064)
+### Added
+- Add api to query file based mmr (#968)
+- Experimental feature: Support query by block number (#992)
+### Changed
+Remove `contract-processors` to [subquery/datasource-processors](https://github.com/subquery/datasource-processors), types improvements and support for datasource processors v1.0.0 (#1012)
+
 ## [1.0.0] - 2022-05-11
 - Major release
 
