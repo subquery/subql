@@ -6,7 +6,10 @@ import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { NodeConfig } from '@subql/common-node/configure';
-import { camelCaseObjectKey } from '@subql/common-node/utils';
+import {
+  camelCaseObjectKey,
+  modelsTypeToModelAttributes,
+} from '@subql/common-node/utils';
 import { Entity, Store } from '@subql/types';
 import { GraphQLModelsRelationsEnums } from '@subql/utils';
 import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
@@ -19,7 +22,6 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
-import { modelsTypeToModelAttributes } from '../utils/graphql';
 import { getLogger } from '../utils/logger';
 import {
   commentConstraintQuery,
