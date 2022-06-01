@@ -29,7 +29,8 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     this._logs = flatten(
       _block.transactions.map((tx) => tx.receipt.logs),
     ) as AvalancheLog<AvalancheResult>[];
-    this.block.logs = this._logs.map((log) => formatLog(log));
+    this._logs.map((log) => formatLog(log));
+    this._block.logs = this._logs;
   }
 
   get block(): AvalancheBlock {
@@ -37,11 +38,11 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   }
 
   get blockHeight(): number {
-    return this.block.number;
+    return this._block.number;
   }
 
   get hash(): string {
-    return this.block.hash;
+    return this._block.hash;
   }
 
   transactions(
