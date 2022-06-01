@@ -25,7 +25,9 @@ export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComple
         },
         willSendResponse({response}) {
           response.http.headers.append('query-complexity', complexity);
-          response.http.headers.append('max-query-complexity', options.maxComplexity);
+          if (options.maxComplexity !== undefined) {
+            response.http.headers.append('max-query-complexity', options.maxComplexity);
+          }
         },
       };
     },
