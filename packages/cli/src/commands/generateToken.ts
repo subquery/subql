@@ -50,7 +50,8 @@ export default class GenerateToken extends Command {
     // }
 
     this.log('Uploading SupQuery project to IPFS');
-    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+    // const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+    // this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+    this.log(``);
   }
 }
