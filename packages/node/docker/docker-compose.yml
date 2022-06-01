@@ -2,7 +2,9 @@ version: '3'
 
 services:
   postgres:
-    image: postgres:12-alpine
+    build:
+      context: .
+      dockerfile: pg-Dockerfile
     ports:
       - 5432:5432
     volumes:
