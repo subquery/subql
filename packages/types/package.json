@@ -1,6 +1,6 @@
 {
-  "name": "@subql/types",
-  "version": "1.1.0",
+  "name": "@subql/types-cosmos",
+  "version": "0.0.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -8,18 +8,16 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rm -rf dist && tsc -b"
   },
-  "author": "Ian He",
+  "author": "Naveen Veluswamy",
   "main": "dist/index.js",
   "license": "Apache-2.0",
   "files": [
-    "src/global.d.ts",
     "/dist"
   ],
   "peerDependencies": {
-    "@polkadot/api": "^8"
+    "@cosmjs/stargate": "*"
   },
   "devDependencies": {
-    "@polkadot/api": "^8",
     "@types/app-module-path": "^2.2.0"
   }
 }

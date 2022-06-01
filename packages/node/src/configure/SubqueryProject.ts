@@ -10,25 +10,18 @@ import {
   validateSemver,
 } from '@subql/common';
 import {
-  SubstrateProjectNetworkConfig,
-  parseSubstrateProjectManifest,
-  ProjectManifestV0_2_0Impl,
-  ProjectManifestV0_2_1Impl,
+  CosmosProjectNetworkConfig,
+  parseCosmosProjectManifest,
   ProjectManifestV0_3_0Impl,
-  SubstrateDataSource,
-  FileType,
+  SubqlCosmosDataSource,
   ProjectManifestV1_0_0Impl,
-} from '@subql/common-substrate';
+} from '@subql/common-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
-import {
-  getChainTypes,
-  getProjectRoot,
-  updateDataSourcesV0_2_0,
-} from '../utils/project';
+import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
 
-export type SubqlProjectDs = SubstrateDataSource & {
-  mapping: SubstrateDataSource['mapping'] & { entryScript: string };
+export type SubqlProjectDs = SubqlCosmosDataSource & {
+  mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -42,7 +35,7 @@ const NOT_SUPPORT = (name: string) => () => {
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<SubstrateProjectNetworkConfig>;
+  network: Partial<CosmosProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -51,7 +44,7 @@ export class SubqueryProject {
 
   static async create(
     path: string,
-    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+    networkOverrides?: Partial<CosmosProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
@@ -61,20 +54,11 @@ export class SubqueryProject {
     if (projectSchema === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
-    const manifest = parseSubstrateProjectManifest(projectSchema);
+    const manifest = parseCosmosProjectManifest(projectSchema);
 
-    if (manifest.isV0_0_1) {
-      NOT_SUPPORT('0.0.1');
-    } else if (manifest.isV0_2_0 || manifest.isV0_3_0) {
+    if (manifest.isV0_3_0) {
       return loadProjectFromManifestBase(
-        manifest.asV0_2_0,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV0_2_1) {
-      return loadProjectFromManifest0_2_1(
-        manifest.asV0_2_1,
+        manifest.asV0_3_0,
         reader,
         path,
         networkOverrides,
@@ -94,7 +78,6 @@ export interface SubqueryProjectNetwork {
   chainId: string;
   endpoint?: string;
   dictionary?: string;
-  chaintypes?: FileType;
 }
 
 function processChainId(network: any): SubqueryProjectNetwork {
@@ -107,17 +90,13 @@ function processChainId(network: any): SubqueryProjectNetwork {
   return network;
 }
 
-type SUPPORT_MANIFEST =
-  | ProjectManifestV0_2_0Impl
-  | ProjectManifestV0_2_1Impl
-  | ProjectManifestV0_3_0Impl
-  | ProjectManifestV1_0_0Impl;
+type SUPPORT_MANIFEST = ProjectManifestV0_3_0Impl | ProjectManifestV1_0_0Impl;
 
 async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<CosmosProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
 
@@ -142,11 +121,7 @@ async function loadProjectFromManifestBase(
   }
   const schema = buildSchemaFromString(schemaString);
 
-  const chainTypes = projectManifest.network.chaintypes
-    ? await getChainTypes(reader, root, projectManifest.network.chaintypes.file)
-    : undefined;
-
-  const dataSources = await updateDataSourcesV0_2_0(
+  const dataSources = await updateDataSourcesV0_3_0(
     projectManifest.dataSources,
     reader,
     root,
@@ -157,33 +132,8 @@ async function loadProjectFromManifestBase(
     network,
     dataSources,
     schema,
-    chainTypes,
     templates: [],
   };
-}
-
-async function loadProjectFromManifest0_2_1(
-  projectManifest: ProjectManifestV0_2_1Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  const root = await getProjectRoot(reader);
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-  );
-
-  project.templates = (
-    await updateDataSourcesV0_2_0(projectManifest.templates, reader, root)
-  ).map((ds, index) => ({
-    ...ds,
-    name: projectManifest.templates[index].name,
-  }));
-
-  return project;
 }
 
 const { version: packageVersion } = require('../../package.json');
@@ -192,7 +142,7 @@ async function loadProjectFromManifest1_0_0(
   projectManifest: ProjectManifestV1_0_0Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<CosmosProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
     projectManifest,

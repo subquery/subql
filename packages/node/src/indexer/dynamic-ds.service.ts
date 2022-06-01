@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
+import { isCustomCosmosDs, isRuntimeCosmosDs } from '@subql/common-cosmos';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
@@ -123,13 +123,13 @@ export class DynamicDsService {
     } as SubqlProjectDs;
     delete dsObj.name;
     try {
-      if (isCustomDs(dsObj)) {
+      if (isCustomCosmosDs(dsObj)) {
         dsObj.processor.options = {
           ...dsObj.processor.options,
           ...params.args,
         };
         await this.dsProcessorService.validateCustomDs([dsObj]);
-      } else if (isRuntimeDs(dsObj)) {
+      } else if (isRuntimeCosmosDs(dsObj)) {
         // XXX add any modifications to the ds here
       }
 

@@ -1,86 +1,97 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
-import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
-import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
-import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import path from 'path';
+import { TextDecoder } from 'util';
+import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { fromAscii, toHex } from '@cosmjs/encoding';
+import { Uint53 } from '@cosmjs/math';
+import { GeneratedType, Registry } from '@cosmjs/proto-signing';
+import {
+  Block,
+  IndexedTx,
+  StargateClient,
+  StargateClientOptions,
+  defaultRegistryTypes,
+  isSearchByHeightQuery,
+  isSearchBySentFromOrToQuery,
+  isSearchByTagsQuery,
+  SearchTxFilter,
+  SearchTxQuery,
+} from '@cosmjs/stargate';
+import {
+  HttpEndpoint,
+  Tendermint34Client,
+  toRfc3339WithNanoseconds,
+} from '@cosmjs/tendermint-rpc';
+import { Injectable } from '@nestjs/common';
+import {
+  MsgClearAdmin,
+  MsgExecuteContract,
+  MsgInstantiateContract,
+  MsgMigrateContract,
+  MsgStoreCode,
+  MsgUpdateAdmin,
+} from 'cosmjs-types/cosmwasm/wasm/v1/tx';
+import { EventEmitter2 } from 'eventemitter2';
+import { load } from 'protobufjs';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { IndexerEvent, NetworkMetadataPayload } from './events';
-import { ApiAt } from './types';
-
-const NOT_SUPPORT = (name: string) => () => {
-  throw new Error(`${name}() is not supported`);
-};
+import { DsProcessorService } from './ds-processor.service';
+import { NetworkMetadataPayload } from './events';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: packageVersion } = require('../../package.json');
 
 const logger = getLogger('api');
 
 @Injectable()
-export class ApiService implements OnApplicationShutdown {
-  private api: ApiPromise;
-  private currentBlockHash: string;
-  private currentBlockNumber: number;
-  private currentRuntimeVersion: RuntimeVersion;
-  private apiOption: ApiOptions;
+export class ApiService {
+  private api: CosmosClient;
+  private clientConfig: StargateClientOptions;
   networkMeta: NetworkMetadataPayload;
-
+  dsProcessor: DsProcessorService;
   constructor(
     protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
   ) {}
 
-  async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect()]);
-  }
-
   async init(): Promise<ApiService> {
-    let chainTypes, network;
-    try {
-      chainTypes = this.project.chainTypes;
-      network = this.project.network;
-    } catch (e) {
-      logger.error(e);
-      process.exit(1);
-    }
+    const { network } = this.project;
+    this.clientConfig = {};
+    const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
+      ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
+      ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
+      ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
+      ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
+      ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
+      ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
+    ];
 
-    let provider: WsProvider | HttpProvider;
-    let throwOnConnect = false;
-    if (network.endpoint.startsWith('ws')) {
-      provider = new WsProvider(network.endpoint);
-    } else if (network.endpoint.startsWith('http')) {
-      provider = new HttpProvider(network.endpoint);
-      throwOnConnect = true;
-    }
-
-    this.apiOption = {
-      provider,
-      throwOnConnect,
-      ...chainTypes,
+    const endpoint: HttpEndpoint = {
+      url: network.endpoint,
+      headers: {
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
+      },
     };
-    this.api = await ApiPromise.create(this.apiOption);
+    const client = await CosmWasmClient.connect(endpoint);
 
-    this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    this.api.on('connected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    });
-    this.api.on('disconnected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
-    });
+    const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+    for (const ds of this.project.dataSources) {
+      const chaintypes = await this.getChainType(ds);
+      for (const typeurl in chaintypes) {
+        registry.register(typeurl, chaintypes[typeurl]);
+      }
+    }
+    this.api = new CosmosClient(client, registry);
 
     this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
+      chainId: network.chainId,
     };
 
-    if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
+    const chainId = await this.api.chainId();
+    if (network.chainId !== chainId) {
       const err = new Error(
-        `Network chainId doesn't match expected genesisHash. expected="${
-          network.chainId ?? network.genesisHash
-        }" actual="${this.networkMeta.genesisHash}`,
+        `The given chainId does not match with client: "${network.chainId}"`,
       );
       logger.error(err, err.message);
       throw err;
@@ -89,82 +100,140 @@ export class ApiService implements OnApplicationShutdown {
     return this;
   }
 
-  getApi(): ApiPromise {
+  getApi(): CosmosClient {
     return this.api;
   }
 
-  async getPatchedApi(
-    blockHash: string | BlockHash,
-    blockNumber: number,
-    parentBlockHash?: string | BlockHash,
-  ): Promise<ApiAt> {
-    this.currentBlockHash = blockHash.toString();
-    this.currentBlockNumber = blockNumber;
-    if (parentBlockHash) {
-      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
-        parentBlockHash,
-      );
-    }
-    const apiAt = (await this.api.at(
-      blockHash,
-      this.currentRuntimeVersion,
-    )) as ApiAt;
-    this.patchApiRpc(this.api, apiAt);
-    return apiAt;
+  async getSafeApi(height: number): Promise<CosmosSafeClient> {
+    const { network } = this.project;
+    const endpoint: HttpEndpoint = {
+      url: network.endpoint,
+      headers: {
+        'User-Agent': `SubQuery-Node ${packageVersion}`,
+      },
+    };
+    const client = await CosmosSafeClient.safeConnect(endpoint, height);
+    return client;
   }
 
-  private redecorateRpcFunction<T extends 'promise' | 'rxjs'>(
-    original: RpcMethodResult<T, AnyFunction>,
-  ): RpcMethodResult<T, AnyFunction> {
-    const methodName = this.getRPCFunctionName(original);
-    if (original.meta.params) {
-      const hashIndex = original.meta.params.findIndex(
-        ({ isHistoric }) => isHistoric,
-      );
-      if (hashIndex > -1) {
-        const isBlockNumber =
-          original.meta.params[hashIndex].type === 'BlockNumber';
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async getChainType(
+    ds: SubqlProjectDs,
+  ): Promise<Record<string, GeneratedType>> {
+    if (!ds.chainTypes) {
+      return {};
+    }
 
-        const ret = ((...args: any[]) => {
-          const argsClone = [...args];
-          argsClone[hashIndex] = isBlockNumber
-            ? this.currentBlockNumber
-            : this.currentBlockHash;
-          return original(...argsClone);
-        }) as RpcMethodResult<T, AnyFunction>;
-        ret.raw = NOT_SUPPORT(`${methodName}.raw`);
-        ret.meta = original.meta;
-        return ret;
+    const res: Record<string, GeneratedType> = {};
+    for (const packages of ds.chainTypes) {
+      const packageName = packages[0];
+      const file = packages[1].file;
+      const messages = packages[1].messages;
+      load(path.join(this.project.root, file), function (err, root) {
+        if (err) throw err;
+        for (const msg of messages) {
+          const msgObj = root.lookupType(`${packageName}.${msg}`);
+          res[`/${packageName}.${msg}`] = msgObj;
+        }
+      });
+    }
+    return res;
+  }
+}
+
+export class CosmosClient {
+  constructor(
+    private readonly baseApi: CosmWasmClient,
+    private registry: Registry,
+  ) {}
+
+  async chainId(): Promise<string> {
+    return this.baseApi.getChainId();
+  }
+
+  async finalisedHeight(): Promise<number> {
+    return this.baseApi.getHeight();
+  }
+
+  async blockInfo(height?: number): Promise<Block> {
+    return this.baseApi.getBlock(height);
+  }
+
+  async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
+    return this.baseApi.searchTx({ height: height });
+  }
+
+  decodeMsg(msg: any) {
+    try {
+      const decodedMsg = this.registry.decode(msg);
+      if (msg.typeUrl === '/cosmwasm.wasm.v1.MsgExecuteContract') {
+        decodedMsg.msg = JSON.parse(new TextDecoder().decode(decodedMsg.msg));
       }
+      return decodedMsg;
+    } catch (e) {
+      logger.error(e);
+      return {};
     }
-
-    const ret = NOT_SUPPORT(methodName) as unknown as RpcMethodResult<
-      T,
-      AnyFunction
-    >;
-    ret.raw = NOT_SUPPORT(`${methodName}.raw`);
-    ret.meta = original.meta;
-    return ret;
   }
 
-  private patchApiRpc(api: ApiPromise, apiAt: ApiAt): void {
-    apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
-      acc[module] = Object.entries(rpcMethods).reduce(
-        (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(rpcPromiseResult);
-          return accInner;
+  get StargateClient(): CosmWasmClient {
+    /* TODO remove this and wrap all calls to include params */
+    return this.baseApi;
+  }
+}
+
+export class CosmosSafeClient extends CosmWasmClient {
+  height: number;
+
+  static async safeConnect(
+    endpoint: string | HttpEndpoint,
+    height: number,
+  ): Promise<CosmosSafeClient> {
+    const tmClient = await Tendermint34Client.connect(endpoint);
+    return new CosmosSafeClient(tmClient, height);
+  }
+
+  constructor(tmClient: Tendermint34Client | undefined, height: number) {
+    super(tmClient);
+    this.height = height;
+  }
+
+  async getBlock(): Promise<Block> {
+    const response = await this.forceGetTmClient().block(this.height);
+    return {
+      id: toHex(response.blockId.hash).toUpperCase(),
+      header: {
+        version: {
+          block: new Uint53(response.block.header.version.block).toString(),
+          app: new Uint53(response.block.header.version.app).toString(),
         },
-        {},
-      );
-      return acc;
-    }, {} as ApiPromise['rpc']);
+        height: response.block.header.height,
+        chainId: response.block.header.chainId,
+        time: toRfc3339WithNanoseconds(response.block.header.time),
+      },
+      txs: response.block.txs,
+    };
   }
 
-  private getRPCFunctionName<T extends 'promise' | 'rxjs'>(
-    original: RpcMethodResult<T, AnyFunction>,
-  ): string {
-    const ext = original.meta as unknown as DefinitionRpcExt;
+  async searchTx(): Promise<readonly IndexedTx[]> {
+    const txs: readonly IndexedTx[] = await this.safeTxsQuery(
+      `tx.height=${this.height}`,
+    );
+    return txs;
+  }
 
-    return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
+  private async safeTxsQuery(query: string): Promise<readonly IndexedTx[]> {
+    const results = await this.forceGetTmClient().txSearchAll({ query: query });
+    return results.txs.map((tx) => {
+      return {
+        height: tx.height,
+        hash: toHex(tx.hash).toUpperCase(),
+        code: tx.result.code,
+        rawLog: tx.result.log || '',
+        tx: tx.tx,
+        gasUsed: tx.result.gasUsed,
+        gasWanted: tx.result.gasWanted,
+      };
+    });
   }
 }

@@ -12,18 +12,10 @@ import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
-import { MmrQueryController } from './mmrQuery.controller';
-import { ReadyController } from './ready.controller';
-import { ReadyService } from './ready.service';
 
 @Module({
   imports: [PrometheusModule.register(), IndexerModule],
-  controllers: [
-    MetaController,
-    HealthController,
-    ReadyController,
-    MmrQueryController,
-  ],
+  controllers: [MetaController, HealthController],
   providers: [
     MetricEventListener,
     makeGaugeProvider({
@@ -68,7 +60,6 @@ import { ReadyService } from './ready.service';
     }),
     MetaService,
     HealthService,
-    ReadyService,
   ],
 })
 export class MetaModule {}

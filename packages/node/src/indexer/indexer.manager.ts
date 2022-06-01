@@ -1,39 +1,38 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
-  isCallHandlerProcessor,
+  isTransactionHandlerProcessor,
+  isMessageHandlerProcessor,
   isEventHandlerProcessor,
-  isCustomDs,
-  isRuntimeDs,
-  SubstrateCustomDataSource,
-  SubstrateCustomHandler,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateRuntimeHandlerInputMap,
-} from '@subql/common-substrate';
+  isCustomCosmosDs,
+  isRuntimeCosmosDs,
+  SubqlCosmosCustomDataSource,
+  SubqlCosmosCustomHandler,
+  SubqlCosmosHandlerKind,
+  CosmosRuntimeHandlerInputMap,
+} from '@subql/common-cosmos';
 import {
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-} from '@subql/types';
+  CosmosBlock,
+  CosmosEvent,
+  CosmosMessage,
+  CosmosTransaction,
+} from '@subql/types-cosmos';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
+import * as CosmosUtil from '../utils/cosmos';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
-import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
+import { ApiService, CosmosClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -61,8 +60,7 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
-  private api: ApiPromise;
-  private prevSpecVersion?: number;
+  private api: CosmosClient;
   protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
   private blockOffset: number;
@@ -87,7 +85,7 @@ export class IndexerManager {
   @profiler(argv.profiler)
   async indexBlock(blockContent: BlockContent): Promise<void> {
     const { block } = blockContent;
-    const blockHeight = block.block.header.number.toNumber();
+    const blockHeight = block.block.header.height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
       height: blockHeight,
       timestamp: Date.now(),
@@ -98,12 +96,8 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      const isUpgraded = block.specVersion !== this.prevSpecVersion;
-      // if parentBlockHash injected, which means we need to check runtime upgrade
-      const apiAt = await this.apiService.getPatchedApi(
-        block.block.hash,
-        block.block.header.number.unwrap().toNumber(),
-        isUpgraded ? block.block.header.parentHash : undefined,
+      const safeApi = await this.apiService.getSafeApi(
+        block.block.header.height,
       );
 
       const datasources = this.filteredDataSources.concat(
@@ -114,7 +108,7 @@ export class IndexerManager {
         blockContent,
         datasources,
         (ds: SubqlProjectDs) => {
-          const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+          const vm = this.sandboxService.getDsProcessor(ds, safeApi);
 
           // Inject function to create ds into vm
           vm.freeze(
@@ -166,7 +160,7 @@ export class IndexerManager {
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
           const poiBlock = PoiBlock.create(
             blockHeight,
-            block.block.header.hash.toHex(),
+            block.block.id,
             operationHash,
             await this.poiService.getLatestPoiBlockHash(),
             this.project.id,
@@ -185,8 +179,7 @@ export class IndexerManager {
       throw e;
     }
     await tx.commit();
-    this.fetchService.latestProcessed(block.block.header.number.toNumber());
-    this.prevSpecVersion = block.specVersion;
+    this.fetchService.latestProcessed(block.block.header.height);
   }
 
   async start(): Promise<void> {
@@ -359,8 +352,6 @@ export class IndexerManager {
       'blockOffset',
       'indexerNodeVersion',
       'chain',
-      'specName',
-      'genesisHash',
       'chainId',
     ] as const;
 
@@ -375,7 +366,7 @@ export class IndexerManager {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
+    const { chainId } = this.apiService.networkMeta;
 
     if (this.project.runner) {
       await Promise.all([
@@ -397,30 +388,8 @@ export class IndexerManager {
         }),
       ]);
     }
-    if (!keyValue.genesisHash) {
-      if (project) {
-        await metadataRepo.upsert({
-          key: 'genesisHash',
-          value: project.networkGenesis,
-        });
-      } else {
-        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
-      }
-    } else {
-      // Check if the configured genesisHash matches the currently stored genesisHash
-      assert(
-        // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
-        (this.project.network.chainId ?? genesisHash) === keyValue.genesisHash,
-        'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
-      );
-    }
-
-    if (keyValue.chain !== chain) {
-      await metadataRepo.upsert({ key: 'chain', value: chain });
-    }
-
-    if (keyValue.specName !== specName) {
-      await metadataRepo.upsert({ key: 'specName', value: specName });
+    if (keyValue.chain !== chainId) {
+      await metadataRepo.upsert({ key: 'chain', value: chainId });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
@@ -434,11 +403,9 @@ export class IndexerManager {
   }
 
   private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.getDataSourcesForSpecName();
+    let filteredDs = this.project.dataSources;
     if (filteredDs.length === 0) {
-      logger.error(
-        `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
-      );
+      logger.error(`Did not find any dataSource`);
       process.exit(1);
     }
     filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
@@ -451,10 +418,10 @@ export class IndexerManager {
     }
     // perform filter for custom ds
     filteredDs = filteredDs.filter((ds) => {
-      if (isCustomDs(ds)) {
+      if (isCustomCosmosDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.api.StargateClient);
       } else {
         return true;
       }
@@ -468,7 +435,7 @@ export class IndexerManager {
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
+    const startBlocksList = this.project.dataSources.map(
       (item) => item.startBlock ?? 1,
     );
     if (startBlocksList.length === 0) {
@@ -481,84 +448,83 @@ export class IndexerManager {
     }
   }
 
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
-    );
-  }
-
   private async indexBlockData(
-    { block, events, extrinsics }: BlockContent,
+    { block, events, messages, transactions }: BlockContent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
-    // Run initialization events
-    const initEvents = events.filter((evt) => evt.phase.isInitialization);
-    for (const event of initEvents) {
-      await this.indexEvent(event, dataSources, getVM);
+    for (const tx of transactions) {
+      await this.indexTransaction(tx, dataSources, getVM);
     }
 
-    for (const extrinsic of extrinsics) {
-      await this.indexExtrinsic(extrinsic, dataSources, getVM);
-
-      // Process extrinsic events
-      const extrinsicEvents = events
-        .filter((e) => e.extrinsic?.idx === extrinsic.idx)
-        .sort((a, b) => a.idx - b.idx);
-
-      for (const event of extrinsicEvents) {
-        await this.indexEvent(event, dataSources, getVM);
-      }
+    for (const msg of messages) {
+      await this.indexMessage(msg, dataSources, getVM);
     }
 
-    // Run finalization events
-    const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
-    for (const event of finalizeEvents) {
-      await this.indexEvent(event, dataSources, getVM);
+    for (const evt of events) {
+      await this.indexEvent(evt, dataSources, getVM);
     }
   }
 
   private async indexBlockContent(
-    block: SubstrateBlock,
+    block: CosmosBlock,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM(ds));
+      await this.indexData(SubqlCosmosHandlerKind.Block, block, ds, getVM(ds));
     }
   }
 
-  private async indexExtrinsic(
-    extrinsic: SubstrateExtrinsic,
+  private async indexTransaction(
+    transaction: CosmosTransaction,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM(ds));
+      await this.indexData(
+        SubqlCosmosHandlerKind.Transaction,
+        transaction,
+        ds,
+        getVM(ds),
+      );
+    }
+  }
+
+  private async indexMessage(
+    message: CosmosMessage,
+    dataSources: SubqlProjectDs[],
+    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+  ): Promise<void> {
+    for (const ds of dataSources) {
+      await this.indexData(
+        SubqlCosmosHandlerKind.Message,
+        message,
+        ds,
+        getVM(ds),
+      );
     }
   }
 
   private async indexEvent(
-    event: SubstrateEvent,
+    event: CosmosEvent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM(ds));
+      await this.indexData(SubqlCosmosHandlerKind.Event, event, ds, getVM(ds));
     }
   }
 
-  private async indexData<K extends SubstrateHandlerKind>(
+  private async indexData<K extends SubqlCosmosHandlerKind>(
     kind: K,
-    data: SubstrateRuntimeHandlerInputMap[K],
+    data: CosmosRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
     vm: IndexerSandbox,
   ): Promise<void> {
-    if (isRuntimeDs(ds)) {
+    if (isRuntimeCosmosDs(ds)) {
       const handlers = ds.mapping.handlers.filter(
         (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
@@ -566,26 +532,21 @@ export class IndexerManager {
       for (const handler of handlers) {
         await vm.securedExec(handler.handler, [data]);
       }
-    } else if (isCustomDs(ds)) {
+    } else if (isCustomCosmosDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(
         ds,
         data,
         ProcessorTypeMap[kind],
         (data, baseFilter) => {
           switch (kind) {
-            case SubstrateHandlerKind.Block:
-              return !!SubstrateUtil.filterBlock(
-                data as SubstrateBlock,
-                baseFilter,
-              );
-            case SubstrateHandlerKind.Call:
-              return !!SubstrateUtil.filterExtrinsics(
-                [data as SubstrateExtrinsic],
+            case SubqlCosmosHandlerKind.Message:
+              return !!CosmosUtil.filterMessages(
+                [data as CosmosMessage],
                 baseFilter,
               ).length;
-            case SubstrateHandlerKind.Event:
-              return !!SubstrateUtil.filterEvents(
-                [data as SubstrateEvent],
+            case SubqlCosmosHandlerKind.Event:
+              return !!CosmosUtil.filterEvents(
+                [data as CosmosEvent],
                 baseFilter,
               ).length;
             default:
@@ -600,49 +561,32 @@ export class IndexerManager {
     }
   }
 
-  private filterCustomDsHandlers<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
-    data: SubstrateRuntimeHandlerInputMap[K],
+  private filterCustomDsHandlers<K extends SubqlCosmosHandlerKind>(
+    ds: SubqlCosmosCustomDataSource<string>,
+    data: CosmosRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
     baseFilter: (
-      data: SubstrateRuntimeHandlerInputMap[K],
+      data: CosmosRuntimeHandlerInputMap[K],
       baseFilter: any,
     ) => boolean,
-  ): SubstrateCustomHandler[] {
+  ): SubqlCosmosCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
 
-    return ds.mapping.handlers
-      .filter((handler) => {
-        const processor = plugin.handlerProcessors[handler.kind];
-        if (baseHandlerCheck(processor)) {
-          processor.baseFilter;
-          return baseFilter(data, processor.baseFilter);
-        }
-        return false;
-      })
-      .filter((handler) => {
-        const processor = asSecondLayerHandlerProcessor_1_0_0(
-          plugin.handlerProcessors[handler.kind],
-        );
-
-        try {
-          return processor.filterProcessor({
-            filter: handler.filter,
-            input: data,
-            ds,
-          });
-        } catch (e) {
-          logger.error(e, 'Failed to run ds processer filter.');
-          throw e;
-        }
-      });
+    return ds.mapping.handlers.filter((handler) => {
+      const processor = plugin.handlerProcessors[handler.kind];
+      if (baseHandlerCheck(processor)) {
+        processor.baseFilter;
+        return baseFilter(data, processor.baseFilter);
+      }
+      return false;
+    });
   }
 
-  private async transformAndExecuteCustomDs<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
+  private async transformAndExecuteCustomDs<K extends SubqlCosmosHandlerKind>(
+    ds: SubqlCosmosCustomDataSource<string>,
     vm: IndexerSandbox,
-    handler: SubstrateCustomHandler,
-    data: SubstrateRuntimeHandlerInputMap[K],
+    handler: SubqlCosmosCustomHandler,
+    data: CosmosRuntimeHandlerInputMap[K],
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
@@ -655,8 +599,7 @@ export class IndexerManager {
       .transformer({
         input: data,
         ds,
-        filter: handler.filter,
-        api: this.api,
+        api: this.api.StargateClient,
         assets,
       })
       .catch((e) => {
@@ -671,19 +614,22 @@ export class IndexerManager {
 }
 
 type ProcessorTypeMap = {
-  [SubstrateHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [SubstrateHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [SubstrateHandlerKind.Call]: typeof isCallHandlerProcessor;
+  [SubqlCosmosHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [SubqlCosmosHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [SubqlCosmosHandlerKind.Transaction]: typeof isTransactionHandlerProcessor;
+  [SubqlCosmosHandlerKind.Message]: typeof isMessageHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [SubstrateHandlerKind.Block]: isBlockHandlerProcessor,
-  [SubstrateHandlerKind.Event]: isEventHandlerProcessor,
-  [SubstrateHandlerKind.Call]: isCallHandlerProcessor,
+  [SubqlCosmosHandlerKind.Block]: isBlockHandlerProcessor,
+  [SubqlCosmosHandlerKind.Event]: isEventHandlerProcessor,
+  [SubqlCosmosHandlerKind.Transaction]: isTransactionHandlerProcessor,
+  [SubqlCosmosHandlerKind.Message]: isMessageHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [SubstrateHandlerKind.Block]: SubstrateUtil.filterBlock,
-  [SubstrateHandlerKind.Event]: SubstrateUtil.filterEvent,
-  [SubstrateHandlerKind.Call]: SubstrateUtil.filterExtrinsic,
+  [SubqlCosmosHandlerKind.Block]: () => true,
+  [SubqlCosmosHandlerKind.Transaction]: () => true,
+  [SubqlCosmosHandlerKind.Event]: CosmosUtil.filterEvent,
+  [SubqlCosmosHandlerKind.Message]: CosmosUtil.filterMessageData,
 };

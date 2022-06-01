@@ -1,19 +1,19 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { ApiPromise } from '@polkadot/api';
-import { ApiDecoration } from '@polkadot/api/types';
 import {
+  CosmosBlock,
+  CosmosEvent,
   Entity,
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-} from '@subql/types';
+  CosmosTransaction,
+  CosmosMessage,
+} from '@subql/types-cosmos';
 
 export interface BlockContent {
-  block: SubstrateBlock;
-  extrinsics: SubstrateExtrinsic[];
-  events: SubstrateEvent[];
+  block: CosmosBlock;
+  transactions: CosmosTransaction[];
+  messages: CosmosMessage[];
+  events: CosmosEvent[];
 }
 
 export enum OperationType {
@@ -26,5 +26,3 @@ export type OperationEntity = {
   entityType: string;
   data: Entity | string;
 };
-
-export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };

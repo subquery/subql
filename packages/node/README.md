@@ -7,13 +7,13 @@ Indexer service in our @subql toolkit, can load user's subquery then fetch, proc
 ## Installation
 
 ```bash
-$ npm i -g @subql/node
+$ npm i -g @subql/node-terra
 ```
 
 ## Running the app
 
 ```
-$> subql-node
+$> subql-node-terra
 Options:
       --help                Show help                                  [boolean]
       --version             Show version number                        [boolean]

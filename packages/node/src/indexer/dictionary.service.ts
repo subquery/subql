@@ -9,7 +9,10 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import {
+  DictionaryQueryCondition,
+  DictionaryQueryEntry,
+} from '@subql/types-cosmos';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -51,14 +54,20 @@ function extractVars(
         and: i.map((j, innerIdx) => {
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
-          return { [sanitizeArgField(j.field)]: { equalTo: `$${v.name}` } };
+          return {
+            [sanitizeArgField(j.field)]: {
+              [j.matcher || 'equalTo']: `$${v.name}`,
+            },
+          };
         }),
       };
     } else if (i.length === 1) {
       const v = extractVar(`${entity}_${outerIdx}_0`, i[0]);
       gqlVars.push(v);
       filter.or[outerIdx] = {
-        [sanitizeArgField(i[0].field)]: { equalTo: `$${v.name}` },
+        [sanitizeArgField(i[0].field)]: {
+          [i[0].matcher || 'equalTo']: `$${v.name}`,
+        },
       };
     }
   });
@@ -151,11 +160,7 @@ export class DictionaryService implements OnApplicationShutdown {
       const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
-        if (
-          entity !== 'specVersions' &&
-          entity !== '_metadata' &&
-          resp.data[entity].nodes.length >= 0
-        ) {
+        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
             entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
@@ -207,16 +212,7 @@ export class DictionaryService implements OnApplicationShutdown {
     const nodes: GqlNode[] = [
       {
         entity: '_metadata',
-        project: ['lastProcessedHeight', 'genesisHash'],
-      },
-      {
-        entity: 'specVersions',
-        project: [
-          {
-            entity: 'nodes',
-            project: ['id', 'blockHeight'],
-          },
-        ],
+        project: ['lastProcessedHeight', 'chain'],
       },
     ];
     for (const entity of Object.keys(mapped)) {

@@ -3,11 +3,8 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import {
-  isDatasourceV0_2_0,
-  SubstrateDataSource,
-} from '@subql/common-substrate';
-import { Store } from '@subql/types';
+import { SubqlCosmosDataSource } from '@subql/common-cosmos';
+import { Store } from '@subql/types-cosmos';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
@@ -17,9 +14,8 @@ import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
+import { ApiService, CosmosSafeClient } from './api.service';
 import { StoreService } from './store.service';
-import { ApiAt } from './types';
 
 const { argv } = getYargsOption();
 
@@ -116,7 +112,7 @@ export class SandboxService {
     private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
+  getDsProcessor(ds: SubqlProjectDs, api: CosmosSafeClient): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
@@ -134,16 +130,12 @@ export class SandboxService {
     }
     processor.freeze(api, 'api');
     if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi(), 'unsafeApi');
+      processor.freeze(this.apiService.getApi().StargateClient, 'unsafeApi');
     }
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubstrateDataSource): string {
-    if (isDatasourceV0_2_0(ds)) {
-      return ds.mapping.file;
-    } else {
-      return getProjectEntry(this.project.root);
-    }
+  private getDataSourceEntry(ds: SubqlCosmosDataSource): string {
+    return getProjectEntry(this.project.root);
   }
 }

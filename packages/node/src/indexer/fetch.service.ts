@@ -7,30 +7,35 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import {
-  isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_0_1,
-  isCustomDs,
-  isRuntimeDs,
+  isCustomCosmosDs,
+  isRuntimeCosmosDs,
   isRuntimeDataSourceV0_3_0,
-  SubstrateCallFilter,
-  SubstrateEventFilter,
-  SubstrateHandlerKind,
-  SubstrateHandler,
-  SubstrateDataSource,
-  SubstrateRuntimeHandlerFilter,
-} from '@subql/common-substrate';
-import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
+  SubqlCosmosMessageFilter,
+  SubqlCosmosEventFilter,
+  SubqlCosmosHandlerKind,
+  SubqlCosmosHandler,
+  SubqlCosmosDataSource,
+  SubqlCosmosHandlerFilter,
+} from '@subql/common-cosmos';
+import {
+  DictionaryQueryEntry,
+  SubqlCosmosCustomHandler,
+  DictionaryQueryCondition,
+  SubqlCosmosEventHandler,
+  SubqlCosmosMessageHandler,
+  SubqlCosmosRuntimeHandler,
+} from '@subql/types-cosmos';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import * as CosmosUtil from '../utils/cosmos';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
-import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
+import { ApiService, CosmosClient } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -49,42 +54,72 @@ const { argv } = getYargsOption();
 
 const fetchBlocksBatches = argv.profiler
   ? profilerWrap(
-      SubstrateUtil.fetchBlocksBatches,
-      'SubstrateUtil',
+      CosmosUtil.fetchBlocksBatches,
+      'CosmosUtil',
       'fetchBlocksBatches',
     )
-  : SubstrateUtil.fetchBlocksBatches;
+  : CosmosUtil.fetchBlocksBatches;
 
 function eventFilterToQueryEntry(
-  filter: SubstrateEventFilter,
+  filter: SubqlCosmosEventFilter,
 ): DictionaryQueryEntry {
+  const conditions: DictionaryQueryCondition[] = [
+    {
+      field: 'type',
+      value: filter.type,
+      matcher: 'equalTo',
+    },
+  ];
+  if (filter.messageFilter !== undefined) {
+    if (filter.messageFilter.type !== undefined) {
+      conditions.push({
+        field: 'msgType',
+        value: filter.messageFilter.type,
+        matcher: 'equalTo',
+      });
+    }
+    if (filter.messageFilter.values !== undefined) {
+      conditions.push({
+        field: 'data',
+        value: Object.keys(filter.messageFilter.values).map((key) => ({
+          key: key,
+          value: filter.messageFilter.values[key],
+        })),
+        matcher: 'contains',
+      });
+    }
+  }
   return {
     entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'event',
-        value: filter.method,
-      },
-    ],
+    conditions: conditions,
   };
 }
 
-function callFilterToQueryEntry(
-  filter: SubstrateCallFilter,
+function messageFilterToQueryEntry(
+  filter: SubqlCosmosMessageFilter,
 ): DictionaryQueryEntry {
-  return {
-    entity: 'extrinsics',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'call',
-        value: filter.method,
-      },
-    ],
-  };
+  const conditions: DictionaryQueryCondition[] = [
+    {
+      field: 'type',
+      value: filter.type,
+      matcher: 'equalTo',
+    },
+  ];
+  if (filter.values !== undefined) {
+    conditions.push({
+      field: 'data',
+      value: Object.keys(filter.values).map((key) => ({
+        key: key,
+        value: filter.values[key],
+      })),
+      matcher: 'contains',
+    });
+    return {
+      entity: 'messages',
+      conditions: conditions,
+    };
+  }
 }
-
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
   const memoryData = getHeapStatistics();
   const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
@@ -145,7 +180,7 @@ export class FetchService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): ApiPromise {
+  get api(): CosmosClient {
     return this.apiService.getApi();
   }
 
@@ -153,59 +188,44 @@ export class FetchService implements OnApplicationShutdown {
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter(
-      (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+    const dataSources = this.project.dataSources.filter((ds) =>
+      isRuntimeDataSourceV0_3_0(ds),
     );
     for (const ds of dataSources) {
-      const plugin = isCustomDs(ds)
+      const plugin = isCustomCosmosDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
       for (const handler of ds.mapping.handlers) {
         const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubstrateRuntimeHandlerFilter[];
-        if (isCustomDs(ds)) {
+        let filterList: SubqlCosmosHandlerFilter[];
+        if (isCustomCosmosDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
-          if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(
-              (handler as SubstrateCustomHandler).filter,
-              ds,
-            );
-            if (queryEntry) {
-              queryEntries.push(queryEntry);
-              continue;
-            }
-          }
-          filterList =
-            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
-              ds,
-              handler.kind,
-            );
+          filterList = this.getBaseHandlerFilters<SubqlCosmosHandlerFilter>(
+            ds,
+            handler.kind,
+          );
         } else {
-          filterList = [handler.filter];
+          filterList = [
+            (handler as SubqlCosmosEventHandler | SubqlCosmosMessageHandler)
+              .filter,
+          ];
         }
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
-          case SubstrateHandlerKind.Block:
-            return [];
-          case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as SubstrateCallFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
-                queryEntries.push(callFilterToQueryEntry(filter));
+          case SubqlCosmosHandlerKind.Message: {
+            for (const filter of filterList as SubqlCosmosMessageFilter[]) {
+              if (filter.type !== undefined) {
+                queryEntries.push(messageFilterToQueryEntry(filter));
               } else {
                 return [];
               }
             }
             break;
           }
-          case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as SubstrateEventFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+          case SubqlCosmosHandlerKind.Event: {
+            for (const filter of filterList as SubqlCosmosEventFilter[]) {
+              if (filter.type !== undefined) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -243,7 +263,7 @@ export class FetchService implements OnApplicationShutdown {
           } catch (e) {
             logger.error(
               e,
-              `failed to index block at height ${block.block.block.header.number.toString()} ${
+              `failed to index block at height ${block.block.block.header.height.toString()} ${
                 e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
               }`,
             );
@@ -264,8 +284,7 @@ export class FetchService implements OnApplicationShutdown {
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
-    await this.getFinalizedBlockHead();
-    await this.getBestBlockHead();
+    await this.getLatestBlockHead();
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -283,16 +302,13 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedBlockHead() {
+  async getLatestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const currentFinalizedHeight = await this.api.finalisedHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
@@ -301,26 +317,6 @@ export class FetchService implements OnApplicationShutdown {
       }
     } catch (e) {
       logger.error(e, `Having a problem when get finalized block`);
-    }
-  }
-
-  @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getBestBlockHead() {
-    if (!this.api) {
-      logger.debug(`Skip fetch best block until API is ready`);
-      return;
-    }
-    try {
-      const bestHeader = await this.api.rpc.chain.getHeader();
-      const currentBestHeight = bestHeader.number.toNumber();
-      if (this.latestBestHeight !== currentBestHeight) {
-        this.latestBestHeight = currentBestHeight;
-        this.eventEmitter.emit(IndexerEvent.BlockBest, {
-          height: this.latestBestHeight,
-        });
-      }
-    } catch (e) {
-      logger.error(e, `Having a problem when get best block`);
     }
   }
 
@@ -339,8 +335,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
-    await this.fetchMeta(initBlockHeight);
-
     let startBlockHeight: number;
     let scaledBatchSize: number;
 
@@ -374,7 +368,7 @@ export class FetchService implements OnApplicationShutdown {
           // const specVersionMap = dictionary.specVersions;
           if (
             dictionary &&
-            this.dictionaryValidation(dictionary, startBlockHeight)
+            (await this.dictionaryValidation(dictionary, startBlockHeight))
           ) {
             const { batchBlocks } = dictionary;
             if (batchBlocks.length === 0) {
@@ -422,14 +416,7 @@ export class FetchService implements OnApplicationShutdown {
       }
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const metadataChanged = await this.fetchMeta(
-        bufferBlocks[bufferBlocks.length - 1],
-      );
-      const blocks = await fetchBlocksBatches(
-        this.api,
-        bufferBlocks,
-        metadataChanged ? undefined : this.parentSpecVersion,
-      );
+      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
@@ -440,24 +427,6 @@ export class FetchService implements OnApplicationShutdown {
         value: this.blockBuffer.size,
       });
     }
-  }
-
-  @profiler(argv.profiler)
-  async fetchMeta(height: number): Promise<boolean> {
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
-      Math.max(height - 1, 0),
-    );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
-    const specVersion = runtimeVersion.specVersion.toNumber();
-    if (this.parentSpecVersion !== specVersion) {
-      const blockHash = await this.api.rpc.chain.getBlockHash(height);
-      await SubstrateUtil.prefetchMetadata(this.api, blockHash);
-      this.parentSpecVersion = specVersion;
-      return true;
-    }
-    return false;
   }
 
   private nextEndBlockHeight(
@@ -472,11 +441,12 @@ export class FetchService implements OnApplicationShutdown {
     return endBlockHeight;
   }
 
-  private dictionaryValidation(
+  private async dictionaryValidation(
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
-  ): boolean {
-    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+  ): Promise<boolean> {
+    const chain = await this.api.chainId();
+    if (metaData.chain !== chain) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -503,12 +473,12 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private getBaseHandlerKind(
-    ds: SubstrateDataSource,
-    handler: SubstrateHandler,
-  ): SubstrateHandlerKind {
-    if (isRuntimeDs(ds) && isBaseHandler(handler)) {
-      return handler.kind;
-    } else if (isCustomDs(ds) && isCustomHandler(handler)) {
+    ds: SubqlCosmosDataSource,
+    handler: SubqlCosmosHandler,
+  ): SubqlCosmosHandlerKind {
+    if (isRuntimeCosmosDs(ds) && isBaseHandler(handler)) {
+      return (handler as SubqlCosmosRuntimeHandler).kind;
+    } else if (isCustomCosmosDs(ds) && isCustomHandler(handler)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const baseHandler =
         plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
@@ -521,11 +491,11 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
-    ds: SubstrateDataSource,
+  private getBaseHandlerFilters<T extends SubqlCosmosHandlerFilter>(
+    ds: SubqlCosmosDataSource,
     handlerKind: string,
   ): T[] {
-    if (isCustomDs(ds)) {
+    if (isCustomCosmosDs(ds)) {
       const plugin = this.dsProcessorService.getDsProcessor(ds);
       const processor = plugin.handlerProcessors[handlerKind];
       return processor.baseFilter instanceof Array

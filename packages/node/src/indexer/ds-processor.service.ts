@@ -4,20 +4,15 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import {
-  isCustomDs,
-  SubstrateCustomDataSource,
-  SubstrateDataSource,
-  SubstrateDatasourceProcessor,
-  SubstrateNetworkFilter,
-} from '@subql/common-substrate';
+import { isCustomCosmosDs } from '@subql/common-cosmos';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
-  SubstrateCustomDatasource,
-  SubstrateHandlerKind,
-} from '@subql/types';
-
+  SubqlCosmosCustomDatasource,
+  SubqlCosmosDatasourceProcessor,
+  SubqlCosmosDatasource,
+  SubqlCosmosHandlerKind,
+} from '@subql/types-cosmos';
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
@@ -32,10 +27,10 @@ export interface DsPluginSandboxOption {
 const logger = getLogger('ds-sandbox');
 
 export function isSecondLayerHandlerProcessor_0_0_0<
-  K extends SubstrateHandlerKind,
+  K extends SubqlCosmosHandlerKind,
   F,
   E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -46,10 +41,10 @@ export function isSecondLayerHandlerProcessor_0_0_0<
 }
 
 export function isSecondLayerHandlerProcessor_1_0_0<
-  K extends SubstrateHandlerKind,
+  K extends SubqlCosmosHandlerKind,
   F,
   E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -59,10 +54,10 @@ export function isSecondLayerHandlerProcessor_1_0_0<
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  K extends SubstrateHandlerKind,
+  K extends SubqlCosmosHandlerKind,
   F,
   E,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlCosmosCustomDatasource = SubqlCosmosCustomDatasource,
 >(
   processor:
     | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
@@ -100,10 +95,10 @@ export class DsPluginSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 
-  getDsPlugin<
-    D extends string,
-    T extends SubstrateNetworkFilter,
-  >(): SubstrateDatasourceProcessor<D, T> {
+  getDsPlugin<D extends string>(): SubqlCosmosDatasourceProcessor<
+    D,
+    undefined
+  > {
     return this.run(this.script);
   }
 }
@@ -111,25 +106,20 @@ export class DsPluginSandbox extends Sandbox {
 @Injectable()
 export class DsProcessorService {
   private processorCache: {
-    [entry: string]: SubstrateDatasourceProcessor<
-      string,
-      SubstrateNetworkFilter
-    >;
+    [entry: string]: SubqlCosmosDatasourceProcessor<string, undefined>;
   } = {};
   constructor(private project: SubqueryProject) {}
 
   async validateCustomDs(
-    datasources: SubstrateCustomDataSource[],
+    datasources: SubqlCosmosCustomDatasource[],
   ): Promise<void> {
     for (const ds of datasources) {
       const processor = this.getDsProcessor(ds);
-      /* Standard validation applicable to all custom ds and processors */
       if (ds.kind !== processor.kind) {
         throw new Error(
           `ds kind (${ds.kind}) doesnt match processor (${processor.kind})`,
         );
       }
-
       for (const handler of ds.mapping.handlers) {
         if (!(handler.kind in processor.handlerProcessors)) {
           throw new Error(
@@ -140,12 +130,6 @@ export class DsProcessorService {
         }
       }
 
-      ds.mapping.handlers.map((handler) =>
-        processor.handlerProcessors[handler.kind].filterValidator(
-          handler.filter,
-        ),
-      );
-
       /* Additional processor specific validation */
       processor.validate(ds, await this.getAssets(ds));
     }
@@ -153,42 +137,42 @@ export class DsProcessorService {
 
   async validateProjectCustomDatasources(): Promise<void> {
     await this.validateCustomDs(
-      (this.project.dataSources as SubstrateDataSource[]).filter(isCustomDs),
+      (this.project.dataSources as SubqlCosmosDatasource[]).filter(
+        isCustomCosmosDs,
+      ),
     );
   }
 
-  getDsProcessor<D extends string, T extends SubstrateNetworkFilter>(
-    ds: SubstrateCustomDataSource<string, T>,
-  ): SubstrateDatasourceProcessor<D, T> {
-    if (!isCustomDs(ds)) {
+  getDsProcessor<D extends string>(
+    ds: SubqlCosmosCustomDatasource<string>,
+  ): SubqlCosmosDatasourceProcessor<D, undefined> {
+    if (!isCustomCosmosDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
     if (!this.processorCache[ds.processor.file]) {
       const sandbox = new DsPluginSandbox({
         root: this.project.root,
         entry: ds.processor.file,
-        script: null /* TODO get working with Readers, same as with sandbox */,
+        script: null,
       });
       try {
-        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
+        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();
       } catch (e) {
-        logger.error(e, `not supported ds @${ds.kind}`);
+        logger.error(`not supported ds @${ds.kind}`);
         throw e;
       }
     }
     return this.processorCache[
       ds.processor.file
-    ] as unknown as SubstrateDatasourceProcessor<D, T>;
+    ] as unknown as SubqlCosmosDatasourceProcessor<D, undefined>;
   }
-
   // eslint-disable-next-line @typescript-eslint/require-await
   async getAssets(
-    ds: SubstrateCustomDataSource,
+    ds: SubqlCosmosCustomDatasource,
   ): Promise<Record<string, string>> {
-    if (!isCustomDs(ds)) {
+    if (!isCustomCosmosDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
-
     if (!ds.assets) {
       return {};
     }
@@ -196,9 +180,8 @@ export class DsProcessorService {
     const res: Record<string, string> = {};
 
     for (const [name, { file }] of ds.assets) {
-      // TODO update with https://github.com/subquery/subql/pull/511
       try {
-        res[name] = fs.readFileSync(file, {
+        res[name] = fs.readFileSync(path.join(this.project.root, file), {
           encoding: 'utf8',
         });
       } catch (e) {
@@ -206,7 +189,6 @@ export class DsProcessorService {
         throw e;
       }
     }
-
     return res;
   }
 }

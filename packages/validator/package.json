@@ -16,8 +16,8 @@
     "/dist"
   ],
   "dependencies": {
-    "@subql/common": "workspace:*",
-    "@subql/common-substrate": "workspace:*",
+    "@subql/common": "latest",
+    "@subql/common-cosmos": "workspace:*",
     "axios": "^0.24.0",
     "ipfs-http-client": "^52.0.3",
     "js-yaml": "^4.1.0",

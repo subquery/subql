@@ -2,14 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Reader} from '@subql/common';
-import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
-import {TerraProjectManifestVersioned} from '@subql/common-terra';
+import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {IPackageJson} from 'package-json-type';
 
 export interface ContextData {
   projectPath: string;
   pkg: IPackageJson;
-  schema?: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+  schema?: CosmosProjectManifestVersioned;
 }
 
 export interface Context {

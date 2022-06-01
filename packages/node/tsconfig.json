@@ -7,11 +7,6 @@
     "rootDir": "src",
     "outDir": "./dist"
   },
-  "references": [
-    { "path": "../common" },
-    { "path": "../common-substrate" },
-    { "path": "../types" },
-    { "path": "../utils" }
-  ],
+  "references": [{ "path": "../common-cosmos" }, { "path": "../types" }],
   "include": ["src/**/*"]
 }

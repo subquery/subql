@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Reader, ReaderFactory, ReaderOptions} from '@subql/common';
-import {parseSubstrateProjectManifest} from '@subql/common-substrate';
-import {parseTerraProjectManifest} from '@subql/common-terra';
+import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
 
@@ -43,23 +42,10 @@ export class Validator {
 
     let schema;
     try {
-      schema = parseSubstrateProjectManifest(rawSchema);
-      if (schema.isV0_0_1) {
-        reports.push({
-          name: 'package-json-file',
-          description: 'A valid `package.json` file must exist in the root directory of the project',
-          valid: !!pkg,
-          skipped: false,
-        });
-      }
+      schema = parseCosmosProjectManifest(rawSchema);
     } catch (e) {
-      console.warn(`Try to load as Substrate project failed, will try to load as Terra project.`);
-      try {
-        schema = parseTerraProjectManifest(rawSchema);
-      } catch (e) {
-        console.error(`Load Terra project failed, please check the manifest file.`);
-        throw e;
-      }
+      console.error(`Load Cosmos project failed, please check the manifest file.`);
+      throw e;
     }
 
     const ctx: Context = {

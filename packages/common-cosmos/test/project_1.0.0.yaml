@@ -1,0 +1,40 @@
+specVersion: 1.0.0
+name: cosmos-subql-starter
+version: 0.0.1
+runner:
+  node:
+    name: '@subql/node-cosmos'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: >-
+  This project can be use as a starting point for developing your Cosmos based
+  SubQuery project
+repository: https://github.com/subquery/terra-subql-starter
+schema:
+  file: ./schema.graphql
+network:
+  chainId: cosmoshub-4
+  endpoint: https://rpc.cosmos.network:443
+
+dataSources:
+  - kind: cosmos/Runtime
+    startBlock: 10346000
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: handleBlock
+          kind: cosmos/BlockHandler
+        - handler: handleTransaction
+          kind: cosmos/TransactionHandler
+        - handler: handleEvent
+          kind: cosmos/EventHandler
+          filter:
+            type: transfer
+            messageFilter:
+              type: '/cosmos.bank.v1beta1.MsgSend'
+        - handler: handleMessage
+          kind: cosmos/MessageHandler
+          filter:
+            type: '/cosmos.bank.v1beta1.MsgSend'

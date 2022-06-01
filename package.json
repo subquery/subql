@@ -52,5 +52,13 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.1.1"
+  "packageManager": "yarn@3.1.1",
+  "dependencies": {
+    "@cosmjs/cosmwasm-stargate": "^0.28.4",
+    "@cosmjs/proto-signing": "^0.28.4",
+    "@cosmjs/stargate": "^0.28.4",
+    "@types/semver": "^7.3.9",
+    "cosmjs-types": "^0.5.0",
+    "protobufjs": "^6.11.2"
+  }
 }
