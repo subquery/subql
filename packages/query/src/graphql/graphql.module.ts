@@ -87,8 +87,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
     ];
 
-    // apolloServerPlugins.push(queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}));
-
     const server = new ApolloServer({
       schema,
       context: {
