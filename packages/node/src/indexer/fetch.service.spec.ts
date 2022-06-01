@@ -143,12 +143,14 @@ function mockDictionaryService(
   });
   return {
     getDictionary: mockDictionary,
+    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
   } as any;
 }
 
 function mockDictionaryService1(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryBatches),
+    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
   } as any;
 }
 
@@ -161,6 +163,7 @@ function mockDictionaryService2(): DictionaryService {
 function mockDictionaryService3(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
+    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
   } as any;
 }
 function testSubqueryProject(): SubqueryProject {
@@ -294,7 +297,7 @@ describe('FetchService', () => {
       project,
       batchSize,
     );
-    fetchService.fetchMeta = jest.fn();
+    fetchService.prefetchMeta = jest.fn();
     await fetchService.init();
     const loopPromise = fetchService.startLoop(1);
     // eslint-disable-next-line @typescript-eslint/require-await
@@ -412,7 +415,7 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    fetchService.fetchMeta = jest.fn();
+    fetchService.prefetchMeta = jest.fn();
     (fetchService as any).latestFinalizedHeight = 16000;
     (fetchService as any).latestBufferedHeight = undefined;
     (fetchService as any).latestProcessedHeight = undefined;
