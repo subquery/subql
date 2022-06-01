@@ -37,6 +37,7 @@ const prepare = async (): Promise<ProjectService> => {
         useFactory: (
           sequelize: Sequelize,
           project: SubqueryProject,
+          projectService: ProjectService,
           subqueryRepo: SubqueryRepo,
         ) => {
           const projectService = new ProjectService(
@@ -51,11 +52,12 @@ const prepare = async (): Promise<ProjectService> => {
             undefined,
             subqueryRepo,
             undefined,
+            projectService,
           );
 
           return projectService;
         },
-        inject: [Sequelize, SubqueryProject, 'Subquery'],
+        inject: [Sequelize, SubqueryProject, ProjectService, 'Subquery'],
       },
       // {
       //   provide: IndexerManager,
