@@ -6,6 +6,13 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
 import { getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import {
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiRepo,
+  ProofOfIndex,
+} from '@subql/common-node/indexer/entities';
 import { delay } from '@subql/common-node/utils';
 import {
   MMR,
@@ -14,8 +21,6 @@ import {
 } from '@subql/x-merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;

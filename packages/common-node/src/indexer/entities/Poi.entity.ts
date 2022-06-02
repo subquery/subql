@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { BuildOptions, DataTypes, Model, Sequelize } from 'sequelize';
+import {BuildOptions, DataTypes, Model, Sequelize} from 'sequelize';
 
 export interface ProofOfIndex {
   id: number; //blockHeight
@@ -60,7 +60,7 @@ export function PoiFactory(sequelize: Sequelize, schema: string): PoiRepo {
     {
       freezeTableName: true,
       schema: schema,
-      indexes: [{ fields: ['hash'] }],
-    },
+      indexes: [{fields: ['hash']}],
+    }
   );
 }

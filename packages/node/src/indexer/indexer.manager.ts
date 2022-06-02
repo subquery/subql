@@ -10,6 +10,10 @@ import { hexToU8a, u8aEq } from '@polkadot/util';
 import { NodeConfig } from '@subql/common-node/configure';
 import { SubqueryRepo } from '@subql/common-node/entities';
 import {
+  MetadataFactory,
+  MetadataRepo,
+} from '@subql/common-node/indexer/entities';
+import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
   isEventHandlerProcessor,
@@ -36,7 +40,6 @@ import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';

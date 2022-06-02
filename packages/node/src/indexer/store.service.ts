@@ -7,6 +7,14 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { NodeConfig } from '@subql/common-node/configure';
 import {
+  Metadata,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiRepo,
+  ProofOfIndex,
+} from '@subql/common-node/indexer/entities';
+import {
   camelCaseObjectKey,
   modelsTypeToModelAttributes,
   commentConstraintQuery,
@@ -32,12 +40,6 @@ import {
 } from 'sequelize';
 import { getLogger } from '../utils/logger';
 import { getYargsOption } from '../yargs';
-import {
-  Metadata,
-  MetadataFactory,
-  MetadataRepo,
-} from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
 import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';

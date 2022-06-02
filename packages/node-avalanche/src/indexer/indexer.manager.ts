@@ -20,6 +20,10 @@ import {
 import { NodeConfig } from '@subql/common-node/configure';
 import { SubqueryRepo } from '@subql/common-node/entities';
 import {
+  MetadataFactory,
+  MetadataRepo,
+} from '@subql/common-node/indexer/entities';
+import {
   ApiWrapper,
   BlockWrapper,
   AvalancheTransaction,
@@ -31,7 +35,6 @@ import { AvalancheApi } from '../avalanche';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';

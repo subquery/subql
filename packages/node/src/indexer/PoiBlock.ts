@@ -3,7 +3,7 @@
 // eslint-disable-next-line header/header
 import { u8aConcat, numberToU8a, hexToU8a, isHex, isU8a } from '@polkadot/util';
 import { blake2AsU8a } from '@polkadot/util-crypto';
-import { ProofOfIndex } from './entities/Poi.entity';
+import { ProofOfIndex } from '@subql/common-node/indexer/entities';
 
 const poiBlockHash = (
   id: number,
