@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-06-02
+### Changed
+- Now query-complexity is indicated in header (#1088)
+
 ## [1.1.0] - 2022-05-31
 ### Added
 - Experimental feature: Support query by block number, require enable by indexing node (#992)
