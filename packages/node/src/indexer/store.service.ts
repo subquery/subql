@@ -9,6 +9,14 @@ import { NodeConfig } from '@subql/common-node/configure';
 import {
   camelCaseObjectKey,
   modelsTypeToModelAttributes,
+  commentConstraintQuery,
+  createNotifyTrigger,
+  createSendNotificationTriggerFunction,
+  createUniqueIndexQuery,
+  dropNotifyTrigger,
+  getFkConstraint,
+  getNotifyTriggers,
+  smartTags,
 } from '@subql/common-node/utils';
 import { Entity, Store } from '@subql/types';
 import { GraphQLModelsRelationsEnums } from '@subql/utils';
@@ -23,16 +31,6 @@ import {
   Utils,
 } from 'sequelize';
 import { getLogger } from '../utils/logger';
-import {
-  commentConstraintQuery,
-  createNotifyTrigger,
-  createSendNotificationTriggerFunction,
-  createUniqueIndexQuery,
-  dropNotifyTrigger,
-  getFkConstraint,
-  getNotifyTriggers,
-  smartTags,
-} from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
 import {
   Metadata,

@@ -29,6 +29,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     this._logs = flatten(
       _block.transactions.map((tx) => tx.receipt.logs),
     ) as AvalancheLog<AvalancheResult>[];
+    this._logs = this._logs.filter((log) => log.topics.length > 0);
     this._logs.map((log) => formatLog(log));
     this._block.logs = this._logs;
   }
