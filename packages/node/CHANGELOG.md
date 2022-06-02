@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.2] - 2022-06-02
+### Fixed
+- Fixed btree_gist extension, also provide docker postgres with extension (#1090)
+- Fixed handle multi datasources with different start block height (#1091)
+
 ## [1.1.1] - 2022-06-01
 ### Fixed
 - Fix disabling historical (#1085)
