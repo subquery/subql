@@ -1,17 +1,13 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OnEvent } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
-import { delay } from '@subql/common-node/utils';
+import {OnEvent} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { getLogger } from '../utils/logger';
-import {
-  IndexerEvent,
-  ProcessBlockPayload,
-  TargetBlockPayload,
-} from './events';
+import {IndexerEvent, ProcessBlockPayload, TargetBlockPayload} from '../events';
+import {getLogger} from '../logger';
+import {delay} from '../utils';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
@@ -31,26 +27,21 @@ export class BenchmarkService {
       await delay(10);
     } else {
       if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
-        const heightDiff =
-          this.currentProcessingHeight - this.lastRegisteredHeight;
-        const timeDiff =
-          this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
+        const heightDiff = this.currentProcessingHeight - this.lastRegisteredHeight;
+        const timeDiff = this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
         this.blockPerSecond = heightDiff / (timeDiff / 1000);
 
         const duration = dayjs.duration(
-          (this.targetHeight - this.currentProcessingHeight) /
-            this.blockPerSecond,
-          'seconds',
+          (this.targetHeight - this.currentProcessingHeight) / this.blockPerSecond,
+          'seconds'
         );
         const hoursMinsStr = duration.format('HH [hours] mm [mins]');
         const days = Math.floor(duration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
         logger.info(
-          `${this.blockPerSecond.toFixed(2)} bps, target: #${
-            this.targetHeight
-          }, current: #${
+          `${this.blockPerSecond.toFixed(2)} bps, target: #${this.targetHeight}, current: #${
             this.currentProcessingHeight
-          }, estimate time: ${durationStr}`,
+          }, estimate time: ${durationStr}`
         );
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;

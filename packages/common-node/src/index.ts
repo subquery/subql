@@ -11,3 +11,4 @@ export * from './entities';
 export * from './db';
 export * from './meta';
 export * from './utils';
+export * from './indexer';
