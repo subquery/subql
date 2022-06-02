@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { TextDecoder } from 'util';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block, IndexedTx } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
@@ -13,8 +12,6 @@ import {
   CosmosTransaction,
   CosmosMessage,
 } from '@subql/types-cosmos';
-import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { filter } from 'lodash';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -23,8 +20,9 @@ const logger = getLogger('fetch');
 
 export function filterMessageData(
   data: CosmosMessage,
-  filter: SubqlCosmosMessageFilter,
+  filter?: SubqlCosmosMessageFilter,
 ): boolean {
+  if (!filter) return true;
   if (filter.type !== data.msg.typeUrl) {
     return false;
   }
@@ -70,8 +68,9 @@ export function filterMessages(
 
 export function filterEvent(
   event: CosmosEvent,
-  filter: SubqlCosmosEventFilter,
+  filter?: SubqlCosmosEventFilter,
 ): boolean {
+  if (!filter) return true;
   if (filter.type !== event.event.type) {
     return false;
   }

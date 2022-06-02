@@ -56,48 +56,53 @@ export class ApiService {
   ) {}
 
   async init(): Promise<ApiService> {
-    const { network } = this.project;
-    this.clientConfig = {};
-    const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
-      ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
-      ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
-      ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
-      ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
-      ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
-      ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
-    ];
+    try {
+      const { network } = this.project;
+      this.clientConfig = {};
+      const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
+        ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
+        ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
+        ['/cosmwasm.wasm.v1.MsgMigrateContract', MsgMigrateContract],
+        ['/cosmwasm.wasm.v1.MsgStoreCode', MsgStoreCode],
+        ['/cosmwasm.wasm.v1.MsgInstantiateContract', MsgInstantiateContract],
+        ['/cosmwasm.wasm.v1.MsgUpdateAdmin', MsgUpdateAdmin],
+      ];
 
-    const endpoint: HttpEndpoint = {
-      url: network.endpoint,
-      headers: {
-        'User-Agent': `SubQuery-Node ${packageVersion}`,
-      },
-    };
-    const client = await CosmWasmClient.connect(endpoint);
+      const endpoint: HttpEndpoint = {
+        url: network.endpoint,
+        headers: {
+          'User-Agent': `SubQuery-Node ${packageVersion}`,
+        },
+      };
+      const client = await CosmWasmClient.connect(endpoint);
 
-    const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
-    for (const ds of this.project.dataSources) {
-      const chaintypes = await this.getChainType(ds);
-      for (const typeurl in chaintypes) {
-        registry.register(typeurl, chaintypes[typeurl]);
+      const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+      for (const ds of this.project.dataSources) {
+        const chaintypes = await this.getChainType(ds);
+        for (const typeurl in chaintypes) {
+          registry.register(typeurl, chaintypes[typeurl]);
+        }
       }
+      this.api = new CosmosClient(client, registry);
+
+      this.networkMeta = {
+        chainId: network.chainId,
+      };
+
+      const chainId = await this.api.chainId();
+      if (network.chainId !== chainId) {
+        const err = new Error(
+          `The given chainId does not match with client: "${network.chainId}"`,
+        );
+        logger.error(err, err.message);
+        throw err;
+      }
+
+      return this;
+    } catch (e) {
+      logger.error(e, 'Failed to init api service');
+      process.exit(1);
     }
-    this.api = new CosmosClient(client, registry);
-
-    this.networkMeta = {
-      chainId: network.chainId,
-    };
-
-    const chainId = await this.api.chainId();
-    if (network.chainId !== chainId) {
-      const err = new Error(
-        `The given chainId does not match with client: "${network.chainId}"`,
-      );
-      logger.error(err, err.message);
-      throw err;
-    }
-
-    return this;
   }
 
   getApi(): CosmosClient {
@@ -171,7 +176,7 @@ export class CosmosClient {
       }
       return decodedMsg;
     } catch (e) {
-      logger.error(e);
+      logger.error(e, 'Failed to decode message');
       return {};
     }
   }
