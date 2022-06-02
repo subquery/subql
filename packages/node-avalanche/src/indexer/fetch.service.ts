@@ -6,10 +6,6 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
-  isCustomDs,
-  isRuntimeDs,
-  SubstrateDataSource,
-  SubstrateHandler,
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-avalanche';
@@ -20,6 +16,7 @@ import {
   IndexerEvent,
 } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { BlockedQueue } from '@subql/common-node/indexer';
 import { delay } from '@subql/common-node/utils';
 import {
   DictionaryQueryEntry,
@@ -31,7 +28,6 @@ import {
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { eventToTopic, functionToSighash } from '../utils/string';
-import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 

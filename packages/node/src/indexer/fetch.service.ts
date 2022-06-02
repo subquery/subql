@@ -7,6 +7,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { NodeConfig } from '@subql/common-node/configure';
+import { BlockedQueue } from '@subql/common-node/indexer';
 import { delay } from '@subql/common-node/utils';
 import {
   isRuntimeDataSourceV0_2_0,
@@ -31,7 +32,6 @@ import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { IndexerEvent } from './events';

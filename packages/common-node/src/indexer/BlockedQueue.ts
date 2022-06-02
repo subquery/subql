@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { delay } from '@subql/common-node/utils';
+import {delay} from '../utils';
 
 export class BlockedQueue<T> {
   private _queue: T[] = [];

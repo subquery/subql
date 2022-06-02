@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { range } from 'lodash';
-import { BlockedQueue } from './BlockedQueue';
+import {range} from 'lodash';
+import {BlockedQueue} from './BlockedQueue';
 
 describe('BlockedQueue', () => {
   it('first in and first out', async () => {
@@ -31,9 +31,7 @@ describe('BlockedQueue', () => {
     const delay = 1000;
     const startTs = new Date();
     let msecondTooks: number;
-    const takePromise = queue
-      .take()
-      .then(() => (msecondTooks = new Date().getTime() - startTs.getTime()));
+    const takePromise = queue.take().then(() => (msecondTooks = new Date().getTime() - startTs.getTime()));
     setTimeout(() => queue.put(0), delay);
     await takePromise;
     expect(msecondTooks).toBeGreaterThanOrEqual(delay);
@@ -57,9 +55,7 @@ describe('BlockedQueue', () => {
     for (const i of sequence) {
       queue.put(i);
     }
-    await expect(queue.takeAll()).resolves.toEqual([
-      0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    ]);
+    await expect(queue.takeAll()).resolves.toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   it('block takeAll() when queue is empty', async () => {
@@ -67,9 +63,7 @@ describe('BlockedQueue', () => {
     const delay = 1000;
     const startTs = new Date();
     let msecondTooks: number;
-    const takePromise = queue
-      .takeAll()
-      .then(() => (msecondTooks = new Date().getTime() - startTs.getTime()));
+    const takePromise = queue.takeAll().then(() => (msecondTooks = new Date().getTime() - startTs.getTime()));
     setTimeout(() => queue.put(0), delay);
     await takePromise;
     expect(msecondTooks).toBeGreaterThanOrEqual(delay);
@@ -80,8 +74,6 @@ describe('BlockedQueue', () => {
     const queue = new BlockedQueue<number>(10);
     const sequence = range(0, 10);
     queue.putAll(sequence);
-    expect(() => queue.putAll([11, 12, 13])).toThrow(
-      'BlockedQueue exceed max size',
-    );
+    expect(() => queue.putAll([11, 12, 13])).toThrow('BlockedQueue exceed max size');
   });
 });
