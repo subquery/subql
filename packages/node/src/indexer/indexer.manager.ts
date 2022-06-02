@@ -106,6 +106,10 @@ export class IndexerManager {
         isUpgraded ? block.block.header.parentHash : undefined,
       );
 
+      this.filteredDataSources = this.filterDataSources(
+        block.block.header.number.toNumber(),
+      );
+
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
@@ -230,7 +234,6 @@ export class IndexerManager {
       // FIXME: retry before exit
       process.exit(1);
     });
-    this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
   }
 
@@ -433,20 +436,13 @@ export class IndexerManager {
     return metadataRepo;
   }
 
-  private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.getDataSourcesForSpecName();
+  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
+    let filteredDs: SubqlProjectDs[];
+    filteredDs = this.project.dataSources.filter(
+      (ds) => ds.startBlock <= nextProcessingHeight,
+    );
     if (filteredDs.length === 0) {
-      logger.error(
-        `Did not find any dataSource match with network specName ${this.api.runtimeVersion.specName}`,
-      );
-      process.exit(1);
-    }
-    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
-    if (filteredDs.length === 0) {
-      logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
-         or delete your database and start again from the currently specified startBlock`,
-      );
+      logger.error(`Did not find any matching datasouces`);
       process.exit(1);
     }
     // perform filter for custom ds
@@ -468,7 +464,7 @@ export class IndexerManager {
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
+    const startBlocksList = this.project.dataSources.map(
       (item) => item.startBlock ?? 1,
     );
     if (startBlocksList.length === 0) {
@@ -481,6 +477,7 @@ export class IndexerManager {
     }
   }
 
+  //Deprecate method, filter only apply in manifest spec 0.0.1
   private getDataSourcesForSpecName(): SubqlProjectDs[] {
     return this.project.dataSources.filter(
       (ds) =>
