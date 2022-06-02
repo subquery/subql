@@ -19,6 +19,7 @@ import {
 } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { SubqueryRepo } from '@subql/common-node/entities';
+import { PoiBlock } from '@subql/common-node/indexer';
 import {
   MetadataFactory,
   MetadataRepo,
@@ -38,7 +39,6 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 

@@ -9,6 +9,7 @@ import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { NodeConfig } from '@subql/common-node/configure';
 import { SubqueryRepo } from '@subql/common-node/entities';
+import { PoiBlock } from '@subql/common-node/indexer';
 import {
   MetadataFactory,
   MetadataRepo,
@@ -44,7 +45,6 @@ import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
