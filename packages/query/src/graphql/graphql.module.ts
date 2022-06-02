@@ -22,6 +22,7 @@ import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
+import {queryLogPlugin} from './plugins/QueryLogPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
@@ -85,6 +86,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         ? ApolloServerPluginLandingPageGraphQLPlayground()
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
+      queryLogPlugin,
     ];
 
     const server = new ApolloServer({
