@@ -205,6 +205,7 @@ export async function prefetchMetadata(
  * @param endHeight
  * @param overallSpecVer exists if all blocks in the range have same parant specVersion
  */
+//Deprecated
 export async function fetchBlocks(
   api: ApiPromise,
   startHeight: number,

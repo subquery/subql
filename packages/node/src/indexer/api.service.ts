@@ -7,6 +7,7 @@ import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
+import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { IndexerEvent, NetworkMetadataPayload } from './events';
@@ -94,20 +95,15 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   async getPatchedApi(
-    blockHash: string | BlockHash,
-    blockNumber: number,
-    parentBlockHash?: string | BlockHash,
+    block: SubstrateBlock,
+    runtimeVersion: RuntimeVersion,
   ): Promise<ApiAt> {
-    this.currentBlockHash = blockHash.toString();
-    this.currentBlockNumber = blockNumber;
-    if (parentBlockHash) {
-      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
-        parentBlockHash,
-      );
-    }
+    this.currentBlockHash = block.block.hash.toString();
+    this.currentBlockNumber = block.block.header.number.toNumber();
+
     const apiAt = (await this.api.at(
-      blockHash,
-      this.currentRuntimeVersion,
+      this.currentBlockHash,
+      runtimeVersion,
     )) as ApiAt;
     this.patchApiRpc(this.api, apiAt);
     return apiAt;
