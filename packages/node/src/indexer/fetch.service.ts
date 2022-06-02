@@ -481,7 +481,7 @@ export class FetchService implements OnApplicationShutdown {
     let currentSpecVersion: number;
     // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
     // therefore instead of check .useDictionary, we check it length before use it.
-    if (this.specVersionMap.length !== 0) {
+    if (this.specVersionMap && this.specVersionMap.length !== 0) {
       currentSpecVersion = this.getSpecFromMap(
         blockHeight,
         this.specVersionMap,
