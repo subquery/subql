@@ -477,15 +477,6 @@ export class IndexerManager {
     }
   }
 
-  //Deprecate method, filter only apply in manifest spec 0.0.1
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName === this.api.runtimeVersion.specName.toString(),
-    );
-  }
-
   private async indexBlockData(
     { block, events, extrinsics }: BlockContent,
     dataSources: SubqlProjectDs[],
