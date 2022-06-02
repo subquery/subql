@@ -26,10 +26,10 @@ import { formatLog } from './utils.avalanche';
 export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   private _logs: AvalancheLog[];
   constructor(private _block: AvalancheBlock) {
-    this._logs = flatten(
-      _block.transactions.map((tx) => tx.receipt.logs),
+    this._logs = flatten(_block.transactions.map((tx) => tx.receipt.logs)).map(
+      (log) => formatLog(log),
     ) as AvalancheLog<AvalancheResult>[];
-    this.block.logs = this._logs.map((log) => formatLog(log));
+    this.block.logs = this._logs;
   }
 
   get block(): AvalancheBlock {

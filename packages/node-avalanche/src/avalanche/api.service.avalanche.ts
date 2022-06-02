@@ -13,34 +13,39 @@ export class AvalancheApiService extends ApiService {
   private _api: AvalancheApi;
 
   async init(): Promise<AvalancheApiService> {
-    let network: ProjectNetworkV1_0_0;
     try {
-      network = this.project.network;
+      let network: ProjectNetworkV1_0_0;
+      try {
+        network = this.project.network;
+      } catch (e) {
+        logger.error(Object.keys(e));
+        process.exit(1);
+      }
+      logger.info(JSON.stringify(this.project.network));
+
+      this.api = new AvalancheApi(network);
+      await this.api.init();
+      this.networkMeta = {
+        chain: this.api.getRuntimeChain(),
+        specName: this.api.getSpecName(),
+        genesisHash: this.api.getGenesisHash(),
+      };
+
+      if (network.chainId !== this.api.getChainId()) {
+        const err = new Error(
+          `Network chainId doesn't match expected chainId. expected="${
+            network.chainId
+          }" actual="${this.api.getChainId()}`,
+        );
+        logger.error(err, err.message);
+        throw err;
+      }
+
+      return this;
     } catch (e) {
-      logger.error(Object.keys(e));
+      logger.error(e, 'Failed to init api service');
       process.exit(1);
     }
-    logger.info(JSON.stringify(this.project.network));
-
-    this.api = new AvalancheApi(network);
-    await this.api.init();
-    this.networkMeta = {
-      chain: this.api.getRuntimeChain(),
-      specName: this.api.getSpecName(),
-      genesisHash: this.api.getGenesisHash(),
-    };
-
-    if (network.chainId !== this.api.getChainId()) {
-      const err = new Error(
-        `Network chainId doesn't match expected chainId. expected="${
-          network.chainId
-        }" actual="${this.api.getChainId()}`,
-      );
-      logger.error(err, err.message);
-      throw err;
-    }
-
-    return this;
   }
 
   get api(): AvalancheApi {
