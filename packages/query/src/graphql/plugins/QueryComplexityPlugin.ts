@@ -5,7 +5,7 @@ import type {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {separateOperations, GraphQLSchema} from 'graphql';
 import {getComplexity, simpleEstimator} from 'graphql-query-complexity';
 
-export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComplexity: number}): ApolloServerPlugin {
+export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComplexity?: number}): ApolloServerPlugin {
   return {
     requestDidStart: () => {
       let complexity: number;
@@ -17,7 +17,8 @@ export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComple
             variables: request.variables,
             estimators: [simpleEstimator({defaultComplexity: 1})],
           });
-          if (complexity > options.maxComplexity) {
+
+          if (options.maxComplexity !== undefined && complexity > options.maxComplexity) {
             throw new Error(
               `Sorry, too complicated query! Current ${complexity} is over ${options.maxComplexity} that is the max allowed complexity.`
             );
@@ -25,7 +26,9 @@ export function queryComplexityPlugin(options: {schema: GraphQLSchema; maxComple
         },
         willSendResponse({response}) {
           response.http.headers.append('query-complexity', complexity);
-          response.http.headers.append('max-query-complexity', options.maxComplexity);
+          if (options.maxComplexity !== undefined) {
+            response.http.headers.append('max-query-complexity', options.maxComplexity);
+          }
         },
       };
     },
