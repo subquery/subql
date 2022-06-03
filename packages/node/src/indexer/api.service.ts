@@ -6,7 +6,7 @@ import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { fromAscii, toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
-import { GeneratedType, Registry } from '@cosmjs/proto-signing';
+import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
@@ -168,7 +168,7 @@ export class CosmosClient {
     return this.baseApi.searchTx({ height: height });
   }
 
-  decodeMsg(msg: any) {
+  decodeMsg<T = unknown>(msg: DecodeObject): T {
     try {
       const decodedMsg = this.registry.decode(msg);
       if (msg.typeUrl === '/cosmwasm.wasm.v1.MsgExecuteContract') {
@@ -177,7 +177,7 @@ export class CosmosClient {
       return decodedMsg;
     } catch (e) {
       logger.error(e, 'Failed to decode message');
-      return {};
+      throw e;
     }
   }
 

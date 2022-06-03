@@ -1,6 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
+import { sha256 } from '@cosmjs/crypto';
+import { toHex } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block, IndexedTx } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
@@ -127,29 +130,46 @@ export async function fetchCosmosBlocksArray(
   );
 }
 
-export function wrapBlock(
-  block: Block,
-  txs: readonly IndexedTx[],
-): CosmosBlock {
+function wrapBlock(block: Block, txs: readonly IndexedTx[]): CosmosBlock {
   return {
     block: block,
     txs: txs as IndexedTx[],
   };
 }
 
-export function wrapTx(
+function wrapTx(
   block: CosmosBlock,
   txInfos: readonly IndexedTx[],
 ): CosmosTransaction[] {
-  return txInfos.map((txInfo, idx) => ({
+  return txInfos.map((tx, idx) => ({
     idx,
     block: block,
-    tx: txInfo,
-    decodedTx: decodeTxRaw(txInfo.tx),
+    tx,
+    decodedTx: decodeTxRaw(tx.tx),
   }));
 }
 
-export function wrapMsg(
+function wrapCosmosMsg(
+  block: CosmosBlock,
+  tx: CosmosTransaction,
+  idx: number,
+  api: CosmosClient,
+): CosmosMessage {
+  const rawMessage = tx.decodedTx.body.messages[idx];
+  const msg: CosmosMessage = {
+    idx,
+    tx: tx,
+    block: block,
+    msg: {
+      typeUrl: rawMessage.typeUrl,
+      ...api.decodeMsg<any>(rawMessage),
+    },
+  };
+
+  return msg;
+}
+
+function wrapMsg(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
@@ -157,23 +177,13 @@ export function wrapMsg(
   const msgs: CosmosMessage[] = [];
   for (const tx of txs) {
     for (let i = 0; i < tx.decodedTx.body.messages.length; i++) {
-      const decodedMsg = api.decodeMsg(tx.decodedTx.body.messages[i]);
-      const msg: CosmosMessage = {
-        idx: i,
-        tx: tx,
-        block: block,
-        msg: {
-          typeUrl: tx.decodedTx.body.messages[i].typeUrl,
-          ...decodedMsg,
-        },
-      };
-      msgs.push(msg);
+      msgs.push(wrapCosmosMsg(block, tx, i, api));
     }
   }
   return msgs;
 }
 
-export function wrapEvent(
+function wrapEvent(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
@@ -184,21 +194,11 @@ export function wrapEvent(
     try {
       logs = parseRawLog(tx.tx.rawLog) as Log[];
     } catch (e) {
+      logger.warn(e, 'Faied to parse raw log');
       continue;
     }
     for (const log of logs) {
-      const decodedMsg = api.decodeMsg(
-        tx.decodedTx.body.messages[log.msg_index],
-      );
-      const msg: CosmosMessage = {
-        idx: log.msg_index,
-        tx: tx,
-        block: block,
-        msg: {
-          typeUrl: tx.decodedTx.body.messages[log.msg_index].typeUrl,
-          ...decodedMsg,
-        },
-      };
+      const msg = wrapCosmosMsg(block, tx, log.msg_index, api);
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
           idx: i,
@@ -223,21 +223,21 @@ export async function fetchBlocksBatches(
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return Promise.all(
     blocks.map(async (blockInfo) => {
-      const txHashes = blockInfo.txs;
-      if (txHashes === null || txHashes.length === 0) {
-        return <BlockContent>{
-          block: wrapBlock(blockInfo, []),
-          transactions: [],
-          messages: [],
-          events: [],
-        };
-      }
+      const txInfos =
+        blockInfo.txs.length <= 0
+          ? []
+          : await api.txInfoByHeight(blockInfo.header.height);
 
-      const txInfos = await api.txInfoByHeight(blockInfo.header.height);
+      assert(
+        txInfos.length === blockInfo.txs.length,
+        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${txInfos.length}`,
+      );
+
       const block = wrapBlock(blockInfo, txInfos);
       const txs = wrapTx(block, txInfos);
       const msgs = wrapMsg(block, txs, api);
       const events = wrapEvent(block, txs, api);
+
       return <BlockContent>{
         block: block,
         transactions: txs,
