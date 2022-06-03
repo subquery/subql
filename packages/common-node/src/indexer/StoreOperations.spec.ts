@@ -1,10 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { u8aToHex } from '@polkadot/util';
-import { GraphQLJsonFieldType } from '@subql/utils';
-import { StoreOperations } from './StoreOperations';
-import { OperationType } from './types';
+import {u8aToHex} from '@polkadot/util';
+import {GraphQLJsonFieldType} from '@subql/utils';
+import {StoreOperations} from './StoreOperations';
+import {OperationType} from './types';
 
 const testOperations = [
   {
@@ -53,7 +53,7 @@ const testOperations = [
       field2: null,
       field4: new Date('2020-05-29T13:28:36.000Z'),
       field5: true,
-      field6: { meat: 0, fruit: { apple: 'Apple' } },
+      field6: {meat: 0, fruit: {apple: 'Apple'}},
       createdAt: new Date('2021-08-18T02:36:06.549Z'),
       updatedAt: new Date('2021-08-18T02:36:06.549Z'),
       field7: parseFloat('3.14'),
@@ -77,7 +77,7 @@ const falseOperation = {
     field2: null,
     field4: new Date('2020-05-29T13:28:36.000Z'),
     field5: true,
-    field6: { meat: 0, fruit: { apple: 'Apple' } },
+    field6: {meat: 0, fruit: {apple: 'Apple'}},
     createdAt: new Date('2021-08-18T02:36:06.549Z'),
     updatedAt: new Date('2021-08-18T02:36:06.549Z'),
     field7: parseFloat('3.14'),
@@ -92,7 +92,7 @@ const apple: GraphQLJsonFieldType = {
 const fruitJson: GraphQLJsonFieldType = {
   name: 'fruit',
   type: 'Json',
-  jsonInterface: { name: 'Fruit', fields: [apple] },
+  jsonInterface: {name: 'Fruit', fields: [apple]},
   isArray: false,
   nullable: true,
 };
@@ -151,7 +151,7 @@ const models = [
       {
         name: 'field6',
         type: 'Json',
-        jsonInterface: { name: 'Food', fields: [meatJson, fruitJson] },
+        jsonInterface: {name: 'Food', fields: [meatJson, fruitJson]},
         isArray: false,
         nullable: true,
         isEnum: false,
@@ -185,9 +185,7 @@ describe('StoreOperations', () => {
 
     operationStack.makeOperationMerkleTree();
     expect(operationStack.getOperationLeafCount()).toBe(5);
-    console.log(
-      `Root in hex: ${u8aToHex(operationStack.getOperationMerkleRoot())}`,
-    );
+    console.log(`Root in hex: ${u8aToHex(operationStack.getOperationMerkleRoot())}`);
     operationStack.reset();
     expect(operationStack.getOperationLeafCount()).toBe(0);
   });
@@ -195,12 +193,8 @@ describe('StoreOperations', () => {
   it('throw error when remove data is not string type', () => {
     const operationStack = new StoreOperations(models);
 
-    expect(() =>
-      operationStack.put(
-        falseOperation.operation,
-        falseOperation.entityType,
-        falseOperation.data,
-      ),
-    ).toThrow(`Remove operation only accept data in string type`);
+    expect(() => operationStack.put(falseOperation.operation, falseOperation.entityType, falseOperation.data)).toThrow(
+      `Remove operation only accept data in string type`
+    );
   });
 });

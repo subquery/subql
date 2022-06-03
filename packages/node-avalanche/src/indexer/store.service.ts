@@ -7,6 +7,7 @@ import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { getLogger, getYargsOption } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
+import { StoreOperations, OperationType } from '@subql/common-node/indexer';
 import {
   Metadata,
   MetadataFactory,
@@ -38,8 +39,6 @@ import {
   Utils,
 } from 'sequelize';
 import { PoiService } from './poi.service';
-import { StoreOperations } from './StoreOperations';
-import { OperationType } from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');

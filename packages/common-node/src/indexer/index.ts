@@ -5,3 +5,5 @@ export * from './benchmark.service';
 export * from './entities';
 export * from './PoiBlock';
 export * from './BlockedQueue';
+export * from './types';
+export * from './StoreOperations';

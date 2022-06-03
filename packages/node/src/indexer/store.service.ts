@@ -6,6 +6,7 @@ import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import { NodeConfig } from '@subql/common-node/configure';
+import { StoreOperations, OperationType } from '@subql/common-node/indexer';
 import {
   Metadata,
   MetadataFactory,
@@ -41,8 +42,6 @@ import {
 import { getLogger } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { PoiService } from './poi.service';
-import { StoreOperations } from './StoreOperations';
-import { OperationType } from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
