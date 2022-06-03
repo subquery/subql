@@ -89,7 +89,6 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-
       // Injected runtimeVersion from fetch service might be outdated
       const runtimeVersion = await this.fetchService.getRuntimeVersion(block);
       const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
@@ -179,6 +178,7 @@ export class IndexerManager {
 
   async start(): Promise<void> {
     await this.projectService.init();
+    await this.fetchService.init();
 
     this.api = this.apiService.getApi();
     const startHeight = this.projectService.startHeight;
