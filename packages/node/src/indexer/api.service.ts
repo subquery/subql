@@ -7,9 +7,9 @@ import { ApiPromise, HttpProvider, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
+import { IndexerEvent, NetworkMetadataPayload } from '@subql/common-node';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { IndexerEvent, NetworkMetadataPayload } from './events';
 import { ApiAt } from './types';
 
 const NOT_SUPPORT = (name: string) => () => {

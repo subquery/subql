@@ -6,6 +6,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
+import { IndexerEvent } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { BlockedQueue } from '@subql/common-node/indexer';
 import { delay } from '@subql/common-node/utils';
@@ -34,7 +35,6 @@ import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
-import { IndexerEvent } from './events';
 import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
