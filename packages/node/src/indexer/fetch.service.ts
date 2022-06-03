@@ -278,9 +278,12 @@ export class FetchService implements OnApplicationShutdown {
     });
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
-    this.specVersionMap = this.useDictionary
-      ? await this.dictionaryService.getSpecVersion()
-      : [];
+
+    const specVersionResponse = await this.dictionaryService.getSpecVersion();
+    this.specVersionMap =
+      this.useDictionary && specVersionResponse !== undefined
+        ? specVersionResponse
+        : [];
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
