@@ -9,6 +9,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { SubqueryRepo } from '../entities';
 import { IndexerManager } from './indexer.manager';
+import { ProjectService } from './project.service';
 
 function testSubqueryProject(): SubqueryProject {
   return {
@@ -24,7 +25,7 @@ function testSubqueryProject(): SubqueryProject {
   };
 }
 
-const prepare = async (): Promise<IndexerManager> => {
+const prepare = async (): Promise<ProjectService> => {
   const module = await Test.createTestingModule({
     providers: [
       {
@@ -32,14 +33,13 @@ const prepare = async (): Promise<IndexerManager> => {
         useFactory: () => testSubqueryProject(),
       },
       {
-        provide: IndexerManager,
+        provide: ProjectService,
         useFactory: (
           sequelize: Sequelize,
           project: SubqueryProject,
           subqueryRepo: SubqueryRepo,
         ) => {
-          const indexerManager = new IndexerManager(
-            undefined,
+          const projectService = new ProjectService(
             undefined,
             undefined,
             undefined,
@@ -49,14 +49,42 @@ const prepare = async (): Promise<IndexerManager> => {
             undefined,
             undefined,
             undefined,
-            undefined,
             subqueryRepo,
             undefined,
           );
-          return indexerManager;
+
+          return projectService;
         },
         inject: [Sequelize, SubqueryProject, 'Subquery'],
       },
+      // {
+      //   provide: IndexerManager,
+      //   useFactory: (
+      //     sequelize: Sequelize,
+      //     project: SubqueryProject,
+      //     projectService: ProjectService,
+      //     subqueryRepo: SubqueryRepo,
+      //   ) => {
+      //     const indexerManager = new IndexerManager(
+      //       undefined,
+      //       undefined,
+      //       undefined,
+      //       undefined,
+      //       undefined,
+      //       sequelize,
+      //       project,
+      //       undefined,
+      //       undefined,
+      //       undefined,
+      //       undefined,
+      //       subqueryRepo,
+      //       undefined,
+      //       projectService,
+      //     );
+      //     return indexerManager;
+      //   },
+      //   inject: [Sequelize, SubqueryProject, ProjectService, 'Subquery'],
+      // },
     ],
     imports: [
       DbModule.forRoot({
@@ -72,7 +100,7 @@ const prepare = async (): Promise<IndexerManager> => {
 
   const app = module.createNestApplication();
   await app.init();
-  return app.get(IndexerManager);
+  return app.get(ProjectService);
 };
 
 function prepareProject(
@@ -92,8 +120,8 @@ function prepareProject(
 
 const TEST_PROJECT = 'test-user/TEST_PROJECT';
 
-describe('IndexerManager Integration Tests', () => {
-  let indexerManager: IndexerManager;
+describe('ProjectService Integration Tests', () => {
+  let projectService: ProjectService;
   let subqueryRepo: SubqueryRepo;
 
   async function createSchema(name: string): Promise<void> {
@@ -106,19 +134,19 @@ describe('IndexerManager Integration Tests', () => {
   }
 
   beforeAll(async () => {
-    indexerManager = await prepare();
-    subqueryRepo = (indexerManager as any).subqueryRepo;
+    projectService = await prepare();
+    subqueryRepo = (projectService as any).subqueryRepo;
   });
 
   beforeEach(async () => {
-    delete (indexerManager as any).nodeConfig;
+    delete (projectService as any).nodeConfig;
     await subqueryRepo.destroy({ where: { name: TEST_PROJECT } });
     await subqueryRepo.sequelize.dropSchema(`"${TEST_PROJECT}"`, undefined);
   });
 
   it("read existing project's schema from subqueries table", async () => {
     const schemaName = 'subql_99999';
-    (indexerManager as any).nodeConfig = new NodeConfig({
+    (projectService as any).nodeConfig = new NodeConfig({
       subquery: '/test/dir/test-query-project',
       subqueryName: TEST_PROJECT,
     });
@@ -126,12 +154,12 @@ describe('IndexerManager Integration Tests', () => {
     await subqueryRepo.create(prepareProject(TEST_PROJECT, schemaName, 1));
 
     await expect(
-      (indexerManager as any).getExistingProjectSchema(),
+      (projectService as any).getExistingProjectSchema(),
     ).resolves.toBe(schemaName);
   });
 
   it("read existing project's schema from nodeConfig", async () => {
-    (indexerManager as any).nodeConfig = new NodeConfig({
+    (projectService as any).nodeConfig = new NodeConfig({
       subquery: '/test/dir/test-query-project',
       subqueryName: TEST_PROJECT,
     });
@@ -140,12 +168,12 @@ describe('IndexerManager Integration Tests', () => {
     await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
     await expect(
-      (indexerManager as any).getExistingProjectSchema(),
+      (projectService as any).getExistingProjectSchema(),
     ).resolves.toBe(TEST_PROJECT);
   });
 
   it("read existing project's schema when --local", async () => {
-    (indexerManager as any).nodeConfig = new NodeConfig({
+    (projectService as any).nodeConfig = new NodeConfig({
       subquery: '/test/dir/test-query-project',
       subqueryName: TEST_PROJECT,
       localMode: true,
@@ -154,16 +182,16 @@ describe('IndexerManager Integration Tests', () => {
     await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
     await expect(
-      (indexerManager as any).getExistingProjectSchema(),
+      (projectService as any).getExistingProjectSchema(),
     ).resolves.toBe('public');
   });
 
   it('create project schema', async () => {
-    (indexerManager as any).nodeConfig = new NodeConfig({
+    (projectService as any).nodeConfig = new NodeConfig({
       subquery: '/test/dir/test-query-project',
       subqueryName: TEST_PROJECT,
     });
-    await expect((indexerManager as any).createProjectSchema()).resolves.toBe(
+    await expect((projectService as any).createProjectSchema()).resolves.toBe(
       TEST_PROJECT,
     );
     await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);

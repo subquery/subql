@@ -19,6 +19,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
+import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 
@@ -150,6 +151,19 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     project,
   );
   const dynamicDsService = new DynamicDsService(dsPluginService, project);
+  const projectService = new ProjectService(
+    dsPluginService,
+    apiService,
+    poiService,
+    mmrService,
+    sequilize,
+    project,
+    storeService,
+    nodeConfig,
+    dynamicDsService,
+    subqueryRepo,
+    eventEmitter,
+  );
 
   return new IndexerManager(
     storeService,
@@ -165,6 +179,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     dynamicDsService,
     subqueryRepo,
     eventEmitter,
+    projectService,
   );
 }
 
