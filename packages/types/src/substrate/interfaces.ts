@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Extrinsic, EventRecord, SignedBlock} from '@polkadot/types/interfaces';
-import { BlockWrapper } from '../interfaces';
+import {BlockWrapper} from '../interfaces';
 
 export interface SubstrateBlock extends SignedBlock {
   // parent block's spec version, can be used to decide the correct metadata that should be used for this block.

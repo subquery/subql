@@ -12,11 +12,6 @@ import {
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
 } from '@subql/common-substrate';
 import {
-  isTerraTemplates,
-  RuntimeDatasourceTemplate as TerraDsTemplate,
-  CustomDatasourceTemplate as TerraCustomDsTemplate,
-} from '@subql/common-terra';
-import {
   getAllEntitiesRelations,
   getAllJsonObjects,
   setJsonObjectType,
@@ -30,8 +25,8 @@ import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
 
-type TemplateKind = SubstrateDsTemplate | SubstrateCustomDsTemplate | TerraDsTemplate | TerraCustomDsTemplate;
-let MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
+type TemplateKind = SubstrateDsTemplate | SubstrateCustomDsTemplate;
+const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
@@ -295,12 +290,6 @@ export async function generateDatasourceTemplates(
       name: t.name,
       args: isCustomDs(t) ? 'Record<string, unknown>' : undefined,
     }));
-  } else if (isTerraTemplates(templates, specVersion)) {
-    props = templates.map((t) => ({
-      name: t.name,
-      args: 'Record<string, unknown>',
-    }));
-    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
   } else {
     throw new Error(`Generated datasource templates failed: unsupported templates`);
   }

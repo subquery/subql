@@ -28,7 +28,6 @@ const RECOMMEND_VERSION = '1.0.0';
 enum NETWORK_FAMILIES {
   Avalanche = 'Avalanche',
   Substrate = 'Substrate',
-  Terra = 'Terra',
 }
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {

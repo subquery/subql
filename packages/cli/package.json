@@ -14,7 +14,6 @@
     "@oclif/plugin-help": "^3.2.3",
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
-    "@subql/common-terra": "workspace:*",
     "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.1.0",

@@ -3,7 +3,6 @@
 
 import {Reader, ReaderFactory, ReaderOptions} from '@subql/common';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
-import {parseTerraProjectManifest} from '@subql/common-terra';
 import {Context} from './context';
 import {Rule, RuleType} from './rules';
 
@@ -53,13 +52,7 @@ export class Validator {
         });
       }
     } catch (e) {
-      console.warn(`Try to load as Substrate project failed, will try to load as Terra project.`);
-      try {
-        schema = parseTerraProjectManifest(rawSchema);
-      } catch (e) {
-        console.error(`Load Terra project failed, please check the manifest file.`);
-        throw e;
-      }
+      console.warn(`Try to load as Substrate project failed.`);
     }
 
     const ctx: Context = {

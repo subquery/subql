@@ -4,7 +4,8 @@
   "description": "",
   "packageManager": "yarn@3.1.1",
   "scripts": {
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",

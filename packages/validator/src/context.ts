@@ -3,13 +3,12 @@
 
 import {Reader} from '@subql/common';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
-import {TerraProjectManifestVersioned} from '@subql/common-terra';
 import {IPackageJson} from 'package-json-type';
 
 export interface ContextData {
   projectPath: string;
   pkg: IPackageJson;
-  schema?: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+  schema?: SubstrateProjectManifestVersioned;
 }
 
 export interface Context {

@@ -3,7 +3,7 @@
 
 import {Injectable} from '@nestjs/common';
 import {ApiWrapper} from '@subql/types-avalanche';
-import { NetworkMetadataPayload } from './events';
+import {NetworkMetadataPayload} from './events';
 
 @Injectable()
 export abstract class ApiService {
