@@ -29,8 +29,6 @@
       "@subql/common-substrate/*": ["packages/common-substrate/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
-      "@subql/types-avalanche": ["packages/types-avalanche/src"],
-      "@subql/types-avalanche/*": ["packages/types-avalanche/src/*"],
       "@subql/validator": ["packages/validator/src"],
       "@subql/validator/*": ["packages/validator/src/*"]
     },
@@ -44,7 +42,6 @@
     {"path": "packages/common-substrate"},
     {"path": "packages/node"},
     {"path": "packages/types"},
-    {"path": "packages/types-avalanche"},
     {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],

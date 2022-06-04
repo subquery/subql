@@ -29,7 +29,7 @@ import {
   BlockWrapper,
   AvalancheTransaction,
   AvalancheLog,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { AvalancheApi } from '../avalanche';

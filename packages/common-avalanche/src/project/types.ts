@@ -3,7 +3,7 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {FileReference, BaseDataSource, BaseHandler, IProjectManifest, ProjectNetworkConfig} from '@subql/common';
-import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from '@subql/types-avalanche';
+import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from '@subql/types';
 import {RuntimeDataSourceV0_0_1} from '../project/versioned/v0_0_1';
 
 export enum SubstrateDatasourceKind {

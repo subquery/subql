@@ -10,7 +10,7 @@ import {
 import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { timeout } from '@subql/common-node/utils';
-import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
+import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';

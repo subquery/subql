@@ -11,7 +11,7 @@
     { "path": "../common" },
     { "path": "../common-node" },
     { "path": "../common-avalanche" },
-    { "path": "../types-avalanche" },
+    { "path": "../types" }
   ],
   "include": ["src/**/*"]
 }

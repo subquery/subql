@@ -10,10 +10,7 @@ import {
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { getLogger, getYargsOption, profiler } from '@subql/common-node';
-import {
-  DictionaryQueryCondition,
-  DictionaryQueryEntry,
-} from '@subql/types-avalanche';
+import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';

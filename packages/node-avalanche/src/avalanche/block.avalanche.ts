@@ -13,7 +13,7 @@ import {
   AvalancheLogFilter,
   AvalancheResult,
   AvalancheTransaction,
-} from '@subql/types-avalanche';
+} from '@subql/types';
 import { flatten } from 'lodash';
 import {
   eventToTopic,

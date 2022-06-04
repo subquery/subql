@@ -26,7 +26,7 @@ import {
   getFkConstraint,
   smartTags,
 } from '@subql/common-node/utils';
-import { Entity, Store } from '@subql/types-avalanche';
+import { Entity, Store } from '@subql/types';
 import { GraphQLModelsRelationsEnums } from '@subql/utils/graphql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';
 import {
