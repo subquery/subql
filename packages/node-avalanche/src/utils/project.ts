@@ -12,30 +12,10 @@ import {
   loadChainTypes,
   loadChainTypesFromJs,
   parseChainTypes,
-  RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-  SubstrateRuntimeHandler,
-  SubstrateCustomHandler,
-  SubstrateHandler,
-  SubstrateHandlerKind,
 } from '@subql/common-avalanche';
 import yaml from 'js-yaml';
-import tar from 'tar';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
-
-export async function prepareProjectDir(projectPath: string): Promise<string> {
-  const stats = fs.statSync(projectPath);
-  if (stats.isFile()) {
-    const sep = path.sep;
-    const tmpDir = os.tmpdir();
-    const tempPath = fs.mkdtempSync(`${tmpDir}${sep}`);
-    // Will promote errors if incorrect format/extension
-    await tar.x({ file: projectPath, cwd: tempPath });
-    return tempPath.concat('/package');
-  } else if (stats.isDirectory()) {
-    return projectPath;
-  }
-}
 
 // We cache this to avoid repeated reads from fs
 const projectEntryCache: Record<string, string> = {};
@@ -58,32 +38,6 @@ export function getProjectEntry(root: string): string {
   } catch (err) {
     throw new Error(`can not find package.json within directory ${root}`);
   }
-}
-
-export function isBaseHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateRuntimeHandler {
-  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
-}
-
-export function isCustomHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateCustomHandler {
-  return !isBaseHandler(handler);
-}
-
-export async function updateDataSourcesV0_0_1(
-  _dataSources: RuntimeDataSourceV0_0_1[],
-  reader: Reader,
-): Promise<SubqlProjectDs[]> {
-  // force convert to updated ds
-  const dataSources = _dataSources as SubqlProjectDs[];
-  await Promise.all(
-    dataSources.map(async (ds) => {
-      ds.mapping.entryScript = await loadDataSourceScript(reader);
-    }),
-  );
-  return dataSources;
 }
 
 export async function updateDataSourcesV0_2_0(
@@ -216,7 +170,7 @@ export async function getChainTypes(
   }
 }
 
-export async function loadDataSourceScript(
+async function loadDataSourceScript(
   reader: Reader,
   file?: string,
 ): Promise<string> {
