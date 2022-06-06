@@ -4,6 +4,7 @@
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
+import { getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import {
   MetadataFactory,
@@ -20,7 +21,6 @@ import {
 } from '@subql/x-merkle-mountain-range';
 import { Sequelize, Op } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 
 const logger = getLogger('mmr');
 const DEFAULT_WORD_SIZE = 32;

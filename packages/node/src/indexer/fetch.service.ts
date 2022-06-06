@@ -6,7 +6,7 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { IndexerEvent } from '@subql/common-node';
+import { IndexerEvent, getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { BlockedQueue } from '@subql/common-node/indexer';
 import { delay } from '@subql/common-node/utils';
@@ -27,7 +27,6 @@ import { DictionaryQueryEntry } from '@subql/types';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';

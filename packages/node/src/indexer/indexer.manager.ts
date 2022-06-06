@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { IndexerEvent } from '@subql/common-node';
+import { IndexerEvent, getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { SubqueryRepo } from '@subql/common-node/entities';
 import { PoiBlock } from '@subql/common-node/indexer';
@@ -35,7 +35,6 @@ import {
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';

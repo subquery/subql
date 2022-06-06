@@ -5,6 +5,7 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { StoreOperations, OperationType } from '@subql/common-node/indexer';
 import {
@@ -39,7 +40,6 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
-import { getLogger } from '../utils/logger';
 import { getYargsOption } from '../yargs';
 import { PoiService } from './poi.service';
 

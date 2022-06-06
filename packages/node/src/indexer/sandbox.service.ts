@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { getLogger } from '@subql/common-node';
 import { NodeConfig } from '@subql/common-node/configure';
 import { timeout } from '@subql/common-node/utils';
 import {
@@ -14,7 +15,6 @@ import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';

@@ -3,9 +3,9 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
+import { getLogger, NestLogger } from '@subql/common-node';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';
-import { getLogger, NestLogger } from './utils/logger';
 import { getYargsOption } from './yargs';
 
 const DEFAULT_PORT = 3000;
