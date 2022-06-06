@@ -3,8 +3,8 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { DbModule } from '@subql/common-node/db';
-import { BenchmarkService } from '@subql/common-node/indexer';
+import { DbModule } from '@subql/node-core/db';
+import { BenchmarkService } from '@subql/node-core/indexer';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';

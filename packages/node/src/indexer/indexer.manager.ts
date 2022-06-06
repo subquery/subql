@@ -7,14 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { IndexerEvent, getLogger } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { SubqueryRepo } from '@subql/common-node/entities';
-import { PoiBlock } from '@subql/common-node/indexer';
-import {
-  MetadataFactory,
-  MetadataRepo,
-} from '@subql/common-node/indexer/entities';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -27,6 +19,14 @@ import {
   SubstrateNetworkFilter,
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
+import { IndexerEvent, getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryRepo } from '@subql/node-core/entities';
+import { PoiBlock } from '@subql/node-core/indexer';
+import {
+  MetadataFactory,
+  MetadataRepo,
+} from '@subql/node-core/indexer/entities';
 import {
   SubstrateBlock,
   SubstrateEvent,

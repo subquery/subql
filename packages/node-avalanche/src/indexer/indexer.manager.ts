@@ -16,14 +16,14 @@ import {
   getYargsOption,
   IndexerEvent,
   profiler,
-} from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { SubqueryRepo } from '@subql/common-node/entities';
-import { PoiBlock } from '@subql/common-node/indexer';
+} from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryRepo } from '@subql/node-core/entities';
+import { PoiBlock } from '@subql/node-core/indexer';
 import {
   MetadataFactory,
   MetadataRepo,
-} from '@subql/common-node/indexer/entities';
+} from '@subql/node-core/indexer/entities';
 import {
   ApiWrapper,
   BlockWrapper,

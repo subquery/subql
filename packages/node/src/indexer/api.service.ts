@@ -11,7 +11,7 @@ import {
   IndexerEvent,
   NetworkMetadataPayload,
   getLogger,
-} from '@subql/common-node';
+} from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiAt } from './types';
 

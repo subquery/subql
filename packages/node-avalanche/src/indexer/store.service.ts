@@ -5,9 +5,9 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { getLogger, getYargsOption } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { StoreOperations, OperationType } from '@subql/common-node/indexer';
+import { getLogger, getYargsOption } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { StoreOperations, OperationType } from '@subql/node-core/indexer';
 import {
   Metadata,
   MetadataFactory,
@@ -15,7 +15,7 @@ import {
   PoiFactory,
   PoiRepo,
   ProofOfIndex,
-} from '@subql/common-node/indexer/entities';
+} from '@subql/node-core/indexer/entities';
 import {
   camelCaseObjectKey,
   modelsTypeToModelAttributes,
@@ -25,7 +25,7 @@ import {
   createUniqueIndexQuery,
   getFkConstraint,
   smartTags,
-} from '@subql/common-node/utils';
+} from '@subql/node-core/utils';
 import { Entity, Store } from '@subql/types';
 import { GraphQLModelsRelationsEnums } from '@subql/utils/graphql/types';
 import { camelCase, flatten, upperFirst, isEqual } from 'lodash';

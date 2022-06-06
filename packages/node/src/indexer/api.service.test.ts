@@ -5,7 +5,7 @@ import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { BlockHash } from '@polkadot/types/interfaces';
-import { delay } from '@subql/common-node/utils';
+import { delay } from '@subql/node-core/utils';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';

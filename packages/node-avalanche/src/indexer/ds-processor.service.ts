@@ -11,7 +11,7 @@ import {
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
 } from '@subql/common-avalanche';
-import { getLogger } from '@subql/common-node';
+import { getLogger } from '@subql/node-core';
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';

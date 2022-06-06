@@ -3,7 +3,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
-import { getYargsOption, getLogger, NestLogger } from '@subql/common-node';
+import { getYargsOption, getLogger, NestLogger } from '@subql/node-core';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';
 

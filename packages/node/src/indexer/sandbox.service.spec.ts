@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import * as path from 'path';
-import { NodeConfig } from '@subql/common-node/configure';
+import { NodeConfig } from '@subql/node-core/configure';
 import { IndexerSandbox } from './sandbox.service';
 
 describe('sandbox for subql-node', () => {

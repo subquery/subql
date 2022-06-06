@@ -7,9 +7,9 @@ import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-avalanche';
-import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { timeout } from '@subql/common-node/utils';
+import { ApiService, getYargsOption, getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { timeout } from '@subql/node-core/utils';
 import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';

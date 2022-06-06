@@ -4,16 +4,16 @@
 import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
-import { getLogger } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
+import { getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
 import {
   MetadataFactory,
   MetadataRepo,
   PoiFactory,
   PoiRepo,
   ProofOfIndex,
-} from '@subql/common-node/indexer/entities';
-import { delay } from '@subql/common-node/utils';
+} from '@subql/node-core/indexer/entities';
+import { delay } from '@subql/node-core/utils';
 import {
   MMR,
   FileBasedDb,

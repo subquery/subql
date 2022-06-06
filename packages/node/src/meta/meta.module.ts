@@ -6,7 +6,7 @@ import {
   MetricEventListener,
   ReadyController,
   ReadyService,
-} from '@subql/common-node/meta';
+} from '@subql/node-core/meta';
 import {
   makeGaugeProvider,
   PrometheusModule,

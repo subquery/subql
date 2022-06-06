@@ -3,13 +3,13 @@
 
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { getLogger } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { timeout } from '@subql/common-node/utils';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-substrate';
+import { getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { timeout } from '@subql/node-core/utils';
 import { Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';

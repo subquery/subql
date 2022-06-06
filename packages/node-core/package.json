@@ -1,5 +1,5 @@
 {
-  "name": "@subql/common-node",
+  "name": "@subql/node-core",
   "version": "0.0.3",
   "description": "",
   "homepage": "https://github.com/subquery/subql",

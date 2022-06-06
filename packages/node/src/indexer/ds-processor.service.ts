@@ -4,7 +4,6 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { getLogger } from '@subql/common-node';
 import {
   isCustomDs,
   SubstrateCustomDataSource,
@@ -12,6 +11,7 @@ import {
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
 } from '@subql/common-substrate';
+import { getLogger } from '@subql/node-core';
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';

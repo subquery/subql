@@ -9,7 +9,7 @@
   },
   "references": [
     { "path": "../common" },
-    { "path": "../common-node" },
+    { "path": "../node-core" },
     { "path": "../common-avalanche" },
     { "path": "../types" }
   ],

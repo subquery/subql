@@ -6,10 +6,6 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { IndexerEvent, getLogger } from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { BlockedQueue } from '@subql/common-node/indexer';
-import { delay } from '@subql/common-node/utils';
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -23,6 +19,10 @@ import {
   SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
+import { IndexerEvent, getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { BlockedQueue } from '@subql/node-core/indexer';
+import { delay } from '@subql/node-core/utils';
 import { DictionaryQueryEntry } from '@subql/types';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';

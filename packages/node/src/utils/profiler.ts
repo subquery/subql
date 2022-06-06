@@ -3,7 +3,7 @@
 
 /* class decorator */
 
-import { getLogger } from '@subql/common-node';
+import { getLogger } from '@subql/node-core';
 
 function isPromise(e: any): boolean {
   return !!e && typeof e.then === 'function';

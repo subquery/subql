@@ -3,9 +3,9 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { getLogger } from '@subql/common-node';
-import { MetadataRepo } from '@subql/common-node/indexer/entities';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
+import { getLogger } from '@subql/node-core';
+import { MetadataRepo } from '@subql/node-core/indexer/entities';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';

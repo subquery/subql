@@ -14,10 +14,10 @@ import {
   getYargsOption,
   getLogger,
   IndexerEvent,
-} from '@subql/common-node';
-import { NodeConfig } from '@subql/common-node/configure';
-import { BlockedQueue } from '@subql/common-node/indexer';
-import { delay } from '@subql/common-node/utils';
+} from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { BlockedQueue } from '@subql/node-core/indexer';
+import { delay } from '@subql/node-core/utils';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
