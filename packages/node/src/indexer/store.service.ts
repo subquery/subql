@@ -41,7 +41,6 @@ import {
   Utils,
 } from 'sequelize';
 import { getYargsOption } from '../yargs';
-import { PoiService } from './poi.service';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -69,11 +68,7 @@ export class StoreService {
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
 
-  constructor(
-    private sequelize: Sequelize,
-    private config: NodeConfig,
-    private poiService: PoiService,
-  ) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
   async init(
     modelsRelations: GraphQLModelsRelationsEnums,

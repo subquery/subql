@@ -12,7 +12,6 @@ import {
 import {
   SubstrateProjectNetworkConfig,
   parseSubstrateProjectManifest,
-  ProjectManifestV0_2_0Impl,
   SubstrateDataSource,
   FileType,
   ProjectManifestV1_0_0Impl,
