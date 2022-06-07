@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {deleteDeployment} from '../controller/delete-deploy-controller';
+import {deleteDeployment} from '../../controller/deploy-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 

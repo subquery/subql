@@ -4,12 +4,12 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {promoteDeployment} from '../controller/promote-deploy-controller';
+import {promoteDeployment} from '../../controller/deploy-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Promote extends Command {
-  static description = 'Delete Deployment';
+  static description = 'Promote Deployment';
 
   static flags = {
     key: Flags.string({description: 'Enter project key', required: true}),

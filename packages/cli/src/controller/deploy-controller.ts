@@ -42,6 +42,32 @@ export async function deployToHostedService(
   }
 }
 
-// interface DeployResponseData {
+export async function promoteDeployment(key: string, authToken: string, deploymentId: number): Promise<string> {
+  try {
+    await axios({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      method: 'post',
+      url: `https://api.thechaindata.com/subqueries/${key}/deployments/${deploymentId}/release`,
+    });
+    return `Success, Deployment ${deploymentId} has been promote from Stage to Production`;
+  } catch (e) {
+    throw new Error(`Failed to promote project: ${e.message}`);
+  }
+}
 
-// }
+export async function deleteDeployment(key: string, authToken: string, deploymentId: number): Promise<string> {
+  try {
+    await axios({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      method: 'delete',
+      url: `https://api.thechaindata.com/subqueries/${key}/deployments/${deploymentId}`,
+    });
+    return `Success, Deployment ${deploymentId} has been deleted from Hosted Service`;
+  } catch (e) {
+    throw new Error(`Failed to promote project: ${e.message}`);
+  }
+}
