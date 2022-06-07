@@ -2,11 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { decode } from 'querystring';
 import { sha256 } from '@cosmjs/crypto';
 import { toHex } from '@cosmjs/encoding';
-import { decodeTxRaw } from '@cosmjs/proto-signing';
+import { DecodedTxRaw, decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block, IndexedTx } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
+import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosMessageFilter,
@@ -130,23 +132,26 @@ export async function fetchCosmosBlocksArray(
   );
 }
 
-function wrapBlock(block: Block, txs: readonly IndexedTx[]): CosmosBlock {
+function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
   return {
     block: block,
-    txs: txs as IndexedTx[],
+    txs: txs,
   };
 }
 
 function wrapTx(
   block: CosmosBlock,
-  txInfos: readonly IndexedTx[],
+  txResults: TxData[],
+  decodedTx: DecodedTxRaw[],
 ): CosmosTransaction[] {
-  return txInfos.map((tx, idx) => ({
-    idx,
-    block: block,
-    tx,
-    decodedTx: decodeTxRaw(tx.tx),
-  }));
+  return txResults.length === 0
+    ? []
+    : txResults.map((tx, idx) => ({
+        idx,
+        block: block,
+        tx,
+        decodedTx: decodedTx[idx],
+      }));
 }
 
 function wrapCosmosMsg(
@@ -192,7 +197,7 @@ function wrapEvent(
   for (const tx of txs) {
     let logs: Log[];
     try {
-      logs = parseRawLog(tx.tx.rawLog) as Log[];
+      logs = parseRawLog(tx.tx.log) as Log[];
     } catch (e) {
       logger.warn(e, 'Faied to parse raw log');
       continue;
@@ -223,18 +228,28 @@ export async function fetchBlocksBatches(
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return Promise.all(
     blocks.map(async (blockInfo) => {
-      const txInfos =
+      const decodedTxs =
         blockInfo.txs.length <= 0
           ? []
-          : await api.txInfoByHeight(blockInfo.header.height);
+          : blockInfo.txs.map((tx) => decodeTxRaw(tx));
+
+      const blockResults =
+        blockInfo.txs.length <= 0
+          ? []
+          : await api.blockResults(blockInfo.header.height);
+
+      const txResults: TxData[] =
+        blockInfo.txs.length <= 0
+          ? []
+          : ((blockResults as BlockResultsResponse).results as TxData[]);
 
       assert(
-        txInfos.length === blockInfo.txs.length,
-        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${txInfos.length}`,
+        decodedTxs.length === blockInfo.txs.length,
+        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${decodedTxs.length}`,
       );
 
-      const block = wrapBlock(blockInfo, txInfos);
-      const txs = wrapTx(block, txInfos);
+      const block = wrapBlock(blockInfo, txResults);
+      const txs = wrapTx(block, txResults, decodedTxs);
       const msgs = wrapMsg(block, txs, api);
       const events = wrapEvent(block, txs, api);
 

@@ -4,6 +4,7 @@
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
 import {Block, IndexedTx} from '@cosmjs/stargate';
 import {Event, Log} from '@cosmjs/stargate/build/logs';
+import {TxData} from '@cosmjs/tendermint-rpc';
 export interface Entity {
   id: string;
 }
@@ -23,13 +24,13 @@ export interface Store {
 
 export interface CosmosBlock {
   block: Block;
-  txs: IndexedTx[];
+  txs: TxData[];
 }
 
 export interface CosmosTransaction {
   idx: number;
   block: CosmosBlock;
-  tx: IndexedTx;
+  tx: TxData;
   decodedTx: DecodedTxRaw;
 }
 

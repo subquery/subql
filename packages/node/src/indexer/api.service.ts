@@ -23,6 +23,7 @@ import {
   HttpEndpoint,
   Tendermint34Client,
   toRfc3339WithNanoseconds,
+  BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
 import {
@@ -75,7 +76,7 @@ export class ApiService {
         },
       };
       const client = await CosmWasmClient.connect(endpoint);
-
+      const tendermint = await Tendermint34Client.connect(endpoint);
       const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
       for (const ds of this.project.dataSources) {
         const chaintypes = await this.getChainType(ds);
@@ -83,7 +84,7 @@ export class ApiService {
           registry.register(typeurl, chaintypes[typeurl]);
         }
       }
-      this.api = new CosmosClient(client, registry);
+      this.api = new CosmosClient(client, tendermint, registry);
 
       this.networkMeta = {
         chainId: network.chainId,
@@ -149,6 +150,7 @@ export class ApiService {
 export class CosmosClient {
   constructor(
     private readonly baseApi: CosmWasmClient,
+    private readonly tendermintClient: Tendermint34Client,
     private registry: Registry,
   ) {}
 
@@ -166,6 +168,11 @@ export class CosmosClient {
 
   async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
     return this.baseApi.searchTx({ height: height });
+  }
+
+  async blockResults(height: number): Promise<BlockResultsResponse> {
+    const blockRes = await this.tendermintClient.blockResults(height);
+    return blockRes;
   }
 
   decodeMsg<T = unknown>(msg: DecodeObject): T {
