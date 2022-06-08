@@ -112,6 +112,8 @@ async function UploadFileByCluster(content: string, authToken: string): Promise<
       method: 'post',
       url: IPFS_CLUSTER_ENDPOINT,
       data: bodyFormData,
+      maxBodyLength: 50 * 1024 * 1024, //50 MB
+      maxContentLength: 50 * 1024 * 1024,
     })
   ).data as ClusterResponseData;
   return result.cid?.['/'];
