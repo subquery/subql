@@ -15,3 +15,13 @@ export const RUNNER_REGEX = /(\^?)(\d|x|\*)+\.(\d|x|\*)+\.(\d|x|\*)+/;
 export const DEFAULT_WORD_SIZE = 32;
 export const DEFAULT_LEAF = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
 export const MMR_AWAIT_TIME = 2;
+
+//DEPLOYMENT
+export const DEFAULT_DEPLOYMENT_TYPE = 'primary';
+export const INDEXER_V = 'v1.1.2';
+export const QUERY_V = 'v1.1.1';
+export const DEFAULT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
+export const DEFAULT_DICT_ENDPOINT = 'https://api.subquery.network/sq/subquery/altair-dictionary';
+
+//PROJECT
+export const CREATE_PROJECT_URL = 'https://api.thechaindata.com/subqueries';

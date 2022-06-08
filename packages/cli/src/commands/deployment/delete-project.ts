@@ -5,24 +5,25 @@ import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import cli from 'cli-ux';
-import {deleteDeployment} from '../../controller/deploy-controller';
+import {deleteProject} from '../../controller/project-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
-export default class Delete extends Command {
-  static description = 'Delete Deployment';
+export default class Delete_project extends Command {
+  static description = 'Delete Project from Hosted Service';
 
   static flags = {
-    key: Flags.string({description: 'Enter project key', required: true}),
-    deploymentID: Flags.string({description: 'Enter deployment ID', required: true}),
+    // required values
+    org: Flags.string({description: 'Enter organization name'}),
+    project_name: Flags.string({description: 'Enter project name'}),
     // token: Flags.string({description: 'Enter access token'}),
   };
 
   async run(): Promise<void> {
-    const {flags} = await this.parse(Delete);
+    const {flags} = await this.parse(Delete_project);
     let authToken: string;
-    let deploymentID: number = +flags.deploymentID;
-    let projectKey: string = flags.key;
+    let project_name: string = flags.project_name;
+    let org_input: string = flags.org;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -36,23 +37,22 @@ export default class Delete extends Command {
       authToken = await cli.prompt('Enter token');
     }
 
-    if (!flags.deploymentID || flags.deploymentID === '') {
+    if (!flags.org || flags.org === '') {
       try {
-        deploymentID = await cli.prompt('Enter deployment ID');
+        org_input = await cli.prompt('Enter organization name');
       } catch (e) {
-        throw new Error('Deployment ID is required');
+        throw new Error('Organization name is required');
       }
     }
-    if (!flags.key || flags.key === '') {
+    if (!flags.project_name || flags.project_name === '') {
       try {
-        projectKey = await cli.prompt('Enter project key');
+        project_name = await cli.prompt('Enter project name');
       } catch (e) {
-        throw new Error('Project key is required');
+        throw new Error('Project name is required');
       }
     }
 
-    this.log(`Removing deployment: ${deploymentID}`);
-    const deleteStatus = await deleteDeployment(projectKey, authToken, +deploymentID).catch((e) => this.error(e));
+    const deleteStatus = await deleteProject(authToken, org_input, project_name).catch((e) => this.error(e));
     this.log(`${deleteStatus}`);
   }
 }

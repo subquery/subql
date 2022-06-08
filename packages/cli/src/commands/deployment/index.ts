@@ -4,10 +4,10 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {DEFAULT_DEPLOYMENT_TYPE, DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V} from '@subql/common';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
 import {deleteDeployment, deployToHostedService, promoteDeployment} from '../../controller/deploy-controller';
-// import { ArgInput } from '@oclif/core/lib/interfaces';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -32,7 +32,7 @@ export default class Deploy extends Command {
     const option = flags.options;
 
     let keyInput: string;
-    let tokenInput: string;
+    let authToken: string;
     let deploymentID: number;
 
     let ipfsCID: string;
@@ -56,31 +56,47 @@ export default class Deploy extends Command {
 
       this.log(`Selected deployment option: ${userOptions}`);
 
+      if (process.env.SUBQL_ACCESS_TOKEN) {
+        authToken = process.env.SUBQL_ACCESS_TOKEN;
+      } else if (existsSync(ACCESS_TOKEN_PATH)) {
+        try {
+          authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
+        } catch (e) {
+          authToken = await cli.prompt('Token cannot be found, Enter token');
+        }
+      } else {
+        authToken = await cli.prompt('Enter token');
+      }
+
       if (userOptions !== 'deploy') {
         keyInput = await cli.prompt('Enter project key e.g. subquery/hello-world');
-        tokenInput = await cli.prompt('Enter token');
+        // token = await cli.prompt('Enter token');
         deploymentID = await cli.prompt('Enter deployment ID');
         const handler = optionMapping[userOptions];
-        const apiCall = await handler(keyInput, tokenInput, deploymentID);
+        const apiCall = await handler(keyInput, authToken, deploymentID);
         this.log(`${apiCall}`);
       } else {
-        keyInput = await cli.prompt('Enter project key e.g. subquery/hello-world', {required: true});
-        tokenInput = await cli.prompt('Enter token', {required: true});
-        ipfsCID = await cli.prompt('Enter IPFS CID', {required: true});
+        keyInput = await cli.prompt('Enter project key e.g. subquery/hello-world');
+        // token = await cli.prompt('Enter token');
+        ipfsCID = await cli.prompt('Enter IPFS CID');
 
         // replace default value later
-        indexerImageVersion = await cli.prompt('Enter indexer image version', {default: 'v1.1.2'});
-        queryImageVersion = await cli.prompt('Enter query image version', {default: 'v1.1.1'});
-        endpoint = await cli.prompt('Enter endpoint', {default: 'wss://polkadot.api.onfinality.io/public-ws'});
-        type = await cli.prompt('Enter type', {default: 'primary'});
+        indexerImageVersion = await cli.prompt('Enter indexer image version', {default: INDEXER_V});
+        queryImageVersion = await cli.prompt('Enter query image version', {default: QUERY_V});
+        endpoint = await cli.prompt('Enter endpoint', {default: DEFAULT_ENDPOINT});
+        type = await cli.prompt('Enter type', {default: DEFAULT_DEPLOYMENT_TYPE});
         dictEndpoint = await cli.prompt('Enter dict endpoint', {
-          default: 'https://api.subquery.network/sq/subquery/altair-dictionary',
+          default: DEFAULT_DICT_ENDPOINT,
         });
+
+        // need to check if ipfsCID exists using validate post
+        // https://api.thechaindata.com/doc/#/default/IpfsController_exists
+        // https://api.thechaindata.com/doc/#/default/IpfsController_validateManifest
 
         const handler = optionMapping[userOptions];
         const apiCall = await handler(
           keyInput,
-          tokenInput,
+          authToken,
           ipfsCID,
           indexerImageVersion,
           queryImageVersion,

@@ -22,17 +22,16 @@ export async function deployToHostedService(
         method: 'post',
         url: `https://api.thechaindata.com/v2/subqueries/${key}/deployments`,
         data: {
-          dictEndpoint:
-            dictEndpoint !== undefined ? dictEndpoint : 'https://api.subquery.network/sq/subquery/altair-dictionary',
-          endpoint: endpoint !== undefined ? endpoint : 'wss://polkadot.api.onfinality.io/public-ws',
           version: ipfsCID,
+          dictEndpoint: dictEndpoint,
+          endpoint: endpoint,
           advancedSettings: {
             '@subql/node': {},
             '@subql/query': {},
           },
-          indexerImageVersion: indexerImageVersion !== undefined ? indexerImageVersion : 'v1.1.2',
-          queryImageVersion: queryImageVersion !== undefined ? queryImageVersion : 'v1.1.1',
-          type: type !== undefined ? type : 'primary',
+          indexerImageVersion: indexerImageVersion,
+          queryImageVersion: queryImageVersion,
+          type: type,
         },
       })
     ).data;
