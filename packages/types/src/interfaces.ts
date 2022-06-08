@@ -46,7 +46,6 @@ export interface CosmosEvent {
   block: CosmosBlock;
   tx: CosmosTransaction;
   msg: CosmosMessage;
-  log: Log;
   event: Event;
 }
 
