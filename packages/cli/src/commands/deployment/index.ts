@@ -104,7 +104,7 @@ export default class Deploy extends Command {
           type,
           dictEndpoint
         );
-        this.log(`${apiCall}`);
+        this.log(`DeploymentID: ${apiCall}`);
       }
     }
   }

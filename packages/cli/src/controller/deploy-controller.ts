@@ -12,7 +12,7 @@ export async function deployToHostedService(
   endpoint?: string,
   type?: string,
   dictEndpoint?: string
-): Promise<string> {
+): Promise<number> {
   try {
     const result = (
       await axios({
@@ -20,7 +20,8 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `https://api.thechaindata.com/v2/subqueries/${key}/deployments`,
+        // url: `https://api.thechaindata.com/v2/subqueries/${key}/deployments`,
+        url: `https://api.subquery.network/v2/subqueries/${key}/deployments`,
         data: {
           version: ipfsCID,
           dictEndpoint: dictEndpoint,
@@ -35,7 +36,7 @@ export async function deployToHostedService(
         },
       })
     ).data;
-    return `Success, Delployment ID: ${result.deployment.id}`;
+    return result.deployment.id;
   } catch (e) {
     throw new Error(`Failed to deploy to hosted service: ${e.message}`);
   }
@@ -48,7 +49,8 @@ export async function promoteDeployment(key: string, authToken: string, deployme
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `https://api.thechaindata.com/subqueries/${key}/deployments/${deploymentId}/release`,
+      // url: `https://api.thechaindata.com/subqueries/${key}/deployments/${deploymentId}/release`,
+      url: `https://api.subquery.network/subqueries/${key}/deployments/${deploymentId}/release`,
     });
     return `Success, Deployment ${deploymentId} has been promote from Stage to Production`;
   } catch (e) {
@@ -63,10 +65,29 @@ export async function deleteDeployment(key: string, authToken: string, deploymen
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `https://api.thechaindata.com/subqueries/${key}/deployments/${deploymentId}`,
+      url: `https://api.subquery.network/subqueries/${key}/deployments/${deploymentId}`,
     });
     return `Success, Deployment ${deploymentId} has been deleted from Hosted Service`;
   } catch (e) {
     throw new Error(`Failed to promote project: ${e.message}`);
+  }
+}
+
+export async function deploymentStatus(key: string, authToken: string, deployID: number): Promise<string> {
+  try {
+    const result = (
+      await axios({
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        method: 'get',
+        url: `https://api.subquery.network/subqueries/${key}/deployments/${deployID}/status`,
+      })
+    ).data;
+    console.log(result.status);
+
+    return `Deployment ${deployID} is ${result.status}`;
+  } catch (e) {
+    throw new Error(`Failed to get deployment status: ${e.message}`);
   }
 }

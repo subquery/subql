@@ -21,7 +21,8 @@ export async function createProject(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: CREATE_PROJECT_URL,
+        url: 'https://api.subquery.network/subqueries',
+        // url: CREATE_PROJECT_URL,
         data: {
           apiVersion: `v${apiVersion}`,
           description: description,
@@ -49,7 +50,8 @@ export async function deleteProject(authToken: string, organization: string, pro
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `https://api.thechaindata.com/subqueries/${key}`,
+      // url: `https://api.thechaindata.com/subqueries/${key}`,
+      url: `https://api.subquery.network/subqueries/${key}`,
     });
     return `Success!
             \n project: ${key} has been deleted.`;

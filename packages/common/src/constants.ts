@@ -25,3 +25,4 @@ export const DEFAULT_DICT_ENDPOINT = 'https://api.subquery.network/sq/subquery/a
 
 //PROJECT
 export const CREATE_PROJECT_URL = 'https://api.thechaindata.com/subqueries';
+// export const CREATE_PROJECT_URL = ;

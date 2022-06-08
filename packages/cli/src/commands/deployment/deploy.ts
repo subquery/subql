@@ -70,6 +70,6 @@ export default class Deploy extends Command {
       flags.type,
       flags.dict
     ).catch((e) => this.error(e));
-    this.log(`${deploying}`);
+    this.log(`DeploymentID: ${deploying}`);
   }
 }
