@@ -69,7 +69,7 @@
     "supertest": "^6.1.6"
   },
   "resolutions": {
-    "@cosmjs/tendermint-rpc": "../../tendermint-rpc.tgz"
+    "@cosmjs/tendermint-rpc": "./tendermint-rpc.tgz"
   },
   "files": [
     "/dist",
