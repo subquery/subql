@@ -136,14 +136,17 @@ export async function fetchCosmosBlocksArray(
   );
 }
 
-function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
+export function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
   return {
     block: block,
     txs: txs,
   };
 }
 
-function wrapTx(block: CosmosBlock, txResults: TxData[]): CosmosTransaction[] {
+export function wrapTx(
+  block: CosmosBlock,
+  txResults: TxData[],
+): CosmosTransaction[] {
   return txResults.map((tx, idx) => ({
     idx,
     block: block,
@@ -185,7 +188,7 @@ function wrapMsg(
   return msgs;
 }
 
-function wrapEvent(
+export function wrapEvent(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
@@ -196,6 +199,7 @@ function wrapEvent(
     try {
       logs = parseRawLog(tx.tx.log) as Log[];
     } catch (e) {
+      //parsing fails if transaction had failed.
       logger.warn(e, 'Failed to parse raw log');
       continue;
     }
