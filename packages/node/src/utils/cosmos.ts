@@ -1,9 +1,13 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
+import { sha256 } from '@cosmjs/crypto';
+import { toHex } from '@cosmjs/encoding';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
-import { Block, IndexedTx } from '@cosmjs/stargate';
+import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
+import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosMessageFilter,
@@ -107,49 +111,69 @@ export function filterEvents(
   return filteredEvents;
 }
 
-async function getBlockByHeight(api: CosmosClient, height: number) {
-  let blockInfo: Block;
-  try {
-    blockInfo = await api.blockInfo(height);
-  } catch (e) {
-    logger.error(`failed to fetch Block ${height}`);
-    throw e;
-  }
-  return blockInfo;
+async function getBlockByHeight(
+  api: CosmosClient,
+  height: number,
+): Promise<[Block, BlockResultsResponse]> {
+  return Promise.all([
+    api.blockInfo(height).catch((e) => {
+      logger.error(`failed to fetch block info ${height}`);
+      throw e;
+    }),
+    api.blockResults(height).catch((e) => {
+      logger.error(`failed to fetch block results ${height}`);
+      throw e;
+    }),
+  ]);
 }
 
 export async function fetchCosmosBlocksArray(
   api: CosmosClient,
   blockArray: number[],
-): Promise<Block[]> {
+): Promise<[Block, BlockResultsResponse][]> {
   return Promise.all(
     blockArray.map(async (height) => getBlockByHeight(api, height)),
   );
 }
 
-export function wrapBlock(
-  block: Block,
-  txs: readonly IndexedTx[],
-): CosmosBlock {
+function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
   return {
     block: block,
-    txs: txs as IndexedTx[],
+    txs: txs,
   };
 }
 
-export function wrapTx(
-  block: CosmosBlock,
-  txInfos: readonly IndexedTx[],
-): CosmosTransaction[] {
-  return txInfos.map((txInfo, idx) => ({
+function wrapTx(block: CosmosBlock, txResults: TxData[]): CosmosTransaction[] {
+  return txResults.map((tx, idx) => ({
     idx,
     block: block,
-    tx: txInfo,
-    decodedTx: decodeTxRaw(txInfo.tx),
+    tx,
+    hash: toHex(sha256(block.block.txs[idx])).toUpperCase(),
+    decodedTx: decodeTxRaw(block.block.txs[idx]),
   }));
 }
 
-export function wrapMsg(
+function wrapCosmosMsg(
+  block: CosmosBlock,
+  tx: CosmosTransaction,
+  idx: number,
+  api: CosmosClient,
+): CosmosMessage {
+  const rawMessage = tx.decodedTx.body.messages[idx];
+  const msg: CosmosMessage = {
+    idx,
+    tx: tx,
+    block: block,
+    msg: {
+      typeUrl: rawMessage.typeUrl,
+      ...api.decodeMsg<any>(rawMessage),
+    },
+  };
+
+  return msg;
+}
+
+function wrapMsg(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
@@ -157,23 +181,13 @@ export function wrapMsg(
   const msgs: CosmosMessage[] = [];
   for (const tx of txs) {
     for (let i = 0; i < tx.decodedTx.body.messages.length; i++) {
-      const decodedMsg = api.decodeMsg(tx.decodedTx.body.messages[i]);
-      const msg: CosmosMessage = {
-        idx: i,
-        tx: tx,
-        block: block,
-        msg: {
-          typeUrl: tx.decodedTx.body.messages[i].typeUrl,
-          ...decodedMsg,
-        },
-      };
-      msgs.push(msg);
+      msgs.push(wrapCosmosMsg(block, tx, i, api));
     }
   }
   return msgs;
 }
 
-export function wrapEvent(
+function wrapEvent(
   block: CosmosBlock,
   txs: CosmosTransaction[],
   api: CosmosClient,
@@ -182,30 +196,19 @@ export function wrapEvent(
   for (const tx of txs) {
     let logs: Log[];
     try {
-      logs = parseRawLog(tx.tx.rawLog) as Log[];
+      logs = parseRawLog(tx.tx.log) as Log[];
     } catch (e) {
+      logger.warn(e, 'Failed to parse raw log');
       continue;
     }
     for (const log of logs) {
-      const decodedMsg = api.decodeMsg(
-        tx.decodedTx.body.messages[log.msg_index],
-      );
-      const msg: CosmosMessage = {
-        idx: log.msg_index,
-        tx: tx,
-        block: block,
-        msg: {
-          typeUrl: tx.decodedTx.body.messages[log.msg_index].typeUrl,
-          ...decodedMsg,
-        },
-      };
+      const msg = wrapCosmosMsg(block, tx, log.msg_index, api);
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
           idx: i,
-          msg: msg,
-          tx: tx,
-          block: block,
-          log: log,
+          msg,
+          tx,
+          block,
           event: log.events[i],
         };
         events.push(event);
@@ -221,29 +224,25 @@ export async function fetchBlocksBatches(
   blockArray: number[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
-  return Promise.all(
-    blocks.map(async (blockInfo) => {
-      const txHashes = blockInfo.txs;
-      if (txHashes === null || txHashes.length === 0) {
-        return <BlockContent>{
-          block: wrapBlock(blockInfo, []),
-          transactions: [],
-          messages: [],
-          events: [],
-        };
-      }
+  return blocks.map(([blockInfo, blockResults]) => {
+    assert(
+      blockResults.results.length === blockInfo.txs.length,
+      `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
+    );
 
-      const txInfos = await api.txInfoByHeight(blockInfo.header.height);
-      const block = wrapBlock(blockInfo, txInfos);
-      const txs = wrapTx(block, txInfos);
-      const msgs = wrapMsg(block, txs, api);
-      const events = wrapEvent(block, txs, api);
-      return <BlockContent>{
-        block: block,
-        transactions: txs,
-        messages: msgs,
-        events: events,
-      };
-    }),
-  );
+    // Make non-readonly
+    const results = [...blockResults.results];
+
+    const block = wrapBlock(blockInfo, results);
+    const transactions = wrapTx(block, results);
+    const messages = wrapMsg(block, transactions, api);
+    const events = wrapEvent(block, transactions, api);
+
+    return <BlockContent>{
+      block,
+      transactions,
+      messages,
+      events,
+    };
+  });
 }

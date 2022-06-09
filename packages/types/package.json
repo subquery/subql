@@ -22,5 +22,8 @@
   "devDependencies": {
     "@types/app-module-path": "^2.2.0"
   },
+  "resolutions": {
+    "@cosmjs/tendermint-rpc": "../../tendermint-rpc.tgz"
+  },
   "stableVersion": "0.0.1-0"
 }

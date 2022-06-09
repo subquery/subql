@@ -6,7 +6,7 @@ import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { fromAscii, toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
-import { GeneratedType, Registry } from '@cosmjs/proto-signing';
+import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
@@ -23,6 +23,7 @@ import {
   HttpEndpoint,
   Tendermint34Client,
   toRfc3339WithNanoseconds,
+  BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
 import {
@@ -75,7 +76,7 @@ export class ApiService {
         },
       };
       const client = await CosmWasmClient.connect(endpoint);
-
+      const tendermint = await Tendermint34Client.connect(endpoint);
       const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
       for (const ds of this.project.dataSources) {
         const chaintypes = await this.getChainType(ds);
@@ -83,7 +84,7 @@ export class ApiService {
           registry.register(typeurl, chaintypes[typeurl]);
         }
       }
-      this.api = new CosmosClient(client, registry);
+      this.api = new CosmosClient(client, tendermint, registry);
 
       this.networkMeta = {
         chainId: network.chainId,
@@ -149,6 +150,7 @@ export class ApiService {
 export class CosmosClient {
   constructor(
     private readonly baseApi: CosmWasmClient,
+    private readonly tendermintClient: Tendermint34Client,
     private registry: Registry,
   ) {}
 
@@ -168,7 +170,12 @@ export class CosmosClient {
     return this.baseApi.searchTx({ height: height });
   }
 
-  decodeMsg(msg: any) {
+  async blockResults(height: number): Promise<BlockResultsResponse> {
+    const blockRes = await this.tendermintClient.blockResults(height);
+    return blockRes;
+  }
+
+  decodeMsg<T = unknown>(msg: DecodeObject): T {
     try {
       const decodedMsg = this.registry.decode(msg);
       if (msg.typeUrl === '/cosmwasm.wasm.v1.MsgExecuteContract') {
@@ -177,7 +184,7 @@ export class CosmosClient {
       return decodedMsg;
     } catch (e) {
       logger.error(e, 'Failed to decode message');
-      return {};
+      throw e;
     }
   }
 

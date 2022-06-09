@@ -1520,9 +1520,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cosmjs/tendermint-rpc@npm:0.28.4, @cosmjs/tendermint-rpc@npm:^0.28.4":
+"@cosmjs/tendermint-rpc@file:./tendermint-rpc.tgz::locator=subql-mono%40workspace%3A.":
   version: 0.28.4
-  resolution: "@cosmjs/tendermint-rpc@npm:0.28.4"
+  resolution: "@cosmjs/tendermint-rpc@file:./tendermint-rpc.tgz::locator=subql-mono%40workspace%3A."
   dependencies:
     "@cosmjs/crypto": 0.28.4
     "@cosmjs/encoding": 0.28.4
@@ -1534,7 +1534,7 @@ __metadata:
     axios: ^0.21.2
     readonly-date: ^1.0.0
     xstream: ^11.14.0
-  checksum: fad057a14da035306f2e0809a6653a159f5cb84f415c516f08d7af987804f5ef6c4c11b83677451c3662da513b1e0065863badcf13983462e8e073701ac13714
+  checksum: 268592fdaa886a83528654de16324d97321ffce9b84967d8d8d7d36e88191bcf55acddebe348768cb8e65843d2c20f08291ef7a7850eff571b4eea97a933ac9f
   languageName: node
   linkType: hard
 
@@ -3294,7 +3294,6 @@ __metadata:
     "@cosmjs/cosmwasm-stargate": ^0.28.4
     "@cosmjs/proto-signing": ^0.28.4
     "@cosmjs/stargate": ^0.28.4
-    "@cosmjs/tendermint-rpc": ^0.28.4
     "@nestjs/common": ^8.1.2
     "@nestjs/core": ^8.1.2
     "@nestjs/event-emitter": ^1.0.0

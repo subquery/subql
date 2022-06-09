@@ -4,6 +4,7 @@
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { GeneratedType, Registry, decodeTxRaw } from '@cosmjs/proto-signing';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
+import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import {
   SubqlCosmosMessageFilter,
   SubqlCosmosEventFilter,
@@ -51,6 +52,7 @@ describe('CosmosUtils', () => {
   let decodedTx;
   beforeAll(async () => {
     const client = await CosmWasmClient.connect(ENDPOINT);
+    const tendermint = await Tendermint34Client.connect(ENDPOINT);
     const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
       ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
       ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
@@ -61,7 +63,7 @@ describe('CosmosUtils', () => {
     ];
 
     const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
-    api = new CosmosClient(client, registry);
+    api = new CosmosClient(client, tendermint, registry);
     const txInfos = await api.txInfoByHeight(TEST_BLOCKNUMBER);
     const txInfo = txInfos.find(
       (txInfo) =>
@@ -72,7 +74,7 @@ describe('CosmosUtils', () => {
   });
 
   it('filter message data for true', () => {
-    const decodedMsg = api.decodeMsg(decodedTx.body.messages[0]);
+    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
     const msg: CosmosMessage = {
       idx: 0,
       block: {} as CosmosBlock,
@@ -87,7 +89,7 @@ describe('CosmosUtils', () => {
   });
 
   it('filter message data for false', () => {
-    const decodedMsg = api.decodeMsg(decodedTx.body.messages[0]);
+    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
     const msg: CosmosMessage = {
       idx: 0,
       block: {} as CosmosBlock,
