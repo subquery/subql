@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V, delay} from '@subql/common';
+import {deploymentSpec} from '../types';
 import {
   deployToHostedService,
   promoteDeployment,
@@ -12,7 +13,7 @@ import {
 import {createProject, deleteProject} from './project-controller';
 
 jest.setTimeout(120000);
-const projectSpec = {
+const projectSpec: deploymentSpec = {
   org: 'bz888',
   project_name: 'mocked_starter',
   repository: 'https://github.com/bz888/test-deployment-2',
@@ -25,7 +26,6 @@ const projectSpec = {
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
-
 describe('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
@@ -65,7 +65,7 @@ describe('CLI deploy, delete, promote', () => {
   });
 
   // Only test locally
-  it.skip('Promote Deployment', async () => {
+  it('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
     let status: string;
     let attempt = 0;
@@ -93,9 +93,6 @@ describe('CLI deploy, delete, promote', () => {
       }
     }
   });
-});
-
-describe('ipfsCID_validator', () => {
   it('should return true for valid ipfsCID', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth);
     expect(validator).toBe(true);

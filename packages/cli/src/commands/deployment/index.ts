@@ -19,18 +19,17 @@ const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TO
 
 type DeploymentOption = 'promote' | 'delete' | 'deploy';
 
-const optionMapping = {
-  deploy: deployToHostedService,
-  promote: promoteDeployment,
-  delete: deleteDeployment,
-};
-
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
   static flags = {
     options: Flags.string({
       options: ['deploy', 'promote', 'delete'],
     }),
+  };
+  static optionMapping = {
+    deploy: deployToHostedService,
+    promote: promoteDeployment,
+    delete: deleteDeployment,
   };
 
   async run(): Promise<void> {
@@ -78,9 +77,9 @@ export default class Deploy extends Command {
       if (userOptions === 'delete' || userOptions === 'promote') {
         org = await cli.prompt('Enter organization name');
         project_name = await cli.prompt('Enter project name');
-
         deploymentID = await cli.prompt('Enter deployment ID');
-        const handler = optionMapping[userOptions];
+
+        const handler = Deploy.optionMapping[userOptions];
         const apiCall = await handler(org, project_name, authToken, deploymentID);
         this.log(`${userOptions}d deployment: ${apiCall}`);
       } else {
@@ -102,7 +101,7 @@ export default class Deploy extends Command {
           required: false,
         });
 
-        const handler = optionMapping[userOptions];
+        const handler = Deploy.optionMapping[userOptions];
         const deployment_output = await handler(
           org,
           project_name,
@@ -115,7 +114,7 @@ export default class Deploy extends Command {
           dictEndpoint
         );
         this.log(`Project: ${deployment_output.projectKey}
-        \nStatus: ${chalk.bgBlue(deployment_output.status)}
+        \nStatus: ${chalk.blue(deployment_output.status)}
         \nDeploymentID: ${deployment_output.id}
         \nDeployment Type: ${deployment_output.type}
         \nEndpoint: ${deployment_output.endpoint}

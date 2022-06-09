@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ROOT_API_URL_PROD, ROOT_DELOYMENT_V2_URL_PROD} from '@subql/common';
+import {ROOT_API_URL_PROD} from '@subql/common';
 import axios from 'axios';
-import {advancedSettingsType, deploymentDataType} from '../types';
+import {deploymentDataType} from '../types';
 
 export async function deployToHostedService(
   org: string,
@@ -14,11 +14,9 @@ export async function deployToHostedService(
   queryImageVersion: string,
   endpoint: string,
   type: string,
-  dictEndpoint: string,
-  advanceSettings?: advancedSettingsType
+  dictEndpoint: string
 ): Promise<deploymentDataType> {
   const key = `${org}/${project_name}`;
-  // console.log(JSON.stringify(advanceSettings, null, 2));
 
   try {
     const result = (
@@ -27,18 +25,15 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `https://api.subquery.network/v2/subqueries/${key}/deployments`,
+        url: `${ROOT_API_URL_PROD}v2/subqueries/${key}/deployments`,
         data: {
           version: ipfsCID,
           dictEndpoint: dictEndpoint,
           endpoint: endpoint,
-          advancedSettings:
-            advanceSettings !== undefined
-              ? advanceSettings
-              : {
-                  '@subql/node': {},
-                  '@subql/query': {},
-                },
+          advancedSettings: {
+            '@subql/node': {},
+            '@subql/query': {},
+          },
           indexerImageVersion: indexerImageVersion,
           queryImageVersion: queryImageVersion,
           type: type,
@@ -64,7 +59,7 @@ export async function promoteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `https://api.subquery.network/subqueries/${key}/deployments/${deploymentId}/release`,
+      url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}/release`,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -85,7 +80,7 @@ export async function deleteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `https://api.subquery.network/subqueries/${key}/deployments/${deploymentId}`,
+      url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}`,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -107,7 +102,7 @@ export async function deploymentStatus(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `https://api.subquery.network/subqueries/${key}/deployments/${deployID}/status`,
+        url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deployID}/status`,
       })
     ).data;
     return `${result.status}`;
@@ -124,12 +119,12 @@ export async function ipfsCID_validate(cid: string, authToken: string): Promise<
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `https://api.subquery.network/ipfs/deployment-id/${cid}/validate`,
+        url: `${ROOT_API_URL_PROD}ipfs/deployment-id/${cid}/validate`,
       })
     ).data;
     return result.valid;
   } catch (e) {
-    console.warn('Failed to validate IPFS CID:', e.message);
+    console.log('Invalid or Failed to validate IPFS CID:', e.message);
     return false;
   }
 }

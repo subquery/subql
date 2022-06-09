@@ -24,8 +24,7 @@ export async function createProject(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: 'https://api.subquery.network/subqueries',
-        // url: ROOT_API_URL_PROD,
+        url: `${ROOT_API_URL_PROD}subqueries`,
         data: {
           apiVersion: `v${apiVersion}`,
           description: description,
@@ -51,7 +50,7 @@ export async function deleteProject(authToken: string, organization: string, pro
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `https://api.subquery.network/subqueries/${key}`,
+      url: `${ROOT_API_URL_PROD}subqueries/${key}`,
     });
     return `${key}`;
   } catch (e) {

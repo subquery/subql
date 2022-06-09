@@ -66,7 +66,6 @@ export default class Project extends Command {
       }
 
       if (userOptions === 'create') {
-        // required fields
         org = await cli.prompt('Enter organization name');
 
         subtitle = await cli.prompt('Enter subtitle', {default: '', required: false});

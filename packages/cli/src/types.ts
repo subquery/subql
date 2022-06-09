@@ -44,21 +44,16 @@ export function isTerraProjectSpecV0_3_0(projectSpec: ProjectSpecBase): projectS
   return !!(projectSpec as TerraProjectSpecV0_3_0).chainId;
 }
 
-export interface advancedSettingsType {
-  '@subql/node': {
-    // [key: string]: unknown;
-    batchSize?: number;
-    unsafe?: boolean;
-    subscription?: boolean;
-  };
-  '@subql/query': {
-    // [key: string]: unknown;
-    batchSize?: number;
-    unsafe?: boolean;
-    subscription?: boolean;
-  };
+export interface deploymentSpec {
+  org: string;
+  project_name: string;
+  repository: string;
+  ipfs: string;
+  subtitle: string;
+  description: string;
+  logoURl: string;
+  apiVersion: string;
 }
-
 export interface deploymentDataType {
   projectKey: string;
   version: string;

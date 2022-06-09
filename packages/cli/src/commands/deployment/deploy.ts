@@ -8,7 +8,6 @@ import {DEFAULT_DEPLOYMENT_TYPE, DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXE
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import {deployToHostedService, ipfsCID_validate} from '../../controller/deploy-controller';
-import {advancedSettingsType, deploymentDataType} from '../../types';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -25,16 +24,6 @@ export default class Deploy extends Command {
     indexerVersion: Flags.string({description: 'enter indexer-version', default: INDEXER_V, required: false}),
     queryVersion: Flags.string({description: 'enter query-version', default: QUERY_V, required: false}),
     endpoint: Flags.string({description: 'enter endpoint', default: DEFAULT_ENDPOINT, required: false}),
-
-    // allowAdvanceSettings: Flags.boolean({char: 'a', description: 'allow advance settings', default: false, required: false}),
-
-    // node_sub: Flags.boolean({description: 'subql/node: subscription', required: false}),
-    // node_unsafe: Flags.boolean({description: 'subql/node: unsafe',  required: false}),
-    // node_batchSize: Flags.string({description: 'subql/node: batch size', required: false}),
-
-    // query_sub: Flags.boolean({description: 'subql/query: subscription',  required: false}),
-    // query_unsafe: Flags.boolean({description: 'subql/query: unsafe',  required: false}),
-    // query_batchSize: Flags.string({description: 'subql/query: batch size',  required: false}),
   };
 
   async run(): Promise<void> {
@@ -43,9 +32,6 @@ export default class Deploy extends Command {
     let ipfsCID: string = flags.ipfsCID;
     let org: string = flags.org;
     let project_name: string = flags.project_name;
-    // let advancedSettings: advancedSettingsType;
-    // const allowAdvanceSettings: boolean = flags.allowAdvanceSettings;
-    // let deployment_output: deploymentDataType;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -58,29 +44,6 @@ export default class Deploy extends Command {
     } else {
       authToken = await cli.prompt('Token cannot be found, Enter token');
     }
-    // switch (allowAdvanceSettings) {
-    //   case flags.node_sub !== undefined:
-    //     advancedSettings['@subql/node'].subscription = flags.node_sub;
-    //     console.log(JSON.stringify(advancedSettings, null, 2));
-    //     break;
-    //   case flags.node_unsafe !== undefined:
-    //     advancedSettings['@subql/node'].unsafe = flags.node_unsafe;
-    //     break;
-    //   case flags.node_batchSize !== undefined:
-    //     advancedSettings['@subql/node'].batchSize = +flags.node_batchSize;
-    //     break;
-    //   case flags.query_sub !== undefined:
-    //     advancedSettings['@subql/query'].subscription = flags.query_sub;
-    //     break;
-    //   case flags.query_unsafe !== undefined:
-    //     advancedSettings['@subql/query'].unsafe = flags.query_unsafe;
-    //     break;
-    //   case flags.query_batchSize !== undefined:
-    //     advancedSettings['@subql/query'].batchSize = +flags.query_batchSize;
-    //     break;
-    //   default:
-    //     break;
-    // }
 
     if (!org) {
       try {
@@ -111,7 +74,6 @@ export default class Deploy extends Command {
     }
 
     this.log('Deploying SupQuery project to Hosted Service');
-    // if (!allowAdvanceSettings ) {
     const deployment_output = await deployToHostedService(
       org,
       project_name,
@@ -123,22 +85,8 @@ export default class Deploy extends Command {
       flags.type,
       flags.dict
     ).catch((e) => this.error(e));
-    // } else {
-    //   deployment_output = await deployToHostedService(
-    //     org,
-    //     project_name,
-    //     authToken,
-    //     ipfsCID,
-    //     flags.indexerVersion,
-    //     flags.queryVersion,
-    //     flags.endpoint,
-    //     flags.type,
-    //     flags.dict,
-    //     advancedSettings
-    //   ).catch((e) => this.error(e));
-    // }
     this.log(`Project: ${deployment_output.projectKey}
-    \nStatus: ${chalk.bgBlue(deployment_output.status)}
+    \nStatus: ${chalk.blue(deployment_output.status)}
     \nDeploymentID: ${deployment_output.id}
     \nDeployment Type: ${deployment_output.type}
     \nEndpoint: ${deployment_output.endpoint}
