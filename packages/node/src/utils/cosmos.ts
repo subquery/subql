@@ -207,6 +207,7 @@ function wrapEvent(
           msg,
           tx,
           block,
+          log,
           event: log.events[i],
         };
         events.push(event);
