@@ -65,7 +65,7 @@ describe('CLI deploy, delete, promote', () => {
   });
 
   // Only test locally
-  it('Promote Deployment', async () => {
+  it.skip('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
     let status: string;
     let attempt = 0;
