@@ -1,0 +1,28 @@
+# project.yaml
+specVersion: '0.2.0'
+description: ''
+repository: 'https://github.com/subquery/subql-starter'
+name: Test
+version: '0.0.0'
+
+schema:
+  file: ./schema.graphql
+
+network:
+  genesisHash: '0x'
+  chaintypes:
+    file: ./types.json
+
+dataSources:
+  - kind: substrate/Jsonfy
+    startBlock: 1
+    processor:
+      file: '@subql/contract-processors/jsonfy.js'
+    assets:
+      test:
+        file: './abi.json'
+    mapping:
+      file: dist/index.js
+      handlers:
+        - handler: handleEvent
+          kind: substrate/JsonfyEvent

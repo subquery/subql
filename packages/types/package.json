@@ -6,7 +6,8 @@
   "repository": "github:subquery/subql",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf dist && tsc -b"
+    "build": "rm -rf dist && tsc -b",
+    "format": "prettier --write \"src/**/*.ts\""
   },
   "author": "Ian He",
   "main": "dist/index.js",

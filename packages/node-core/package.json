@@ -1,0 +1,24 @@
+{
+  "name": "@subql/node-core",
+  "version": "0.0.3",
+  "description": "",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "@subql/common": "workspace:*",
+    "@subql/types": "workspace:*",
+    "@subql/utils": "workspace:*"
+  }
+}

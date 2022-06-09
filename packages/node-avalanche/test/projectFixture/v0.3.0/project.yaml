@@ -1,0 +1,50 @@
+specVersion: 0.3.0
+name: moonriver
+version: 1.0.0
+description: ''
+repository: ''
+schema:
+  file: ./schema.graphql
+network:
+  genesisHash: '0x401a1f9dca3da46f5c4091016c8a2f26dcea05865116b286f60f668207d1474b'
+  endpoint: wss://moonriver.api.onfinality.io/public-ws
+  dictionary: 'https://api.subquery.network/sq/subquery/moonriver-dictionary'
+  chaintypes:
+    file: './dist/chainTypes.js'
+dataSources:
+  - kind: substrate/Runtime
+    startBlock: 69218
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        - handler: collatorJoined
+          kind: substrate/EventHandler
+          filter:
+            module: parachainStaking
+            method: JoinedCollatorCandidates
+        - handler: collatorLeft
+          kind: substrate/CallHandler
+          filter:
+            module: parachainStaking
+            method: leaveCandidates
+
+  - kind: substrate/Moonbeam
+    startBlock: 562683
+    processor:
+      file: './dist/moonbeam.js'
+      #      file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
+      options:
+        # Must be a key of assets
+        abi: erc20
+        address: '0x6bd193ee6d2104f14f94e2ca6efefae561a4334b'
+    assets:
+      erc20:
+        file: './erc20.abi.json'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: erc20Transfer
+          kind: substrate/MoonbeamEvent
+          filter:
+            topics:
+              - Transfer(address indexed from,address indexed to,uint256 value)
