@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
-import {Block, IndexedTx} from '@cosmjs/stargate';
+import {Block} from '@cosmjs/stargate';
 import {Event, Log} from '@cosmjs/stargate/build/logs';
 import {TxData} from '@cosmjs/tendermint-rpc';
 export interface Entity {
