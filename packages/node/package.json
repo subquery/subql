@@ -71,7 +71,8 @@
   },
   "files": [
     "/dist",
-    "/bin"
+    "/bin",
+    "tendermint-rpc.tgz"
   ],
   "stableVersion": "0.0.1-8"
 }
