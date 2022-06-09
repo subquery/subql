@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { GeneratedType, Registry, decodeTxRaw } from '@cosmjs/proto-signing';
+import {
+  GeneratedType,
+  Registry,
+  decodeTxRaw,
+  DecodedTxRaw,
+} from '@cosmjs/proto-signing';
 import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import {
@@ -22,12 +27,13 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { CosmosClient } from '../indexer/api.service';
-import { filterMessageData, filterEvent } from './cosmos';
+import { filterMessageData, filterEvent, wrapBlock, wrapEvent } from './cosmos';
 
-const ENDPOINT = 'https://rpc-juno.itastakers.com/';
+const ENDPOINT = 'https://rpc.juno-1.api.onfinality.io';
 const CHAINID = 'juno-1';
 
 const TEST_BLOCKNUMBER = 3266772;
+const TEST_FAILTX_BLOCKNUMBER = 3451838;
 
 const TEST_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
@@ -101,5 +107,19 @@ describe('CosmosUtils', () => {
     };
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE);
     expect(result).toEqual(false);
+  });
+
+  it('does not wrap events of failed transaction', async () => {
+    const blockInfo = await api.blockResults(TEST_FAILTX_BLOCKNUMBER);
+    const failedTx = blockInfo.results[2];
+    const tx: CosmosTransaction = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: failedTx,
+      hash: '',
+      decodedTx: {} as DecodedTxRaw,
+    };
+    const events = wrapEvent({} as CosmosBlock, [tx], api);
+    expect(events.length).toEqual(0);
   });
 });
