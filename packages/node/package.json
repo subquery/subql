@@ -69,7 +69,8 @@
     "supertest": "^6.1.6"
   },
   "resolutions": {
-    "@cosmjs/tendermint-rpc": "./tendermint-rpc.tgz"
+    "@cosmjs/tendermint-rpc": "./tendermint-rpc.tgz",
+    "@cosmjs/amino": "0.28.4"
   },
   "files": [
     "/dist",
