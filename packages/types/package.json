@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-cosmos",
-  "version": "0.0.1-3",
+  "version": "0.0.1-4",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -25,5 +25,5 @@
   "resolutions": {
     "@cosmjs/tendermint-rpc": "../../tendermint-rpc.tgz"
   },
-  "stableVersion": "0.0.1-2"
+  "stableVersion": "0.0.1-3"
 }
