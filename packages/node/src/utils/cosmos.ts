@@ -160,7 +160,7 @@ function wrapCosmosMsg(
   api: CosmosClient,
 ): CosmosMessage {
   const rawMessage = tx.decodedTx.body.messages[idx];
-  const msg: CosmosMessage = {
+  return {
     idx,
     tx: tx,
     block: block,
@@ -169,8 +169,6 @@ function wrapCosmosMsg(
       ...api.decodeMsg<any>(rawMessage),
     },
   };
-
-  return msg;
 }
 
 function wrapMsg(

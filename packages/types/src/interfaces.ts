@@ -30,6 +30,7 @@ export interface CosmosBlock {
 export interface CosmosTransaction {
   idx: number;
   block: CosmosBlock;
+  hash: string;
   tx: TxData;
   decodedTx: DecodedTxRaw;
 }
@@ -46,6 +47,7 @@ export interface CosmosEvent {
   block: CosmosBlock;
   tx: CosmosTransaction;
   msg: CosmosMessage;
+  log: Log;
   event: Event;
 }
 
