@@ -1,15 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V} from '@subql/common';
-import {deployToHostedService, promoteDeployment, deleteDeployment, deploymentStatus} from './deploy-controller';
+import {DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V, delay} from '@subql/common';
+import {
+  deployToHostedService,
+  promoteDeployment,
+  deleteDeployment,
+  deploymentStatus,
+  ipfsCID_validate,
+} from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
-
-export async function delay(sec: number): Promise<void> {
-  return new Promise((resolve) => {
-    setTimeout(resolve, sec * 1000);
-  });
-}
 
 jest.setTimeout(120000);
 const projectSpec = {
@@ -27,22 +27,10 @@ const projectSpec = {
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 describe('CLI deploy, delete, promote', () => {
-  let deploymentID: number;
-
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
     try {
-      const project = await createProject(
-        org,
-        subtitle,
-        logoURl,
-        project_name,
-        testAuth,
-        repository,
-        description,
-        apiVersion
-      );
-      console.log(project);
+      await createProject(org, subtitle, logoURl, project_name, testAuth, repository, description, apiVersion);
     } catch (e) {
       console.warn(`Failed at create project ${project_name} ${e}`);
     }
@@ -51,16 +39,17 @@ describe('CLI deploy, delete, promote', () => {
   afterAll(async () => {
     try {
       await deleteProject(testAuth, projectSpec.org, projectSpec.project_name);
-      console.log(`Project ${projectSpec.project_name} deleted`);
     } catch (e) {
       console.warn('Failed to delete project', e);
     }
   });
 
-  it('Deploy to Hosted Service', async () => {
+  it('Deploy to Hosted Service and Delete', async () => {
     const {ipfs, org, project_name} = projectSpec;
-    deploymentID = await deployToHostedService(
-      `${org}/${project_name}`,
+
+    const deploy_output = await deployToHostedService(
+      org,
+      project_name,
       testAuth,
       ipfs,
       INDEXER_V,
@@ -69,45 +58,51 @@ describe('CLI deploy, delete, promote', () => {
       'stage',
       DEFAULT_DICT_ENDPOINT
     );
-    expect(typeof deploymentID).toBe('number');
+
+    const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id);
+    expect(typeof deploy_output.id).toBe('number');
+    expect(+del_output).toBe(deploy_output.id);
   });
 
-  it('Delete stage deployment from Hosted Service', async () => {
-    const {org, project_name} = projectSpec;
-    const del_output = await deleteDeployment(`${org}/${project_name}`, testAuth, deploymentID);
-    expect(del_output).toContain('Success');
-    await delay(30);
-  });
-  it('Promote Deployment', async () => {
+  // Only test locally
+  it.skip('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
-    deploymentID = await deployToHostedService(
-      `${org}/${project_name}`,
-      testAuth,
-      ipfs,
-      INDEXER_V,
-      QUERY_V,
-      DEFAULT_ENDPOINT,
-      'stage',
-      DEFAULT_DICT_ENDPOINT
-    );
-    console.log(deploymentID);
-    // await delay(60);
     let status: string;
+    let attempt = 0;
 
-    do {
-      status = await deploymentStatus(`${org}/${project_name}`, testAuth, deploymentID);
-    } while (status !== 'running');
-    {
+    const deploy_output = await deployToHostedService(
+      org,
+      project_name,
+      testAuth,
+      ipfs,
+      INDEXER_V,
+      QUERY_V,
+      DEFAULT_ENDPOINT,
+      'stage',
+      DEFAULT_DICT_ENDPOINT
+    );
+
+    while (status !== 'running') {
+      if (attempt >= 5) break;
+      attempt = attempt + 1;
       await delay(30);
-      status = await deploymentStatus(`${org}/${project_name}`, testAuth, deploymentID);
+      status = await deploymentStatus(org, project_name, testAuth, deploy_output.id);
+      if (status === 'running') {
+        const promote_output = await promoteDeployment(org, project_name, testAuth, deploy_output.id);
+        expect(+promote_output).toBe(deploy_output.id);
+      }
     }
+  });
+});
 
-    if (status === 'running') {
-      const promote_output = await promoteDeployment(`${org}/${project_name}`, testAuth, deploymentID);
+describe('ipfsCID_validator', () => {
+  it('should return true for valid ipfsCID', async () => {
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth);
+    expect(validator).toBe(true);
+  });
 
-      expect(promote_output).toContain('Success');
-    } else {
-      throw new Error('Deployment is not running');
-    }
+  it('should return false for invalid ipfsCID', async () => {
+    const validator = await ipfsCID_validate('fake_ipfs_cid', testAuth);
+    expect(validator).toBe(false);
   });
 });

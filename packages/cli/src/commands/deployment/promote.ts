@@ -13,7 +13,8 @@ export default class Promote extends Command {
   static description = 'Promote Deployment';
 
   static flags = {
-    key: Flags.string({description: 'Enter project key'}),
+    org: Flags.string({description: 'Enter organization name'}),
+    project_name: Flags.string({description: 'Enter project name'}),
     deploymentID: Flags.string({description: 'Enter deployment ID'}),
   };
 
@@ -21,7 +22,8 @@ export default class Promote extends Command {
     const {flags} = await this.parse(Promote);
     let authToken: string;
     let deploymentID: number = +flags.deploymentID;
-    let projectKey: string = flags.key;
+    let org: string = flags.org;
+    let project_name: string = flags.project_name;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -32,7 +34,7 @@ export default class Promote extends Command {
         authToken = await cli.prompt('Token cannot be found, Enter token');
       }
     } else {
-      authToken = await cli.prompt('Enter token');
+      authToken = await cli.prompt('Token cannot be found, Enter token');
     }
 
     if (!flags.deploymentID || flags.deploymentID === '') {
@@ -42,16 +44,18 @@ export default class Promote extends Command {
         throw new Error('Deployment ID is required');
       }
     }
-    if (!flags.key || flags.key === '') {
+    if (!org || !project_name) {
       try {
-        projectKey = await cli.prompt('Enter project key');
+        org = await cli.prompt('Enter organisation');
+        project_name = await cli.prompt('Enter project name');
       } catch (e) {
-        throw new Error('Project key is required');
+        throw new Error('Project organisation is required');
       }
     }
 
-    this.log(`Promote deployment: ${deploymentID} from Stage to Production`);
-    const promoteStatus = await promoteDeployment(projectKey, authToken, +deploymentID).catch((e) => this.error(e));
-    this.log(`${promoteStatus}`);
+    const promote_output = await promoteDeployment(org, project_name, authToken, +deploymentID).catch((e) =>
+      this.error(e)
+    );
+    this.log(`Promote deployment: ${promote_output} from Stage to Production`);
   }
 }

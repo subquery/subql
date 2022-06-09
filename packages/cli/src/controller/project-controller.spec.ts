@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {delay} from '@subql/common';
 import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
@@ -19,9 +20,9 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 jest.setTimeout(120000);
 describe('CLI create project and delete project', () => {
-  it('Create project', async () => {
+  it('Create project and delete', async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
-    const output = await createProject(
+    const create_project = await createProject(
       org,
       subtitle,
       logoURl,
@@ -31,10 +32,9 @@ describe('CLI create project and delete project', () => {
       description,
       apiVersion
     );
-    expect(output).toContain('Success');
-  });
-  it('Delete project', async () => {
-    const output = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name);
-    expect(output).toContain('Success');
+    await delay(10);
+    const delete_project = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name);
+    expect(create_project.key).toMatch('bz888/mocked_project');
+    expect(delete_project).toMatch('bz888/mocked_project');
   });
 });

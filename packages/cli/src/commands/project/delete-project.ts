@@ -10,13 +10,11 @@ import {deleteProject} from '../../controller/project-controller';
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Delete_project extends Command {
-  static description = 'Delete Project from Hosted Service';
+  static description = 'Delete Project on Hosted Service';
 
   static flags = {
-    // required values
     org: Flags.string({description: 'Enter organization name'}),
     project_name: Flags.string({description: 'Enter project name'}),
-    // token: Flags.string({description: 'Enter access token'}),
   };
 
   async run(): Promise<void> {
@@ -37,22 +35,22 @@ export default class Delete_project extends Command {
       authToken = await cli.prompt('Enter token');
     }
 
-    if (!flags.org || flags.org === '') {
+    if (flags.org === undefined) {
       try {
-        org_input = await cli.prompt('Enter organization name');
+        org_input = await cli.prompt('Enter organization name', {required: true});
       } catch (e) {
         throw new Error('Organization name is required');
       }
     }
-    if (!flags.project_name || flags.project_name === '') {
+    if (flags.project_name === undefined) {
       try {
-        project_name = await cli.prompt('Enter project name');
+        project_name = await cli.prompt('Enter project name', {required: true});
       } catch (e) {
         throw new Error('Project name is required');
       }
     }
 
     const deleteStatus = await deleteProject(authToken, org_input, project_name).catch((e) => this.error(e));
-    this.log(`${deleteStatus}`);
+    this.log(`Project: ${deleteStatus} has been deleted`);
   }
 }

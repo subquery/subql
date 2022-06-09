@@ -1,9 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {CREATE_PROJECT_URL} from '@subql/common';
+import {ROOT_API_URL_PROD} from '@subql/common';
 import axios from 'axios';
 
+interface createProjectType {
+  key: string;
+}
 export async function createProject(
   organization: string,
   subtitle: string,
@@ -13,7 +16,7 @@ export async function createProject(
   gitRepository: string,
   description: string,
   apiVersion: string
-): Promise<string> {
+): Promise<createProjectType> {
   try {
     const result = (
       await axios({
@@ -22,7 +25,7 @@ export async function createProject(
         },
         method: 'post',
         url: 'https://api.subquery.network/subqueries',
-        // url: CREATE_PROJECT_URL,
+        // url: ROOT_API_URL_PROD,
         data: {
           apiVersion: `v${apiVersion}`,
           description: description,
@@ -34,9 +37,7 @@ export async function createProject(
         },
       })
     ).data;
-    return `Success!
-            \n project has been created.
-            \nProject key: ${result.key}`;
+    return result;
   } catch (e) {
     throw new Error(`Failed to create project: ${e.message}`);
   }
@@ -50,11 +51,9 @@ export async function deleteProject(authToken: string, organization: string, pro
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      // url: `https://api.thechaindata.com/subqueries/${key}`,
       url: `https://api.subquery.network/subqueries/${key}`,
     });
-    return `Success!
-            \n project: ${key} has been deleted.`;
+    return `${key}`;
   } catch (e) {
     throw new Error(`Failed to delete project: ${e.message}`);
   }

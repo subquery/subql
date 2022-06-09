@@ -5,9 +5,15 @@ import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {DEFAULT_DEPLOYMENT_TYPE, DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V} from '@subql/common';
+import chalk from 'chalk';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
-import {deleteDeployment, deployToHostedService, promoteDeployment} from '../../controller/deploy-controller';
+import {
+  deleteDeployment,
+  deployToHostedService,
+  ipfsCID_validate,
+  promoteDeployment,
+} from '../../controller/deploy-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -31,7 +37,8 @@ export default class Deploy extends Command {
     const {flags} = await this.parse(Deploy);
     const option = flags.options;
 
-    let keyInput: string;
+    let org: string;
+    let project_name: string;
     let authToken: string;
     let deploymentID: number;
 
@@ -65,37 +72,40 @@ export default class Deploy extends Command {
           authToken = await cli.prompt('Token cannot be found, Enter token');
         }
       } else {
-        authToken = await cli.prompt('Enter token');
+        authToken = await cli.prompt('Token cannot be found, Enter token');
       }
 
-      if (userOptions !== 'deploy') {
-        keyInput = await cli.prompt('Enter project key e.g. subquery/hello-world');
-        // token = await cli.prompt('Enter token');
+      if (userOptions === 'delete' || userOptions === 'promote') {
+        org = await cli.prompt('Enter organization name');
+        project_name = await cli.prompt('Enter project name');
+
         deploymentID = await cli.prompt('Enter deployment ID');
         const handler = optionMapping[userOptions];
-        const apiCall = await handler(keyInput, authToken, deploymentID);
-        this.log(`${apiCall}`);
+        const apiCall = await handler(org, project_name, authToken, deploymentID);
+        this.log(`${userOptions}d deployment: ${apiCall}`);
       } else {
-        keyInput = await cli.prompt('Enter project key e.g. subquery/hello-world');
-        // token = await cli.prompt('Enter token');
+        org = await cli.prompt('Enter organization name');
+        project_name = await cli.prompt('Enter project name');
         ipfsCID = await cli.prompt('Enter IPFS CID');
 
-        // replace default value later
-        indexerImageVersion = await cli.prompt('Enter indexer image version', {default: INDEXER_V});
-        queryImageVersion = await cli.prompt('Enter query image version', {default: QUERY_V});
-        endpoint = await cli.prompt('Enter endpoint', {default: DEFAULT_ENDPOINT});
-        type = await cli.prompt('Enter type', {default: DEFAULT_DEPLOYMENT_TYPE});
+        const validator = await ipfsCID_validate(ipfsCID, authToken);
+
+        if (!validator) {
+          throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
+        }
+        indexerImageVersion = await cli.prompt('Enter indexer image version', {default: INDEXER_V, required: false});
+        queryImageVersion = await cli.prompt('Enter query image version', {default: QUERY_V, required: false});
+        endpoint = await cli.prompt('Enter endpoint', {default: DEFAULT_ENDPOINT, required: false});
+        type = await cli.prompt('Enter type', {default: DEFAULT_DEPLOYMENT_TYPE, required: false});
         dictEndpoint = await cli.prompt('Enter dict endpoint', {
           default: DEFAULT_DICT_ENDPOINT,
+          required: false,
         });
 
-        // need to check if ipfsCID exists using validate post
-        // https://api.thechaindata.com/doc/#/default/IpfsController_exists
-        // https://api.thechaindata.com/doc/#/default/IpfsController_validateManifest
-
         const handler = optionMapping[userOptions];
-        const apiCall = await handler(
-          keyInput,
+        const deployment_output = await handler(
+          org,
+          project_name,
           authToken,
           ipfsCID,
           indexerImageVersion,
@@ -104,7 +114,13 @@ export default class Deploy extends Command {
           type,
           dictEndpoint
         );
-        this.log(`DeploymentID: ${apiCall}`);
+        this.log(`Project: ${deployment_output.projectKey}
+        \nStatus: ${chalk.bgBlue(deployment_output.status)}
+        \nDeploymentID: ${deployment_output.id}
+        \nDeployment Type: ${deployment_output.type}
+        \nEndpoint: ${deployment_output.endpoint}
+        \nDictionary Endpoint: ${deployment_output.dictEndpoint}
+        `);
       }
     }
   }

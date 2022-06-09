@@ -13,16 +13,17 @@ export default class Delete extends Command {
   static description = 'Delete Deployment';
 
   static flags = {
-    key: Flags.string({description: 'Enter project key', required: true}),
-    deploymentID: Flags.string({description: 'Enter deployment ID', required: true}),
-    // token: Flags.string({description: 'Enter access token'}),
+    org: Flags.string({description: 'Enter organization name'}),
+    project_name: Flags.string({description: 'Enter project name'}),
+    deploymentID: Flags.string({description: 'Enter deployment ID'}),
   };
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Delete);
     let authToken: string;
     let deploymentID: number = +flags.deploymentID;
-    let projectKey: string = flags.key;
+    let project_name: string = flags.project_name;
+    let org: string = flags.org;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -33,26 +34,37 @@ export default class Delete extends Command {
         authToken = await cli.prompt('Token cannot be found, Enter token');
       }
     } else {
-      authToken = await cli.prompt('Enter token');
+      authToken = await cli.prompt('Token cannot be found, Enter token');
     }
 
-    if (!flags.deploymentID || flags.deploymentID === '') {
+    if (!org) {
+      try {
+        org = await cli.prompt('Enter organisation');
+      } catch (e) {
+        throw new Error('Project name and organisation is required');
+      }
+    }
+
+    if (!project_name) {
+      try {
+        project_name = await cli.prompt('Enter project name');
+      } catch (e) {
+        throw new Error('Project name is required');
+      }
+    }
+
+    if (!flags.deploymentID) {
       try {
         deploymentID = await cli.prompt('Enter deployment ID');
       } catch (e) {
         throw new Error('Deployment ID is required');
       }
     }
-    if (!flags.key || flags.key === '') {
-      try {
-        projectKey = await cli.prompt('Enter project key');
-      } catch (e) {
-        throw new Error('Project key is required');
-      }
-    }
 
     this.log(`Removing deployment: ${deploymentID}`);
-    const deleteStatus = await deleteDeployment(projectKey, authToken, +deploymentID).catch((e) => this.error(e));
-    this.log(`${deleteStatus}`);
+    const delete_output = await deleteDeployment(org, project_name, authToken, +deploymentID).catch((e) =>
+      this.error(e)
+    );
+    this.log(`Removed deployment: ${delete_output}`);
   }
 }

@@ -10,19 +10,19 @@ import {createProject} from '../../controller/project-controller';
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
 export default class Create_project extends Command {
-  static description = 'Delete Project from Hosted Service';
+  static description = 'Create Project on Hosted Service';
 
   static flags = {
     // required values
     org: Flags.string({description: 'Enter organization name'}),
     project_name: Flags.string({description: 'Enter project name'}),
-    gitRepository: Flags.string({description: 'Enter git repository'}),
+    gitRepo: Flags.string({description: 'Enter git repository'}),
 
     // optional values
-    logoURL: Flags.string({description: 'Enter logo URL', default: ''}),
-    subtitle: Flags.string({description: 'Enter subtitle', default: ''}),
-    description: Flags.string({description: 'Enter description', default: ''}),
-    apiVersion: Flags.string({description: 'Enter api version', default: '2'}),
+    logoURL: Flags.string({description: 'Enter logo URL', default: '', required: false}),
+    subtitle: Flags.string({description: 'Enter subtitle', default: '', required: false}),
+    description: Flags.string({description: 'Enter description', default: '', required: false}),
+    apiVersion: Flags.string({description: 'Enter api version', default: '2', required: false}),
   };
 
   async run(): Promise<void> {
@@ -30,7 +30,7 @@ export default class Create_project extends Command {
     let authToken: string;
     let project_name: string = flags.project_name;
     let org_input: string = flags.org;
-    let gitRepo_input: string = flags.gitRepository;
+    let gitRepo_input: string = flags.gitRepo;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -44,30 +44,30 @@ export default class Create_project extends Command {
       authToken = await cli.prompt('Enter token');
     }
 
-    if (!flags.org || flags.org === '') {
+    if (!org_input) {
       try {
-        org_input = await cli.prompt('Enter organization name');
+        org_input = await cli.prompt('Enter organization name', {required: true});
       } catch (e) {
         throw new Error('Organization name is required');
       }
     }
-    if (!flags.project_name || flags.project_name === '') {
+    if (!project_name) {
       try {
-        project_name = await cli.prompt('Enter project key');
+        project_name = await cli.prompt('Enter project name', {required: true});
       } catch (e) {
         throw new Error('Project name is required');
       }
     }
 
-    if (!flags.gitRepository || flags.gitRepository === '') {
+    if (!gitRepo_input) {
       try {
-        gitRepo_input = await cli.prompt('Enter git repository');
+        gitRepo_input = await cli.prompt('Enter git repository', {required: true});
       } catch (e) {
         throw new Error('Git repository is required');
       }
     }
 
-    const createStatus = await createProject(
+    const result = await createProject(
       org_input,
       flags.subtitle,
       flags.logoURL,
@@ -77,6 +77,6 @@ export default class Create_project extends Command {
       flags.description,
       flags.apiVersion
     ).catch((e) => this.error(e));
-    this.log(`${createStatus}`);
+    this.log(`Successfully created project: ${result.key}`);
   }
 }

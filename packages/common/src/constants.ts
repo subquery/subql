@@ -24,5 +24,6 @@ export const DEFAULT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
 export const DEFAULT_DICT_ENDPOINT = 'https://api.subquery.network/sq/subquery/altair-dictionary';
 
 //PROJECT
-export const CREATE_PROJECT_URL = 'https://api.thechaindata.com/subqueries';
-// export const CREATE_PROJECT_URL = ;
+export const ROOT_API_URL_DEV = 'https://api.thechaindata.com/subqueries';
+export const ROOT_API_URL_PROD = 'https://api.subquery.network/subqueries';
+export const ROOT_DELOYMENT_V2_URL_PROD = 'https://api.subquery.network/v2/subqueries';
