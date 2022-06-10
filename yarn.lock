@@ -3295,7 +3295,7 @@ __metadata:
     "@oclif/dev-cli": ^1.26.10
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/common-avalanche": ^0.0.2-0
+    "@subql/common-avalanche": ^0.0.3-2
     "@subql/common-cosmos": ^0.0.1-0
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": "workspace:*"
@@ -3330,13 +3330,13 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-avalanche@npm:^0.0.2-0":
-  version: 0.0.2-0
-  resolution: "@subql/common-avalanche@npm:0.0.2-0"
+"@subql/common-avalanche@npm:^0.0.3-2":
+  version: 0.0.3-2
+  resolution: "@subql/common-avalanche@npm:0.0.3-2"
   dependencies:
     "@polkadot/util": ^8
-    "@subql/common": 0.22.0
-    "@subql/types-avalanche": 0.0.2-0
+    "@subql/common": 1.0.1-0
+    "@subql/types-avalanche": 0.0.3-4
     bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.2
@@ -3348,7 +3348,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     sequelize: ^6.6.2
     vm2: ^3.9.9
-  checksum: 99493bdfb2b06af583f382584c06e583b6874740a683971d45cdd58ceff86fc0ef068659b26ac64c0205767d8ce65035aab6d588a496fdf915a3dc92c9c6646f
+  checksum: 9ab9cf2a773794a140b29e58dd3c44100f4fcdb053e42918a8170a5eabe13f7d55916a91acb60ca0efff8c592f994f74fb781185c8502f03b317ca14bacbeead
   languageName: node
   linkType: hard
 
@@ -3397,9 +3397,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@subql/common@npm:0.22.0"
+"@subql/common@npm:1.0.1-0":
+  version: 1.0.1-0
+  resolution: "@subql/common@npm:1.0.1-0"
   dependencies:
     axios: ^0.27.2
     class-transformer: 0.5.1
@@ -3407,7 +3407,7 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 58259f15f19cae5f3a2aab3de8d8a6eba54c681960e32c9e83bfe7dcede185734ddd28e71518939fad35df83c9ef18b426ac7b224331b9468918ad401926f698
+  checksum: a7bb8c81ff9246aec0557723bbd2ff88e4ba9e74bfbb993944922dd41dd37e7bc34579da83c55819a17f1181d87c932724cad48283cf7afc236c9ef990dc3efc
   languageName: node
   linkType: hard
 
@@ -3592,12 +3592,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-avalanche@npm:0.0.2-0":
-  version: 0.0.2-0
-  resolution: "@subql/types-avalanche@npm:0.0.2-0"
+"@subql/types-avalanche@npm:0.0.3-4":
+  version: 0.0.3-4
+  resolution: "@subql/types-avalanche@npm:0.0.3-4"
   peerDependencies:
     "@polkadot/api": ^8
-  checksum: 3144caabcea3049a302e515ce966e32be5cc7f68dd313418424c1d825c324d66e271d881c8efff14b6106d71d1f134e8ca63862163547ae43956a893ed228538
+  checksum: b4c5d32851a43689a58edc9f7e2e74bb7325cf7025dffa55bdab6195b48db68221d3a61cd30e216de5b1bf74ce7493b1d892db88e98efa458493e1ba9b0ce6e2
   languageName: node
   linkType: hard
 
