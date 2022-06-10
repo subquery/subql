@@ -14,6 +14,7 @@ import { fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 
 jest.mock('../utils/substrate', () =>
@@ -221,12 +222,15 @@ function createFetchService(
   project: SubqueryProject,
   batchSize?: number,
 ) {
+  const dsProcessorService = new DsProcessorService(project);
+  const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   return new FetchService(
     apiService,
     new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
     project,
     dictionaryService,
     new DsProcessorService(project),
+    dynamicDsService,
     new EventEmitter2(),
   );
 }
@@ -339,12 +343,15 @@ describe('FetchService', () => {
     });
     const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
+    const dsProcessorService = new DsProcessorService(project);
+    const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
       dsPluginService,
+      dynamicDsService,
       eventEmitter,
     );
 
@@ -402,12 +409,15 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService3();
     const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
+    const dsProcessorService = new DsProcessorService(project);
+    const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
       project,
       dictionaryService,
       dsPluginService,
+      dynamicDsService,
       eventEmitter,
     );
     await fetchService.init();
@@ -458,6 +468,8 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService1();
     const dsPluginService = new DsProcessorService(project);
+    const dsProcessorService = new DsProcessorService(project);
+    const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     const eventEmitter = new EventEmitter2();
     const fetchService = new FetchService(
       apiService,
@@ -465,6 +477,7 @@ describe('FetchService', () => {
       project,
       dictionaryService,
       dsPluginService,
+      dynamicDsService,
       eventEmitter,
     );
     const nextEndBlockHeightSpy = jest.spyOn(

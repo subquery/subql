@@ -33,6 +33,10 @@ export class BlockedQueue<T> {
     this._queue.push(...items);
   }
 
+  firstInQueue(): T | undefined {
+    return this._queue[0] ?? undefined;
+  }
+
   async take(): Promise<T> {
     while (!this.size) {
       await delay(0.1);
@@ -52,5 +56,9 @@ export class BlockedQueue<T> {
       this._queue = [];
     }
     return result;
+  }
+
+  reset() {
+    this._queue = [];
   }
 }
