@@ -81,7 +81,6 @@ export class Worker<T extends AsyncMethods> {
     });
 
     this.worker.on('message', (res: Response) => {
-      console.log('WORKER MESSAGE', res);
       if (this.responseListeners[res.id]) {
         this.responseListeners[res.id](res.result, res.error);
 

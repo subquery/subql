@@ -154,27 +154,18 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
-  private totalQueueLimit: number;
 
-  // Blocks to fetch
-  private fetchQueue: Queue<number>;
+  private taskCounter = 0;
 
-  // Queue to process fetched blocks
-  private processQueue: AutoQueue<number>;
-
-  private running = false;
+  private queue: AutoQueue<void>;
 
   /**
    * @param numWorkers. The number of worker threads to run, this is capped at number of cpus
    * @param workerQueueSize. The number of fetched blocks queued to be processed
    */
   constructor(numWorkers: number, private workerQueueSize: number) {
-    this.numWorkers = getMaxWorkers(numWorkers);
-    // TODO should probably be more
-    this.totalQueueLimit = this.numWorkers * workerQueueSize;
-
-    this.fetchQueue = new Queue();
-    this.processQueue = new AutoQueue();
+    this.numWorkers = numWorkers;
+    this.queue = new AutoQueue(numWorkers * workerQueueSize);
   }
 
   async init(): Promise<void> {
@@ -184,8 +175,8 @@ export class WorkerBlockDispatcherService
   }
 
   async onApplicationShutdown(): Promise<void> {
-    // Stop the queue processing
-    this.processQueue.abort();
+    // Stop processing blocks
+    this.queue.abort();
 
     // Stop all workers
     await Promise.all(this.workers.map((w) => w.terminate()));
@@ -195,84 +186,41 @@ export class WorkerBlockDispatcherService
     logger.info(
       `Enqueing blocks ${heights[0]}...${heights[heights.length - 1]}`,
     );
-    assert(
-      this.totalQueueLimit >= this.fetchQueue.size + heights.length,
-      'Queue exceeds max size',
-    );
-    this.fetchQueue.putMany(heights);
-    void this.run();
+
+    heights.map((height) => this.enqueueBlock(height));
+  }
+
+  private enqueueBlock(height: number) {
+    const workerIdx = this.getNextWorkerIndex();
+    const worker = this.workers[workerIdx];
+
+    assert(worker, `Worker ${workerIdx} not found`);
+    const pendingBlock = worker.fetchBlock(height);
+
+    const processBlock = async () => {
+      await pendingBlock;
+
+      logger.info(`worker ${workerIdx} processing block ${height}`);
+
+      await worker.processBlock(height);
+    };
+
+    void this.queue.put(processBlock);
   }
 
   get queueSize(): number {
-    return this.fetchQueue.size;
+    return this.queue.size;
   }
 
   get freeSize(): number {
-    return this.totalQueueLimit - this.fetchQueue.size;
+    return this.queue.freeSpace;
   }
 
-  private popBlock(): number | undefined {
-    if (!this.fetchQueue.size) {
-      return undefined;
-    }
-    return this.fetchQueue.take();
-  }
+  private getNextWorkerIndex(): number {
+    const index = this.taskCounter % this.numWorkers;
 
-  // TODO find better name
-  private async run(): Promise<void> {
-    if (this.running) return;
+    this.taskCounter++;
 
-    this.running = true;
-
-    if (this.processQueue.freeSpace > 5) {
-      // Get number of batched blocks in each thread
-      const workerPoolSizes = await Promise.all(
-        this.workers.map((w) => w.numFetchingBlocks()),
-      );
-
-      // Find the thread with the least amount of blocks
-      const workerIdx = workerPoolSizes.indexOf(Math.min(...workerPoolSizes));
-
-      if (workerPoolSizes[workerIdx] > 100) {
-        return;
-      }
-
-      void this.popAndFetchBlock(workerIdx);
-    } else {
-      await delay(1);
-    }
-
-    if (this.fetchQueue.size <= 0) {
-      this.running = false;
-      return;
-    }
-
-    await this.run();
-  }
-
-  private async popAndFetchBlock(
-    workerIdx: number,
-  ): Promise<number | undefined> {
-    const height = this.popBlock();
-
-    if (!height) return;
-
-    const worker = this.workers[workerIdx];
-
-    assert(worker, `Worker with index ${workerIdx} not found`);
-
-    await worker.fetchBlock(height);
-
-    // Enqueue task to process
-    // TODO ensure queue pushes heights in correct order
-    void this.processQueue.put(async () => {
-      await worker.processBlock(height);
-
-      // TODO emit some event/logging
-
-      return height;
-    });
-
-    return height;
+    return index;
   }
 }

@@ -6,6 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
+import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
@@ -25,6 +26,8 @@ import {
 } from './worker/block-dispatcher.service';
 // import { BlockDispatcherService } from './worker/worker.service';
 
+const { argv } = getYargsOption();
+
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
@@ -41,7 +44,7 @@ import {
       },
       inject: [SubqueryProject, EventEmitter2],
     },
-    IndexerManager, // TODO
+    IndexerManager,
     {
       provide: 'IBlockDispatcher',
       useFactory: async (
@@ -49,23 +52,23 @@ import {
         nodeConfig: NodeConfig,
         indexerManager: IndexerManager,
       ) => {
-        // TODO put behind flag
-        // return new BlockDispatcherService(
-        //   apiService,
-        //   nodeConfig,
-        //   indexerManager
-        // );
+        if (argv.workers) {
+          const workerBlockDispatcher = new WorkerBlockDispatcherService(
+            2, //argv.workers,
+            nodeConfig.batchSize,
+          );
 
-        // TODO get workers from cli
-        const workerBlockDispatcher = new WorkerBlockDispatcherService(
-          1,
-          nodeConfig.batchSize,
+          await workerBlockDispatcher.init();
+
+          return workerBlockDispatcher;
+        }
+
+        return new BlockDispatcherService(
+          apiService,
+          nodeConfig,
+          indexerManager,
         );
-
-        await workerBlockDispatcher.init();
-
-        return workerBlockDispatcher;
-      }, // TODO init different depending on whether we want workers
+      },
       inject: [ApiService, NodeConfig, IndexerManager],
     },
     {
