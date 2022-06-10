@@ -4,7 +4,6 @@
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
 import { AppModule } from './app.module';
-import { IndexerManager } from './indexer/indexer.manager';
 import { getLogger, NestLogger } from './utils/logger';
 import { getYargsOption } from './yargs';
 
@@ -42,8 +41,6 @@ async function bootstrap() {
     });
     await app.init();
 
-    // const indexerManager = app.get(IndexerManager);
-    // await indexerManager.start();
     await app.listen(port);
 
     logger.info(`Node started on port: ${port}`);

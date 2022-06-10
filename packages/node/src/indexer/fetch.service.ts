@@ -61,14 +61,6 @@ const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
 
-// const fetchBlocksBatches = argv.profiler
-//   ? profilerWrap(
-//       SubstrateUtil.fetchBlocksBatches,
-//       'SubstrateUtil',
-//       'fetchBlocksBatches',
-//     )
-//   : SubstrateUtil.fetchBlocksBatches;
-
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryQueryEntry {
@@ -129,8 +121,6 @@ export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private latestBufferedHeight: number;
-  // private blockBuffer: BlockedQueue<BlockContent>;
-  // private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
@@ -152,12 +142,6 @@ export class FetchService implements OnApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry,
     private projectService: ProjectService,
   ) {
-    // this.blockBuffer = new BlockedQueue<BlockContent>(
-    //   this.nodeConfig.batchSize * 3,
-    // );
-    // this.blockNumberBuffer = new BlockedQueue<number>(
-    //   this.nodeConfig.batchSize * 3,
-    // );
     this.batchSizeScale = 1;
   }
 
@@ -258,35 +242,7 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  // register(next: (value: BlockContent) => Promise<void>): () => void {
-  //   let stopper = false;
-  //   void (async () => {
-  //     while (!stopper && !this.isShutdown) {
-  //       const block = await this.blockBuffer.take();
-  //       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-  //         value: this.blockBuffer.size,
-  //       });
-  //       let success = false;
-  //       while (!success) {
-  //         try {
-  //           await next(block);
-  //           success = true;
-  //         } catch (e) {
-  //           logger.error(
-  //             e,
-  //             `failed to index block at height ${block.block.block.header.number.toString()} ${
-  //               e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
-  //             }`,
-  //           );
-  //           process.exit(1);
-  //         }
-  //       }
-  //     }
-  //   })();
-  //   return () => (stopper = true);
-  // }
-
-  updateDictionary() {
+  updateDictionary(): void {
     this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
     this.useDictionary =
       !!this.dictionaryQueryEntries?.length &&
@@ -393,12 +349,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private async startLoop(initBlockHeight: number): Promise<void> {
-    logger.info(`START LOOP ${initBlockHeight}`);
     await this.fillNextBlockBuffer(initBlockHeight);
-    // await Promise.all([
-    //   this.fillNextBlockBuffer(initBlockHeight),
-    //   this.fillBlockBuffer(),
-    // ]);
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -483,54 +434,6 @@ export class FetchService implements OnApplicationShutdown {
       this.setLatestBufferedHeight(endHeight);
     }
   }
-
-  // async fillBlockBuffer(): Promise<void> {
-  //   while (!this.isShutdown) {
-  //     const takeCount = Math.min(
-  //       this.blockBuffer.freeSize,
-  //       Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-  //     );
-
-  //     // const takeCount = this.workerPool.poolSize;
-
-  //     if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-  //       await delay(1);
-  //       continue;
-  //     }
-
-  //     // Used to compare before and after as a way to check if new DS created
-  //     const bufferedHeight = this.latestBufferedHeight;
-
-  //     const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-  //     const specChanged = await this.specChanged(
-  //       bufferBlocks[bufferBlocks.length - 1],
-  //     );
-
-  //     const blocks = await this.workerPool.fetchBlocks(
-  //       bufferBlocks,
-  //       specChanged ? undefined : this.parentSpecVersion,
-  //     );
-  //     // const blocks = await fetchBlocksBatches(
-  //     //   this.api,
-  //     //   bufferBlocks,
-  //     //   metadataChanged ? undefined : this.parentSpecVersion,
-  //     // );
-  //     logger.info(
-  //       `fetch block [${bufferBlocks[0]},${
-  //         bufferBlocks[bufferBlocks.length - 1]
-  //       }], total ${bufferBlocks.length} blocks`,
-  //     );
-
-  //     if (bufferedHeight > this.latestBufferedHeight) {
-  //       logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-  //       continue;
-  //     }
-  //     this.blockBuffer.putAll(blocks);
-  //     this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-  //       value: this.blockBuffer.size,
-  //     });
-  //   }
-  // }
 
   async getSpecFromApi(height: number): Promise<number> {
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
