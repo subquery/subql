@@ -114,9 +114,14 @@ export class IndexerManager {
                 },
                 tx,
               );
-
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
+              // Rather than discard both block queue, we reset the block number queue only.
+              // Indexer can still continue process fetched blocks,
+              // Then new dictionary entries should apply.
+              await this.fetchService.syncDynamicDatascourcesFromMeta();
+              this.fetchService.updateDictionary();
+              this.fetchService.resetBlockNumberBuffer();
             },
             'createDynamicDatasource',
           );
