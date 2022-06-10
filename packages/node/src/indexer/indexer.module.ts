@@ -10,7 +10,6 @@ import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-// import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
@@ -30,14 +29,12 @@ import { WorkerService } from './worker/worker.service';
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
       ) => {
-        console.log('XXXXX Indexer start');
         const apiService = new ApiService(project, eventEmitter);
         await apiService.init();
         return apiService;
       },
       inject: [SubqueryProject, EventEmitter2],
     },
-    // FetchService,
     BenchmarkService,
     DictionaryService,
     SandboxService,
@@ -46,7 +43,7 @@ import { WorkerService } from './worker/worker.service';
     PoiService,
     MmrService,
     ProjectService,
-    // WorkerService,
+    WorkerService,
   ],
   exports: [StoreService, MmrService],
 })

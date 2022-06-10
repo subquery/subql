@@ -3,6 +3,8 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
+type PredicateFn<T> = (item: T, index: number, items: readonly T[]) => boolean;
+
 export class Queue<T> {
   private items: T[] = [];
   private _capacity?: number;
@@ -36,6 +38,10 @@ export class Queue<T> {
     this.items.push(...items);
   }
 
+  peek(): T | undefined {
+    return this.items[0];
+  }
+
   take(): T | undefined {
     return this.items.shift();
   }
@@ -57,8 +63,10 @@ export class Queue<T> {
   }
 }
 
+type Task<T> = () => Promise<T> | T;
+
 type Action<T> = {
-  task: () => Promise<T> | T;
+  task: Task<T>;
   resolve: (value: T) => void;
   reject: (reason: any) => void;
 };
@@ -91,11 +99,11 @@ export class AutoQueue<T> {
    * If it is async it will return a promise that throws rather than throwing the function
    */
   // eslint-disable-next-line @typescript-eslint/promise-function-async
-  put(item: () => T | Promise<T>): Promise<T> {
+  put(item: Task<T>): Promise<T> {
     return this.putMany([item])[0];
   }
 
-  putMany(tasks: Array<() => T | Promise<T>>): Promise<T>[] {
+  putMany(tasks: Array<Task<T>>): Promise<T>[] {
     if (this.capacity && this.size + tasks.length >= this.capacity) {
       throw new Error('Queue exceeds max size');
     }
@@ -110,7 +118,7 @@ export class AutoQueue<T> {
     });
   }
 
-  async take(): Promise<void> {
+  private async take(): Promise<void> {
     if (this.pendingPromise) return;
     if (this._abort) {
       // Reset so it can be restarted

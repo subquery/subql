@@ -69,6 +69,8 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
+
+    this.api = this.apiService.getApi();
   }
 
   @profiler(argv.profiler)
@@ -179,7 +181,7 @@ export class IndexerManager {
     await this.projectService.init();
     // await this.fetchService.init();
 
-    this.api = this.apiService.getApi();
+    // this.api = this.apiService.getApi();
     // const startHeight = this.projectService.startHeight;
 
     // void this.fetchService.startLoop(startHeight).catch((err) => {
