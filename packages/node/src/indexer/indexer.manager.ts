@@ -175,23 +175,10 @@ export class IndexerManager {
       throw e;
     }
     await tx.commit();
-
-    // this.fetchService.latestProcessed(block.block.header.number.toNumber());
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
-    // await this.fetchService.init();
-
-    // this.api = this.apiService.getApi();
-    // const startHeight = this.projectService.startHeight;
-
-    // void this.fetchService.startLoop(startHeight).catch((err) => {
-    //   logger.error(err, 'failed to fetch block');
-    //   // FIXME: retry before exit
-    //   process.exit(1);
-    // });
-    // this.fetchService.register((block) => this.indexBlock(block));
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
