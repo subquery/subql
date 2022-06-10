@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiOptions } from '@polkadot/api/types';
 import {
@@ -15,7 +14,6 @@ import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
-import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 
 function testSubqueryProject(): SubqueryProject {
@@ -56,8 +54,6 @@ async function createFetchService(
   batchSize = 5,
 ): Promise<FetchService> {
   const apiService = new ApiService(project, new EventEmitter2());
-  const dsProcessorService = new DsProcessorService(project);
-  const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   await apiService.init();
   const dictionaryService = new DictionaryService(project);
   const dsPluginService = new DsProcessorService(project);
@@ -67,7 +63,6 @@ async function createFetchService(
     project,
     dictionaryService,
     dsPluginService,
-    dynamicDsService,
     new EventEmitter2(),
   );
 }
