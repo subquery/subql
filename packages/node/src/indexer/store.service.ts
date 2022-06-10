@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { isMainThread } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
@@ -95,7 +96,9 @@ export class StoreService {
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
     try {
-      await this.syncSchema(this.schema);
+      if (isMainThread) {
+        await this.syncSchema(this.schema);
+      }
     } catch (e) {
       logger.error(e, `Having a problem when syncing schema`);
       process.exit(1);

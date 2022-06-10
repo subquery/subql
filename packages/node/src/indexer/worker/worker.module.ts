@@ -7,7 +7,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigureModule } from '../../configure/configure.module';
 import { DbModule } from '../../db/db.module';
 import { IndexerModule } from '../indexer.module';
-import { WorkerService } from './worker.service';
 
 @Module({
   imports: [
@@ -22,7 +21,6 @@ import { WorkerService } from './worker.service';
     ConfigureModule.register(),
     ScheduleModule.forRoot(),
     IndexerModule,
-    WorkerService,
   ],
   controllers: [],
 })
