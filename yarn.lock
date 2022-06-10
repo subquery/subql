@@ -3295,6 +3295,8 @@ __metadata:
     "@oclif/dev-cli": ^1.26.10
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
+    "@subql/common-avalanche": ^0.0.2-0
+    "@subql/common-cosmos": ^0.0.1-0
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": "workspace:*"
     "@subql/utils": "workspace:*"
@@ -3328,6 +3330,42 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/common-avalanche@npm:^0.0.2-0":
+  version: 0.0.2-0
+  resolution: "@subql/common-avalanche@npm:0.0.2-0"
+  dependencies:
+    "@polkadot/util": ^8
+    "@subql/common": 0.22.0
+    "@subql/types-avalanche": 0.0.2-0
+    bn.js: 4.11.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    flatted: ^3.2.2
+    graphql: ^15.7.2
+    graphql-tag: ^2.12.5
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
+    vm2: ^3.9.9
+  checksum: 99493bdfb2b06af583f382584c06e583b6874740a683971d45cdd58ceff86fc0ef068659b26ac64c0205767d8ce65035aab6d588a496fdf915a3dc92c9c6646f
+  languageName: node
+  linkType: hard
+
+"@subql/common-cosmos@npm:^0.0.1-0":
+  version: 0.0.1-0
+  resolution: "@subql/common-cosmos@npm:0.0.1-0"
+  dependencies:
+    "@subql/common": latest
+    "@subql/types-cosmos": 0.0.1-0
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+  checksum: 0b70a90c8e8a3f2563c4f55fffd4c1902d4910b0933f0e529556957f05c1f7a11ff9d49f12a6957600b63f0dd9493514dccf31dbcb43353a5585379a12eeb07c
+  languageName: node
+  linkType: hard
+
 "@subql/common-substrate@workspace:*, @subql/common-substrate@workspace:packages/common-substrate":
   version: 0.0.0-use.local
   resolution: "@subql/common-substrate@workspace:packages/common-substrate"
@@ -3358,6 +3396,34 @@ __metadata:
     reflect-metadata: ^0.1.13
   languageName: unknown
   linkType: soft
+
+"@subql/common@npm:0.22.0":
+  version: 0.22.0
+  resolution: "@subql/common@npm:0.22.0"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: 0.5.1
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: 58259f15f19cae5f3a2aab3de8d8a6eba54c681960e32c9e83bfe7dcede185734ddd28e71518939fad35df83c9ef18b426ac7b224331b9468918ad401926f698
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:latest":
+  version: 1.1.0
+  resolution: "@subql/common@npm:1.1.0"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: 0.5.1
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: f54b39f90c8dcbc65a04f602fa42fcb945f3ac0a6000b20d4614160fc31ce4d4f0da260df2755cb96c94ca9cc7f9c0090570770216da8fddfa285c8ed3bdf7ef
+  languageName: node
+  linkType: hard
 
 "@subql/common@workspace:*, @subql/common@workspace:packages/common":
   version: 0.0.0-use.local
@@ -3525,6 +3591,24 @@ __metadata:
     subql-query: ./bin/run
   languageName: unknown
   linkType: soft
+
+"@subql/types-avalanche@npm:0.0.2-0":
+  version: 0.0.2-0
+  resolution: "@subql/types-avalanche@npm:0.0.2-0"
+  peerDependencies:
+    "@polkadot/api": ^8
+  checksum: 3144caabcea3049a302e515ce966e32be5cc7f68dd313418424c1d825c324d66e271d881c8efff14b6106d71d1f134e8ca63862163547ae43956a893ed228538
+  languageName: node
+  linkType: hard
+
+"@subql/types-cosmos@npm:0.0.1-0":
+  version: 0.0.1-0
+  resolution: "@subql/types-cosmos@npm:0.0.1-0"
+  peerDependencies:
+    "@cosmjs/stargate": "*"
+  checksum: f0f64ee3a3ec8989db63aeb390a552e84cebbe22548b032530bc995a9cf073525dbd1faf563b65822dd49c3911705884801db100a0266bfd3974cdb954cfbf9f
+  languageName: node
+  linkType: hard
 
 "@subql/types-terra@workspace:*, @subql/types-terra@workspace:packages/types-terra":
   version: 0.0.0-use.local
@@ -5720,6 +5804,13 @@ __metadata:
   dependencies:
     browser-readablestream-to-it: ^1.0.3
   checksum: e7fbebe5bd7b8187a4a88203639777456596a0cc68372e7b2dbcfbae6dea2b80e2a89522140039b538140bc3e3a6b1e90d1778e725eb8899070f799e61591751
+  languageName: node
+  linkType: hard
+
+"bn.js@npm:4.11.6":
+  version: 4.11.6
+  resolution: "bn.js@npm:4.11.6"
+  checksum: db23047bf06fdf9cf74401c8e76bca9f55313c81df382247d2c753868b368562e69171716b81b7038ada8860af18346fd4bcd1cf9d4963f923fe8e54e61cb58a
   languageName: node
   linkType: hard
 
@@ -8496,7 +8587,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"flatted@npm:^3.1.0, flatted@npm:^3.2.5":
+"flatted@npm:^3.1.0, flatted@npm:^3.2.2, flatted@npm:^3.2.5":
   version: 3.2.5
   resolution: "flatted@npm:3.2.5"
   checksum: 3c436e9695ccca29620b4be5671dd72e5dd0a7500e0856611b7ca9bd8169f177f408c3b9abfa78dfe1493ee2d873e2c119080a8a9bee4e1a186a9e60ca6c89f1
@@ -9084,7 +9175,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.3, graphql-tag@npm:^2.12.6":
+"graphql-tag@npm:^2.11.0, graphql-tag@npm:^2.12.3, graphql-tag@npm:^2.12.5, graphql-tag@npm:^2.12.6":
   version: 2.12.6
   resolution: "graphql-tag@npm:2.12.6"
   dependencies:
@@ -9111,7 +9202,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:>=0.9 <0.14 || ^14.0.2 || ^15.4.0, graphql@npm:^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0, graphql@npm:^15.8.0":
+"graphql@npm:>=0.9 <0.14 || ^14.0.2 || ^15.4.0, graphql@npm:^0.6.0 || ^0.7.0 || ^0.8.0-b || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.2 || ^15.0.0, graphql@npm:^15.7.2, graphql@npm:^15.8.0":
   version: 15.8.0
   resolution: "graphql@npm:15.8.0"
   checksum: 423325271db8858428641b9aca01699283d1fe5b40ef6d4ac622569ecca927019fce8196208b91dd1d8eb8114f00263fe661d241d0eb40c10e5bfd650f86ec5e
@@ -14587,6 +14678,47 @@ __metadata:
     tedious:
       optional: true
   checksum: e1faa389fe8bf4e58f4781763d313e6a28b5cf8376f9c34ba6a6af9f158a309d8fa30277706bbee004caa8068a5f3030cf1620735a2d9f84a33f204ab2dae2f2
+  languageName: node
+  linkType: hard
+
+"sequelize@npm:^6.6.2":
+  version: 6.20.1
+  resolution: "sequelize@npm:6.20.1"
+  dependencies:
+    "@types/debug": ^4.1.7
+    "@types/validator": ^13.7.1
+    debug: ^4.3.3
+    dottie: ^2.0.2
+    inflection: ^1.13.2
+    lodash: ^4.17.21
+    moment: ^2.29.1
+    moment-timezone: ^0.5.34
+    pg-connection-string: ^2.5.0
+    retry-as-promised: ^5.0.0
+    semver: ^7.3.5
+    sequelize-pool: ^7.1.0
+    toposort-class: ^1.0.1
+    uuid: ^8.3.2
+    validator: ^13.7.0
+    wkx: ^0.5.0
+  peerDependenciesMeta:
+    ibm_db:
+      optional: true
+    mariadb:
+      optional: true
+    mysql2:
+      optional: true
+    pg:
+      optional: true
+    pg-hstore:
+      optional: true
+    snowflake-sdk:
+      optional: true
+    sqlite3:
+      optional: true
+    tedious:
+      optional: true
+  checksum: 08a6f9e3fb9d31d87399b378802cc5a0531f93cfb5ac18e0b11dc0942cac4a886bbba2dbe5aa33dd3d7ba060d32891876ba0de5c03ebfb4f6459ce84f430be79
   languageName: node
   linkType: hard
 
