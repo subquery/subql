@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import fs from 'fs';
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getAllEntitiesRelations } from '@subql/utils';
@@ -63,22 +64,32 @@ export class ProjectService {
   }
 
   async init(): Promise<void> {
-    await this.dsProcessorService.validateProjectCustomDatasources();
+    // Do extra work on main thread to setup stuff
+    if (isMainThread) {
+      await this.dsProcessorService.validateProjectCustomDatasources();
 
-    this._schema = await this.ensureProject();
-    await this.initDbSchema();
-    this.metadataRepo = await this.ensureMetadata();
-    this.dynamicDsService.init(this.metadataRepo);
+      this._schema = await this.ensureProject();
+      await this.initDbSchema();
+      this.metadataRepo = await this.ensureMetadata();
+      this.dynamicDsService.init(this.metadataRepo);
 
-    if (this.nodeConfig.proofOfIndex) {
-      const blockOffset = await this.getMetadataBlockOffset();
-      if (blockOffset !== null && blockOffset !== undefined) {
-        this.setBlockOffset(Number(blockOffset));
+      if (this.nodeConfig.proofOfIndex) {
+        const blockOffset = await this.getMetadataBlockOffset();
+        if (blockOffset !== null && blockOffset !== undefined) {
+          this.setBlockOffset(Number(blockOffset));
+        }
+        await this.poiService.init(this.schema);
       }
-      await this.poiService.init(this.schema);
-    }
 
-    this._startHeight = await this.getStartHeight();
+      this._startHeight = await this.getStartHeight();
+    } else {
+      this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+      this.dynamicDsService.init(this.metadataRepo);
+
+      this._schema = await this.getExistingProjectSchema();
+      assert(this._schema, 'Schema should be created in main thread');
+      await this.initDbSchema();
+    }
   }
 
   private async ensureProject(): Promise<string> {

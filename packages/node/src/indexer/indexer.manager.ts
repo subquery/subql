@@ -36,7 +36,6 @@ import {
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerEvent } from './events';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
@@ -65,7 +64,6 @@ export class IndexerManager {
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -80,10 +78,6 @@ export class IndexerManager {
   ): Promise<void> {
     const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
-    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height: blockHeight,
-      timestamp: Date.now(),
-    });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
