@@ -50,12 +50,14 @@ const { argv } = getYargsOption();
       useFactory: async (
         apiService: ApiService,
         nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
         indexerManager: IndexerManager,
       ) => {
         if (argv.workers) {
           const workerBlockDispatcher = new WorkerBlockDispatcherService(
-            2, //argv.workers,
+            argv.workers,
             nodeConfig.batchSize,
+            eventEmitter,
           );
 
           await workerBlockDispatcher.init();
@@ -67,9 +69,10 @@ const { argv } = getYargsOption();
           apiService,
           nodeConfig,
           indexerManager,
+          eventEmitter,
         );
       },
-      inject: [ApiService, NodeConfig, IndexerManager],
+      inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
     },
     {
       provide: FetchService,
