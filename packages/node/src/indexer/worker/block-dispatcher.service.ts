@@ -5,12 +5,14 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from 'eventemitter2';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
 import { delay } from '../../utils/promise';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
+import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
 import {
   FetchBlock,
@@ -84,6 +86,7 @@ export class BlockDispatcherService
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
+    private eventEmitter: EventEmitter2,
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
@@ -125,10 +128,13 @@ export class BlockDispatcherService
 
     void fetchBlocksBatches(this.apiService.getApi(), blockNums /* TODO*/)
       .then((blocks) =>
-        blocks.map(
-          (block) => () =>
-            this.indexerManager.indexBlock(block, null /* TODO*/),
-        ),
+        blocks.map((block) => () => {
+          this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+            height: block.block.block.header.number.toNumber(),
+            timestamp: Date.now(),
+          });
+          return this.indexerManager.indexBlock(block, null /* TODO*/);
+        }),
       )
       .then((blockTasks) => {
         this.processQueue.putMany(blockTasks);
@@ -163,7 +169,11 @@ export class WorkerBlockDispatcherService
    * @param numWorkers. The number of worker threads to run, this is capped at number of cpus
    * @param workerQueueSize. The number of fetched blocks queued to be processed
    */
-  constructor(numWorkers: number, private workerQueueSize: number) {
+  constructor(
+    numWorkers: number,
+    private workerQueueSize: number,
+    private eventEmitter: EventEmitter2,
+  ) {
     this.numWorkers = numWorkers;
     this.queue = new AutoQueue(numWorkers * workerQueueSize);
   }
@@ -200,9 +210,19 @@ export class WorkerBlockDispatcherService
     const processBlock = async () => {
       await pendingBlock;
 
-      logger.info(`worker ${workerIdx} processing block ${height}`);
+      logger.info(
+        `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
+      );
+
+      console.time(`Process block ${height}`);
+
+      this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+        height,
+        timestamp: Date.now(),
+      });
 
       await worker.processBlock(height);
+      console.timeEnd(`Process block ${height}`);
     };
 
     void this.queue.put(processBlock);

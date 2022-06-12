@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { ApiService } from './api.service';
-import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -35,7 +34,6 @@ import { WorkerService } from './worker/worker.service';
       },
       inject: [SubqueryProject, EventEmitter2],
     },
-    BenchmarkService,
     DictionaryService,
     SandboxService,
     DsProcessorService,
