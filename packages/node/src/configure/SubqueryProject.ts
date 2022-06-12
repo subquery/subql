@@ -16,12 +16,17 @@ import {
   SubqlCosmosDataSource,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-cosmos';
+import { CustomModule } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
+import * as protobuf from 'protobufjs';
 import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
+
+export type CosmosChainType = CustomModule & { proto: protobuf.Root };
 
 export type SubqlProjectDs = SubqlCosmosDataSource & {
   mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
+  chainTypes: Map<string, CosmosChainType>;
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -156,5 +161,19 @@ async function loadProjectFromManifest1_0_0(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
     );
   }
+
+  project.dataSources.map((ds: SubqlCosmosDataSource) => {
+    Object.keys(ds.chainTypes).map(async (key) => {
+      const type = ds.chainTypes[key];
+      const proto = await reader.getFile(type.file);
+
+      if (!proto) throw new Error(`Unable to load chain type for ${key}`);
+
+      return {
+        proto: protobuf.parse(proto).root,
+        ...type,
+      };
+    });
+  });
   return project;
 }
