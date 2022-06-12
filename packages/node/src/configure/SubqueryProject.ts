@@ -162,18 +162,5 @@ async function loadProjectFromManifest1_0_0(
     );
   }
 
-  project.dataSources.map((ds: SubqlCosmosDataSource) => {
-    Object.keys(ds.chainTypes).map(async (key) => {
-      const type = ds.chainTypes[key];
-      const proto = await reader.getFile(type.file);
-
-      if (!proto) throw new Error(`Unable to load chain type for ${key}`);
-
-      return {
-        proto: protobuf.parse(proto).root,
-        ...type,
-      };
-    });
-  });
   return project;
 }
