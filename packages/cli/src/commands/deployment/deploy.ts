@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {checkToken, DEFAULT_DEPLOYMENT_TYPE, valueOrPrompt} from '@subql/common';
@@ -35,7 +34,8 @@ export default class Deploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
-    // let authToken: string;
+
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let ipfsCID: string = flags.ipfsCID;
     let org: string = flags.org;
     let project_name: string = flags.project_name;
@@ -45,18 +45,6 @@ export default class Deploy extends Command {
     let indexer_v = flags.indexerVersion;
     let query_v = flags.queryVersion;
 
-    // if (process.env.SUBQL_ACCESS_TOKEN) {
-    //   authToken = process.env.SUBQL_ACCESS_TOKEN;
-    // } else if (existsSync(ACCESS_TOKEN_PATH)) {
-    //   try {
-    //     authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
-    //   } catch (e) {
-    //     authToken = await cli.prompt('Token cannot be found, Enter token');
-    //   }
-    // } else {
-    //   authToken = await cli.prompt('Token cannot be found, Enter token');
-    // }
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');

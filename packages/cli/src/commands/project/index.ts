@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {checkToken} from '@subql/common';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
 import {createProject, deleteProject} from '../../controller/project-controller';
@@ -31,7 +31,7 @@ export default class Project extends Command {
 
     let org: string;
     let project_name: string;
-    let authToken: string;
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let gitRepository: string;
 
     let logoURL: string;
@@ -53,27 +53,12 @@ export default class Project extends Command {
 
       this.log(`Selected project option: ${userOptions}`);
 
-      if (process.env.SUBQL_ACCESS_TOKEN) {
-        authToken = process.env.SUBQL_ACCESS_TOKEN;
-      } else if (existsSync(ACCESS_TOKEN_PATH)) {
-        try {
-          authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
-        } catch (e) {
-          authToken = await cli.prompt('Token cannot be found, Enter token');
-        }
-      } else {
-        authToken = await cli.prompt('Enter token');
-      }
-
       if (userOptions === 'create') {
         org = await cli.prompt('Enter organization name');
 
         subtitle = await cli.prompt('Enter subtitle', {default: '', required: false});
         logoURL = await cli.prompt('Enter logo URL', {default: '', required: false});
         project_name = await cli.prompt('Enter project name');
-        if (!authToken) {
-          authToken = await cli.prompt('Enter token');
-        }
         gitRepository = await cli.prompt('Enter git repository', {
           default: 'https://github.com/subquery/subql-starter',
         });

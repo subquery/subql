@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {checkToken, DEFAULT_DEPLOYMENT_TYPE} from '@subql/common';
@@ -39,9 +38,9 @@ export default class Deploy extends Command {
     const {flags} = await this.parse(Deploy);
     const option = flags.options;
 
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let org: string;
     let project_name: string;
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let deploymentID: number;
 
     let ipfsCID: string;
