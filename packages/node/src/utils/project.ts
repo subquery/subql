@@ -19,7 +19,11 @@ import {
 import yaml from 'js-yaml';
 import * as protobuf from 'protobufjs';
 import tar from 'tar';
-import { SubqlProjectDs, CosmosChainType } from '../configure/SubqueryProject';
+import {
+  SubqlProjectDs,
+  CosmosChainType,
+  SubqueryProjectNetwork,
+} from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -70,6 +74,29 @@ export function isCustomHandler(
   return !isBaseHandler(handler);
 }
 
+export async function processNetworkConfig(
+  network: any,
+  reader: Reader,
+): Promise<SubqueryProjectNetwork> {
+  if (network.chainId && network.genesisHash) {
+    throw new Error('Please only provide one of chainId and genesisHash');
+  } else if (network.genesisHash && !network.chainId) {
+    network.chainId = network.genesisHash;
+  }
+  delete network.genesisHash;
+
+  const chainTypes: Map<string, CosmosChainType> = new Map();
+
+  for (const [key, value] of network.chainTypes) {
+    chainTypes.set(key, {
+      ...value,
+      proto: await loadNetworkChainType(reader, value.file),
+    });
+  }
+  network.chainTypes = chainTypes;
+  return network;
+}
+
 export async function updateDataSourcesV0_3_0(
   _dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[],
   reader: Reader,
@@ -88,15 +115,6 @@ export async function updateDataSourcesV0_3_0(
         root,
         entryScript,
       );
-
-      const chainTypes: Map<string, CosmosChainType> = new Map();
-
-      for (const [key, value] of dataSource.chainTypes) {
-        chainTypes.set(key, {
-          ...value,
-          proto: await loadDataSourceChainType(reader, value.file),
-        });
-      }
 
       if (isCustomCosmosDs(dataSource)) {
         if (dataSource.processor) {
@@ -124,13 +142,11 @@ export async function updateDataSourcesV0_3_0(
         return {
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
-          chainTypes,
         };
       } else {
         return {
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
-          chainTypes,
         };
       }
     }),
@@ -178,7 +194,7 @@ export async function loadDataSourceScript(
   return entryScript;
 }
 
-async function loadDataSourceChainType(
+export async function loadNetworkChainType(
   reader: Reader,
   file: string,
 ): Promise<protobuf.Root> {

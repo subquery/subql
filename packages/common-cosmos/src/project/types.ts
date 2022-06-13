@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {IProjectManifest, ProjectNetworkConfig} from '@subql/common';
-import {SubqlCosmosDatasource} from '@subql/types-cosmos';
+import {SubqlCosmosDatasource, CustomModule} from '@subql/types-cosmos';
 
 // All of these used to be redefined in this file, re-exporting for simplicity
 export {

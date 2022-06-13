@@ -7,6 +7,7 @@ import {
   SubqlCosmosCustomHandler,
   SubqlCosmosMapping,
   SubqlCosmosRuntimeHandler,
+  CustomModule,
 } from '@subql/types-cosmos';
 
 import {plainToClass, Transform, TransformFnParams, Type} from 'class-transformer';
@@ -20,7 +21,12 @@ import {
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {CosmosCustomDataSourceBase, CosmosRuntimeDataSourceBase, CosmosMapping} from '../../models';
+import {
+  CosmosCustomDataSourceBase,
+  CosmosRuntimeDataSourceBase,
+  CosmosMapping,
+  CosmosCustomModuleImpl,
+} from '../../models';
 import {
   CustomDatasourceV0_3_0,
   CosmosProjectManifestV0_3_0,
@@ -49,6 +55,10 @@ export class CosmosProjectNetworkV0_3_0 extends CosmosProjectNetworkDeploymentV0
   @IsString()
   @IsOptional()
   genesisHash?: string;
+  @Type(() => CosmosCustomModuleImpl)
+  @IsOptional()
+  @ValidateNested({each: true})
+  chainTypes?: Map<string, CustomModule>;
 }
 
 export class CosmosProjectMappingV0_3_0 extends CosmosMapping {

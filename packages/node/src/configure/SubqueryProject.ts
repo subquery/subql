@@ -20,12 +20,20 @@ import { CustomModule } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 import * as protobuf from 'protobufjs';
-import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
+import {
+  getProjectRoot,
+  updateDataSourcesV0_3_0,
+  loadNetworkChainType,
+  processNetworkConfig,
+} from '../utils/project';
 
 export type CosmosChainType = CustomModule & { proto: protobuf.Root };
 
 export type SubqlProjectDs = SubqlCosmosDataSource & {
   mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
+};
+
+export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
   chainTypes: Map<string, CosmosChainType>;
 };
 
@@ -40,7 +48,7 @@ const NOT_SUPPORT = (name: string) => () => {
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<CosmosProjectNetworkConfig>;
+  network: Partial<CosmosProjectNetConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -83,16 +91,7 @@ export interface SubqueryProjectNetwork {
   chainId: string;
   endpoint?: string;
   dictionary?: string;
-}
-
-function processChainId(network: any): SubqueryProjectNetwork {
-  if (network.chainId && network.genesisHash) {
-    throw new Error('Please only provide one of chainId and genesisHash');
-  } else if (network.genesisHash && !network.chainId) {
-    network.chainId = network.genesisHash;
-  }
-  delete network.genesisHash;
-  return network;
+  chainTypes?: Map<string, CosmosChainType>;
 }
 
 type SUPPORT_MANIFEST = ProjectManifestV0_3_0Impl | ProjectManifestV1_0_0Impl;
@@ -105,10 +104,13 @@ async function loadProjectFromManifestBase(
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
 
-  const network = processChainId({
-    ...projectManifest.network,
-    ...networkOverrides,
-  });
+  const network = await processNetworkConfig(
+    {
+      ...projectManifest.network,
+      ...networkOverrides,
+    },
+    reader,
+  );
 
   if (!network.endpoint) {
     throw new Error(
