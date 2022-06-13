@@ -8,7 +8,7 @@ import {
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';

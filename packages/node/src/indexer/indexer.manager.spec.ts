@@ -8,9 +8,9 @@ import {
 } from '@subql/common-substrate';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryFactory } from '../entities';
+import { SubqueryFactory } from '@subql/node-core/entities';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

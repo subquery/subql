@@ -27,16 +27,16 @@ import {
 } from '@subql/types';
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import { delay } from '../utils/promise';
+import { delay } from '@subql/node-core/utils';
 import * as SubstrateUtil from '../utils/substrate';
-import { getYargsOption } from '../yargs';
+import { getYargsOption } from '@subql/node-core';
 import { ApiService } from './api.service';
-import { BlockedQueue } from './BlockedQueue';
+import { BlockedQueue } from '@subql/node-core/indexer';
 import {
   Dictionary,
   DictionaryService,

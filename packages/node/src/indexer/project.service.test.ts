@@ -4,10 +4,10 @@
 import { Test } from '@nestjs/testing';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { DbModule } from '../db/db.module';
-import { SubqueryRepo } from '../entities';
+import { DbModule } from '@subql/node-core/db';
+import { SubqueryRepo } from '@subql/node-core/entities';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 

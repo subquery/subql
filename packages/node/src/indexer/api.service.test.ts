@@ -12,7 +12,7 @@ import {
 import { SubstrateBlock } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
+import { delay } from '@subql/node-core/utils';
 import { wrapBlock } from '../utils/substrate';
 import { ApiService } from './api.service';
 
