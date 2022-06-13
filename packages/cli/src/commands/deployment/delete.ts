@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {valueOrPrompt} from '@subql/common';
+import {checkToken, valueOrPrompt} from '@subql/common';
 import cli from 'cli-ux';
 import {deleteDeployment} from '../../controller/deploy-controller';
 
@@ -21,22 +21,22 @@ export default class Delete extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Delete);
-    let authToken: string;
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let deploymentID: number = +flags.deploymentID;
     let project_name: string = flags.project_name;
     let org: string = flags.org;
 
-    if (process.env.SUBQL_ACCESS_TOKEN) {
-      authToken = process.env.SUBQL_ACCESS_TOKEN;
-    } else if (existsSync(ACCESS_TOKEN_PATH)) {
-      try {
-        authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
-      } catch (e) {
-        authToken = await cli.prompt('Token cannot be found, Enter token');
-      }
-    } else {
-      authToken = await cli.prompt('Token cannot be found, Enter token');
-    }
+    // if (process.env.SUBQL_ACCESS_TOKEN) {
+    //   authToken = process.env.SUBQL_ACCESS_TOKEN;
+    // } else if (existsSync(ACCESS_TOKEN_PATH)) {
+    //   try {
+    //     authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
+    //   } catch (e) {
+    //     authToken = await cli.prompt('Token cannot be found, Enter token');
+    //   }
+    // } else {
+    //   authToken = await cli.prompt('Token cannot be found, Enter token');
+    // }
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');

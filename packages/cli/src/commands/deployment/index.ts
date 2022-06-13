@@ -4,7 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_DEPLOYMENT_TYPE} from '@subql/common';
+import {checkToken, DEFAULT_DEPLOYMENT_TYPE} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
@@ -41,7 +41,7 @@ export default class Deploy extends Command {
 
     let org: string;
     let project_name: string;
-    let authToken: string;
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let deploymentID: number;
 
     let ipfsCID: string;
@@ -64,18 +64,6 @@ export default class Deploy extends Command {
       const userOptions: DeploymentOption = response.deploymentOptions;
 
       this.log(`Selected deployment option: ${userOptions}`);
-
-      if (process.env.SUBQL_ACCESS_TOKEN) {
-        authToken = process.env.SUBQL_ACCESS_TOKEN;
-      } else if (existsSync(ACCESS_TOKEN_PATH)) {
-        try {
-          authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(ACCESS_TOKEN_PATH, 'utf8');
-        } catch (e) {
-          authToken = await cli.prompt('Token cannot be found, Enter token');
-        }
-      } else {
-        authToken = await cli.prompt('Token cannot be found, Enter token');
-      }
 
       if (userOptions === 'delete' || userOptions === 'promote') {
         org = await cli.prompt('Enter organization name');

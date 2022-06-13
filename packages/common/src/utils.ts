@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {existsSync, readFileSync} from 'fs';
 import cli from 'cli-ux';
 
 export async function delay(sec: number): Promise<void> {
@@ -26,5 +27,20 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
     return await cli.prompt(msg);
   } catch (e) {
     throw new Error(error);
+  }
+}
+
+export async function checkToken(authToken_ENV: string, token_path: string): Promise<string> {
+  let authToken = authToken_ENV;
+  if (authToken_ENV) return authToken_ENV;
+  if (existsSync(token_path)) {
+    try {
+      authToken = process.env.SUBQL_ACCESS_TOKEN ?? readFileSync(token_path, 'utf8');
+    } catch (e) {
+      return (authToken = await cli.prompt('Token cannot be found, Enter token'));
+    }
+  } else {
+    authToken = await cli.prompt('Token cannot be found, Enter token');
+    return authToken;
   }
 }
