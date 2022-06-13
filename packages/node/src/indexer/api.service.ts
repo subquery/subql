@@ -131,17 +131,12 @@ export class ApiService {
     }
 
     const res: Record<string, GeneratedType> = {};
-    for (const packages of ds.chainTypes) {
-      const packageName = packages[0];
-      const file = packages[1].file;
-      const messages = packages[1].messages;
-      load(path.join(this.project.root, file), function (err, root) {
-        if (err) throw err;
-        for (const msg of messages) {
-          const msgObj = root.lookupType(`${packageName}.${msg}`);
-          res[`/${packageName}.${msg}`] = msgObj;
-        }
-      });
+    for (const [packageName, { messages, proto }] of ds.chainTypes) {
+      for (const msg of messages) {
+        logger.info(`Registering chain message type "/${packageName}.${msg}"`);
+        const msgObj = proto.lookupType(`${packageName}.${msg}`);
+        res[`/${packageName}.${msg}`] = msgObj;
+      }
     }
     return res;
   }

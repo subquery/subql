@@ -16,12 +16,17 @@ import {
   SubqlCosmosDataSource,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-cosmos';
+import { CustomModule } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
+import * as protobuf from 'protobufjs';
 import { getProjectRoot, updateDataSourcesV0_3_0 } from '../utils/project';
+
+export type CosmosChainType = CustomModule & { proto: protobuf.Root };
 
 export type SubqlProjectDs = SubqlCosmosDataSource & {
   mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
+  chainTypes: Map<string, CosmosChainType>;
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -156,5 +161,6 @@ async function loadProjectFromManifest1_0_0(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
     );
   }
+
   return project;
 }

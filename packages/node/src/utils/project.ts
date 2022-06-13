@@ -17,8 +17,9 @@ import {
   CustomDatasourceV0_3_0,
 } from '@subql/common-cosmos';
 import yaml from 'js-yaml';
+import * as protobuf from 'protobufjs';
 import tar from 'tar';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { SubqlProjectDs, CosmosChainType } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -87,6 +88,16 @@ export async function updateDataSourcesV0_3_0(
         root,
         entryScript,
       );
+
+      const chainTypes: Map<string, CosmosChainType> = new Map();
+
+      for (const [key, value] of dataSource.chainTypes) {
+        chainTypes.set(key, {
+          ...value,
+          proto: await loadDataSourceChainType(reader, value.file),
+        });
+      }
+
       if (isCustomCosmosDs(dataSource)) {
         if (dataSource.processor) {
           dataSource.processor.file = await updateProcessor(
@@ -113,11 +124,13 @@ export async function updateDataSourcesV0_3_0(
         return {
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
+          chainTypes,
         };
       } else {
         return {
           ...dataSource,
           mapping: { ...dataSource.mapping, entryScript, file },
+          chainTypes,
         };
       }
     }),
@@ -163,6 +176,17 @@ export async function loadDataSourceScript(
     throw new Error(`Entry file ${entry} for datasource not exist`);
   }
   return entryScript;
+}
+
+async function loadDataSourceChainType(
+  reader: Reader,
+  file: string,
+): Promise<protobuf.Root> {
+  const proto = await reader.getFile(file);
+
+  if (!proto) throw new Error(`Unable to load chain type from ${file}`);
+
+  return protobuf.parse(proto).root;
 }
 
 async function makeTempDir(): Promise<string> {
