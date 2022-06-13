@@ -4,6 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {valueOrPrompt} from '@subql/common';
 import cli from 'cli-ux';
 import {promoteDeployment} from '../../controller/deploy-controller';
 
@@ -37,21 +38,9 @@ export default class Promote extends Command {
       authToken = await cli.prompt('Token cannot be found, Enter token');
     }
 
-    if (!flags.deploymentID || flags.deploymentID === '') {
-      try {
-        deploymentID = await cli.prompt('Enter deployment ID');
-      } catch (e) {
-        throw new Error('Deployment ID is required');
-      }
-    }
-    if (!org || !project_name) {
-      try {
-        org = await cli.prompt('Enter organisation');
-        project_name = await cli.prompt('Enter project name');
-      } catch (e) {
-        throw new Error('Project organisation is required');
-      }
-    }
+    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
+    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
+    deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
 
     const promote_output = await promoteDeployment(org, project_name, authToken, +deploymentID).catch((e) =>
       this.error(e)

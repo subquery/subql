@@ -4,6 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {valueOrPrompt} from '@subql/common';
 import cli from 'cli-ux';
 import {createProject} from '../../controller/project-controller';
 
@@ -44,28 +45,9 @@ export default class Create_project extends Command {
       authToken = await cli.prompt('Enter token');
     }
 
-    if (!org_input) {
-      try {
-        org_input = await cli.prompt('Enter organization name', {required: true});
-      } catch (e) {
-        throw new Error('Organization name is required');
-      }
-    }
-    if (!project_name) {
-      try {
-        project_name = await cli.prompt('Enter project name', {required: true});
-      } catch (e) {
-        throw new Error('Project name is required');
-      }
-    }
-
-    if (!gitRepo_input) {
-      try {
-        gitRepo_input = await cli.prompt('Enter git repository', {required: true});
-      } catch (e) {
-        throw new Error('Git repository is required');
-      }
-    }
+    org_input = await valueOrPrompt(org_input, 'Enter organisation', 'Organisation is required');
+    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
+    gitRepo_input = await valueOrPrompt(gitRepo_input, 'Enter git repository', 'Git repository is required');
 
     const result = await createProject(
       org_input,

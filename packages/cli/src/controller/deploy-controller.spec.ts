@@ -95,11 +95,11 @@ describe('CLI deploy, delete, promote', () => {
   });
   it('should return true for valid ipfsCID', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth);
-    expect(validator).toBe(true);
+    expect(validator.valid).toBe(true);
   });
 
   it('should return false for invalid ipfsCID', async () => {
     const validator = await ipfsCID_validate('fake_ipfs_cid', testAuth);
-    expect(validator).toBe(false);
+    expect(validator).toThrow('Invalid or Failed to validate IPFS CID');
   });
 });

@@ -4,6 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {valueOrPrompt} from '@subql/common';
 import cli from 'cli-ux';
 import {deleteDeployment} from '../../controller/deploy-controller';
 
@@ -37,29 +38,9 @@ export default class Delete extends Command {
       authToken = await cli.prompt('Token cannot be found, Enter token');
     }
 
-    if (!org) {
-      try {
-        org = await cli.prompt('Enter organisation');
-      } catch (e) {
-        throw new Error('Project name and organisation is required');
-      }
-    }
-
-    if (!project_name) {
-      try {
-        project_name = await cli.prompt('Enter project name');
-      } catch (e) {
-        throw new Error('Project name is required');
-      }
-    }
-
-    if (!flags.deploymentID) {
-      try {
-        deploymentID = await cli.prompt('Enter deployment ID');
-      } catch (e) {
-        throw new Error('Deployment ID is required');
-      }
-    }
+    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
+    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
+    deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
 
     this.log(`Removing deployment: ${deploymentID}`);
     const delete_output = await deleteDeployment(org, project_name, authToken, +deploymentID).catch((e) =>

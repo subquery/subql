@@ -4,10 +4,17 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_DEPLOYMENT_TYPE, DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V} from '@subql/common';
+import {DEFAULT_DEPLOYMENT_TYPE, valueOrPrompt} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
-import {deployToHostedService, ipfsCID_validate} from '../../controller/deploy-controller';
+import inquirer from 'inquirer';
+import {
+  deployToHostedService,
+  ipfsCID_validate,
+  getEndpoint,
+  getDictEndpoint,
+  getImage_v,
+} from '../../controller/deploy-controller';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -20,10 +27,10 @@ export default class Deploy extends Command {
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
     type: Flags.string({description: 'enter type', default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    dict: Flags.string({description: 'enter dict', default: DEFAULT_DICT_ENDPOINT, required: false}),
-    indexerVersion: Flags.string({description: 'enter indexer-version', default: INDEXER_V, required: false}),
-    queryVersion: Flags.string({description: 'enter query-version', default: QUERY_V, required: false}),
-    endpoint: Flags.string({description: 'enter endpoint', default: DEFAULT_ENDPOINT, required: false}),
+    indexerVersion: Flags.string({description: 'enter indexer-version', required: false}),
+    queryVersion: Flags.string({description: 'enter query-version', required: false}),
+    dict: Flags.string({description: 'enter dict', required: false}),
+    endpoint: Flags.string({description: 'enter endpoint', required: false}),
   };
 
   async run(): Promise<void> {
@@ -32,6 +39,11 @@ export default class Deploy extends Command {
     let ipfsCID: string = flags.ipfsCID;
     let org: string = flags.org;
     let project_name: string = flags.project_name;
+
+    let endpoint: string = flags.endpoint;
+    let dict: string = flags.dict;
+    let indexer_v = flags.indexerVersion;
+    let query_v = flags.queryVersion;
 
     if (process.env.SUBQL_ACCESS_TOKEN) {
       authToken = process.env.SUBQL_ACCESS_TOKEN;
@@ -45,32 +57,53 @@ export default class Deploy extends Command {
       authToken = await cli.prompt('Token cannot be found, Enter token');
     }
 
-    if (!org) {
-      try {
-        org = await cli.prompt('Enter organization name');
-      } catch (e) {
-        throw new Error('Please provide org');
-      }
-    }
-    if (!project_name) {
-      try {
-        project_name = await cli.prompt('Enter project name');
-      } catch (e) {
-        throw new Error('Please provide name');
-      }
-    }
+    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
+    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
+    ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
-    if (!flags.ipfsCID) {
-      try {
-        ipfsCID = await cli.prompt('Enter IPFS CID');
-      } catch (e) {
-        throw new Error('Please provide ipfs');
-      }
-    }
     const validator = await ipfsCID_validate(ipfsCID, authToken);
 
-    if (!validator) {
+    if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
+    }
+
+    if (!endpoint) {
+      const default_endpoint = await getEndpoint(validator.chainId);
+      endpoint = await cli.prompt('Enter endpoint', {default: default_endpoint, required: false});
+    }
+
+    if (!dict) {
+      const default_dict = await getDictEndpoint(validator.chainId);
+      dict = await cli.prompt('Enter dictionary', {default: default_dict, required: false});
+    }
+
+    if (!indexer_v) {
+      try {
+        const indexerVersions = await getImage_v(validator.runner.node.name, validator.runner.node.version, authToken);
+        const response = await inquirer.prompt({
+          name: 'indexer_v',
+          message: 'Select indexer version',
+          type: 'list',
+          choices: indexerVersions,
+        });
+        indexer_v = response.indexer_v;
+      } catch (e) {
+        throw new Error(chalk.bgRedBright('Indexer version is required'));
+      }
+    }
+    if (!query_v) {
+      try {
+        const queryVersions = await getImage_v(validator.runner.query.name, validator.runner.query.version, authToken);
+        const response = await inquirer.prompt({
+          name: 'query_v',
+          message: 'Select Query version',
+          type: 'list',
+          choices: queryVersions,
+        });
+        query_v = response.query_v;
+      } catch (e) {
+        throw new Error(chalk.bgRedBright('Indexer version is required'));
+      }
     }
 
     this.log('Deploying SupQuery project to Hosted Service');
@@ -79,11 +112,11 @@ export default class Deploy extends Command {
       project_name,
       authToken,
       ipfsCID,
-      flags.indexerVersion,
-      flags.queryVersion,
-      flags.endpoint,
+      indexer_v,
+      query_v,
+      endpoint,
       flags.type,
-      flags.dict
+      dict
     ).catch((e) => this.error(e));
     this.log(`Project: ${deployment_output.projectKey}
     \nStatus: ${chalk.blue(deployment_output.status)}

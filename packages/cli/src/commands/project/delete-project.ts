@@ -4,6 +4,7 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {valueOrPrompt} from '@subql/common';
 import cli from 'cli-ux';
 import {deleteProject} from '../../controller/project-controller';
 
@@ -34,21 +35,8 @@ export default class Delete_project extends Command {
     } else {
       authToken = await cli.prompt('Enter token');
     }
-
-    if (flags.org === undefined) {
-      try {
-        org_input = await cli.prompt('Enter organization name', {required: true});
-      } catch (e) {
-        throw new Error('Organization name is required');
-      }
-    }
-    if (flags.project_name === undefined) {
-      try {
-        project_name = await cli.prompt('Enter project name', {required: true});
-      } catch (e) {
-        throw new Error('Project name is required');
-      }
-    }
+    org_input = await valueOrPrompt(org_input, 'Enter organisation', 'Organisation is required');
+    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
 
     const deleteStatus = await deleteProject(authToken, org_input, project_name).catch((e) => this.error(e));
     this.log(`Project: ${deleteStatus} has been deleted`);

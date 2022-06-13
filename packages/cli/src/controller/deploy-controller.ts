@@ -3,7 +3,7 @@
 
 import {ROOT_API_URL_PROD} from '@subql/common';
 import axios from 'axios';
-import {deploymentDataType} from '../types';
+import {deploymentDataType, validateDataType} from '../types';
 
 export async function deployToHostedService(
   org: string,
@@ -111,7 +111,7 @@ export async function deploymentStatus(
   }
 }
 
-export async function ipfsCID_validate(cid: string, authToken: string): Promise<boolean> {
+export async function ipfsCID_validate(cid: string, authToken: string): Promise<validateDataType> {
   try {
     const result = (
       await axios({
@@ -122,9 +122,61 @@ export async function ipfsCID_validate(cid: string, authToken: string): Promise<
         url: `${ROOT_API_URL_PROD}ipfs/deployment-id/${cid}/validate`,
       })
     ).data;
-    return result.valid;
+    return result;
   } catch (e) {
-    console.log('Invalid or Failed to validate IPFS CID:', e.message);
-    return false;
+    throw new Error('Invalid or Failed to validate IPFS CID');
+  }
+}
+
+// get Dictionary Endpoint
+// https://api.thechaindata.com/subqueries/dictionaries
+
+interface endpointType {
+  network: string;
+  endpoint: string;
+  chainId: string;
+}
+
+export async function getDictEndpoint(chainId: string): Promise<string> {
+  try {
+    const result = (
+      await axios({
+        method: 'get',
+        url: `${ROOT_API_URL_PROD}subqueries/dictionaries`,
+      })
+    ).data;
+    const filtered = result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
+    return filtered;
+  } catch (e) {
+    throw new Error(`Failed to get dictionary endpoint: ${e.message}`);
+  }
+}
+
+export async function getEndpoint(chainId: string): Promise<string> {
+  try {
+    const result = (
+      await axios({
+        method: 'get',
+        url: `${ROOT_API_URL_PROD}subqueries/network-endpoints`,
+      })
+    ).data;
+    return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
+  } catch (e) {
+    throw new Error(`Failed to get endpoint: ${e.message}`);
+  }
+}
+
+export async function getImage_v(name: string, version: string, authToken: string): Promise<string[]> {
+  try {
+    const result = (
+      await axios({
+        headers: {Authorization: `Bearer ${authToken}`},
+        method: 'get',
+        url: `${ROOT_API_URL_PROD}info/images/${encodeURIComponent(name)}?version=${encodeURIComponent(version)}`,
+      })
+    ).data;
+    return result;
+  } catch (e) {
+    throw new Error(`Failed to get image: ${e.message}`);
   }
 }

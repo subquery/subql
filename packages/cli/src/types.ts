@@ -44,6 +44,14 @@ export function isTerraProjectSpecV0_3_0(projectSpec: ProjectSpecBase): projectS
   return !!(projectSpec as TerraProjectSpecV0_3_0).chainId;
 }
 
+export interface validateDataType {
+  valid: boolean;
+  manifestFile: string | null;
+  chainId: string | null;
+  runner: RunnerSpecs | null;
+  errorMessage?: string;
+}
+
 export interface deploymentSpec {
   org: string;
   project_name: string;
