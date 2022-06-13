@@ -5,7 +5,7 @@ import { isMainThread, threadId } from 'node:worker_threads';
 import { LoggerService } from '@nestjs/common';
 import { Logger } from '@subql/utils';
 import Pino from 'pino';
-import { argv } from '../yargs';
+import { argv } from '@subql/node-core';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const debug = argv('debug');

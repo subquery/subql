@@ -4,7 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import {
   IndexerEvent,
   ProcessBlockPayload,

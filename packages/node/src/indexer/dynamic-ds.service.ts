@@ -8,7 +8,7 @@ import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
-import { MetadataRepo } from './entities/Metadata.entity';
+import { MetadataRepo } from '@subql/node-core/indexer/entities';
 
 const logger = getLogger('dynamic-ds');
 

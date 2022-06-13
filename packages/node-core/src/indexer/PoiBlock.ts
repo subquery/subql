@@ -1,21 +1,29 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-// eslint-disable-next-line header/header
-import {u8aConcat, numberToU8a, hexToU8a, isHex, isU8a} from '@polkadot/util';
-import {blake2AsU8a} from '@polkadot/util-crypto';
-import {ProofOfIndex} from './entities';
+
+import { u8aConcat, numberToU8a, hexToU8a, isHex, isU8a } from '@polkadot/util';
+import { blake2AsU8a } from '@polkadot/util-crypto';
+import { ProofOfIndex } from './entities/Poi.entity';
 
 const poiBlockHash = (
   id: number,
   chainBlockHash: string | Uint8Array,
   operationHashRoot: Uint8Array,
   parentHash: Uint8Array,
-  projectId: string
+  projectId: string,
 ): Uint8Array => {
   if (!id || !chainBlockHash || !operationHashRoot || !projectId) {
     throw new Error('Poof of index: can not generate block hash');
   }
-  return blake2AsU8a(u8aConcat(numberToU8a(id), chainBlockHash, operationHashRoot, Buffer.from(projectId), parentHash));
+  return blake2AsU8a(
+    u8aConcat(
+      numberToU8a(id),
+      chainBlockHash,
+      operationHashRoot,
+      Buffer.from(projectId),
+      parentHash,
+    ),
+  );
 };
 
 export class PoiBlock implements ProofOfIndex {
@@ -33,7 +41,7 @@ export class PoiBlock implements ProofOfIndex {
     hash: Uint8Array,
     parentHash: Uint8Array,
     operationHashRoot: Uint8Array,
-    projectId: string
+    projectId: string,
   ) {
     this.id = id;
     this.chainBlockHash = chainBlockHash;
@@ -48,16 +56,29 @@ export class PoiBlock implements ProofOfIndex {
     chainBlockHash: string | Uint8Array,
     operationHashRoot: Uint8Array,
     parentHash: Uint8Array,
-    projectId: string
+    projectId: string,
   ): PoiBlock {
-    const _poiBlockHash = poiBlockHash(id, chainBlockHash, operationHashRoot, parentHash, projectId);
+    const _poiBlockHash = poiBlockHash(
+      id,
+      chainBlockHash,
+      operationHashRoot,
+      parentHash,
+      projectId,
+    );
     let _chainBlockHash: Uint8Array;
     if (isHex(chainBlockHash)) {
       _chainBlockHash = hexToU8a(chainBlockHash);
     } else if (isU8a(chainBlockHash)) {
       _chainBlockHash = chainBlockHash;
     }
-    const poiBlock = new PoiBlock(id, _chainBlockHash, _poiBlockHash, parentHash, operationHashRoot, projectId);
+    const poiBlock = new PoiBlock(
+      id,
+      _chainBlockHash,
+      _poiBlockHash,
+      parentHash,
+      operationHashRoot,
+      projectId,
+    );
     return poiBlock;
   }
 }

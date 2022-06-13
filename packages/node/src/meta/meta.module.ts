@@ -7,14 +7,16 @@ import {
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { FetchModule } from '../indexer/fetch.module';
-import { MetricEventListener } from './event.listener';
+import {
+  MetricEventListener,
+  ReadyController,
+  ReadyService,
+} from '@subql/node-core/meta';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 import { MmrQueryController } from './mmrQuery.controller';
-import { ReadyController } from './ready.controller';
-import { ReadyService } from './ready.service';
 
 @Module({
   imports: [PrometheusModule.register(), FetchModule],

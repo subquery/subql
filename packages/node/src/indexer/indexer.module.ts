@@ -4,7 +4,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { DbModule } from '../db/db.module';
+import { DbModule } from '@subql/node-core/db';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

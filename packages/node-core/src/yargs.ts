@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {hideBin} from 'yargs/helpers';
+import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -47,6 +47,12 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Allows usage of any built-in module within the sandbox',
     },
+    subscription: {
+      demandOption: false,
+      describe: 'Enable subscription by create notification triggers',
+      type: 'boolean',
+      default: false,
+    },
     'batch-size': {
       demandOption: false,
       describe: 'Batch size of blocks to fetch in one round',
@@ -65,7 +71,8 @@ export function getYargsOption() {
     },
     debug: {
       demandOption: false,
-      describe: 'Show debug information to console output. will forcefully set log level to debug',
+      describe:
+        'Show debug information to console output. will forcefully set log level to debug',
       type: 'boolean',
       default: false,
     },
@@ -110,6 +117,11 @@ export function getYargsOption() {
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'dictionary-timeout': {
+      demandOption: false,
+      describe: 'Max timeout for dictionary query',
+      type: 'number',
+    },
     'mmr-path': {
       alias: 'm',
       demandOption: false,
@@ -132,6 +144,12 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'The port the service will bind to',
       type: 'number',
+    },
+    'disable-historical': {
+      demandOption: false,
+      default: true,
+      describe: 'Disable storing historical state entities',
+      type: 'boolean',
     },
   });
 }

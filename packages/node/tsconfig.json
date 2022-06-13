@@ -10,6 +10,7 @@
   "references": [
     { "path": "../common" },
     { "path": "../common-substrate" },
+    { "path": "../node-core" },
     { "path": "../types" },
     { "path": "../utils" }
   ],
