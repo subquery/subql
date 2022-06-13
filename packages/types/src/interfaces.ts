@@ -24,30 +24,32 @@ export interface Store {
 
 export interface CosmosBlock {
   block: Block;
-  txs: TxData[];
+  txs: CosmosTransaction[];
+  msgs: CosmosMessage[];
+  events: CosmosEvent[];
 }
 
 export interface CosmosTransaction {
   idx: number;
-  block: CosmosBlock;
   hash: string;
   tx: TxData;
   decodedTx: DecodedTxRaw;
+  msgs: CosmosMessage[];
+  events: CosmosEvent[];
 }
 
 export interface CosmosMessage {
   idx: number;
-  block: CosmosBlock;
-  tx: CosmosTransaction;
+  txHash: string;
   msg: any;
+  events: CosmosEvent[];
 }
 
 export interface CosmosEvent {
   idx: number;
-  block: CosmosBlock;
-  tx: CosmosTransaction;
-  msg: CosmosMessage;
+  txHash: string;
   log: Log;
+  msg: CosmosMessage;
   event: Event;
 }
 
