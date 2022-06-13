@@ -31,6 +31,7 @@ export interface IConfig {
   readonly proofOfIndex: boolean;
   readonly mmrPath?: string;
   readonly ipfs?: string;
+  readonly dictionaryTimeout: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -45,6 +46,7 @@ const DEFAULT_CONFIG = {
   indexCountLimit: 10,
   timestampField: true,
   proofOfIndex: false,
+  dictionaryTimeout: 30,
 };
 
 export class NodeConfig implements IConfig {
@@ -129,6 +131,10 @@ export class NodeConfig implements IConfig {
 
   get proofOfIndex(): boolean {
     return this._config.proofOfIndex;
+  }
+
+  get dictionaryTimeout(): number {
+    return this._config.dictionaryTimeout;
   }
 
   get mmrPath(): string {

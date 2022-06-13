@@ -6,15 +6,17 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
+import {
+  MetricEventListener,
+  ReadyController,
+  ReadyService,
+} from '@subql/node-core/meta';
 import { IndexerModule } from '../indexer/indexer.module';
-import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 import { MmrQueryController } from './mmrQuery.controller';
-import { ReadyController } from './ready.controller';
-import { ReadyService } from './ready.service';
 
 @Module({
   imports: [PrometheusModule.register(), IndexerModule],

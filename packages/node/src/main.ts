@@ -3,10 +3,10 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
+import { getYargsOption } from '@subql/node-core';
 import { AppModule } from './app.module';
 import { IndexerManager } from './indexer/indexer.manager';
 import { getLogger, NestLogger } from './utils/logger';
-import { getYargsOption } from './yargs';
 
 const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');

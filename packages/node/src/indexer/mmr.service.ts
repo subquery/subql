@@ -8,12 +8,12 @@ import { DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME } from '@subql/common';
 import { MMR, FileBasedDb } from '@subql/x-merkle-mountain-range';
 import { keccak256 } from 'js-sha3';
 import { Sequelize, Op } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
+import { delay } from '@subql/node-core/utils';
+import { MetadataFactory, MetadataRepo } from '@subql/node-core/indexer/entities';
+import { PoiFactory, PoiRepo, ProofOfIndex } from '@subql/node-core/indexer/entities';
 import { MmrPayload, MmrProof } from './events';
 const logger = getLogger('mmr');
 

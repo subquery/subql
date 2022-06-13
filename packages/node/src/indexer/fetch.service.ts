@@ -21,25 +21,23 @@ import {
   SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
+import { getYargsOption } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { BlockedQueue } from '@subql/node-core/indexer';
+import { delay } from '@subql/node-core/utils';
 import {
   DictionaryQueryEntry,
   SubstrateBlock,
   SubstrateCustomHandler,
 } from '@subql/types';
-
 import { MetaData } from '@subql/utils';
-import { isUndefined, range, sortBy, template, uniqBy } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
+import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
-import { calcInterval } from '../utils/substrate';
-import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import { BlockedQueue } from './BlockedQueue';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';

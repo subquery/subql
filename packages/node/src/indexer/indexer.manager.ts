@@ -24,13 +24,13 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core/configure';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
+import { SubqueryRepo } from '@subql/node-core/entities';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
-import { getYargsOption } from '../yargs';
+import { getYargsOption } from '@subql/node-core';
 import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -41,7 +41,7 @@ import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
+import { PoiBlock } from '@subql/node-core/indexer';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';

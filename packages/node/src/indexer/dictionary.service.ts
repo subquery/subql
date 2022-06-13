@@ -17,7 +17,7 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { timeout } from '../utils/promise';
-import { getYargsOption } from '../yargs';
+import { getYargsOption } from '@subql/node-core';
 
 export type SpecVersion = {
   id: string;
