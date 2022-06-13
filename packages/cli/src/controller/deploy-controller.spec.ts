@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V, delay} from '@subql/common';
+import {delay} from '@subql/common';
 import {deploymentSpec} from '../types';
 import {
   deployToHostedService,
@@ -9,6 +9,9 @@ import {
   deleteDeployment,
   deploymentStatus,
   ipfsCID_validate,
+  getEndpoint,
+  getDictEndpoint,
+  getImage_v,
 } from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
 
@@ -47,16 +50,21 @@ describe('CLI deploy, delete, promote', () => {
   it('Deploy to Hosted Service and Delete', async () => {
     const {ipfs, org, project_name} = projectSpec;
 
+    const validator = await ipfsCID_validate(ipfs, testAuth);
+    const indexer_v = await getImage_v(validator.runner.node.name, validator.runner.node.version, testAuth);
+    const query_v = await getImage_v(validator.runner.query.name, validator.runner.query.version, testAuth);
+    const endpoint = await getEndpoint(validator.chainId);
+    const dictEndpoint = await getDictEndpoint(validator.chainId);
     const deploy_output = await deployToHostedService(
       org,
       project_name,
       testAuth,
       ipfs,
-      INDEXER_V,
-      QUERY_V,
-      DEFAULT_ENDPOINT,
+      indexer_v[0],
+      query_v[0],
+      endpoint,
       'stage',
-      DEFAULT_DICT_ENDPOINT
+      dictEndpoint
     );
 
     const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id);
@@ -65,21 +73,26 @@ describe('CLI deploy, delete, promote', () => {
   });
 
   // Only test locally
-  it.skip('Promote Deployment', async () => {
+  it('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
     let status: string;
     let attempt = 0;
+    const validator = await ipfsCID_validate(ipfs, testAuth);
+    const indexer_v = await getImage_v(validator.runner.node.name, validator.runner.node.version, testAuth);
+    const query_v = await getImage_v(validator.runner.query.name, validator.runner.query.version, testAuth);
+    const endpoint = await getEndpoint(validator.chainId);
+    const dictEndpoint = await getDictEndpoint(validator.chainId);
 
     const deploy_output = await deployToHostedService(
       org,
       project_name,
       testAuth,
       ipfs,
-      INDEXER_V,
-      QUERY_V,
-      DEFAULT_ENDPOINT,
+      indexer_v[0],
+      query_v[0],
+      endpoint,
       'stage',
-      DEFAULT_DICT_ENDPOINT
+      dictEndpoint
     );
 
     while (status !== 'running') {
@@ -98,8 +111,14 @@ describe('CLI deploy, delete, promote', () => {
     expect(validator.valid).toBe(true);
   });
 
-  it('should return false for invalid ipfsCID', async () => {
-    const validator = await ipfsCID_validate('fake_ipfs_cid', testAuth);
-    expect(validator).toThrow('Invalid or Failed to validate IPFS CID');
+  it('get Endpoint', async () => {
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth);
+    const endpoint = await getEndpoint(validator.chainId);
+    expect(endpoint).toBe('wss://polkadot.api.onfinality.io/public-ws');
+  });
+  it('get DictEndpoint', async () => {
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth);
+    const dict = await getDictEndpoint(validator.chainId);
+    expect(dict).toBe('https://api.subquery.network/sq/subquery/polkadot-dictionary');
   });
 });

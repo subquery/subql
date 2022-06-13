@@ -18,11 +18,6 @@ export const MMR_AWAIT_TIME = 2;
 
 //DEPLOYMENT
 export const DEFAULT_DEPLOYMENT_TYPE = 'primary';
-export const INDEXER_V = 'v1.1.2';
-export const QUERY_V = 'v1.1.1';
-export const DEFAULT_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
-export const DEFAULT_DICT_ENDPOINT = 'https://api.subquery.network/sq/subquery/polkadot-dictionary';
-
 //PROJECT
 export const ROOT_API_URL_DEV = 'https://api.thechaindata.com/';
 export const ROOT_API_URL_PROD = 'https://api.subquery.network/';

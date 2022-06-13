@@ -68,13 +68,11 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      const default_endpoint = await getEndpoint(validator.chainId);
-      endpoint = await cli.prompt('Enter endpoint', {default: default_endpoint, required: false});
+      endpoint = await cli.prompt('Enter endpoint', {default: await getEndpoint(validator.chainId), required: false});
     }
 
     if (!dict) {
-      const default_dict = await getDictEndpoint(validator.chainId);
-      dict = await cli.prompt('Enter dictionary', {default: default_dict, required: false});
+      dict = await cli.prompt('Enter dictionary', {default: await getDictEndpoint(validator.chainId), required: false});
     }
 
     if (!indexer_v) {
