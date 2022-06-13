@@ -4,16 +4,13 @@
 import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {DEFAULT_DEPLOYMENT_TYPE} from '@subql/common';
+import {DEFAULT_DEPLOYMENT_TYPE, DEFAULT_DICT_ENDPOINT, DEFAULT_ENDPOINT, INDEXER_V, QUERY_V} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
 import {
   deleteDeployment,
   deployToHostedService,
-  getDictEndpoint,
-  getEndpoint,
-  getImage_v,
   ipfsCID_validate,
   promoteDeployment,
 } from '../../controller/deploy-controller';
@@ -45,8 +42,8 @@ export default class Deploy extends Command {
     let deploymentID: number;
 
     let ipfsCID: string;
-    let indexer_v: string;
-    let query_v: string;
+    let indexerImageVersion: string;
+    let queryImageVersion: string;
     let endpoint: string;
     let type: string;
     let dictEndpoint: string;
@@ -95,30 +92,14 @@ export default class Deploy extends Command {
         if (!validator) {
           throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
         }
-
-        const indexer_res = await inquirer.prompt({
-          name: 'indexer_version',
-          message: 'Enter indexer version',
-          type: 'list',
-          choices: await getImage_v(validator.runner.node.name, validator.runner.node.version, authToken),
-        });
-        indexer_v = indexer_res.indexer_version;
-
-        const query_res = await inquirer.prompt({
-          name: 'query_version',
-          message: 'Enter indexer version',
-          type: 'list',
-          choices: await getImage_v(validator.runner.query.name, validator.runner.query.version, authToken),
-        });
-        query_v = query_res.query_version;
-
-        endpoint = await cli.prompt('Enter endpoint', {default: await getEndpoint(validator.chainId), required: false});
-        dictEndpoint = await cli.prompt('Enter dictionary', {
-          default: await getDictEndpoint(validator.chainId),
+        indexerImageVersion = await cli.prompt('Enter indexer image version', {default: INDEXER_V, required: false});
+        queryImageVersion = await cli.prompt('Enter query image version', {default: QUERY_V, required: false});
+        endpoint = await cli.prompt('Enter endpoint', {default: DEFAULT_ENDPOINT, required: false});
+        type = await cli.prompt('Enter type', {default: DEFAULT_DEPLOYMENT_TYPE, required: false});
+        dictEndpoint = await cli.prompt('Enter dict endpoint', {
+          default: DEFAULT_DICT_ENDPOINT,
           required: false,
         });
-
-        type = await cli.prompt('Enter type', {default: DEFAULT_DEPLOYMENT_TYPE, required: false});
 
         const handler = Deploy.optionMapping[userOptions];
         const deployment_output = await handler(
@@ -126,8 +107,8 @@ export default class Deploy extends Command {
           project_name,
           authToken,
           ipfsCID,
-          indexer_v,
-          query_v,
+          indexerImageVersion,
+          queryImageVersion,
           endpoint,
           type,
           dictEndpoint
