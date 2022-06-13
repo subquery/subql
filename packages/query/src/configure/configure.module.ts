@@ -25,6 +25,8 @@ export class ConfigureModule {
       host: config.get('DB_HOST_READ') ?? config.get('DB_HOST'),
       port: config.get('DB_PORT'),
       database: config.get('DB_DATABASE'),
+      max: opts['max-connection'],
+      statement_timeout: opts['query-timeout'],
     });
     pgPool.on('error', (err) => {
       // tslint:disable-next-line no-console
