@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ROOT_API_URL_PROD} from '@subql/common';
 import axios from 'axios';
+import {ROOT_API_URL_DEV, ROOT_API_URL_PROD} from '../constants';
 
 interface createProjectType {
   key: string;
@@ -15,7 +15,8 @@ export async function createProject(
   authToken: string,
   gitRepository: string,
   description: string,
-  apiVersion: string
+  apiVersion: string,
+  test_case?: boolean
 ): Promise<createProjectType> {
   try {
     const result = (
@@ -24,7 +25,7 @@ export async function createProject(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${ROOT_API_URL_PROD}subqueries`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries`,
         data: {
           apiVersion: `v${apiVersion}`,
           description: description,
@@ -42,7 +43,12 @@ export async function createProject(
   }
 }
 
-export async function deleteProject(authToken: string, organization: string, project_name: string): Promise<string> {
+export async function deleteProject(
+  authToken: string,
+  organization: string,
+  project_name: string,
+  test_case?: boolean
+): Promise<string> {
   const key = `${organization}/${project_name}`;
   try {
     await axios({
@@ -50,7 +56,7 @@ export async function deleteProject(authToken: string, organization: string, pro
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `${ROOT_API_URL_PROD}subqueries/${key}`,
+      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}`,
     });
     return `${key}`;
   } catch (e) {

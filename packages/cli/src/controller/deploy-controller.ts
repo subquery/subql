@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ROOT_API_URL_PROD} from '@subql/common';
 import axios from 'axios';
+import {ROOT_API_URL_DEV, ROOT_API_URL_PROD} from '../constants';
 import {deploymentDataType, validateDataType} from '../types';
 
 export async function deployToHostedService(
@@ -14,7 +14,8 @@ export async function deployToHostedService(
   queryImageVersion: string,
   endpoint: string,
   type: string,
-  dictEndpoint: string
+  dictEndpoint: string,
+  test_case?: boolean
 ): Promise<deploymentDataType> {
   const key = `${org}/${project_name}`;
 
@@ -25,7 +26,7 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${ROOT_API_URL_PROD}v2/subqueries/${key}/deployments`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}v2/subqueries/${key}/deployments`,
         data: {
           version: ipfsCID,
           dictEndpoint: dictEndpoint,
@@ -50,7 +51,8 @@ export async function promoteDeployment(
   org: string,
   project_name: string,
   authToken: string,
-  deploymentId: number
+  deploymentId: number,
+  test_case?: boolean
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -59,7 +61,7 @@ export async function promoteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}/release`,
+      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}/release`,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -71,7 +73,8 @@ export async function deleteDeployment(
   org: string,
   project_name: string,
   authToken: string,
-  deploymentId: number
+  deploymentId: number,
+  test_case?: boolean
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -80,7 +83,7 @@ export async function deleteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}`,
+      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}`,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -92,7 +95,8 @@ export async function deploymentStatus(
   org: string,
   project_name: string,
   authToken: string,
-  deployID: number
+  deployID: number,
+  test_case?: boolean
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -102,7 +106,7 @@ export async function deploymentStatus(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `${ROOT_API_URL_PROD}subqueries/${key}/deployments/${deployID}/status`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deployID}/status`,
       })
     ).data;
     return `${result.status}`;
@@ -111,7 +115,7 @@ export async function deploymentStatus(
   }
 }
 
-export async function ipfsCID_validate(cid: string, authToken: string): Promise<validateDataType> {
+export async function ipfsCID_validate(cid: string, authToken: string, test_case?: boolean): Promise<validateDataType> {
   try {
     const result = (
       await axios({
@@ -119,7 +123,7 @@ export async function ipfsCID_validate(cid: string, authToken: string): Promise<
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${ROOT_API_URL_PROD}ipfs/deployment-id/${cid}/validate`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}ipfs/deployment-id/${cid}/validate`,
       })
     ).data;
     return result;
@@ -128,21 +132,12 @@ export async function ipfsCID_validate(cid: string, authToken: string): Promise<
   }
 }
 
-// get Dictionary Endpoint
-// https://api.thechaindata.com/subqueries/dictionaries
-
-interface endpointType {
-  network: string;
-  endpoint: string;
-  chainId: string;
-}
-
-export async function getDictEndpoint(chainId: string): Promise<string> {
+export async function getDictEndpoint(chainId: string, test_case?: boolean): Promise<string> {
   try {
     const result = (
       await axios({
         method: 'get',
-        url: `${ROOT_API_URL_PROD}subqueries/dictionaries`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/dictionaries`,
       })
     ).data;
     const filtered = result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
@@ -152,12 +147,12 @@ export async function getDictEndpoint(chainId: string): Promise<string> {
   }
 }
 
-export async function getEndpoint(chainId: string): Promise<string> {
+export async function getEndpoint(chainId: string, test_case?: boolean): Promise<string> {
   try {
     const result = (
       await axios({
         method: 'get',
-        url: `${ROOT_API_URL_PROD}subqueries/network-endpoints`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/network-endpoints`,
       })
     ).data;
     return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
@@ -166,17 +161,29 @@ export async function getEndpoint(chainId: string): Promise<string> {
   }
 }
 
-export async function getImage_v(name: string, version: string, authToken: string): Promise<string[]> {
+export async function getImage_v(
+  name: string,
+  version: string,
+  authToken: string,
+  test_case?: boolean
+): Promise<string[]> {
   try {
     const result = (
       await axios({
         headers: {Authorization: `Bearer ${authToken}`},
         method: 'get',
-        url: `${ROOT_API_URL_PROD}info/images/${encodeURIComponent(name)}?version=${encodeURIComponent(version)}`,
+        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}info/images/${encodeURIComponent(
+          name
+        )}?version=${encodeURIComponent(version)}`,
       })
     ).data;
     return result;
   } catch (e) {
     throw new Error(`Failed to get image: ${e.message}`);
   }
+}
+interface endpointType {
+  network: string;
+  endpoint: string;
+  chainId: string;
 }

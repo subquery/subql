@@ -44,3 +44,15 @@ export async function checkToken(authToken_ENV: string, token_path: string): Pro
     return authToken;
   }
 }
+
+export function split_arr(arr: string[]): string[] {
+  const newArr: string[] = [];
+  for (let i = 0; i < arr.length; i++) {
+    if (arr[i].includes('--options')) {
+      arr.splice(i, 1);
+    }
+    const split = arr[i].split('=');
+    newArr.push(...split);
+  }
+  return newArr;
+}

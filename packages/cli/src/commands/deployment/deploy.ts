@@ -3,10 +3,10 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {checkToken, DEFAULT_DEPLOYMENT_TYPE, valueOrPrompt} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
+import {DEFAULT_DEPLOYMENT_TYPE} from '../../constants';
 import {
   deployToHostedService,
   ipfsCID_validate,
@@ -14,6 +14,7 @@ import {
   getDictEndpoint,
   getImage_v,
 } from '../../controller/deploy-controller';
+import {checkToken, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 

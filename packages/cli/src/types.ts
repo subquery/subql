@@ -48,7 +48,8 @@ export interface validateDataType {
   valid: boolean;
   manifestFile: string | null;
   chainId: string | null;
-  runner: RunnerSpecs | null;
+  runner?: RunnerSpecs | null;
+  manifestRunner?: RunnerSpecs | null;
   errorMessage?: string;
 }
 

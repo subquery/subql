@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {delay} from '@subql/common';
+import {delay} from '../utils';
 import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
@@ -30,10 +30,11 @@ describe('CLI create project and delete project', () => {
       testAuth,
       repository,
       description,
-      apiVersion
+      apiVersion,
+      true
     );
     await delay(10);
-    const delete_project = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name);
+    const delete_project = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, true);
     expect(create_project.key).toMatch('bz888/mocked_project');
     expect(delete_project).toMatch('bz888/mocked_project');
   });

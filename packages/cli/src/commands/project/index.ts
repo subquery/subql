@@ -3,10 +3,11 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {checkToken} from '@subql/common';
+// import {checkToken} from '@subql/common';
 import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
 import {createProject, deleteProject} from '../../controller/project-controller';
+import {checkToken} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 

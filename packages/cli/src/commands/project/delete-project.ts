@@ -3,8 +3,8 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {checkToken, valueOrPrompt} from '@subql/common';
 import {deleteProject} from '../../controller/project-controller';
+import {checkToken, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
