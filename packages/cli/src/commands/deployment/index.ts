@@ -47,6 +47,7 @@ export default class Deployment extends Command {
     this.log(`Selected deployment option: ${userOptions}`);
     try {
       const handler = Deployment.optionMapping[userOptions];
+      // removes arguments -> deployment and everything before it from the process.argv
       const stripped_argv: string[] = process.argv.filter(
         (v, idx) => v !== 'deployment' && idx > process.argv.indexOf('deployment') && !v.includes('--options')
       );

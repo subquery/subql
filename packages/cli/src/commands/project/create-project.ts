@@ -12,12 +12,10 @@ export default class Create_project extends Command {
   static description = 'Create Project on Hosted Service';
 
   static flags = {
-    // required values
     org: Flags.string({description: 'Enter organization name'}),
     project_name: Flags.string({description: 'Enter project name'}),
     gitRepo: Flags.string({description: 'Enter git repository'}),
 
-    // optional values
     logoURL: Flags.string({description: 'Enter logo URL', default: '', required: false}),
     subtitle: Flags.string({description: 'Enter subtitle', default: '', required: false}),
     description: Flags.string({description: 'Enter description', default: '', required: false}),

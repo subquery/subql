@@ -1,22 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import {Command, Flags} from '@oclif/core';
-// import {checkToken} from '@subql/common';
-import cli from 'cli-ux';
 import * as inquirer from 'inquirer';
-import {createProject, deleteProject} from '../../controller/project-controller';
-import {checkToken} from '../../utils';
-
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
+import Create_project from './create-project';
+import Delete_project from './delete-project';
 
 type projectOptions = 'create' | 'delete';
-
-const optionMapping = {
-  create: createProject,
-  delete: deleteProject,
-};
 
 export default class Project extends Command {
   static description = 'Create/Delete project';
@@ -24,21 +14,17 @@ export default class Project extends Command {
     options: Flags.string({
       options: ['create', 'delete'],
     }),
+    ...Delete_project.flags,
+    ...Create_project.flags,
   };
-
+  static optionMapping = {
+    create: Create_project,
+    delete: Delete_project,
+  };
   async run(): Promise<void> {
     const {flags} = await this.parse(Project);
     const option = flags.options;
-
-    let org: string;
-    let project_name: string;
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
-    let gitRepository: string;
-
-    let logoURL: string;
-    let subtitle: string;
-    let description: string;
-    let apiVersion: string;
+    let userOptions: projectOptions;
 
     if (!option) {
       const response = await inquirer.prompt([
@@ -49,41 +35,24 @@ export default class Project extends Command {
           choices: [{name: 'create'}, {name: 'delete'}],
         },
       ]);
+      userOptions = response.projectOption;
+    } else {
+      userOptions = option as projectOptions;
+    }
+    this.log(`Selected project option: ${userOptions}`);
 
-      const userOptions: projectOptions = response.projectOption;
+    try {
+      const handler = Project.optionMapping[userOptions];
+      // removes arguments -> deployment and everything before it from the process.argv
+      const stripped_argv: string[] = process.argv.filter(
+        (v, idx) => v !== 'project' && idx > process.argv.indexOf('project') && !v.includes('--options')
+      );
 
-      this.log(`Selected project option: ${userOptions}`);
-
-      if (userOptions === 'create') {
-        org = await cli.prompt('Enter organization name');
-
-        subtitle = await cli.prompt('Enter subtitle', {default: '', required: false});
-        logoURL = await cli.prompt('Enter logo URL', {default: '', required: false});
-        project_name = await cli.prompt('Enter project name');
-        gitRepository = await cli.prompt('Enter git repository', {
-          default: 'https://github.com/subquery/subql-starter',
-        });
-        description = await cli.prompt('Enter description', {default: '', required: false});
-        apiVersion = await cli.prompt('Enter API version', {default: '2', required: false});
-        const handler = optionMapping[userOptions];
-        const create_output = await handler(
-          org,
-          subtitle,
-          logoURL,
-          project_name,
-          authToken,
-          gitRepository,
-          description,
-          apiVersion
-        );
-        this.log(`Project key: ${create_output}`);
-      } else {
-        org = await cli.prompt('Enter organization name');
-        project_name = await cli.prompt('Enter project name');
-        const handler = optionMapping[userOptions];
-        const delete_output = await handler(authToken, org, project_name);
-        this.log(`Project: ${delete_output} has been deleted`);
-      }
+      const output_arr: string[] = [];
+      stripped_argv.map((v: string) => v.split('=').map((x: string) => output_arr.push(x)));
+      await handler.run(output_arr);
+    } catch (e) {
+      this.log(`Failed to execute command: ${userOptions} error: ${e}`);
     }
   }
 }
