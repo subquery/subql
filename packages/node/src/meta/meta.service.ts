@@ -17,7 +17,7 @@ import { StoreService } from '../indexer/store.service';
 const UPDATE_HEIGHT_INTERVAL = 60000;
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: cosmosSdkVersion } = require('@cosmjs/stargate/package.json');
+const { version: polkadotSdkVersion } = require('@polkadot/api/package.json');
 const { version: packageVersion } = require('../../package.json');
 
 @Injectable()
@@ -45,7 +45,7 @@ export class MetaService {
       lastProcessedHeight: this.lastProcessedHeight,
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
-      cosmosSdkVersion,
+      polkadotSdkVersion,
       apiConnected: this.apiConnected,
       injectedApiConnected: this.injectedApiConnected,
       usingDictionary: this.usingDictionary,
@@ -54,18 +54,8 @@ export class MetaService {
   }
 
   @Interval(UPDATE_HEIGHT_INTERVAL)
-  async checkHeight() {
-    await Promise.all([
-      this.storeService.setMetadata(
-        'lastProcessedHeight',
-        this.lastProcessedHeight,
-      ),
-      this.storeService.setMetadata(
-        'lastProcessedTimestamp',
-        this.lastProcessedTimestamp,
-      ),
-      this.storeService.setMetadata('targetHeight', this.targetHeight),
-    ]);
+  async getTargetHeight(): Promise<void> {
+    await this.storeService.setMetadata('targetHeight', this.targetHeight);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)

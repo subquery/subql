@@ -4,7 +4,7 @@
 import assert from 'assert';
 import { sha256 } from '@cosmjs/crypto';
 import { toHex } from '@cosmjs/encoding';
-import { DecodedTxRaw, decodeTxRaw } from '@cosmjs/proto-signing';
+import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
 import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
@@ -136,105 +136,82 @@ export async function fetchCosmosBlocksArray(
   );
 }
 
-export function wrapBlock(
-  block: Block,
-  txs: CosmosTransaction[],
-  msgs: CosmosMessage[],
-  events: CosmosEvent[],
-): CosmosBlock {
+export function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
   return {
     block: block,
     txs: txs,
-    msgs: msgs,
-    events: events,
   };
 }
 
 export function wrapTx(
-  events: CosmosEvent[],
-  messages: CosmosMessage[],
-  block: Block,
+  block: CosmosBlock,
   txResults: TxData[],
 ): CosmosTransaction[] {
-  return txResults.map((tx, idx) => {
-    const hash = toHex(sha256(block.txs[idx])).toUpperCase();
-    return {
-      idx,
-      tx,
-      hash: hash,
-      decodedTx: decodeTxRaw(block.txs[idx]),
-      msgs: messages.filter((msg) => msg.txHash === hash),
-      events: events.filter((evt) => evt.txHash === hash),
-    };
-  });
+  return txResults.map((tx, idx) => ({
+    idx,
+    block: block,
+    tx,
+    hash: toHex(sha256(block.block.txs[idx])).toUpperCase(),
+    decodedTx: decodeTxRaw(block.block.txs[idx]),
+  }));
 }
 
 function wrapCosmosMsg(
+  block: CosmosBlock,
+  tx: CosmosTransaction,
   idx: number,
-  tx: {
-    decodedTx: DecodedTxRaw;
-    hash: string;
-  },
-  events: CosmosEvent[],
   api: CosmosClient,
 ): CosmosMessage {
   const rawMessage = tx.decodedTx.body.messages[idx];
   return {
     idx,
-    txHash: tx.hash,
+    tx: tx,
+    block: block,
     msg: {
       typeUrl: rawMessage.typeUrl,
       ...api.decodeMsg<any>(rawMessage),
     },
-    events: events.filter(
-      (event) => event.log.msg_index === idx && event.txHash === tx.hash,
-    ),
   };
 }
 
 function wrapMsg(
-  events: CosmosEvent[],
-  txs: {
-    decodedTx: DecodedTxRaw;
-    hash: string;
-  }[],
+  block: CosmosBlock,
+  txs: CosmosTransaction[],
   api: CosmosClient,
 ): CosmosMessage[] {
   const msgs: CosmosMessage[] = [];
   for (const tx of txs) {
     for (let i = 0; i < tx.decodedTx.body.messages.length; i++) {
-      msgs.push(wrapCosmosMsg(i, tx, events, api));
+      msgs.push(wrapCosmosMsg(block, tx, i, api));
     }
   }
   return msgs;
 }
 
 export function wrapEvent(
-  txs: {
-    result: TxData;
-    decodedTx: DecodedTxRaw;
-    hash: string;
-  }[],
+  block: CosmosBlock,
+  txs: CosmosTransaction[],
   api: CosmosClient,
 ): CosmosEvent[] {
   const events: CosmosEvent[] = [];
   for (const tx of txs) {
     let logs: Log[];
     try {
-      logs = parseRawLog(tx.result.log) as Log[];
+      logs = parseRawLog(tx.tx.log) as Log[];
     } catch (e) {
       //parsing fails if transaction had failed.
       logger.warn(e, 'Failed to parse raw log');
       continue;
     }
     for (const log of logs) {
-      const msg = wrapCosmosMsg(log.msg_index, tx, [], api);
+      const msg = wrapCosmosMsg(block, tx, log.msg_index, api);
       for (let i = 0; i < log.events.length; i++) {
         const event: CosmosEvent = {
           idx: i,
-          txHash: tx.hash,
-          log: log,
-          msg: msg,
+          msg,
+          tx,
+          block,
+          log,
           event: log.events[i],
         };
         events.push(event);
@@ -258,32 +235,11 @@ export async function fetchBlocksBatches(
 
     // Make non-readonly
     const results = [...blockResults.results];
-    const decodedTxs = blockInfo.txs.map((tx) => decodeTxRaw(tx));
 
-    const events = wrapEvent(
-      results.map((tx, idx) => {
-        return {
-          result: tx,
-          decodedTx: decodedTxs[idx],
-          hash: toHex(sha256(blockInfo.txs[idx])).toUpperCase(),
-        };
-      }),
-      api,
-    );
-
-    const messages = wrapMsg(
-      events,
-      decodedTxs.map((tx, idx) => {
-        return {
-          decodedTx: tx,
-          hash: toHex(sha256(blockInfo.txs[idx])).toUpperCase(),
-        };
-      }),
-      api,
-    );
-
-    const transactions = wrapTx(events, messages, blockInfo, results);
-    const block = wrapBlock(blockInfo, transactions, messages, events);
+    const block = wrapBlock(blockInfo, results);
+    const transactions = wrapTx(block, results);
+    const messages = wrapMsg(block, transactions, api);
+    const events = wrapEvent(block, transactions, api);
 
     return <BlockContent>{
       block,

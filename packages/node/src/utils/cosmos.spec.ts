@@ -83,9 +83,8 @@ describe('CosmosUtils', () => {
     const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
     const msg: CosmosMessage = {
       idx: 0,
-      txHash:
-        '1A796F30DD866CA2E9A866084CB10BF13B5F6502256D6503E8B1BAC358B15701',
-      events: [] as CosmosEvent[],
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
       msg: {
         typeUrl: decodedTx.body.messages[0].typeUrl,
         ...decodedMsg,
@@ -99,9 +98,8 @@ describe('CosmosUtils', () => {
     const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
     const msg: CosmosMessage = {
       idx: 0,
-      txHash:
-        '1A796F30DD866CA2E9A866084CB10BF13B5F6502256D6503E8B1BAC358B15701',
-      events: [] as CosmosEvent[],
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
       msg: {
         typeUrl: decodedTx.body.messages[0].typeUrl,
         ...decodedMsg,
@@ -114,12 +112,14 @@ describe('CosmosUtils', () => {
   it('does not wrap events of failed transaction', async () => {
     const blockInfo = await api.blockResults(TEST_FAILTX_BLOCKNUMBER);
     const failedTx = blockInfo.results[2];
-    const tx = {
-      result: failedTx,
+    const tx: CosmosTransaction = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: failedTx,
       hash: '',
       decodedTx: {} as DecodedTxRaw,
     };
-    const events = wrapEvent([tx], api);
+    const events = wrapEvent({} as CosmosBlock, [tx], api);
     expect(events.length).toEqual(0);
   });
 });

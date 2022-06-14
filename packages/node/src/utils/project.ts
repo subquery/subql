@@ -86,7 +86,10 @@ export async function processNetworkConfig(
   delete network.genesisHash;
 
   const chainTypes: Map<string, CosmosChainType> = new Map();
-
+  if (!network.chainTypes) {
+    network.chainTypes = chainTypes;
+    return network;
+  }
   for (const [key, value] of network.chainTypes) {
     chainTypes.set(key, {
       ...value,
