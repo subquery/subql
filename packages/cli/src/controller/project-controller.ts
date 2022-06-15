@@ -16,7 +16,7 @@ export async function createProject(
   gitRepository: string,
   description: string,
   apiVersion: string,
-  test_case?: boolean
+  url: string
 ): Promise<createProjectType> {
   try {
     const result = (
@@ -25,7 +25,8 @@ export async function createProject(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries`,
+        url: 'subqueries',
+        baseURL: url,
         data: {
           apiVersion: `v${apiVersion}`,
           description: description,
@@ -47,7 +48,7 @@ export async function deleteProject(
   authToken: string,
   organization: string,
   project_name: string,
-  test_case?: boolean
+  url: string
 ): Promise<string> {
   const key = `${organization}/${project_name}`;
   try {
@@ -56,7 +57,8 @@ export async function deleteProject(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}`,
+      url: `subqueries/${key}`,
+      baseURL: url,
     });
     return `${key}`;
   } catch (e) {

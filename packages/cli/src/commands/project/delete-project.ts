@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {ROOT_API_URL_PROD} from '../../constants';
 import {deleteProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
@@ -25,7 +26,9 @@ export default class Delete_project extends Command {
     org_input = await valueOrPrompt(org_input, 'Enter organisation', 'Organisation is required');
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
 
-    const deleteStatus = await deleteProject(authToken, org_input, project_name).catch((e) => this.error(e));
+    const deleteStatus = await deleteProject(authToken, org_input, project_name, ROOT_API_URL_PROD).catch((e) =>
+      this.error(e)
+    );
     this.log(`Project: ${deleteStatus} has been deleted`);
   }
 }

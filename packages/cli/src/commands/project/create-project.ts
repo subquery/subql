@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
@@ -41,8 +42,10 @@ export default class Create_project extends Command {
       authToken,
       gitRepo_input,
       flags.description,
-      flags.apiVersion
+      flags.apiVersion,
+      ROOT_API_URL_PROD
     ).catch((e) => this.error(e));
-    this.log(`Successfully created project: ${result.key}`);
+    //  log url
+    this.log(`Successfully created project: ${JSON.stringify(result, null, 2)}`);
   }
 }

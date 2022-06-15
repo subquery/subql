@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {ROOT_API_URL_DEV} from '../constants';
 import {deploymentSpec} from '../types';
 import {delay} from '../utils';
 import {
@@ -28,13 +29,24 @@ const projectSpec: deploymentSpec = {
 };
 
 // Replace/Update your access token when test locally
+// const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 describe('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
     try {
-      await createProject(org, subtitle, logoURl, project_name, testAuth, repository, description, apiVersion, true);
+      await createProject(
+        org,
+        subtitle,
+        logoURl,
+        project_name,
+        testAuth,
+        repository,
+        description,
+        apiVersion,
+        ROOT_API_URL_DEV
+      );
     } catch (e) {
       console.warn(`Failed at create project ${project_name} ${e}`);
     }
@@ -42,7 +54,7 @@ describe('CLI deploy, delete, promote', () => {
 
   afterAll(async () => {
     try {
-      await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, true);
+      await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, ROOT_API_URL_DEV);
     } catch (e) {
       console.warn('Failed to delete project', e);
     }
@@ -51,21 +63,21 @@ describe('CLI deploy, delete, promote', () => {
   it('Deploy to Hosted Service and Delete', async () => {
     const {ipfs, org, project_name} = projectSpec;
 
-    const validator = await ipfsCID_validate(ipfs, testAuth, true);
+    const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
     const indexer_v = await getImage_v(
       validator.manifestRunner.node.name,
       validator.manifestRunner.node.version,
       testAuth,
-      true
+      ROOT_API_URL_DEV
     );
     const query_v = await getImage_v(
       validator.manifestRunner.query.name,
       validator.manifestRunner.query.version,
       testAuth,
-      true
+      ROOT_API_URL_DEV
     );
-    const endpoint = await getEndpoint(validator.chainId, true);
-    const dictEndpoint = await getDictEndpoint(validator.chainId, true);
+    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
+    const dictEndpoint = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
     const deploy_output = await deployToHostedService(
       org,
       project_name,
@@ -76,34 +88,34 @@ describe('CLI deploy, delete, promote', () => {
       endpoint,
       'stage',
       dictEndpoint,
-      true
+      ROOT_API_URL_DEV
     );
 
-    const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id, true);
+    const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
     expect(typeof deploy_output.id).toBe('number');
     expect(+del_output).toBe(deploy_output.id);
   });
 
   // Only test locally
-  it.skip('Promote Deployment', async () => {
+  it('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
     let status: string;
     let attempt = 0;
-    const validator = await ipfsCID_validate(ipfs, testAuth, true);
+    const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
     const indexer_v = await getImage_v(
       validator.manifestRunner.node.name,
       validator.manifestRunner.node.version,
       testAuth,
-      true
+      ROOT_API_URL_DEV
     );
     const query_v = await getImage_v(
       validator.manifestRunner.query.name,
       validator.manifestRunner.query.version,
       testAuth,
-      true
+      ROOT_API_URL_DEV
     );
-    const endpoint = await getEndpoint(validator.chainId, true);
-    const dictEndpoint = await getDictEndpoint(validator.chainId, true);
+    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
+    const dictEndpoint = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
 
     const deploy_output = await deployToHostedService(
       org,
@@ -115,37 +127,37 @@ describe('CLI deploy, delete, promote', () => {
       endpoint,
       'stage',
       dictEndpoint,
-      true
+      ROOT_API_URL_DEV
     );
 
     while (status !== 'running') {
       if (attempt >= 5) break;
       attempt = attempt + 1;
       await delay(30);
-      status = await deploymentStatus(org, project_name, testAuth, deploy_output.id, true);
+      status = await deploymentStatus(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
       if (status === 'running') {
-        const promote_output = await promoteDeployment(org, project_name, testAuth, deploy_output.id, true);
+        const promote_output = await promoteDeployment(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
         expect(+promote_output).toBe(deploy_output.id);
       }
     }
   });
   it('should return true for valid ipfsCID', async () => {
-    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, true);
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     expect(validator.valid).toBe(true);
   });
-  it('to throw error for invalid ipfsCID', async () => {
-    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, true);
-    expect(validator.valid).toBe(true);
-  });
+  // it('to throw error for invalid ipfsCID', async () => {
+  //   const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+  //   expect(validator.valid).toBe(true);
+  // });
 
   it('get Endpoint - polkadot', async () => {
-    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, true);
-    const endpoint = await getEndpoint(validator.chainId, true);
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
     expect(endpoint).toBe('wss://polkadot.api.onfinality.io/public-ws');
   });
   it('get DictEndpoint - polkadot', async () => {
-    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, true);
-    const dict = await getDictEndpoint(validator.chainId);
-    expect(dict).toBe('https://api.subquery.network/sq/subquery/polkadot-dictionary');
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+    const dict = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
+    expect(dict).toBe('https://api.subquery.network/sq/subquery/dictionary-polkadot');
   });
 });

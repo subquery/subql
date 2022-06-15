@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {ROOT_API_URL_DEV, ROOT_API_URL_PROD} from '../constants';
 import {deploymentDataType, validateDataType} from '../types';
 
 export async function deployToHostedService(
@@ -15,7 +14,7 @@ export async function deployToHostedService(
   endpoint: string,
   type: string,
   dictEndpoint: string,
-  test_case?: boolean
+  url: string
 ): Promise<deploymentDataType> {
   const key = `${org}/${project_name}`;
 
@@ -26,7 +25,8 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}v2/subqueries/${key}/deployments`,
+        url: `v2/subqueries/${key}/deployments`,
+        baseURL: url,
         data: {
           version: ipfsCID,
           dictEndpoint: dictEndpoint,
@@ -52,7 +52,7 @@ export async function promoteDeployment(
   project_name: string,
   authToken: string,
   deploymentId: number,
-  test_case?: boolean
+  url: string
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -61,7 +61,8 @@ export async function promoteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}/release`,
+      url: `subqueries/${key}/deployments/${deploymentId}/release`,
+      baseURL: url,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -74,7 +75,7 @@ export async function deleteDeployment(
   project_name: string,
   authToken: string,
   deploymentId: number,
-  test_case?: boolean
+  url: string
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -83,7 +84,8 @@ export async function deleteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deploymentId}`,
+      url: `subqueries/${key}/deployments/${deploymentId}`,
+      baseURL: url,
     });
     return `${deploymentId}`;
   } catch (e) {
@@ -96,7 +98,7 @@ export async function deploymentStatus(
   project_name: string,
   authToken: string,
   deployID: number,
-  test_case?: boolean
+  url: string
 ): Promise<string> {
   const key = `${org}/${project_name}`;
   try {
@@ -106,7 +108,8 @@ export async function deploymentStatus(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/${key}/deployments/${deployID}/status`,
+        url: `subqueries/${key}/deployments/${deployID}/status`,
+        baseURL: url,
       })
     ).data;
     return `${result.status}`;
@@ -115,7 +118,7 @@ export async function deploymentStatus(
   }
 }
 
-export async function ipfsCID_validate(cid: string, authToken: string, test_case?: boolean): Promise<validateDataType> {
+export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<validateDataType> {
   try {
     const result = (
       await axios({
@@ -123,7 +126,8 @@ export async function ipfsCID_validate(cid: string, authToken: string, test_case
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}ipfs/deployment-id/${cid}/validate`,
+        url: `ipfs/deployment-id/${cid}/validate`,
+        baseURL: url,
       })
     ).data;
     return result;
@@ -132,12 +136,13 @@ export async function ipfsCID_validate(cid: string, authToken: string, test_case
   }
 }
 
-export async function getDictEndpoint(chainId: string, test_case?: boolean): Promise<string> {
+export async function getDictEndpoint(chainId: string, url: string): Promise<string> {
   try {
     const result = (
       await axios({
         method: 'get',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/dictionaries`,
+        url: `subqueries/dictionaries`,
+        baseURL: url,
       })
     ).data;
     const filtered = result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
@@ -147,12 +152,13 @@ export async function getDictEndpoint(chainId: string, test_case?: boolean): Pro
   }
 }
 
-export async function getEndpoint(chainId: string, test_case?: boolean): Promise<string> {
+export async function getEndpoint(chainId: string, url: string): Promise<string> {
   try {
     const result = (
       await axios({
         method: 'get',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}subqueries/network-endpoints`,
+        url: `subqueries/network-endpoints`,
+        baseURL: url,
       })
     ).data;
     return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
@@ -161,20 +167,14 @@ export async function getEndpoint(chainId: string, test_case?: boolean): Promise
   }
 }
 
-export async function getImage_v(
-  name: string,
-  version: string,
-  authToken: string,
-  test_case?: boolean
-): Promise<string[]> {
+export async function getImage_v(name: string, version: string, authToken: string, url: string): Promise<string[]> {
   try {
     const result = (
       await axios({
         headers: {Authorization: `Bearer ${authToken}`},
         method: 'get',
-        url: `${test_case ? ROOT_API_URL_DEV : ROOT_API_URL_PROD}info/images/${encodeURIComponent(
-          name
-        )}?version=${encodeURIComponent(version)}`,
+        url: `info/images/${encodeURIComponent(name)}?version=${encodeURIComponent(version)}`,
+        baseURL: url,
       })
     ).data;
     return result;

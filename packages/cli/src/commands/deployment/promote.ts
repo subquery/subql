@@ -3,6 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {ROOT_API_URL_PROD} from '../../constants';
 import {promoteDeployment} from '../../controller/deploy-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
@@ -29,9 +30,13 @@ export default class Promote extends Command {
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
     deploymentID = await valueOrPrompt(deploymentID, 'Enter deployment ID', 'Deployment ID is required');
 
-    const promote_output = await promoteDeployment(org, project_name, authToken, +deploymentID).catch((e) =>
-      this.error(e)
-    );
+    const promote_output = await promoteDeployment(
+      org,
+      project_name,
+      authToken,
+      +deploymentID,
+      ROOT_API_URL_PROD
+    ).catch((e) => this.error(e));
     this.log(`Promote deployment: ${promote_output} from Stage to Production`);
   }
 }

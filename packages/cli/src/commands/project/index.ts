@@ -44,13 +44,11 @@ export default class Project extends Command {
     try {
       const handler = Project.optionMapping[userOptions];
       // removes arguments -> deployment and everything before it from the process.argv
-      const stripped_argv: string[] = process.argv.filter(
-        (v, idx) => v !== 'project' && idx > process.argv.indexOf('project') && !v.includes('--options')
-      );
+      const stripped_argv: string[] = process.argv
+        .filter((v, idx) => idx > process.argv.indexOf('deployment') && !v.includes('--options'))
+        .reduce((acc, val) => acc.concat(val.split('=')), []);
 
-      const output_arr: string[] = [];
-      stripped_argv.map((v: string) => v.split('=').map((x: string) => output_arr.push(x)));
-      await handler.run(output_arr);
+      await handler.run(stripped_argv);
     } catch (e) {
       this.log(`Failed to execute command: ${userOptions} error: ${e}`);
     }

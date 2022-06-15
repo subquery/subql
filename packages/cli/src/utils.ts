@@ -10,17 +10,6 @@ export async function delay(sec: number): Promise<void> {
   });
 }
 
-export async function timeout<T>(promise: Promise<T>, sec: number): Promise<T> {
-  // so we can have a more comprehensive error stack
-  const err = new Error('timeout');
-  return Promise.race([
-    promise,
-    new Promise<never>((resolve, reject) => {
-      setTimeout(() => reject(err), sec * 1000);
-    }),
-  ]);
-}
-
 export async function valueOrPrompt<T>(value: T, msg: string, error: string): Promise<T> {
   if (value) return value;
   try {

@@ -1,9 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO
-// Duplicated and will be removed in the future
-
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(resolve, sec * 1000);

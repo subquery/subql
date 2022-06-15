@@ -6,7 +6,7 @@ import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import {DEFAULT_DEPLOYMENT_TYPE} from '../../constants';
+import {DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
 import {
   deployToHostedService,
   ipfsCID_validate,
@@ -50,23 +50,34 @@ export default class Deploy extends Command {
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
-    const validator = await ipfsCID_validate(ipfsCID, authToken);
+    const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
     }
 
     if (!endpoint) {
-      endpoint = await cli.prompt('Enter endpoint', {default: await getEndpoint(validator.chainId), required: false});
+      endpoint = await cli.prompt('Enter endpoint', {
+        default: await getEndpoint(validator.chainId, ROOT_API_URL_PROD),
+        required: false,
+      });
     }
 
     if (!dict) {
-      dict = await cli.prompt('Enter dictionary', {default: await getDictEndpoint(validator.chainId), required: false});
+      dict = await cli.prompt('Enter dictionary', {
+        default: await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD),
+        required: false,
+      });
     }
 
     if (!indexer_v) {
       try {
-        const indexerVersions = await getImage_v(validator.runner.node.name, validator.runner.node.version, authToken);
+        const indexerVersions = await getImage_v(
+          validator.runner.node.name,
+          validator.runner.node.version,
+          authToken,
+          ROOT_API_URL_PROD
+        );
         const response = await inquirer.prompt({
           name: 'indexer_v',
           message: 'Select indexer version',
@@ -80,7 +91,12 @@ export default class Deploy extends Command {
     }
     if (!query_v) {
       try {
-        const queryVersions = await getImage_v(validator.runner.query.name, validator.runner.query.version, authToken);
+        const queryVersions = await getImage_v(
+          validator.runner.query.name,
+          validator.runner.query.version,
+          authToken,
+          ROOT_API_URL_PROD
+        );
         const response = await inquirer.prompt({
           name: 'query_v',
           message: 'Select Query version',
@@ -103,7 +119,8 @@ export default class Deploy extends Command {
       query_v,
       endpoint,
       flags.type,
-      dict
+      dict,
+      ROOT_API_URL_PROD
     ).catch((e) => this.error(e));
     this.log(`Project: ${deployment_output.projectKey}
     \nStatus: ${chalk.blue(deployment_output.status)}
