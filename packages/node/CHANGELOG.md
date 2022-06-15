@@ -8,7 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [0.0.1] - 2022-06-15
+## [0.0.2] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.0.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.0.2...HEAD
