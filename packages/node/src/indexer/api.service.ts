@@ -1,23 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { fromAscii, toHex } from '@cosmjs/encoding';
+import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
-  StargateClient,
   StargateClientOptions,
   defaultRegistryTypes,
-  isSearchByHeightQuery,
-  isSearchBySentFromOrToQuery,
-  isSearchByTagsQuery,
-  SearchTxFilter,
-  SearchTxQuery,
 } from '@cosmjs/stargate';
 import {
   HttpEndpoint,
@@ -26,7 +19,6 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
-import { CosmosProjectNetworkConfig } from '@subql/common-cosmos';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -36,10 +28,8 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { EventEmitter2 } from 'eventemitter2';
-import { load } from 'protobufjs';
 import {
   CosmosProjectNetConfig,
-  SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';

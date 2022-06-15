@@ -11,7 +11,6 @@ import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
-import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService, CosmosSafeClient } from './api.service';
@@ -136,6 +135,6 @@ export class SandboxService {
   }
 
   private getDataSourceEntry(ds: SubqlCosmosDataSource): string {
-    return getProjectEntry(this.project.root);
+    return ds.mapping.file;
   }
 }

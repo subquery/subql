@@ -6,7 +6,6 @@ import os from 'os';
 import path from 'path';
 import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
-  CustomDatasourceV0_2_0,
   isCustomCosmosDs,
   // loadChainTypesFromJs,
   SubqlCosmosRuntimeHandler,
@@ -41,26 +40,6 @@ export async function prepareProjectDir(projectPath: string): Promise<string> {
 
 // We cache this to avoid repeated reads from fs
 const projectEntryCache: Record<string, string> = {};
-
-export function getProjectEntry(root: string): string {
-  const pkgPath = path.join(root, 'package.json');
-  try {
-    if (!projectEntryCache[pkgPath]) {
-      const content = fs.readFileSync(pkgPath).toString();
-      const pkg = JSON.parse(content);
-      if (!pkg.main) {
-        return './dist';
-      }
-      projectEntryCache[pkgPath] = pkg.main.startsWith('./')
-        ? pkg.main
-        : `./${pkg.main}`;
-    }
-
-    return projectEntryCache[pkgPath];
-  } catch (err) {
-    throw new Error(`can not find package.json within directory ${root}`);
-  }
-}
 
 export function isBaseHandler(
   handler: SubqlCosmosHandler,
