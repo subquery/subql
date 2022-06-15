@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {ROOT_API_URL_DEV, ROOT_API_URL_PROD} from '../constants';
 
 interface createProjectType {
   key: string;

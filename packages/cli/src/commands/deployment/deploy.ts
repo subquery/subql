@@ -6,7 +6,7 @@ import {Command, Flags} from '@oclif/core';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import inquirer from 'inquirer';
-import {DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
+import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
 import {
   deployToHostedService,
   ipfsCID_validate,
@@ -123,11 +123,13 @@ export default class Deploy extends Command {
       ROOT_API_URL_PROD
     ).catch((e) => this.error(e));
     this.log(`Project: ${deployment_output.projectKey}
-    \nStatus: ${chalk.blue(deployment_output.status)}
+    \nStatus: ${chalk.blue(deployment_output.status)} 
     \nDeploymentID: ${deployment_output.id}
     \nDeployment Type: ${deployment_output.type}
     \nEndpoint: ${deployment_output.endpoint}
     \nDictionary Endpoint: ${deployment_output.dictEndpoint}
+    \nQuery URL: ${deployment_output.queryUrl}
+    \nProject URL: ${BASE_PROJECT_URL}/project/${deployment_output.projectKey}
     `);
   }
 }

@@ -3,7 +3,7 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
-import {ROOT_API_URL_PROD} from '../../constants';
+import {BASE_PROJECT_URL, ROOT_API_URL_PROD} from '../../constants';
 import {createProject} from '../../controller/project-controller';
 import {checkToken, valueOrPrompt} from '../../utils';
 
@@ -45,7 +45,8 @@ export default class Create_project extends Command {
       flags.apiVersion,
       ROOT_API_URL_PROD
     ).catch((e) => this.error(e));
-    //  log url
-    this.log(`Successfully created project: ${JSON.stringify(result, null, 2)}`);
+
+    this.log(`Successfully created project: ${result.key}
+    \nProject Url: ${BASE_PROJECT_URL}/project/${result.key}`);
   }
 }

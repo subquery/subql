@@ -29,9 +29,7 @@ const projectSpec: deploymentSpec = {
 };
 
 // Replace/Update your access token when test locally
-// const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 const testAuth = process.env.SUBQL_ACCESS_TOKEN;
-
 describe('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
@@ -97,7 +95,7 @@ describe('CLI deploy, delete, promote', () => {
   });
 
   // Only test locally
-  it('Promote Deployment', async () => {
+  it.skip('Promote Deployment', async () => {
     const {ipfs, org, project_name} = projectSpec;
     let status: string;
     let attempt = 0;
@@ -145,10 +143,13 @@ describe('CLI deploy, delete, promote', () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     expect(validator.valid).toBe(true);
   });
-  // it('to throw error for invalid ipfsCID', async () => {
-  //   const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-  //   expect(validator.valid).toBe(true);
-  // });
+  it('to throw error for invalid ipfsCID', async () => {
+    try {
+      await ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV);
+    } catch (e) {
+      expect(e.message).toBe('Invalid or Failed to validate IPFS CID');
+    }
+  });
 
   it('get Endpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
