@@ -6,7 +6,7 @@ import {delay} from '../utils';
 import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
-  org: 'bz888',
+  org: process.env.SUBQL_ORG_TEST,
   project_name: 'mocked_project',
   repository: 'https://github.com/bz888/test-deployment-2',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
@@ -17,7 +17,7 @@ const projectSpec = {
 };
 
 // Replace/Update your access token when test locally
-const testAuth = process.env.SUBQL_ACCESS_TOKEN;
+const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 
 jest.setTimeout(120000);
 describe('CLI create project and delete project', () => {
