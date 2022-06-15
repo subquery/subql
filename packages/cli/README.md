@@ -92,7 +92,16 @@ USAGE
   $ subql deployment
 
 OPTIONS
+  --deploymentID=deploymentID      Enter deployment ID
+  --dict=dict                      enter dict
+  --endpoint=endpoint              enter endpoint
+  --indexerVersion=indexerVersion  enter indexer-version
+  --ipfsCID=ipfsCID                Enter IPFS CID
   --options=deploy|promote|delete
+  --org=org                        Enter organization name
+  --project_name=project_name      Enter project name
+  --queryVersion=queryVersion      enter query-version
+  --type=type                      [default: primary] enter type
 ```
 
 _See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/deployment/index.js)_
@@ -213,7 +222,14 @@ USAGE
   $ subql project
 
 OPTIONS
+  --apiVersion=apiVersion      [default: 2] Enter api version
+  --description=description    Enter description
+  --gitRepo=gitRepo            Enter git repository
+  --logoURL=logoURL            Enter logo URL
   --options=create|delete
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+  --subtitle=subtitle          Enter subtitle
 ```
 
 _See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/project/index.js)_
