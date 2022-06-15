@@ -80,6 +80,6 @@ async function publishRelease(releaseInfo) {
  
 checkForBetaVersion(version);
 
-const releaseInfo = gatherReleaseInfo(`./${myArgs[0]}/CHANGELOG.md`);
+const releaseInfo = gatherReleaseInfo(`${myArgs[0]}/CHANGELOG.md`);
 
 publishRelease(releaseInfo);
