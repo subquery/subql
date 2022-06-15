@@ -71,6 +71,16 @@ export function getYargsOption() {
       describe: 'Level of query complexity',
       type: 'number',
     },
+    'max-connection': {
+      demandOption: false,
+      describe: 'Max connection to pg pool',
+      type: 'number',
+    },
+    'query-timeout': {
+      demandOption: false,
+      describe: 'Query timeout in milliseconds',
+      type: 'number',
+    },
   });
 }
 
