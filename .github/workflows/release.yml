@@ -22,7 +22,7 @@ jobs:
   Build-Publish:
     name: Build-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-cosomos'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-cosmos'"
     runs-on: ubuntu-latest
     steps:
       #Check out
