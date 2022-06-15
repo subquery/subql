@@ -96,14 +96,15 @@ describe('CosmosUtils', () => {
   });
 
   it('filter message data for true', () => {
-    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
     const msg: CosmosMessage = {
       idx: 0,
       block: {} as CosmosBlock,
       tx: {} as CosmosTransaction,
       msg: {
         typeUrl: decodedTx.body.messages[0].typeUrl,
-        ...decodedMsg,
+        get decodedMsg() {
+          return api.decodeMsg<any>(decodedTx.body.messages[0]);
+        },
       },
     };
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_TRUE);
@@ -118,7 +119,9 @@ describe('CosmosUtils', () => {
       tx: {} as CosmosTransaction,
       msg: {
         typeUrl: decodedTx.body.messages[0].typeUrl,
-        ...decodedMsg,
+        get decodedMsg() {
+          return api.decodeMsg<any>(decodedTx.body.messages[0]);
+        },
       },
     };
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE);
