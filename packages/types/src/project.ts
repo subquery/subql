@@ -62,6 +62,7 @@ export interface CosmosNetwork {
   genesisHash: string;
   endpoint: string;
   chainId: string;
+  chainTypes?: Map<string, CustomModule>;
 }
 
 export interface SubqlCosmosMessageFilter {
@@ -133,7 +134,6 @@ export interface SubqlCosmosRuntimeDatasource<
   M extends SubqlCosmosMapping<SubqlCosmosRuntimeHandler> = SubqlCosmosMapping<SubqlCosmosRuntimeHandler>
 > extends ISubqlCosmosDatasource<M> {
   kind: SubqlCosmosDatasourceKind.Runtime;
-  chainTypes: Map<string, CustomModule>;
 }
 
 export type SubqlCosmosDatasource = SubqlCosmosRuntimeDatasource | SubqlCosmosCustomDatasource;
@@ -147,7 +147,6 @@ export interface SubqlCosmosCustomDatasource<
 > extends ISubqlCosmosDatasource<M> {
   kind: K;
   assets: Map<string, CustomCosmosDataSourceAsset>;
-  chainTypes: Map<string, CustomModule>;
   processor?: Processor<O>;
 }
 

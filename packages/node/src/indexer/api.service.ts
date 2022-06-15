@@ -1,23 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
-import { fromAscii, toHex } from '@cosmjs/encoding';
+import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import {
   Block,
   IndexedTx,
-  StargateClient,
   StargateClientOptions,
   defaultRegistryTypes,
-  isSearchByHeightQuery,
-  isSearchBySentFromOrToQuery,
-  isSearchByTagsQuery,
-  SearchTxFilter,
-  SearchTxQuery,
 } from '@cosmjs/stargate';
 import {
   HttpEndpoint,
@@ -35,8 +28,10 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { EventEmitter2 } from 'eventemitter2';
-import { load } from 'protobufjs';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  CosmosProjectNetConfig,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
 import { NetworkMetadataPayload } from './events';
@@ -78,12 +73,12 @@ export class ApiService {
       const client = await CosmWasmClient.connect(endpoint);
       const tendermint = await Tendermint34Client.connect(endpoint);
       const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
-      for (const ds of this.project.dataSources) {
-        const chaintypes = await this.getChainType(ds);
-        for (const typeurl in chaintypes) {
-          registry.register(typeurl, chaintypes[typeurl]);
-        }
+
+      const chaintypes = await this.getChainType(network);
+      for (const typeurl in chaintypes) {
+        registry.register(typeurl, chaintypes[typeurl]);
       }
+
       this.api = new CosmosClient(client, tendermint, registry);
 
       this.networkMeta = {
@@ -124,14 +119,14 @@ export class ApiService {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getChainType(
-    ds: SubqlProjectDs,
+    network: Partial<CosmosProjectNetConfig>,
   ): Promise<Record<string, GeneratedType>> {
-    if (!ds.chainTypes) {
+    if (!network.chainTypes) {
       return {};
     }
 
     const res: Record<string, GeneratedType> = {};
-    for (const [packageName, { messages, proto }] of ds.chainTypes) {
+    for (const [packageName, { messages, proto }] of network.chainTypes) {
       for (const msg of messages) {
         logger.info(`Registering chain message type "/${packageName}.${msg}"`);
         const msgObj = proto.lookupType(`${packageName}.${msg}`);

@@ -117,11 +117,11 @@ async function getBlockByHeight(
 ): Promise<[Block, BlockResultsResponse]> {
   return Promise.all([
     api.blockInfo(height).catch((e) => {
-      logger.error(`failed to fetch block info ${height}`);
+      logger.error(e, `failed to fetch block info ${height}`);
       throw e;
     }),
     api.blockResults(height).catch((e) => {
-      logger.error(`failed to fetch block results ${height}`);
+      logger.error(e, `failed to fetch block results ${height}`);
       throw e;
     }),
   ]);

@@ -10,6 +10,7 @@ import {
   SubqlCosmosMapping,
   SubqlCosmosRuntimeDatasource,
   SubqlCosmosRuntimeHandler,
+  CustomModule,
 } from '@subql/types-cosmos';
 import {ICosmosProjectManifest} from '../../types';
 
@@ -31,6 +32,7 @@ export interface CosmosProjectManifestV0_3_0 extends ICosmosProjectManifest {
     endpoint?: string;
     dictionary?: string;
     chainId: string;
+    chainTypes?: Map<string, CustomModule>;
   };
 
   dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
