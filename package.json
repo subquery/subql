@@ -33,8 +33,7 @@
   "resolutions": {
     "@polkadot/api": "8.2.1",
     "@polkadot/util": "9.0.1",
-    "@cosmjs/cosmwasm-stargate": "0.28.4",
-    "@cosmjs/tendermint-rpc": "./tendermint-rpc.tgz"
+    "@cosmjs/cosmwasm-stargate": "0.28.7"
   },
   "scripts": {
     "build": "yarn workspaces foreach -ptA run build",
