@@ -70,13 +70,6 @@ jobs:
           package-path: packages/common-cosmos
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump common terra & deploy
-        if: steps.changed-common-terra.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/common-terra
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
       - name: Bump node & deploy
         if: steps.changed-node.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease

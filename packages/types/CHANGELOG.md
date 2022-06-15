@@ -8,26 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [0.4.0] - 2022-04-27
-### Added
-- Support for dynamic datasources (#899)
-### Fixed
-- Global export for unsafeApi (#899)
+## [0.0.1] - 2022-06-15
+First release
 
-## [0.3.1] - 2022-04-19
-### Updated
-- Fix dictionary queries (#893)
-
-## [0.3.0] - 2022-04-06
-### Changed
-- Update project type in order support terra manifest 1.0.0 (#845)
-
-## [0.2.0] - 2022-03-01
-### Added
-- Added interfaces to support contract handling (#848)
-
-## [0.1.0] - 2022-03-01
-### Added
-- init commit
-
-[Unreleased]: https://github.com/subquery/subql/compare/types/0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.0.1...HEAD
