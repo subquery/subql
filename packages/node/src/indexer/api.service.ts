@@ -123,9 +123,10 @@ export class ApiService implements OnApplicationShutdown {
 
         const ret = ((...args: any[]) => {
           const argsClone = [...args];
-          argsClone[hashIndex] = isBlockNumber
-            ? this.currentBlockNumber
-            : this.currentBlockHash;
+          argsClone[hashIndex] =
+            argsClone[hashIndex] || isBlockNumber
+              ? this.currentBlockNumber
+              : this.currentBlockHash;
           return original(...argsClone);
         }) as RpcMethodResult<T, AnyFunction>;
         ret.raw = NOT_SUPPORT(`${methodName}.raw`);
