@@ -12,3 +12,4 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 First release
 
 [Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.0.3...HEAD
+
