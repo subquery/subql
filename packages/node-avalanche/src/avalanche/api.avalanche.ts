@@ -3,6 +3,8 @@
 
 import assert from 'assert';
 import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import url from 'url';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
@@ -73,14 +75,21 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
     const { hostname, port, protocol } = url.parse(options.endpoint);
 
+    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
+    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+
     const protocolStr = protocol.replace(':', '');
     const portNum = port
       ? parseInt(port, 10)
       : protocolStr === 'https'
-      ? 443
+      ? undefined
       : 80;
 
     this.client = new Avalanche(hostname, portNum, protocolStr);
+
+    this.client.setRequestConfig('httpAgent', httpAgent as any);
+    this.client.setRequestConfig('httpsAgent', httpsAgent as any);
+
     if (this.options.token) {
       this.client.setAuthToken(this.options.token);
     }
