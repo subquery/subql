@@ -31,8 +31,8 @@
     "typescript": "^4.4.4"
   },
   "resolutions": {
-    "@polkadot/api": "8.2.1",
-    "@polkadot/util": "9.0.1",
+    "@polkadot/api": "8.8.2",
+    "@polkadot/util": "9.4.1",
     "@terra-money/terra.js": "^3.0.11"
   },
   "scripts": {
