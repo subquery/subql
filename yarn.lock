@@ -4125,7 +4125,7 @@ __metadata:
   dependencies:
     "@polkadot/util": ^8
     "@subql/common": "workspace:*"
-    "@subql/types": "workspace:*"
+    "@subql/types-avalanche": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
     "@types/pino": ^6.3.12
@@ -4277,7 +4277,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-avalanche": "workspace:*"
     "@subql/node-core": "workspace:*"
-    "@subql/types": "workspace:*"
+    "@subql/types-avalanche": "workspace:*"
     "@subql/utils": 0.1.0
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
@@ -4342,6 +4342,7 @@ __metadata:
     "@polkadot/api": 8.12.2
     "@subql/common": "workspace:*"
     "@subql/common-substrate": "workspace:*"
+    "@subql/node-core": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
@@ -4444,6 +4445,17 @@ __metadata:
   checksum: 3d34d5028181088da1158c77d00c5039bd52843d5c13984d4bf680de9c879a30168883cbcb89a6bdb3ee3ec56ce853bbbe8e95b5f8a83b60efec89e1566b426d
   languageName: node
   linkType: hard
+
+"@subql/types-avalanche@workspace:*, @subql/types-avalanche@workspace:packages/types-avalanche":
+  version: 0.0.0-use.local
+  resolution: "@subql/types-avalanche@workspace:packages/types-avalanche"
+  dependencies:
+    "@polkadot/api": ^8
+    "@types/app-module-path": ^2.2.0
+  peerDependencies:
+    "@polkadot/api": ^8
+  languageName: unknown
+  linkType: soft
 
 "@subql/types-cosmos@npm:0.0.5":
   version: 0.0.5

@@ -7,7 +7,7 @@ import {
   AvalancheReceipt,
   AvalancheResult,
   AvalancheTransaction,
-} from '@subql/types';
+} from '@subql/types-avalanche';
 import { BigNumber } from 'ethers';
 
 export function formatBlock(block: Record<string, any>): AvalancheBlock {

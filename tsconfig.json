@@ -30,6 +30,8 @@
       "@subql/node-core/*": ["packages/node-core/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
+      "@subql/types-avalanche": ["packages/types-avalanche/src"],
+      "@subql/types-avalanche/*": ["packages/types-avalanche/src/*"],
       "@subql/validator": ["packages/validator/src"],
       "@subql/validator/*": ["packages/validator/src/*"]
     },
@@ -44,6 +46,7 @@
     {"path": "packages/node-avalanche"},
     {"path": "packages/node-core"},
     {"path": "packages/types"},
+    {"path": "packages/types-avalanche"},
     {"path": "packages/utils"},
     {"path": "packages/validator"}
   ],
