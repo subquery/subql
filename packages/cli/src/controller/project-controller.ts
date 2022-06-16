@@ -39,7 +39,7 @@ export async function createProject(
     ).data;
     return result;
   } catch (e) {
-    throw new Error(`Failed to create project: ${e.message}`);
+    throw new Error(`Failed to create project: ${e.response.data.message}`);
   }
 }
 
@@ -61,6 +61,6 @@ export async function deleteProject(
     });
     return `${key}`;
   } catch (e) {
-    throw new Error(`Failed to delete project: ${e.message}`);
+    throw new Error(`Failed to delete project: ${e.response.data.message}`);
   }
 }

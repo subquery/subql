@@ -30,6 +30,7 @@ const projectSpec: deploymentSpec = {
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
+// const testAuth = 'process.env.SUBQL_ACCESS_TOKEN_TEST';
 describe('CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
@@ -147,7 +148,7 @@ describe('CLI deploy, delete, promote', () => {
     try {
       await ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV);
     } catch (e) {
-      expect(e.message).toBe('Invalid or Failed to validate IPFS CID');
+      expect(e.message).toBe(`Failed to validate IPFS CID: fake is not a valid subquery deployment id!`);
     }
   });
 

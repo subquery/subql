@@ -43,7 +43,7 @@ export async function deployToHostedService(
     ).data;
     return result.deployment;
   } catch (e) {
-    throw new Error(`Failed to deploy to hosted service: ${e.message}`);
+    throw new Error(`Failed to deploy to hosted service: ${e.response.data.message}`);
   }
 }
 
@@ -66,7 +66,7 @@ export async function promoteDeployment(
     });
     return `${deploymentId}`;
   } catch (e) {
-    throw new Error(`Failed to promote project: ${e.message}`);
+    throw new Error(`Failed to promote project: ${e.response.data.message}`);
   }
 }
 
@@ -89,7 +89,7 @@ export async function deleteDeployment(
     });
     return `${deploymentId}`;
   } catch (e) {
-    throw new Error(`Failed to promote project: ${e.message}`);
+    throw new Error(`Failed to promote project: ${e.response.data.message}`);
   }
 }
 
@@ -114,7 +114,7 @@ export async function deploymentStatus(
     ).data;
     return `${result.status}`;
   } catch (e) {
-    throw new Error(`Failed to get deployment status: ${e.message}`);
+    throw new Error(`Failed to get deployment status: ${e.response.data.message}`);
   }
 }
 
@@ -132,7 +132,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
     ).data;
     return result;
   } catch (e) {
-    throw new Error('Invalid or Failed to validate IPFS CID');
+    throw new Error(`Failed to validate IPFS CID: ${e.response.data.message}`);
   }
 }
 
@@ -163,7 +163,7 @@ export async function getEndpoint(chainId: string, url: string): Promise<string>
     ).data;
     return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
   } catch (e) {
-    throw new Error(`Failed to get endpoint: ${e.message}`);
+    throw new Error(`Failed to get endpoint: ${e.response.data.message}`);
   }
 }
 
@@ -179,7 +179,7 @@ export async function getImage_v(name: string, version: string, authToken: strin
     ).data;
     return result;
   } catch (e) {
-    throw new Error(`Failed to get image: ${e.message}`);
+    throw new Error(`Failed to get image: ${e.response.data.message}`);
   }
 }
 interface endpointType {
