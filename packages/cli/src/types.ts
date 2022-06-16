@@ -43,3 +43,48 @@ export function isProjectSpecV1_0_0(projectSpec: ProjectSpecBase): projectSpec i
 export function isTerraProjectSpecV0_3_0(projectSpec: ProjectSpecBase): projectSpec is TerraProjectSpecV0_3_0 {
   return !!(projectSpec as TerraProjectSpecV0_3_0).chainId;
 }
+
+export interface validateDataType {
+  valid: boolean;
+  manifestFile: string | null;
+  chainId: string | null;
+  runner?: RunnerSpecs | null;
+  manifestRunner?: RunnerSpecs | null;
+  errorMessage?: string;
+}
+
+export interface deploymentSpec {
+  org: string;
+  project_name: string;
+  repository: string;
+  ipfs: string;
+  subtitle: string;
+  description: string;
+  logoURl: string;
+  apiVersion: string;
+}
+export interface deploymentDataType {
+  projectKey: string;
+  version: string;
+  status: string;
+  indexerImage: string;
+  queryImage: string;
+  endpoint: string;
+  dictEndpoint: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  subFolder: string;
+  queryUrl: string;
+  configuration: {
+    config: {
+      query: Record<string, unknown>;
+      indexer: {
+        batchSize: number;
+      };
+      role: string;
+      chainId: string;
+    };
+  };
+}

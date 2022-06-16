@@ -38,9 +38,16 @@ USAGE
 
 - [`subql build`](#subql-build)
 - [`subql codegen`](#subql-codegen)
+- [`subql deployment`](#subql-deployment)
+- [`subql deployment:delete`](#subql-deploymentdelete)
+- [`subql deployment:deploy`](#subql-deploymentdeploy)
+- [`subql deployment:promote`](#subql-deploymentpromote)
 - [`subql help [COMMAND]`](#subql-help-command)
 - [`subql init [PROJECTNAME]`](#subql-init-projectname)
 - [`subql migrate`](#subql-migrate)
+- [`subql project`](#subql-project)
+- [`subql project:create-project`](#subql-projectcreate-project)
+- [`subql project:delete-project`](#subql-projectdelete-project)
 - [`subql publish`](#subql-publish)
 - [`subql validate`](#subql-validate)
 
@@ -75,6 +82,82 @@ OPTIONS
 ```
 
 _See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.0.2-1/lib/commands/codegen.js)_
+
+## `subql deployment`
+
+Deployment to hosted service
+
+```
+USAGE
+  $ subql deployment
+
+OPTIONS
+  --deploymentID=deploymentID      Enter deployment ID
+  --dict=dict                      enter dict
+  --endpoint=endpoint              enter endpoint
+  --indexerVersion=indexerVersion  enter indexer-version
+  --ipfsCID=ipfsCID                Enter IPFS CID
+  --options=deploy|promote|delete
+  --org=org                        Enter organization name
+  --project_name=project_name      Enter project name
+  --queryVersion=queryVersion      enter query-version
+  --type=type                      [default: primary] enter type
+```
+
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/deployment/index.js)_
+
+## `subql deployment:delete`
+
+Delete Deployment
+
+```
+USAGE
+  $ subql deployment:delete
+
+OPTIONS
+  --deploymentID=deploymentID  Enter deployment ID
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+```
+
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/deployment/delete.js)_
+
+## `subql deployment:deploy`
+
+Deployment to hosted service
+
+```
+USAGE
+  $ subql deployment:deploy
+
+OPTIONS
+  --dict=dict                      enter dict
+  --endpoint=endpoint              enter endpoint
+  --indexerVersion=indexerVersion  enter indexer-version
+  --ipfsCID=ipfsCID                Enter IPFS CID
+  --org=org                        Enter organization name
+  --project_name=project_name      Enter project name
+  --queryVersion=queryVersion      enter query-version
+  --type=type                      [default: primary] enter type
+```
+
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/deployment/deploy.js)_
+
+## `subql deployment:promote`
+
+Promote Deployment
+
+```
+USAGE
+  $ subql deployment:promote
+
+OPTIONS
+  --deploymentID=deploymentID  Enter deployment ID
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+```
+
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/deployment/promote.js)_
 
 ## `subql help [COMMAND]`
 
@@ -129,6 +212,62 @@ OPTIONS
 ```
 
 _See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.0.2-1/lib/commands/migrate.js)_
+
+## `subql project`
+
+Create/Delete project
+
+```
+USAGE
+  $ subql project
+
+OPTIONS
+  --apiVersion=apiVersion      [default: 2] Enter api version
+  --description=description    Enter description
+  --gitRepo=gitRepo            Enter git repository
+  --logoURL=logoURL            Enter logo URL
+  --options=create|delete
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+  --subtitle=subtitle          Enter subtitle
+```
+
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/project/index.js)_
+
+## `subql project:create-project`
+
+Create Project on Hosted Service
+
+```
+USAGE
+  $ subql project:create-project
+
+OPTIONS
+  --apiVersion=apiVersion      [default: 2] Enter api version
+  --description=description    Enter description
+  --gitRepo=gitRepo            Enter git repository
+  --logoURL=logoURL            Enter logo URL
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+  --subtitle=subtitle          Enter subtitle
+```
+
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/project/create-project.js)_
+
+## `subql project:delete-project`
+
+Delete Project on Hosted Service
+
+```
+USAGE
+  $ subql project:delete-project
+
+OPTIONS
+  --org=org                    Enter organization name
+  --project_name=project_name  Enter project name
+```
+
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.0.2-0/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
