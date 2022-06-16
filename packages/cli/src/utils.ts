@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {existsSync, readFileSync} from 'fs';
+import axios from 'axios';
 import cli from 'cli-ux';
 
 export async function delay(sec: number): Promise<void> {
@@ -31,5 +32,13 @@ export async function checkToken(authToken_ENV: string, token_path: string): Pro
   } else {
     authToken = await cli.prompt('Token cannot be found, Enter token');
     return authToken;
+  }
+}
+
+export function errorHandle(e: any, msg: string): string {
+  if (axios.isAxiosError(e)) {
+    throw new Error(`${msg} ${e.response.statusText}`);
+  } else {
+    throw new Error(`${msg} ${e.response.data.message}`);
   }
 }

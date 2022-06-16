@@ -3,6 +3,7 @@
 
 import axios from 'axios';
 import {deploymentDataType, validateDataType} from '../types';
+import {errorHandle} from '../utils';
 
 export async function deployToHostedService(
   org: string,
@@ -43,7 +44,7 @@ export async function deployToHostedService(
     ).data;
     return result.deployment;
   } catch (e) {
-    throw new Error(`Failed to deploy to hosted service: ${e.response.data.message}`);
+    errorHandle(e, 'Error deploying to hosted service:');
   }
 }
 
@@ -66,7 +67,7 @@ export async function promoteDeployment(
     });
     return `${deploymentId}`;
   } catch (e) {
-    throw new Error(`Failed to promote project: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to promote project:');
   }
 }
 
@@ -89,7 +90,7 @@ export async function deleteDeployment(
     });
     return `${deploymentId}`;
   } catch (e) {
-    throw new Error(`Failed to promote project: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to delete deployment:');
   }
 }
 
@@ -114,7 +115,7 @@ export async function deploymentStatus(
     ).data;
     return `${result.status}`;
   } catch (e) {
-    throw new Error(`Failed to get deployment status: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to get deployment status:');
   }
 }
 
@@ -132,7 +133,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
     ).data;
     return result;
   } catch (e) {
-    throw new Error(`Failed to validate IPFS CID: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to validate IPFS CID:');
   }
 }
 
@@ -148,7 +149,7 @@ export async function getDictEndpoint(chainId: string, url: string): Promise<str
     const filtered = result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
     return filtered;
   } catch (e) {
-    throw new Error(`Failed to get dictionary endpoint: ${e.message}`);
+    errorHandle(e, 'Failed to get dictionary endpoint:');
   }
 }
 
@@ -163,7 +164,7 @@ export async function getEndpoint(chainId: string, url: string): Promise<string>
     ).data;
     return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
   } catch (e) {
-    throw new Error(`Failed to get endpoint: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to get endpoint:');
   }
 }
 
@@ -179,7 +180,7 @@ export async function getImage_v(name: string, version: string, authToken: strin
     ).data;
     return result;
   } catch (e) {
-    throw new Error(`Failed to get image: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to get image:');
   }
 }
 interface endpointType {

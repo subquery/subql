@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
+import {errorHandle} from '../utils';
 
 interface createProjectType {
   key: string;
@@ -39,7 +40,7 @@ export async function createProject(
     ).data;
     return result;
   } catch (e) {
-    throw new Error(`Failed to create project: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to create project:');
   }
 }
 
@@ -61,6 +62,6 @@ export async function deleteProject(
     });
     return `${key}`;
   } catch (e) {
-    throw new Error(`Failed to delete project: ${e.response.data.message}`);
+    errorHandle(e, 'Failed to delete project:');
   }
 }
