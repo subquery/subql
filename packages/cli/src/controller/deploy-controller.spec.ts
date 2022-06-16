@@ -148,7 +148,7 @@ describe('CLI deploy, delete, promote', () => {
     try {
       await ipfsCID_validate('fake', testAuth, ROOT_API_URL_DEV);
     } catch (e) {
-      expect(e.message).toBe(`Failed to validate IPFS CID: fake is not a valid subquery deployment id!`);
+      expect(e.message).toBe('Failed to validate IPFS CID: fake is not a valid subquery deployment id!');
     }
   });
 

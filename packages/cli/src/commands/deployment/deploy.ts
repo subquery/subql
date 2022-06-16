@@ -73,8 +73,8 @@ export default class Deploy extends Command {
     if (!indexer_v) {
       try {
         const indexerVersions = await getImage_v(
-          validator.runner.node.name,
-          validator.runner.node.version,
+          validator.manifestRunner.node.name,
+          validator.manifestRunner.node.version,
           authToken,
           ROOT_API_URL_PROD
         );
@@ -92,8 +92,8 @@ export default class Deploy extends Command {
     if (!query_v) {
       try {
         const queryVersions = await getImage_v(
-          validator.runner.query.name,
-          validator.runner.query.version,
+          validator.manifestRunner.query.name,
+          validator.manifestRunner.query.version,
           authToken,
           ROOT_API_URL_PROD
         );
