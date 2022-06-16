@@ -24,7 +24,7 @@ import {
   BlockWrapper,
   AvalancheLogFilter,
   AvalancheTransactionFilter,
-} from '@subql/types';
+} from '@subql/types-avalanche';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { eventToTopic, functionToSighash } from '../utils/string';
