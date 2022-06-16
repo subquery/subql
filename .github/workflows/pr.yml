@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SUBQL_ACCESS_TOKEN: ${{ secrets.SUBQL_ACCESS_TOKEN }}
+      SUBQL_ACCESS_TOKEN_TEST: ${{ secrets.SUBQL_ACCESS_TOKEN_TEST }}
+      SUBQL_ORG_TEST: ${{ secrets.SUBQL_ORG_TEST }}
     steps:
     - uses: actions/checkout@v2
     - name: Setup Node.js environment
