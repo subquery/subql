@@ -153,6 +153,11 @@ describe('ApiService', () => {
     ).not.toEqual(currentMaxNRPV);
   });
 
+  // it('argsClone fails if it is a future block number or block hash', async () => {
+  //   const apiService = await prepareApiService();
+  //   const api = apiService.getApi();
+
+  // });
   // it('.tx.*.*, .derive.*.* are removed', async () => {
   //   const apiService = await prepareApiService();
   //   const api = apiService.getApi();
