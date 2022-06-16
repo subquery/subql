@@ -578,13 +578,12 @@ export class FetchService implements OnApplicationShutdown {
     return endBlockHeight;
   }
 
-  resetBlockNumberBuffer() {
-    const firstInQueue = this.blockNumberBuffer.firstInQueue();
-    if (firstInQueue !== undefined) {
-      this.blockNumberBuffer.reset();
-      console.log(`reset to block height ${firstInQueue - 1}`);
-      this.setLatestBufferedHeight(firstInQueue - 1);
-    }
+  async resetForNewDs(blockHeight: number): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
+    this.updateDictionary();
+    this.blockBuffer.reset();
+    this.blockNumberBuffer.reset();
+    this.setLatestBufferedHeight(blockHeight);
   }
 
   private dictionaryValidation(
@@ -610,7 +609,7 @@ export class FetchService implements OnApplicationShutdown {
     return true;
   }
 
-  setLatestBufferedHeight(height: number): void {
+  private setLatestBufferedHeight(height: number): void {
     this.latestBufferedHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
       value: this.blockNumberBuffer.size,
