@@ -36,7 +36,7 @@ describe('CLI create project and delete project', () => {
     );
     await delay(10);
     const delete_project = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, ROOT_API_URL_DEV);
-    expect(create_project.key).toMatch('bz888/mocked_project');
-    expect(delete_project).toMatch('bz888/mocked_project');
+    expect(create_project.key).toMatch(`${process.env.SUBQL_ORG_TEST}/mocked_project`);
+    expect(delete_project).toMatch(`${process.env.SUBQL_ORG_TEST}/mocked_project`);
   });
 });
