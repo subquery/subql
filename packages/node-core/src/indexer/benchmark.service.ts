@@ -5,14 +5,14 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { getLogger } from '../logger';
-import { delay } from '../utils/promise';
-import { getYargsOption } from '../yargs';
 import {
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '../events';
+import { getLogger } from '../logger';
+import { delay } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');

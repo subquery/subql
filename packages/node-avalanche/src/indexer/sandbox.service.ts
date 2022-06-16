@@ -10,7 +10,7 @@ import {
 import { ApiService, getYargsOption, getLogger } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { timeout } from '@subql/node-core/utils';
-import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types';
+import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';

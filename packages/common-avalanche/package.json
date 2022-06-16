@@ -15,7 +15,7 @@
   "dependencies": {
     "@polkadot/util": "^8",
     "@subql/common": "workspace:*",
-    "@subql/types": "workspace:*",
+    "@subql/types-avalanche": "workspace:*",
     "bn.js": "4.11.6",
     "class-transformer": "0.4.0",
     "class-validator": "^0.13.2",

@@ -27,7 +27,7 @@
     "@subql/common": "workspace:*",
     "@subql/common-avalanche": "workspace:*",
     "@subql/node-core": "workspace:*",
-    "@subql/types": "workspace:*",
+    "@subql/types-avalanche": "workspace:*",
     "@subql/utils": "0.1.0",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
     "@subql/x-vm2": "^3.9.3-0.1.0",
