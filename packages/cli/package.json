@@ -16,7 +16,7 @@
     "@subql/common-avalanche": "^0.0.3-2",
     "@subql/common-cosmos": "^0.0.1-0",
     "@subql/common-substrate": "workspace:*",
-    "@subql/common-terra": "workspace:*",
+    "@subql/common-terra": "^0.6.0",
     "@subql/utils": "workspace:*",
     "@subql/validator": "workspace:*",
     "@types/ejs": "^3.1.0",
