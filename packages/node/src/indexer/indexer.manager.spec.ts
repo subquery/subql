@@ -132,12 +132,15 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const dictionaryService = new DictionaryService(project);
 
   const dsPluginService = new DsProcessorService(project);
+  const dynamicDsService = new DynamicDsService(dsPluginService, project);
+
   const fetchService = new FetchService(
     apiService,
     nodeConfig,
     project,
     dictionaryService,
     dsPluginService,
+    dynamicDsService,
     eventEmitter,
   );
   const poiService = new PoiService(nodeConfig, project, sequilize);
@@ -150,7 +153,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     nodeConfig,
     project,
   );
-  const dynamicDsService = new DynamicDsService(dsPluginService, project);
   const projectService = new ProjectService(
     dsPluginService,
     apiService,
