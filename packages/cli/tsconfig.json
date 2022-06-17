@@ -13,7 +13,6 @@
   "references": [
     {"path": "../common"},
     {"path": "../common-substrate"},
-    {"path": "../common-terra"},
     {"path": "../utils"},
     {"path": "../validator"}
   ],
