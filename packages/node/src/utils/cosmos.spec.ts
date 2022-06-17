@@ -69,6 +69,10 @@ const TEST_NESTED_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   },
 };
 
+const TEST_MESSAGE_FILTER_FALSE_2: SubqlCosmosMessageFilter = {
+  type: '/cosmwasm.wasm.v1.MsgStoreCode',
+};
+
 describe('CosmosUtils', () => {
   let api: CosmosClient;
   let decodedTx;
@@ -158,6 +162,7 @@ describe('CosmosUtils', () => {
     expect(result).toEqual(false);
   });
 
+
   it('does not wrap events of failed transaction', async () => {
     const blockInfo = await api.blockResults(TEST_FAILTX_BLOCKNUMBER);
     const failedTx = blockInfo.results[2];
@@ -170,5 +175,41 @@ describe('CosmosUtils', () => {
     };
     const events = wrapEvent({} as CosmosBlock, [tx], api);
     expect(events.length).toEqual(0);
+  });
+
+  it('does not lazy decode failed message filters', () => {
+    const msg: CosmosMessage = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
+      msg: {
+        typeUrl: decodedTx.body.messages[0].typeUrl,
+        get decodedMsg() {
+          return api.decodeMsg<any>(decodedTx.body.messages[0]);
+        },
+      },
+    };
+
+    const spy = jest.spyOn(msg.msg, 'decodedMsg', 'get');
+    const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE_2);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it('lazy decode passed message filters', () => {
+    const msg: CosmosMessage = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
+      msg: {
+        typeUrl: decodedTx.body.messages[0].typeUrl,
+        get decodedMsg() {
+          return api.decodeMsg<any>(decodedTx.body.messages[0]);
+        },
+      },
+    };
+
+    const spy = jest.spyOn(msg.msg, 'decodedMsg', 'get');
+    const result = filterMessageData(msg, TEST_MESSAGE_FILTER_TRUE);
+    expect(spy).toHaveBeenCalled();
   });
 });

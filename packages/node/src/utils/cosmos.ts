@@ -34,7 +34,7 @@ export function filterMessageData(
     for (const key in filter.values) {
       if (
         !(key in data.msg.decodedMsg) ||
-        filter.values[key] !== key.split('.').reduce((acc, curr) => acc[curr], data.msg.decodedMessage) //data.msg.decodedMsg[key]
+        filter.values[key] !== key.split('.').reduce((acc, curr) => acc[curr], data.msg.decodedMessage.msg) //data.msg.decodedMsg[key]
       ) {
         return false;
       }
@@ -196,7 +196,8 @@ function wrapCosmosMsg(
     msg: {
       typeUrl: rawMessage.typeUrl,
       get decodedMsg() {
-        return api.decodeMsg<any>(rawMessage);
+        delete this.decodedMsg
+        return this.decodeMsg = api.decodeMsg(rawMessage);
       },
     },
   };
