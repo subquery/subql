@@ -118,9 +118,9 @@ export class IndexerManager {
                 },
                 tx,
               );
-
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
+              await this.fetchService.resetForNewDs(blockHeight);
             },
             'createDynamicDatasource',
           );

@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiOptions } from '@polkadot/api/types';
 import {
@@ -14,6 +15,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 
 function testSubqueryProject(): SubqueryProject {
@@ -54,6 +56,9 @@ async function createFetchService(
   batchSize = 5,
 ): Promise<FetchService> {
   const apiService = new ApiService(project, new EventEmitter2());
+  const dsProcessorService = new DsProcessorService(project);
+  const dynamicDsService = new DynamicDsService(dsProcessorService, project);
+  (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   await apiService.init();
   const dictionaryService = new DictionaryService(project);
   const dsPluginService = new DsProcessorService(project);
@@ -63,6 +68,7 @@ async function createFetchService(
     project,
     dictionaryService,
     dsPluginService,
+    dynamicDsService,
     new EventEmitter2(),
   );
 }
@@ -425,7 +431,7 @@ describe('FetchService', () => {
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const getSpecFromApiSpy = jest.spyOn(fetchService, 'getSpecFromApi');
 
-    // current last specVersion 9190, we should always use api for check next spec
+    // current last specVersion 9200, we should always use api for check next spec
 
     await expect(fetchService.getSpecVersion(90156860)).rejects.toThrow();
     // It checked with dictionary specVersionMap once, and fall back to use api method
@@ -508,7 +514,7 @@ describe('FetchService', () => {
     const spec = await fetchService.getSpecVersion(10337859);
     const specVersionMap = (fetchService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
-    expect(specVersionMap[specVersionMap.length - 1].id).toBe('9190');
+    expect(specVersionMap[specVersionMap.length - 1].id).toBe('9200');
   }, 500000);
 
   it('prefetch meta for different specVersion range', async () => {
