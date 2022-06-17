@@ -22,6 +22,7 @@
     "@cosmjs/cosmwasm-stargate": "0.28.7",
     "@cosmjs/proto-signing": "0.28.7",
     "@cosmjs/stargate": "0.28.7",
+    "@cosmjs/tendermint-rpc": "./tendermint-rpc.tgz",
     "@nestjs/common": "^8.1.2",
     "@nestjs/core": "^8.1.2",
     "@nestjs/event-emitter": "^1.0.0",
