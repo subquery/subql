@@ -40,7 +40,10 @@ export function filterMessageData(
   if (
     filter.type === '/cosmwasm.wasm.v1.MsgExecuteContract' &&
     filter.contractCall &&
-    !(filter.contractCall in data.msg.msg)
+    !(
+      filter.contractCall === data.msg.msg ||
+      filter.contractCall in data.msg.msg
+    )
   ) {
     return false;
   }
