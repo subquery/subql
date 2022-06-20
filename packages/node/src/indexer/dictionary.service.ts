@@ -32,7 +32,7 @@ const { argv } = getYargsOption();
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
     name,
-    gqlType: 'String!',
+    gqlType: cond.matcher === 'contains' ? 'JSON' : 'String!',
     value: cond.value,
   };
 }
