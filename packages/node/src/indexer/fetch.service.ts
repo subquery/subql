@@ -114,11 +114,11 @@ function messageFilterToQueryEntry(
       })),
       matcher: 'contains',
     });
-    return {
-      entity: 'messages',
-      conditions: conditions,
-    };
   }
+  return {
+    entity: 'messages',
+    conditions: conditions,
+  };
 }
 function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
   const memoryData = getHeapStatistics();
