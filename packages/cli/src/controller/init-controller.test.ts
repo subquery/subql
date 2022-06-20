@@ -27,7 +27,7 @@ const projectSpec = {
   name: 'mocked_starter',
   repository: '',
   endpoint: 'wss://rpc.polkadot.io/public-ws',
-  specVersion: '0.2.0',
+  specVersion: '1.0.0',
   author: 'jay',
   description: 'this is test for init controller',
   version: '',
