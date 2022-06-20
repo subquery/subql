@@ -39,11 +39,22 @@ export class FileTypeV0_3_0 {
   file: string;
 }
 
+export class CustomModuleImpl implements CustomModule {
+  @IsString()
+  file: string;
+  @IsArray()
+  messages: string[];
+}
+
 export class CosmosProjectNetworkDeploymentV0_3_0 {
   @IsString()
   @IsNotEmpty()
   @Transform(({value}: TransformFnParams) => value.trim())
   chainId: string;
+  @Type(() => CosmosCustomModuleImpl)
+  @IsOptional()
+  @ValidateNested({each: true})
+  chainTypes?: Map<string, CustomModule>;
 }
 
 export class CosmosProjectNetworkV0_3_0 extends CosmosProjectNetworkDeploymentV0_3_0 {
@@ -55,10 +66,6 @@ export class CosmosProjectNetworkV0_3_0 extends CosmosProjectNetworkDeploymentV0
   @IsString()
   @IsOptional()
   genesisHash?: string;
-  @Type(() => CosmosCustomModuleImpl)
-  @IsOptional()
-  @ValidateNested({each: true})
-  chainTypes?: Map<string, CustomModule>;
 }
 
 export class CosmosProjectMappingV0_3_0 extends CosmosMapping {

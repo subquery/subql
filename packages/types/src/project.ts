@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
-import {StargateClient} from '@cosmjs/stargate';
 import {CosmosBlock, CosmosTransaction, CosmosMessage, CosmosEvent} from './interfaces';
 
 export interface FileReference {
