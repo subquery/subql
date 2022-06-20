@@ -9,7 +9,11 @@ import { getLogger, NestLogger } from '../../utils/logger';
 import { IndexerManager } from '../indexer.manager';
 import { registerWorker } from './worker.builder';
 import { WorkerModule } from './worker.module';
-import { FetchBlockResponse, WorkerService } from './worker.service';
+import {
+  FetchBlockResponse,
+  ProcessBlockResponse,
+  WorkerService,
+} from './worker.service';
 
 let app: INestApplication;
 let workerService: WorkerService;
@@ -40,10 +44,10 @@ async function fetchBlock(height: number): Promise<FetchBlockResponse> {
   return workerService.fetchBlock(height);
 }
 
-async function processBlock(height: number): Promise<void> {
+async function processBlock(height: number): Promise<ProcessBlockResponse> {
   assert(workerService, 'Not initialised');
 
-  await workerService.processBlock(height);
+  return workerService.processBlock(height);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

@@ -11,6 +11,7 @@ import { EventEmitter2 } from 'eventemitter2';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
+import { delay } from '../../utils/promise';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
@@ -67,12 +68,18 @@ function getMaxWorkers(numWorkers?: number): number {
 }
 
 export interface IBlockDispatcher {
+  init(
+    runtimeVersionGetter: GetRuntimeVersion,
+    onDynamicDsCreated: (height: number) => Promise<void>,
+  ): Promise<void>;
+
   enqueueBlocks(heights: number[]): void;
 
   queueSize: number;
   freeSize: number;
 
-  setRuntimeVersionGetter(fn: GetRuntimeVersion): void;
+  // Remove all enqueued blocks, used when a dynamic ds is created
+  flushQueue(): void;
 }
 
 const logger = getLogger('BlockDispatcherService');
@@ -91,6 +98,7 @@ export class BlockDispatcherService
   private fetching = false;
   private isShutdown = false;
   private getRuntimeVersion: GetRuntimeVersion;
+  private onDynamicDsCreated: (height: number) => Promise<void>;
 
   constructor(
     private apiService: ApiService,
@@ -100,6 +108,15 @@ export class BlockDispatcherService
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async init(
+    runtimeVersionGetter: GetRuntimeVersion,
+    onDynamicDsCreated: (height: number) => Promise<void>,
+  ): Promise<void> {
+    this.getRuntimeVersion = runtimeVersionGetter;
+    this.onDynamicDsCreated = onDynamicDsCreated;
   }
 
   onApplicationShutdown(): void {
@@ -117,6 +134,11 @@ export class BlockDispatcherService
       logger.error(e, 'Failed to fetch blocks from queue');
       throw e;
     });
+  }
+
+  flushQueue(): void {
+    this.fetchQueue.flush(); // Empty
+    this.processQueue.flush();
   }
 
   private async fetchBlocksFromQueue(): Promise<void> {
@@ -146,19 +168,26 @@ export class BlockDispatcherService
     );
 
     const blockTasks = blocks.map((block) => async () => {
-      logger.info(
-        `INDEXING BLOCK ${block.block.block.header.number.toNumber()}`,
-      );
+      const height = block.block.block.header.number.toNumber();
+      logger.info(`INDEXING BLOCK ${height}`);
       this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-        height: block.block.block.header.number.toNumber(),
+        height,
         timestamp: Date.now(),
       });
 
       const runtimeVersion = await this.getRuntimeVersion(block.block);
 
-      return this.indexerManager.indexBlock(block, runtimeVersion);
+      const { dynamicDsCreated } = await this.indexerManager.indexBlock(
+        block,
+        runtimeVersion,
+      );
+
+      if (dynamicDsCreated) {
+        await this.onDynamicDsCreated(height);
+      }
     });
 
+    // There can be enough of a delay after fetching blocks that shutdown could now be true
     if (this.isShutdown) return;
 
     await Promise.all(this.processQueue.putMany(blockTasks));
@@ -166,10 +195,6 @@ export class BlockDispatcherService
     // Recurse
     this.fetching = false;
     await this.fetchBlocksFromQueue();
-  }
-
-  setRuntimeVersionGetter(fn: GetRuntimeVersion): void {
-    this.getRuntimeVersion = fn;
   }
 
   get queueSize(): number {
@@ -188,6 +213,7 @@ export class WorkerBlockDispatcherService
   private workers: IndexerWorker[];
   private numWorkers: number;
   private getRuntimeVersion: GetRuntimeVersion;
+  private onDynamicDsCreated: (height: number) => Promise<void>;
 
   private taskCounter = 0;
   private isShutdown = false;
@@ -206,10 +232,16 @@ export class WorkerBlockDispatcherService
     this.queue = new AutoQueue(this.numWorkers * workerQueueSize);
   }
 
-  async init(): Promise<void> {
+  async init(
+    runtimeVersionGetter: GetRuntimeVersion,
+    onDynamicDsCreated: (height: number) => Promise<void>,
+  ): Promise<void> {
     this.workers = await Promise.all(
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );
+
+    this.getRuntimeVersion = runtimeVersionGetter;
+    this.onDynamicDsCreated = onDynamicDsCreated;
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -227,6 +259,10 @@ export class WorkerBlockDispatcherService
     );
 
     heights.map((height) => this.enqueueBlock(height));
+  }
+
+  flushQueue(): void {
+    this.queue.flush();
   }
 
   private enqueueBlock(height: number) {
@@ -266,15 +302,19 @@ export class WorkerBlockDispatcherService
         `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
       );
 
-      console.time(`Process block ${height}`);
+      // console.time(`Process block ${height}`);
 
       this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
         height,
         timestamp: Date.now(),
       });
 
-      await worker.processBlock(height);
-      console.timeEnd(`Process block ${height}`);
+      const { dynamicDsCreated } = await worker.processBlock(height);
+
+      if (dynamicDsCreated) {
+        await this.onDynamicDsCreated(height);
+      }
+      // console.timeEnd(`Process block ${height}`);
     };
 
     void this.queue.put(processBlock);

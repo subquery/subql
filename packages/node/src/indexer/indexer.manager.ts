@@ -76,8 +76,9 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-  ): Promise<void> {
+  ): Promise<{ dynamicDsCreated: boolean }> {
     const { block } = blockContent;
+    let dynamicDsCreated = false;
     const blockHeight = block.block.header.number.toNumber();
     // console.time(`${blockHeight} get transaction`);
     const tx = await this.sequelize.transaction();
@@ -125,7 +126,7 @@ export class IndexerManager {
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
-              await this.fetchService.resetForNewDs(blockHeight);
+              dynamicDsCreated = true;
             },
             'createDynamicDatasource',
           );
@@ -183,6 +184,10 @@ export class IndexerManager {
     // console.time(`${blockHeight} commit tx`);
     await tx.commit();
     // console.timeEnd(`${blockHeight} commit tx`);
+
+    return {
+      dynamicDsCreated,
+    };
   }
 
   async start(): Promise<void> {

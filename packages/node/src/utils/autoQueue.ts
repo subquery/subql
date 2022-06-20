@@ -3,8 +3,6 @@
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
 
-type PredicateFn<T> = (item: T, index: number, items: readonly T[]) => boolean;
-
 export class Queue<T> {
   private items: T[] = [];
   private _capacity?: number;
@@ -60,6 +58,10 @@ export class Queue<T> {
 
     this.items = [];
     return result;
+  }
+
+  flush(): void {
+    this.takeAll();
   }
 }
 
@@ -143,6 +145,12 @@ export class AutoQueue<T> {
       this.pendingPromise = false;
       void this.take();
     }
+  }
+
+  flush(): void {
+    // Empty the queue
+    // TODO do we need to reject all promises?
+    this.queue.takeAll();
   }
 
   abort(): void {
