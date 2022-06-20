@@ -5,11 +5,12 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { SubstrateBlock } from '@subql/types';
 import { EventEmitter2 } from 'eventemitter2';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { delay } from '../../utils/promise';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
@@ -20,6 +21,7 @@ import {
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
+  SetCurrentRuntimeVersion,
 } from './worker';
 import { Worker } from './worker.builder';
 
@@ -28,6 +30,7 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
+  setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -47,6 +50,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
+      'setCurrentRuntimeVersion',
     ],
   );
 
@@ -54,6 +58,8 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
 
   return indexerWorker;
 }
+
+type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
 
 function getMaxWorkers(numWorkers?: number): number {
   const maxCPUs = os.cpus().length - 1;
@@ -65,6 +71,8 @@ export interface IBlockDispatcher {
 
   queueSize: number;
   freeSize: number;
+
+  setRuntimeVersionGetter(fn: GetRuntimeVersion): void;
 }
 
 const logger = getLogger('BlockDispatcherService');
@@ -81,6 +89,8 @@ export class BlockDispatcherService
   private processQueue: AutoQueue<void>;
 
   private fetching = false;
+  private isShutdown = false;
+  private getRuntimeVersion: GetRuntimeVersion;
 
   constructor(
     private apiService: ApiService,
@@ -93,6 +103,7 @@ export class BlockDispatcherService
   }
 
   onApplicationShutdown(): void {
+    this.isShutdown = true;
     this.processQueue.abort();
   }
 
@@ -102,11 +113,14 @@ export class BlockDispatcherService
     );
     this.fetchQueue.putMany(heights);
 
-    this.fetchBlocksFromQueue();
+    void this.fetchBlocksFromQueue().catch((e) => {
+      logger.error(e, 'Failed to fetch blocks from queue');
+      throw e;
+    });
   }
 
-  private fetchBlocksFromQueue() {
-    if (this.fetching) return;
+  private async fetchBlocksFromQueue(): Promise<void> {
+    if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
     if (this.processQueue.freeSpace < this.nodeConfig.batchSize) return;
 
@@ -126,23 +140,36 @@ export class BlockDispatcherService
       return;
     }
 
-    void fetchBlocksBatches(this.apiService.getApi(), blockNums /* TODO*/)
-      .then((blocks) =>
-        blocks.map((block) => () => {
-          this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-            height: block.block.block.header.number.toNumber(),
-            timestamp: Date.now(),
-          });
-          return this.indexerManager.indexBlock(block, null /* TODO*/);
-        }),
-      )
-      .then((blockTasks) => {
-        this.processQueue.putMany(blockTasks);
+    const blocks = await fetchBlocksBatches(
+      this.apiService.getApi(),
+      blockNums,
+    );
 
-        // Recurse
-        this.fetching = false;
-        this.fetchBlocksFromQueue();
+    const blockTasks = blocks.map((block) => async () => {
+      logger.info(
+        `INDEXING BLOCK ${block.block.block.header.number.toNumber()}`,
+      );
+      this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+        height: block.block.block.header.number.toNumber(),
+        timestamp: Date.now(),
       });
+
+      const runtimeVersion = await this.getRuntimeVersion(block.block);
+
+      return this.indexerManager.indexBlock(block, runtimeVersion);
+    });
+
+    if (this.isShutdown) return;
+
+    await Promise.all(this.processQueue.putMany(blockTasks));
+
+    // Recurse
+    this.fetching = false;
+    await this.fetchBlocksFromQueue();
+  }
+
+  setRuntimeVersionGetter(fn: GetRuntimeVersion): void {
+    this.getRuntimeVersion = fn;
   }
 
   get queueSize(): number {
@@ -160,9 +187,10 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
+  private getRuntimeVersion: GetRuntimeVersion;
 
   private taskCounter = 0;
-
+  private isShutdown = false;
   private queue: AutoQueue<void>;
 
   /**
@@ -174,8 +202,8 @@ export class WorkerBlockDispatcherService
     private workerQueueSize: number,
     private eventEmitter: EventEmitter2,
   ) {
-    this.numWorkers = numWorkers;
-    this.queue = new AutoQueue(numWorkers * workerQueueSize);
+    this.numWorkers = getMaxWorkers(numWorkers);
+    this.queue = new AutoQueue(this.numWorkers * workerQueueSize);
   }
 
   async init(): Promise<void> {
@@ -185,6 +213,7 @@ export class WorkerBlockDispatcherService
   }
 
   async onApplicationShutdown(): Promise<void> {
+    this.isShutdown = true;
     // Stop processing blocks
     this.queue.abort();
 
@@ -201,6 +230,7 @@ export class WorkerBlockDispatcherService
   }
 
   private enqueueBlock(height: number) {
+    if (this.isShutdown) return;
     const workerIdx = this.getNextWorkerIndex();
     const worker = this.workers[workerIdx];
 
@@ -208,7 +238,29 @@ export class WorkerBlockDispatcherService
     const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {
-      await pendingBlock;
+      const start = new Date();
+      const result = await pendingBlock;
+      const end = new Date();
+
+      if (start.getTime() < end.getTime() - 100) {
+        console.log(
+          'Waiting for pending block',
+          end.getTime() - start.getTime(),
+        );
+      }
+
+      if (result) {
+        const runtimeVersion = await this.getRuntimeVersion({
+          specVersion: result.specVersion,
+          block: {
+            header: {
+              parentHash: result.parentHash,
+            },
+          },
+        } as any);
+
+        await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
+      }
 
       logger.info(
         `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
@@ -226,6 +278,10 @@ export class WorkerBlockDispatcherService
     };
 
     void this.queue.put(processBlock);
+  }
+
+  setRuntimeVersionGetter(fn: GetRuntimeVersion): void {
+    this.getRuntimeVersion = fn;
   }
 
   get queueSize(): number {

@@ -9,7 +9,7 @@ import { getLogger, NestLogger } from '../../utils/logger';
 import { IndexerManager } from '../indexer.manager';
 import { registerWorker } from './worker.builder';
 import { WorkerModule } from './worker.module';
-import { WorkerService } from './worker.service';
+import { FetchBlockResponse, WorkerService } from './worker.service';
 
 let app: INestApplication;
 let workerService: WorkerService;
@@ -34,16 +34,23 @@ async function initWorker(): Promise<void> {
   workerService = app.get(WorkerService);
 }
 
-async function fetchBlock(height: number): Promise<void> {
+async function fetchBlock(height: number): Promise<FetchBlockResponse> {
   assert(workerService, 'Not initialised');
 
-  await workerService.fetchBlock(height);
+  return workerService.fetchBlock(height);
 }
 
 async function processBlock(height: number): Promise<void> {
   assert(workerService, 'Not initialised');
 
   await workerService.processBlock(height);
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+async function setCurrentRuntimeVersion(runtimeHex: string): Promise<void> {
+  assert(workerService, 'Not initialised');
+
+  return workerService.setCurrentRuntimeVersion(runtimeHex);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -63,6 +70,7 @@ registerWorker({
   processBlock,
   numFetchedBlocks,
   numFetchingBlocks,
+  setCurrentRuntimeVersion,
 });
 
 // Export types to be used on the parent
@@ -71,3 +79,4 @@ export type FetchBlock = typeof fetchBlock;
 export type ProcessBlock = typeof processBlock;
 export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
+export type SetCurrentRuntimeVersion = typeof setCurrentRuntimeVersion;

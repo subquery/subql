@@ -96,10 +96,13 @@ const { argv } = getYargsOption();
           dictionaryService,
           dsProcessorService,
           eventEmitter,
-          projectService,
         );
 
-        await fetchService.init();
+        blockDispatcher.setRuntimeVersionGetter(
+          fetchService.getRuntimeVersion.bind(fetchService),
+        );
+
+        await fetchService.init(projectService.startHeight);
         return fetchService;
       },
       inject: [

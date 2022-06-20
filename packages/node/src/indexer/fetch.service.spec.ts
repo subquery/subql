@@ -5,7 +5,7 @@ import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { BN } from '@polkadot/util';
-
+import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -18,7 +18,11 @@ import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
+import { IndexerManager } from './indexer.manager';
+import { BlockContent } from './types';
+import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
@@ -36,6 +40,22 @@ function mockRejectedApiService(): ApiService {
   };
   return {
     getApi: () => mockApi,
+  } as any;
+}
+
+function mockIndexerManager(): IndexerManager & {
+  register: (handler: IndexerManager['indexBlock']) => void;
+} {
+  let _fn: any;
+
+  return {
+    register: (fn) => (_fn = fn),
+    indexBlock: (block: BlockContent, runtimeVersion: RuntimeVersion) => {
+      console.log('FUnciton exists', !!_fn);
+      _fn?.(block, runtimeVersion);
+
+      return Promise.resolve();
+    },
   } as any;
 }
 
@@ -186,6 +206,7 @@ function mockDictionaryService3(): DictionaryService {
     getSpecVersionsRaw: jest.fn(() => mockDictionaryNoBatches),
   } as any;
 }
+
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
@@ -237,21 +258,36 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
 
 function createFetchService(
   apiService = mockApiService(),
+  indexerManager: IndexerManager,
   dictionaryService: DictionaryService,
   project: SubqueryProject,
   batchSize?: number,
 ) {
+
   const dsProcessorService = new DsProcessorService(project);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+  const nodeConfig = new NodeConfig({
+    subquery: '',
+    subqueryName: '',
+    batchSize,
+  });
+  const eventEmitter = new EventEmitter2();
+
   return new FetchService(
     apiService,
-    new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+    nodeConfig,
     project,
+    new BlockDispatcherService(
+      apiService,
+      nodeConfig,
+      indexerManager,
+      eventEmitter,
+    ),
     dictionaryService,
-    new DsProcessorService(project),
+    dsProcessorService,
     dynamicDsService,
-    new EventEmitter2(),
+    eventEmitter,
     new SchedulerRegistry(),
   );
 }
@@ -274,10 +310,11 @@ describe('FetchService', () => {
   it('get finalized head when reconnect', async () => {
     const fetchService = createFetchService(
       apiService,
+      mockIndexerManager(),
       new DictionaryService(project),
       project,
     );
-    await fetchService.init();
+    await fetchService.init(1);
     expect(
       apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
@@ -285,13 +322,15 @@ describe('FetchService', () => {
     fetchService.onApplicationShutdown();
   });
 
-  it('log errors when failed to get finalized block', async () => {
+  // This doesn't test anything
+  it.skip('log errors when failed to get finalized block', async () => {
     const fetchService = createFetchService(
       mockRejectedApiService(),
+      mockIndexerManager(),
       new DictionaryService(project),
       project,
     );
-    await fetchService.init();
+    await fetchService.init(1);
     fetchService.onApplicationShutdown();
   });
 
@@ -301,6 +340,7 @@ describe('FetchService', () => {
 
     const fetchService = createFetchService(
       apiService,
+      mockIndexerManager(),
       dictionaryService,
       project,
       batchSize,
@@ -320,26 +360,43 @@ describe('FetchService', () => {
     );
     const dictionaryService = new DictionaryService(project);
 
+    const indexerManager = mockIndexerManager();
+
     const fetchService = createFetchService(
       apiService,
+      indexerManager,
       dictionaryService,
       project,
       batchSize,
     );
     fetchService.prefetchMeta = jest.fn();
-    await fetchService.init();
-    const loopPromise = fetchService.startLoop(1);
-    // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.register(async (content) => {
-      if (content.block.block.header.number.toNumber() === 10) {
-        fetchService.onApplicationShutdown();
-      }
+
+    const pendingCondition = new Promise((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      indexerManager.register(async (content) => {
+        if (content.block.block.header.number.toNumber() === 10) {
+          fetchService.onApplicationShutdown();
+          (fetchService as any).blockDispatcher.onApplicationShutdown();
+          resolve(undefined);
+        }
+      });
     });
-    await loopPromise;
+
+    await fetchService.init(1);
+    await pendingCondition;
+
+    // const loopPromise = fetchService.startLoop(1);
+    // // eslint-disable-next-line @typescript-eslint/require-await
+    // fetchService.register(async (content) => {
+    //   if (content.block.block.header.number.toNumber() === 10) {
+    //     fetchService.onApplicationShutdown();
+    //   }
+    // });
+    // await loopPromise;
     fetchService.onApplicationShutdown();
   }, 500000);
 
-  it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight ", async () => {
+  it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight", async () => {
     const batchSize = 20;
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
@@ -367,19 +424,28 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
-    const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
-
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+    const nodeConfig = new NodeConfig({
+      subquery: '',
+      subqueryName: '',
+      batchSize,
+    });
     const fetchService = new FetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      nodeConfig,
       project,
+      new BlockDispatcherService(
+        apiService,
+        nodeConfig,
+        mockIndexerManager(),
+        eventEmitter,
+      ),
       dictionaryService,
-      dsPluginService,
+      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -393,18 +459,22 @@ describe('FetchService', () => {
       fetchService as any,
       `dictionaryValidation`,
     );
-    await fetchService.init();
+    await fetchService.init(1000);
     (fetchService as any).latestFinalizedHeight = 1005;
     (fetchService as any).latestBufferedHeight = undefined;
-    (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
-      // [1000,1001,1002,1003,1004]
-      if (nextBufferSize.value >= 5) {
-        fetchService.onApplicationShutdown();
-      }
+    // (fetchService as any).latestProcessedHeight = undefined;
+    // const loopPromise = fetchService.startLoop(1000);
+    await new Promise((resolve) => {
+      eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
+        // [1000,1001,1002,1003,1004]
+        if (nextBufferSize.value >= 5) {
+          fetchService.onApplicationShutdown();
+          (fetchService as any).blockDispatcher.onApplicationShutdown();
+          resolve(undefined);
+        }
+      });
     });
-    await loopPromise;
+
     expect(dictionaryValidationSpy).toHaveBeenCalledTimes(2);
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     //we expect after use the original method, next loop will still use dictionary by default
@@ -438,23 +508,33 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService3();
-    const dsPluginService = new DsProcessorService(project);
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+    const nodeConfig = new NodeConfig({
+      subquery: '',
+      subqueryName: '',
+      batchSize,
+    });
     const fetchService = new FetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      nodeConfig,
       project,
+      new BlockDispatcherService(
+        apiService,
+        nodeConfig,
+        mockIndexerManager(),
+        eventEmitter,
+      ),
       dictionaryService,
-      dsPluginService,
+      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
     );
-    await fetchService.init();
+    await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
@@ -462,14 +542,18 @@ describe('FetchService', () => {
     fetchService.prefetchMeta = jest.fn();
     (fetchService as any).latestFinalizedHeight = 16000;
     (fetchService as any).latestBufferedHeight = undefined;
-    (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
-      if (nextBufferSize.value >= 5) {
-        fetchService.onApplicationShutdown();
-      }
+    // (fetchService as any).latestProcessedHeight = undefined;
+    // const loopPromise = fetchService.startLoop(1000);
+    await new Promise((resolve) => {
+      eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
+        if (nextBufferSize.value >= 5) {
+          fetchService.onApplicationShutdown();
+          (fetchService as any).blockDispatcher.onApplicationShutdown();
+          resolve(undefined);
+        }
+      });
     });
-    await loopPromise;
+    // await loopPromise;
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     // lastProcessed height (use dictionary once) + batchsize (use original once)
     expect((fetchService as any).latestBufferedHeight).toBe(15020);
@@ -503,17 +587,27 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService1();
     const schedulerRegistry = new SchedulerRegistry();
-    const dsPluginService = new DsProcessorService(project);
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
     const eventEmitter = new EventEmitter2();
+    const nodeConfig = new NodeConfig({
+      subquery: '',
+      subqueryName: '',
+      batchSize,
+    });
     const fetchService = new FetchService(
       apiService,
-      new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+      nodeConfig,
       project,
+      new BlockDispatcherService(
+        apiService,
+        nodeConfig,
+        mockIndexerManager(),
+        eventEmitter,
+      ),
       dictionaryService,
-      dsPluginService,
+      dsProcessorService,
       dynamicDsService,
       eventEmitter,
       schedulerRegistry,
@@ -522,17 +616,21 @@ describe('FetchService', () => {
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    await fetchService.init();
+    await fetchService.init(1000);
     (fetchService as any).latestFinalizedHeight = 16000;
     (fetchService as any).latestBufferedHeight = undefined;
-    (fetchService as any).latestProcessedHeight = undefined;
-    const loopPromise = fetchService.startLoop(1000);
-    eventEmitter.on(`blocknumber_queue_size`, (nextBufferSize) => {
-      if (nextBufferSize.value >= 8) {
-        fetchService.onApplicationShutdown();
-      }
+    // (fetchService as any).latestProcessedHeight = undefined;
+    // const loopPromise = fetchService.startLoop(1000);
+    await new Promise((resolve) => {
+      eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
+        if (nextBufferSize.value >= 8) {
+          fetchService.onApplicationShutdown();
+          (fetchService as any).blockDispatcher.onApplicationShutdown();
+          resolve(undefined);
+        }
+      });
     });
-    await loopPromise;
+    // await loopPromise;
     expect(nextEndBlockHeightSpy).toBeCalledTimes(0);
     //alway use dictionary
     expect((fetchService as any).useDictionary).toBeTruthy();
@@ -543,8 +641,11 @@ describe('FetchService', () => {
   it('can support custom data sources', async () => {
     project = testSubqueryProjectV0_2_0();
 
+    const indexerManager = mockIndexerManager();
+
     const fetchService = createFetchService(
       apiService,
+      indexerManager,
       new DictionaryService(project),
       project,
       20,
@@ -560,16 +661,28 @@ describe('FetchService', () => {
       `getDsProcessor`,
     );
 
-    await fetchService.init();
-
-    const loopPromise = fetchService.startLoop(1);
-    // eslint-disable-next-line @typescript-eslint/require-await
-    fetchService.register(async (content) => {
-      if (content.block.block.header.number.toNumber() === 10) {
-        fetchService.onApplicationShutdown();
-      }
+    const pendingCondition = new Promise((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      indexerManager.register(async (content) => {
+        if (content.block.block.header.number.toNumber() === 10) {
+          fetchService.onApplicationShutdown();
+          (fetchService as any).blockDispatcher.onApplicationShutdown();
+          resolve(undefined);
+        }
+      });
     });
-    await loopPromise;
+
+    await fetchService.init(1);
+
+    await pendingCondition;
+
+    // const loopPromise = fetchService.startLoop(1);
+    // void fetchService.register(async (content) => {
+    //   if (content.block.block.header.number.toNumber() === 10) {
+    //     fetchService.onApplicationShutdown();
+    //   }
+    // });
+    // await loopPromise;
 
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
     expect(getDsProcessor).toHaveBeenCalledTimes(3);

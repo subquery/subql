@@ -8,7 +8,7 @@ describe('Store Service', () => {
   let storeService: StoreService;
 
   it('addIdAndBlockRangeAttributes', () => {
-    storeService = new StoreService(null, null, null);
+    storeService = new StoreService(null, null);
     const attributes = {
       id: {
         type: DataTypes.STRING,

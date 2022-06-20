@@ -42,7 +42,7 @@ import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
-import { BlockContent } from './types';
+import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -79,15 +79,14 @@ export class IndexerManager {
   ): Promise<void> {
     const { block } = blockContent;
     const blockHeight = block.block.header.number.toNumber();
+    // console.time(`${blockHeight} get transaction`);
     const tx = await this.sequelize.transaction();
+    // console.timeEnd(`${blockHeight} get transaction`);
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
 
     let poiBlockHash: Uint8Array;
     try {
-      // Injected runtimeVersion from fetch service might be outdated
-      const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
-
       this.filteredDataSources = this.filterDataSources(
         block.block.header.number.toNumber(),
       );
@@ -96,10 +95,21 @@ export class IndexerManager {
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
 
+      // console.time(`${blockHeight} indexBlockData`);
+
+      let apiAt: ApiAt;
+
       await this.indexBlockData(
         blockContent,
         datasources,
-        (ds: SubqlProjectDs) => {
+        async (ds: SubqlProjectDs) => {
+          // Injected runtimeVersion from fetch service might be outdated
+          // console.time(`${blockHeight} patched api`);
+          apiAt =
+            apiAt ??
+            (await this.apiService.getPatchedApi(block, runtimeVersion));
+          // console.timeEnd(`${blockHeight} patched api`);
+
           const vm = this.sandboxService.getDsProcessor(ds, apiAt);
 
           // Inject function to create ds into vm
@@ -123,6 +133,8 @@ export class IndexerManager {
           return vm;
         },
       );
+
+      // console.timeEnd(`${blockHeight} indexBlockData`);
 
       await this.storeService.setMetadataBatch(
         [
@@ -167,7 +179,10 @@ export class IndexerManager {
       await tx.rollback();
       throw e;
     }
+
+    // console.time(`${blockHeight} commit tx`);
     await tx.commit();
+    // console.timeEnd(`${blockHeight} commit tx`);
   }
 
   async start(): Promise<void> {
@@ -205,7 +220,7 @@ export class IndexerManager {
   private async indexBlockData(
     { block, events, extrinsics }: BlockContent,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
@@ -238,30 +253,30 @@ export class IndexerManager {
   private async indexBlockContent(
     block: SubstrateBlock,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM);
     }
   }
 
   private async indexExtrinsic(
     extrinsic: SubstrateExtrinsic,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM);
     }
   }
 
   private async indexEvent(
     event: SubstrateEvent,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM);
     }
   }
 
@@ -269,14 +284,16 @@ export class IndexerManager {
     kind: K,
     data: SubstrateRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
-    vm: IndexerSandbox,
+    getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
+    let vm: IndexerSandbox;
     if (isRuntimeDs(ds)) {
       const handlers = ds.mapping.handlers.filter(
         (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
 
       for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
         await vm.securedExec(handler.handler, [data]);
       }
     } else if (isCustomDs(ds)) {
@@ -308,6 +325,7 @@ export class IndexerManager {
       );
 
       for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }

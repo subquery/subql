@@ -14,5 +14,5 @@
     { "path": "../utils" }
   ],
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts", "**/*test.ts"]
+  "exclude": ["node_modules", "test", "dist"]
 }
