@@ -13,14 +13,13 @@ export type FetchBlockResponse =
   | { specVersion: number; parentHash: string }
   | undefined;
 
-const runtimeVersionType =
-  '{"specName":"Text","implName":"Text","authoringVersion":"u32","specVersion":"u32","implVersion":"u32","apis":"Vec<RuntimeVersionApi>","transactionVersion":"u32"}';
+export type ProcessBlockResponse = {
+  dynamicDsCreated: boolean;
+};
 
 @Injectable()
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
-  private fetchingBlocks: Record<string, Promise<void>> = {};
-
   private currentRuntimeVersion: RuntimeVersion | undefined;
 
   private queue: AutoQueue<FetchBlockResponse>;
@@ -34,11 +33,15 @@ export class WorkerService {
 
   async fetchBlock(height: number): Promise<FetchBlockResponse> {
     return this.queue.put(async () => {
-      const [block] = await fetchBlocksBatches(this.apiService.getApi(), [
-        height,
-      ]);
+      // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
+      if (!this.fetchedBlocks[height]) {
+        const [block] = await fetchBlocksBatches(this.apiService.getApi(), [
+          height,
+        ]);
+        this.fetchedBlocks[height] = block;
+      }
 
-      this.fetchedBlocks[height] = block;
+      const block = this.fetchedBlocks[height];
 
       // We have the current version, don't need a new one when processing
       if (
@@ -54,22 +57,6 @@ export class WorkerService {
         parentHash: block.block.block.header.parentHash.toHex(),
       };
     });
-
-    // if (this.fetchedBlocks[height]) {
-    //   return Promise.resolve();
-    // }
-
-    // if (this.fetchingBlocks[height] === undefined) {
-    //   this.fetchingBlocks[height] = fetchBlocksBatches(
-    //     this.apiService.getApi(),
-    //     [height],
-    //   ).then(([block]) => {
-    //     this.fetchedBlocks[height] = block;
-    //     delete this.fetchingBlocks[height];
-    //   })
-    // }
-
-    // return this.fetchingBlocks[height];
   }
 
   setCurrentRuntimeVersion(runtimeHex: string): void {
@@ -80,7 +67,7 @@ export class WorkerService {
     this.currentRuntimeVersion = runtimeVersion;
   }
 
-  async processBlock(height: number): Promise<void> {
+  async processBlock(height: number): Promise<ProcessBlockResponse> {
     const block = this.fetchedBlocks[height];
 
     if (!block) {
@@ -98,6 +85,5 @@ export class WorkerService {
 
   get numFetchingBlocks(): number {
     return this.queue.size;
-    // return Object.keys(this.fetchingBlocks).length;
   }
 }

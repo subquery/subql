@@ -137,6 +137,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -170,6 +172,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -226,6 +230,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -263,6 +269,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -316,6 +324,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -375,6 +385,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 
@@ -432,6 +444,8 @@ describe('FetchService', () => {
           fetchService.onApplicationShutdown();
           resolve(undefined);
         }
+
+        return { dynamicDsCreated: false };
       });
     });
 

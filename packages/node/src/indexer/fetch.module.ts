@@ -47,22 +47,18 @@ const { argv } = getYargsOption();
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      useFactory: async (
+      useFactory: (
         apiService: ApiService,
         nodeConfig: NodeConfig,
         eventEmitter: EventEmitter2,
         indexerManager: IndexerManager,
       ) => {
         if (argv.workers) {
-          const workerBlockDispatcher = new WorkerBlockDispatcherService(
+          return new WorkerBlockDispatcherService(
             argv.workers,
             nodeConfig.batchSize,
             eventEmitter,
           );
-
-          await workerBlockDispatcher.init();
-
-          return workerBlockDispatcher;
         }
 
         return new BlockDispatcherService(
@@ -85,6 +81,7 @@ const { argv } = getYargsOption();
         dsProcessorService: DsProcessorService,
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
+        dynamicDsService: DynamicDsService,
       ) => {
         await projectService.init();
 
@@ -95,11 +92,8 @@ const { argv } = getYargsOption();
           blockDispatcher,
           dictionaryService,
           dsProcessorService,
+          dynamicDsService,
           eventEmitter,
-        );
-
-        blockDispatcher.setRuntimeVersionGetter(
-          fetchService.getRuntimeVersion.bind(fetchService),
         );
 
         await fetchService.init(projectService.startHeight);
@@ -114,6 +108,7 @@ const { argv } = getYargsOption();
         DsProcessorService,
         EventEmitter2,
         ProjectService,
+        DynamicDsService,
       ],
     },
     BenchmarkService,
