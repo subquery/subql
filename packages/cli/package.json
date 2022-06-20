@@ -1,7 +1,7 @@
 {
   "name": "@subql/cli",
   "description": "cli for subquery",
-  "version": "1.0.2-3",
+  "version": "1.0.2-4",
   "author": "Ian He",
   "bin": {
     "subql": "./bin/run"
@@ -80,5 +80,5 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "types": "lib/index.d.ts",
-  "stableVersion": "1.0.2-2"
+  "stableVersion": "1.0.2-3"
 }
