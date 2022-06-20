@@ -14,7 +14,7 @@
     "@oclif/plugin-help": "^3.2.3",
     "@subql/common": "workspace:*",
     "@subql/common-avalanche": "^0.0.3-2",
-    "@subql/common-cosmos": "^0.0.1-0",
+    "@subql/common-cosmos": "latest",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "^0.6.0",
     "@subql/utils": "workspace:*",

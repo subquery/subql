@@ -3255,7 +3255,7 @@ __metadata:
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
     "@subql/common-avalanche": ^0.0.3-2
-    "@subql/common-cosmos": ^0.0.1-0
+    "@subql/common-cosmos": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": ^0.6.0
     "@subql/utils": "workspace:*"
@@ -3311,17 +3311,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^0.0.1-0":
-  version: 0.0.1-0
-  resolution: "@subql/common-cosmos@npm:0.0.1-0"
+"@subql/common-cosmos@npm:latest":
+  version: 0.0.5
+  resolution: "@subql/common-cosmos@npm:0.0.5"
   dependencies:
     "@subql/common": latest
-    "@subql/types-cosmos": 0.0.1-0
+    "@subql/types-cosmos": 0.0.5
     class-transformer: 0.4.0
     class-validator: ^0.13.2
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
-  checksum: 0b70a90c8e8a3f2563c4f55fffd4c1902d4910b0933f0e529556957f05c1f7a11ff9d49f12a6957600b63f0dd9493514dccf31dbcb43353a5585379a12eeb07c
+  checksum: ad0b8e64345594b991b42c9d6ae97668a4d7ac9f28ff14919c5c5b440c2b8b791d94d40a49504d8e8d5a7ca309d82c2ce8b2ecf349b8a58962bf52db341b566a
   languageName: node
   linkType: hard
 
@@ -3507,12 +3507,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-cosmos@npm:0.0.1-0":
-  version: 0.0.1-0
-  resolution: "@subql/types-cosmos@npm:0.0.1-0"
+"@subql/types-cosmos@npm:0.0.5":
+  version: 0.0.5
+  resolution: "@subql/types-cosmos@npm:0.0.5"
   peerDependencies:
-    "@cosmjs/stargate": "*"
-  checksum: f0f64ee3a3ec8989db63aeb390a552e84cebbe22548b032530bc995a9cf073525dbd1faf563b65822dd49c3911705884801db100a0266bfd3974cdb954cfbf9f
+    "@cosmjs/cosmwasm-stargate": 0.28.7
+    "@cosmjs/proto-signing": 0.28.7
+    "@cosmjs/stargate": 0.28.7
+  checksum: 109137cd0dea1f4e63d6e94614e494d25340319c16a701aa47c60409671c918e6d713cb661812147445fab0e5a9df3cce0ae7d9ecf8feefa169e750d3d69bded
   languageName: node
   linkType: hard
 
