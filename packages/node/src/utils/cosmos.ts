@@ -64,7 +64,13 @@ export function filterMessages(
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
   ) {
-    return messages;
+    return messages.map((msg) => {
+      msg.msg = {
+        typeUrl: msg.msg.typeUrl,
+        ...msg.msg.decodedMsg,
+      };
+      return msg;
+    });
   }
 
   const filters =
@@ -76,11 +82,9 @@ export function filterMessages(
     })
     .map((msg) => {
       msg.msg = {
-        ...msg.msg,
+        typeUrl: msg.msg.typeUrl,
         ...msg.msg.decodedMsg,
       };
-      delete msg.msg.decodedMsg;
-
       return msg;
     });
   return filteredMessages;
@@ -116,7 +120,13 @@ export function filterEvents(
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
   ) {
-    return events;
+    return events.map((evt) => {
+      evt.msg.msg = {
+        ...evt.msg.msg.typeUrl,
+        ...evt.msg.msg.decodedMsg,
+      };
+      return evt;
+    });
   }
 
   const filters =
@@ -127,11 +137,9 @@ export function filterEvents(
     })
     .map((evt) => {
       evt.msg.msg = {
-        ...evt.msg.msg,
+        ...evt.msg.msg.typeUrl,
         ...evt.msg.msg.decodedMsg,
       };
-      delete evt.msg.msg.decodedMsg;
-
       return evt;
     });
   return filteredEvents;
