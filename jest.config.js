@@ -89,11 +89,8 @@ module.exports = {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
   moduleNameMapper: {
-    '^@subql/common-substrate': '<rootDir>/packages/common-substrate/src',
     '^@subql/common-substrate/(.*)$': '<rootDir>/packages/common-substrate/src/$1',
-    '^@subql/common': '<rootDir>/packages/common/src',
     '^@subql/common/(.*)$': '<rootDir>/packages/common/src/$1',
-    '^@subql/utils': '<rootDir>/packages/utils/src',
     '^@subql/utils/(.*)$': '<rootDir>/packages/utils/src/$1',
   },
 

@@ -18,7 +18,7 @@
   "dependencies": {
     "@subql/common": "workspace:*",
     "@subql/common-avalanche": "latest",
-    "@subql/common-cosmos": "^0.0.5",
+    "@subql/common-cosmos": "^0.0.6",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
     "axios": "^0.24.0",

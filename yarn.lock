@@ -3333,7 +3333,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-cosmos@npm:^0.0.5, @subql/common-cosmos@npm:latest":
+"@subql/common-cosmos@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@subql/common-cosmos@npm:0.0.6"
+  dependencies:
+    "@subql/common": latest
+    "@subql/types-cosmos": 0.0.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+  checksum: 93d113560cad2202d08a51ef9e3d8e8d3dac349cb63e6ccb9744ff5ae3b728d985cec422226119219be4622e02cad1597010b0d0d5179519bc76bf1d26f4c028
+  languageName: node
+  linkType: hard
+
+"@subql/common-cosmos@npm:latest":
   version: 0.0.5
   resolution: "@subql/common-cosmos@npm:0.0.5"
   dependencies:
@@ -3563,6 +3577,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-cosmos@npm:0.0.6":
+  version: 0.0.6
+  resolution: "@subql/types-cosmos@npm:0.0.6"
+  peerDependencies:
+    "@cosmjs/cosmwasm-stargate": 0.28.7
+    "@cosmjs/proto-signing": 0.28.7
+    "@cosmjs/stargate": 0.28.7
+  checksum: 7b86b60e0bccdbb4cd65567049a719a453036a1dc46fecfd13112d71e725e5d72395ed9ad8ce6471cb7d41859387c0f82c0c8d460a6e743c7428382518638471
+  languageName: node
+  linkType: hard
+
 "@subql/types-terra@npm:0.4.0":
   version: 0.4.0
   resolution: "@subql/types-terra@npm:0.4.0"
@@ -3611,7 +3636,7 @@ __metadata:
   dependencies:
     "@subql/common": "workspace:*"
     "@subql/common-avalanche": latest
-    "@subql/common-cosmos": ^0.0.5
+    "@subql/common-cosmos": ^0.0.6
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5
