@@ -17,3 +17,4 @@ First release
 
 [Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.5...HEAD
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...common-cosmos/0.0.6
+

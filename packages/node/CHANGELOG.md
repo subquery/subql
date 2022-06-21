@@ -23,4 +23,3 @@ First release
 [Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...HEAD
 [0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.6...node/0.0.7
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/node/0.0.5...node/0.0.6
-
