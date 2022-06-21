@@ -53,6 +53,22 @@ const TEST_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   },
 };
 
+const TEST_NESTED_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
+  type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+  contractCall: 'swap',
+  values: {
+    'msg.swap.input_token': 'Token1',
+  },
+};
+
+const TEST_NESTED_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
+  type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+  contractCall: 'swap',
+  values: {
+    'msg.swap.input_token': 'Token2',
+  },
+};
+
 describe('CosmosUtils', () => {
   let api: CosmosClient;
   let decodedTx;
@@ -106,6 +122,36 @@ describe('CosmosUtils', () => {
       },
     };
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE);
+    expect(result).toEqual(false);
+  });
+
+  it('filter nested message data for true', () => {
+    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
+    const msg: CosmosMessage = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
+      msg: {
+        typeUrl: decodedTx.body.messages[0].typeUrl,
+        ...decodedMsg,
+      },
+    };
+    const result = filterMessageData(msg, TEST_NESTED_MESSAGE_FILTER_TRUE);
+    expect(result).toEqual(true);
+  });
+
+  it('filter nested message data for false', () => {
+    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
+    const msg: CosmosMessage = {
+      idx: 0,
+      block: {} as CosmosBlock,
+      tx: {} as CosmosTransaction,
+      msg: {
+        typeUrl: decodedTx.body.messages[0].typeUrl,
+        ...decodedMsg,
+      },
+    };
+    const result = filterMessageData(msg, TEST_NESTED_MESSAGE_FILTER_FALSE);
     expect(result).toEqual(false);
   });
 

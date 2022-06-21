@@ -32,7 +32,10 @@ export function filterMessageData(
   }
   if (filter.values) {
     for (const key in filter.values) {
-      if (!(key in data.msg) || filter.values[key] !== data.msg[key]) {
+      if (
+        filter.values[key] !==
+        key.split('.').reduce((acc, curr) => acc[curr], data.msg)
+      ) {
         return false;
       }
     }
