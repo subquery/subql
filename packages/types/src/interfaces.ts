@@ -39,7 +39,10 @@ export interface CosmosMessage {
   idx: number;
   block: CosmosBlock;
   tx: CosmosTransaction;
-  msg: any;
+  msg: {
+    typeUrl: string;
+    decodedMsg: any;
+  };
 }
 
 export interface CosmosEvent {

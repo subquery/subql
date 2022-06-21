@@ -295,20 +295,6 @@ export class IndexerManager {
         (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
 
-      //check for CosmosEvent
-      if ('msg' in data && 'event' in data) {
-        data.msg.msg = {
-          typeUrl: data.msg.msg.typeUrl,
-          ...data.msg.msg.decodedMsg,
-        };
-      } else if ('msg' in data) {
-        //check for CosmosMessage
-        data.msg = {
-          typeUrl: data.msg.typeUrl,
-          ...data.msg.decodedMsg,
-        };
-      }
-
       for (const handler of handlers) {
         await vm.securedExec(handler.handler, [data]);
       }

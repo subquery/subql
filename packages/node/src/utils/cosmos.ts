@@ -64,29 +64,15 @@ export function filterMessages(
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
   ) {
-    return messages.map((msg) => {
-      msg.msg = {
-        typeUrl: msg.msg.typeUrl,
-        ...msg.msg.decodedMsg,
-      };
-      return msg;
-    });
+    return messages;
   }
 
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
 
-  const filteredMessages = messages
-    .filter((message) => {
-      filters.find((filter) => filterMessageData(message, filter));
-    })
-    .map((msg) => {
-      msg.msg = {
-        typeUrl: msg.msg.typeUrl,
-        ...msg.msg.decodedMsg,
-      };
-      return msg;
-    });
+  const filteredMessages = messages.filter((message) => {
+    filters.find((filter) => filterMessageData(message, filter));
+  });
   return filteredMessages;
 }
 
@@ -120,28 +106,14 @@ export function filterEvents(
     !filterOrFilters ||
     (filterOrFilters instanceof Array && filterOrFilters.length === 0)
   ) {
-    return events.map((evt) => {
-      evt.msg.msg = {
-        ...evt.msg.msg.typeUrl,
-        ...evt.msg.msg.decodedMsg,
-      };
-      return evt;
-    });
+    return events;
   }
 
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  const filteredEvents = events
-    .filter((event) => {
-      filters.find((filter) => filterEvent(event, filter));
-    })
-    .map((evt) => {
-      evt.msg.msg = {
-        ...evt.msg.msg.typeUrl,
-        ...evt.msg.msg.decodedMsg,
-      };
-      return evt;
-    });
+  const filteredEvents = events.filter((event) => {
+    filters.find((filter) => filterEvent(event, filter));
+  });
   return filteredEvents;
 }
 
