@@ -15,3 +15,19 @@ export const RUNNER_REGEX = /(\^?)(\d|x|\*)+\.(\d|x|\*)+\.(\d|x|\*)+/;
 export const DEFAULT_WORD_SIZE = 32;
 export const DEFAULT_LEAF = Buffer.from('0000000000000000000000000000000000000000000000000000000000000001', 'hex');
 export const MMR_AWAIT_TIME = 2;
+
+// NETWORK
+export enum NETWORK_FAMILY {
+  substrate = 'Substrate',
+  avalanche = 'Avalanche',
+  terra = 'Terra',
+  cosmos = 'Cosmos',
+}
+
+export const runnerMapping = {
+  '@subql/node': NETWORK_FAMILY.substrate,
+  '@subql/node-substrate': NETWORK_FAMILY.substrate,
+  '@subql/node-avalanche': NETWORK_FAMILY.avalanche,
+  '@subql/node-terra': NETWORK_FAMILY.terra,
+  '@subql/node-cosmos': NETWORK_FAMILY.cosmos,
+};

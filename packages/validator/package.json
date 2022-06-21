@@ -17,7 +17,10 @@
   ],
   "dependencies": {
     "@subql/common": "workspace:*",
+    "@subql/common-avalanche": "latest",
+    "@subql/common-cosmos": "^0.0.5",
     "@subql/common-substrate": "workspace:*",
+    "@subql/common-terra": "latest",
     "axios": "^0.24.0",
     "ipfs-http-client": "^52.0.3",
     "js-yaml": "^4.1.0",

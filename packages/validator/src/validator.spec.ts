@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {NETWORK_FAMILY} from '@subql/common';
 import {commonRules} from './rules';
 import {Validator} from './validator';
 
@@ -9,7 +10,7 @@ describe('Validator', () => {
 
   beforeAll(async () => {
     const url = 'https://github.com/subquery/tutorials-block-timestamp';
-    v = await Validator.create(url);
+    v = await Validator.create(url, null, NETWORK_FAMILY.substrate);
     v.addRule(...commonRules);
   });
 

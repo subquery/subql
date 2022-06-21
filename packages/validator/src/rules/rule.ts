@@ -23,12 +23,16 @@ export interface Rule {
   validate(ctx: Context): boolean | Promise<boolean>;
 }
 
-export const commonRules: Rule[] = [
-  new RequireBuildScript(),
-  new RequireCodegenScript(),
-  new RequireCliDep(),
+export const deploymentRules: Rule[] = [
   new RequireValidManifest(),
   new RequireValidChainTypes(),
   new RequireCustomDsValidation(),
   new RequireValidRunner(),
+];
+
+export const commonRules: Rule[] = [
+  new RequireBuildScript(),
+  new RequireCodegenScript(),
+  new RequireCliDep(),
+  ...deploymentRules,
 ];

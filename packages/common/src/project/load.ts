@@ -4,8 +4,9 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'js-yaml';
+import {gte} from 'semver';
+import {NETWORK_FAMILY, runnerMapping} from '../constants';
 import {ProjectManifestV0_2_0} from '../project/versioned';
-
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
@@ -37,4 +38,17 @@ export function getSchemaPath(file: string) {
     return path.join(file, (yamlFile as any).schema);
   }
   return path.join(file, (yamlFile as ProjectManifestV0_2_0).schema.file);
+}
+
+// Only work for manifest specVersion >= 1.0.0
+export function getProjectNetwork(rawManifest: unknown): NETWORK_FAMILY {
+  if (gte((rawManifest as any).specVersion, '1.0.0')) {
+    const network = runnerMapping[(rawManifest as any).runner.node.name as keyof typeof runnerMapping];
+    if (network === undefined) {
+      throw new Error(`Can not identify project network with runner node ${(rawManifest as any).runner.node.name}`);
+    }
+    return network;
+  } else {
+    throw new Error('Can not identify project network under spec version 1.0.0');
+  }
 }

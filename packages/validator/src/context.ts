@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Reader} from '@subql/common';
+import {SubstrateProjectManifestVersioned as AvalancheProjectManifestVersioned} from '@subql/common-avalanche';
+import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {TerraProjectManifestVersioned} from '@subql/common-terra';
 import {IPackageJson} from 'package-json-type';
@@ -9,7 +11,11 @@ import {IPackageJson} from 'package-json-type';
 export interface ContextData {
   projectPath: string;
   pkg: IPackageJson;
-  schema?: SubstrateProjectManifestVersioned | TerraProjectManifestVersioned;
+  schema?:
+    | SubstrateProjectManifestVersioned
+    | TerraProjectManifestVersioned
+    | CosmosProjectManifestVersioned
+    | AvalancheProjectManifestVersioned;
 }
 
 export interface Context {
