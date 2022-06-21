@@ -8,8 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.0.6] - 2022-06-21
+### Fixed
+- Fix chainTypes not being in deployments
+
 ## [0.0.5] - 2022-06-15
 First release
 
 [Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.5...HEAD
-
+[0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...common-cosmos/0.0.6
