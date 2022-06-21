@@ -28,10 +28,13 @@ const projectSpec: deploymentSpec = {
   apiVersion: '2',
 };
 
+const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
+  condition ? describe(...args) : describe.skip(...args);
+
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 // const testAuth = 'process.env.SUBQL_ACCESS_TOKEN_TEST';
-describe('CLI deploy, delete, promote', () => {
+describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
     try {

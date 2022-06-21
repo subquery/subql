@@ -3311,6 +3311,42 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/common-avalanche@npm:latest":
+  version: 0.0.2-0
+  resolution: "@subql/common-avalanche@npm:0.0.2-0"
+  dependencies:
+    "@polkadot/util": ^8
+    "@subql/common": 0.22.0
+    "@subql/types-avalanche": 0.0.2-0
+    bn.js: 4.11.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    flatted: ^3.2.2
+    graphql: ^15.7.2
+    graphql-tag: ^2.12.5
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
+    vm2: ^3.9.9
+  checksum: 99493bdfb2b06af583f382584c06e583b6874740a683971d45cdd58ceff86fc0ef068659b26ac64c0205767d8ce65035aab6d588a496fdf915a3dc92c9c6646f
+  languageName: node
+  linkType: hard
+
+"@subql/common-cosmos@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@subql/common-cosmos@npm:0.0.6"
+  dependencies:
+    "@subql/common": latest
+    "@subql/types-cosmos": 0.0.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+  checksum: 93d113560cad2202d08a51ef9e3d8e8d3dac349cb63e6ccb9744ff5ae3b728d985cec422226119219be4622e02cad1597010b0d0d5179519bc76bf1d26f4c028
+  languageName: node
+  linkType: hard
+
 "@subql/common-cosmos@npm:latest":
   version: 0.0.5
   resolution: "@subql/common-cosmos@npm:0.0.5"
@@ -3341,7 +3377,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-terra@npm:^0.6.0":
+"@subql/common-terra@npm:^0.6.0, @subql/common-terra@npm:latest":
   version: 0.6.0
   resolution: "@subql/common-terra@npm:0.6.0"
   dependencies:
@@ -3351,6 +3387,20 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
   checksum: 90e45b4dcac1f624d18395a3db928a7a7a86dd199d0a8f7594862ab62256dc39170b1488b0490a46139f25563178beb103eee2c8450c342bf49d7553399d5729
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:0.22.0":
+  version: 0.22.0
+  resolution: "@subql/common@npm:0.22.0"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: 0.5.1
+    class-validator: ^0.13.2
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: 58259f15f19cae5f3a2aab3de8d8a6eba54c681960e32c9e83bfe7dcede185734ddd28e71518939fad35df83c9ef18b426ac7b224331b9468918ad401926f698
   languageName: node
   linkType: hard
 
@@ -3498,6 +3548,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@subql/types-avalanche@npm:0.0.2-0":
+  version: 0.0.2-0
+  resolution: "@subql/types-avalanche@npm:0.0.2-0"
+  peerDependencies:
+    "@polkadot/api": ^8
+  checksum: 3144caabcea3049a302e515ce966e32be5cc7f68dd313418424c1d825c324d66e271d881c8efff14b6106d71d1f134e8ca63862163547ae43956a893ed228538
+  languageName: node
+  linkType: hard
+
 "@subql/types-avalanche@npm:0.0.3-4":
   version: 0.0.3-4
   resolution: "@subql/types-avalanche@npm:0.0.3-4"
@@ -3515,6 +3574,17 @@ __metadata:
     "@cosmjs/proto-signing": 0.28.7
     "@cosmjs/stargate": 0.28.7
   checksum: 109137cd0dea1f4e63d6e94614e494d25340319c16a701aa47c60409671c918e6d713cb661812147445fab0e5a9df3cce0ae7d9ecf8feefa169e750d3d69bded
+  languageName: node
+  linkType: hard
+
+"@subql/types-cosmos@npm:0.0.6":
+  version: 0.0.6
+  resolution: "@subql/types-cosmos@npm:0.0.6"
+  peerDependencies:
+    "@cosmjs/cosmwasm-stargate": 0.28.7
+    "@cosmjs/proto-signing": 0.28.7
+    "@cosmjs/stargate": 0.28.7
+  checksum: 7b86b60e0bccdbb4cd65567049a719a453036a1dc46fecfd13112d71e725e5d72395ed9ad8ce6471cb7d41859387c0f82c0c8d460a6e743c7428382518638471
   languageName: node
   linkType: hard
 
@@ -3565,7 +3635,10 @@ __metadata:
   resolution: "@subql/validator@workspace:packages/validator"
   dependencies:
     "@subql/common": "workspace:*"
+    "@subql/common-avalanche": latest
+    "@subql/common-cosmos": ^0.0.6
     "@subql/common-substrate": "workspace:*"
+    "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5
     axios: ^0.24.0
     ipfs-http-client: ^52.0.3
