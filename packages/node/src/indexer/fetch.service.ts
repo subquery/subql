@@ -26,7 +26,7 @@ import {
   SubqlCosmosRuntimeHandler,
 } from '@subql/types-cosmos';
 
-import { isUndefined, range, sortBy, uniqBy } from 'lodash';
+import { isUndefined, range, sortBy, uniqBy, setWith } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
@@ -66,7 +66,7 @@ const fetchBlocksBatches = argv.profiler
     )
   : CosmosUtil.fetchBlocksBatches;
 
-function eventFilterToQueryEntry(
+export function eventFilterToQueryEntry(
   filter: SubqlCosmosEventFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
@@ -77,23 +77,16 @@ function eventFilterToQueryEntry(
     },
   ];
   if (filter.messageFilter !== undefined) {
-    if (filter.messageFilter.type !== undefined) {
-      conditions.push({
-        field: 'msgType',
-        value: filter.messageFilter.type,
-        matcher: 'equalTo',
-      });
-    }
-    if (filter.messageFilter.values !== undefined) {
-      conditions.push({
-        field: 'data',
-        value: Object.keys(filter.messageFilter.values).map((key) => ({
-          key: key,
-          value: filter.messageFilter.values[key],
-        })),
-        matcher: 'contains',
-      });
-    }
+    const messageFilter = messageFilterToQueryEntry(
+      filter.messageFilter,
+    ).conditions.map((f) => {
+      if (f.field === 'type') {
+        return { ...f, field: 'msgType' };
+      }
+      return f;
+    });
+
+    conditions.push(...messageFilter);
   }
   return {
     entity: 'events',
@@ -101,7 +94,7 @@ function eventFilterToQueryEntry(
   };
 }
 
-function messageFilterToQueryEntry(
+export function messageFilterToQueryEntry(
   filter: SubqlCosmosMessageFilter,
 ): DictionaryQueryEntry {
   const conditions: DictionaryQueryCondition[] = [
@@ -111,13 +104,19 @@ function messageFilterToQueryEntry(
       matcher: 'equalTo',
     },
   ];
+
   if (filter.values !== undefined) {
+    const nested = {};
+
+    // convert nested filters from `msg.swap.input_token` to { msg: { swap: { input_token: 'Token2' } } }
+    Object.keys(filter.values).map((key) => {
+      const value = filter.values[key];
+      setWith(nested, key, value);
+    });
+
     conditions.push({
       field: 'data',
-      value: Object.keys(filter.values).map((key) => ({
-        key: key,
-        value: filter.values[key],
-      })),
+      value: nested,
       matcher: 'contains',
     });
   }
