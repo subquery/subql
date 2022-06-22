@@ -22,17 +22,13 @@
       "@subql/common-cosmos/*": ["packages/common-cosmos/src/*"],
       "@subql/types-cosmos": ["packages/types/src"],
       "@subql/types-cosmos/*": ["packages/types/src/*"],
-      "@subql/validator": ["packages/validator/src"],
-      "@subql/validator/*": ["packages/validator/src/*"]
     },
     "skipLibCheck": true
   },
   "references": [
-    {"path": "packages/cli"},
     {"path": "packages/common-cosmos"},
     {"path": "packages/node"},
     {"path": "packages/types"},
-    {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],

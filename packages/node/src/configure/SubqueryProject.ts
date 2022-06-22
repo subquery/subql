@@ -23,7 +23,6 @@ import * as protobuf from 'protobufjs';
 import {
   getProjectRoot,
   updateDataSourcesV0_3_0,
-  loadNetworkChainType,
   processNetworkConfig,
 } from '../utils/project';
 
@@ -157,6 +156,7 @@ async function loadProjectFromManifest1_0_0(
     path,
     networkOverrides,
   );
+  project.templates = await loadProjectTemplates(projectManifest, reader);
   project.runner = projectManifest.runner;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
@@ -165,4 +165,25 @@ async function loadProjectFromManifest1_0_0(
   }
 
   return project;
+}
+
+async function loadProjectTemplates(
+  projectManifest: ProjectManifestV1_0_0Impl,
+  reader: Reader,
+): Promise<SubqlProjectDsTemplate[]> {
+  if (projectManifest.templates && projectManifest.templates.length !== 0) {
+    const root = await getProjectRoot(reader);
+
+    const dsTemplates = await updateDataSourcesV0_3_0(
+      projectManifest.templates,
+      reader,
+      root,
+    );
+    return dsTemplates.map((ds, index) => ({
+      ...ds,
+      name: projectManifest.templates[index].name,
+    }));
+  }
+
+  return [];
 }
