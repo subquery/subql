@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-06-22
+### Changed
+- Increase publish project body size up to 50mb (#1100)
+- Validate support multi networks, also support validate IPFS deployment. To validate project manifest spec version below 1.0.0, will require to provide `network-family` (#1115)
+### Added
+- Added avalanche and cosmos to publish (#1105)
+- Now cli able to manage deployment on host service, promote, deploy and delete (#1102)
+
 ## [1.0.1] - 2022-05-31
 ### Fixed
 - Fix cli init duplicate chainId and genesisHash (#1058)

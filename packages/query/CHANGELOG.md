@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-06-22
+### Added
+- added `max-connection` and `query-timeout` configuration for pg pool (#1108)
+
 ## [1.1.1] - 2022-06-02
 ### Changed
 - Now query-complexity is indicated in header (#1088)
