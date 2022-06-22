@@ -158,7 +158,10 @@ export function wrapTx(
     block: block,
     tx,
     hash: toHex(sha256(block.block.txs[idx])).toUpperCase(),
-    decodedTx: decodeTxRaw(block.block.txs[idx]),
+    get decodedTx() {
+      delete (this as any).decodedTx;
+      return ((this.decodedTx as any) = decodeTxRaw(block.block.txs[idx]));
+    },
   }));
 }
 
