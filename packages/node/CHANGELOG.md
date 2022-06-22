@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2022-06-22
+### Fixed
+- Handle when templates are undefined
+
 ## [1.2.0] - 2022-06-22
 ### Added
 - Use dictionary SpecVersion map (#1046)
