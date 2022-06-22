@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-06-22
+### Added
+- Use dictionary SpecVersion map (#1046)
+- Support dictionary for dynamic ds (#1110)
+### Changed
+- Split setup code from indexer manager to another service (#1092)
+### Fixed
+- Handle when specVersion query response is undefined (#1097)
+- Fix templates not being processed for manifest v1.0.0 (#1116)
+
 ## [1.1.2] - 2022-06-02
 ### Fixed
 - Fixed btree_gist extension, also provide docker postgres with extension (#1090)
