@@ -12,11 +12,9 @@ import { defaultRegistryTypes } from '@cosmjs/stargate';
 import { Tendermint34Client } from '@cosmjs/tendermint-rpc';
 import {
   SubqlCosmosMessageFilter,
-  SubqlCosmosEventFilter,
   CosmosBlock,
   CosmosTransaction,
   CosmosMessage,
-  CosmosEvent,
 } from '@subql/types-cosmos';
 import {
   MsgClearAdmin,
@@ -27,7 +25,7 @@ import {
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { CosmosClient } from '../indexer/api.service';
-import { filterMessageData, filterEvent, wrapBlock, wrapEvent } from './cosmos';
+import { filterMessageData, wrapEvent } from './cosmos';
 
 const ENDPOINT = 'https://rpc.juno-1.api.onfinality.io';
 const CHAINID = 'juno-1';
@@ -69,13 +67,23 @@ const TEST_NESTED_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   },
 };
 
+const TEST_NESTED_MESSAGE_FILTER_INVALID_PATH: SubqlCosmosMessageFilter = {
+  type: '/cosmwasm.wasm.v1.MsgExecuteContract',
+  contractCall: 'swap',
+  values: {
+    'msg.swap.input_token.xxx': 'Token2',
+  },
+};
+
 const TEST_MESSAGE_FILTER_FALSE_2: SubqlCosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgStoreCode',
 };
 
 describe('CosmosUtils', () => {
   let api: CosmosClient;
-  let decodedTx;
+  let decodedTx: DecodedTxRaw;
+  let msg: CosmosMessage;
+
   beforeAll(async () => {
     const client = await CosmWasmClient.connect(ENDPOINT);
     const tendermint = await Tendermint34Client.connect(ENDPOINT);
@@ -97,10 +105,7 @@ describe('CosmosUtils', () => {
         '1A796F30DD866CA2E9A866084CB10BF13B5F6502256D6503E8B1BAC358B15701',
     );
     decodedTx = decodeTxRaw(txInfo.tx);
-  });
-
-  it('filter message data for true', () => {
-    const msg: CosmosMessage = {
+    msg = {
       idx: 0,
       block: {} as CosmosBlock,
       tx: {} as CosmosTransaction,
@@ -111,57 +116,35 @@ describe('CosmosUtils', () => {
         },
       },
     };
+  });
+
+  it('filter message data for true', () => {
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_TRUE);
     expect(result).toEqual(true);
   });
 
   it('filter message data for false', () => {
-    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
-    const msg: CosmosMessage = {
-      idx: 0,
-      block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
-      msg: {
-        typeUrl: decodedTx.body.messages[0].typeUrl,
-        get decodedMsg() {
-          return api.decodeMsg<any>(decodedTx.body.messages[0]);
-        },
-      },
-    };
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE);
     expect(result).toEqual(false);
   });
 
   it('filter nested message data for true', () => {
-    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
-    const msg: CosmosMessage = {
-      idx: 0,
-      block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
-      msg: {
-        typeUrl: decodedTx.body.messages[0].typeUrl,
-        ...decodedMsg,
-      },
-    };
     const result = filterMessageData(msg, TEST_NESTED_MESSAGE_FILTER_TRUE);
     expect(result).toEqual(true);
   });
 
   it('filter nested message data for false', () => {
-    const decodedMsg = api.decodeMsg<any>(decodedTx.body.messages[0]);
-    const msg: CosmosMessage = {
-      idx: 0,
-      block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
-      msg: {
-        typeUrl: decodedTx.body.messages[0].typeUrl,
-        ...decodedMsg,
-      },
-    };
     const result = filterMessageData(msg, TEST_NESTED_MESSAGE_FILTER_FALSE);
     expect(result).toEqual(false);
   });
 
+  it('filter nested message data for invalid path', () => {
+    const result = filterMessageData(
+      msg,
+      TEST_NESTED_MESSAGE_FILTER_INVALID_PATH,
+    );
+    expect(result).toEqual(false);
+  });
 
   it('does not wrap events of failed transaction', async () => {
     const blockInfo = await api.blockResults(TEST_FAILTX_BLOCKNUMBER);
@@ -178,36 +161,12 @@ describe('CosmosUtils', () => {
   });
 
   it('does not lazy decode failed message filters', () => {
-    const msg: CosmosMessage = {
-      idx: 0,
-      block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
-      msg: {
-        typeUrl: decodedTx.body.messages[0].typeUrl,
-        get decodedMsg() {
-          return api.decodeMsg<any>(decodedTx.body.messages[0]);
-        },
-      },
-    };
-
     const spy = jest.spyOn(msg.msg, 'decodedMsg', 'get');
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_FALSE_2);
     expect(spy).not.toHaveBeenCalled();
   });
 
   it('lazy decode passed message filters', () => {
-    const msg: CosmosMessage = {
-      idx: 0,
-      block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
-      msg: {
-        typeUrl: decodedTx.body.messages[0].typeUrl,
-        get decodedMsg() {
-          return api.decodeMsg<any>(decodedTx.body.messages[0]);
-        },
-      },
-    };
-
     const spy = jest.spyOn(msg.msg, 'decodedMsg', 'get');
     const result = filterMessageData(msg, TEST_MESSAGE_FILTER_TRUE);
     expect(spy).toHaveBeenCalled();
