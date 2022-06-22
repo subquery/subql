@@ -175,9 +175,9 @@ async function loadProjectFromManifest0_2_1(
     path,
     networkOverrides,
   );
-
-  project.templates = await loadProjectTemplates(projectManifest, reader);
-
+  if (projectManifest.templates && projectManifest.templates.length !== 0) {
+    project.templates = await loadProjectTemplates(projectManifest, reader);
+  }
   return project;
 }
 
@@ -195,9 +195,9 @@ async function loadProjectFromManifest1_0_0(
     path,
     networkOverrides,
   );
-
-  project.templates = await loadProjectTemplates(projectManifest, reader);
-
+  if (projectManifest.templates && projectManifest.templates.length !== 0) {
+    project.templates = await loadProjectTemplates(projectManifest, reader);
+  }
   project.runner = projectManifest.runner;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
