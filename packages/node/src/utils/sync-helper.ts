@@ -73,7 +73,7 @@ export function addTagsToForeignKeyMap(
   tableKeys.set(foreignKey, foreignKeyTags);
 }
 
-export const BTREE_GIST_EXTENSION_QUERY = `CREATE EXTENSION IF NOT EXISTS btree_gist;`;
+export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
 export function createExcludeConstraintQuery(
   schema: string,

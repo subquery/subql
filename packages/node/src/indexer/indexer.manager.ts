@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
@@ -23,8 +22,7 @@ import {
   CosmosMessage,
   CosmosTransaction,
 } from '@subql/types-cosmos';
-import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
@@ -36,23 +34,18 @@ import { ApiService, CosmosClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
-  isSecondLayerHandlerProcessor_0_0_0,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
 import { IndexerEvent } from './events';
 import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
+import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
-
-const DEFAULT_DB_SCHEMA = 'public';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
@@ -61,10 +54,8 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: CosmosClient;
-  protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
   private blockOffset: number;
-  private schema: string;
 
   constructor(
     private storeService: StoreService,
@@ -80,6 +71,7 @@ export class IndexerManager {
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
+    private projectService: ProjectService,
   ) {}
 
   @profiler(argv.profiler)
@@ -96,9 +88,9 @@ export class IndexerManager {
 
     let poiBlockHash: Uint8Array;
     try {
-      const safeApi = await this.apiService.getSafeApi(
-        block.block.header.height,
-      );
+      const safeApi = await this.apiService.getSafeApi(blockHeight);
+
+      this.filteredDataSources = this.filterDataSources(blockHeight);
 
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
@@ -121,9 +113,9 @@ export class IndexerManager {
                 },
                 tx,
               );
-
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
+              await this.fetchService.resetForNewDs(blockHeight);
             },
             'createDynamicDatasource',
           );
@@ -145,14 +137,11 @@ export class IndexerManager {
         !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
         this.blockOffset === undefined
       ) {
-        await this.metadataRepo.upsert(
-          {
-            key: 'blockOffset',
-            value: blockHeight - 1,
-          },
-          { transaction: tx },
+        await this.projectService.upsertMetadataBlockOffset(
+          blockHeight - 1,
+          tx,
         );
-        this.setBlockOffset(blockHeight - 1);
+        this.projectService.setBlockOffset(blockHeight - 1);
       }
 
       if (this.nodeConfig.proofOfIndex) {
@@ -183,237 +172,28 @@ export class IndexerManager {
   }
 
   async start(): Promise<void> {
-    await this.dsProcessorService.validateProjectCustomDatasources();
+    await this.projectService.init();
     await this.fetchService.init();
+
     this.api = this.apiService.getApi();
-    this.schema = await this.ensureProject();
-    await this.initDbSchema();
-    this.metadataRepo = await this.ensureMetadata();
-    this.dynamicDsService.init(this.metadataRepo);
-
-    if (this.nodeConfig.proofOfIndex) {
-      const blockOffset = await this.metadataRepo.findOne({
-        where: { key: 'blockOffset' },
-      });
-      if (blockOffset !== null && blockOffset.value !== null) {
-        this.setBlockOffset(Number(blockOffset.value));
-      }
-      await Promise.all([this.poiService.init(this.schema)]);
-    }
-
-    let startHeight: number;
-    const lastProcessedHeight = await this.metadataRepo.findOne({
-      where: { key: 'lastProcessedHeight' },
-    });
-    if (lastProcessedHeight !== null && lastProcessedHeight.value !== null) {
-      startHeight = Number(lastProcessedHeight.value) + 1;
-    } else {
-      const project = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (project !== null) {
-        startHeight = project.nextBlockHeight;
-      } else {
-        startHeight = this.getStartBlockFromDataSources();
-      }
-    }
+    const startHeight = this.projectService.startHeight;
 
     void this.fetchService.startLoop(startHeight).catch((err) => {
       logger.error(err, 'failed to fetch block');
       // FIXME: retry before exit
       process.exit(1);
     });
-    this.filteredDataSources = this.filterDataSources(startHeight);
     this.fetchService.register((block) => this.indexBlock(block));
   }
 
-  private setBlockOffset(offset: number): void {
-    this.blockOffset = offset;
-    logger.info(`set blockoffset to ${offset}`);
-    void this.mmrService
-      .syncFileBaseFromPoi(this.schema, this.blockOffset)
-      .catch((err) => {
-        logger.error(err, 'failed to sync poi to mmr');
-        process.exit(1);
-      });
-  }
-
-  private async ensureProject(): Promise<string> {
-    let schema = await this.getExistingProjectSchema();
-    if (!schema) {
-      schema = await this.createProjectSchema();
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema and metadata table
-          await this.sequelize.dropSchema(`"${schema}"`, {
-            logging: false,
-            benchmark: false,
-          });
-
-          // remove schema from subquery table (might not exist)
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              WHERE name = :name`,
-            {
-              replacements: { name: this.nodeConfig.subqueryName },
-              type: QueryTypes.DELETE,
-            },
-          );
-
-          logger.info('force cleaned schema and tables');
-
-          if (fs.existsSync(this.nodeConfig.mmrPath)) {
-            await fs.promises.unlink(this.nodeConfig.mmrPath);
-            logger.info('force cleaned file based mmr');
-          }
-        } catch (err) {
-          logger.error(err, 'failed to force clean');
-        }
-        schema = await this.createProjectSchema();
-      }
-    }
-
-    this.eventEmitter.emit(IndexerEvent.Ready, {
-      value: true,
-    });
-
-    return schema;
-  }
-
-  // Get existing project schema, undefined when doesn't exist
-  private async getExistingProjectSchema(): Promise<string> {
-    let schema = this.nodeConfig.localMode
-      ? DEFAULT_DB_SCHEMA
-      : this.nodeConfig.dbSchema;
-
-    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-    const schemas = (await this.sequelize
-      .query(`SELECT schema_name FROM information_schema.schemata`, {
-        type: QueryTypes.SELECT,
-      })
-      .then((xs) => xs.map((x: any) => x.schema_name))
-      .catch((err) => {
-        logger.error(`Unable to fetch all schemas: ${err}`);
-        process.exit(1);
-      })) as [string];
-
-    if (!schemas.includes(schema)) {
-      // fallback to subqueries table
-      const subqueryModel = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (subqueryModel) {
-        schema = subqueryModel.dbSchema;
-      } else {
-        schema = undefined;
-      }
-    }
-    return schema;
-  }
-
-  private async createProjectSchema(): Promise<string> {
-    let schema: string;
-    if (this.nodeConfig.localMode) {
-      // create tables in default schema if local mode is enabled
-      schema = DEFAULT_DB_SCHEMA;
-    } else {
-      schema = this.nodeConfig.dbSchema;
-      const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, undefined);
-      }
-    }
-
-    return schema;
-  }
-
-  private async initDbSchema(): Promise<void> {
-    const graphqlSchema = this.project.schema;
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, this.schema);
-  }
-
-  private async ensureMetadata(): Promise<MetadataRepo> {
-    const metadataRepo = MetadataFactory(this.sequelize, this.schema);
-
-    const project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-
-    this.eventEmitter.emit(
-      IndexerEvent.NetworkMetadata,
-      this.apiService.networkMeta,
+  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
+    let filteredDs: SubqlProjectDs[];
+    filteredDs = this.project.dataSources.filter(
+      (ds) => ds.startBlock <= nextProcessingHeight,
     );
 
-    const keys = [
-      'lastProcessedHeight',
-      'blockOffset',
-      'indexerNodeVersion',
-      'chain',
-      'chainId',
-    ] as const;
-
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-    });
-
-    const keyValue = entries.reduce((arr, curr) => {
-      arr[curr.key] = curr.value;
-      return arr;
-    }, {} as { [key in typeof keys[number]]: string | boolean | number });
-
-    const { chainId } = this.apiService.networkMeta;
-
-    if (this.project.runner) {
-      await Promise.all([
-        metadataRepo.upsert({
-          key: 'runnerNode',
-          value: this.project.runner.node.name,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerNodeVersion',
-          value: this.project.runner.node.version,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerQuery',
-          value: this.project.runner.query.name,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerQueryVersion',
-          value: this.project.runner.query.version,
-        }),
-      ]);
-    }
-    if (keyValue.chain !== chainId) {
-      await metadataRepo.upsert({ key: 'chain', value: chainId });
-    }
-
-    if (keyValue.indexerNodeVersion !== packageVersion) {
-      await metadataRepo.upsert({
-        key: 'indexerNodeVersion',
-        value: packageVersion,
-      });
-    }
-
-    return metadataRepo;
-  }
-
-  private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.project.dataSources;
     if (filteredDs.length === 0) {
-      logger.error(`Did not find any dataSource`);
-      process.exit(1);
-    }
-    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
-    if (filteredDs.length === 0) {
-      logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight} 
-         or delete your database and start again from the currently specified startBlock`,
-      );
+      logger.error(`Did not find any matching datasouces`);
       process.exit(1);
     }
     // perform filter for custom ds
@@ -432,20 +212,6 @@ export class IndexerManager {
       process.exit(1);
     }
     return filteredDs;
-  }
-
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.project.dataSources.map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
-      );
-      process.exit(1);
-    } else {
-      return Math.min(...startBlocksList);
-    }
   }
 
   private async indexBlockData(

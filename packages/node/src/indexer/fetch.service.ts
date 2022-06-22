@@ -5,7 +5,7 @@ import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { ApiPromise } from '@polkadot/api';
+import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -28,7 +28,7 @@ import {
 
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
 import { getLogger } from '../utils/logger';
 import { profiler, profilerWrap } from '../utils/profiler';
@@ -37,8 +37,13 @@ import { delay } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService, CosmosClient } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import { Dictionary, DictionaryService } from './dictionary.service';
+import {
+  Dictionary,
+  DictionaryService,
+  SpecVersion,
+} from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
+import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
 import { BlockContent } from './types';
 
@@ -49,6 +54,7 @@ const CHECK_MEMORY_INTERVAL = 60000;
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
+const SPEC_VERSION_BLOCK_GAP = 100;
 
 const { argv } = getYargsOption();
 
@@ -158,6 +164,9 @@ export class FetchService implements OnApplicationShutdown {
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
+  private specVersionMap: SpecVersion[];
+  private currentRuntimeVersion: RuntimeVersion;
+  private templateDynamicDatasouces: SubqlProjectDs[];
 
   constructor(
     private apiService: ApiService,
@@ -165,6 +174,7 @@ export class FetchService implements OnApplicationShutdown {
     private project: SubqueryProject,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
+    private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
@@ -184,14 +194,18 @@ export class FetchService implements OnApplicationShutdown {
     return this.apiService.getApi();
   }
 
-  // TODO: if custom ds doesn't support dictionary, use baseFilter, if yes, let
+  async syncDynamicDatascourcesFromMeta(): Promise<void> {
+    this.templateDynamicDatasouces =
+      await this.dynamicDsService.getDynamicDatasources();
+  }
+
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter((ds) =>
       isRuntimeDataSourceV0_3_0(ds),
     );
-    for (const ds of dataSources) {
+    for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       const plugin = isCustomCosmosDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
@@ -275,12 +289,16 @@ export class FetchService implements OnApplicationShutdown {
     return () => (stopper = true);
   }
 
-  async init(): Promise<void> {
+  updateDictionary() {
     this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
     this.useDictionary =
       !!this.dictionaryQueryEntries?.length &&
       !!this.project.network.dictionary;
+  }
 
+  async init(): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
+    this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
@@ -364,8 +382,6 @@ export class FetchService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
-          //TODO
-          // const specVersionMap = dictionary.specVersions;
           if (
             dictionary &&
             (await this.dictionaryValidation(dictionary, startBlockHeight))
@@ -379,6 +395,7 @@ export class FetchService implements OnApplicationShutdown {
                 ),
               );
             } else {
+              console.log(`dictioanry put number ${batchBlocks}`);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
@@ -439,6 +456,14 @@ export class FetchService implements OnApplicationShutdown {
       endBlockHeight = this.latestFinalizedHeight;
     }
     return endBlockHeight;
+  }
+
+  async resetForNewDs(blockHeight: number): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
+    this.updateDictionary();
+    this.blockBuffer.reset();
+    this.blockNumberBuffer.reset();
+    this.setLatestBufferedHeight(blockHeight);
   }
 
   private async dictionaryValidation(

@@ -20,6 +20,12 @@ import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { getYargsOption } from '../yargs';
 
+export type SpecVersion = {
+  id: string;
+  start: number; //start with this block
+  end: number;
+};
+
 export type Dictionary = {
   _metadata: MetaData;
   batchBlocks: number[];
@@ -227,5 +233,62 @@ export class DictionaryService implements OnApplicationShutdown {
       vars.push(...pVars);
     }
     return buildQuery(vars, nodes);
+  }
+
+  async getSpecVersion(): Promise<SpecVersion[]> {
+    const { query } = this.specVersionQuery();
+    try {
+      const resp = await this.client.query({
+        query: gql(query),
+      });
+      const specVersionBlockHeightSet = new Set<SpecVersion>();
+      const _metadata = resp.data._metadata;
+      const specVersions = resp.data.specVersions.nodes;
+
+      if (specVersions && specVersions.length >= 0) {
+        // Add range for the last specVersion
+        if (_metadata.lastProcessedHeight) {
+          specVersionBlockHeightSet.add({
+            id: specVersions[specVersions.length - 1].id,
+            start: Number(specVersions[specVersions.length - 1].blockHeight),
+            end: Number(_metadata.lastProcessedHeight),
+          });
+        }
+        // Add range for -1 specVersions
+        for (let i = 0; i < resp.data.specVersions.nodes.length - 1; i++) {
+          specVersionBlockHeightSet.add({
+            id: specVersions[i].id,
+            start: Number(specVersions[i].blockHeight),
+            end: Number(specVersions[i + 1].blockHeight) - 1,
+          });
+        }
+      }
+      return Array.from(specVersionBlockHeightSet);
+    } catch (err) {
+      logger.warn(err, `failed to fetch specVersion result`);
+      return undefined;
+    }
+  }
+
+  private specVersionQuery(): GqlQuery {
+    const nodes: GqlNode[] = [
+      {
+        entity: '_metadata',
+        project: ['lastProcessedHeight', 'genesisHash'],
+      },
+      {
+        entity: 'specVersions',
+        project: [
+          {
+            entity: 'nodes',
+            project: ['id', 'blockHeight'],
+          },
+        ],
+        args: {
+          orderBy: 'BLOCK_HEIGHT_ASC',
+        },
+      },
+    ];
+    return buildQuery([], nodes);
   }
 }

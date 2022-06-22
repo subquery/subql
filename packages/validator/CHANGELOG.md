@@ -9,6 +9,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-05-31
+### Changed
+- move out terra pacakges (#1112)
+### Added
+- validate deployment, validate multi network (#1115)
+
 ## [1.1.0] - 2022-05-31
 ### Changed
 - Update import types name (#1012)

@@ -4,8 +4,11 @@
 import fs from 'fs';
 import path from 'path';
 import {ReaderFactory, IPFS_CLUSTER_ENDPOINT} from '@subql/common';
+import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
-import {FileReference} from '@subql/types-cosmos';
+import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
+import {parseTerraProjectManifest} from '@subql/common-terra';
+import {FileReference} from '@subql/types';
 import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
@@ -13,7 +16,29 @@ import {IPFSHTTPClient, create} from 'ipfs-http-client';
 export async function uploadToIpfs(projectPath: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
   const reader = await ReaderFactory.create(projectPath);
   const schema = await reader.getProjectSchema();
-  const manifest = parseCosmosProjectManifest(schema).asImpl;
+
+  let manifest;
+  //substrate
+  try {
+    manifest = parseSubstrateProjectManifest(schema).asImpl;
+    if (manifestIsV0_0_1(manifest)) {
+      throw new Error('Unsupported project manifest spec, only 0.2.0 or greater is supported');
+    }
+  } catch (e) {
+    //terra
+    try {
+      manifest = parseTerraProjectManifest(schema).asImpl;
+    } catch (e) {
+      // cosmos
+      try {
+        manifest = parseCosmosProjectManifest(schema).asImpl;
+      } catch (e) {
+        //avalanche
+        manifest = parseAvalancheProjectManifest(schema).asImpl;
+      }
+    }
+  }
+
   let ipfs: IPFSHTTPClient;
   if (ipfsEndpoint) {
     ipfs = create({url: ipfsEndpoint});
@@ -102,6 +127,8 @@ async function UploadFileByCluster(content: string, authToken: string): Promise<
       method: 'post',
       url: IPFS_CLUSTER_ENDPOINT,
       data: bodyFormData,
+      maxBodyLength: 50 * 1024 * 1024, //50 MB
+      maxContentLength: 50 * 1024 * 1024,
     })
   ).data as ClusterResponseData;
   return result.cid?.['/'];

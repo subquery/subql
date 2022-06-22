@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Command, Flags} from '@oclif/core';
-import {IPFS_NODE_ENDPOINT} from '@subql/common';
-import {commonRules, Validator} from '@subql/validator';
+import {IPFS_NODE_ENDPOINT, IPFS_REGEX, NETWORK_FAMILY} from '@subql/common';
+import {commonRules, deploymentRules, Validator} from '@subql/validator';
 import chalk from 'chalk';
 
 export default class Validate extends Command {
@@ -16,13 +16,21 @@ export default class Validate extends Command {
       default: IPFS_NODE_ENDPOINT,
     }),
     silent: Flags.boolean(),
+    'network-family': Flags.enum({options: Object.values(NETWORK_FAMILY)}),
   };
 
   //TODO, currently validation only work for complete project, ipfs deployment is not supported
   async run(): Promise<void> {
     const {flags} = await this.parse(Validate);
-    const v = await Validator.create(flags.location ?? process.cwd(), {ipfs: flags.ipfs});
-    v.addRule(...commonRules);
+    const location = flags.location ?? process.cwd();
+    const v = await Validator.create(location, {ipfs: flags.ipfs}, flags['network-family']);
+
+    const ipfsMatch = location.match(IPFS_REGEX);
+    if (ipfsMatch) {
+      v.addRule(...deploymentRules);
+    } else {
+      v.addRule(...commonRules);
+    }
 
     const reports = await v.getValidateReports();
     const passed = reports.filter((r) => r.valid).length;

@@ -24,7 +24,6 @@ module.exports = {
     'packages/cli/src/**/*.ts',
     'packages/common-cosmos/src/**/*.ts',
     'packages/common/src/**/*.ts',
-    'packages/contract-processors/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/utils/src/**/*.ts',
     'packages/validator/src/**/*.ts',
@@ -90,7 +89,6 @@ module.exports = {
   // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
   // moduleNameMapper: {},
   moduleNameMapper: {
-    '^@subql/common-cosmos': '<rootDir>/packages/common-cosmos/src',
     '^@subql/common-cosmos/(.*)$': '<rootDir>/packages/common-cosmos/src/$1',
   },
 
