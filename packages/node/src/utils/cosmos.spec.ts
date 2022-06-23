@@ -26,6 +26,7 @@ import {
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
 import { CosmosClient } from '../indexer/api.service';
 import { filterMessageData, wrapEvent } from './cosmos';
+import * as CosmosUtil from './cosmos';
 
 const ENDPOINT = 'https://rpc.juno-1.api.onfinality.io';
 const CHAINID = 'juno-1';

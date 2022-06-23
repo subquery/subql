@@ -8,6 +8,7 @@ import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
 import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
+import { isRuntimeCosmosDs } from '@subql/common-cosmos';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosMessageFilter,
@@ -15,7 +16,10 @@ import {
   CosmosEvent,
   CosmosTransaction,
   CosmosMessage,
+  SubqlCosmosHandlerKind,
 } from '@subql/types-cosmos';
+import { transpileModule } from 'typescript';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -237,6 +241,7 @@ export function wrapEvent(
 export async function fetchBlocksBatches(
   api: CosmosClient,
   blockArray: number[],
+  datasouces: SubqlProjectDs[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return blocks.map(([blockInfo, blockResults]) => {
@@ -248,16 +253,88 @@ export async function fetchBlocksBatches(
     // Make non-readonly
     const results = [...blockResults.results];
 
-    const block = wrapBlock(blockInfo, results);
-    const transactions = wrapTx(block, results);
-    const messages = wrapMsg(block, transactions, api);
-    const events = wrapEvent(block, transactions, api);
-
-    return <BlockContent>{
-      block,
-      transactions,
-      messages,
-      events,
-    };
+    return new LazyBlockContent(blockInfo, results, api, datasouces);
   });
+}
+
+class LazyBlockContent implements BlockContent {
+  private _wrappedBlock: CosmosBlock;
+  private _wrappedTransaction: CosmosTransaction[];
+  private _wrappedMessage: CosmosMessage[];
+  private _wrappedEvent: CosmosEvent[];
+
+  constructor(
+    private _blockInfo: Block,
+    private _results: TxData[],
+    private _api: CosmosClient,
+    private _dataSources: SubqlProjectDs[],
+  ) {}
+
+  get block() {
+    if (!this._wrappedBlock) {
+      if (this.handlerExists(SubqlCosmosHandlerKind.Block)) {
+        this._wrappedBlock = wrapBlock(this._blockInfo, this._results);
+      } else {
+        return undefined;
+      }
+    }
+    return this._wrappedBlock;
+  }
+
+  get transactions() {
+    if (!this._wrappedTransaction) {
+      if (this.handlerExists(SubqlCosmosHandlerKind.Transaction)) {
+        this._wrappedTransaction = wrapTx(this.block, this._results);
+      } else {
+        this._wrappedTransaction = [];
+      }
+    }
+    return this._wrappedTransaction;
+  }
+
+  get messages() {
+    if (!this._wrappedMessage) {
+      if (this.handlerExists(SubqlCosmosHandlerKind.Message)) {
+        this._wrappedMessage = wrapMsg(
+          this.block,
+          this.transactions,
+          this._api,
+        );
+      } else {
+        this._wrappedMessage = [];
+      }
+    }
+    return this._wrappedMessage;
+  }
+
+  get events() {
+    if (!this._wrappedEvent) {
+      if (this.handlerExists(SubqlCosmosHandlerKind.Event)) {
+        this._wrappedEvent = wrapEvent(
+          this.block,
+          this.transactions,
+          this._api,
+        );
+      } else {
+        this._wrappedEvent = [];
+      }
+    }
+    return this._wrappedEvent;
+  }
+
+  private handlerExists<K extends SubqlCosmosHandlerKind>(kind: K) {
+    for (const ds of this._dataSources) {
+      if (isRuntimeCosmosDs(ds)) {
+        const handlers = ds.mapping.handlers.filter(
+          (h) => h.kind === kind, //&& FilterTypeMap[kind](data as any, h.filter),
+        );
+        if (handlers.length > 0) {
+          return true;
+        }
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
 }

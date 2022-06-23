@@ -215,21 +215,22 @@ export class IndexerManager {
   }
 
   private async indexBlockData(
-    { block, events, messages, transactions }: BlockContent,
+    blockContent: BlockContent,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => IndexerSandbox,
   ): Promise<void> {
-    await this.indexBlockContent(block, dataSources, getVM);
-
-    for (const tx of transactions) {
+    if (blockContent.block) {
+      await this.indexBlockContent(blockContent.block, dataSources, getVM);
+    }
+    for (const tx of blockContent.transactions) {
       await this.indexTransaction(tx, dataSources, getVM);
     }
 
-    for (const msg of messages) {
+    for (const msg of blockContent.messages) {
       await this.indexMessage(msg, dataSources, getVM);
     }
 
-    for (const evt of events) {
+    for (const evt of blockContent.events) {
       await this.indexEvent(evt, dataSources, getVM);
     }
   }

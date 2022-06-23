@@ -433,7 +433,11 @@ export class FetchService implements OnApplicationShutdown {
       }
 
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
+      const blocks = await fetchBlocksBatches(
+        this.api,
+        bufferBlocks,
+        this.project.dataSources,
+      );
       logger.info(
         `fetch block [${bufferBlocks[0]},${
           bufferBlocks[bufferBlocks.length - 1]
