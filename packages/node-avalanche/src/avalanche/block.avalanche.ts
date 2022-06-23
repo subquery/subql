@@ -27,7 +27,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   private _logs: AvalancheLog[];
   constructor(private _block: AvalancheBlock) {
     this._logs = flatten(_block.transactions.map((tx) => tx.receipt.logs)).map(
-      (log) => formatLog(log),
+      (log) => formatLog(log, _block),
     ) as AvalancheLog<AvalancheResult>[];
     this.block.logs = this._logs;
   }

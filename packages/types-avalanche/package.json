@@ -21,5 +21,8 @@
   "devDependencies": {
     "@polkadot/api": "^8",
     "@types/app-module-path": "^2.2.0"
+  },
+  "dependencies": {
+    "@ethersproject/abstract-provider": "^5.6.1"
   }
 }

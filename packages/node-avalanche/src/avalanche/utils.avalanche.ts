@@ -11,111 +11,111 @@ import {
 import { BigNumber } from 'ethers';
 
 export function formatBlock(block: Record<string, any>): AvalancheBlock {
-  const newBlock = {} as AvalancheBlock;
-  if (block.baseFeePerGas) {
-    newBlock.baseFeePerGas = BigNumber.from(block.baseFeePerGas).toBigInt();
-  }
-  newBlock.blockExtraData = block.extraData;
-  if (block.blockGasCost) {
-    newBlock.blockGasCost = BigNumber.from(block.blockGasCost).toBigInt();
-  }
-  newBlock.difficulty = BigNumber.from(block.difficulty).toBigInt();
-  newBlock.extDataGasUsed = block.extDataGasUsed;
-  newBlock.extDataHash = block.extDataHash;
-  newBlock.gasLimit = BigNumber.from(block.gasLimit).toBigInt();
-  newBlock.gasUsed = BigNumber.from(block.gasUsed).toBigInt();
-  newBlock.hash = block.hash;
-  newBlock.logsBloom = block.logsBloom;
-  newBlock.miner = block.miner;
-  newBlock.mixHash = block.mixHash;
-  newBlock.nonce = block.nonce;
-  newBlock.number = BigNumber.from(block.number).toNumber();
-  newBlock.parentHash = block.parentHash;
-  newBlock.receiptsRoot = block.receiptsRoot;
-  newBlock.sha3Uncles = block.sha3Uncles;
-  newBlock.size = BigNumber.from(block.size).toBigInt();
-  newBlock.stateRoot = block.stateRoot;
-  newBlock.timestamp = BigNumber.from(block.timestamp).toBigInt();
-  newBlock.totalDifficulty = BigNumber.from(block.totalDifficulty).toBigInt();
-  newBlock.transactions = block.transactions;
-  newBlock.transactionsRoot = block.transactionsRoot;
-  newBlock.uncles = block.uncles;
+  const newBlock: AvalancheBlock = {
+    difficulty: BigNumber.from(block.difficulty).toBigInt(),
+    extDataGasUsed: block.extDataGasUsed,
+    extDataHash: block.extDataHash,
+    gasLimit: BigNumber.from(block.gasLimit).toBigInt(),
+    gasUsed: BigNumber.from(block.gasUsed).toBigInt(),
+    hash: block.hash,
+    logsBloom: block.logsBloom,
+    miner: block.miner,
+    mixHash: block.mixHash,
+    nonce: block.nonce,
+    number: BigNumber.from(block.number).toNumber(),
+    parentHash: block.parentHash,
+    receiptsRoot: block.receiptsRoot,
+    sha3Uncles: block.sha3Uncles,
+    size: BigNumber.from(block.size).toBigInt(),
+    stateRoot: block.stateRoot,
+    timestamp: BigNumber.from(block.timestamp).toBigInt(),
+    totalDifficulty: BigNumber.from(block.totalDifficulty).toBigInt(),
+    transactions: block.transactions,
+    transactionsRoot: block.transactionsRoot,
+    uncles: block.uncles,
+    baseFeePerGas: block.baseFeePerGas
+      ? BigNumber.from(block.baseFeePerGas).toBigInt()
+      : undefined,
+    blockGasCost: block.blockGasCost
+      ? BigNumber.from(block.blockGasCost).toBigInt()
+      : undefined,
+    blockExtraData: block.blockExtraData,
+    logs: [], // Filled in at AvalancheBlockWrapped constructor
+  };
+
   return newBlock;
 }
 export function formatLog(
   log: AvalancheLog<AvalancheResult> | AvalancheLog,
+  block: AvalancheBlock,
 ): AvalancheLog<AvalancheResult> | AvalancheLog {
-  const newLog = {} as AvalancheLog<AvalancheResult>;
-  newLog.address = log.address;
-  newLog.topics = log.topics;
-  newLog.data = log.data;
-  newLog.blockNumber = BigNumber.from(log.blockNumber).toNumber();
-  newLog.transactionHash = log.transactionHash;
-  newLog.transactionIndex = BigNumber.from(log.transactionIndex).toNumber();
-  newLog.blockHash = log.blockHash;
-  newLog.logIndex = BigNumber.from(log.logIndex).toNumber();
-  newLog.removed = log.removed;
-  newLog.args = log.args;
+  const newLog: AvalancheLog<AvalancheResult> = {
+    address: log.address,
+    topics: log.topics,
+    data: log.data,
+    blockNumber: BigNumber.from(log.blockNumber).toNumber(),
+    transactionHash: log.transactionHash,
+    transactionIndex: BigNumber.from(log.transactionIndex).toNumber(),
+    blockHash: log.blockHash,
+    logIndex: BigNumber.from(log.logIndex).toNumber(),
+    removed: log.removed,
+    args: log.args,
+    block,
+  };
   return newLog;
 }
 
 export function formatTransaction(
   tx: Record<string, any>,
 ): AvalancheTransaction {
-  const transaction = {} as AvalancheTransaction;
-  transaction.blockHash = tx.blockHash;
-  transaction.blockNumber = BigNumber.from(tx.blockNumber).toNumber();
-  transaction.from = tx.from;
-  transaction.gas = BigNumber.from(tx.gas).toBigInt();
-  transaction.gasPrice = BigNumber.from(tx.gasPrice).toBigInt();
-  transaction.hash = tx.hash;
-  transaction.input = tx.input;
-  transaction.nonce = BigNumber.from(tx.nonce).toBigInt();
-  transaction.to = tx.to;
-  transaction.transactionIndex = BigNumber.from(tx.transactionIndex).toBigInt();
-  transaction.value = BigNumber.from(tx.value).toBigInt();
-  transaction.type = tx.type;
-  transaction.v = BigNumber.from(tx.v).toBigInt();
-  transaction.r = tx.r;
-  transaction.s = tx.s;
-  if (tx.accessList) {
-    transaction.accessList = tx.accessList;
-  }
-  if (tx.chainId) {
-    transaction.chainId = tx.chainId;
-  }
-  if (tx.maxFeePerGas) {
-    transaction.maxFeePerGas = BigNumber.from(tx.maxFeePerGas).toBigInt();
-  }
-  if (tx.maxPriorityFeePerGas) {
-    transaction.maxPriorityFeePerGas = BigNumber.from(
-      tx.maxPriorityFeePerGas,
-    ).toBigInt();
-  }
+  const transaction: AvalancheTransaction = {
+    blockHash: tx.blockHash,
+    blockNumber: BigNumber.from(tx.blockNumber).toNumber(),
+    from: tx.from,
+    gas: BigNumber.from(tx.gas).toBigInt(),
+    gasPrice: BigNumber.from(tx.gasPrice).toBigInt(),
+    hash: tx.hash,
+    input: tx.input,
+    nonce: BigNumber.from(tx.nonce).toBigInt(),
+    to: tx.to,
+    transactionIndex: BigNumber.from(tx.transactionIndex).toBigInt(),
+    value: BigNumber.from(tx.value).toBigInt(),
+    type: tx.type,
+    v: BigNumber.from(tx.v).toBigInt(),
+    r: tx.r,
+    s: tx.s,
+    accessList: tx.accessList,
+    chainId: tx.chainId,
+    maxFeePerGas: tx.maxFeePerGas
+      ? BigNumber.from(tx.maxFeePerGas).toBigInt()
+      : undefined,
+    maxPriorityFeePerGas: tx.maxPriorityFeePerGas
+      ? BigNumber.from(tx.maxPriorityFeePerGas).toBigInt()
+      : undefined,
+    receipt: undefined, // Filled in at AvalancheApi.fetchBlocks
+  };
   return transaction;
 }
 
-export function formatReceipt(receipt: Record<string, any>): AvalancheReceipt {
-  const newReceipt = {} as AvalancheReceipt;
-  newReceipt.blockHash = receipt.blockHash;
-  newReceipt.blockNumber = BigNumber.from(receipt.blockNumber).toNumber();
-  newReceipt.contractAddress = receipt.contractAddress;
-  newReceipt.cumulativeGasUsed = BigNumber.from(
-    receipt.cumulativeGasUsed,
-  ).toBigInt();
-  newReceipt.effectiveGasPrice = BigNumber.from(
-    receipt.effectiveGasPrice,
-  ).toBigInt();
-  newReceipt.from = receipt.from;
-  newReceipt.gasUsed = BigNumber.from(receipt.gasUsed).toBigInt();
-  newReceipt.logs = receipt.logs.map((log) => formatLog(log));
-  newReceipt.logsBloom = receipt.logsBloom;
-  newReceipt.status = Boolean(BigNumber.from(receipt.status).toNumber());
-  newReceipt.to = receipt.to;
-  newReceipt.transactionHash = receipt.transactionHash;
-  newReceipt.transactionIndex = BigNumber.from(
-    receipt.transactionIndex,
-  ).toNumber();
-  newReceipt.type = receipt.type;
+export function formatReceipt(
+  receipt: Record<string, any>,
+  block: AvalancheBlock,
+): AvalancheReceipt {
+  const newReceipt: AvalancheReceipt = {
+    blockHash: receipt.blockHash,
+    blockNumber: BigNumber.from(receipt.blockNumber).toNumber(),
+    contractAddress: receipt.contractAddress,
+    cumulativeGasUsed: BigNumber.from(receipt.cumulativeGasUsed).toBigInt(),
+    effectiveGasPrice: BigNumber.from(receipt.effectiveGasPrice).toBigInt(),
+    from: receipt.from,
+    gasUsed: BigNumber.from(receipt.gasUsed).toBigInt(),
+    logs: receipt.logs.map((log) => formatLog(log, block)),
+    logsBloom: receipt.logsBloom,
+    status: Boolean(BigNumber.from(receipt.status).toNumber()),
+    to: receipt.to,
+    transactionHash: receipt.transactionHash,
+    transactionIndex: BigNumber.from(receipt.transactionIndex).toNumber(),
+    type: receipt.type,
+  };
   return newReceipt;
 }

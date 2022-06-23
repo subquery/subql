@@ -74,13 +74,14 @@ export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   address: string;
   topics: string[];
   data: string;
+  blockHash: string;
   blockNumber: number;
   transactionHash: string;
   transactionIndex: number;
-  blockHash: string;
   logIndex: number;
   removed: boolean;
   args?: T;
+  block: AvalancheBlock;
 };
 
 export type AvalancheReceipt = {
