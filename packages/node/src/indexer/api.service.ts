@@ -121,12 +121,35 @@ export class ApiService implements OnApplicationShutdown {
         const isBlockNumber =
           original.meta.params[hashIndex].type === 'BlockNumber';
 
-        const ret = ((...args: any[]) => {
+        const ret = (async (...args: any[]) => {
           const argsClone = [...args];
-          argsClone[hashIndex] =
-            argsClone[hashIndex] || isBlockNumber
-              ? this.currentBlockNumber
-              : this.currentBlockHash;
+
+          if (isBlockNumber) {
+            if (argsClone[hashIndex] === undefined) {
+              argsClone[hashIndex] = this.currentBlockNumber;
+            } else if (argsClone[hashIndex] > this.currentBlockNumber) {
+              throw new Error(
+                `input block ${argsClone[hashIndex]} ahead of current block ${this.currentBlockNumber} is not supported`,
+              );
+            }
+          }
+          // is block hash
+          else {
+            if (argsClone[hashIndex] === undefined) {
+              argsClone[hashIndex] = this.currentBlockHash;
+            } else {
+              const atBlock = await this.api.rpc.chain.getBlock(
+                argsClone[hashIndex],
+              );
+              const atBlockNumber = atBlock.block.header.number.toNumber();
+              if (atBlockNumber > this.currentBlockNumber) {
+                throw new Error(
+                  `input block hash ${argsClone[hashIndex]} ahead of current block ${this.currentBlockNumber} is not supported`,
+                );
+              }
+            }
+          }
+
           return original(...argsClone);
         }) as RpcMethodResult<T, AnyFunction>;
         ret.raw = NOT_SUPPORT(`${methodName}.raw`);
