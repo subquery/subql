@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Breaking changes
+- New dictionary support, fixes incorrect results and allows for new filters (#26)
+
+### Updated
+- Sync with latest development from origin (#27)
+
+### Added
+- Support for nested filters (#21)
+- Support for enum contract call (#23)
+
 ## [0.0.7] - 2022-06-21
 ### Fixed
 - Handle JSON variable types in dictionary (#24)
