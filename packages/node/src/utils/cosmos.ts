@@ -241,7 +241,6 @@ export function wrapEvent(
 export async function fetchBlocksBatches(
   api: CosmosClient,
   blockArray: number[],
-  datasouces: SubqlProjectDs[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return blocks.map(([blockInfo, blockResults]) => {
@@ -253,7 +252,7 @@ export async function fetchBlocksBatches(
     // Make non-readonly
     const results = [...blockResults.results];
 
-    return new LazyBlockContent(blockInfo, results, api, datasouces);
+    return new LazyBlockContent(blockInfo, results, api);
   });
 }
 
@@ -267,74 +266,33 @@ class LazyBlockContent implements BlockContent {
     private _blockInfo: Block,
     private _results: TxData[],
     private _api: CosmosClient,
-    private _dataSources: SubqlProjectDs[],
   ) {}
 
   get block() {
     if (!this._wrappedBlock) {
-      if (this.handlerExists(SubqlCosmosHandlerKind.Block)) {
-        this._wrappedBlock = wrapBlock(this._blockInfo, this._results);
-      } else {
-        return undefined;
-      }
+      this._wrappedBlock = wrapBlock(this._blockInfo, this._results);
     }
     return this._wrappedBlock;
   }
 
   get transactions() {
     if (!this._wrappedTransaction) {
-      if (this.handlerExists(SubqlCosmosHandlerKind.Transaction)) {
-        this._wrappedTransaction = wrapTx(this.block, this._results);
-      } else {
-        this._wrappedTransaction = [];
-      }
+      this._wrappedTransaction = wrapTx(this.block, this._results);
     }
     return this._wrappedTransaction;
   }
 
   get messages() {
     if (!this._wrappedMessage) {
-      if (this.handlerExists(SubqlCosmosHandlerKind.Message)) {
-        this._wrappedMessage = wrapMsg(
-          this.block,
-          this.transactions,
-          this._api,
-        );
-      } else {
-        this._wrappedMessage = [];
-      }
+      this._wrappedMessage = wrapMsg(this.block, this.transactions, this._api);
     }
     return this._wrappedMessage;
   }
 
   get events() {
     if (!this._wrappedEvent) {
-      if (this.handlerExists(SubqlCosmosHandlerKind.Event)) {
-        this._wrappedEvent = wrapEvent(
-          this.block,
-          this.transactions,
-          this._api,
-        );
-      } else {
-        this._wrappedEvent = [];
-      }
+      this._wrappedEvent = wrapEvent(this.block, this.transactions, this._api);
     }
     return this._wrappedEvent;
-  }
-
-  private handlerExists<K extends SubqlCosmosHandlerKind>(kind: K) {
-    for (const ds of this._dataSources) {
-      if (isRuntimeCosmosDs(ds)) {
-        const handlers = ds.mapping.handlers.filter(
-          (h) => h.kind === kind, //&& FilterTypeMap[kind](data as any, h.filter),
-        );
-        if (handlers.length > 0) {
-          return true;
-        }
-      } else {
-        return true;
-      }
-    }
-    return false;
   }
 }
