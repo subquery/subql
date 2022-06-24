@@ -23,6 +23,7 @@ import {
   CosmosMessage,
   CosmosTransaction,
 } from '@subql/types-cosmos';
+import { conformsTo } from 'lodash';
 import { Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -293,8 +294,11 @@ export class IndexerManager {
 
       const blockData = BlockContentTypeMap[kind](block);
 
-      for (const handler of handlers) {
-        for (const data of blockData) {
+      for (const data of blockData) {
+        const filteredHandlers = handlers.filter((h) =>
+          FilterTypeMap[kind](data as any, h.filter),
+        );
+        for (const handler of filteredHandlers) {
           await vm.securedExec(handler.handler, [data]);
         }
       }
