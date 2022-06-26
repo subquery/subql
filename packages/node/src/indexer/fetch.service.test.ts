@@ -514,7 +514,12 @@ describe('FetchService', () => {
     const spec = await fetchService.getSpecVersion(10337859);
     const specVersionMap = (fetchService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
-    expect(specVersionMap[specVersionMap.length - 1].id).toBe('9200');
+    const latestSpecVersion =
+      await fetchService.api.rpc.state.getRuntimeVersion();
+    // This should be match if dictionary is fully synced
+    expect(Number(specVersionMap[specVersionMap.length - 1].id)).toBe(
+      latestSpecVersion.specVersion.toNumber(),
+    );
   }, 500000);
 
   it('prefetch meta for different specVersion range', async () => {

@@ -248,7 +248,14 @@ export class DictionaryService implements OnApplicationShutdown {
       const specVersionBlockHeightSet = new Set<SpecVersion>();
       const _metadata = resp.data._metadata;
       const specVersions = resp.data.specVersions.nodes;
-
+      // Add range for -1 specVersions
+      for (let i = 0; i < resp.data.specVersions.nodes.length - 1; i++) {
+        specVersionBlockHeightSet.add({
+          id: specVersions[i].id,
+          start: Number(specVersions[i].blockHeight),
+          end: Number(specVersions[i + 1].blockHeight) - 1,
+        });
+      }
       if (specVersions && specVersions.length >= 0) {
         // Add range for the last specVersion
         if (_metadata.lastProcessedHeight) {
@@ -256,14 +263,6 @@ export class DictionaryService implements OnApplicationShutdown {
             id: specVersions[specVersions.length - 1].id,
             start: Number(specVersions[specVersions.length - 1].blockHeight),
             end: Number(_metadata.lastProcessedHeight),
-          });
-        }
-        // Add range for -1 specVersions
-        for (let i = 0; i < resp.data.specVersions.nodes.length - 1; i++) {
-          specVersionBlockHeightSet.add({
-            id: specVersions[i].id,
-            start: Number(specVersions[i].blockHeight),
-            end: Number(specVersions[i + 1].blockHeight) - 1,
           });
         }
       }
