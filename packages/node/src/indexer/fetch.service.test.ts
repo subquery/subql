@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { ApiOptions } from '@polkadot/api/types';
 import {
   SubstrateDatasourceKind,
@@ -70,6 +71,7 @@ async function createFetchService(
     dsPluginService,
     dynamicDsService,
     new EventEmitter2(),
+    new SchedulerRegistry(),
   );
 }
 

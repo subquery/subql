@@ -4,9 +4,11 @@
 import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
+import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
+
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -48,13 +50,14 @@ import { IndexerEvent } from './events';
 import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
-const BLOCK_TIME_VARIANCE = 5;
+let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
+const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
 
@@ -66,6 +69,37 @@ const fetchBlocksBatches = argv.profiler
     )
   : SubstrateUtil.fetchBlocksBatches;
 
+const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
+const DEFAULT_TIME = new BN(6_000);
+const A_DAY = new BN(24 * 60 * 60 * 1000);
+function calcInterval(api: ApiPromise): BN {
+  // console.log('babe', api.consts.babe?.expectedBlockTime);
+  // console.log('diff',api.consts.difficulty?.targetBlockTime);
+  // console.log('subspace',api.consts.subspace?.expectedBlockTime);
+  // console.log('if logic',api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
+  // ?
+  //   api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+  // : api.query.parachainSystem
+  // ?
+  //   DEFAULT_TIME.mul(BN_TWO)
+  // :
+  //   DEFAULT_TIME);
+  //   console.log('stamp gte',api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD));
+
+  //   console.log('bn two ',api.consts.timestamp.minimumPeriod.mul(BN_TWO));
+  //   console.log('parachain', api.query.parachainSystem);
+  return bnMin(
+    A_DAY,
+    api.consts.babe?.expectedBlockTime ||
+      (api.consts.difficulty?.targetBlockTime as any) ||
+      api.consts.subspace?.expectedBlockTime ||
+      (api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
+        ? api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+        : api.query.parachainSystem
+        ? DEFAULT_TIME.mul(BN_TWO)
+        : DEFAULT_TIME),
+  );
+}
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryQueryEntry {
@@ -146,6 +180,7 @@ export class FetchService implements OnApplicationShutdown {
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
+    private schedulerRegistry: SchedulerRegistry,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
       this.nodeConfig.batchSize * 3,
@@ -168,6 +203,10 @@ export class FetchService implements OnApplicationShutdown {
     this.templateDynamicDatasouces =
       await this.dynamicDsService.getDynamicDatasources();
   }
+  // dynamicInterval(name: string,  milliseconds: number, fn: void): void {
+  //   const interval = setInterval(()=>fn, milliseconds);
+  //   this.schedulerRegistry.addInterval(name, interval);
+  // }
 
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
@@ -282,7 +321,33 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary;
   }
 
+  addInterval(name: string, milliseconds: number, handler: () => void): void {
+    const interval = setInterval(handler.bind(this), milliseconds);
+    this.schedulerRegistry.addInterval(name, interval);
+  }
+
   async init(): Promise<void> {
+    if (this.api) {
+      // const CHAIN_INTERVAL = +calcInterval(this.api) * INTERVAL_PERCENT
+      const CHAIN_INTERVAL = calcInterval(this.api)
+        .muln(INTERVAL_PERCENT)
+        .toNumber();
+      console.log(CHAIN_INTERVAL);
+
+      BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
+
+      this.schedulerRegistry.addInterval(
+        'getFinalizedBlockHead',
+        setInterval(
+          () => void this.getFinalizedBlockHead(),
+          BLOCK_TIME_VARIANCE,
+        ),
+      );
+      this.schedulerRegistry.addInterval(
+        'getBestBlockHead',
+        setInterval(() => void this.getBestBlockHead(), BLOCK_TIME_VARIANCE),
+      );
+    }
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -315,8 +380,9 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedBlockHead() {
+  async getFinalizedBlockHead(): Promise<void> {
+    // console.log('getFinalizedBlockHead', Date.now());
+
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -337,8 +403,9 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getBestBlockHead() {
+  async getBestBlockHead(): Promise<void> {
+    // console.log('getBestBlockHead', Date.now());
+
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;

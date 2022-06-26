@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -143,6 +144,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     dsPluginService,
     dynamicDsService,
     eventEmitter,
+    new SchedulerRegistry(),
   );
   const poiService = new PoiService(nodeConfig, project, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig, poiService);
