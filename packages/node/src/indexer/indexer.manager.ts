@@ -56,7 +56,6 @@ const { argv } = getYargsOption();
 export class IndexerManager {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
-  private blockOffset: number;
 
   constructor(
     private storeService: StoreService,
@@ -140,7 +139,7 @@ export class IndexerManager {
       const operationHash = this.storeService.getOperationMerkleRoot();
       if (
         !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
-        this.blockOffset === undefined
+        this.projectService.blockOffset === undefined
       ) {
         await this.projectService.upsertMetadataBlockOffset(
           blockHeight - 1,
