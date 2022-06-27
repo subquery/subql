@@ -35,11 +35,14 @@ export interface CosmosTransaction {
   decodedTx: DecodedTxRaw;
 }
 
-export interface CosmosMessage {
+export interface CosmosMessage<T = any> {
   idx: number;
   block: CosmosBlock;
   tx: CosmosTransaction;
-  msg: any;
+  msg: {
+    typeUrl: string;
+    decodedMsg: T;
+  };
 }
 
 export interface CosmosEvent {
