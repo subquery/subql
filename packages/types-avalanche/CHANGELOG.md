@@ -10,6 +10,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [Unreleased]
 
 
-## [0.1.0] - 2022-06-27
+## [0.1.1] - 2022-06-27
 ### Added
 - init commit
