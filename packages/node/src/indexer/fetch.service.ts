@@ -394,7 +394,6 @@ export class FetchService implements OnApplicationShutdown {
                 ),
               );
             } else {
-              console.log(`dictioanry put number ${batchBlocks}`);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
