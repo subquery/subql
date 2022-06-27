@@ -8,8 +8,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.0] - 2022-06-27
+
 ### Breaking changes
-- New dictionary support, fixes incorrect results and allows for new filters (#26)
+- Messages and events have changed `message.msg.msg` to `message.msg.decodeMsg.msg`. This is due to lazy loading and will mean you don't need to provide chain types for messages you don't care about
+- Dictionary structure has changed
+
+### Fixed
+- Loading chainTypes that referred to other files (#28)
+- Dictionary queries, this also required a new dictionary (#26)
 
 ### Updated
 - Sync with latest development from origin (#27)
@@ -17,6 +24,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Support for nested filters (#21)
 - Support for enum contract call (#23)
+- Lazy decoding of messages (#17)
 
 ## [0.0.7] - 2022-06-21
 ### Fixed
@@ -30,6 +38,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...HEAD
+[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
 [0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.6...node/0.0.7
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/node/0.0.5...node/0.0.6
