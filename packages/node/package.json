@@ -19,10 +19,9 @@
   },
   "dependencies": {
     "@apollo/client": "3.4.16",
-    "@cosmjs/cosmwasm-stargate": "0.28.7",
-    "@cosmjs/proto-signing": "0.28.7",
-    "@cosmjs/stargate": "0.28.7",
-    "@cosmjs/tendermint-rpc": "https://github.com/subquery/subql-cosmos/raw/79d287dbcdbd4def097a6d4c3f7373f7353e0b20/packages/node/tendermint-rpc.tgz",
+    "@cosmjs/cosmwasm-stargate": "^0.28.9",
+    "@cosmjs/proto-signing": "^0.28.9",
+    "@cosmjs/stargate": "^0.28.9",
     "@nestjs/common": "^8.1.2",
     "@nestjs/core": "^8.1.2",
     "@nestjs/event-emitter": "^1.0.0",

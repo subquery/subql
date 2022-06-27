@@ -33,7 +33,7 @@
   "resolutions": {
     "@polkadot/api": "8.8.2",
     "@polkadot/util": "9.4.1",
-    "@cosmjs/cosmwasm-stargate": "0.28.7"
+    "@cosmjs/cosmwasm-stargate": "0.28.9"
   },
   "scripts": {
     "build": "yarn workspaces foreach -ptA run build",
