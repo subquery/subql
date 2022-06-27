@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@actions/core": "^1.6.0",
+    "@actions/core": "^1.9.0",
     "@babel/preset-env": "^7.16.11",
     "@octokit/request": "^5.6.3",
     "@types/node": "^14.18.10",
