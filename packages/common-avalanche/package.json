@@ -1,6 +1,6 @@
 {
   "name": "@subql/common-avalanche",
-  "version": "0.0.3-2",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "build": "rm -rf dist && tsc -b",
@@ -32,6 +32,5 @@
     "@types/bn.js": "4.11.6",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  },
-  "stableVersion": "0.0.3-1"
+  }
 }

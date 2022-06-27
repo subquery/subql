@@ -8,22 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [0.3.1] - 2022-04-27
-### Changed
-- Add missing vm2 dependency (#919)
-
-## [0.3.0] - 2022-04-06
-### Added
-- Add manifest 1.0.0 (#845)
-### Fixed
-- Fix validation for genesisHash or chainId with empty string (#883)
-
-## [0.2.0] - 2022-04-04
-### Changed
-- Update to use `vm2`(#869)
-
-## [0.1.0] - 2022-03-01
+## [0.1.0] - 2022-06-27
 ### Added
 - init commit
 
-[Unreleased]: https://github.com/subquery/subql/compare/common-substrate/0.1.0...HEAD
