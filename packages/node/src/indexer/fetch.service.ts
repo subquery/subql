@@ -291,11 +291,14 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    const specVersionResponse = await this.dictionaryService.getSpecVersion();
-    this.specVersionMap =
-      this.useDictionary && specVersionResponse !== undefined
-        ? specVersionResponse
-        : [];
+    if (this.useDictionary) {
+      const specVersionResponse = await this.dictionaryService.getSpecVersion();
+      if (specVersionResponse !== undefined) {
+        this.specVersionMap = specVersionResponse;
+      }
+    } else {
+      this.specVersionMap = [];
+    }
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -413,7 +416,6 @@ export class FetchService implements OnApplicationShutdown {
                 ),
               );
             } else {
-              console.log(`dictioanry put number ${batchBlocks}`);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
@@ -507,7 +509,9 @@ export class FetchService implements OnApplicationShutdown {
       currentSpecVersion = await this.getSpecFromApi(blockHeight);
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
-        const response = await this.dictionaryService.getSpecVersion();
+        const response = this.useDictionary
+          ? await this.dictionaryService.getSpecVersion()
+          : undefined;
         if (response !== undefined) {
           this.specVersionMap = response;
         }

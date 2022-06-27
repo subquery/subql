@@ -23,7 +23,6 @@ describe('substrate utils', () => {
     const blocks = await fetchBlocks(api, 100000, 100019);
     expect(blocks).toHaveLength(20);
     for (const block of blocks) {
-      console.log(block.block.specVersion);
       expect(block).toHaveProperty('block');
       expect(block).toHaveProperty('extrinsics');
       expect(block).toHaveProperty('events');
