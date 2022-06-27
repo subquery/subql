@@ -34,6 +34,7 @@ export class ProjectService {
   private _schema: string;
   private metadataRepo: MetadataRepo;
   private _startHeight: number;
+  private _blockOffset: number;
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
@@ -51,6 +52,10 @@ export class ProjectService {
 
   get schema(): string {
     return this._schema;
+  }
+
+  get blockOffset(): number {
+    return this._blockOffset;
   }
 
   get startHeight(): number {
@@ -272,7 +277,7 @@ export class ProjectService {
     await this.metadataRepo.upsert(
       {
         key: 'blockOffset',
-        value: height - 1,
+        value: height,
       },
       { transaction: tx },
     );
@@ -313,9 +318,10 @@ export class ProjectService {
     return startHeight;
   }
 
-  // FIXME Dedupe with indexermanager
+  // FIXME Dedupe with indexer manager
   setBlockOffset(offset: number): void {
-    logger.info(`set blockoffset to ${offset}`);
+    logger.info(`set blockOffset to ${offset}`);
+    this._blockOffset = offset;
     void this.mmrService
       .syncFileBaseFromPoi(this.schema, offset)
       .catch((err) => {
