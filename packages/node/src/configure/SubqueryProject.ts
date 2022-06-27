@@ -26,14 +26,17 @@ import {
   processNetworkConfig,
 } from '../utils/project';
 
-export type CosmosChainType = CustomModule & { proto: protobuf.Root };
+export type CosmosChainType = CustomModule & {
+  proto: protobuf.Root;
+  packageName?: string;
+};
 
 export type SubqlProjectDs = SubqlCosmosDataSource & {
   mapping: SubqlCosmosDataSource['mapping'] & { entryScript: string };
 };
 
 export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
-  chainTypes: Map<string, CosmosChainType>;
+  chainTypes: Map<string, CosmosChainType> & { protoRoot: protobuf.Root };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {

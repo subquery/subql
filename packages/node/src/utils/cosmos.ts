@@ -244,15 +244,23 @@ export async function fetchBlocksBatches(
 ): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return blocks.map(([blockInfo, blockResults]) => {
-    assert(
-      blockResults.results.length === blockInfo.txs.length,
-      `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
-    );
+    try {
+      assert(
+        blockResults.results.length === blockInfo.txs.length,
+        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
+      );
 
-    // Make non-readonly
-    const results = [...blockResults.results];
+      // Make non-readonly
+      const results = [...blockResults.results];
 
-    return new LazyBlockContent(blockInfo, results, api);
+      return new LazyBlockContent(blockInfo, results, api);
+    } catch (e) {
+      logger.error(
+        e,
+        `Failed to fetch and prepare block ${blockInfo.header.height}`,
+      );
+      throw e;
+    }
   });
 }
 
