@@ -234,24 +234,32 @@ export async function fetchBlocksBatches(
 ): Promise<BlockContent[]> {
   const blocks = await fetchCosmosBlocksArray(api, blockArray);
   return blocks.map(([blockInfo, blockResults]) => {
-    assert(
-      blockResults.results.length === blockInfo.txs.length,
-      `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
-    );
+    try {
+      assert(
+        blockResults.results.length === blockInfo.txs.length,
+        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
+      );
 
-    // Make non-readonly
-    const results = [...blockResults.results];
+      // Make non-readonly
+      const results = [...blockResults.results];
 
-    const block = wrapBlock(blockInfo, results);
-    const transactions = wrapTx(block, results);
-    const messages = wrapMsg(block, transactions, api);
-    const events = wrapEvent(block, transactions, api);
+      const block = wrapBlock(blockInfo, results);
+      const transactions = wrapTx(block, results);
+      const messages = wrapMsg(block, transactions, api);
+      const events = wrapEvent(block, transactions, api);
 
-    return <BlockContent>{
-      block,
-      transactions,
-      messages,
-      events,
-    };
+      return <BlockContent>{
+        block,
+        transactions,
+        messages,
+        events,
+      };
+    } catch (e) {
+      logger.error(
+        e,
+        `Failed to fetch and prepare block ${blockInfo.header.height}`,
+      );
+      throw e;
+    }
   });
 }

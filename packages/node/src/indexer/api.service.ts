@@ -6,12 +6,7 @@ import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
-import {
-  Block,
-  IndexedTx,
-  StargateClientOptions,
-  defaultRegistryTypes,
-} from '@cosmjs/stargate';
+import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
 import {
   HttpEndpoint,
   Tendermint34Client,
@@ -19,6 +14,7 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
+import { MsgVoteWeighted } from 'cosmjs-types/cosmos/gov/v1beta1/tx';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -43,7 +39,6 @@ const logger = getLogger('api');
 @Injectable()
 export class ApiService {
   private api: CosmosClient;
-  private clientConfig: StargateClientOptions;
   networkMeta: NetworkMetadataPayload;
   dsProcessor: DsProcessorService;
   constructor(
@@ -54,7 +49,7 @@ export class ApiService {
   async init(): Promise<ApiService> {
     try {
       const { network } = this.project;
-      this.clientConfig = {};
+      // https://github.com/cosmos/cosmjs/blob/ae06012a1510ddf48068bbf21374c0bbff3d5bab/packages/cosmwasm-stargate/src/modules/wasm/messages.ts#L11
       const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
         ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
         ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
@@ -126,11 +121,17 @@ export class ApiService {
     }
 
     const res: Record<string, GeneratedType> = {};
-    for (const [packageName, { messages, proto }] of network.chainTypes) {
+    for (const [
+      userPackageName,
+      { messages, packageName },
+    ] of network.chainTypes) {
+      const pkgName = packageName ?? userPackageName;
       for (const msg of messages) {
-        logger.info(`Registering chain message type "/${packageName}.${msg}"`);
-        const msgObj = proto.lookupType(`${packageName}.${msg}`);
-        res[`/${packageName}.${msg}`] = msgObj;
+        logger.info(`Registering chain message type "/${pkgName}.${msg}"`);
+        const msgObj = network.chainTypes.protoRoot.lookupType(
+          `${pkgName}.${msg}`,
+        );
+        res[`/${pkgName}.${msg}`] = msgObj;
       }
     }
     return res;

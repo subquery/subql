@@ -15,13 +15,12 @@ import {
   RuntimeDataSourceV0_3_0,
   CustomDatasourceV0_3_0,
 } from '@subql/common-cosmos';
-import yaml from 'js-yaml';
 import * as protobuf from 'protobufjs';
 import tar from 'tar';
 import {
   SubqlProjectDs,
   CosmosChainType,
-  SubqueryProjectNetwork,
+  CosmosProjectNetConfig,
 } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
@@ -38,9 +37,6 @@ export async function prepareProjectDir(projectPath: string): Promise<string> {
   }
 }
 
-// We cache this to avoid repeated reads from fs
-const projectEntryCache: Record<string, string> = {};
-
 export function isBaseHandler(
   handler: SubqlCosmosHandler,
 ): handler is SubqlCosmosRuntimeHandler {
@@ -56,7 +52,7 @@ export function isCustomHandler(
 export async function processNetworkConfig(
   network: any,
   reader: Reader,
-): Promise<SubqueryProjectNetwork> {
+): Promise<CosmosProjectNetConfig> {
   if (network.chainId && network.genesisHash) {
     throw new Error('Please only provide one of chainId and genesisHash');
   } else if (network.genesisHash && !network.chainId) {
@@ -64,17 +60,23 @@ export async function processNetworkConfig(
   }
   delete network.genesisHash;
 
-  const chainTypes: Map<string, CosmosChainType> = new Map();
+  const chainTypes = new Map<string, CosmosChainType>() as Map<
+    string,
+    CosmosChainType
+  > & { protoRoot: protobuf.Root };
   if (!network.chainTypes) {
     network.chainTypes = chainTypes;
     return network;
   }
+
+  const protoRoot = new protobuf.Root();
   for (const [key, value] of network.chainTypes) {
-    chainTypes.set(key, {
-      ...value,
-      proto: await loadNetworkChainType(reader, value.file),
-    });
+    const [packageName, proto] = await loadNetworkChainType(reader, value.file);
+    chainTypes.set(key, { ...value, packageName, proto });
+
+    protoRoot.add(proto);
   }
+  chainTypes.protoRoot = protoRoot;
   network.chainTypes = chainTypes;
   return network;
 }
@@ -179,12 +181,14 @@ export async function loadDataSourceScript(
 export async function loadNetworkChainType(
   reader: Reader,
   file: string,
-): Promise<protobuf.Root> {
+): Promise<[string, protobuf.Root]> {
   const proto = await reader.getFile(file);
 
   if (!proto) throw new Error(`Unable to load chain type from ${file}`);
 
-  return protobuf.parse(proto).root;
+  const { package: packageName, root } = protobuf.parse(proto);
+
+  return [packageName, root];
 }
 
 async function makeTempDir(): Promise<string> {
