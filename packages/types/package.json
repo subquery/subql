@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-cosmos",
-  "version": "0.0.7-0",
+  "version": "0.0.7-1",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -22,5 +22,5 @@
   "devDependencies": {
     "@types/app-module-path": "^2.2.0"
   },
-  "stableVersion": "0.0.6"
+  "stableVersion": "0.0.7-0"
 }
