@@ -8,6 +8,7 @@ import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
 import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
+import { isRuntimeCosmosDs } from '@subql/common-cosmos';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosMessageFilter,
@@ -15,7 +16,10 @@ import {
   CosmosEvent,
   CosmosTransaction,
   CosmosMessage,
+  SubqlCosmosHandlerKind,
 } from '@subql/types-cosmos';
+import { transpileModule } from 'typescript';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
@@ -34,7 +38,7 @@ export function filterMessageData(
     for (const key in filter.values) {
       if (
         filter.values[key] !==
-        key.split('.').reduce((acc, curr) => acc[curr], data.msg)
+        key.split('.').reduce((acc, curr) => acc[curr], data.msg.decodedMsg)
       ) {
         return false;
       }
@@ -44,8 +48,8 @@ export function filterMessageData(
     filter.type === '/cosmwasm.wasm.v1.MsgExecuteContract' &&
     filter.contractCall &&
     !(
-      filter.contractCall === data.msg.msg ||
-      filter.contractCall in data.msg.msg
+      filter.contractCall === data.msg.decodedMsg.msg ||
+      filter.contractCall in data.msg.decodedMsg.msg
     )
   ) {
     return false;
@@ -158,7 +162,10 @@ export function wrapTx(
     block: block,
     tx,
     hash: toHex(sha256(block.block.txs[idx])).toUpperCase(),
-    decodedTx: decodeTxRaw(block.block.txs[idx]),
+    get decodedTx() {
+      delete (this as any).decodedTx;
+      return ((this.decodedTx as any) = decodeTxRaw(block.block.txs[idx]));
+    },
   }));
 }
 
@@ -175,7 +182,10 @@ function wrapCosmosMsg(
     block: block,
     msg: {
       typeUrl: rawMessage.typeUrl,
-      ...api.decodeMsg<any>(rawMessage),
+      get decodedMsg() {
+        delete this.decodedMsg;
+        return (this.decodedMsg = api.decodeMsg(rawMessage));
+      },
     },
   };
 }
@@ -243,17 +253,7 @@ export async function fetchBlocksBatches(
       // Make non-readonly
       const results = [...blockResults.results];
 
-      const block = wrapBlock(blockInfo, results);
-      const transactions = wrapTx(block, results);
-      const messages = wrapMsg(block, transactions, api);
-      const events = wrapEvent(block, transactions, api);
-
-      return <BlockContent>{
-        block,
-        transactions,
-        messages,
-        events,
-      };
+      return new LazyBlockContent(blockInfo, results, api);
     } catch (e) {
       logger.error(
         e,
@@ -262,4 +262,45 @@ export async function fetchBlocksBatches(
       throw e;
     }
   });
+}
+
+class LazyBlockContent implements BlockContent {
+  private _wrappedBlock: CosmosBlock;
+  private _wrappedTransaction: CosmosTransaction[];
+  private _wrappedMessage: CosmosMessage[];
+  private _wrappedEvent: CosmosEvent[];
+
+  constructor(
+    private _blockInfo: Block,
+    private _results: TxData[],
+    private _api: CosmosClient,
+  ) {}
+
+  get block() {
+    if (!this._wrappedBlock) {
+      this._wrappedBlock = wrapBlock(this._blockInfo, this._results);
+    }
+    return this._wrappedBlock;
+  }
+
+  get transactions() {
+    if (!this._wrappedTransaction) {
+      this._wrappedTransaction = wrapTx(this.block, this._results);
+    }
+    return this._wrappedTransaction;
+  }
+
+  get messages() {
+    if (!this._wrappedMessage) {
+      this._wrappedMessage = wrapMsg(this.block, this.transactions, this._api);
+    }
+    return this._wrappedMessage;
+  }
+
+  get events() {
+    if (!this._wrappedEvent) {
+      this._wrappedEvent = wrapEvent(this.block, this.transactions, this._api);
+    }
+    return this._wrappedEvent;
+  }
 }
