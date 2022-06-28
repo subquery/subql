@@ -21,16 +21,18 @@ import {
   hexStringEq,
   stringNormalizedEq,
 } from '../utils/string';
+import { AvalancheProvider } from './provider.avalanche';
 import { formatLog } from './utils.avalanche';
 
 export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   private _logs: AvalancheLog[];
-  constructor(private _block: AvalancheBlock) {
+  constructor(private _block: AvalancheBlock, provider: AvalancheProvider) {
     this._logs = flatten(
       _block.transactions.map((tx) => tx.receipt.logs),
     ) as AvalancheLog<AvalancheResult>[];
     this._logs = this._logs.filter((log) => log.topics.length > 0);
-    this._logs.map((log) => formatLog(log));
+    this._block.provider = provider;
+    this._logs.map((log) => formatLog(log, this._block, provider));
     this._block.logs = this._logs;
   }
 

@@ -18,6 +18,13 @@ export interface AvalancheResult extends ReadonlyArray<any> {
   readonly [key: string]: any;
 }
 
+export interface AvalancheProvider {
+  getBalance: (address: string) => Promise<any>;
+  getTransactionCount: (address: string) => Promise<any>;
+  getCode: (address: string) => Promise<any>;
+  call: (to: string, from?: string, gas?: string, gasPrice?: string, value?: string, data?: string) => Promise<any>;
+}
+
 export type AvalancheBlock = {
   blockExtraData: string;
   difficulty: bigint;
@@ -44,6 +51,7 @@ export type AvalancheBlock = {
   uncles: string[];
   baseFeePerGas?: bigint;
   blockGasCost?: bigint;
+  provider: AvalancheProvider;
 };
 
 export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = {
@@ -67,11 +75,13 @@ export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = 
   chainId?: string;
   maxFeePerGas?: bigint;
   maxPriorityFeePerGas?: bigint;
+  provider: AvalancheProvider;
   args?: T;
 };
 
 export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   address: string;
+  blockTimestamp: bigint;
   topics: string[];
   data: string;
   blockNumber: number;
@@ -80,6 +90,7 @@ export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
   blockHash: string;
   logIndex: number;
   removed: boolean;
+  provider: AvalancheProvider;
   args?: T;
 };
 
