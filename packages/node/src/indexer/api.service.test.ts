@@ -128,6 +128,58 @@ describe('ApiService', () => {
     await delay(0.5);
   });
 
+  it('apiAt could fetch previous block info', async () => {
+    const apiService = await prepareApiService(
+      'wss://polkadot.api.onfinality.io/public-ws',
+    );
+    const api = apiService.getApi();
+    const blockhash = await api.rpc.chain.getBlockHash(6721195);
+    const block = await api.rpc.chain.getBlock(blockhash);
+    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const runtimeVersion = { specVersion: 9090 } as unknown as RuntimeVersion;
+    // step 1, get early block, original polkadot api query result
+    const earlyBlockhash = await api.rpc.chain.getBlockHash(5661443);
+    const apiResults = await api.rpc.state.getRuntimeVersion(earlyBlockhash);
+    // step 2, api get patched result with block height
+    const patchedApi = await apiService.getPatchedApi(
+      mockBlock,
+      runtimeVersion,
+    );
+    const patchedResult = await patchedApi.rpc.state.getRuntimeVersion(
+      earlyBlockhash,
+    );
+    expect(apiResults).toEqual(patchedResult);
+    // patchedApi without input blockHash, will return runtimeVersion at 6721195
+    const patchedResult2 = await patchedApi.rpc.state.getRuntimeVersion();
+    expect(apiResults).not.toEqual(patchedResult2);
+    // To be same as runtimeVersion at 6721195
+    expect(patchedResult2.specVersion.toNumber()).toEqual(9090);
+    await delay(0.5);
+  });
+
+  it('apiAt will throw when fetch future block info', async () => {
+    const apiService = await prepareApiService(
+      'wss://polkadot.api.onfinality.io/public-ws',
+    );
+    const api = apiService.getApi();
+    const blockhash = await api.rpc.chain.getBlockHash(5661443);
+    const block = await api.rpc.chain.getBlock(blockhash);
+    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const runtimeVersion = { specVersion: 9050 } as unknown as RuntimeVersion;
+    // step 1, get future block, original polkadot api query result
+    const futureBlockhash = await api.rpc.chain.getBlockHash(6721195);
+    // step 2, api get patched result with block height
+    const patchedApi = await apiService.getPatchedApi(
+      mockBlock,
+      runtimeVersion,
+    );
+    await expect(
+      patchedApi.rpc.state.getRuntimeVersion(futureBlockhash),
+    ).rejects.toThrow(
+      'input block hash 0x509f1b7627970a326a840e3c32be75bb568cf64b92b007611b4216069fe0d9a7 ahead of current block 5661443 is not supported',
+    );
+  });
+
   it.skip('api consts is swapped to the specified block', async () => {
     const apiService = await prepareApiService();
     const api = apiService.getApi();
@@ -153,11 +205,6 @@ describe('ApiService', () => {
     ).not.toEqual(currentMaxNRPV);
   });
 
-  // it('argsClone fails if it is a future block number or block hash', async () => {
-  //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
-
-  // });
   // it('.tx.*.*, .derive.*.* are removed', async () => {
   //   const apiService = await prepareApiService();
   //   const api = apiService.getApi();
