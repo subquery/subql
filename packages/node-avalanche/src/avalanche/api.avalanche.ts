@@ -19,6 +19,7 @@ import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
 import { AvalancheBlockWrapped } from './block.avalanche';
+import { AvalancheProvider } from './provider.avalanche';
 import {
   formatBlock,
   formatReceipt,
@@ -65,6 +66,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   private cchain: EVMAPI;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: string;
+  private provider: AvalancheProvider;
 
   constructor(private options: AvalancheOptions) {
     this.encoding = 'cb58';
@@ -86,6 +88,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     }
     this.indexApi = this.client.Index();
     this.cchain = this.client.CChain();
+    this.provider = new AvalancheProvider(this.cchain);
     switch (this.options.subnet) {
       case 'XV':
         this.baseUrl = '/ext/index/X/vtx';
@@ -152,6 +155,38 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return lastHeight;
   }
 
+  async getBalance(address: string): Promise<any> {
+    const rep = await this.provider.getBalance(address);
+    return rep;
+  }
+
+  async getTransactionCount(address: string): Promise<any> {
+    const rep = await this.provider.getTransactionCount(address);
+    return rep;
+  }
+
+  async getCode(address: string): Promise<any> {
+    const rep = await this.provider.getCode(address);
+    return rep;
+  }
+
+  async getStorageAt(address: string, position: string): Promise<any> {
+    const rep = await this.provider.getStorageAt(address, position);
+    return rep;
+  }
+
+  async call(
+    to: string,
+    from?: string,
+    gas?: string,
+    gasPrice?: string,
+    value?: string,
+    data?: string,
+  ): Promise<any> {
+    const rep = await this.provider.call(to, from, gas, gasPrice, value, data);
+    return rep;
+  }
+
   async fetchBlocks(bufferBlocks: number[]): Promise<AvalancheBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
@@ -166,7 +201,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
         block.transactions = await Promise.all(
           block.transactions.map(async (tx) => {
-            const transaction = formatTransaction(tx);
+            const transaction = formatTransaction(tx, this.provider);
             const receipt = (
               await this.cchain.callMethod(
                 'eth_getTransactionReceipt',
@@ -174,11 +209,11 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
                 '/ext/bc/C/rpc',
               )
             ).data.result;
-            transaction.receipt = formatReceipt(receipt);
+            transaction.receipt = formatReceipt(receipt, block, this.provider);
             return transaction;
           }),
         );
-        return new AvalancheBlockWrapped(block);
+        return new AvalancheBlockWrapped(block, this.provider);
       }),
     );
   }
