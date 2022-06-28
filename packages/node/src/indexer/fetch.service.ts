@@ -374,10 +374,14 @@ export class FetchService implements OnApplicationShutdown {
     let startBlockHeight: number;
     let scaledBatchSize: number;
 
-    while (!this.isShutdown) {
-      startBlockHeight = this.latestBufferedHeight
+    const getStartBlockHeight = (): number => {
+      return this.latestBufferedHeight
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
+    };
+
+    while (!this.isShutdown) {
+      startBlockHeight = getStartBlockHeight();
 
       scaledBatchSize = Math.max(
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
@@ -400,6 +404,14 @@ export class FetchService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
+
+          if (startBlockHeight !== getStartBlockHeight()) {
+            logger.debug(
+              `Queue was reset for new DS, discarding dictionary query result`,
+            );
+            continue;
+          }
+
           if (
             dictionary &&
             this.dictionaryValidation(dictionary, startBlockHeight)
@@ -413,7 +425,6 @@ export class FetchService implements OnApplicationShutdown {
                 ),
               );
             } else {
-              console.log(`dictioanry put number ${batchBlocks}`);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
@@ -450,6 +461,9 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
+      // Used to compare before and after as a way to check if new DS created
+      const bufferedHeight = this.latestBufferedHeight;
+
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
       const specChanged = await this.specChanged(
         bufferBlocks[bufferBlocks.length - 1],
@@ -464,6 +478,11 @@ export class FetchService implements OnApplicationShutdown {
           bufferBlocks[bufferBlocks.length - 1]
         }], total ${bufferBlocks.length} blocks`,
       );
+
+      if (bufferedHeight > this.latestBufferedHeight) {
+        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        continue;
+      }
       this.blockBuffer.putAll(blocks);
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.blockBuffer.size,
