@@ -1,6 +1,20 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {
+  Block,
+  BlockTag,
+  BlockWithTransactions,
+  EventType,
+  Filter,
+  Listener,
+  Log,
+  Provider,
+  TransactionReceipt,
+  TransactionRequest,
+  TransactionResponse,
+} from '@ethersproject/abstract-provider';
+import {Deferrable} from '@ethersproject/properties';
 import {BlockWrapper} from '../interfaces';
 
 export interface AvalancheTransactionFilter {
@@ -22,7 +36,7 @@ export interface AvalancheProvider {
   getBalance: (address: string) => Promise<any>;
   getTransactionCount: (address: string) => Promise<any>;
   getCode: (address: string) => Promise<any>;
-  call: (to: string, from?: string, gas?: string, gasPrice?: string, value?: string, data?: string) => Promise<any>;
+  call: (transaction: Deferrable<TransactionRequest>, blockTag?: BlockTag | Promise<BlockTag>) => Promise<string>;
 }
 
 export type AvalancheBlock = {
@@ -77,6 +91,7 @@ export type AvalancheTransaction<T extends AvalancheResult = AvalancheResult> = 
   maxPriorityFeePerGas?: bigint;
   provider: AvalancheProvider;
   args?: T;
+  data?: string;
 };
 
 export type AvalancheLog<T extends AvalancheResult = AvalancheResult> = {
