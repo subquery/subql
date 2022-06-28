@@ -1,91 +1,59 @@
-specVersion: 1.0.0
-name: subquery-query-registry-project
-version: 1.0.0
-description: ''
-repository: ''
+specVersion: '1.0.0'
+
+name: 'avalanche-subql-starter'
+version: '0.0.1'
 runner:
   node:
-    name: '@subql/node'
-    version: '0.28.0'
+    name: '@subql/node-avalanche'
+    version: '*'
   query:
     name: '@subql/query'
-    version: '^0.12.0'
+    version: '*'
+description: 'This project can be use as a starting point for developing your new Avalanche SubQuery project'
+repository: 'https://github.com/subquery/avalanche-subql-starter'
+
 schema:
-  file: ./schema.graphql
+  file: './schema.graphql'
+
 network:
-  # genesisHash: '0x956876d5b80e47e523a6629b3c3ac3e42f2850ad12e236d87a0aaac87c9f6bc9' # Moonriver
-  genesisHash: '0x91bc6e169807aaa54802737e1c504b2577d4fafedd5a02c10293b1cd60e39527' # Moonbase Alpha
-  endpoint: wss://moonbeam-alpha.api.onfinality.io/public-ws
-  dictionary: https://api.subquery.network/sq/subquery/moonbase-alpha-dictionary
+  endpoint: 'http://avalanche.api.onfinality.io:9650'
+  # endpoint: "https://avalanche.api.onfinality.io"
+  # endpoint:  https://api.avax-test.network
+  chainId: 'mainnet'
+  subnet: 'C'
+  dictionary: https://api.subquery.network/sq/subquery/avalanche-dictionary
 
-  chaintypes:
-    file: './types.yaml'
 dataSources:
-  - kind: substrate/Moonbeam
-    startBlock: 1358833
-    processor:
-      file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
-      options:
-        abi: settings
-        address: '0xde030fC2b42AE2438B32506ECf63B2f3c1665579'
+  - kind: avalanche/Runtime
+    startBlock: 1
+    options:
+      # Must be a key of assets
+      abi: erc20
+      ## Pangolin token https://snowtrace.io/token/0x60781c2586d68229fde47564546784ab3faca982
+      address: '0x60781C2586D68229fde47564546784ab3fACA982'
     assets:
-      settings:
-        file: ./src/settings.abi.json
+      erc20:
+        file: './node_modules/@pangolindex/exchange-contracts/artifacts/contracts/pangolin-core/interfaces/IPangolinERC20.sol/IPangolinERC20.json'
     mapping:
-      file: ./dist/index.js
+      file: './dist/index.js'
       handlers:
-        - handler: handleUpdateSettings
-          kind: substrate/MoonbeamCall
+        # - handler: handleBlock
+        #   kind: avalanche/BlockHandler
+        - handler: handleTransaction
+          kind: avalanche/TransactionHandler
           filter:
-            function: setAllAddresses(address _sqToken,address _staking,address _indexerRegistry,address _queryRegistry) # add ",address _serviceAgreementRegistry" in later versions
-
-templates:
-  - name: QueryRegistry
-    kind: substrate/Moonbeam
-    startBlock: 1358829
-    processor:
-      file: './node_modules/@subql/contract-processors/dist/moonbeam.js'
-      options:
-        abi: queryRegistry
-        # address: '0xB0b3f6bc7a8E0bCb2aa1Cd2Ae2dE56fbdA3c0651'
-    assets:
-      queryRegistry:
-        file: ./src/queryRegistry.abi.json
-    mapping:
-      file: ./dist/index.js
-      handlers:
-        - handler: handleNewQuery
-          kind: substrate/MoonbeamEvent
+            ## The function can either be the function fragment or signature
+            # function: '0x095ea7b3'
+            # function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'
+            function: approve(address spender, uint256 rawAmount)
+            # from: "0x60781C2586D68229fde47564546784ab3fACA982"
+            # to: "0x60781C2586D68229fde47564546784ab3fACA982"
+        # - handler: handleReceipt
+        #   kind: avalanche/TransactionHandler
+        - handler: handleLog
+          kind: avalanche/LogHandler
           filter:
             topics:
-              - CreateQuery(uint256 queryId, address creator, bytes32 metadata, bytes32 deploymentId, bytes32 version)
-        - handler: handleUpdateQueryMetadata
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - UpdateQueryMetadata(address owner, uint256 queryId, bytes32 metadata)
-        - handler: handleUpdateQueryDeployment
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - UpdateQueryDeployment(address owner, uint256 queryId, bytes32 deploymentId, bytes32 version)
-        - handler: handleStartIndexing
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - StartIndexing(address indexer, bytes32 deploymentId)
-        - handler: handleIndexingUpdate
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - UpdateDeploymentStatus(address indexer, bytes32 deploymentId, uint256 blockheight, bytes32 mmrRoot, uint256 timestamp)
-        - handler: handleIndexingReady
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - UpdateIndexingStatusToReady(address indexer, bytes32 deploymentId, uint256 _timestamp)
-        - handler: handleStopIndexing
-          kind: substrate/MoonbeamEvent
-          filter:
-            topics:
-              - StopIndexing(address indexer, bytes32 deploymentId)
+              ## Follows standard log filters https://docs.ethers.io/v5/concepts/events/
+              - Transfer(address indexed from, address indexed to, uint256 amount)
+              # address: "0x60781C2586D68229fde47564546784ab3fACA982"

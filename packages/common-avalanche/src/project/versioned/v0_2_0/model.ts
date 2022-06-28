@@ -15,7 +15,12 @@ import {
 } from 'class-validator';
 import {CustomDataSourceBase, RuntimeDataSourceBase} from '../../models';
 import {SubstrateCustomDataSource, SubstrateNetworkFilter} from '../../types';
-import {CustomDatasourceV0_2_0, SubstrateProjectManifestV0_2_0, RuntimeDataSourceV0_2_0} from './types';
+import {
+  CustomDatasourceV0_2_0,
+  SubstrateProjectManifestV0_2_0,
+  RuntimeDataSourceV0_2_0,
+  AvalancheDatasourceV0_2_0,
+} from './types';
 
 export class FileType {
   @IsString()
@@ -52,6 +57,12 @@ function validateObject(object: any, errorMessage = 'failed to validate object.'
 }
 
 export class SubstrateRuntimeDataSourceV0_2_0Impl extends RuntimeDataSourceBase implements RuntimeDataSourceV0_2_0 {
+  validate(): void {
+    return validateObject(this, 'failed to validate runtime datasource.');
+  }
+}
+
+export class AvalancheRuntimeDataSourceV0_2_0Impl extends RuntimeDataSourceBase implements AvalancheDatasourceV0_2_0 {
   validate(): void {
     return validateObject(this, 'failed to validate runtime datasource.');
   }

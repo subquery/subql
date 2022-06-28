@@ -21,13 +21,12 @@ import {
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {SubstrateRuntimeDataSource} from '../../types';
+import {AvalancheDataSource} from '../../types';
 import {
-  CustomDatasourceV0_2_0,
+  AvalancheDatasourceV0_2_0,
+  AvalancheRuntimeDataSourceV0_2_0Impl,
   FileType,
-  RuntimeDataSourceV0_2_0,
   SubstrateCustomDataSourceV0_2_0Impl,
-  SubstrateRuntimeDataSourceV0_2_0Impl,
 } from '../v0_2_0';
 import {
   CustomDatasourceTemplate,
@@ -106,18 +105,18 @@ export class DeploymentV1_0_0 {
   @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0)[];
+  dataSources: AvalancheDatasourceV0_2_0[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -133,11 +132,11 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: SubstrateRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: (SubstrateRuntimeDataSource | CustomDatasourceV0_2_0)[];
+  dataSources: AvalancheDataSource[];
   @Type(() => ProjectNetworkV1_0_0)
   network: ProjectNetworkV1_0_0;
   @IsString()
@@ -169,6 +168,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
       this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
       validateSync(this._deployment, {whitelist: true});
     }
+
     return this._deployment;
   }
 }
