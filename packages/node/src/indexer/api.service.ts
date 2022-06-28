@@ -1,9 +1,17 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import http from 'http';
+import https from 'https';
 import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
+import {
+  isJsonRpcErrorResponse,
+  JsonRpcRequest,
+  JsonRpcSuccessResponse,
+  parseJsonRpcResponse,
+} from '@cosmjs/json-rpc';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
@@ -14,6 +22,7 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { MsgVoteWeighted } from 'cosmjs-types/cosmos/gov/v1beta1/tx';
 import {
   MsgClearAdmin,
@@ -65,8 +74,9 @@ export class ApiService {
           'User-Agent': `SubQuery-Node ${packageVersion}`,
         },
       };
-      const client = await CosmWasmClient.connect(endpoint);
-      const tendermint = await Tendermint34Client.connect(endpoint);
+
+      const keepAliveClient = new KeepAliveClient(endpoint);
+      const tendermint = await Tendermint34Client.create(keepAliveClient);
       const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
       const chaintypes = await this.getChainType(network);
@@ -74,13 +84,13 @@ export class ApiService {
         registry.register(typeurl, chaintypes[typeurl]);
       }
 
-      this.api = new CosmosClient(client, tendermint, registry);
+      this.api = new CosmosClient(tendermint, registry);
 
       this.networkMeta = {
         chainId: network.chainId,
       };
 
-      const chainId = await this.api.chainId();
+      const chainId = await this.api.getChainId();
       if (network.chainId !== chainId) {
         const err = new Error(
           `The given chainId does not match with client: "${network.chainId}"`,
@@ -138,27 +148,30 @@ export class ApiService {
   }
 }
 
-export class CosmosClient {
+export class CosmosClient extends CosmWasmClient {
   constructor(
-    private readonly baseApi: CosmWasmClient,
     private readonly tendermintClient: Tendermint34Client,
     private registry: Registry,
-  ) {}
+  ) {
+    super(tendermintClient);
+  }
 
+  /*
   async chainId(): Promise<string> {
-    return this.baseApi.getChainId();
+    return this.getChainId();
   }
 
   async finalisedHeight(): Promise<number> {
-    return this.baseApi.getHeight();
+    return this.getHeight();
   }
+  */
 
   async blockInfo(height?: number): Promise<Block> {
-    return this.baseApi.getBlock(height);
+    return this.getBlock(height);
   }
 
   async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
-    return this.baseApi.searchTx({ height: height });
+    return this.searchTx({ height: height });
   }
 
   async blockResults(height: number): Promise<BlockResultsResponse> {
@@ -178,11 +191,6 @@ export class CosmosClient {
       throw e;
     }
   }
-
-  get StargateClient(): CosmWasmClient {
-    /* TODO remove this and wrap all calls to include params */
-    return this.baseApi;
-  }
 }
 
 export class CosmosSafeClient extends CosmWasmClient {
@@ -192,7 +200,8 @@ export class CosmosSafeClient extends CosmWasmClient {
     endpoint: string | HttpEndpoint,
     height: number,
   ): Promise<CosmosSafeClient> {
-    const tmClient = await Tendermint34Client.connect(endpoint);
+    const keepAliveClient = new KeepAliveClient(endpoint);
+    const tmClient = await Tendermint34Client.create(keepAliveClient);
     return new CosmosSafeClient(tmClient, height);
   }
 
@@ -238,5 +247,63 @@ export class CosmosSafeClient extends CosmWasmClient {
         gasWanted: tx.result.gasWanted,
       };
     });
+  }
+}
+
+export interface RpcClient {
+  readonly execute: (
+    request: JsonRpcRequest,
+  ) => Promise<JsonRpcSuccessResponse>;
+  readonly disconnect: () => void;
+}
+
+export function hasProtocol(url: string): boolean {
+  return url.search('://') !== -1;
+}
+
+export async function httpRequest(
+  connection: AxiosInstance,
+  request?: any,
+): Promise<any> {
+  const { data } = await connection.post('/', request);
+
+  return data;
+}
+
+export class KeepAliveClient implements RpcClient {
+  protected readonly url: string;
+  protected readonly headers: Record<string, string> | undefined;
+  connection: AxiosInstance;
+
+  constructor(endpoint: string | HttpEndpoint) {
+    if (typeof endpoint === 'string') {
+      // accept host.name:port and assume http protocol
+      this.url = hasProtocol(endpoint) ? endpoint : `http://${endpoint}`;
+    } else {
+      this.url = endpoint.url;
+      this.headers = endpoint.headers;
+    }
+    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
+    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+    this.connection = axios.create({
+      httpAgent,
+      httpsAgent,
+      baseURL: this.url,
+      headers: this.headers,
+    });
+  }
+
+  disconnect(): void {
+    // nothing to be done
+  }
+
+  async execute(request: JsonRpcRequest): Promise<JsonRpcSuccessResponse> {
+    const response = parseJsonRpcResponse(
+      await httpRequest(this.connection, request),
+    );
+    if (isJsonRpcErrorResponse(response)) {
+      throw new Error(JSON.stringify(response.error));
+    }
+    return response;
   }
 }

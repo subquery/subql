@@ -203,7 +203,7 @@ export class IndexerManager {
       if (isCustomCosmosDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api.StargateClient);
+          .dsFilterProcessor(ds, this.api);
       } else {
         return true;
       }
@@ -372,7 +372,7 @@ export class IndexerManager {
       .transformer({
         input: data,
         ds,
-        api: this.api.StargateClient,
+        api: this.api,
         assets,
       })
       .catch((e) => {

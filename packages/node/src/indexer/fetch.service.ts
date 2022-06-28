@@ -325,7 +325,7 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const currentFinalizedHeight = await this.api.finalisedHeight();
+      const currentFinalizedHeight = await this.api.getHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
@@ -468,7 +468,7 @@ export class FetchService implements OnApplicationShutdown {
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): Promise<boolean> {
-    const chain = await this.api.chainId();
+    const chain = await this.api.getChainId();
     if (metaData.chain !== chain) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;

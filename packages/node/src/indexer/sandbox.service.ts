@@ -129,7 +129,7 @@ export class SandboxService {
     }
     processor.freeze(api, 'api');
     if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi().StargateClient, 'unsafeApi');
+      processor.freeze(this.apiService.getApi(), 'unsafeApi');
     }
     return processor;
   }

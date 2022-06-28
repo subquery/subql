@@ -24,7 +24,7 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { CosmosClient } from '../indexer/api.service';
+import { CosmosClient, KeepAliveClient } from '../indexer/api.service';
 import { filterMessageData, wrapEvent } from './cosmos';
 import * as CosmosUtil from './cosmos';
 
@@ -86,8 +86,8 @@ describe('CosmosUtils', () => {
   let msg: CosmosMessage;
 
   beforeAll(async () => {
-    const client = await CosmWasmClient.connect(ENDPOINT);
-    const tendermint = await Tendermint34Client.connect(ENDPOINT);
+    const client = new KeepAliveClient(ENDPOINT);
+    const tendermint = await Tendermint34Client.create(client);
     const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
       ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
       ['/cosmwasm.wasm.v1.MsgExecuteContract', MsgExecuteContract],
@@ -98,7 +98,7 @@ describe('CosmosUtils', () => {
     ];
 
     const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
-    api = new CosmosClient(client, tendermint, registry);
+    api = new CosmosClient(tendermint, registry);
     const txInfos = await api.txInfoByHeight(TEST_BLOCKNUMBER);
     const txInfo = txInfos.find(
       (txInfo) =>
