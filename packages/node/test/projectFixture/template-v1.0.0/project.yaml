@@ -32,7 +32,7 @@ dataSources:
       settings:
         file: ./src/settings.abi.json
     mapping:
-      file: ./dist/index.js
+      file: ./distMock/index.js
       handlers:
         - handler: handleUpdateSettings
           kind: substrate/MoonbeamCall
@@ -52,7 +52,7 @@ templates:
       queryRegistry:
         file: ./src/queryRegistry.abi.json
     mapping:
-      file: ./dist/index.js
+      file: ./distMock/index.js
       handlers:
         - handler: handleNewQuery
           kind: substrate/MoonbeamEvent

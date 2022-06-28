@@ -17,12 +17,12 @@ network:
   endpoint: wss://moonriver.api.onfinality.io/public-ws
   dictionary: 'https://api.subquery.network/sq/subquery/moonriver-dictionary'
   chaintypes:
-    file: './dist/chainTypes.js'
+    file: './distMock/chaintypes.js'
 dataSources:
   - kind: substrate/Runtime
     startBlock: 69219
     mapping:
-      file: './dist/index.js'
+      file: './distMock/index.js'
       handlers:
         - handler: collatorJoined
           kind: substrate/EventHandler
@@ -48,7 +48,7 @@ dataSources:
       erc20:
         file: './erc20.abi.json'
     mapping:
-      file: ./dist/index.js
+      file: ./distMock/index.js
       handlers:
         - handler: erc20Transfer
           kind: substrate/MoonbeamEvent
