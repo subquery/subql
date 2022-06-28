@@ -346,6 +346,8 @@ describe('FetchService', () => {
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
+
+    (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
     const fetchService = new FetchService(
       apiService,
       new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
