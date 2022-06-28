@@ -3,6 +3,7 @@
 
 import {ProjectManifestV0_2_0} from '@subql/common';
 import {
+  AvalancheDataSource,
   SubstrateCustomDataSource,
   SubstrateDataSource,
   SubstrateDatasourceKind,
@@ -15,6 +16,7 @@ import {
 
 export type RuntimeDataSourceV0_2_0 = SubstrateRuntimeDataSource;
 export type CustomDatasourceV0_2_0 = SubstrateCustomDataSource;
+export type AvalancheDatasourceV0_2_0 = AvalancheDataSource;
 
 export type SubstrateProjectManifestV0_2_0 = ProjectManifestV0_2_0<SubstrateDataSource>;
 

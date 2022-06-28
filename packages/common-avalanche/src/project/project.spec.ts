@@ -39,6 +39,16 @@ describe('project.yaml', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'))).not.toThrow();
   });
 
+  it('get v1.0.0 deployment mapping filter', () => {
+    const manifestVersioned = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+
+    const deployment = manifestVersioned.asV1_0_0.deployment;
+    const filter = deployment.dataSources[0].mapping.handlers[0].filter;
+    const deploymentString = manifestVersioned.toDeployment();
+    expect(filter).not.toBeNull();
+    expect(deploymentString).toContain('function: approve(address spender, uint256 rawAmount)');
+  });
+
   it('can convert genesis hash in v1.0.0 to chainId in deployment', () => {
     const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml')).asV1_0_0.deployment;
     expect(deployment.network.chainId).not.toBeNull();

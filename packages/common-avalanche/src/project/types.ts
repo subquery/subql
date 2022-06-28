@@ -47,6 +47,8 @@ interface SubstrateBaseHandlerFilter {
 
 export type SubstrateBlockFilter = SubstrateBaseHandlerFilter;
 
+export type AvalancheBaseFilter = Record<string, unknown>;
+
 export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {
   module?: string;
   method?: string;
@@ -70,11 +72,27 @@ export interface SubstrateEventHandler extends BaseHandler<SubstrateEventFilter>
   kind: SubstrateHandlerKind.Event;
 }
 
+export interface AvalancheBlockHandler extends AvalancheBaseHandler {
+  kind: SubstrateHandlerKind.Block;
+}
+
+export interface AvalancheCallHandler extends AvalancheBaseHandler {
+  kind: SubstrateHandlerKind.Call;
+}
+
+export interface AvalancheEventHandler extends AvalancheBaseHandler {
+  kind: SubstrateHandlerKind.Event;
+}
+
 export type SubstrateHandler = SubstrateRuntimeHandler | SubstrateCustomHandler;
 
 export type SubstrateRuntimeHandler = SubstrateBlockHandler | SubstrateCallHandler | SubstrateEventHandler;
 
-export type SubstrateCustomHandler = BaseHandler<Record<string, unknown>>;
+export type AvalancheHandler = AvalancheBlockHandler | AvalancheCallHandler | AvalancheEventHandler;
+
+export type SubstrateCustomHandler = BaseHandler<AvalancheBaseFilter>;
+
+export type AvalancheBaseHandler = BaseHandler<AvalancheBaseFilter>;
 
 export interface SubstrateNetworkFilter {
   specName?: string;
@@ -83,6 +101,13 @@ export interface SubstrateNetworkFilter {
 export type SubstrateDataSource = SubstrateRuntimeDataSource | SubstrateCustomDataSource; // | SubqlBuiltinDataSource;
 
 export type SubstrateCustomDataSourceAsset = FileReference;
+
+export interface AvalancheDataSource extends BaseDataSource<AvalancheBaseFilter, AvalancheHandler> {
+  kind: SubstrateDatasourceKind.Runtime;
+  filter?: SubstrateNetworkFilter; //keep network filter for v0.0.1
+  options?: any;
+  assets?: Map<string, FileReference>;
+}
 
 export interface SubstrateRuntimeDataSource
   extends BaseDataSource<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler> {
@@ -99,10 +124,10 @@ export interface SubstrateCustomDataSource<
   T extends SubstrateNetworkFilter = SubstrateNetworkFilter,
   O = any
 > extends BaseDataSource {
-  filter?: T;
   kind: K;
   assets: Map<string, SubstrateCustomDataSourceAsset>;
   processor?: Processor<O>;
+  filter?: T;
 }
 
 export interface HandlerInputTransformer<

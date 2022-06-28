@@ -28,10 +28,13 @@ import {
   SubstrateEventHandler,
   SubstrateHandlerKind,
   SubstrateNetworkFilter,
-  SubstrateRuntimeDataSource,
-  SubstrateRuntimeHandler,
-  SubstrateRuntimeHandlerFilter,
   SubstrateCustomDataSource,
+  AvalancheBaseFilter,
+  AvalancheHandler,
+  AvalancheDataSource,
+  AvalancheCallHandler,
+  AvalancheEventHandler,
+  AvalancheBlockHandler,
 } from './types';
 
 export class BlockFilter implements SubstrateBlockFilter {
@@ -74,33 +77,30 @@ export class CallFilter extends EventFilter implements SubstrateCallFilter {
   success?: boolean;
 }
 
-export class BlockHandler implements SubstrateBlockHandler {
+export class BlockHandler implements AvalancheBlockHandler {
+  @IsObject()
   @IsOptional()
-  @ValidateNested()
-  @Type(() => BlockFilter)
-  filter?: SubstrateBlockFilter;
+  filter?: AvalancheBaseFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Block]})
   kind: SubstrateHandlerKind.Block;
   @IsString()
   handler: string;
 }
 
-export class CallHandler implements SubstrateCallHandler {
+export class CallHandler implements AvalancheCallHandler {
+  @IsObject()
   @IsOptional()
-  @ValidateNested()
-  @Type(() => CallFilter)
-  filter?: SubstrateCallFilter;
+  filter?: AvalancheBaseFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Call]})
   kind: SubstrateHandlerKind.Call;
   @IsString()
   handler: string;
 }
 
-export class EventHandler implements SubstrateEventHandler {
+export class EventHandler implements AvalancheEventHandler {
+  @IsObject()
   @IsOptional()
-  @ValidateNested()
-  @Type(() => EventFilter)
-  filter?: SubstrateEventFilter;
+  filter?: AvalancheBaseFilter;
   @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Event]})
   kind: SubstrateHandlerKind.Event;
   @IsString()
@@ -117,9 +117,9 @@ export class CustomHandler implements SubstrateCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler> {
+export class RuntimeMapping implements BaseMapping<AvalancheBaseFilter, AvalancheHandler> {
   @Transform((params) => {
-    const handlers: SubstrateRuntimeHandler[] = params.value;
+    const handlers: AvalancheHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
         case SubstrateHandlerKind.Event:
@@ -135,7 +135,7 @@ export class RuntimeMapping implements BaseMapping<SubstrateRuntimeHandlerFilter
   })
   @IsArray()
   @ValidateNested()
-  handlers: SubstrateRuntimeHandler[];
+  handlers: AvalancheHandler[];
   @IsString()
   file: string;
 }
@@ -155,7 +155,7 @@ export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
   specName?: string;
 }
 
-export class RuntimeDataSourceBase implements SubstrateRuntimeDataSource {
+export class RuntimeDataSourceBase implements AvalancheDataSource {
   @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
   kind: SubstrateDatasourceKind.Runtime;
   @Type(() => RuntimeMapping)
