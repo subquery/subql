@@ -9,6 +9,7 @@ import {
   AvalancheTransaction,
 } from '@subql/types-avalanche';
 import { BigNumber } from 'ethers';
+import { AvalancheProvider } from './provider.avalanche';
 
 export function formatBlock(block: Record<string, any>): AvalancheBlock {
   const newBlock = {} as AvalancheBlock;
@@ -44,9 +45,13 @@ export function formatBlock(block: Record<string, any>): AvalancheBlock {
 }
 export function formatLog(
   log: AvalancheLog<AvalancheResult> | AvalancheLog,
+  block: AvalancheBlock,
+  provider: AvalancheProvider,
 ): AvalancheLog<AvalancheResult> | AvalancheLog {
   const newLog = {} as AvalancheLog<AvalancheResult>;
   newLog.address = log.address;
+  newLog.blockTimestamp = block.timestamp;
+  newLog.provider = block.provider;
   newLog.topics = log.topics;
   newLog.data = log.data;
   newLog.blockNumber = BigNumber.from(log.blockNumber).toNumber();
@@ -61,6 +66,7 @@ export function formatLog(
 
 export function formatTransaction(
   tx: Record<string, any>,
+  provider: AvalancheProvider,
 ): AvalancheTransaction {
   const transaction = {} as AvalancheTransaction;
   transaction.blockHash = tx.blockHash;
@@ -78,6 +84,7 @@ export function formatTransaction(
   transaction.v = BigNumber.from(tx.v).toBigInt();
   transaction.r = tx.r;
   transaction.s = tx.s;
+  transaction.provider = provider;
   if (tx.accessList) {
     transaction.accessList = tx.accessList;
   }
@@ -95,7 +102,11 @@ export function formatTransaction(
   return transaction;
 }
 
-export function formatReceipt(receipt: Record<string, any>): AvalancheReceipt {
+export function formatReceipt(
+  receipt: Record<string, any>,
+  block: AvalancheBlock,
+  provider: AvalancheProvider,
+): AvalancheReceipt {
   const newReceipt = {} as AvalancheReceipt;
   newReceipt.blockHash = receipt.blockHash;
   newReceipt.blockNumber = BigNumber.from(receipt.blockNumber).toNumber();
@@ -108,7 +119,7 @@ export function formatReceipt(receipt: Record<string, any>): AvalancheReceipt {
   ).toBigInt();
   newReceipt.from = receipt.from;
   newReceipt.gasUsed = BigNumber.from(receipt.gasUsed).toBigInt();
-  newReceipt.logs = receipt.logs.map((log) => formatLog(log));
+  newReceipt.logs = receipt.logs.map((log) => formatLog(log, block, provider));
   newReceipt.logsBloom = receipt.logsBloom;
   newReceipt.status = Boolean(BigNumber.from(receipt.status).toNumber());
   newReceipt.to = receipt.to;
