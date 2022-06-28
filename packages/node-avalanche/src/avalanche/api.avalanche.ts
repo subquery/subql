@@ -175,18 +175,6 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     return rep;
   }
 
-  async call(
-    to: string,
-    from?: string,
-    gas?: string,
-    gasPrice?: string,
-    value?: string,
-    data?: string,
-  ): Promise<any> {
-    const rep = await this.provider.call(to, from, gas, gasPrice, value, data);
-    return rep;
-  }
-
   async fetchBlocks(bufferBlocks: number[]): Promise<AvalancheBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
