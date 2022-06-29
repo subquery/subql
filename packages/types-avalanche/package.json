@@ -1,6 +1,6 @@
 {
   "name": "@subql/types-avalanche",
-  "version": "0.1.2-0",
+  "version": "0.2.0",
   "description": "",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -24,6 +24,5 @@
   },
   "dependencies": {
     "@ethersproject/abstract-provider": "^5.6.1"
-  },
-  "stableVersion": "0.1.1"
+  }
 }

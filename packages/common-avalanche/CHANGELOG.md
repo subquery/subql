@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.2] - 2022-06-29
+### Fixed
+- Fix deployment missing filter issue (#1138)
 
 ## [0.1.1] - 2022-06-27
 ### Added
