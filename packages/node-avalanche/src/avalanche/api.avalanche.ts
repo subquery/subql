@@ -16,11 +16,14 @@ import {
   AvalancheBlockWrapper,
   AvalancheTransaction,
   AvalancheResult,
+  BlockWrapper,
 } from '@subql/types-avalanche';
 import { Avalanche } from 'avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
+import { BigNumber } from 'ethers';
 import { AvalancheBlockWrapped } from './block.avalanche';
+import { CChainProvider } from './provider';
 import {
   formatBlock,
   formatReceipt,
@@ -109,6 +112,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
         this.baseUrl = '/ext/index/P/block';
         break;
       default:
+        this.baseUrl = `/ext/index/${this.options.subnet}/block`;
         break;
     }
   }
@@ -122,7 +126,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       await this.cchain.callMethod(
         'eth_getBlockByNumber',
         ['0x0', true],
-        '/ext/bc/C/rpc',
+        `/ext/bc/${this.options.subnet}/rpc`,
       )
     ).data.result;
   }
@@ -144,56 +148,66 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
-    const lastAccepted = await this.indexApi.getLastAccepted(
-      this.encoding,
-      this.baseUrl,
-    );
-    const finalizedBlockHeight = parseInt(lastAccepted.index);
-    return finalizedBlockHeight;
+    // Doesn't seem to be a difference between finalized and latest
+    return this.getLastHeight();
   }
 
   async getLastHeight(): Promise<number> {
-    const lastAccepted = await this.indexApi.getLastAccepted(
-      this.encoding,
-      this.baseUrl,
+    const res = await this.cchain.callMethod(
+      'eth_blockNumber',
+      [],
+      `/ext/bc/${this.options.subnet}/rpc`,
     );
-    const lastHeight = parseInt(lastAccepted.index);
-    return lastHeight;
+
+    return BigNumber.from(res.data.result).toNumber();
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<AvalancheBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
-        // Fetch Block
-        const block_promise = await this.cchain.callMethod(
-          'eth_getBlockByNumber',
-          [`0x${num.toString(16)}`, true],
-          '/ext/bc/C/rpc',
-        );
+        try {
+          // Fetch Block
+          const block_promise = await this.cchain.callMethod(
+            'eth_getBlockByNumber',
+            [`0x${num.toString(16)}`, true],
+            `/ext/bc/${this.options.subnet}/rpc`,
+          );
 
-        const block = formatBlock(block_promise.data.result);
+          const block = formatBlock(block_promise.data.result);
 
-        block.transactions = await Promise.all(
-          block.transactions.map(async (tx) => {
-            const transaction = formatTransaction(tx);
-            const receipt = (
-              await this.cchain.callMethod(
-                'eth_getTransactionReceipt',
-                [tx.hash],
-                '/ext/bc/C/rpc',
-              )
-            ).data.result;
-            transaction.receipt = formatReceipt(receipt);
-            return transaction;
-          }),
-        );
-        return new AvalancheBlockWrapped(block);
+          // Get transaction receipts
+          block.transactions = await Promise.all(
+            block.transactions.map(async (tx) => {
+              const transaction = formatTransaction(tx);
+              const receipt = (
+                await this.cchain.callMethod(
+                  'eth_getTransactionReceipt',
+                  [tx.hash],
+                  `/ext/bc/${this.options.subnet}/rpc`,
+                )
+              ).data.result;
+              transaction.receipt = formatReceipt(receipt, block);
+              return transaction;
+            }),
+          );
+          return new AvalancheBlockWrapped(block);
+        } catch (e) {
+          logger.error(e, `Failed to fetch block at height ${num}`);
+          throw e;
+        }
       }),
     );
   }
 
-  freezeApi(processor: any): void {
-    processor.freeze(this.client, 'api');
+  freezeApi(processor: any, blockContent: BlockWrapper): void {
+    processor.freeze(
+      new CChainProvider(
+        this.client,
+        blockContent.blockHeight,
+        `/ext/bc/${this.options.subnet}/rpc`,
+      ),
+      'api',
+    );
   }
 
   private buildInterface(

@@ -8,7 +8,7 @@ import {
   SubstrateDataSource,
 } from '@subql/common-avalanche';
 import { ApiService, getYargsOption, getLogger } from '@subql/common-node';
-import { ApiAt, ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
+import { ApiWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
@@ -112,29 +112,6 @@ export class SandboxService {
     private readonly nodeConfig: NodeConfig,
     private readonly project: SubqueryProject,
   ) {}
-
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
-    const entry = this.getDataSourceEntry(ds);
-    let processor = this.processorCache[entry];
-    if (!processor) {
-      processor = new IndexerSandbox(
-        {
-          // api: await this.apiService.getPatchedApi(),
-          store: this.storeService.getStore(),
-          root: this.project.root,
-          script: ds.mapping.entryScript,
-          entry,
-        },
-        this.nodeConfig,
-      );
-      this.processorCache[entry] = processor;
-    }
-    processor.freeze(api, 'api');
-    if (argv.unsafe) {
-      processor.freeze(this.apiService.api, 'unsafeApi');
-    }
-    return processor;
-  }
 
   getDsProcessorWrapper(
     ds: SubqlProjectDs,

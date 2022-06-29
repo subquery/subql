@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ApiPromise} from '@polkadot/api';
-import {ApiDecoration} from '@polkadot/api/types';
+// import {ApiPromise} from '@polkadot/api';
+// import {ApiDecoration} from '@polkadot/api/types';
 import {AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction} from './algorand';
 import {
   AvalancheBlock,
@@ -19,7 +19,7 @@ export interface Entity {
   id: string;
 }
 
-export type ApiAt = ApiDecoration<'promise'> & {rpc: ApiPromise['rpc']};
+// export type ApiAt = ApiDecoration<'promise'> & {rpc: ApiPromise['rpc']};
 
 export type FunctionPropertyNames<T> = {
   [K in keyof T]: T[K] extends Function ? K : never;

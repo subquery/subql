@@ -3,3 +3,4 @@
 
 export * from './api.avalanche';
 export * from './api.service.avalanche';
+export * from './provider';
