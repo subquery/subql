@@ -8,10 +8,10 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { SubstrateBlock } from '@subql/types';
 import { EventEmitter2 } from 'eventemitter2';
+import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { delay } from '../../utils/promise';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
@@ -77,9 +77,10 @@ export interface IBlockDispatcher {
 
   queueSize: number;
   freeSize: number;
+  latestBufferedHeight: number | undefined;
 
   // Remove all enqueued blocks, used when a dynamic ds is created
-  flushQueue(): void;
+  flushQueue(height: number): void;
 }
 
 const logger = getLogger('BlockDispatcherService');
@@ -99,6 +100,7 @@ export class BlockDispatcherService
   private isShutdown = false;
   private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
+  private _latestBufferedHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -125,10 +127,12 @@ export class BlockDispatcherService
   }
 
   enqueueBlocks(heights: number[]): void {
-    logger.info(
-      `Enqueing blocks ${heights[0]}...${heights[heights.length - 1]}`,
-    );
+    if (!heights.length) return;
+
+    logger.info(`Enqueing blocks ${heights[0]}...${last(heights)}`);
+
     this.fetchQueue.putMany(heights);
+    this.latestBufferedHeight = last(heights);
 
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
@@ -136,7 +140,8 @@ export class BlockDispatcherService
     });
   }
 
-  flushQueue(): void {
+  flushQueue(height: number): void {
+    this.latestBufferedHeight = height;
     this.fetchQueue.flush(); // Empty
     this.processQueue.flush();
   }
@@ -149,6 +154,9 @@ export class BlockDispatcherService
     this.fetching = true;
 
     const blockNums = this.fetchQueue.takeMany(this.nodeConfig.batchSize);
+
+    // Used to compare before and after as a way to check if queue was flushed
+    const bufferedHeight = this._latestBufferedHeight;
 
     logger.info(
       `fetch block [${blockNums[0]},${
@@ -166,6 +174,11 @@ export class BlockDispatcherService
       this.apiService.getApi(),
       blockNums,
     );
+
+    if (bufferedHeight > this._latestBufferedHeight) {
+      logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+      return;
+    }
 
     const blockTasks = blocks.map((block) => async () => {
       const height = block.block.block.header.number.toNumber();
@@ -204,6 +217,17 @@ export class BlockDispatcherService
   get freeSize(): number {
     return this.fetchQueue.freeSpace;
   }
+
+  get latestBufferedHeight(): number {
+    return this._latestBufferedHeight;
+  }
+
+  set latestBufferedHeight(height: number) {
+    this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
+      value: this.queueSize,
+    });
+    this._latestBufferedHeight = height;
+  }
 }
 
 @Injectable()
@@ -218,6 +242,7 @@ export class WorkerBlockDispatcherService
   private taskCounter = 0;
   private isShutdown = false;
   private queue: AutoQueue<void>;
+  private _latestBufferedHeight: number;
 
   /**
    * @param numWorkers. The number of worker threads to run, this is capped at number of cpus
@@ -225,7 +250,7 @@ export class WorkerBlockDispatcherService
    */
   constructor(
     numWorkers: number,
-    private workerQueueSize: number,
+    workerQueueSize: number,
     private eventEmitter: EventEmitter2,
   ) {
     this.numWorkers = getMaxWorkers(numWorkers);
@@ -254,14 +279,16 @@ export class WorkerBlockDispatcherService
   }
 
   enqueueBlocks(heights: number[]): void {
-    logger.info(
-      `Enqueing blocks ${heights[0]}...${heights[heights.length - 1]}`,
-    );
+    if (!heights.length) return;
+    logger.info(`Enqueing blocks ${heights[0]}...${last(heights)}`);
 
     heights.map((height) => this.enqueueBlock(height));
+
+    this.latestBufferedHeight = last(heights);
   }
 
-  flushQueue(): void {
+  flushQueue(height: number): void {
+    this.latestBufferedHeight = height;
     this.queue.flush();
   }
 
@@ -271,12 +298,20 @@ export class WorkerBlockDispatcherService
     const worker = this.workers[workerIdx];
 
     assert(worker, `Worker ${workerIdx} not found`);
+
+    // Used to compare before and after as a way to check if queue was flushed
+    const bufferedHeight = this._latestBufferedHeight;
     const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {
       const start = new Date();
       const result = await pendingBlock;
       const end = new Date();
+
+      if (bufferedHeight > this._latestBufferedHeight) {
+        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        return;
+      }
 
       if (start.getTime() < end.getTime() - 100) {
         console.log(
@@ -320,16 +355,23 @@ export class WorkerBlockDispatcherService
     void this.queue.put(processBlock);
   }
 
-  setRuntimeVersionGetter(fn: GetRuntimeVersion): void {
-    this.getRuntimeVersion = fn;
-  }
-
   get queueSize(): number {
     return this.queue.size;
   }
 
   get freeSize(): number {
     return this.queue.freeSpace;
+  }
+
+  get latestBufferedHeight(): number {
+    return this._latestBufferedHeight;
+  }
+
+  set latestBufferedHeight(height: number) {
+    this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
+      value: this.queueSize,
+    });
+    this._latestBufferedHeight = height;
   }
 
   private getNextWorkerIndex(): number {
