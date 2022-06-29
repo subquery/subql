@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
@@ -31,6 +30,7 @@ import { MetaData } from '@subql/utils';
 import { range, sortBy, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { checkMemoryUsage } from '../utils/batch-size';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
@@ -52,8 +52,6 @@ const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
-const HIGH_THRESHOLD = 0.85;
-const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
@@ -90,36 +88,10 @@ function callFilterToQueryEntry(
   };
 }
 
-function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
-  const memoryData = getHeapStatistics();
-  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
-  if (argv.profiler) {
-    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
-    logger.info(`Heap Usage: ${ratio}`);
-  }
-  let scale = batchSizeScale;
-
-  if (ratio > HIGH_THRESHOLD) {
-    if (scale > 0) {
-      scale = Math.max(scale - 0.1, 0);
-      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
-    }
-  }
-
-  if (ratio < LOW_THRESHOLD) {
-    if (scale < 1) {
-      scale = Math.min(scale + 0.1, 1);
-      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
-    }
-  }
-  return scale;
-}
-
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
-  private latestBufferedHeight: number;
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
@@ -301,10 +273,7 @@ export class FetchService implements OnApplicationShutdown {
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
     if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(
-        this.nodeConfig.batchSize,
-        this.batchSizeScale,
-      );
+      const scale = checkMemoryUsage(this.batchSizeScale);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -363,8 +332,8 @@ export class FetchService implements OnApplicationShutdown {
     let scaledBatchSize: number;
 
     const getStartBlockHeight = (): number => {
-      return this.latestBufferedHeight
-        ? this.latestBufferedHeight + 1
+      return this.blockDispatcher.latestBufferedHeight
+        ? this.blockDispatcher.latestBufferedHeight + 1
         : initBlockHeight;
     };
 
@@ -406,19 +375,14 @@ export class FetchService implements OnApplicationShutdown {
           ) {
             const { batchBlocks } = dictionary;
             if (batchBlocks.length === 0) {
-              this.setLatestBufferedHeight(
-                Math.min(
-                  queryEndBlock - 1,
-                  dictionary._metadata.lastProcessedHeight,
-                ),
+              // There we're no blocks in this query range, we can set a new height we're up to
+              this.blockDispatcher.latestBufferedHeight = Math.min(
+                queryEndBlock - 1,
+                dictionary._metadata.lastProcessedHeight,
               );
             } else {
               this.blockDispatcher.enqueueBlocks(batchBlocks);
-              this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
-            this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-              value: this.blockDispatcher.queueSize,
-            });
             continue; // skip nextBlockRange() way
           }
           // else use this.nextBlockRange()
@@ -435,7 +399,6 @@ export class FetchService implements OnApplicationShutdown {
       this.blockDispatcher.enqueueBlocks(
         range(startBlockHeight, endHeight + 1),
       );
-      this.setLatestBufferedHeight(endHeight);
     }
   }
 
@@ -551,8 +514,7 @@ export class FetchService implements OnApplicationShutdown {
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
-    this.blockDispatcher.flushQueue();
-    this.setLatestBufferedHeight(blockHeight);
+    this.blockDispatcher.flushQueue(blockHeight);
   }
 
   private dictionaryValidation(
@@ -584,13 +546,6 @@ export class FetchService implements OnApplicationShutdown {
       return true;
     }
     return false;
-  }
-
-  private setLatestBufferedHeight(height: number): void {
-    this.latestBufferedHeight = height;
-    this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-      value: this.blockDispatcher.queueSize,
-    });
   }
 
   private getBaseHandlerKind(
