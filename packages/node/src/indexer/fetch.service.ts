@@ -4,9 +4,10 @@
 import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
+import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+
 import {
   isRuntimeDataSourceV0_2_0,
   RuntimeDataSourceV0_0_1,
@@ -34,6 +35,7 @@ import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
+import { calcInterval } from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
@@ -48,13 +50,14 @@ import { IndexerEvent } from './events';
 import { BlockContent } from './types';
 
 const logger = getLogger('fetch');
-const BLOCK_TIME_VARIANCE = 5;
+let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
+const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
 
@@ -146,6 +149,7 @@ export class FetchService implements OnApplicationShutdown {
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
+    private schedulerRegistry: SchedulerRegistry,
   ) {
     this.blockBuffer = new BlockedQueue<BlockContent>(
       this.nodeConfig.batchSize * 3,
@@ -157,6 +161,12 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   onApplicationShutdown(): void {
+    try {
+      this.schedulerRegistry.deleteInterval('getFinalizedBlockHead');
+      this.schedulerRegistry.deleteInterval('getBestBlockHead');
+    } catch (e) {
+      //ignore if interval not exist
+    }
     this.isShutdown = true;
   }
 
@@ -282,7 +292,31 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary;
   }
 
+  addInterval(name: string, milliseconds: number, handler: () => void): void {
+    const interval = setInterval(handler.bind(this), milliseconds);
+    this.schedulerRegistry.addInterval(name, interval);
+  }
+
   async init(): Promise<void> {
+    if (this.api) {
+      const CHAIN_INTERVAL = calcInterval(this.api)
+        .muln(INTERVAL_PERCENT)
+        .toNumber();
+
+      BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
+
+      this.schedulerRegistry.addInterval(
+        'getFinalizedBlockHead',
+        setInterval(
+          () => void this.getFinalizedBlockHead(),
+          BLOCK_TIME_VARIANCE,
+        ),
+      );
+      this.schedulerRegistry.addInterval(
+        'getBestBlockHead',
+        setInterval(() => void this.getBestBlockHead(), BLOCK_TIME_VARIANCE),
+      );
+    }
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -315,8 +349,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getFinalizedBlockHead() {
+  async getFinalizedBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -337,8 +370,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  @Interval(BLOCK_TIME_VARIANCE * 1000)
-  async getBestBlockHead() {
+  async getBestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;

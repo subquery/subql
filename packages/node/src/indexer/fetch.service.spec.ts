@@ -3,6 +3,9 @@
 
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { BN } from '@polkadot/util';
+
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -10,7 +13,7 @@ import {
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { fetchBlocksBatches } from '../utils/substrate';
+import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -38,6 +41,19 @@ function mockRejectedApiService(): ApiService {
 
 function mockApiService(): ApiService {
   const mockApi = {
+    consts: {
+      babe: {
+        epochDuration: 0x0000000000000960,
+        expectedBlockTime: 0x0000000000001770,
+        maxAuthorities: 0x000186a0,
+      },
+      timestamp: {
+        minimumPeriod: 0x0000000000000bb8,
+      },
+    },
+    query: {
+      parachainSystem: undefined,
+    },
     rpc: {
       state: {
         getRuntimeVersion: jest.fn(() => {
@@ -233,6 +249,7 @@ function createFetchService(
     new DsProcessorService(project),
     dynamicDsService,
     new EventEmitter2(),
+    new SchedulerRegistry(),
   );
 }
 
@@ -248,6 +265,7 @@ describe('FetchService', () => {
         block: { block: { header: { number: { toNumber: () => height } } } },
       })),
     );
+    (calcInterval as jest.Mock).mockImplementation((api) => new BN(7_000));
   });
 
   it('get finalized head when reconnect', async () => {
@@ -261,6 +279,7 @@ describe('FetchService', () => {
       apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
     expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(1);
+    fetchService.onApplicationShutdown();
   });
 
   it('log errors when failed to get finalized block', async () => {
@@ -270,6 +289,7 @@ describe('FetchService', () => {
       project,
     );
     await fetchService.init();
+    fetchService.onApplicationShutdown();
   });
 
   it('load batchSize of blocks with original method', () => {
@@ -285,6 +305,7 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 1000;
     const end = (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
+    fetchService.onApplicationShutdown();
   });
 
   it('loop until shutdown', async () => {
@@ -312,6 +333,7 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
+    fetchService.onApplicationShutdown();
   }, 500000);
 
   it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight ", async () => {
@@ -344,6 +366,7 @@ describe('FetchService', () => {
     });
     const dsPluginService = new DsProcessorService(project);
     const eventEmitter = new EventEmitter2();
+    const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
@@ -356,6 +379,7 @@ describe('FetchService', () => {
       dsPluginService,
       dynamicDsService,
       eventEmitter,
+      schedulerRegistry,
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -382,6 +406,7 @@ describe('FetchService', () => {
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     //we expect after use the original method, next loop will still use dictionary by default
     expect((fetchService as any).useDictionary).toBeTruthy();
+    fetchService.onApplicationShutdown();
   }, 500000);
 
   it('set last buffered Height to dictionary last processed height when dictionary returned batch is empty, and then start use original method', async () => {
@@ -411,6 +436,7 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService3();
     const dsPluginService = new DsProcessorService(project);
+    const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -423,6 +449,7 @@ describe('FetchService', () => {
       dsPluginService,
       dynamicDsService,
       eventEmitter,
+      schedulerRegistry,
     );
     await fetchService.init();
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -443,6 +470,7 @@ describe('FetchService', () => {
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     // lastProcessed height (use dictionary once) + batchsize (use original once)
     expect((fetchService as any).latestBufferedHeight).toBe(15020);
+    fetchService.onApplicationShutdown();
   }, 500000);
 
   it('fill the dictionary returned batches to nextBlockBuffer', async () => {
@@ -471,6 +499,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService1();
+    const schedulerRegistry = new SchedulerRegistry();
     const dsPluginService = new DsProcessorService(project);
     const dsProcessorService = new DsProcessorService(project);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -484,6 +513,7 @@ describe('FetchService', () => {
       dsPluginService,
       dynamicDsService,
       eventEmitter,
+      schedulerRegistry,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
@@ -504,6 +534,7 @@ describe('FetchService', () => {
     //alway use dictionary
     expect((fetchService as any).useDictionary).toBeTruthy();
     expect((fetchService as any).latestBufferedHeight).toBe(14900);
+    fetchService.onApplicationShutdown();
   }, 500000);
 
   it('can support custom data sources', async () => {
@@ -539,5 +570,6 @@ describe('FetchService', () => {
 
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
     expect(getDsProcessor).toHaveBeenCalledTimes(3);
+    fetchService.onApplicationShutdown();
   }, 500000);
 });

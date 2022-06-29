@@ -11,6 +11,7 @@ import {
   RuntimeVersion,
   SignedBlock,
 } from '@polkadot/types/interfaces';
+import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
 import {
   SpecVersionRange,
   SubstrateBlockFilter,
@@ -24,6 +25,9 @@ import { last, merge, range } from 'lodash';
 import { BlockContent } from '../indexer/types';
 import { getLogger } from './logger';
 const logger = getLogger('fetch');
+const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
+const DEFAULT_TIME = new BN(6_000);
+const A_DAY = new BN(24 * 60 * 60 * 1000);
 
 export function wrapBlock(
   signedBlock: SignedBlock,
@@ -366,4 +370,18 @@ export async function fetchBlocksBatches(
       events: wrappedEvents,
     };
   });
+}
+
+export function calcInterval(api: ApiPromise): BN {
+  return bnMin(
+    A_DAY,
+    api.consts.babe?.expectedBlockTime ||
+      (api.consts.difficulty?.targetBlockTime as any) ||
+      api.consts.subspace?.expectedBlockTime ||
+      (api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
+        ? api.consts.timestamp.minimumPeriod.mul(BN_TWO)
+        : api.query.parachainSystem
+        ? DEFAULT_TIME.mul(BN_TWO)
+        : DEFAULT_TIME),
+  );
 }
