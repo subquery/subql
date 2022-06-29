@@ -3,6 +3,7 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
@@ -82,6 +83,7 @@ const { argv } = getYargsOption();
         eventEmitter: EventEmitter2,
         projectService: ProjectService,
         dynamicDsService: DynamicDsService,
+        schedulerRegistry: SchedulerRegistry,
       ) => {
         await projectService.init();
 
@@ -94,6 +96,7 @@ const { argv } = getYargsOption();
           dsProcessorService,
           dynamicDsService,
           eventEmitter,
+          schedulerRegistry,
         );
 
         await fetchService.init(projectService.startHeight);
@@ -109,6 +112,7 @@ const { argv } = getYargsOption();
         EventEmitter2,
         ProjectService,
         DynamicDsService,
+        SchedulerRegistry,
       ],
     },
     BenchmarkService,
