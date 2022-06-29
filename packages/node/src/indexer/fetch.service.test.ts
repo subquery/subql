@@ -64,7 +64,7 @@ function mockIndexerManager(): IndexerManager & {
     indexBlock: (block: BlockContent, runtimeVersion: RuntimeVersion) => {
       _fn?.(block, runtimeVersion);
 
-      return Promise.resolve();
+      return Promise.resolve({ dynamicDsCreated: false });
     },
   } as any;
 }
