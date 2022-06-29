@@ -161,6 +161,12 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   onApplicationShutdown(): void {
+    try {
+      this.schedulerRegistry.deleteInterval('getFinalizedBlockHead');
+      this.schedulerRegistry.deleteInterval('getBestBlockHead');
+    } catch (e) {
+      //ignore if interval not exist
+    }
     this.isShutdown = true;
   }
 
@@ -344,8 +350,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async getFinalizedBlockHead(): Promise<void> {
-    // console.log('getFinalizedBlockHead', Date.now());
-
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
@@ -367,8 +371,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async getBestBlockHead(): Promise<void> {
-    // console.log('getBestBlockHead', Date.now());
-
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;

@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ApiOptions } from '@polkadot/api/types';
@@ -12,6 +11,7 @@ import {
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -78,10 +78,10 @@ async function createFetchService(
 describe('FetchService', () => {
   let fetchService: FetchService;
 
-  afterEach(() => {
-    return (
-      fetchService as unknown as any
-    )?.apiService?.onApplicationShutdown();
+  afterEach(async () => {
+    await delay(0.5);
+    (fetchService as unknown as any)?.apiService?.onApplicationShutdown();
+    fetchService.onApplicationShutdown();
   });
 
   it('fetch meta data once when spec version not changed in range', async () => {
@@ -107,6 +107,8 @@ describe('FetchService', () => {
       (call) => call[0] === 'state_getMetadata',
     );
     expect(getMetadataCalls.length).toBe(1);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   });
 
   it('fetch metadata two times when spec version changed in range', async () => {
@@ -135,6 +137,8 @@ describe('FetchService', () => {
       (call) => call[0] === 'state_getMetadata',
     );
     expect(getMetadataCalls.length).toBe(2);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 100000);
 
   it('not use dictionary if dictionary is not defined in project config', async () => {
@@ -182,6 +186,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).not.toBeCalled();
     expect(nextEndBlockHeightSpy).toBeCalled();
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('not use dictionary if filters not defined in datasource', async () => {
@@ -212,6 +218,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).not.toBeCalled();
     expect(nextEndBlockHeightSpy).toBeCalled();
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('not use dictionary if block handler is defined in datasource', async () => {
@@ -258,6 +266,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).not.toBeCalled();
     expect(nextEndBlockHeightSpy).toBeCalled();
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('not use dictionary if one of the handler filter module or method is not defined', async () => {
@@ -312,6 +322,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).not.toBeCalled();
     expect(nextEndBlockHeightSpy).toBeCalled();
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('set useDictionary to false if dictionary metadata not match with the api', async () => {
@@ -363,6 +375,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
@@ -398,6 +412,8 @@ describe('FetchService', () => {
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const specVersion = await fetchService.getSpecVersion(8638105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('use api to get block specVersion when blockHeight out of specVersionMap', async () => {
@@ -440,6 +456,8 @@ describe('FetchService', () => {
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
     // this large blockHeight should be thrown
     expect(getSpecFromApiSpy).toBeCalledTimes(1);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('only fetch SpecVersion from dictionary once', async () => {
@@ -478,6 +496,8 @@ describe('FetchService', () => {
     await fetchService.getSpecVersion(8638200);
 
     expect(getSpecVersionSpy).toBeCalledTimes(1);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('update specVersionMap once when specVersion map is out', async () => {
@@ -522,6 +542,8 @@ describe('FetchService', () => {
     expect(Number(specVersionMap[specVersionMap.length - 1].id)).toBe(
       latestSpecVersion.specVersion.toNumber(),
     );
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 
   it('prefetch meta for different specVersion range', async () => {
@@ -566,5 +588,7 @@ describe('FetchService', () => {
     await fetchService.prefetchMeta(9738720); // in 9180
     // Should be called 91151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
+    // fetchService.onApplicationShutdown()
+    // await delay(0.5)
   }, 500000);
 });
