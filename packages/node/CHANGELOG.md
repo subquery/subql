@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-06-29
+
+### Updated
+- Sync with latest development from origin (#31)
+
+### Added
+- HTTP keep alive (#30)
+
 ## [0.1.0] - 2022-06-27
 
 ### Breaking changes
@@ -38,7 +46,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...HEAD
+[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
 [0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
 [0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.6...node/0.0.7
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/node/0.0.5...node/0.0.6
