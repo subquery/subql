@@ -4,8 +4,8 @@
 import path from 'path';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { BN } from '@polkadot/util';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { BN } from '@polkadot/util';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
