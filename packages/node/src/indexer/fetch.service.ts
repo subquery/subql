@@ -19,7 +19,6 @@ import {
 } from '@subql/common-cosmos';
 import {
   DictionaryQueryEntry,
-  SubqlCosmosCustomHandler,
   DictionaryQueryCondition,
   SubqlCosmosEventHandler,
   SubqlCosmosMessageHandler,
@@ -37,11 +36,7 @@ import { delay } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 import { ApiService, CosmosClient } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryService,
-  SpecVersion,
-} from './dictionary.service';
+import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
@@ -54,7 +49,6 @@ const CHECK_MEMORY_INTERVAL = 60000;
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
-const SPEC_VERSION_BLOCK_GAP = 100;
 
 const { argv } = getYargsOption();
 
@@ -159,12 +153,9 @@ export class FetchService implements OnApplicationShutdown {
   private blockBuffer: BlockedQueue<BlockContent>;
   private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
-  private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
-  private specVersionMap: SpecVersion[];
-  private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
 
   constructor(
@@ -355,10 +346,14 @@ export class FetchService implements OnApplicationShutdown {
     let startBlockHeight: number;
     let scaledBatchSize: number;
 
-    while (!this.isShutdown) {
-      startBlockHeight = this.latestBufferedHeight
+    const getStartBlockHeight = (): number => {
+      return this.latestBufferedHeight
         ? this.latestBufferedHeight + 1
         : initBlockHeight;
+    };
+
+    while (!this.isShutdown) {
+      startBlockHeight = getStartBlockHeight();
 
       scaledBatchSize = Math.max(
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
@@ -381,6 +376,14 @@ export class FetchService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
+
+          if (startBlockHeight !== getStartBlockHeight()) {
+            logger.debug(
+              `Queue was reset for new DS, discarding dictionary query result`,
+            );
+            continue;
+          }
+
           if (
             dictionary &&
             (await this.dictionaryValidation(dictionary, startBlockHeight))
@@ -430,6 +433,9 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
+      // Used to compare before and after as a way to check if new DS created
+      const bufferedHeight = this.latestBufferedHeight;
+
       const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
       const blocks = await fetchBlocksBatches(this.api, bufferBlocks);
       logger.info(
@@ -437,6 +443,11 @@ export class FetchService implements OnApplicationShutdown {
           bufferBlocks[bufferBlocks.length - 1]
         }], total ${bufferBlocks.length} blocks`,
       );
+
+      if (bufferedHeight > this.latestBufferedHeight) {
+        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        continue;
+      }
       this.blockBuffer.putAll(blocks);
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.blockBuffer.size,

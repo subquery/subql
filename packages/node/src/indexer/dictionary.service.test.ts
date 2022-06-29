@@ -177,12 +177,4 @@ describe('DictionaryService', () => {
     );
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
-
-  it('should return all specVersion', async () => {
-    const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
-
-    const specVersions = await dictionaryService.getSpecVersion();
-    console.log(specVersions);
-  }, 500000);
 });
