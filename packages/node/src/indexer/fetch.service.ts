@@ -138,6 +138,7 @@ export class FetchService implements OnApplicationShutdown {
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
   private specVersionMap: SpecVersion[];
+  // if specVersionReponse !== this.specVersio
   private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
 
@@ -291,6 +292,7 @@ export class FetchService implements OnApplicationShutdown {
       !!this.dictionaryQueryEntries?.length &&
       !!this.project.network.dictionary;
   }
+  // if specVersionReponse !== this.specVersio
 
   addInterval(name: string, milliseconds: number, handler: () => void): void {
     const interval = setInterval(handler.bind(this), milliseconds);
@@ -327,7 +329,11 @@ export class FetchService implements OnApplicationShutdown {
 
     if (this.useDictionary) {
       const specVersionResponse = await this.dictionaryService.getSpecVersion();
+
       if (specVersionResponse !== undefined) {
+        // if specVersionReponse !== this.specVersionMap
+        // what is specVersion res ? is it from the dict or the api?
+        // use API specVersion response rather than dictionarySpecVersion
         this.specVersionMap = specVersionResponse;
       }
     } else {
@@ -434,6 +440,7 @@ export class FetchService implements OnApplicationShutdown {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         try {
           const dictionary = await this.dictionaryService.getDictionary(
+            // if specVersionReponse !== this.specVersio
             startBlockHeight,
             queryEndBlock,
             scaledBatchSize,
@@ -553,7 +560,9 @@ export class FetchService implements OnApplicationShutdown {
     // therefore instead of check .useDictionary, we check it length before use it.
     if (this.specVersionMap && this.specVersionMap.length !== 0) {
       currentSpecVersion = this.getSpecFromMap(
+        // if specVersionReponse !== this.specVersio
         blockHeight,
+        // if specVersionReponse !== this.specVersio
         this.specVersionMap,
       );
     }
@@ -565,6 +574,7 @@ export class FetchService implements OnApplicationShutdown {
           ? await this.dictionaryService.getSpecVersion()
           : undefined;
         if (response !== undefined) {
+          // if specVersionReponse !== this.specVersio
           this.specVersionMap = response;
         }
       }
@@ -652,8 +662,10 @@ export class FetchService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
         value: Number(this.useDictionary),
       });
+      // if specVersionReponse !== this.specVersio
       this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
+      // if specVersionReponse !== this.specVersio
     }
     if (metaData.lastProcessedHeight < startBlockHeight) {
       logger.warn(
