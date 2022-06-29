@@ -13,7 +13,7 @@ import {
 import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { fetchBlocksBatches } from '../utils/substrate';
+import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -265,6 +265,7 @@ describe('FetchService', () => {
         block: { block: { header: { number: { toNumber: () => height } } } },
       })),
     );
+    (calcInterval as jest.Mock).mockImplementation((api) => new BN(7_000));
   });
 
   it('get finalized head when reconnect', async () => {
@@ -273,8 +274,6 @@ describe('FetchService', () => {
       new DictionaryService(project),
       project,
     );
-    // (fetchService as any).calcInterval = new BN(0x0000000000001770);
-    // (fetchService as any).CHAIN_INTERVAL = 5400;
     await fetchService.init();
     expect(
       apiService.getApi().rpc.chain.getFinalizedHead,

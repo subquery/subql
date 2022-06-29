@@ -7,7 +7,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
 
 import {
   isRuntimeDataSourceV0_2_0,
@@ -36,6 +35,7 @@ import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
+import { calcInterval } from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
@@ -69,37 +69,6 @@ const fetchBlocksBatches = argv.profiler
     )
   : SubstrateUtil.fetchBlocksBatches;
 
-const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
-const DEFAULT_TIME = new BN(6_000);
-const A_DAY = new BN(24 * 60 * 60 * 1000);
-function calcInterval(api: ApiPromise): BN {
-  // console.log('babe', api.consts.babe?.expectedBlockTime);
-  // console.log('diff',api.consts.difficulty?.targetBlockTime);
-  // console.log('subspace',api.consts.subspace?.expectedBlockTime);
-  // console.log('if logic',api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
-  // ?
-  //   api.consts.timestamp.minimumPeriod.mul(BN_TWO)
-  // : api.query.parachainSystem
-  // ?
-  //   DEFAULT_TIME.mul(BN_TWO)
-  // :
-  //   DEFAULT_TIME);
-  //   console.log('stamp gte',api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD));
-
-  //   console.log('bn two ',api.consts.timestamp.minimumPeriod.mul(BN_TWO));
-  //   console.log('parachain', api.query.parachainSystem);
-  return bnMin(
-    A_DAY,
-    api.consts.babe?.expectedBlockTime ||
-      (api.consts.difficulty?.targetBlockTime as any) ||
-      api.consts.subspace?.expectedBlockTime ||
-      (api.consts.timestamp?.minimumPeriod.gte(INTERVAL_THRESHOLD)
-        ? api.consts.timestamp.minimumPeriod.mul(BN_TWO)
-        : api.query.parachainSystem
-        ? DEFAULT_TIME.mul(BN_TWO)
-        : DEFAULT_TIME),
-  );
-}
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
 ): DictionaryQueryEntry {
@@ -203,10 +172,6 @@ export class FetchService implements OnApplicationShutdown {
     this.templateDynamicDatasouces =
       await this.dynamicDsService.getDynamicDatasources();
   }
-  // dynamicInterval(name: string,  milliseconds: number, fn: void): void {
-  //   const interval = setInterval(()=>fn, milliseconds);
-  //   this.schedulerRegistry.addInterval(name, interval);
-  // }
 
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
@@ -328,11 +293,9 @@ export class FetchService implements OnApplicationShutdown {
 
   async init(): Promise<void> {
     if (this.api) {
-      // const CHAIN_INTERVAL = +calcInterval(this.api) * INTERVAL_PERCENT
       const CHAIN_INTERVAL = calcInterval(this.api)
         .muln(INTERVAL_PERCENT)
         .toNumber();
-      console.log(CHAIN_INTERVAL);
 
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
