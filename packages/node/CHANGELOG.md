@@ -6,6 +6,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-06-29
+### Changed
+- Update tests with Manifest v1.0.0 (#1114)
+- Update redecorate api, allow apiAt object to query data earlier than current indexing block (#1111)
+- Using chain block time as interval to fetch latest finalized and best block height (#1134)
+### Fixed
+- Fix set block offset twice issue (#1133)
+- Fix warning for fetch specVersion when dictionary undefined, and tidy up logs (#1127)
+- Fix pending data being used when it should be reset with new DS (#1140)
+
 ## [1.2.1] - 2022-06-22
 ### Fixed
 - Handle when templates are undefined

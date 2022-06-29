@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-06-29
+### Fixed
+- Fixed typo in publish log (#1135)
+### Changed
+- Update init and publish tests with manifest 1.0.0 (#1114)
+
 ## [1.1.0] - 2022-06-22
 ### Changed
 - Increase publish project body size up to 50mb (#1100)
