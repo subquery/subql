@@ -9,7 +9,6 @@ import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
 const {version: packageVersion} = require('../../../package.json');
-const indexerUrl = argv('indexer') as string | undefined;
 
 const METADATA_TYPES = {
   lastProcessedHeight: 'number',
@@ -35,6 +34,8 @@ const metaCache = {
 async function fetchFromApi(): Promise<void> {
   let health: Response;
   let meta: Response;
+
+  const indexerUrl = argv('indexer') as string | undefined;
 
   try {
     meta = await fetch(new URL(`meta`, indexerUrl));

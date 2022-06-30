@@ -111,6 +111,7 @@ describe('FetchService', () => {
 
   afterEach(async () => {
     await delay(0.5);
+    (fetchService as unknown as any)?.blockDispatcher?.onApplicationShutdown();
     (fetchService as unknown as any)?.apiService?.onApplicationShutdown();
     fetchService.onApplicationShutdown();
   });
@@ -131,7 +132,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 10) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -166,7 +166,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -224,7 +223,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -263,7 +261,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -318,7 +315,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -379,7 +375,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 
@@ -438,7 +433,6 @@ describe('FetchService', () => {
       // eslint-disable-next-line @typescript-eslint/require-await
       indexerManager.register(async (content) => {
         if (content.block.block.header.number.toNumber() === 29240) {
-          fetchService.onApplicationShutdown();
           resolve(undefined);
         }
 

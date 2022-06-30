@@ -48,8 +48,8 @@ describe('query limits', () => {
     });
   }
 
-  afterAll((done) => {
-    pool.end();
+  afterAll(async (done) => {
+    await pool.end();
     done();
   });
 

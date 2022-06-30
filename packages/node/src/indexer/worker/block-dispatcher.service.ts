@@ -124,6 +124,7 @@ export class BlockDispatcherService
   onApplicationShutdown(): void {
     this.isShutdown = true;
     this.processQueue.abort();
+    this.flushQueue(0);
   }
 
   enqueueBlocks(heights: number[]): void {
@@ -149,7 +150,7 @@ export class BlockDispatcherService
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
-    if (this.processQueue.freeSpace < this.nodeConfig.batchSize) return;
+    // if (this.processQueue.freeSpace < this.nodeConfig.batchSize) return;
 
     this.fetching = true;
 
@@ -177,6 +178,7 @@ export class BlockDispatcherService
 
     if (bufferedHeight > this._latestBufferedHeight) {
       logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+      this.fetching = false;
       return;
     }
 

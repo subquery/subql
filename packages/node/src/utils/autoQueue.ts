@@ -30,7 +30,7 @@ export class Queue<T> {
   }
 
   putMany(items: T[]): void {
-    if (this.capacity && this.size + items.length >= this.capacity) {
+    if (this.capacity && this.size + items.length > this.capacity) {
       throw new Error('Queue exceeds max size');
     }
     this.items.push(...items);
