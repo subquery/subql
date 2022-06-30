@@ -7,12 +7,9 @@
 import {QueryBuilder} from 'graphile-build-pg';
 import {argv} from '../../yargs';
 
-const unsafe = argv('unsafe') as boolean;
-
 const MAX_ENTITY_COUNT = 100;
 
 const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
-const safeClamp = (x: number) => (unsafe ? x : Math.min(x, MAX_ENTITY_COUNT));
 
 export default (builder) => {
   builder.hook(
@@ -28,6 +25,8 @@ export default (builder) => {
         addArgDataGenerator,
         scope: {fieldName, isPgFieldConnection, isPgFieldSimpleCollection, pgFieldIntrospection: source},
       } = context;
+      const unsafe = argv('unsafe') as boolean;
+      const safeClamp = (x: number) => (unsafe ? x : Math.min(x, MAX_ENTITY_COUNT));
 
       if (
         !(isPgFieldConnection || isPgFieldSimpleCollection) ||

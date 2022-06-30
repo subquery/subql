@@ -301,6 +301,7 @@ function createFetchService(
 describe('FetchService', () => {
   let apiService: ApiService;
   let project: SubqueryProject;
+  let fetchService: FetchService;
 
   beforeEach(() => {
     apiService = mockApiService();
@@ -313,8 +314,13 @@ describe('FetchService', () => {
     (calcInterval as jest.Mock).mockImplementation((api) => new BN(7_000));
   });
 
+  afterEach(() => {
+    (fetchService as unknown as any)?.blockDispatcher?.onApplicationShutdown();
+    fetchService?.onApplicationShutdown();
+  });
+
   it('get finalized head when reconnect', async () => {
-    const fetchService = createFetchService(
+    fetchService = createFetchService(
       apiService,
       mockIndexerManager(),
       new DictionaryService(project, nodeConfig),
@@ -325,26 +331,24 @@ describe('FetchService', () => {
       apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
     expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(1);
-    fetchService.onApplicationShutdown();
   });
 
   // This doesn't test anything
   it.skip('log errors when failed to get finalized block', async () => {
-    const fetchService = createFetchService(
+    fetchService = createFetchService(
       mockRejectedApiService(),
       mockIndexerManager(),
       new DictionaryService(project, nodeConfig),
       project,
     );
     await fetchService.init(1);
-    fetchService.onApplicationShutdown();
   });
 
   it('load batchSize of blocks with original method', () => {
     const batchSize = 50;
     const dictionaryService = new DictionaryService(project, nodeConfig);
 
-    const fetchService = createFetchService(
+    fetchService = createFetchService(
       apiService,
       mockIndexerManager(),
       dictionaryService,
@@ -354,7 +358,6 @@ describe('FetchService', () => {
     (fetchService as any).latestFinalizedHeight = 1000;
     const end = (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
-    fetchService.onApplicationShutdown();
   });
 
   it('loop until shutdown', async () => {
@@ -368,7 +371,7 @@ describe('FetchService', () => {
 
     const indexerManager = mockIndexerManager();
 
-    const fetchService = createFetchService(
+    fetchService = createFetchService(
       apiService,
       indexerManager,
       dictionaryService,
@@ -442,7 +445,7 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const fetchService = new FetchService(
+    fetchService = new FetchService(
       apiService,
       nodeConfig,
       project,
@@ -526,7 +529,7 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const fetchService = new FetchService(
+    fetchService = new FetchService(
       apiService,
       nodeConfig,
       project,
@@ -604,7 +607,7 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const fetchService = new FetchService(
+    fetchService = new FetchService(
       apiService,
       nodeConfig,
       project,
@@ -651,7 +654,7 @@ describe('FetchService', () => {
 
     const indexerManager = mockIndexerManager();
 
-    const fetchService = createFetchService(
+    fetchService = createFetchService(
       apiService,
       indexerManager,
       new DictionaryService(project, nodeConfig),
