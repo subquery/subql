@@ -29,6 +29,12 @@ export type Dictionary = {
   //TODO
   // specVersions: number[];
 };
+
+export type SpecVersionDictionary = {
+  _metadata: MetaData;
+  specVersions: SpecVersion[];
+};
+
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
 
@@ -239,34 +245,47 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery(vars, nodes);
   }
 
-  async getSpecVersion(): Promise<SpecVersion[]> {
+  async getSpecVersionMap(
+    resp_arg?: SpecVersionDictionary,
+  ): Promise<SpecVersion[]> {
+    const resp = resp_arg ? resp_arg : await this.getSpecVersion();
+    const specVersionBlockHeightSet = new Set<SpecVersion>();
+    const specVersions = (resp.specVersions as any).nodes;
+    const _metadata = resp._metadata;
+
+    // Add range for -1 specVersions
+    for (let i = 0; i < specVersions.length - 1; i++) {
+      specVersionBlockHeightSet.add({
+        id: specVersions[i].id,
+        start: Number(specVersions[i].blockHeight),
+        end: Number(specVersions[i + 1].blockHeight) - 1,
+      });
+    }
+    if (specVersions && specVersions.length >= 0) {
+      // Add range for the last specVersion
+      if (_metadata.lastProcessedHeight) {
+        specVersionBlockHeightSet.add({
+          id: specVersions[specVersions.length - 1].id,
+          start: Number(specVersions[specVersions.length - 1].blockHeight),
+          end: Number(_metadata.lastProcessedHeight),
+        });
+      }
+    }
+    console.log('map hit');
+
+    return Array.from(specVersionBlockHeightSet);
+  }
+
+  async getSpecVersion(): Promise<SpecVersionDictionary> {
     const { query } = this.specVersionQuery();
     try {
       const resp = await this.client.query({
         query: gql(query),
       });
-      const specVersionBlockHeightSet = new Set<SpecVersion>();
+
       const _metadata = resp.data._metadata;
-      const specVersions = resp.data.specVersions.nodes;
-      // Add range for -1 specVersions
-      for (let i = 0; i < resp.data.specVersions.nodes.length - 1; i++) {
-        specVersionBlockHeightSet.add({
-          id: specVersions[i].id,
-          start: Number(specVersions[i].blockHeight),
-          end: Number(specVersions[i + 1].blockHeight) - 1,
-        });
-      }
-      if (specVersions && specVersions.length >= 0) {
-        // Add range for the last specVersion
-        if (_metadata.lastProcessedHeight) {
-          specVersionBlockHeightSet.add({
-            id: specVersions[specVersions.length - 1].id,
-            start: Number(specVersions[specVersions.length - 1].blockHeight),
-            end: Number(_metadata.lastProcessedHeight),
-          });
-        }
-      }
-      return Array.from(specVersionBlockHeightSet);
+      const specVersions = resp.data.specVersions;
+      return { _metadata, specVersions };
     } catch (err) {
       logger.warn(err, `failed to fetch specVersion result`);
       return undefined;

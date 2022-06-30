@@ -43,6 +43,7 @@ import {
   Dictionary,
   DictionaryService,
   SpecVersion,
+  SpecVersionDictionary,
 } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -138,7 +139,6 @@ export class FetchService implements OnApplicationShutdown {
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
   private specVersionMap: SpecVersion[];
-  // if specVersionReponse !== this.specVersio
   private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
 
@@ -292,12 +292,6 @@ export class FetchService implements OnApplicationShutdown {
       !!this.dictionaryQueryEntries?.length &&
       !!this.project.network.dictionary;
   }
-  // if specVersionReponse !== this.specVersio
-
-  addInterval(name: string, milliseconds: number, handler: () => void): void {
-    const interval = setInterval(handler.bind(this), milliseconds);
-    this.schedulerRegistry.addInterval(name, interval);
-  }
 
   async init(): Promise<void> {
     if (this.api) {
@@ -326,19 +320,31 @@ export class FetchService implements OnApplicationShutdown {
     });
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
+    let validChecker: boolean | undefined = false;
+    console.log(this.project.network.dictionary);
+    const specVersionResult = await this.dictionaryService.getSpecVersion();
+    if (specVersionResult !== undefined) {
+      validChecker = this.dictionaryValidation(specVersionResult);
+      console.log('238', validChecker);
 
-    if (this.useDictionary) {
-      const specVersionResponse = await this.dictionaryService.getSpecVersion();
+      if (this.useDictionary && validChecker) {
+        console.log('332', validChecker);
 
-      if (specVersionResponse !== undefined) {
-        // if specVersionReponse !== this.specVersionMap
-        // what is specVersion res ? is it from the dict or the api?
-        // use API specVersion response rather than dictionarySpecVersion
-        this.specVersionMap = specVersionResponse;
+        const specVersionResponse =
+          await this.dictionaryService.getSpecVersionMap(specVersionResult);
+        console.log('yes yes');
+
+        if (specVersionResponse !== undefined) {
+          this.specVersionMap = specVersionResponse;
+        }
+      } else {
+        console.log('yes no or no no');
+        this.specVersionMap = [];
       }
-    } else {
-      this.specVersionMap = [];
     }
+    console.log(
+      `output specVersionMap ${JSON.stringify(this.specVersionMap, null, 2)}`,
+    );
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -440,7 +446,6 @@ export class FetchService implements OnApplicationShutdown {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         try {
           const dictionary = await this.dictionaryService.getDictionary(
-            // if specVersionReponse !== this.specVersio
             startBlockHeight,
             queryEndBlock,
             scaledBatchSize,
@@ -560,9 +565,7 @@ export class FetchService implements OnApplicationShutdown {
     // therefore instead of check .useDictionary, we check it length before use it.
     if (this.specVersionMap && this.specVersionMap.length !== 0) {
       currentSpecVersion = this.getSpecFromMap(
-        // if specVersionReponse !== this.specVersio
         blockHeight,
-        // if specVersionReponse !== this.specVersio
         this.specVersionMap,
       );
     }
@@ -571,10 +574,9 @@ export class FetchService implements OnApplicationShutdown {
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersion()
+          ? await this.dictionaryService.getSpecVersionMap()
           : undefined;
         if (response !== undefined) {
-          // if specVersionReponse !== this.specVersio
           this.specVersionMap = response;
         }
       }
@@ -653,26 +655,29 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private dictionaryValidation(
-    { _metadata: metaData }: Dictionary,
-    startBlockHeight: number,
+    { _metadata: metaData }: Dictionary | SpecVersionDictionary,
+    startBlockHeight?: number,
   ): boolean {
+    console.log('meta: ', metaData.genesisHash);
+    console.log('api: ', this.api.genesisHash.toString());
+
     if (metaData.genesisHash !== this.api.genesisHash.toString()) {
       logger.warn(`Dictionary is disabled since now`);
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
         value: Number(this.useDictionary),
       });
-      // if specVersionReponse !== this.specVersio
       this.eventEmitter.emit(IndexerEvent.SkipDictionary);
       return false;
-      // if specVersionReponse !== this.specVersio
     }
-    if (metaData.lastProcessedHeight < startBlockHeight) {
-      logger.warn(
-        `Dictionary indexed block is behind current indexing block height`,
-      );
-      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-      return false;
+    if (startBlockHeight !== undefined) {
+      if (metaData.lastProcessedHeight < startBlockHeight) {
+        logger.warn(
+          `Dictionary indexed block is behind current indexing block height`,
+        );
+        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+        return false;
+      }
     }
     return true;
   }
