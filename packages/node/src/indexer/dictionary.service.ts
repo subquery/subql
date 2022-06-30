@@ -249,6 +249,9 @@ export class DictionaryService implements OnApplicationShutdown {
     resp_arg?: SpecVersionDictionary,
   ): Promise<SpecVersion[]> {
     const resp = resp_arg ? resp_arg : await this.getSpecVersion();
+    if (resp === undefined) {
+      return [];
+    }
     const specVersionBlockHeightSet = new Set<SpecVersion>();
     const specVersions = (resp.specVersions as any).nodes;
     const _metadata = resp._metadata;
@@ -271,8 +274,6 @@ export class DictionaryService implements OnApplicationShutdown {
         });
       }
     }
-    console.log('map hit');
-
     return Array.from(specVersionBlockHeightSet);
   }
 

@@ -321,30 +321,23 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
     let validChecker: boolean | undefined = false;
-    console.log(this.project.network.dictionary);
     const specVersionResult = await this.dictionaryService.getSpecVersion();
-    if (specVersionResult !== undefined) {
-      validChecker = this.dictionaryValidation(specVersionResult);
-      console.log('238', validChecker);
 
-      if (this.useDictionary && validChecker) {
-        console.log('332', validChecker);
+    validChecker = this.dictionaryValidation(specVersionResult);
 
-        const specVersionResponse =
-          await this.dictionaryService.getSpecVersionMap(specVersionResult);
-        console.log('yes yes');
-
-        if (specVersionResponse !== undefined) {
-          this.specVersionMap = specVersionResponse;
-        }
-      } else {
-        console.log('yes no or no no');
-        this.specVersionMap = [];
+    if (this.useDictionary && validChecker) {
+      const specVersionResponse =
+        await this.dictionaryService.getSpecVersionMap(specVersionResult);
+      if (specVersionResponse !== undefined) {
+        this.specVersionMap = specVersionResponse;
       }
+    } else {
+      this.specVersionMap = [];
     }
-    console.log(
-      `output specVersionMap ${JSON.stringify(this.specVersionMap, null, 2)}`,
-    );
+
+    // console.log(
+    //   `output specVersionMap ${JSON.stringify(this.specVersionMap, null, 2)}`,
+    // );
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -655,31 +648,34 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private dictionaryValidation(
-    { _metadata: metaData }: Dictionary | SpecVersionDictionary,
+    dictionary: Dictionary | SpecVersionDictionary,
     startBlockHeight?: number,
   ): boolean {
-    console.log('meta: ', metaData.genesisHash);
-    console.log('api: ', this.api.genesisHash.toString());
+    if (dictionary !== undefined) {
+      const { _metadata: metaData } = dictionary;
 
-    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
-      logger.warn(`Dictionary is disabled since now`);
-      this.useDictionary = false;
-      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-        value: Number(this.useDictionary),
-      });
-      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-      return false;
-    }
-    if (startBlockHeight !== undefined) {
-      if (metaData.lastProcessedHeight < startBlockHeight) {
-        logger.warn(
-          `Dictionary indexed block is behind current indexing block height`,
-        );
+      if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+        logger.warn(`Dictionary is disabled since now`);
+        this.useDictionary = false;
+        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+          value: Number(this.useDictionary),
+        });
         this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         return false;
       }
+
+      if (startBlockHeight !== undefined) {
+        if (metaData.lastProcessedHeight < startBlockHeight) {
+          logger.warn(
+            `Dictionary indexed block is behind current indexing block height`,
+          );
+          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+          return false;
+        }
+      }
+      return true;
     }
-    return true;
+    return false;
   }
 
   private setLatestBufferedHeight(height: number): void {
