@@ -10,7 +10,7 @@ import Promote from './promote';
 type DeploymentOption = 'promote' | 'delete' | 'deploy';
 
 export default class Deployment extends Command {
-  static description = 'Deployment to hosted service';
+  static description = 'Deploy to hosted service';
   static flags = {
     options: Flags.string({
       options: ['deploy', 'promote', 'delete'],
