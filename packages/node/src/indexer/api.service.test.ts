@@ -361,13 +361,20 @@ describe('ApiService', () => {
   //   expect(expectedValidators2).toEqual(vs2);
   // });
   //
-  // it('support http provider', async () => {
-  //   const apiService = await prepareApiService(HTTP_ENDPOINT);
-  //   const api = apiService.getApi();
-  //   const blockhash = await api.rpc.chain.getBlockHash(1);
-  //   const patchedApi = await apiService.getPatchedApi(blockhash, 1);
-  //   await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
-  // });
+  it('support http provider', async () => {
+    const apiService = await prepareApiService(HTTP_ENDPOINT);
+    const api = apiService.getApi();
+    const blockhash = await api.rpc.chain.getBlockHash(1);
+    const block = await api.rpc.chain.getBlock(blockhash);
+    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const runtimeVersion = { specVersion: 1 } as unknown as RuntimeVersion;
+
+    const patchedApi = await apiService.getPatchedApi(
+      mockBlock,
+      runtimeVersion,
+    );
+    await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
+  });
   //
   // /* This test can be reenabled once https://github.com/polkadot-js/api/pull/4540 has been released and the api is updated */
   // it.skip('can correctly call rpc methods that use block number', async () => {
