@@ -28,7 +28,7 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
   ) {
-    this.queue = new AutoQueue();
+    this.queue = new AutoQueue(undefined, 5);
   }
 
   async fetchBlock(height: number): Promise<FetchBlockResponse> {
