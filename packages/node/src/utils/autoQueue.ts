@@ -80,7 +80,7 @@ export class AutoQueue<T> {
 
   private eventEmitter = new EventEmitter2();
 
-  constructor(capacity?: number) {
+  constructor(capacity?: number, private concurrency = 1) {
     this.queue = new Queue<Action<T>>(capacity);
   }
 
@@ -129,20 +129,25 @@ export class AutoQueue<T> {
     }
 
     while (!this._abort) {
-      const action = this.queue.take();
+      const actions = this.queue.takeMany(this.concurrency);
 
-      if (!action) break;
+      if (!actions.length) break;
 
       this.eventEmitter.emit('size', this.queue.size);
 
-      try {
-        this.pendingPromise = true;
-        const payload = await action.task();
+      this.pendingPromise = true;
 
-        action.resolve(payload);
-      } catch (e) {
-        action.reject(e);
-      }
+      await Promise.all(
+        actions.map(async (action) => {
+          try {
+            const payload = await action.task();
+
+            action.resolve(payload);
+          } catch (e) {
+            action.reject(e);
+          }
+        }),
+      );
     }
     this.pendingPromise = false;
   }
