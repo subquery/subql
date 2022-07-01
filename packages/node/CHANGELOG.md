@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+[0.1.2] - 2022-07-01
+### Fixed
+- Docker image health checks failing because of missing `curl` command
+
+### Added
+- Inject the types registry into the sandbox (#34)
+
 ## [0.1.1] - 2022-06-29
 
 ### Updated
@@ -46,8 +53,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...HEAD
-[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
-[0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...HEAD
+[0.1.2]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...node/0.1.2
+[0.1.1]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
+[0.1.0]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
 [0.0.7]: https://github.com/subquery/subql-cosmos/compare/node/0.0.6...node/0.0.7
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/node/0.0.5...node/0.0.6

@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-07-01
+
+- Inject the types registry into the sandbox (#34)
+
+### Added
+
 ## [0.1.0] - 2022-06-27
 
 ### Changed
@@ -20,6 +26,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.1.0...HEAD
-[0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...types/0.1.0
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.1.1...HEAD
+[0.1.1]: https://github.com/subquery/subql-cosmos/compare/types/0.1.0...types/0.1.1
+[0.1.0]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...types/0.1.0
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...types/0.0.6
