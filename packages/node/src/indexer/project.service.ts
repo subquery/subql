@@ -3,8 +3,8 @@
 
 import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getAllEntitiesRelations } from '@subql/utils';
-import { EventEmitter2 } from 'eventemitter2';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';

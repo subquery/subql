@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+[0.1.3] - 2022-07-01
+
+### Fixed
+- Dependency injection issue with EventEmitter
 
 [0.1.2] - 2022-07-01
 ### Fixed
@@ -53,7 +57,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.3...HEAD
+[0.1.3]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...node/0.1.3
 [0.1.2]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...node/0.1.2
 [0.1.1]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
 [0.1.0]: https://github.com/subquery/subql-cosmos/compare/node/0.0.7...node/0.1.0
