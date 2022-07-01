@@ -50,11 +50,14 @@ export function validateSemver(current: string, required: string): boolean {
 
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
-    const validated = valid(value, {includePrerelease: false});
-    if (validated === null || validated === undefined) {
-      return false;
+    if (value !== 'latest' && value !== 'dev') {
+      const validated = valid(value, {includePrerelease: false});
+      if (validated === null || validated === undefined) {
+        return false;
+      }
+      return true;
     }
-    return true;
+    return false;
   }
   defaultMessage(): string {
     return 'Version number must follow Semver rules';
