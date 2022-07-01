@@ -128,23 +128,23 @@ export class AutoQueue<T> {
       return;
     }
 
-    const action = this.queue.take();
+    while (!this._abort) {
+      const action = this.queue.take();
 
-    if (!action) return;
+      if (!action) break;
 
-    this.eventEmitter.emit('size', this.queue.size);
+      this.eventEmitter.emit('size', this.queue.size);
 
-    try {
-      this.pendingPromise = true;
-      const payload = await action.task();
+      try {
+        this.pendingPromise = true;
+        const payload = await action.task();
 
-      action.resolve(payload);
-    } catch (e) {
-      action.reject(e);
-    } finally {
-      this.pendingPromise = false;
-      void this.take();
+        action.resolve(payload);
+      } catch (e) {
+        action.reject(e);
+      }
     }
+    this.pendingPromise = false;
   }
 
   flush(): void {
