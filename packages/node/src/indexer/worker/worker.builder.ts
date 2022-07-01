@@ -101,6 +101,7 @@ export class Worker<T extends AsyncMethods> {
 
     this.worker.on('exit', (code) => {
       console.log('Worker exited', code);
+      process.exit(code);
     });
 
     // Add expected methods to class

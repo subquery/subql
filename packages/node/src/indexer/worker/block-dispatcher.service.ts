@@ -153,62 +153,60 @@ export class BlockDispatcherService
 
     this.fetching = true;
 
-    const blockNums = this.fetchQueue.takeMany(this.nodeConfig.batchSize);
+    while (!this.isShutdown) {
+      const blockNums = this.fetchQueue.takeMany(this.nodeConfig.batchSize);
 
-    // Used to compare before and after as a way to check if queue was flushed
-    const bufferedHeight = this._latestBufferedHeight;
+      // Used to compare before and after as a way to check if queue was flushed
+      const bufferedHeight = this._latestBufferedHeight;
 
-    logger.info(
-      `fetch block [${blockNums[0]},${
-        blockNums[blockNums.length - 1]
-      }], total ${blockNums.length} blocks`,
-    );
+      // Queue is empty
+      if (!blockNums.length) {
+        break;
+      }
 
-    // Queue is empty
-    if (!blockNums.length) {
-      this.fetching = false;
-      return;
-    }
-
-    const blocks = await fetchBlocksBatches(
-      this.apiService.getApi(),
-      blockNums,
-    );
-
-    if (bufferedHeight > this._latestBufferedHeight) {
-      logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-      this.fetching = false;
-      return;
-    }
-
-    const blockTasks = blocks.map((block) => async () => {
-      const height = block.block.block.header.number.toNumber();
-      logger.info(`INDEXING BLOCK ${height}`);
-      this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-        height,
-        timestamp: Date.now(),
-      });
-
-      const runtimeVersion = await this.getRuntimeVersion(block.block);
-
-      const { dynamicDsCreated } = await this.indexerManager.indexBlock(
-        block,
-        runtimeVersion,
+      logger.info(
+        `fetch block [${blockNums[0]},${
+          blockNums[blockNums.length - 1]
+        }], total ${blockNums.length} blocks`,
       );
 
-      if (dynamicDsCreated) {
-        await this.onDynamicDsCreated(height);
+      const blocks = await fetchBlocksBatches(
+        this.apiService.getApi(),
+        blockNums,
+      );
+
+      if (bufferedHeight > this._latestBufferedHeight) {
+        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        continue;
       }
-    });
 
-    // There can be enough of a delay after fetching blocks that shutdown could now be true
-    if (this.isShutdown) return;
+      const blockTasks = blocks.map((block) => async () => {
+        const height = block.block.block.header.number.toNumber();
+        logger.info(`INDEXING BLOCK ${height}`);
+        this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+          height,
+          timestamp: Date.now(),
+        });
 
-    await Promise.all(this.processQueue.putMany(blockTasks));
+        const runtimeVersion = await this.getRuntimeVersion(block.block);
 
-    // Recurse
+        const { dynamicDsCreated } = await this.indexerManager.indexBlock(
+          block,
+          runtimeVersion,
+        );
+
+        if (dynamicDsCreated) {
+          await this.onDynamicDsCreated(height);
+        }
+      });
+
+      // There can be enough of a delay after fetching blocks that shutdown could now be true
+      if (this.isShutdown) break;
+
+      await Promise.all(this.processQueue.putMany(blockTasks));
+    }
+
     this.fetching = false;
-    await this.fetchBlocksFromQueue();
   }
 
   get queueSize(): number {
