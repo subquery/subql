@@ -50,6 +50,7 @@ export class ApiService {
   private api: CosmosClient;
   networkMeta: NetworkMetadataPayload;
   dsProcessor: DsProcessorService;
+  registry: Registry;
   constructor(
     protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
@@ -77,14 +78,14 @@ export class ApiService {
 
       const keepAliveClient = new KeepAliveClient(endpoint);
       const tendermint = await Tendermint34Client.create(keepAliveClient);
-      const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
+      this.registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
       const chaintypes = await this.getChainType(network);
       for (const typeurl in chaintypes) {
-        registry.register(typeurl, chaintypes[typeurl]);
+        this.registry.register(typeurl, chaintypes[typeurl]);
       }
 
-      this.api = new CosmosClient(tendermint, registry);
+      this.api = new CosmosClient(tendermint, this.registry);
 
       this.networkMeta = {
         chainId: network.chainId,
