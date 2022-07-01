@@ -111,9 +111,9 @@ describe('FetchService', () => {
 
   afterEach(async () => {
     await delay(0.5);
+    fetchService.onApplicationShutdown();
     (fetchService as unknown as any)?.blockDispatcher?.onApplicationShutdown();
     (fetchService as unknown as any)?.apiService?.onApplicationShutdown();
-    fetchService.onApplicationShutdown();
   });
 
   it('fetch meta data once when spec version not changed in range', async () => {

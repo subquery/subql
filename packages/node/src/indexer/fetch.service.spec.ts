@@ -51,7 +51,6 @@ function mockIndexerManager(): IndexerManager & {
   return {
     register: (fn) => (_fn = fn),
     indexBlock: (block: BlockContent, runtimeVersion: RuntimeVersion) => {
-      console.log('Funciton exists', !!_fn);
       _fn?.(block, runtimeVersion);
 
       return Promise.resolve({ dynamicDsCreated: false });
