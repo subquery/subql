@@ -184,7 +184,7 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
     // fetchService.onApplicationShutdown()
     // await delay(0.5)
@@ -216,7 +216,7 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
     // fetchService.onApplicationShutdown()
     // await delay(0.5)
@@ -264,10 +264,8 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
   it('not use dictionary if one of the handler filter module or method is not defined', async () => {
@@ -320,12 +318,11 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(dictionaryValidationSpy).not.toBeCalled();
+    expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
+  // at init
   it('set useDictionary to false if dictionary metadata not match with the api', async () => {
     const batchSize = 5;
     const project = testSubqueryProject();
@@ -375,8 +372,8 @@ describe('FetchService', () => {
     await loopPromise;
     expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
+    expect(dictionaryValidationSpy).toReturnWith(false);
+    expect((fetchService as any).specVersionMap.length).toBe(0);
   }, 500000);
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
@@ -412,8 +409,6 @@ describe('FetchService', () => {
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const specVersion = await fetchService.getSpecVersion(8638105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
   it('use api to get block specVersion when blockHeight out of specVersionMap', async () => {
@@ -456,8 +451,6 @@ describe('FetchService', () => {
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
     // this large blockHeight should be thrown
     expect(getSpecFromApiSpy).toBeCalledTimes(1);
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
   it('only fetch SpecVersion from dictionary once', async () => {
@@ -496,8 +489,6 @@ describe('FetchService', () => {
     await fetchService.getSpecVersion(8638200);
 
     expect(getSpecVersionSpy).toBeCalledTimes(1);
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
   it('update specVersionMap once when specVersion map is out', async () => {
@@ -542,8 +533,6 @@ describe('FetchService', () => {
     expect(Number(specVersionMap[specVersionMap.length - 1].id)).toBe(
       latestSpecVersion.specVersion.toNumber(),
     );
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 
   it('prefetch meta for different specVersion range', async () => {
@@ -588,7 +577,5 @@ describe('FetchService', () => {
     await fetchService.prefetchMeta(9738720); // in 9180
     // Should be called 91151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   }, 500000);
 });

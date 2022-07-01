@@ -334,10 +334,6 @@ export class FetchService implements OnApplicationShutdown {
     } else {
       this.specVersionMap = [];
     }
-
-    // console.log(
-    //   `output specVersionMap ${JSON.stringify(this.specVersionMap, null, 2)}`,
-    // );
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)

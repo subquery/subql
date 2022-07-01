@@ -160,14 +160,16 @@ function mockDictionaryService(
   });
   return {
     getDictionary: mockDictionary,
-    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersion: jest.fn(() => mockDictionaryRet),
   } as any;
 }
 
 function mockDictionaryService1(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryBatches),
-    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersion: jest.fn(() => mockDictionaryBatches),
   } as any;
 }
 
@@ -180,7 +182,8 @@ function mockDictionaryService2(): DictionaryService {
 function mockDictionaryService3(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
-    getSpecVersion: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersion: jest.fn(() => mockDictionaryNoBatches),
   } as any;
 }
 function testSubqueryProject(): SubqueryProject {
@@ -402,7 +405,7 @@ describe('FetchService', () => {
       }
     });
     await loopPromise;
-    expect(dictionaryValidationSpy).toHaveBeenCalledTimes(1);
+    expect(dictionaryValidationSpy).toHaveBeenCalledTimes(2);
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     //we expect after use the original method, next loop will still use dictionary by default
     expect((fetchService as any).useDictionary).toBeTruthy();
