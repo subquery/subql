@@ -320,10 +320,10 @@ export class FetchService implements OnApplicationShutdown {
     });
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
-    let validChecker: boolean | undefined = false;
+
     const specVersionResult = await this.dictionaryService.getSpecVersion();
 
-    validChecker = this.dictionaryValidation(specVersionResult);
+    const validChecker = this.dictionaryValidation(specVersionResult);
 
     if (this.useDictionary && validChecker) {
       const specVersionResponse =
