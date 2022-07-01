@@ -124,7 +124,6 @@ export class BlockDispatcherService
   onApplicationShutdown(): void {
     this.isShutdown = true;
     this.processQueue.abort();
-    this.flushQueue(0);
   }
 
   enqueueBlocks(heights: number[]): void {
