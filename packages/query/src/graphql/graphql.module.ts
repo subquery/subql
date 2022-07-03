@@ -71,7 +71,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         return this.buildSchema(dbSchema, options, --retries);
       }
     } else {
-      console.error(`Failed to build schema ${dbSchema} ${SCHEMA_RETRY_NUMBER} times`);
+      throw new Error(`Failed to build schema ${dbSchema} ${SCHEMA_RETRY_NUMBER} times`);
     }
   }
 
