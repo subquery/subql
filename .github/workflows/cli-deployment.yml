@@ -1,0 +1,54 @@
+name: "CLI deployment"
+
+on: 
+  workflow_dispatch:
+    inputs: 
+      dictionaryRepo:
+        description: 'Dictionary gitHub repo'
+        required: true
+        default: 'warning'
+        type: string
+
+
+jobs:
+  cli_deployment: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+# Build and publish
+
+# get the repo
+# clone it down
+# run yarn install
+# yarn codegen
+# do i clone both subql and the dictionary ?
+# pack-path: packages/cli
+# node bin/run publish ?
+  #SUBQL_ACCESS_TOKEN=${{ secrets.SUBQL_ACCESS_TOKEN }} // or get it directly from the API using github cookie
+
+# Deploy to hosted services
+# use CID for deployment
+# if: steps.
+
+# Create project
+# node bin/run project:create-project 
+  # token: SUBQL_ACCESS_TOKEN=${{ secrets.SUBQL_ACCESS_TOKEN }}
+  # --description "Subql Dictionary for ${name of dictionary}"
+  # --gitRepo=<git repo for dictionary>
+  # --org=<subquery>
+  # --project_name=<name of dictionary>
+  # --subtitle="The SubQuery Dictionary is able to massively improve the indexing performance of your SubQuery Project."
+
+# Deploy project
+# node bin/run deployment:deploy 
+  # --cid=<cid> 
+  # --endpoint=<endpoint> 
+  # --org=<subquery>
+  # --project_name=<dictionary name>
+
