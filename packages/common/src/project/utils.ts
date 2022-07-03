@@ -45,22 +45,27 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
 }
 
 export function validateSemver(current: string, required: string): boolean {
+  // if (current !== 'latest' && current !== 'dev') {
+  //   return false
+  // }
   return satisfies(current, required, {includePrerelease: true});
 }
 
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
-    if (value !== 'latest' && value !== 'dev') {
-      const validated = valid(value, {includePrerelease: false});
-      if (validated === null || validated === undefined) {
-        return false;
-      }
-      return true;
+    console.log(`semver value: ${value}`);
+
+    const validated = valid(value, {includePrerelease: false});
+    if (validated === null || validated === undefined) {
+      return false;
     }
-    return false;
+    return true;
   }
   defaultMessage(): string {
-    return 'Version number must follow Semver rules';
+    // if (value.value !== 'latest'  && value.value !== 'dev') {
+    //   return 'Version number must follow Semver rules';
+    // }
+    return '"latest" and "dev" are not valid versions';
   }
 }
 
