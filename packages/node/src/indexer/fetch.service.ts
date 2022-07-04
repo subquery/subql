@@ -27,6 +27,7 @@ import {
   SubstrateCustomHandler,
 } from '@subql/types';
 
+import { MetaData } from '@subql/utils';
 import { isUndefined, range, sortBy, template, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -39,11 +40,7 @@ import { calcInterval } from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryService,
-  SpecVersion,
-} from './dictionary.service';
+import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
@@ -292,11 +289,6 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary;
   }
 
-  addInterval(name: string, milliseconds: number, handler: () => void): void {
-    const interval = setInterval(handler.bind(this), milliseconds);
-    this.schedulerRegistry.addInterval(name, interval);
-  }
-
   async init(): Promise<void> {
     if (this.api) {
       const CHAIN_INTERVAL = calcInterval(this.api)
@@ -325,8 +317,13 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    if (this.useDictionary) {
-      const specVersionResponse = await this.dictionaryService.getSpecVersion();
+    const validChecker = this.dictionaryValidation(
+      await this.dictionaryService.getSpecVersionsRaw(),
+    );
+
+    if (this.useDictionary && validChecker) {
+      const specVersionResponse =
+        await this.dictionaryService.getSpecVersions();
       if (specVersionResponse !== undefined) {
         this.specVersionMap = specVersionResponse;
       }
@@ -562,7 +559,7 @@ export class FetchService implements OnApplicationShutdown {
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersion()
+          ? await this.dictionaryService.getSpecVersions()
           : undefined;
         if (response !== undefined) {
           this.specVersionMap = response;
@@ -643,26 +640,34 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private dictionaryValidation(
-    { _metadata: metaData }: Dictionary,
-    startBlockHeight: number,
+    dictionary: { _metadata: MetaData },
+    startBlockHeight?: number,
   ): boolean {
-    if (metaData.genesisHash !== this.api.genesisHash.toString()) {
-      logger.warn(`Dictionary is disabled since now`);
-      this.useDictionary = false;
-      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-        value: Number(this.useDictionary),
-      });
-      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-      return false;
+    if (dictionary !== undefined) {
+      const { _metadata: metaData } = dictionary;
+
+      if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+        logger.warn(`Dictionary is disabled since now`);
+        this.useDictionary = false;
+        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+          value: Number(this.useDictionary),
+        });
+        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+        return false;
+      }
+
+      if (startBlockHeight !== undefined) {
+        if (metaData.lastProcessedHeight < startBlockHeight) {
+          logger.warn(
+            `Dictionary indexed block is behind current indexing block height`,
+          );
+          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+          return false;
+        }
+      }
+      return true;
     }
-    if (metaData.lastProcessedHeight < startBlockHeight) {
-      logger.warn(
-        `Dictionary indexed block is behind current indexing block height`,
-      );
-      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-      return false;
-    }
-    return true;
+    return false;
   }
 
   private setLatestBufferedHeight(height: number): void {
