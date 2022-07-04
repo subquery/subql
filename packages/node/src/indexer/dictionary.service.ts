@@ -245,16 +245,13 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery(vars, nodes);
   }
 
-  async getSpecVersionMap(
-    resp_arg?: SpecVersionDictionary,
-  ): Promise<SpecVersion[]> {
-    const resp = resp_arg ? resp_arg : await this.getSpecVersion();
-    if (resp === undefined) {
+  parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
+    if (raw === undefined) {
       return [];
     }
     const specVersionBlockHeightSet = new Set<SpecVersion>();
-    const specVersions = (resp.specVersions as any).nodes;
-    const _metadata = resp._metadata;
+    const specVersions = (raw.specVersions as any).nodes;
+    const _metadata = raw._metadata;
 
     // Add range for -1 specVersions
     for (let i = 0; i < specVersions.length - 1; i++) {
@@ -277,7 +274,7 @@ export class DictionaryService implements OnApplicationShutdown {
     return Array.from(specVersionBlockHeightSet);
   }
 
-  async getSpecVersion(): Promise<SpecVersionDictionary> {
+  async getSpecVersionsRaw(): Promise<SpecVersionDictionary> {
     const { query } = this.specVersionQuery();
     try {
       const resp = await this.client.query({
@@ -289,6 +286,14 @@ export class DictionaryService implements OnApplicationShutdown {
       return { _metadata, specVersions };
     } catch (err) {
       logger.warn(err, `failed to fetch specVersion result`);
+      return undefined;
+    }
+  }
+
+  async getSpecVersions(): Promise<SpecVersion[]> {
+    try {
+      return this.parseSpecVersions(await this.getSpecVersionsRaw());
+    } catch {
       return undefined;
     }
   }

@@ -27,6 +27,7 @@ import {
   SubstrateCustomHandler,
 } from '@subql/types';
 
+import { MetaData } from '@subql/utils';
 import { isUndefined, range, sortBy, template, uniqBy } from 'lodash';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -39,12 +40,7 @@ import { calcInterval } from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { BlockedQueue } from './BlockedQueue';
-import {
-  Dictionary,
-  DictionaryService,
-  SpecVersion,
-  SpecVersionDictionary,
-} from './dictionary.service';
+import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
@@ -321,13 +317,13 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    const specVersionResult = await this.dictionaryService.getSpecVersion();
-
-    const validChecker = this.dictionaryValidation(specVersionResult);
+    const validChecker = this.dictionaryValidation(
+      await this.dictionaryService.getSpecVersionsRaw(),
+    );
 
     if (this.useDictionary && validChecker) {
       const specVersionResponse =
-        await this.dictionaryService.getSpecVersionMap(specVersionResult);
+        await this.dictionaryService.getSpecVersions();
       if (specVersionResponse !== undefined) {
         this.specVersionMap = specVersionResponse;
       }
@@ -563,7 +559,7 @@ export class FetchService implements OnApplicationShutdown {
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersionMap()
+          ? await this.dictionaryService.getSpecVersions()
           : undefined;
         if (response !== undefined) {
           this.specVersionMap = response;
@@ -644,7 +640,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private dictionaryValidation(
-    dictionary: Dictionary | SpecVersionDictionary,
+    dictionary: { _metadata: MetaData },
     startBlockHeight?: number,
   ): boolean {
     if (dictionary !== undefined) {

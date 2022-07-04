@@ -182,7 +182,7 @@ describe('DictionaryService', () => {
     const project = testSubqueryProject();
     const dictionaryService = new DictionaryService(project);
 
-    const specVersions = await dictionaryService.getSpecVersion();
+    const specVersions = await dictionaryService.getSpecVersions();
     console.log(specVersions);
   }, 500000);
 });

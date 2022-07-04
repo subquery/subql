@@ -160,16 +160,16 @@ function mockDictionaryService(
   });
   return {
     getDictionary: mockDictionary,
-    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersion: jest.fn(() => mockDictionaryRet),
+    getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionsRaw: jest.fn(() => mockDictionaryRet),
   } as any;
 }
 
 function mockDictionaryService1(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryBatches),
-    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersion: jest.fn(() => mockDictionaryBatches),
+    getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionsRaw: jest.fn(() => mockDictionaryBatches),
   } as any;
 }
 
@@ -182,8 +182,8 @@ function mockDictionaryService2(): DictionaryService {
 function mockDictionaryService3(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
-    getSpecVersionMap: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersion: jest.fn(() => mockDictionaryNoBatches),
+    getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
+    getSpecVersionsRaw: jest.fn(() => mockDictionaryNoBatches),
   } as any;
 }
 function testSubqueryProject(): SubqueryProject {

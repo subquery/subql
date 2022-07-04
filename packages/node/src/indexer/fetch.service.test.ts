@@ -481,7 +481,7 @@ describe('FetchService', () => {
 
     fetchService = await createFetchService(project, batchSize);
     const dictionaryService = (fetchService as any).dictionaryService;
-    const getSpecVersionSpy = jest.spyOn(dictionaryService, 'getSpecVersion');
+    const getSpecVersionSpy = jest.spyOn(dictionaryService, 'getSpecVersions');
 
     await fetchService.init();
 
