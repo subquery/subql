@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ConfigureModule } from './configure/configure.module';
 import { DbModule } from './db/db.module';
 import { FetchModule } from './indexer/fetch.module';
+import { MetaModule } from './meta/meta.module';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { FetchModule } from './indexer/fetch.module';
     ConfigureModule.register(),
     ScheduleModule.forRoot(),
     FetchModule,
-    // MetaModule, // TODO bring back, not sure how to work with threads
+    MetaModule,
   ],
   controllers: [],
 })
