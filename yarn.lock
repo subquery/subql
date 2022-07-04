@@ -3420,7 +3420,7 @@ __metadata:
     "@oclif/dev-cli": ^1.26.10
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/common-avalanche": 0.1.2
+    "@subql/common-avalanche": 0.1.3
     "@subql/common-cosmos": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": ^0.6.0
@@ -3455,9 +3455,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-avalanche@npm:0.1.2":
-  version: 0.1.2
-  resolution: "@subql/common-avalanche@npm:0.1.2"
+"@subql/common-avalanche@npm:0.1.3":
+  version: 0.1.3
+  resolution: "@subql/common-avalanche@npm:0.1.3"
   dependencies:
     "@polkadot/util": ^8
     "@subql/common": 1.0.1-0
@@ -3473,7 +3473,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     sequelize: ^6.6.2
     vm2: ^3.9.9
-  checksum: 9bf1b1f84830cfbb31b229d45884d2baa7307cabcc5eedb8997959af89a21973463e03b615aec72b2a73a15ff464a0c7e970bf5d5871b6fea68f38b28ca33c2b
+  checksum: af70dd6656d8661599aabfab0b49a817e6f83ff9d94cee3208172724e9eed28b0e4254f07c9a3a42487156bb53b4d755e3469213b68b70183a39fc0947597725
   languageName: node
   linkType: hard
 
