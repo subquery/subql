@@ -4,6 +4,7 @@
 import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
+import {delay} from '@subql/common';
 import {
   ApolloServerPluginCacheControl,
   ApolloServerPluginLandingPageDisabled,
@@ -11,7 +12,7 @@ import {
 } from 'apollo-server-core';
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
-import {execute, subscribe} from 'graphql';
+import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {Pool} from 'pg';
 import {makePluginHook} from 'postgraphile';
 import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
@@ -25,7 +26,8 @@ import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
-
+const SCHEMA_RETRY_INTERVAL = 10; //seconds
+const SCHEMA_RETRY_NUMBER = 5;
 @Module({
   providers: [ProjectService],
 })
@@ -43,11 +45,34 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (!this.httpAdapterHost) {
       return;
     }
-    this.apolloServer = await this.createServer();
+    try {
+      this.apolloServer = await this.createServer();
+    } catch (e) {
+      throw new Error(`create apollo server failed, ${e.message}`);
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
     return this.apolloServer?.stop();
+  }
+
+  private async buildSchema(
+    dbSchema: string,
+    options: PostGraphileCoreOptions,
+    retries: number
+  ): Promise<GraphQLSchema> {
+    if (retries > 0) {
+      try {
+        const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
+        const graphqlSchema = builder.buildSchema();
+        return graphqlSchema;
+      } catch (e) {
+        await delay(SCHEMA_RETRY_INTERVAL);
+        return this.buildSchema(dbSchema, options, --retries);
+      }
+    } else {
+      throw new Error(`Failed to build schema ${dbSchema} ${SCHEMA_RETRY_NUMBER} times`);
+    }
   }
 
   private async createServer() {
@@ -72,9 +97,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       }
     }
 
-    const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
-
-    const schema = builder.buildSchema();
+    const schema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
 
     const apolloServerPlugins = [
       ApolloServerPluginCacheControl({
