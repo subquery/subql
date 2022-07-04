@@ -110,10 +110,12 @@ describe('FetchService', () => {
   let fetchService: FetchService;
 
   afterEach(async () => {
-    await delay(0.5);
     fetchService.onApplicationShutdown();
-    (fetchService as unknown as any)?.blockDispatcher?.onApplicationShutdown();
-    (fetchService as unknown as any)?.apiService?.onApplicationShutdown();
+    await (
+      fetchService as unknown as any
+    )?.blockDispatcher?.onApplicationShutdown();
+    await delay(2.5);
+    await (fetchService as unknown as any)?.apiService?.onApplicationShutdown();
   });
 
   it('fetch meta data once when spec version not changed in range', async () => {
@@ -146,8 +148,6 @@ describe('FetchService', () => {
       (call) => call[0] === 'state_getMetadata',
     );
     expect(getMetadataCalls.length).toBe(1);
-    // fetchService.onApplicationShutdown()
-    // await delay(0.5)
   });
 
   it('fetch metadata two times when spec version changed in range', async () => {

@@ -28,4 +28,7 @@ services:
     command:
       - yarn
       - test:all
+      - -t
+      - "FetchService"
+      # - --detectOpenHandles
 

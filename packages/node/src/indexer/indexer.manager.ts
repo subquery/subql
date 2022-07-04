@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
@@ -80,9 +79,7 @@ export class IndexerManager {
     const { block } = blockContent;
     let dynamicDsCreated = false;
     const blockHeight = block.block.header.number.toNumber();
-    // console.time(`${blockHeight} get transaction`);
     const tx = await this.sequelize.transaction();
-    // console.timeEnd(`${blockHeight} get transaction`);
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
 
@@ -96,8 +93,6 @@ export class IndexerManager {
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
 
-      // console.time(`${blockHeight} indexBlockData`);
-
       let apiAt: ApiAt;
 
       await this.indexBlockData(
@@ -105,11 +100,9 @@ export class IndexerManager {
         datasources,
         async (ds: SubqlProjectDs) => {
           // Injected runtimeVersion from fetch service might be outdated
-          // console.time(`${blockHeight} patched api`);
           apiAt =
             apiAt ??
             (await this.apiService.getPatchedApi(block, runtimeVersion));
-          // console.timeEnd(`${blockHeight} patched api`);
 
           const vm = this.sandboxService.getDsProcessor(ds, apiAt);
 
@@ -134,8 +127,6 @@ export class IndexerManager {
           return vm;
         },
       );
-
-      // console.timeEnd(`${blockHeight} indexBlockData`);
 
       await this.storeService.setMetadataBatch(
         [
@@ -181,9 +172,7 @@ export class IndexerManager {
       throw e;
     }
 
-    // console.time(`${blockHeight} commit tx`);
     await tx.commit();
-    // console.timeEnd(`${blockHeight} commit tx`);
 
     return {
       dynamicDsCreated,

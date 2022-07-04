@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -13,10 +12,8 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
-import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
@@ -130,7 +127,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const eventEmitter = new EventEmitter2();
 
   const apiService = new ApiService(project, eventEmitter);
-  // const dictionaryService = new DictionaryService(project);
 
   const dsProcessorService = new DsProcessorService(project);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -163,7 +159,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     storeService,
     apiService,
     poiService,
-    // mmrService,
     sequilize,
     project,
     nodeConfig,
@@ -171,7 +166,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     dsProcessorService,
     dynamicDsService,
     subqueryRepo,
-    // eventEmitter,
     projectService,
   );
 }
