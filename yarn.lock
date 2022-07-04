@@ -3440,7 +3440,6 @@ __metadata:
     globby: ^11
     inquirer: ^8.2.0
     inquirer-autocomplete-prompt: ^1.4.0
-    ipfs-http-client: ^52.0.3
     oclif: ^2.4.4
     rimraf: ^3.0.2
     simple-git: ^3.1.1
@@ -3611,6 +3610,7 @@ __metadata:
     axios: ^0.27.2
     class-transformer: 0.5.1
     class-validator: ^0.13.2
+    ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
@@ -3790,7 +3790,6 @@ __metadata:
     flatted: ^3.2.5
     graphql: ^15.8.0
     graphql-tag: ^2.12.6
-    ipfs-http-client: ^52.0.3
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
@@ -3810,7 +3809,6 @@ __metadata:
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5
     axios: ^0.24.0
-    ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
     package-json-type: ^1.0.3
   languageName: unknown

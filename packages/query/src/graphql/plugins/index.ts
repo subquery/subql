@@ -53,9 +53,6 @@ import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 
-import {getYargsOption} from '../../yargs';
-const {argv} = getYargsOption();
-
 /* eslint-enable */
 
 export const defaultPlugins = [

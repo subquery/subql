@@ -20,7 +20,6 @@
     "flatted": "^3.2.5",
     "graphql": "^15.8.0",
     "graphql-tag": "^2.12.6",
-    "ipfs-http-client": "^52.0.3",
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.0.2",
     "semver": "^7.3.7",
