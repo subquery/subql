@@ -168,6 +168,10 @@ export class RuntimeDataSourceBase implements AvalancheDataSource {
   @ValidateNested()
   @Type(() => SubqlNetworkFilterImpl)
   filter?: SubstrateNetworkFilter;
+  @IsOptional()
+  assets?: Map<string, FileReference>;
+  @IsOptional()
+  options?: any;
 }
 
 export class FileReferenceImpl implements FileReference {
