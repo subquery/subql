@@ -110,6 +110,10 @@ export class AutoQueue<T> {
       throw new Error('Queue exceeds max size');
     }
 
+    if (this._abort) {
+      throw new Error('Queue has been aborted');
+    }
+
     return tasks.map((task, index) => {
       return new Promise((resolve, reject) => {
         this.queue.put({ task, resolve, reject });
@@ -124,7 +128,7 @@ export class AutoQueue<T> {
     if (this.pendingPromise) return;
     if (this._abort) {
       // Reset so it can be restarted
-      this._abort = false;
+      // this._abort = false;
       return;
     }
 

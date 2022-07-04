@@ -158,7 +158,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     storeService,
     apiService,
     poiService,
-    // mmrService,
     sequilize,
     project,
     nodeConfig,
@@ -166,7 +165,6 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
     dsProcessorService,
     dynamicDsService,
     subqueryRepo,
-    // eventEmitter,
     projectService,
   );
 }

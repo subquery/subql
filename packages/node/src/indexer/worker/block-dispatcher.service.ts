@@ -122,6 +122,7 @@ export class BlockDispatcherService
   }
 
   onApplicationShutdown(): void {
+    logger.info('onApplicationShutdown');
     this.isShutdown = true;
     this.processQueue.abort();
   }
@@ -182,7 +183,6 @@ export class BlockDispatcherService
 
       const blockTasks = blocks.map((block) => async () => {
         const height = block.block.block.header.number.toNumber();
-        logger.info(`INDEXING BLOCK ${height}`);
         this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
           height,
           timestamp: Date.now(),
@@ -332,9 +332,9 @@ export class WorkerBlockDispatcherService
         await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
       }
 
-      logger.info(
-        `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
-      );
+      // logger.info(
+      //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
+      // );
 
       // console.time(`Process block ${height}`);
 
