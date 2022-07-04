@@ -5,16 +5,13 @@ import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
 import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
+import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 
-jest.mock('../yargs', () => {
-  const original = jest.requireActual('../yargs');
-  return {
-    ...original,
-    getYargsOption: jest.fn().mockImplementation(() => {
-      return {argv: {name: 'test'}};
-    }),
-  };
+jest.mock('../yargs', () => jest.createMockFromModule('../yargs'));
+
+(getYargsOption as jest.Mock).mockImplementation(() => {
+  return {argv: {name: 'test'}};
 });
 
 describe('query limits', () => {

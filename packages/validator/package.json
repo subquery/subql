@@ -22,7 +22,6 @@
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
     "axios": "^0.24.0",
-    "ipfs-http-client": "^52.0.3",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"
   },
