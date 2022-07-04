@@ -34,6 +34,7 @@
     "app-module-path": "^2.2.0",
     "dayjs": "^1.10.7",
     "eventemitter2": "^6.4.5",
+    "fetch-h2": "3.0.2",
     "lodash": "^4.17.21",
     "merkle-tools": "^1.4.1",
     "parse-json": "^6.0.2",
