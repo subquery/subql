@@ -71,9 +71,8 @@ describe('GraphqlModule', () => {
     await pool.query(`DROP TABLE subquery_1._metadata`);
   });
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await pool.end();
-    done();
   });
 
   it('can query all metadata fields from database', async () => {
