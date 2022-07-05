@@ -20,8 +20,8 @@ export default class Publish extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Publish);
-
-    const project = getProjectRootAndManifest(flags.location ? path.resolve(flags.location) : process.cwd());
+    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+    const project = getProjectRootAndManifest(location);
 
     // Ensure that the project is built
     try {
@@ -46,9 +46,8 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SubQuery project to IPFS');
-    const cid = 'QmQ9x4AhfRQA6AkvCC65nGPaeKHDuWbRkgsJs9emdaNjFY';
-    // const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    await renderIPFS_file('project', cid);
+    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+    await renderIPFS_file(location, cid);
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }
