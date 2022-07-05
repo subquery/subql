@@ -9,7 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [1.2.0] - 2022-05-31
+## [1.2.1] - 2022-07-05
+### Fixed
+- Tidy up dependency, move `ipfs-http-client` to common packages (#1160)
+
+## [1.2.0] - 2022-06-22
 ### Changed
 - move out terra pacakges (#1112)
 ### Added

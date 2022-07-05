@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.4.0] - 2022-07-05
+### Fixed
+- Fix DI issue with EventEmitter not being resolved (#1154)
+- Validate dictionary before use its specVersion (#1152)
+### Changed
+- use Http keepAlive and maxSockets, use http2 (#1150)
+
 ## [1.3.0] - 2022-06-29
 ### Changed
 - Update tests with Manifest v1.0.0 (#1114)

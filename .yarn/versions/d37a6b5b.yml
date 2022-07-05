@@ -1,5 +1,0 @@
-undecided:
-  - "@subql/common"
-  - "@subql/query"
-  - "@subql/utils"
-  - "@subql/validator"
