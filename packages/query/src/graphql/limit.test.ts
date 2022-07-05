@@ -48,9 +48,8 @@ describe('query limits', () => {
     });
   }
 
-  afterAll(async (done) => {
+  afterAll(async () => {
     await pool.end();
-    done();
   });
 
   describe('entity limits', () => {
