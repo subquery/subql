@@ -2772,11 +2772,10 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@subql/types-cosmos@workspace:packages/types"
   dependencies:
-    "@types/app-module-path": ^2.2.0
-  peerDependencies:
     "@cosmjs/cosmwasm-stargate": ^0.28.9
     "@cosmjs/proto-signing": ^0.28.9
     "@cosmjs/stargate": ^0.28.9
+    "@types/app-module-path": ^2.2.0
   languageName: unknown
   linkType: soft
 
