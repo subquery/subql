@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-07-05
+### Fixed
+- update common-avalanche,fix missing filter, asset and options (#1158)
+### Changed
+- Rename `deployment` command to `deploy`(#1149)
+
 ## [1.1.1] - 2022-06-29
 ### Fixed
 - Fixed typo in publish log (#1135)

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.1] - 2022-07-05
+### Changed
+- Bump with `@subql/common`
+
 ## [1.1.0] - 2022-05-31
 ### Changed
 - Remove `contract-processors` and types improvements (#1012)
