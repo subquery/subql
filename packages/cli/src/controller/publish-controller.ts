@@ -13,6 +13,16 @@ import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
+const MANIFEST_FILE_NAME = 'project';
+
+export async function renderIPFS_file(file_name: string, cid: string): Promise<void> {
+  try {
+    await fs.promises.writeFile(`.${MANIFEST_FILE_NAME}-cid`, cid, 'utf8');
+  } catch (e) {
+    throw new Error(`Failed to create CID file: ${e}`);
+  }
+}
+
 export async function uploadToIpfs(projectPath: string, authToken: string, ipfsEndpoint?: string): Promise<string> {
   const reader = await ReaderFactory.create(projectPath);
   let manifest;
