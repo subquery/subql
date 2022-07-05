@@ -29,6 +29,7 @@ enum NETWORK_FAMILIES {
   Avalanche = 'Avalanche',
   Substrate = 'Substrate',
   Terra = 'Terra',
+  Cosmos = 'Cosmos',
 }
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
