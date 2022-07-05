@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {URL} from 'url';
 import {Command, Flags} from '@oclif/core';
+import {NETWORK_FAMILY} from '@subql/common';
 import chalk from 'chalk';
 import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
@@ -25,11 +26,7 @@ import {ProjectSpecBase, ProjectSpecV0_2_0, ProjectSpecV1_0_0} from '../types';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const RECOMMEND_VERSION = '1.0.0';
-enum NETWORK_FAMILIES {
-  Avalanche = 'Avalanche',
-  Substrate = 'Substrate',
-  Terra = 'Terra',
-}
+
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
   return (_: any, input: string) => {
@@ -92,7 +89,7 @@ export default class Init extends Command {
   private projectPath: string; //path on GitHub
   private project: ProjectSpecBase;
   private location: string;
-  private networkFamily: NETWORK_FAMILIES;
+  private networkFamily: NETWORK_FAMILY;
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
@@ -199,7 +196,7 @@ export default class Init extends Command {
     }
   }
 
-  async setupProject(flags: any) {
+  async setupProject(flags: any): Promise<void> {
     const [
       defaultSpecVersion,
       defaultRepository,
@@ -221,7 +218,7 @@ export default class Init extends Command {
     this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
 
     //TODO, only substrate family project should fetch its genesis hash, keep it this way for now
-    if (this.networkFamily === NETWORK_FAMILIES.Substrate && flags.specVersion !== '0.0.1') {
+    if (this.networkFamily === NETWORK_FAMILY.substrate && flags.specVersion !== '0.0.1') {
       cli.action.start('Fetching network genesis hash');
       if (gte(flags.specVersion, '1.0.0')) {
         (this.project as ProjectSpecV1_0_0).chainId = await getGenesisHash(this.project.endpoint);
