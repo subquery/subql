@@ -63,7 +63,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
 type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
 
 function getMaxWorkers(numWorkers?: number): number {
-  const maxCPUs = os.cpus().length - 1;
+  const maxCPUs = os.cpus().length;
   return Math.min(numWorkers ?? maxCPUs, maxCPUs);
 }
 
