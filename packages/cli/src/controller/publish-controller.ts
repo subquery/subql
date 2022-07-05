@@ -20,6 +20,8 @@ export async function createIPFS_file(projectPath: string, cid: string): Promise
   // dymically resolve manfiest-file name
   // projectPath can be directory or project file
   // get manifest file name
+
+  // user sets their own token
   console.log('path: ', projectPath);
   const val = getProjectManifestPath(projectPath);
   console.log('val: ', val);
