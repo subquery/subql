@@ -15,7 +15,9 @@ import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
 const MANIFEST_FILE_NAME = 'project';
 
-export async function renderIPFS_file(projectPath: string, cid: string): Promise<void> {
+export async function createIPFS_file(projectPath: string, cid: string): Promise<void> {
+  // TODO:
+  // dymically resolve manfiest-file name
   const MANIFEST_FILE = path.join(projectPath, `.${MANIFEST_FILE_NAME}-cid`);
   try {
     await fs.promises.writeFile(MANIFEST_FILE, cid, 'utf8');

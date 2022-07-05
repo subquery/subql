@@ -22,7 +22,7 @@ import {
   ProjectSpecV1_0_0,
 } from '../types';
 import {cloneProjectGit, prepare} from './init-controller';
-import {uploadFile, uploadToIpfs} from './publish-controller';
+import {createIPFS_file, uploadFile, uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
   name: 'mocked_starter',
@@ -175,5 +175,19 @@ describe('Cli publish', () => {
     expect(deployment).toContain('genesisHash');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
+  });
+
+  it('create ipfsCID file stored in local', async () => {
+    projectDir = await createTestProject(projectSpecV1_0_0);
+    const cid = 'test-cid';
+    await createIPFS_file(projectDir, cid);
+    const cidFile = path.resolve(projectDir, '.project-cid');
+    const fileExists = fs.existsSync(cidFile);
+    const content = fs.readFile(cidFile, 'utf8', (err, data) => {
+      if (err) throw err;
+      return data;
+    });
+    expect(content).toBe(cid);
+    expect(fileExists).toBeTruthy();
   });
 });

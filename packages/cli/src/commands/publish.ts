@@ -5,7 +5,7 @@ import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
-import {renderIPFS_file, uploadToIpfs} from '../controller/publish-controller';
+import {createIPFS_file, uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
@@ -47,7 +47,7 @@ export default class Publish extends Command {
 
     this.log('Uploading SubQuery project to IPFS');
     const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    await renderIPFS_file(location, cid);
+    await createIPFS_file(location, cid);
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }
 }
