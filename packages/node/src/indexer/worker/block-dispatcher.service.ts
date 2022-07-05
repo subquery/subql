@@ -238,10 +238,11 @@ export class WorkerBlockDispatcherService
   private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
 
-  private taskCounter = 0;
   private isShutdown = false;
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
+  private currentIndexingWorkerId: number;
+  private lastAssignedWorkerId = 0;
 
   /**
    * @param numWorkers. The number of worker threads to run, this is capped at number of cpus
@@ -307,6 +308,8 @@ export class WorkerBlockDispatcherService
       const result = await pendingBlock;
       const end = new Date();
 
+      this.currentIndexingWorkerId = workerIdx;
+
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
         return;
@@ -348,6 +351,8 @@ export class WorkerBlockDispatcherService
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
       }
+
+      this.currentIndexingWorkerId = undefined;
       // console.timeEnd(`Process block ${height}`);
     };
 
@@ -374,10 +379,8 @@ export class WorkerBlockDispatcherService
   }
 
   private getNextWorkerIndex(): number {
-    const index = this.taskCounter % this.numWorkers;
-
-    this.taskCounter++;
-
-    return index;
+    const nextId = (idx) => (idx + 1) % this.numWorkers;
+    const index = nextId(this.lastAssignedWorkerId);
+    return index === this.currentIndexingWorkerId ? nextId(index) : index;
   }
 }

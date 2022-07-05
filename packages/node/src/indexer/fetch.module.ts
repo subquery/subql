@@ -54,7 +54,7 @@ const { argv } = getYargsOption();
         eventEmitter: EventEmitter2,
         indexerManager: IndexerManager,
       ) => {
-        if (argv.workers) {
+        if (argv.workers && argv.workers > 1) {
           return new WorkerBlockDispatcherService(
             argv.workers,
             nodeConfig.batchSize,
