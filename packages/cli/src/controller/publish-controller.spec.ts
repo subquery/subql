@@ -179,15 +179,22 @@ describe('Cli publish', () => {
 
   it('create ipfsCID file stored in local', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
-    const cid = 'test-cid';
-    await createIPFS_file(projectDir, cid);
+    const reader = await ReaderFactory.create(projectDir);
+    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
+    expect((manifest as ProjectManifestV1_0_0Impl).runner).toBeDefined();
+    // run publish before
+    //
+    // projectDir = await createTestProject(projectSpecV1_0_0);
+    // // cid can it to a normal one
+    // const cid = 'test-cid';
+    // await createIPFS_file(projectDir, cid);
     const cidFile = path.resolve(projectDir, '.project-cid');
     const fileExists = fs.existsSync(cidFile);
-    const content = fs.readFile(cidFile, 'utf8', (err, data) => {
-      if (err) throw err;
-      return data;
-    });
-    expect(content).toBe(cid);
+    // const content = fs.readFile(cidFile, 'utf8', (err, data) => {
+    //   if (err) throw err;
+    //   return data;
+    // });
+    // expect(content).toBe(cid);
     expect(fileExists).toBeTruthy();
   });
 });

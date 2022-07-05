@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ReaderFactory, IPFS_CLUSTER_ENDPOINT} from '@subql/common';
+import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectManifestPath} from '@subql/common';
 import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
@@ -13,12 +13,23 @@ import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
-const MANIFEST_FILE_NAME = 'project';
+// const MANIFEST_FILE_NAME = 'project';
 
 export async function createIPFS_file(projectPath: string, cid: string): Promise<void> {
   // TODO:
   // dymically resolve manfiest-file name
-  const MANIFEST_FILE = path.join(projectPath, `.${MANIFEST_FILE_NAME}-cid`);
+  // projectPath can be directory or project file
+  // get manifest file name
+  console.log('path: ', projectPath);
+  const val = getProjectManifestPath(projectPath);
+  console.log('val: ', val);
+
+  // const MANIFEST_FILE = `.${val}-cid`;
+  // console.log(`.${getProjectManifestPath(projectPath)}-cid`);
+
+  const MANIFEST_FILE = path.join(projectPath, `.${val}-cid`);
+  console.log(`manifest_file: ${MANIFEST_FILE}`);
+
   try {
     await fs.promises.writeFile(MANIFEST_FILE, cid, 'utf8');
   } catch (e) {
@@ -155,6 +166,7 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
   return assetsObj;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isFileReference(value: any): value is FileReference {
   return value.file && typeof value.file === 'string';
 }
