@@ -38,6 +38,7 @@ import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
+import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

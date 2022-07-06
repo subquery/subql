@@ -7,14 +7,14 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { ApiOptions } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { delay } from '@subql/common';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '@subql/node-core/configure';
+import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
