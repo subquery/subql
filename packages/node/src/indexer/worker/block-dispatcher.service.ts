@@ -7,6 +7,7 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { SubstrateBlock } from '@subql/types';
+import chalk from 'chalk';
 import { EventEmitter2 } from 'eventemitter2';
 import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
@@ -279,7 +280,11 @@ export class WorkerBlockDispatcherService
 
   enqueueBlocks(heights: number[]): void {
     if (!heights.length) return;
-    logger.info(`Enqueing blocks ${heights[0]}...${last(heights)}`);
+    logger.info(
+      `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
+        heights.length
+      } blocks`,
+    );
 
     heights.map((height) => this.enqueueBlock(height));
 
@@ -312,10 +317,14 @@ export class WorkerBlockDispatcherService
         return;
       }
 
-      if (start.getTime() < end.getTime() - 100) {
-        console.log(
-          'Waiting for pending block',
-          end.getTime() - start.getTime(),
+      const waitTime = end.getTime() - start.getTime();
+      if (waitTime > 1000) {
+        logger.info(
+          `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
+        );
+      } else if (waitTime > 200) {
+        logger.info(
+          `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
         );
       }
 
@@ -336,8 +345,6 @@ export class WorkerBlockDispatcherService
       //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
       // );
 
-      // console.time(`Process block ${height}`);
-
       this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
         height,
         timestamp: Date.now(),
@@ -348,7 +355,6 @@ export class WorkerBlockDispatcherService
       if (dynamicDsCreated) {
         await this.onDynamicDsCreated(height);
       }
-      // console.timeEnd(`Process block ${height}`);
     };
 
     void this.queue.put(processBlock);

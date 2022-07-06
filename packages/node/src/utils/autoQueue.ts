@@ -30,7 +30,7 @@ export class Queue<T> {
   }
 
   putMany(items: T[]): void {
-    if (this.capacity && this.size + items.length > this.capacity) {
+    if (this.capacity && items.length > this.freeSpace) {
       throw new Error('Queue exceeds max size');
     }
     this.items.push(...items);
@@ -100,13 +100,12 @@ export class AutoQueue<T> {
    * We don't want this function to be async
    * If it is async it will return a promise that throws rather than throwing the function
    */
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
-  put(item: Task<T>): Promise<T> {
+  async put(item: Task<T>): Promise<T> {
     return this.putMany([item])[0];
   }
 
   putMany(tasks: Array<Task<T>>): Promise<T>[] {
-    if (this.capacity && this.size + tasks.length >= this.capacity) {
+    if (this.capacity && tasks.length > this.freeSpace) {
       throw new Error('Queue exceeds max size');
     }
 
