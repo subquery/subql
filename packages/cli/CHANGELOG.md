@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.1] - 2022-07-06
+### Added
+- Add cosmos family to cli init (#1165)
+
 ## [1.2.0] - 2022-07-05
 ### Fixed
 - update common-avalanche,fix missing filter, asset and options (#1158)
