@@ -44,31 +44,6 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
   return project;
 }
 
-export function getProjectManifestPath(subquery: string): string {
-  let project: string;
-  // console.log(`subquery: ${subquery}`);
-  const stats = fs.statSync(subquery);
-  if (stats.isDirectory()) {
-    // look for the file .yml
-    // project = path.resolve(subquery, 'project.yaml');
-
-    const {name} = path.parse(subquery);
-    project = name;
-    console.log(`name: ${name}`);
-    // project = 'hi'
-  } else if (stats.isFile()) {
-    // check if its json or yml
-    const {ext} = path.parse(subquery);
-    // project = ext;
-    project = 'hi2';
-
-    console.log(`name: ${ext}`);
-  }
-  console.log('iijhjhhuu: ', project);
-
-  return project;
-}
-
 export function validateSemver(current: string, required: string): boolean {
   return satisfies(current, required, {includePrerelease: true});
 }

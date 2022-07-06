@@ -46,8 +46,7 @@ export default class Publish extends Command {
     }
 
     this.log('Uploading SubQuery project to IPFS');
-    const cid = 'test';
-    // const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
+    const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
     await createIPFS_file(location, cid);
     this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
   }

@@ -45,7 +45,7 @@ const projectSpecV0_2_0: ProjectSpecV0_2_0 = {
   license: '',
 };
 
-const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
+export const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
   name: 'mocked_starter',
   repository: '',
   chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
@@ -72,7 +72,7 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 jest.setTimeout(150000);
 
-async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
+export async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
 
@@ -175,26 +175,5 @@ describe('Cli publish', () => {
     expect(deployment).toContain('genesisHash');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
-  });
-
-  it('create ipfsCID file stored in local', async () => {
-    projectDir = await createTestProject(projectSpecV1_0_0);
-    const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
-    expect((manifest as ProjectManifestV1_0_0Impl).runner).toBeDefined();
-    // run publish before
-    //
-    // projectDir = await createTestProject(projectSpecV1_0_0);
-    // // cid can it to a normal one
-    // const cid = 'test-cid';
-    // await createIPFS_file(projectDir, cid);
-    const cidFile = path.resolve(projectDir, '.project-cid');
-    const fileExists = fs.existsSync(cidFile);
-    // const content = fs.readFile(cidFile, 'utf8', (err, data) => {
-    //   if (err) throw err;
-    //   return data;
-    // });
-    // expect(content).toBe(cid);
-    expect(fileExists).toBeTruthy();
   });
 });
