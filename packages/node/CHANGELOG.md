@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.1] - 2022-07-07
+### Fixed
+- Fix oversize subscription notification trigger name (#1171)
 
 ## [1.4.0] - 2022-07-05
 ### Fixed
