@@ -7,12 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
-[0.1.3] - 2022-07-01
+
+## [0.2.0] - 2022-07-08
+
+## Changed
+
+- Decode buffer to json for `cosmwasm.wasm.v1.MsgMigrateContract` and `cosmwasm.wasm.v1.MsgInstantiateContract` messages (#38)
+
+## [0.1.3] - 2022-07-01
 
 ### Fixed
 - Dependency injection issue with EventEmitter
 
-[0.1.2] - 2022-07-01
+## [0.1.2] - 2022-07-01
 ### Fixed
 - Docker image health checks failing because of missing `curl` command
 
@@ -57,7 +64,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.1.3...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.2.0...HEAD
+[0.2.0]: https://github.com/subquery/subql-cosmos/compare/node/0.1.3...node/0.2.0
 [0.1.3]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...node/0.1.3
 [0.1.2]: https://github.com/subquery/subql-cosmos/compare/node/0.1.1...node/0.1.2
 [0.1.1]: https://github.com/subquery/subql-cosmos/compare/node/0.1.0...node/0.1.1
