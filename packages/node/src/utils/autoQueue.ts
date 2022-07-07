@@ -77,6 +77,7 @@ export class AutoQueue<T> {
   private pendingPromise = false;
   private queue: Queue<Action<T>>;
   private _abort = false;
+  private processingTasks = 0;
 
   private eventEmitter = new EventEmitter2();
 
@@ -85,7 +86,7 @@ export class AutoQueue<T> {
   }
 
   get size(): number {
-    return this.queue.size;
+    return this.queue.size + this.processingTasks;
   }
 
   get capacity(): number {
@@ -135,6 +136,7 @@ export class AutoQueue<T> {
       const actions = this.queue.takeMany(this.concurrency);
 
       if (!actions.length) break;
+      this.processingTasks += actions.length;
 
       this.eventEmitter.emit('size', this.queue.size);
 
@@ -144,7 +146,7 @@ export class AutoQueue<T> {
         actions.map(async (action) => {
           try {
             const payload = await action.task();
-
+            this.processingTasks -= 1;
             action.resolve(payload);
           } catch (e) {
             action.reject(e);
