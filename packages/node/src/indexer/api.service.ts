@@ -183,7 +183,13 @@ export class CosmosClient extends CosmWasmClient {
   decodeMsg<T = unknown>(msg: DecodeObject): T {
     try {
       const decodedMsg = this.registry.decode(msg);
-      if (msg.typeUrl === '/cosmwasm.wasm.v1.MsgExecuteContract') {
+      if (
+        [
+          '/cosmwasm.wasm.v1.MsgExecuteContract',
+          '/cosmwasm.wasm.v1.MsgMigrateContract',
+          '/cosmwasm.wasm.v1.MsgInstantiateContract',
+        ].includes(msg.typeUrl)
+      ) {
         decodedMsg.msg = JSON.parse(new TextDecoder().decode(decodedMsg.msg));
       }
       return decodedMsg;
