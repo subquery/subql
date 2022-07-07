@@ -46,6 +46,7 @@ import {
   addTagsToForeignKeyMap,
   createExcludeConstraintQuery,
   BTREE_GIST_EXTENSION_EXIST_QUERY,
+  makeTriggerName,
 } from '../utils/sync-helper';
 import { getYargsOption } from '../yargs';
 import {
@@ -211,7 +212,7 @@ export class StoreService {
         );
       }
       if (argv.subscription) {
-        const triggerName = `${schema}_${sequelizeModel.tableName}_notify_trigger`;
+        const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
           replacements: { triggerName },
           type: QueryTypes.SELECT,

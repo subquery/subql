@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { blake2AsHex } from '@polkadot/util-crypto';
 import { underscoredIf } from 'sequelize/lib/utils';
 
 export interface SmartTags {
@@ -144,9 +145,15 @@ export function getNotifyTriggers(): string {
           WHERE trigger_name = :triggerName`;
 }
 export function createNotifyTrigger(schema: string, table: string): string {
+  const triggerName = makeTriggerName(schema, table);
   return `
-CREATE TRIGGER "${schema}_${table}_notify_trigger"
+CREATE TRIGGER "${triggerName}"
     AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."${table}"
     FOR EACH ROW EXECUTE FUNCTION send_notification();`;
+}
+
+export function makeTriggerName(schema: string, tableName: string): string {
+  // max name length is 63 bytes in Postgres
+  return blake2AsHex(`${schema}_${tableName}_notify_trigger`).substr(2, 10);
 }
