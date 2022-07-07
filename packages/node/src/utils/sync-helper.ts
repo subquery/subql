@@ -136,7 +136,8 @@ END;
 $$ LANGUAGE plpgsql;`;
 
 export function dropNotifyTrigger(schema: string, table: string): string {
-  return `DROP TRIGGER IF EXISTS "${schema}_${table}_notify_trigger"
+  const triggerName = makeTriggerName(schema, table);
+  return `DROP TRIGGER IF EXISTS "${triggerName}"
     ON "${schema}"."${table}";`;
 }
 
