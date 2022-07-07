@@ -6,6 +6,19 @@ import {GraphQLJsonFieldType} from '@subql/utils';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
 
+type StarterEntity = {
+  id: string;
+  field1: number;
+  field2?: string;
+  field3?: BigInt;
+  field4?: Date;
+  field5?: boolean;
+  field6?: any;
+  field7?: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 const testOperations = [
   {
     operation: OperationType.Set,
@@ -18,7 +31,7 @@ const testOperations = [
   {
     operation: OperationType.Set,
     entityType: 'StarterEntity',
-    data: {
+    data: <StarterEntity>{
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
       field3: null,
       field1: 41914,
@@ -32,7 +45,7 @@ const testOperations = [
   {
     operation: OperationType.Set,
     entityType: 'StarterEntity',
-    data: {
+    data: <StarterEntity>{
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
       field3: null,
       field1: 41914,
@@ -46,7 +59,7 @@ const testOperations = [
   {
     operation: OperationType.Set,
     entityType: 'StarterEntity',
-    data: {
+    data: <StarterEntity>{
       id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
       field3: null,
       field1: 41914,
@@ -70,7 +83,7 @@ const testOperations = [
 const falseOperation = {
   operation: OperationType.Remove,
   entityType: 'StarterEntity',
-  data: {
+  data: <StarterEntity>{
     id: '0x2494bd5d089cf370c366351e851755ee42e8477df1c17ea1d9c2ae94e4f77ea8',
     field3: null,
     field1: 41914,
@@ -172,7 +185,7 @@ const models = [
         name: 'field8',
       },
     ],
-    indexes: [],
+    indexes: <any[]>[],
   },
 ];
 

@@ -6,7 +6,36 @@ import { isMainThread } from 'worker_threads';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
+import { getYargsOption } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
+import { OperationType, StoreOperations } from '@subql/node-core/indexer';
+import {
+  Metadata,
+  MetadataFactory,
+  MetadataRepo,
+  PoiFactory,
+  PoiRepo,
+  ProofOfIndex,
+} from '@subql/node-core/indexer/entities';
+import {
+  commentTableQuery,
+  commentConstraintQuery,
+  createNotifyTrigger,
+  createSendNotificationTriggerFunction,
+  createUniqueIndexQuery,
+  dropNotifyTrigger,
+  getFkConstraint,
+  getNotifyTriggers,
+  SmartTags,
+  smartTags,
+  getVirtualFkTag,
+  addTagsToForeignKeyMap,
+  createExcludeConstraintQuery,
+  BTREE_GIST_EXTENSION_EXIST_QUERY,
+  modelsTypeToModelAttributes,
+  camelCaseObjectKey,
+  makeTriggerName,
+} from '@subql/node-core/utils';
 import { Entity, Store } from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -31,36 +60,7 @@ import {
   Utils,
 } from 'sequelize';
 import { getLogger } from '../utils/logger';
-import {
-  commentTableQuery,
-  commentConstraintQuery,
-  createNotifyTrigger,
-  createSendNotificationTriggerFunction,
-  createUniqueIndexQuery,
-  dropNotifyTrigger,
-  getFkConstraint,
-  getNotifyTriggers,
-  SmartTags,
-  smartTags,
-  getVirtualFkTag,
-  addTagsToForeignKeyMap,
-  createExcludeConstraintQuery,
-  makeTriggerName,
-  modelsTypeToModelAttributes,
-  camelCaseObjectKey,
-  BTREE_GIST_EXTENSION_EXIST_QUERY,
-} from '@subql/node-core/utils';
-import { getYargsOption } from '@subql/node-core';
-import {
-  Metadata,
-  MetadataFactory,
-  MetadataRepo,
-  PoiFactory,
-  PoiRepo,
-  ProofOfIndex
-} from '@subql/node-core/indexer/entities';
-import { StoreOperations } from '@subql/node-core/indexer';
-import { OperationType } from './types';
+import { PoiService } from './poi.service';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');

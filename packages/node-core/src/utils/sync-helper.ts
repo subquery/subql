@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { blake2AsHex } from '@polkadot/util-crypto';
-import { underscoredIf } from 'sequelize/lib/utils';
+import {Utils} from 'sequelize';
 
 export interface SmartTags {
   foreignKey?: string;
@@ -16,7 +16,7 @@ const tagOrder = {
   singleForeignFieldName: 2,
 };
 
-const byTagOrder = (a: [string, any], b: [string, any]) => {
+const byTagOrder = (a: [keyof SmartTags, any], b: [keyof SmartTags, any]) => {
   return tagOrder[a[0]] - tagOrder[b[0]];
 };
 
@@ -27,11 +27,11 @@ export function smartTags(tags: SmartTags, separator = '\n'): string {
     .join(separator);
 }
 
-export function getVirtualFkTag(field: string, to: string) {
+export function getVirtualFkTag(field: string, to: string): string {
   return `(${underscored(field)}) REFERENCES ${to} (id)`;
 }
 
-const underscored = (input) => underscoredIf(input, true);
+const underscored = (input: string) => Utils.underscoredIf(input, true);
 
 export function getFkConstraint(tableName: string, foreignKey: string): string {
   return [tableName, foreignKey, 'fkey'].map(underscored).join('_');
@@ -42,16 +42,10 @@ export function getUniqConstraint(tableName: string, field: string): string {
 }
 
 function getExcludeConstraint(tableName: string): string {
-  return [tableName, '_id', '_block_range', 'exclude']
-    .map(underscored)
-    .join('_');
+  return [tableName, '_id', '_block_range', 'exclude'].map(underscored).join('_');
 }
 
-export function commentConstraintQuery(
-  table: string,
-  constraint: string,
-  comment: string,
-): string {
+export function commentConstraintQuery(table: string, constraint: string, comment: string): string {
   return `COMMENT ON CONSTRAINT ${constraint} ON ${table} IS E'${comment}'`;
 }
 
@@ -63,7 +57,7 @@ export function addTagsToForeignKeyMap(
   map: Map<string, Map<string, SmartTags>>,
   tableName: string,
   foreignKey: string,
-  newTags: SmartTags,
+  newTags: SmartTags
 ): void {
   if (!map.has(tableName)) {
     map.set(tableName, new Map<string, SmartTags>());
@@ -76,10 +70,7 @@ export function addTagsToForeignKeyMap(
 
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
-export function createExcludeConstraintQuery(
-  schema: string,
-  table: string,
-): string {
+export function createExcludeConstraintQuery(schema: string, table: string): string {
   const constraint = getExcludeConstraint(table);
   return `DO $$
     BEGIN
@@ -90,15 +81,10 @@ export function createExcludeConstraintQuery(
     $$`;
 }
 
-export function createUniqueIndexQuery(
-  schema: string,
-  table: string,
-  field: string,
-): string {
-  return `create unique index if not exists '${getUniqConstraint(
-    table,
-    field,
-  )}' on '${schema}.${table}' (${underscored(field)})`;
+export function createUniqueIndexQuery(schema: string, table: string, field: string): string {
+  return `create unique index if not exists '${getUniqConstraint(table, field)}' on '${schema}.${table}' (${underscored(
+    field
+  )})`;
 }
 
 export const createSendNotificationTriggerFunction = `
