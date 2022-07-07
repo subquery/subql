@@ -30,7 +30,7 @@ describe('Intergration test - Publish', () => {
     expect(initCID).not.toEqual(cidValue);
   });
 
-  it('should resolve the correct file name if -f ./project-xyz.yaml is used', async () => {
+  it('file name consistent with manfiest file name, if -f <manifest path> is used', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
     const testManifestPath = path.resolve(projectDir, 'project-xyz.yaml');
     await Publish.run(['-f', testManifestPath]);
