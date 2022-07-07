@@ -5,7 +5,7 @@ import {readFileSync, existsSync} from 'fs';
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
 import {getProjectRootAndManifest} from '@subql/common';
-import {createIPFS_file, uploadToIpfs} from '../controller/publish-controller';
+import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
@@ -16,6 +16,7 @@ export default class Publish extends Command {
   static flags = {
     location: Flags.string({char: 'f', description: 'from project or manifest path'}),
     ipfs: Flags.string({description: 'IPFS gateway endpoint', required: false}),
+    output: Flags.boolean({char: 'o', description: 'Output IPFS CID', required: false}),
   };
 
   async run(): Promise<void> {
@@ -25,7 +26,7 @@ export default class Publish extends Command {
 
     // Ensure that the project is built
     try {
-      await Build.run(['--location', project.root]);
+      await Build.run(['--location', project.root, '-s']);
     } catch (e) {
       this.log(e);
       this.error('Failed to build project');
@@ -44,10 +45,14 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
-
-    this.log('Uploading SubQuery project to IPFS');
     const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
-    await createIPFS_file(location, cid);
-    this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+    await createIPFSFile(location, cid);
+
+    if (!flags.output) {
+      this.log('Uploading SubQuery project to IPFS');
+      this.log(`SubQuery Project uploaded to IPFS: ${cid}`);
+    } else {
+      this.log(`${cid}`);
+    }
   }
 }

@@ -13,7 +13,7 @@ import axios from 'axios';
 import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
-export async function createIPFS_file(projectPath: string, cid: string): Promise<void> {
+export async function createIPFSFile(projectPath: string, cid: string): Promise<void> {
   const filePath = getProjectRootAndManifest(projectPath);
   const {name} = path.parse(filePath.manifest);
   const MANIFEST_FILE = path.join(filePath.root, `.${name}-cid`);

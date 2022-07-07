@@ -10,7 +10,6 @@ import Publish from './publish';
 
 describe('Intergration test - Publish', () => {
   let projectDir: string;
-
   afterEach(async () => {
     try {
       await promisify(rimraf)(projectDir);
@@ -19,7 +18,27 @@ describe('Intergration test - Publish', () => {
     }
   });
 
-  it('create ipfsCID file stored in local', async () => {
+  it('overwrites any exisiting CID files', async () => {
+    const initCID = 'QmWLxg7xV7ZWUyc7ZxZ8XuQQ7NmH8WQGXzg7VZ3QQNqF-testing';
+    let cidValue: string;
+    projectDir = await createTestProject(projectSpecV1_0_0);
+    const cidFile = path.resolve(projectDir, '.project-cid');
+    await fs.promises.writeFile(cidFile, initCID);
+    cidValue = await fs.promises.readFile(cidFile, 'utf8');
+    await Publish.run(['-f', projectDir, '-o']);
+    cidValue = await fs.promises.readFile(cidFile, 'utf8');
+    expect(initCID).not.toEqual(cidValue);
+  });
+
+  it('should resolve the correct file name if -f ./project-xyz.yaml is used', async () => {
+    projectDir = await createTestProject(projectSpecV1_0_0);
+    const testManifestPath = path.resolve(projectDir, 'project-xyz.yaml');
+    await Publish.run(['-f', testManifestPath]);
+    const fileExists = fs.existsSync(testManifestPath);
+    expect(fileExists).toBeTruthy();
+  });
+
+  it('create ipfsCID file stored in local with dictiory path', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
     await Publish.run(['-f', projectDir]);
     const cidFile = path.resolve(projectDir, '.project-cid');

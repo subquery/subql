@@ -13,6 +13,7 @@ export default class Build extends Command {
     location: Flags.string({char: 'f', description: 'local folder'}),
     output: Flags.string({char: 'o', description: 'output folder of build e.g. dist'}),
     mode: Flags.enum({options: ['production', 'prod', 'development', 'dev'], default: 'production'}),
+    slient: Flags.boolean({char: 's', description: 'silent mode'}),
   };
 
   async run(): Promise<void> {
@@ -51,9 +52,11 @@ export default class Build extends Command {
           delete buildEntries[i];
         }
       }
-      this.log('Building and packing code ...');
       await runWebpack(buildEntries, directory, outputDir, isDev, true);
-      this.log('Done!');
+      if (!flags.slient) {
+        this.log('Building and packing code ...');
+        this.log('Done!');
+      }
     } catch (e) {
       this.error(e);
     }
