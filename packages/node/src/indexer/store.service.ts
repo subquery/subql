@@ -584,116 +584,154 @@ group by
   getStore(): Store {
     return {
       get: async (entity: string, id: string): Promise<Entity | undefined> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const record = await model.findOne({
-          where: { id },
-          transaction: this.tx,
-        });
-        return record?.toJSON() as Entity;
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          const record = await model.findOne({
+            where: { id },
+            transaction: this.tx,
+          });
+          return record?.toJSON() as Entity;
+        } catch (e) {
+          throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
+        }
       },
       getByField: async (
         entity: string,
         field: string,
         value,
       ): Promise<Entity[] | undefined> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const indexed =
-          this.modelIndexedFields.findIndex(
-            (indexField) =>
-              upperFirst(camelCase(indexField.entityName)) === entity &&
-              camelCase(indexField.fieldName) === field,
-          ) > -1;
-        assert(
-          indexed,
-          `to query by field ${field}, an index must be created on model ${entity}`,
-        );
-        const records = await model.findAll({
-          where: { [field]: value },
-          transaction: this.tx,
-          limit: this.config.queryLimit,
-        });
-        return records.map((record) => record.toJSON() as Entity);
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          const indexed =
+            this.modelIndexedFields.findIndex(
+              (indexField) =>
+                upperFirst(camelCase(indexField.entityName)) === entity &&
+                camelCase(indexField.fieldName) === field,
+            ) > -1;
+          assert(
+            indexed,
+            `to query by field ${field}, an index must be created on model ${entity}`,
+          );
+          const records = await model.findAll({
+            where: { [field]: value },
+            transaction: this.tx,
+            limit: this.config.queryLimit,
+          });
+          return records.map((record) => record.toJSON() as Entity);
+        } catch (e) {
+          throw new Error(
+            `Failed to getByField Entity ${entity} with field ${field}: ${e}`,
+          );
+        }
       },
       getOneByField: async (
         entity: string,
         field: string,
         value,
       ): Promise<Entity | undefined> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const indexed =
-          this.modelIndexedFields.findIndex(
-            (indexField) =>
-              upperFirst(camelCase(indexField.entityName)) === entity &&
-              camelCase(indexField.fieldName) === field &&
-              indexField.isUnique,
-          ) > -1;
-        assert(
-          indexed,
-          `to query by field ${field}, an unique index must be created on model ${entity}`,
-        );
-        const record = await model.findOne({
-          where: { [field]: value },
-          transaction: this.tx,
-        });
-        return record?.toJSON() as Entity;
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          const indexed =
+            this.modelIndexedFields.findIndex(
+              (indexField) =>
+                upperFirst(camelCase(indexField.entityName)) === entity &&
+                camelCase(indexField.fieldName) === field &&
+                indexField.isUnique,
+            ) > -1;
+          assert(
+            indexed,
+            `to query by field ${field}, an unique index must be created on model ${entity}`,
+          );
+          const record = await model.findOne({
+            where: { [field]: value },
+            transaction: this.tx,
+          });
+          return record?.toJSON() as Entity;
+        } catch (e) {
+          throw new Error(
+            `Failed to getOneByField Entity ${entity} with field ${field}: ${e}`,
+          );
+        }
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const attributes = data as unknown as CreationAttributes<Model>;
-        if (this.historical) {
-          // If entity was already saved in current block, update that entity instead
-          const [updatedRows] = await model.update(attributes, {
-            hooks: false,
-            transaction: this.tx,
-            where: this.sequelize.and(
-              { id: data.id },
-              this.sequelize.where(
-                this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-                this.blockHeight,
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          const attributes = data as unknown as CreationAttributes<Model>;
+          if (this.historical) {
+            // If entity was already saved in current block, update that entity instead
+            const [updatedRows] = await model.update(attributes, {
+              hooks: false,
+              transaction: this.tx,
+              where: this.sequelize.and(
+                { id: data.id },
+                this.sequelize.where(
+                  this.sequelize.fn(
+                    'lower',
+                    this.sequelize.col('_block_range'),
+                  ),
+                  this.blockHeight,
+                ),
               ),
-            ),
-          });
-          if (updatedRows < 1) {
-            await this.markAsDeleted(model, data.id);
-            await model.create(attributes, {
+            });
+            if (updatedRows < 1) {
+              await this.markAsDeleted(model, data.id);
+              await model.create(attributes, {
+                transaction: this.tx,
+              });
+            }
+          } else {
+            await model.upsert(attributes, {
               transaction: this.tx,
             });
           }
-        } else {
-          await model.upsert(attributes, {
-            transaction: this.tx,
-          });
-        }
-        if (this.config.proofOfIndex) {
-          this.operationStack.put(OperationType.Set, entity, data);
+          if (this.config.proofOfIndex) {
+            this.operationStack.put(OperationType.Set, entity, data);
+          }
+        } catch (e) {
+          throw new Error(
+            `Failed to set Entity ${entity} with _id ${_id}: ${e}`,
+          );
         }
       },
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
-          transaction: this.tx,
-        });
-        if (this.config.proofOfIndex) {
-          for (const item of data) {
-            this.operationStack.put(OperationType.Set, entity, item);
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          await model.bulkCreate(
+            data as unknown as CreationAttributes<Model>[],
+            {
+              transaction: this.tx,
+            },
+          );
+          if (this.config.proofOfIndex) {
+            for (const item of data) {
+              this.operationStack.put(OperationType.Set, entity, item);
+            }
           }
+        } catch (e) {
+          throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
       remove: async (entity: string, id: string): Promise<void> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        if (this.historical) {
-          await this.markAsDeleted(model, id);
-        } else {
-          await model.destroy({ where: { id }, transaction: this.tx });
-        }
-        if (this.config.proofOfIndex) {
-          this.operationStack.put(OperationType.Remove, entity, id);
+        try {
+          const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
+          if (this.historical) {
+            await this.markAsDeleted(model, id);
+          } else {
+            await model.destroy({ where: { id }, transaction: this.tx });
+          }
+          if (this.config.proofOfIndex) {
+            this.operationStack.put(OperationType.Remove, entity, id);
+          }
+        } catch (e) {
+          throw new Error(
+            `Failed to remove Entity ${entity} with id ${id}: ${e}`,
+          );
         }
       },
     };
