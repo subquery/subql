@@ -14,7 +14,7 @@ import {
   getDictEndpoint,
   getImage_v,
 } from '../../controller/deploy-controller';
-import {checkToken, enableDefault, valueOrPrompt} from '../../utils';
+import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -32,7 +32,7 @@ export default class Deploy extends Command {
     dict: Flags.string({description: 'enter dictionary', required: false}),
     endpoint: Flags.string({description: 'enter endpoint', required: false}),
 
-    enableDefault: Flags.boolean({
+    useDefault: Flags.boolean({
       char: 'd',
       description: 'Use default values for indexerVerion, queryVersion, dict, endpoint',
       required: false,
@@ -49,8 +49,8 @@ export default class Deploy extends Command {
 
     let endpoint: string = flags.endpoint;
     let dict: string = flags.dict;
-    let indexer_v = flags.indexerVersion;
-    let query_v = flags.queryVersion;
+    let indexerVersion = flags.indexerVersion;
+    let queryVersion = flags.queryVersion;
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
     project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
@@ -64,31 +64,22 @@ export default class Deploy extends Command {
 
     if (!endpoint) {
       const defaultEndpoint = await getEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.enableDefault) {
-        endpoint = await enableDefault(cli, 'Enter endpoint', defaultEndpoint);
-
-        // endpoint = await cli.prompt('Enter endpoint', {
-        //   default: defaultEndpoint,
-        //   required: false,
-        // });
+      if (!flags.useDefault) {
+        endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', defaultEndpoint);
       }
       endpoint = defaultEndpoint;
     }
 
     if (!dict) {
       const defaultDict = await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.enableDefault) {
-        dict = await enableDefault(cli, 'Enter dictionary', defaultDict);
-
-        // cli.prompt('Enter dictionary', {
-        //   default: defaultDict,
-        //   required: false,
-        // });
+      if (!flags.useDefault) {
+        dict = await promptWithDefaultValues(cli, 'Enter dictionary', defaultDict);
+      } else {
+        dict = defaultDict;
       }
-      dict = defaultDict;
     }
 
-    if (!indexer_v) {
+    if (!indexerVersion) {
       try {
         const indexerVersions = await getImage_v(
           validator.manifestRunner.node.name,
@@ -96,55 +87,42 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        // getList [] using manifest
-
-        // function that checks if it is set or not (using semVersion)
-        // --indexerVersion=v1.4.1
-
-        // runner version
-        // grab latest release version (getDefaultVersion) => would you like to use default [v1.4.1]: [y/n]
-        // if no, prompt list of options
-
-        // getDefaultVersion
-        if (!flags.enableDefault) {
-          const response = await enableDefault(inquirer, 'Enter indexer version', null, indexerVersions, 'indexer_v');
-          // const response = await inquirer.prompt({
-          //   name: 'indexer_v',
-          //   message: 'Select indexer version',
-          //   type: 'list',
-          //   choices: indexerVersions,
-          // });
-          indexer_v = (response as any).indexer_v;
+        if (!flags.useDefault) {
+          const response = await promptWithDefaultValues(
+            inquirer,
+            'Enter indexer version',
+            null,
+            indexerVersions,
+            'indexerVersion'
+          );
+          indexerVersion = (response as any).indexer_v;
+        } else {
+          indexerVersion = indexerVersions[0];
         }
-        indexer_v = indexerVersions[0];
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
     }
-    if (!query_v) {
+    if (!queryVersion) {
       try {
-        // find closest version from manifest
-
-        // test if it is using the correct version when given e.g. v1.0.0
-        // semver look into
-
         const queryVersions = await getImage_v(
           validator.manifestRunner.query.name,
           validator.manifestRunner.query.version,
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!flags.enableDefault) {
-          const response = await enableDefault(inquirer, 'Enter query version', null, queryVersions, 'query_v');
-          // const response = await inquirer.prompt({
-          //   name: 'query_v',
-          //   message: 'Select Query version',
-          //   type: 'list',
-          //   choices: queryVersions,
-          // });
-          query_v = (response as any).query_v;
+        if (!flags.useDefault) {
+          const response = await promptWithDefaultValues(
+            inquirer,
+            'Enter query version',
+            null,
+            queryVersions,
+            'queryVersion'
+          );
+          queryVersion = (response as any).query_v;
+        } else {
+          queryVersion = queryVersions[0];
         }
-        query_v = queryVersions[0];
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
@@ -156,8 +134,8 @@ export default class Deploy extends Command {
       project_name,
       authToken,
       ipfsCID,
-      indexer_v,
-      query_v,
+      indexerVersion,
+      queryVersion,
       endpoint,
       flags.type,
       dict,
@@ -167,6 +145,8 @@ export default class Deploy extends Command {
     \nStatus: ${chalk.blue(deployment_output.status)} 
     \nDeploymentID: ${deployment_output.id}
     \nDeployment Type: ${deployment_output.type}
+    \nIndexer version: ${indexerVersion}
+    \nQuery version: ${queryVersion}
     \nEndpoint: ${deployment_output.endpoint}
     \nDictionary Endpoint: ${deployment_output.dictEndpoint}
     \nQuery URL: ${deployment_output.queryUrl}

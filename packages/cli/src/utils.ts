@@ -3,8 +3,8 @@
 
 import {existsSync, readFileSync} from 'fs';
 import axios from 'axios';
-import cli from 'cli-ux';
-import inquirer from 'inquirer';
+import cli, {ux} from 'cli-ux';
+import inquirer, {Inquirer} from 'inquirer';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
@@ -21,14 +21,13 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
-// temp func name
-export async function enableDefault(
-  promptType: any,
+export async function promptWithDefaultValues(
+  promptType: Inquirer | typeof ux,
   msg: string,
   defaultValue?: string,
   choices?: string[],
   name?: string
-): Promise<any> {
+): Promise<string> {
   const promptValue =
     promptType === inquirer
       ? await promptType.prompt({
