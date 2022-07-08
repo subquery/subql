@@ -4,6 +4,7 @@
 import {existsSync, readFileSync} from 'fs';
 import axios from 'axios';
 import cli from 'cli-ux';
+import inquirer from 'inquirer';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
@@ -18,6 +19,26 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   } catch (e) {
     throw new Error(error);
   }
+}
+
+// temp func name
+export async function enableDefault(
+  promptType: any,
+  msg: string,
+  defaultValue?: string,
+  choices?: string[],
+  name?: string
+): Promise<any> {
+  const promptValue =
+    promptType === inquirer
+      ? await promptType.prompt({
+          name: name,
+          message: msg,
+          type: 'list',
+          choices: choices,
+        })
+      : await promptType.prompt(msg, {default: defaultValue});
+  return promptValue;
 }
 
 export async function checkToken(authToken_ENV: string, token_path: string): Promise<string> {

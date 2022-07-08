@@ -14,7 +14,7 @@ import {
   getDictEndpoint,
   getImage_v,
 } from '../../controller/deploy-controller';
-import {checkToken, valueOrPrompt} from '../../utils';
+import {checkToken, enableDefault, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 
@@ -22,15 +22,21 @@ export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
   static flags = {
-    org: Flags.string({description: 'Enter github organization name'}),
+    org: Flags.string({description: 'Enter organization name'}),
     projectName: Flags.string({description: 'Enter project name'}),
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-    type: Flags.string({description: 'Enter deployment type', default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
-    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
-    dict: Flags.string({description: 'Enter dictionary endpoint', required: false}),
-    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
+    type: Flags.enum({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+    indexerVersion: Flags.string({description: 'enter indexer-version', required: false}),
+    queryVersion: Flags.string({description: 'enter query-version', required: false}),
+    dict: Flags.string({description: 'enter dictionary', required: false}),
+    endpoint: Flags.string({description: 'enter endpoint', required: false}),
+
+    enableDefault: Flags.boolean({
+      char: 'd',
+      description: 'Use default values for indexerVerion, queryVersion, dict, endpoint',
+      required: false,
+    }),
   };
 
   async run(): Promise<void> {
@@ -57,17 +63,29 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      endpoint = await cli.prompt('Enter endpoint', {
-        default: await getEndpoint(validator.chainId, ROOT_API_URL_PROD),
-        required: false,
-      });
+      const defaultEndpoint = await getEndpoint(validator.chainId, ROOT_API_URL_PROD);
+      if (!flags.enableDefault) {
+        endpoint = await enableDefault(cli, 'Enter endpoint', defaultEndpoint);
+
+        // endpoint = await cli.prompt('Enter endpoint', {
+        //   default: defaultEndpoint,
+        //   required: false,
+        // });
+      }
+      endpoint = defaultEndpoint;
     }
 
     if (!dict) {
-      dict = await cli.prompt('Enter dictionary', {
-        default: await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD),
-        required: false,
-      });
+      const defaultDict = await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD);
+      if (!flags.enableDefault) {
+        dict = await enableDefault(cli, 'Enter dictionary', defaultDict);
+
+        // cli.prompt('Enter dictionary', {
+        //   default: defaultDict,
+        //   required: false,
+        // });
+      }
+      dict = defaultDict;
     }
 
     if (!indexer_v) {
@@ -78,32 +96,55 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        const response = await inquirer.prompt({
-          name: 'indexer_v',
-          message: 'Select indexer version',
-          type: 'list',
-          choices: indexerVersions,
-        });
-        indexer_v = response.indexer_v;
+        // getList [] using manifest
+
+        // function that checks if it is set or not (using semVersion)
+        // --indexerVersion=v1.4.1
+
+        // runner version
+        // grab latest release version (getDefaultVersion) => would you like to use default [v1.4.1]: [y/n]
+        // if no, prompt list of options
+
+        // getDefaultVersion
+        if (!flags.enableDefault) {
+          const response = await enableDefault(inquirer, 'Enter indexer version', null, indexerVersions, 'indexer_v');
+          // const response = await inquirer.prompt({
+          //   name: 'indexer_v',
+          //   message: 'Select indexer version',
+          //   type: 'list',
+          //   choices: indexerVersions,
+          // });
+          indexer_v = (response as any).indexer_v;
+        }
+        indexer_v = indexerVersions[0];
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
     }
     if (!query_v) {
       try {
+        // find closest version from manifest
+
+        // test if it is using the correct version when given e.g. v1.0.0
+        // semver look into
+
         const queryVersions = await getImage_v(
           validator.manifestRunner.query.name,
           validator.manifestRunner.query.version,
           authToken,
           ROOT_API_URL_PROD
         );
-        const response = await inquirer.prompt({
-          name: 'query_v',
-          message: 'Select Query version',
-          type: 'list',
-          choices: queryVersions,
-        });
-        query_v = response.query_v;
+        if (!flags.enableDefault) {
+          const response = await enableDefault(inquirer, 'Enter query version', null, queryVersions, 'query_v');
+          // const response = await inquirer.prompt({
+          //   name: 'query_v',
+          //   message: 'Select Query version',
+          //   type: 'list',
+          //   choices: queryVersions,
+          // });
+          query_v = (response as any).query_v;
+        }
+        query_v = queryVersions[0];
       } catch (e) {
         throw new Error(chalk.bgRedBright('Indexer version is required'));
       }
