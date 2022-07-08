@@ -282,8 +282,25 @@ export class WorkerBlockDispatcherService
       } blocks`,
     );
 
-    const workerIdx = this.getNextWorkerIndex();
-    heights.map((height) => this.enqueueBlock(height, workerIdx));
+    // eslint-disable-next-line no-constant-condition
+    if (true) {
+      /*
+       * Load balancing:
+       * worker1: 1,2,3
+       * worker2: 4,5,6
+       */
+      const workerIdx = this.getNextWorkerIndex();
+      heights.map((height) => this.enqueueBlock(height, workerIdx));
+    } else {
+      /*
+       * Load balancing:
+       * worker1: 1,3,5
+       * worker2: 2,4,6
+       */
+      heights.map((height) =>
+        this.enqueueBlock(height, this.getNextWorkerIndex()),
+      );
+    }
 
     this.latestBufferedHeight = last(heights);
   }
