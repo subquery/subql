@@ -20,22 +20,24 @@ describe('Intergration test - Publish', () => {
 
   it('overwrites any exisiting CID files', async () => {
     const initCID = 'QmWLxg7xV7ZWUyc7ZxZ8XuQQ7NmH8WQGXzg7VZ3QQNqF-testing';
-    let cidValue: string;
     projectDir = await createTestProject(projectSpecV1_0_0);
-    const cidFile = path.resolve(projectDir, '.project-cid');
-    await fs.promises.writeFile(cidFile, initCID);
-    cidValue = await fs.promises.readFile(cidFile, 'utf8');
+    const cidFilePath = path.resolve(projectDir, '.project-cid');
+    await fs.promises.writeFile(cidFilePath, initCID);
     await Publish.run(['-f', projectDir, '-o']);
-    cidValue = await fs.promises.readFile(cidFile, 'utf8');
+    const cidValue = await fs.promises.readFile(cidFilePath, 'utf8');
     expect(initCID).not.toEqual(cidValue);
   });
 
   it('file name consistent with manfiest file name, if -f <manifest path> is used', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
-    const testManifestPath = path.resolve(projectDir, 'project-xyz.yaml');
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const testManifestPath = path.resolve(projectDir, 'test.yaml');
+    fs.renameSync(manifestPath, testManifestPath);
     await Publish.run(['-f', testManifestPath]);
-    const fileExists = fs.existsSync(testManifestPath);
-    expect(fileExists).toBeTruthy();
+
+    const cidFile = path.resolve(projectDir, '.test-cid');
+    const fileExists = await fs.promises.stat(cidFile);
+    expect(fileExists.isFile()).toBeTruthy();
   });
 
   it('create ipfsCID file stored in local with dictiory path', async () => {

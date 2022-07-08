@@ -130,13 +130,7 @@ describe('Cli publish', () => {
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
   });
-  // 1
-  //QmdR5cpNkRThCAW3t221z9zKhASuGnfgDVD4xhrv7ZsSb4
 
-  // 2
-  //QmcmCfxzE2V4K9mUd4q2yH3JjqWd5n88hiYsocnn2QBVzL
-
-  // print out directory of the project
   it('upload project from a manifest', async () => {
     projectDir = await createTestProject(projectSpecV0_2_0);
     const manifestPath = path.resolve(projectDir, 'project.yaml');
