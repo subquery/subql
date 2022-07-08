@@ -22,15 +22,15 @@ export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
   static flags = {
-    org: Flags.string({description: 'Enter organization name'}),
-    project_name: Flags.string({description: 'Enter project name'}),
+    org: Flags.string({description: 'Enter github organization name'}),
+    projectName: Flags.string({description: 'Enter project name'}),
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
-    type: Flags.string({description: 'enter type', default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    indexerVersion: Flags.string({description: 'enter indexer-version', required: false}),
-    queryVersion: Flags.string({description: 'enter query-version', required: false}),
-    dict: Flags.string({description: 'enter dict', required: false}),
-    endpoint: Flags.string({description: 'enter endpoint', required: false}),
+    type: Flags.string({description: 'Enter deployment type', default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
+    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
+    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
+    dict: Flags.string({description: 'Enter dictionary endpoint', required: false}),
+    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
   };
 
   async run(): Promise<void> {
@@ -39,7 +39,7 @@ export default class Deploy extends Command {
     const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
     let ipfsCID: string = flags.ipfsCID;
     let org: string = flags.org;
-    let project_name: string = flags.project_name;
+    let project_name: string = flags.projectName;
 
     let endpoint: string = flags.endpoint;
     let dict: string = flags.dict;
