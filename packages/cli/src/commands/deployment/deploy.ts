@@ -93,9 +93,9 @@ export default class Deploy extends Command {
             'Enter indexer version',
             null,
             indexerVersions,
-            'indexerVersion'
+            'promptIndexerVersion'
           );
-          indexerVersion = (response as any).indexer_v;
+          indexerVersion = (response as any).promptIndexerVersion;
         } else {
           indexerVersion = indexerVersions[0];
         }
@@ -117,9 +117,9 @@ export default class Deploy extends Command {
             'Enter query version',
             null,
             queryVersions,
-            'queryVersion'
+            'promptQueryVersion'
           );
-          queryVersion = (response as any).query_v;
+          queryVersion = (response as any).promptQueryVersion;
         } else {
           queryVersion = queryVersions[0];
         }

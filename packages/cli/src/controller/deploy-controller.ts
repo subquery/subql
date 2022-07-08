@@ -18,7 +18,8 @@ export async function deployToHostedService(
   url: string
 ): Promise<deploymentDataType> {
   const key = `${org}/${project_name}`;
-
+  console.log(`indexerImageVersion: ${indexerImageVersion}`);
+  console.log(`queryImageVersion: ${queryImageVersion}`);
   try {
     const result = (
       await axios({
