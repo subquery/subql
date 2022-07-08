@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Storing ipfs-cid locally (#1169)
+- New Flag `-d` added to `deployment:deploy` command allowing runner versions and endpoints to use default values from manifest
+### Changed
+- Rename `deploy` command back to `deployment` (#1176)
+
 ## [1.2.1] - 2022-07-06
 ### Added
 - Add cosmos family to cli init (#1165)

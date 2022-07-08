@@ -27,14 +27,14 @@ export default class Deploy extends Command {
     ipfsCID: Flags.string({description: 'Enter IPFS CID'}),
 
     type: Flags.enum({options: ['stage', 'primary'], default: DEFAULT_DEPLOYMENT_TYPE, required: false}),
-    indexerVersion: Flags.string({description: 'enter indexer-version', required: false}),
-    queryVersion: Flags.string({description: 'enter query-version', required: false}),
-    dict: Flags.string({description: 'enter dictionary', required: false}),
-    endpoint: Flags.string({description: 'enter endpoint', required: false}),
+    indexerVersion: Flags.string({description: 'Enter indexer-version', required: false}),
+    queryVersion: Flags.string({description: 'Enter query-version', required: false}),
+    dict: Flags.string({description: 'Enter dictionary', required: false}),
+    endpoint: Flags.string({description: 'Enter endpoint', required: false}),
 
     useDefault: Flags.boolean({
       char: 'd',
-      description: 'Use default values for indexerVerion, queryVersion, dict, endpoint',
+      description: 'Use default values for indexerVerion, queryVersion, dictionary, endpoint',
       required: false,
     }),
   };
