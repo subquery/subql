@@ -13,6 +13,7 @@ import {
   FetchBlockResponse,
   ProcessBlockResponse,
   WorkerService,
+  WorkerStatusResponse,
 } from './worker.service';
 
 let app: INestApplication;
@@ -67,6 +68,16 @@ async function numFetchingBlocks(): Promise<number> {
   return workerService.numFetchingBlocks;
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
+async function getStatus(): Promise<WorkerStatusResponse> {
+  return {
+    threadId,
+    fetchedBlocks: workerService.numFetchedBlocks,
+    toFetchBlocks: workerService.numFetchingBlocks,
+    isIndexing: workerService.isIndexing,
+  };
+}
+
 // Register these functions to be exposed to worker host
 registerWorker({
   initWorker,
@@ -75,6 +86,7 @@ registerWorker({
   numFetchedBlocks,
   numFetchingBlocks,
   setCurrentRuntimeVersion,
+  getStatus,
 });
 
 // Export types to be used on the parent
@@ -84,3 +96,4 @@ export type ProcessBlock = typeof processBlock;
 export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
 export type SetCurrentRuntimeVersion = typeof setCurrentRuntimeVersion;
+export type GetWorkerStatus = typeof getStatus;

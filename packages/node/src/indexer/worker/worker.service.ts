@@ -3,6 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
@@ -17,18 +18,27 @@ export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
 };
 
+export type WorkerStatusResponse = {
+  threadId: number;
+  isIndexing: boolean;
+  fetchedBlocks: number;
+  toFetchBlocks: number;
+};
+
 @Injectable()
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
   private currentRuntimeVersion: RuntimeVersion | undefined;
+  private _isIndexing = false;
 
   private queue: AutoQueue<FetchBlockResponse>;
 
   constructor(
     private apiService: ApiService,
     private indexerManager: IndexerManager,
+    private nodeConfig: NodeConfig,
   ) {
-    this.queue = new AutoQueue(undefined, 5);
+    this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }
 
   async fetchBlock(height: number): Promise<FetchBlockResponse> {
@@ -68,6 +78,7 @@ export class WorkerService {
   }
 
   async processBlock(height: number): Promise<ProcessBlockResponse> {
+    this._isIndexing = true;
     const block = this.fetchedBlocks[height];
 
     if (!block) {
@@ -76,7 +87,13 @@ export class WorkerService {
 
     delete this.fetchedBlocks[height];
 
-    return this.indexerManager.indexBlock(block, this.currentRuntimeVersion);
+    const response = await this.indexerManager.indexBlock(
+      block,
+      this.currentRuntimeVersion,
+    );
+
+    this._isIndexing = false;
+    return response;
   }
 
   get numFetchedBlocks(): number {
@@ -85,5 +102,9 @@ export class WorkerService {
 
   get numFetchingBlocks(): number {
     return this.queue.size;
+  }
+
+  get isIndexing(): boolean {
+    return this._isIndexing;
   }
 }

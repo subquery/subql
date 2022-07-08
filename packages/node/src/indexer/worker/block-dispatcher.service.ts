@@ -5,6 +5,7 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Interval } from '@nestjs/schedule';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
@@ -24,6 +25,7 @@ import {
   NumFetchedBlocks,
   NumFetchingBlocks,
   SetCurrentRuntimeVersion,
+  GetWorkerStatus,
 } from './worker';
 import { Worker } from './worker.builder';
 
@@ -33,6 +35,7 @@ type IIndexerWorker = {
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
   setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
+  getStatus: GetWorkerStatus;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -53,6 +56,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'numFetchedBlocks',
       'numFetchingBlocks',
       'setCurrentRuntimeVersion',
+      'getStatus',
     ],
   );
 
@@ -244,17 +248,9 @@ export class WorkerBlockDispatcherService
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
 
-  /**
-   * @param numWorkers. The number of worker threads to run, this is capped at number of cpus
-   * @param workerQueueSize. The number of fetched blocks queued to be processed
-   */
-  constructor(
-    numWorkers: number,
-    workerQueueSize: number,
-    private eventEmitter: EventEmitter2,
-  ) {
-    this.numWorkers = getMaxWorkers(numWorkers);
-    this.queue = new AutoQueue(this.numWorkers * workerQueueSize);
+  constructor(nodeConfig: NodeConfig, private eventEmitter: EventEmitter2) {
+    this.numWorkers = getMaxWorkers(nodeConfig.workers);
+    this.queue = new AutoQueue(this.numWorkers * nodeConfig.batchSize * 2);
   }
 
   async init(
@@ -286,7 +282,8 @@ export class WorkerBlockDispatcherService
       } blocks`,
     );
 
-    heights.map((height) => this.enqueueBlock(height));
+    const workerIdx = this.getNextWorkerIndex();
+    heights.map((height) => this.enqueueBlock(height, workerIdx));
 
     this.latestBufferedHeight = last(heights);
   }
@@ -296,9 +293,8 @@ export class WorkerBlockDispatcherService
     this.queue.flush();
   }
 
-  private enqueueBlock(height: number) {
+  private enqueueBlock(height: number, workerIdx: number) {
     if (this.isShutdown) return;
-    const workerIdx = this.getNextWorkerIndex();
     const worker = this.workers[workerIdx];
 
     assert(worker, `Worker ${workerIdx} not found`);
@@ -358,6 +354,14 @@ export class WorkerBlockDispatcherService
     };
 
     void this.queue.put(processBlock);
+  }
+
+  @Interval(15000)
+  async sampleWorkerStatus() {
+    for (const worker of this.workers) {
+      const status = await worker.getStatus();
+      logger.info(JSON.stringify(status));
+    }
   }
 
   get queueSize(): number {
