@@ -15,6 +15,7 @@ import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 
 export type SpecVersion = {
@@ -155,10 +156,13 @@ export class DictionaryService implements OnApplicationShutdown {
     );
 
     try {
-      const resp = await this.client.query({
-        query: gql(query),
-        variables,
-      });
+      const resp = await timeout(
+        this.client.query({
+          query: gql(query),
+          variables,
+        }),
+        argv['dictionary-timeout'],
+      );
       const blockHeightSet = new Set<number>();
       const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
@@ -277,9 +281,12 @@ export class DictionaryService implements OnApplicationShutdown {
   async getSpecVersionsRaw(): Promise<SpecVersionDictionary> {
     const { query } = this.specVersionQuery();
     try {
-      const resp = await this.client.query({
-        query: gql(query),
-      });
+      const resp = await timeout(
+        this.client.query({
+          query: gql(query),
+        }),
+        argv['dictionary-timeout'],
+      );
 
       const _metadata = resp.data._metadata;
       const specVersions = resp.data.specVersions;
