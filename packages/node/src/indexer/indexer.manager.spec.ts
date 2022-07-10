@@ -130,7 +130,15 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const eventEmitter = new EventEmitter2();
 
   const apiService = new ApiService(project, eventEmitter);
-  const dictionaryService = new DictionaryService(project);
+  const dictionaryService = new DictionaryService(
+    project,
+    new NodeConfig({
+      subquery: 'asdf',
+      subqueryName: 'asdf',
+      networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      dictionaryTimeout: 10,
+    }),
+  );
 
   const dsProcessorService = new DsProcessorService(project);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);

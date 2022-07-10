@@ -4,6 +4,7 @@
 import { DictionaryQueryEntry } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
+import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 
@@ -51,10 +52,17 @@ const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
   },
 ];
 
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  dictionaryTimeout: 10,
+});
+
 describe('DictionaryService', () => {
   it('return dictionary query result', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const batchSize = 30;
     const startBlock = 1;
@@ -73,7 +81,7 @@ describe('DictionaryService', () => {
     const project = testSubqueryProject();
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-not-exist';
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
@@ -88,7 +96,7 @@ describe('DictionaryService', () => {
 
   it('should return meta even startblock height greater than dictionary last processed height', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
     const batchSize = 30;
     const startBlock = 400000000;
     const endBlock = 400010000;
@@ -103,7 +111,7 @@ describe('DictionaryService', () => {
 
   it('test query the correct range', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const batchSize = 30;
     const startBlock = 1;
@@ -127,7 +135,7 @@ describe('DictionaryService', () => {
 
   it('use minimum value of event/extrinsic returned block as batch end block', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
     const batchSize = 50;
     const startBlock = 333300;
     const endBlock = 340000;
@@ -180,7 +188,7 @@ describe('DictionaryService', () => {
 
   it('should return all specVersion', async () => {
     const project = testSubqueryProject();
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const specVersions = await dictionaryService.getSpecVersions();
     console.log(specVersions);
