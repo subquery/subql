@@ -51,6 +51,12 @@ function testSubqueryProject(): SubqueryProject {
 }
 
 jest.setTimeout(200000);
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  dictionaryTimeout: 10,
+});
 
 async function createFetchService(
   project = testSubqueryProject(),
@@ -61,11 +67,12 @@ async function createFetchService(
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   await apiService.init();
-  const dictionaryService = new DictionaryService(project);
+
+  const dictionaryService = new DictionaryService(project, nodeConfig);
   const dsPluginService = new DsProcessorService(project);
   return new FetchService(
     apiService,
-    new NodeConfig({ subquery: '', subqueryName: '', batchSize }),
+    nodeConfig,
     project,
     dictionaryService,
     dsPluginService,

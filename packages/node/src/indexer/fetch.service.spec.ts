@@ -24,6 +24,13 @@ jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
 );
 
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  dictionaryTimeout: 10,
+});
+
 function mockRejectedApiService(): ApiService {
   const mockApi = {
     rpc: {
@@ -274,7 +281,7 @@ describe('FetchService', () => {
   it('get finalized head when reconnect', async () => {
     const fetchService = createFetchService(
       apiService,
-      new DictionaryService(project),
+      new DictionaryService(project, nodeConfig),
       project,
     );
     await fetchService.init();
@@ -288,7 +295,7 @@ describe('FetchService', () => {
   it('log errors when failed to get finalized block', async () => {
     const fetchService = createFetchService(
       mockRejectedApiService(),
-      new DictionaryService(project),
+      new DictionaryService(project, nodeConfig),
       project,
     );
     await fetchService.init();
@@ -297,7 +304,7 @@ describe('FetchService', () => {
 
   it('load batchSize of blocks with original method', () => {
     const batchSize = 50;
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const fetchService = createFetchService(
       apiService,
@@ -318,7 +325,7 @@ describe('FetchService', () => {
         block: { block: { header: { number: { toNumber: () => height } } } },
       })),
     );
-    const dictionaryService = new DictionaryService(project);
+    const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const fetchService = createFetchService(
       apiService,
@@ -545,7 +552,7 @@ describe('FetchService', () => {
 
     const fetchService = createFetchService(
       apiService,
-      new DictionaryService(project),
+      new DictionaryService(project, nodeConfig),
       project,
       20,
     );
