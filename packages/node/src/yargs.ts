@@ -121,7 +121,6 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Max timeout for dictionary query',
       type: 'number',
-      default: 30, //sec
     },
     'mmr-path': {
       alias: 'm',
