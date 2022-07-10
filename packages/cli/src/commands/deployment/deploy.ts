@@ -17,7 +17,6 @@ import {
 import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
-
 export default class Deploy extends Command {
   static description = 'Deployment to hosted service';
 
@@ -32,7 +31,7 @@ export default class Deploy extends Command {
     dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: false}),
 
-    useDefault: Flags.boolean({
+    useDefaults: Flags.boolean({
       char: 'd',
       description: 'Use default values for indexerVerion, queryVersion, dictionary, endpoint',
       required: false,
@@ -41,19 +40,12 @@ export default class Deploy extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Deploy);
+    let {dict, endpoint, indexerVersion, ipfsCID, org, projectName, queryVersion} = flags;
 
     const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
-    let ipfsCID: string = flags.ipfsCID;
-    let org: string = flags.org;
-    let project_name: string = flags.projectName;
-
-    let endpoint: string = flags.endpoint;
-    let dict: string = flags.dict;
-    let indexerVersion = flags.indexerVersion;
-    let queryVersion = flags.queryVersion;
 
     org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
-    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
+    projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
     const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
@@ -64,7 +56,7 @@ export default class Deploy extends Command {
 
     if (!endpoint) {
       const defaultEndpoint = await getEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.useDefault) {
+      if (!flags.useDefaults) {
         endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', defaultEndpoint);
       }
       endpoint = defaultEndpoint;
@@ -72,7 +64,7 @@ export default class Deploy extends Command {
 
     if (!dict) {
       const defaultDict = await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.useDefault) {
+      if (!flags.useDefaults) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', defaultDict);
       } else {
         dict = defaultDict;
@@ -87,15 +79,9 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!flags.useDefault) {
-          const response = await promptWithDefaultValues(
-            inquirer,
-            'Enter indexer version',
-            null,
-            indexerVersions,
-            'promptIndexerVersion'
-          );
-          indexerVersion = (response as any).promptIndexerVersion;
+        if (!flags.useDefaults) {
+          const response = await promptWithDefaultValues(inquirer, 'Enter indexer version', null, indexerVersions);
+          indexerVersion = response;
         } else {
           indexerVersion = indexerVersions[0];
         }
@@ -111,15 +97,9 @@ export default class Deploy extends Command {
           authToken,
           ROOT_API_URL_PROD
         );
-        if (!flags.useDefault) {
-          const response = await promptWithDefaultValues(
-            inquirer,
-            'Enter query version',
-            null,
-            queryVersions,
-            'promptQueryVersion'
-          );
-          queryVersion = (response as any).promptQueryVersion;
+        if (!flags.useDefaults) {
+          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions);
+          queryVersion = response;
         } else {
           queryVersion = queryVersions[0];
         }
@@ -131,7 +111,7 @@ export default class Deploy extends Command {
     this.log('Deploying SupQuery project to Hosted Service');
     const deployment_output = await deployToHostedService(
       org,
-      project_name,
+      projectName,
       authToken,
       ipfsCID,
       indexerVersion,
