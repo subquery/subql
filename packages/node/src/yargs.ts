@@ -117,6 +117,11 @@ export function getYargsOption() {
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'dictionary-timeout': {
+      demandOption: false,
+      describe: 'Max timeout for dictionary query',
+      type: 'number',
+    },
     'mmr-path': {
       alias: 'm',
       demandOption: false,
