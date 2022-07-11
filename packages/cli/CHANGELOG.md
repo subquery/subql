@@ -8,9 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Fixed
+- CLI deployment when no dictionary or matching endpoint is provided (#1180)
 ### Added
 - Storing ipfs-cid locally (#1169)
-- New Flag `-d` added to `deployment:deploy` command allowing runner versions and endpoints to use default values from manifest
+- New Flag `-d` added to `deployment:deploy` command allowing runner versions and endpoints to use default values from manifest (#1176)
 ### Changed
 - Rename `deploy` command back to `deployment` (#1176)
 
