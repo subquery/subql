@@ -18,7 +18,6 @@ export async function deployToHostedService(
   url: string
 ): Promise<deploymentDataType> {
   const key = `${org}/${project_name}`;
-
   try {
     const result = (
       await axios({

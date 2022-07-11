@@ -3,7 +3,8 @@
 
 import {existsSync, readFileSync} from 'fs';
 import axios from 'axios';
-import cli from 'cli-ux';
+import cli, {ux} from 'cli-ux';
+import inquirer, {Inquirer} from 'inquirer';
 
 export async function delay(sec: number): Promise<void> {
   return new Promise((resolve) => {
@@ -18,6 +19,26 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   } catch (e) {
     throw new Error(error);
   }
+}
+
+export async function promptWithDefaultValues(
+  promptType: Inquirer | typeof ux,
+  msg: string,
+  defaultValue?: string,
+  choices?: string[]
+): Promise<string> {
+  const promptValue =
+    promptType === inquirer
+      ? (
+          await promptType.prompt({
+            name: 'runnerVersions',
+            message: msg,
+            type: 'list',
+            choices: choices,
+          })
+        ).runnerVersions
+      : await promptType.prompt(msg, {default: defaultValue});
+  return promptValue;
 }
 
 export async function checkToken(authToken_ENV: string, token_path: string): Promise<string> {
