@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/1.2.2-0 linux-x64 node-v16.15.1
+@subql/cli/1.2.2-1 linux-x64 node-v16.15.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -38,10 +38,10 @@ USAGE
 
 - [`subql build`](#subql-build)
 - [`subql codegen`](#subql-codegen)
-- [`subql deploy`](#subql-deploy)
-- [`subql deploy:delete`](#subql-deploydelete)
-- [`subql deploy:deploy`](#subql-deploydeploy)
-- [`subql deploy:promote`](#subql-deploypromote)
+- [`subql deployment`](#subql-deployment)
+- [`subql deployment:delete`](#subql-deploymentdelete)
+- [`subql deployment:deploy`](#subql-deploymentdeploy)
+- [`subql deployment:promote`](#subql-deploymentpromote)
 - [`subql help [COMMAND]`](#subql-help-command)
 - [`subql init [PROJECTNAME]`](#subql-init-projectname)
 - [`subql migrate`](#subql-migrate)
@@ -66,7 +66,7 @@ OPTIONS
   --mode=(production|prod|development|dev)  [default: production]
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -82,19 +82,20 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/codegen.js)_
 
-## `subql deploy`
+## `subql deployment`
 
 Deploy to hosted service
 
 ```
 USAGE
-  $ subql deploy
+  $ subql deployment
 
 OPTIONS
+  -d, --useDefaults                Use default values for indexerVerion, queryVersion, dictionary, endpoint
   --deploymentID=deploymentID      Enter deployment ID
-  --dict=dict                      Enter dictionary endpoint
+  --dict=dict                      Enter dictionary
   --endpoint=endpoint              Enter endpoint
   --indexerVersion=indexerVersion  Enter indexer-version
   --ipfsCID=ipfsCID                Enter IPFS CID
@@ -103,18 +104,18 @@ OPTIONS
   --projectName=projectName        Enter project name
   --project_name=project_name      Enter project name
   --queryVersion=queryVersion      Enter query-version
-  --type=type                      [default: primary] Enter deployment type
+  --type=(stage|primary)           [default: primary]
 ```
 
-_See code: [lib/commands/deploy/index.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/deploy/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/deployment/index.js)_
 
-## `subql deploy:delete`
+## `subql deployment:delete`
 
 Delete Deployment
 
 ```
 USAGE
-  $ subql deploy:delete
+  $ subql deployment:delete
 
 OPTIONS
   --deploymentID=deploymentID  Enter deployment ID
@@ -122,36 +123,37 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deploy/delete.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/deploy/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/deployment/delete.js)_
 
-## `subql deploy:deploy`
+## `subql deployment:deploy`
 
 Deployment to hosted service
 
 ```
 USAGE
-  $ subql deploy:deploy
+  $ subql deployment:deploy
 
 OPTIONS
-  --dict=dict                      Enter dictionary endpoint
+  -d, --useDefaults                Use default values for indexerVerion, queryVersion, dictionary, endpoint
+  --dict=dict                      Enter dictionary
   --endpoint=endpoint              Enter endpoint
   --indexerVersion=indexerVersion  Enter indexer-version
   --ipfsCID=ipfsCID                Enter IPFS CID
-  --org=org                        Enter github organization name
+  --org=org                        Enter organization name
   --projectName=projectName        Enter project name
   --queryVersion=queryVersion      Enter query-version
-  --type=type                      [default: primary] Enter deployment type
+  --type=(stage|primary)           [default: primary]
 ```
 
-_See code: [lib/commands/deploy/deploy.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/deploy/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/deployment/deploy.js)_
 
-## `subql deploy:promote`
+## `subql deployment:promote`
 
 Promote Deployment
 
 ```
 USAGE
-  $ subql deploy:promote
+  $ subql deployment:promote
 
 OPTIONS
   --deploymentID=deploymentID  Enter deployment ID
@@ -159,7 +161,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deploy/promote.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/deploy/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/deployment/promote.js)_
 
 ## `subql help [COMMAND]`
 
@@ -197,7 +199,7 @@ OPTIONS
   --specVersion=0.2.0|1.0.0  [default: 1.0.0] The spec version to be used by the project
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/init.js)_
 
 ## `subql migrate`
 
@@ -213,7 +215,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/migrate.js)_
 
 ## `subql project`
 
@@ -234,7 +236,7 @@ OPTIONS
   --subtitle=subtitle          Enter subtitle
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -254,7 +256,7 @@ OPTIONS
   --subtitle=subtitle          Enter subtitle
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -269,7 +271,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -285,7 +287,7 @@ OPTIONS
   --ipfs=ipfs              IPFS gateway endpoint
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -306,6 +308,6 @@ OPTIONS
   --silent
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.2.2-0/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/validate.js)_
 
 <!-- commandsstop -->
