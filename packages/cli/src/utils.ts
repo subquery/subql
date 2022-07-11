@@ -22,6 +22,7 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
 }
 
 export async function promptWithDefaultValues(
+  required: boolean,
   promptType: Inquirer | typeof ux,
   msg: string,
   defaultValue?: string,
@@ -37,7 +38,7 @@ export async function promptWithDefaultValues(
             choices: choices,
           })
         ).runnerVersions
-      : await promptType.prompt(msg, {default: defaultValue});
+      : await promptType.prompt(msg, {default: defaultValue, required: required});
   return promptValue;
 }
 
