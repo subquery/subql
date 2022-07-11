@@ -19,7 +19,7 @@ const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
 
-const keccak256Hash = (...nodeValues) =>
+const keccak256Hash = (...nodeValues: Uint8Array[]) =>
   Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 @Injectable()
@@ -125,7 +125,7 @@ export class MmrService implements OnApplicationShutdown {
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
 
-  validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array) {
+  validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array): void {
     if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(

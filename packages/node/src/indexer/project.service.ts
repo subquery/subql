@@ -88,9 +88,14 @@ export class ProjectService {
       this.dynamicDsService.init(this.metadataRepo);
 
       await this.sequelize.sync();
+
       this._schema = await this.getExistingProjectSchema();
       assert(this._schema, 'Schema should be created in main thread');
       await this.initDbSchema();
+
+      if (this.nodeConfig.proofOfIndex) {
+        await this.poiService.init(this.schema);
+      }
     }
   }
 

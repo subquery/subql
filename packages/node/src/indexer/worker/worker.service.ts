@@ -1,10 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
+import { getLogger } from '../../utils/logger';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
@@ -25,6 +27,8 @@ export type WorkerStatusResponse = {
   toFetchBlocks: number;
 };
 
+const logger = getLogger(`Worker Service #${threadId}`);
+
 @Injectable()
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
@@ -36,37 +40,41 @@ export class WorkerService {
   constructor(
     private apiService: ApiService,
     private indexerManager: IndexerManager,
-    private nodeConfig: NodeConfig,
+    nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }
 
   async fetchBlock(height: number): Promise<FetchBlockResponse> {
-    return this.queue.put(async () => {
-      // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
-      if (!this.fetchedBlocks[height]) {
-        const [block] = await fetchBlocksBatches(this.apiService.getApi(), [
-          height,
-        ]);
-        this.fetchedBlocks[height] = block;
-      }
+    try {
+      return await this.queue.put(async () => {
+        // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
+        if (!this.fetchedBlocks[height]) {
+          const [block] = await fetchBlocksBatches(this.apiService.getApi(), [
+            height,
+          ]);
+          this.fetchedBlocks[height] = block;
+        }
 
-      const block = this.fetchedBlocks[height];
+        const block = this.fetchedBlocks[height];
 
-      // We have the current version, don't need a new one when processing
-      if (
-        this.currentRuntimeVersion?.specVersion.toNumber() ===
-        block.block.specVersion
-      ) {
-        return;
-      }
+        // We have the current version, don't need a new one when processing
+        if (
+          this.currentRuntimeVersion?.specVersion.toNumber() ===
+          block.block.specVersion
+        ) {
+          return;
+        }
 
-      // Return info to get the runtime version, this lets the worker thread know
-      return {
-        specVersion: block.block.specVersion,
-        parentHash: block.block.block.header.parentHash.toHex(),
-      };
-    });
+        // Return info to get the runtime version, this lets the worker thread know
+        return {
+          specVersion: block.block.specVersion,
+          parentHash: block.block.block.header.parentHash.toHex(),
+        };
+      });
+    } catch (e) {
+      logger.error(e, `Failed to fetch block ${height}`);
+    }
   }
 
   setCurrentRuntimeVersion(runtimeHex: string): void {
@@ -78,22 +86,27 @@ export class WorkerService {
   }
 
   async processBlock(height: number): Promise<ProcessBlockResponse> {
-    this._isIndexing = true;
-    const block = this.fetchedBlocks[height];
+    try {
+      this._isIndexing = true;
+      const block = this.fetchedBlocks[height];
 
-    if (!block) {
-      throw new Error(`Block ${height} has not been fetched`);
+      if (!block) {
+        throw new Error(`Block ${height} has not been fetched`);
+      }
+
+      delete this.fetchedBlocks[height];
+
+      const response = await this.indexerManager.indexBlock(
+        block,
+        this.currentRuntimeVersion,
+      );
+
+      this._isIndexing = false;
+      return response;
+    } catch (e) {
+      logger.error(e, `Failed to index block ${height}: ${e.stack}`);
+      throw e;
     }
-
-    delete this.fetchedBlocks[height];
-
-    const response = await this.indexerManager.indexBlock(
-      block,
-      this.currentRuntimeVersion,
-    );
-
-    this._isIndexing = false;
-    return response;
   }
 
   get numFetchedBlocks(): number {
