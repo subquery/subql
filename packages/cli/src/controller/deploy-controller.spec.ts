@@ -168,6 +168,4 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       'https://api.subquery.network/sq/subquery/dictionary-polkadot'
     );
   });
-
-  it('');
 });
