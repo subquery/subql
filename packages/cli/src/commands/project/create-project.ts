@@ -14,7 +14,7 @@ export default class Create_project extends Command {
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),
-    project_name: Flags.string({description: 'Enter project name'}),
+    projectName: Flags.string({description: 'Enter project name'}),
     gitRepo: Flags.string({description: 'Enter git repository'}),
 
     logoURL: Flags.string({description: 'Enter logo URL', default: '', required: false}),
@@ -25,22 +25,21 @@ export default class Create_project extends Command {
 
   async run(): Promise<void> {
     const {flags} = await this.parse(Create_project);
-    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
-    let project_name: string = flags.project_name;
-    let org_input: string = flags.org;
-    let gitRepo_input: string = flags.gitRepo;
 
-    org_input = await valueOrPrompt(org_input, 'Enter organisation', 'Organisation is required');
-    project_name = await valueOrPrompt(project_name, 'Enter project name', 'Project name is required');
-    gitRepo_input = await valueOrPrompt(gitRepo_input, 'Enter git repository', 'Git repository is required');
+    let {gitRepo, org, projectName} = flags;
+    const authToken = await checkToken(process.env.SUBQL_ACCESS_TOKEN, ACCESS_TOKEN_PATH);
+
+    org = await valueOrPrompt(org, 'Enter organisation', 'Organisation is required');
+    projectName = await valueOrPrompt(projectName, 'Enter project name', 'Project name is required');
+    gitRepo = await valueOrPrompt(gitRepo, 'Enter git repository', 'Git repository is required');
 
     const result = await createProject(
-      org_input,
+      org,
       flags.subtitle,
       flags.logoURL,
-      project_name,
+      projectName,
       authToken,
-      gitRepo_input,
+      gitRepo,
       flags.description,
       flags.apiVersion,
       ROOT_API_URL_PROD
