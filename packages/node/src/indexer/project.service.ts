@@ -75,9 +75,7 @@ export class ProjectService {
 
       if (this.nodeConfig.proofOfIndex) {
         const blockOffset = await this.getMetadataBlockOffset();
-        if (blockOffset !== null && blockOffset !== undefined) {
-          this.setBlockOffset(Number(blockOffset));
-        }
+        void this.setBlockOffset(Number(blockOffset));
         await this.poiService.init(this.schema);
       }
 
@@ -335,11 +333,13 @@ export class ProjectService {
     return startHeight;
   }
 
-  // FIXME Dedupe with indexer manager
-  setBlockOffset(offset: number): void {
+  async setBlockOffset(offset: number): Promise<void> {
+    if (this._blockOffset || !offset) {
+      return;
+    }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    void this.mmrService
+    return this.mmrService
       .syncFileBaseFromPoi(this.schema, offset)
       .catch((err) => {
         logger.error(err, 'failed to sync poi to mmr');

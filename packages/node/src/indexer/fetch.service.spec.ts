@@ -288,6 +288,7 @@ function createFetchService(
       nodeConfig,
       indexerManager,
       eventEmitter,
+      null,
     ),
     dictionaryService,
     dsProcessorService,
@@ -388,7 +389,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -450,6 +451,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
+      null,
     );
     fetchService = new FetchService(
       apiService,
@@ -533,6 +535,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
+      null,
     );
     fetchService = new FetchService(
       apiService,
@@ -609,6 +612,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
+      null,
     );
     fetchService = new FetchService(
       apiService,
@@ -674,7 +678,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 

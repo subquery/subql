@@ -100,6 +100,7 @@ async function createFetchService(
       nodeConfig,
       indexerManager,
       eventEmitter,
+      null,
     ),
     dictionaryService,
     dsProcessorService,
@@ -140,7 +141,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -172,7 +173,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -229,7 +230,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -267,7 +268,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -321,7 +322,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -381,7 +382,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -439,7 +440,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -486,7 +487,6 @@ describe('FetchService', () => {
     const getSpecFromMapSpy = jest.spyOn(fetchService, 'getSpecFromMap');
     const specVersion = await fetchService.getSpecVersion(8638105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
-
   }, 500000);
 
   it('use api to get block specVersion when blockHeight out of specVersionMap', async () => {

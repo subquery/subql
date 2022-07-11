@@ -74,7 +74,7 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-  ): Promise<{ dynamicDsCreated: boolean }> {
+  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
     const blockHeight = block.block.header.number.toNumber();
@@ -82,6 +82,7 @@ export class IndexerManager {
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
 
+    let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
     try {
       this.filteredDataSources = this.filterDataSources(
@@ -135,7 +136,7 @@ export class IndexerManager {
         { transaction: tx },
       );
       // Need calculate operationHash to ensure correct offset insert all time
-      const operationHash = this.storeService.getOperationMerkleRoot();
+      operationHash = this.storeService.getOperationMerkleRoot();
       if (
         !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
         this.projectService.blockOffset === undefined
@@ -144,7 +145,6 @@ export class IndexerManager {
           blockHeight - 1,
           tx,
         );
-        this.projectService.setBlockOffset(blockHeight - 1);
       }
 
       if (this.nodeConfig.proofOfIndex) {
@@ -175,6 +175,7 @@ export class IndexerManager {
 
     return {
       dynamicDsCreated,
+      operationHash,
     };
   }
 

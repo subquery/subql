@@ -7,6 +7,7 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { Interval } from '@nestjs/schedule';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { hexToU8a, u8aEq } from '@polkadot/util';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { EventEmitter2 } from 'eventemitter2';
@@ -18,6 +19,8 @@ import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
+import { MmrService } from '../mmr.service';
+import { ProjectService } from '../project.service';
 import {
   FetchBlock,
   ProcessBlock,
@@ -28,6 +31,8 @@ import {
   GetWorkerStatus,
 } from './worker';
 import { Worker } from './worker.builder';
+
+const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 type IIndexerWorker = {
   processBlock: ProcessBlock;
@@ -112,6 +117,7 @@ export class BlockDispatcherService
     private nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     private eventEmitter: EventEmitter2,
+    private projectService: ProjectService,
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
@@ -196,10 +202,15 @@ export class BlockDispatcherService
 
           const runtimeVersion = await this.getRuntimeVersion(block.block);
 
-          const { dynamicDsCreated } = await this.indexerManager.indexBlock(
-            block,
-            runtimeVersion,
-          );
+          const { dynamicDsCreated, operationHash } =
+            await this.indexerManager.indexBlock(block, runtimeVersion);
+
+          if (
+            this.nodeConfig.proofOfIndex &&
+            u8aEq(operationHash, NULL_MERKEL_ROOT)
+          ) {
+            void this.projectService.setBlockOffset(height - 1);
+          }
 
           if (dynamicDsCreated) {
             await this.onDynamicDsCreated(height);
@@ -258,7 +269,11 @@ export class WorkerBlockDispatcherService
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
 
-  constructor(nodeConfig: NodeConfig, private eventEmitter: EventEmitter2) {
+  constructor(
+    nodeConfig: NodeConfig,
+    private eventEmitter: EventEmitter2,
+    private projectService: ProjectService,
+  ) {
     this.numWorkers = getMaxWorkers(nodeConfig.workers);
     this.queue = new AutoQueue(this.numWorkers * nodeConfig.batchSize * 2);
   }
@@ -376,7 +391,13 @@ export class WorkerBlockDispatcherService
           timestamp: Date.now(),
         });
 
-        const { dynamicDsCreated } = await worker.processBlock(height);
+        const { dynamicDsCreated, operationHash } = await worker.processBlock(
+          height,
+        );
+
+        if (u8aEq(Buffer.from(operationHash, 'base64'), NULL_MERKEL_ROOT)) {
+          void this.projectService.setBlockOffset(height - 1);
+        }
 
         if (dynamicDsCreated) {
           await this.onDynamicDsCreated(height);
