@@ -24,7 +24,7 @@
     "@nestjs/event-emitter": "^1.0.0",
     "@nestjs/platform-express": "^8.2.6",
     "@nestjs/schedule": "^1.0.2",
-    "@polkadot/api": "8.8.2",
+    "@polkadot/api": "8.12.2",
     "@subql/common": "workspace:*",
     "@subql/common-substrate": "workspace:*",
     "@subql/types": "workspace:*",
