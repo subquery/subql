@@ -9,13 +9,17 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { getYargsOption, NodeConfig, timeout } from '@subql/node-core';
+import {
+  getYargsOption,
+  NodeConfig,
+  timeout,
+  getLogger,
+  profiler,
+} from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
 
 export type SpecVersion = {
   id: string;

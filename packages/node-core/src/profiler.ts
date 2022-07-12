@@ -1,16 +1,21 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {getLogger} from './logger';
-
 /* class decorator */
+
+import { getLogger } from './logger';
 
 function isPromise(e: any): boolean {
   return !!e && typeof e.then === 'function';
 }
 const logger = getLogger('profiler');
 
-function printCost(start: Date, end: Date, target: string, method: string): void {
+function printCost(
+  start: Date,
+  end: Date,
+  target: string,
+  method: string,
+): void {
   logger.info(`${target}, ${method}, ${end.getTime() - start.getTime()} ms`);
 }
 export function profiler(enabled = true): any {
@@ -30,7 +35,7 @@ export function profiler(enabled = true): any {
             (err: any) => {
               printCost(start, new Date(), target.constructor.name, name);
               throw err;
-            }
+            },
           );
         } else {
           printCost(start, new Date(), target.constructor.name, name);
@@ -41,9 +46,11 @@ export function profiler(enabled = true): any {
   };
 }
 
+type AnyFn = (...args: any[]) => any;
+
 export const profilerWrap =
-  (method: any, target: any, name: string): any =>
-  (...args: any[]) => {
+  <T extends AnyFn>(method: T, target: any, name: string) =>
+  (...args: Parameters<T>): ReturnType<T> => {
     const start = new Date();
     const res = method(...args);
     if (isPromise(res)) {
@@ -55,7 +62,7 @@ export const profilerWrap =
         (err: any) => {
           printCost(start, new Date(), target, name);
           throw err;
-        }
+        },
       );
     } else {
       printCost(start, new Date(), target, name);

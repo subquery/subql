@@ -6,7 +6,7 @@ import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getYargsOption } from '@subql/node-core';
+import { getYargsOption, getLogger } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
 import { IndexerEvent } from '@subql/node-core/events';
@@ -18,7 +18,6 @@ import {
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';

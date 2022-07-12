@@ -15,8 +15,8 @@ import type {
   ProviderInterfaceEmitted,
   ProviderStats,
 } from '@polkadot/rpc-provider/types';
+import { getLogger } from '@subql/node-core';
 import { context } from 'fetch-h2';
-import { getLogger } from '../../utils/logger';
 
 const ctx = context({
   http1: {

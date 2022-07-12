@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { getLogger } from '../utils/logger';
+import { getLogger } from '@subql/node-core';
 import { HealthService } from './health.service';
 
 const logger = getLogger('health');
@@ -12,7 +12,7 @@ export class HealthController {
   constructor(private healthService: HealthService) {}
 
   @Get()
-  getHealth() {
+  getHealth(): void {
     try {
       this.healthService.getHealth();
     } catch (e) {

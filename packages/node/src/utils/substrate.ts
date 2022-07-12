@@ -12,6 +12,7 @@ import {
   SignedBlock,
 } from '@polkadot/types/interfaces';
 import { BN, BN_THOUSAND, BN_TWO, bnMin } from '@polkadot/util';
+import { getLogger } from '@subql/node-core';
 import {
   SpecVersionRange,
   SubstrateBlockFilter,
@@ -23,7 +24,6 @@ import {
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
 import { BlockContent } from '../indexer/types';
-import { getLogger } from './logger';
 const logger = getLogger('fetch');
 const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
 const DEFAULT_TIME = new BN(6_000);

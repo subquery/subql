@@ -3,7 +3,7 @@
 
 import * as workers from 'worker_threads';
 import { Logger } from 'pino';
-import { getLogger } from '../../utils/logger';
+import { getLogger } from '@subql/node-core/logger';
 
 export type SerializableError = {
   message: string;

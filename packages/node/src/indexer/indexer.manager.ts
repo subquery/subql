@@ -17,10 +17,9 @@ import {
   SubstrateNetworkFilter,
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
-import { getYargsOption } from '@subql/node-core';
+import { getYargsOption, getLogger, profiler, profilerWrap } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
-import { IndexerEvent } from '@subql/node-core/events';
 import { PoiBlock, StoreService } from '@subql/node-core/indexer';
 import {
   SubstrateBlock,
@@ -29,8 +28,6 @@ import {
 } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import {

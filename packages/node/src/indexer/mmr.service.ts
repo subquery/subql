@@ -5,6 +5,7 @@ import fs from 'fs';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { u8aToHex, u8aEq } from '@polkadot/util';
 import { DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME } from '@subql/common';
+import { getLogger } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { MmrPayload, MmrProof } from '@subql/node-core/events';
 import {
@@ -19,7 +20,6 @@ import { MMR, FileBasedDb } from '@subql/x-merkle-mountain-range';
 import { keccak256 } from 'js-sha3';
 import { Sequelize, Op } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;

@@ -21,11 +21,16 @@ import {
   SubstrateRuntimeHandlerFilter,
   SubstrateBlockFilter,
 } from '@subql/common-substrate';
-import { getYargsOption } from '@subql/node-core';
+import {
+  getYargsOption,
+  getLogger,
+  profiler,
+  profilerWrap,
+} from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { IndexerEvent } from '@subql/node-core/events';
 import { BlockedQueue } from '@subql/node-core/indexer';
-import { delay } from '@subql/node-core/utils';
+import { delay, checkMemoryUsage } from '@subql/node-core/utils';
 import {
   DictionaryQueryEntry,
   SubstrateBlock,
@@ -34,9 +39,6 @@ import {
 import { MetaData } from '@subql/utils';
 import { isUndefined, range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { checkMemoryUsage } from '../utils/batch-size';
-import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';

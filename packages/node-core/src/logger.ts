@@ -1,10 +1,11 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {LoggerService} from '@nestjs/common';
-import {Logger} from '@subql/utils';
+import { isMainThread, threadId } from 'node:worker_threads';
+import { LoggerService } from '@nestjs/common';
+import { Logger } from '@subql/utils';
 import Pino from 'pino';
-import {argv} from './yargs';
+import { argv } from './yargs';
 
 const outputFmt = argv('output-fmt') as 'json' | 'colored';
 const debug = argv('debug');
@@ -25,21 +26,23 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 }
 
 export class NestLogger implements LoggerService {
-  private logger = logger.getLogger('nestjs');
+  private logger = logger.getLogger(
+    `nestjs${isMainThread ? '-0' : `-#${threadId}`}`,
+  );
 
-  error(message: any, trace?: string) {
+  error(message: any, trace?: string): void {
     if (trace) {
-      this.logger.error({trace}, message);
+      this.logger.error({ trace }, message);
     } else {
       this.logger.error(message);
     }
   }
 
-  log(message: any): any {
+  log(message: any): void {
     this.logger.info(message);
   }
 
-  warn(message: any): any {
+  warn(message: any): void {
     this.logger.warn(message);
   }
 }
