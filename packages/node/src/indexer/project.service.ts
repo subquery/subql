@@ -5,19 +5,22 @@ import assert from 'assert';
 import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { getYargsOption } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryRepo } from '@subql/node-core/entities';
+import { IndexerEvent } from '@subql/node-core/events';
+import {
+  MetadataFactory,
+  MetadataRepo,
+} from '@subql/node-core/indexer/entities';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { NodeConfig } from '@subql/node-core/configure';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '@subql/node-core/entities';
 import { getLogger } from '../utils/logger';
-import { getYargsOption } from '@subql/node-core';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from '@subql/node-core/indexer/entities';
-import { IndexerEvent } from './events';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { StoreService } from './store.service';

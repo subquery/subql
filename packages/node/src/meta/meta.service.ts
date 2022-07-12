@@ -11,7 +11,7 @@ import {
   NetworkMetadataPayload,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from '../indexer/events';
+} from '@subql/node-core/events';
 import { StoreService } from '../indexer/store.service';
 
 const UPDATE_HEIGHT_INTERVAL = 60000;

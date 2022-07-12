@@ -3,7 +3,6 @@
 
 export enum IndexerEvent {
   ApiConnected = 'api_connected',
-  InjectedApiConnected = 'injected_api_connected',
   BlockTarget = 'block_target_height',
   BlockBest = 'block_best_height',
   BlockProcessing = 'block_processing_height',
@@ -18,6 +17,7 @@ export enum IndexerEvent {
 export interface ProcessBlockPayload {
   height: number;
   timestamp: number;
+  processedBlockCount: number;
 }
 
 export interface TargetBlockPayload {
@@ -27,7 +27,6 @@ export interface TargetBlockPayload {
 export interface BestBlockPayload {
   height: number;
 }
-
 export interface EventPayload<T> {
   value: T;
 }
@@ -36,4 +35,22 @@ export interface NetworkMetadataPayload {
   chain: string;
   specName: string;
   genesisHash: string;
+}
+
+export interface MmrPayload {
+  offset: number;
+  height: number;
+  hash: string; //the node hash
+  mmrRoot: string;
+}
+
+export interface MmrProof {
+  digest: string;
+  leafLength: number;
+  nodes: MmrNode[];
+}
+
+export interface MmrNode {
+  node: string;
+  hash: string;
 }

@@ -9,7 +9,7 @@ import {
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from '../indexer/events';
+} from '@subql/node-core/events';
 import { StoreService } from '../indexer/store.service';
 
 const DEFAULT_TIMEOUT = 900000;

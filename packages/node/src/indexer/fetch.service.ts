@@ -23,6 +23,7 @@ import {
 } from '@subql/common-substrate';
 import { getYargsOption } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
+import { IndexerEvent } from '@subql/node-core/events';
 import { BlockedQueue } from '@subql/node-core/indexer';
 import { delay } from '@subql/node-core/utils';
 import {
@@ -43,7 +44,6 @@ import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerEvent } from './events';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
