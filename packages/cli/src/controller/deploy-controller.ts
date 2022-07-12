@@ -166,12 +166,12 @@ export async function getEndpoints(url: string): Promise<endpointType[]> {
   }
 }
 
-export function processEndpoints(endpoints: endpointType[], chainId: string): null | string {
-  const endpoint = endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId);
+export function processEndpoints(endpoints: endpointType[], chainId: string): string {
+  const endpoint = endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId)?.endpoint;
   if (!endpoint) {
-    return undefined;
+    return chainId;
   }
-  return endpoint.endpoint;
+  return endpoint;
 }
 
 export async function getImage_v(name: string, version: string, authToken: string, url: string): Promise<string[]> {

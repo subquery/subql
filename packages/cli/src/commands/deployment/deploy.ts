@@ -59,17 +59,16 @@ export default class Deploy extends Command {
       const defaultEndpoints = await getEndpoints(ROOT_API_URL_PROD);
       const validateEndpoint = processEndpoints(defaultEndpoints, validator.chainId);
       if (!flags.useDefaults && !validateEndpoint) {
-        endpoint = await promptWithDefaultValues(true, cli, 'Enter endpoint', validateEndpoint);
+        endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
       } else {
         endpoint = validateEndpoint;
       }
     }
 
     if (!dict) {
-      const defaultDict = await getDictEndpoints(ROOT_API_URL_PROD);
-      const validateDictEndpoint = processEndpoints(defaultDict, validator.chainId);
+      const validateDictEndpoint = processEndpoints(await getDictEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
-        dict = await promptWithDefaultValues(false, cli, 'Enter dictionary', validateDictEndpoint);
+        dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
         dict = validateDictEndpoint;
       }
@@ -85,11 +84,11 @@ export default class Deploy extends Command {
         );
         if (!flags.useDefaults) {
           const response = await promptWithDefaultValues(
-            true,
             inquirer,
             'Enter indexer version',
             null,
-            indexerVersions
+            indexerVersions,
+            true
           );
           indexerVersion = response;
         } else {
@@ -108,7 +107,7 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(true, inquirer, 'Enter query version', null, queryVersions);
+          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
           queryVersion = response;
         } else {
           queryVersion = queryVersions[0];
@@ -119,7 +118,6 @@ export default class Deploy extends Command {
     }
 
     this.log('Deploying SupQuery project to Hosted Service');
-    console.log(endpoint);
 
     const deployment_output = await deployToHostedService(
       org,

@@ -22,11 +22,11 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
 }
 
 export async function promptWithDefaultValues(
-  required: boolean,
   promptType: Inquirer | typeof ux,
   msg: string,
   defaultValue?: string,
-  choices?: string[]
+  choices?: string[],
+  required?: boolean
 ): Promise<string> {
   const promptValue =
     promptType === inquirer
