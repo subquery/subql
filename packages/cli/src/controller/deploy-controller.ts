@@ -166,12 +166,8 @@ export async function getEndpoints(url: string): Promise<endpointType[]> {
   }
 }
 
-export function processEndpoints(endpoints: endpointType[], chainId: string): string {
-  const endpoint = endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId)?.endpoint;
-  if (!endpoint) {
-    return chainId;
-  }
-  return endpoint;
+export function processEndpoints(endpoints: endpointType[], chainId: string): string | undefined {
+  return endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId)?.endpoint;
 }
 
 export async function getImage_v(name: string, version: string, authToken: string, url: string): Promise<string[]> {
