@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/1.2.2-1 linux-x64 node-v16.15.1
+@subql/cli/1.2.2-1 darwin-arm64 node-v16.13.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -226,14 +226,14 @@ USAGE
   $ subql project
 
 OPTIONS
-  --apiVersion=apiVersion      [default: 2] Enter api version
-  --description=description    Enter description
-  --gitRepo=gitRepo            Enter git repository
-  --logoURL=logoURL            Enter logo URL
+  --apiVersion=apiVersion    [default: 2] Enter api version
+  --description=description  Enter description
+  --gitRepo=gitRepo          Enter git repository
+  --logoURL=logoURL          Enter logo URL
   --options=create|delete
-  --org=org                    Enter organization name
-  --project_name=project_name  Enter project name
-  --subtitle=subtitle          Enter subtitle
+  --org=org                  Enter organization name
+  --projectName=projectName  Enter project name
+  --subtitle=subtitle        Enter subtitle
 ```
 
 _See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/index.js)_
@@ -247,13 +247,13 @@ USAGE
   $ subql project:create-project
 
 OPTIONS
-  --apiVersion=apiVersion      [default: 2] Enter api version
-  --description=description    Enter description
-  --gitRepo=gitRepo            Enter git repository
-  --logoURL=logoURL            Enter logo URL
-  --org=org                    Enter organization name
-  --project_name=project_name  Enter project name
-  --subtitle=subtitle          Enter subtitle
+  --apiVersion=apiVersion    [default: 2] Enter api version
+  --description=description  Enter description
+  --gitRepo=gitRepo          Enter git repository
+  --logoURL=logoURL          Enter logo URL
+  --org=org                  Enter organization name
+  --projectName=projectName  Enter project name
+  --subtitle=subtitle        Enter subtitle
 ```
 
 _See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/create-project.js)_
@@ -267,8 +267,8 @@ USAGE
   $ subql project:delete-project
 
 OPTIONS
-  --org=org                    Enter organization name
-  --project_name=project_name  Enter project name
+  --org=org                  Enter organization name
+  --projectName=projectName  Enter project name
 ```
 
 _See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.2.2-1/lib/commands/project/delete-project.js)_
