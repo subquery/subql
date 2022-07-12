@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { DataTypes, Model, ModelAttributes } from 'sequelize';
-import { StoreService } from './store.service';
+import {DataTypes, Model, ModelAttributes} from 'sequelize';
+import {StoreService} from './store.service';
 
 describe('Store Service', () => {
   let storeService: StoreService;
@@ -17,8 +17,7 @@ describe('Store Service', () => {
     } as ModelAttributes<Model<any, any>, any>;
     storeService.addIdAndBlockRangeAttributes(attributes);
     expect(Object.keys(attributes).length).toEqual(3);
-    // eslint-disable-next-line
-    expect(attributes.id['primaryKey']).toEqual(false);
+    expect((attributes.id as any).primaryKey).toEqual(false);
     expect(attributes.__id).toEqual({
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

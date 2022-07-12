@@ -10,7 +10,7 @@ import {
   ProcessBlockPayload,
   TargetBlockPayload,
 } from '@subql/node-core/events';
-import { StoreService } from '../indexer/store.service';
+import { StoreService } from '@subql/node-core/indexer';
 
 const DEFAULT_TIMEOUT = 900000;
 const CHECK_HEALTH_INTERVAL = 60000;

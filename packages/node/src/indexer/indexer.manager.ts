@@ -21,7 +21,7 @@ import { getYargsOption } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
 import { IndexerEvent } from '@subql/node-core/events';
-import { PoiBlock } from '@subql/node-core/indexer';
+import { PoiBlock, StoreService } from '@subql/node-core/indexer';
 import {
   SubstrateBlock,
   SubstrateEvent,
@@ -41,7 +41,6 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');

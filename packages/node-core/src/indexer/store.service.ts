@@ -3,20 +3,31 @@
 
 import assert from 'assert';
 import { isMainThread } from 'worker_threads';
-import { Injectable } from '@nestjs/common';
-import { hexToU8a, u8aToBuffer } from '@polkadot/util';
-import { blake2AsHex } from '@polkadot/util-crypto';
-import { getYargsOption } from '@subql/node-core';
-import { NodeConfig } from '@subql/node-core/configure';
-import { OperationType, StoreOperations } from '@subql/node-core/indexer';
+import {Injectable} from '@nestjs/common';
+import {hexToU8a, u8aToBuffer} from '@polkadot/util';
+import {blake2AsHex} from '@polkadot/util-crypto';
+import {getYargsOption} from '@subql/node-core';
+import {NodeConfig} from '@subql/node-core/configure';
+import {OperationType, StoreOperations} from '@subql/node-core/indexer';
+import {Entity, Store} from '@subql/types';
+import {GraphQLModelsRelationsEnums, GraphQLRelationsType, IndexType} from '@subql/utils';
+import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
-  Metadata,
-  MetadataFactory,
-  MetadataRepo,
-  PoiFactory,
-  PoiRepo,
-  ProofOfIndex,
-} from '@subql/node-core/indexer/entities';
+  CreationAttributes,
+  DataTypes,
+  IndexesOptions,
+  Model,
+  ModelAttributeColumnOptions,
+  ModelAttributes,
+  ModelStatic,
+  Op,
+  QueryTypes,
+  Sequelize,
+  Transaction,
+  UpsertOptions,
+  Utils,
+} from 'sequelize';
+import {getLogger} from '../logger';
 import {
   commentTableQuery,
   commentConstraintQuery,
@@ -35,36 +46,12 @@ import {
   modelsTypeToModelAttributes,
   camelCaseObjectKey,
   makeTriggerName,
-} from '@subql/node-core/utils';
-import { Entity, Store } from '@subql/types';
-import {
-  GraphQLModelsRelationsEnums,
-  GraphQLRelationsType,
-  IndexType,
-} from '@subql/utils';
-import { camelCase, flatten, isEqual, upperFirst } from 'lodash';
-import {
-  CreationAttributes,
-  DataTypes,
-  IndexesOptions,
-  Model,
-  ModelAttributeColumnOptions,
-  ModelAttributes,
-  ModelCtor,
-  ModelStatic,
-  Op,
-  QueryTypes,
-  Sequelize,
-  Transaction,
-  UpsertOptions,
-  Utils,
-} from 'sequelize';
-import { getLogger } from '../utils/logger';
-import { PoiService } from './poi.service';
+} from '../utils';
+import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-const { argv } = getYargsOption();
+const {argv} = getYargsOption();
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 const KEY_FIELDS = ['id', '__id', '__block_range'];
 
@@ -93,10 +80,7 @@ export class StoreService {
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
-  async init(
-    modelsRelations: GraphQLModelsRelationsEnums,
-    schema: string,
-  ): Promise<void> {
+  async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
@@ -126,13 +110,9 @@ export class StoreService {
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
     if (this.historical) {
-      const [results] = await this.sequelize.query(
-        BTREE_GIST_EXTENSION_EXIST_QUERY,
-      );
+      const [results] = await this.sequelize.query(BTREE_GIST_EXTENSION_EXIST_QUERY);
       if (results.length === 0) {
-        throw new Error(
-          'Btree_gist extension is required to enable historical data, contact DB admin for support',
-        );
+        throw new Error('Btree_gist extension is required to enable historical data, contact DB admin for support');
       }
     }
 
@@ -147,18 +127,13 @@ export class StoreService {
          join pg_enum e on t.oid = e.enumtypid
          where t.typname = ?
          order by enumsortorder;`,
-        { replacements: [enumTypeName] },
+        {replacements: [enumTypeName]}
       );
 
       if (results.length === 0) {
-        await this.sequelize.query(
-          `CREATE TYPE "${enumTypeName}" as ENUM (${e.values
-            .map(() => '?')
-            .join(',')});`,
-          {
-            replacements: e.values,
-          },
-        );
+        await this.sequelize.query(`CREATE TYPE "${enumTypeName}" as ENUM (${e.values.map(() => '?').join(',')});`, {
+          replacements: e.values,
+        });
       } else {
         const currentValues = results.map((v: any) => v.enum_value);
         // Assert the existing enum is same
@@ -166,20 +141,14 @@ export class StoreService {
         // Make it a function to not execute potentially big joins unless needed
         if (!isEqual(e.values, currentValues)) {
           throw new Error(
-            `\n * Can't modify enum "${
-              e.name
-            }" between runs: \n * Before: [${currentValues.join(
-              `,`,
-            )}] \n * After : [${e.values.join(
-              ',',
-            )}] \n * You must rerun the project to do such a change`,
+            `\n * Can't modify enum "${e.name}" between runs: \n * Before: [${currentValues.join(
+              `,`
+            )}] \n * After : [${e.values.join(',')}] \n * You must rerun the project to do such a change`
           );
         }
       }
 
-      const comment = `@enum\\n@enumName ${e.name}${
-        e.description ? `\\n ${e.description}` : ''
-      }`;
+      const comment = `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`;
 
       await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E?`, {
         replacements: [comment],
@@ -192,7 +161,7 @@ export class StoreService {
     }
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
-      const indexes = model.indexes.map(({ fields, unique, using }) => ({
+      const indexes = model.indexes.map(({fields, unique, using}) => ({
         fields: fields.map((field) => Utils.underscoredIf(field, true)),
         unique,
         using,
@@ -215,26 +184,19 @@ export class StoreService {
       });
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
-        extraQueries.push(
-          createExcludeConstraintQuery(schema, sequelizeModel.tableName),
-        );
+        extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
       if (argv.subscription) {
         const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
-          replacements: { triggerName },
+          replacements: {triggerName},
           type: QueryTypes.SELECT,
         });
         // Triggers not been found
         if (triggers.length === 0) {
-          extraQueries.push(
-            createNotifyTrigger(schema, sequelizeModel.tableName),
-          );
+          extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
         } else {
-          this.validateNotifyTriggers(
-            triggerName,
-            triggers as NotifyTriggerPayload[],
-          );
+          this.validateNotifyTriggers(triggerName, triggers as NotifyTriggerPayload[]);
         }
       } else {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
@@ -250,31 +212,20 @@ export class StoreService {
       }
       switch (relation.type) {
         case 'belongsTo': {
-          model.belongsTo(relatedModel, { foreignKey: relation.foreignKey });
+          model.belongsTo(relatedModel, {foreignKey: relation.foreignKey});
           break;
         }
         case 'hasOne': {
           const rel = model.hasOne(relatedModel, {
             foreignKey: relation.foreignKey,
           });
-          const fkConstraint = getFkConstraint(
-            rel.target.tableName,
-            rel.foreignKey,
-          );
+          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
           const tags = smartTags({
             singleForeignFieldName: relation.fieldName,
           });
           extraQueries.push(
-            commentConstraintQuery(
-              `"${schema}"."${rel.target.tableName}"`,
-              fkConstraint,
-              tags,
-            ),
-            createUniqueIndexQuery(
-              schema,
-              relatedModel.tableName,
-              relation.foreignKey,
-            ),
+            commentConstraintQuery(`"${schema}"."${rel.target.tableName}"`, fkConstraint, tags),
+            createUniqueIndexQuery(schema, relatedModel.tableName, relation.foreignKey)
           );
           break;
         }
@@ -282,20 +233,11 @@ export class StoreService {
           const rel = model.hasMany(relatedModel, {
             foreignKey: relation.foreignKey,
           });
-          const fkConstraint = getFkConstraint(
-            rel.target.tableName,
-            rel.foreignKey,
-          );
+          const fkConstraint = getFkConstraint(rel.target.tableName, rel.foreignKey);
           const tags = smartTags({
             foreignFieldName: relation.fieldName,
           });
-          extraQueries.push(
-            commentConstraintQuery(
-              `"${schema}"."${rel.target.tableName}"`,
-              fkConstraint,
-              tags,
-            ),
-          );
+          extraQueries.push(commentConstraintQuery(`"${schema}"."${rel.target.tableName}"`, fkConstraint, tags));
 
           break;
         }
@@ -329,17 +271,16 @@ export class StoreService {
     let enabled = true;
     try {
       // Throws if _metadata doesn't exist (first startup)
-      const result = await this.sequelize.query(
+      const result = await this.sequelize.query<{value: boolean}>(
         `SELECT value FROM "${this.schema}"."_metadata" WHERE key = 'historicalStateEnabled'`,
-        { type: QueryTypes.SELECT },
+        {type: QueryTypes.SELECT}
       );
       if (result.length > 0) {
-        // eslint-disable-next-line
-        enabled = result[0]['value'];
+        enabled = result[0].value;
       } else {
         enabled = false;
       }
-    } catch (e: any) {
+    } catch (e) {
       enabled = !argv['disable-historical'];
     }
     logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
@@ -362,43 +303,25 @@ export class StoreService {
     relation: GraphQLRelationsType,
     foreignKeys: Map<string, Map<string, SmartTags>>,
     model: ModelStatic<any>,
-    relatedModel: ModelStatic<any>,
+    relatedModel: ModelStatic<any>
   ) {
     switch (relation.type) {
       case 'belongsTo': {
-        addTagsToForeignKeyMap(
-          foreignKeys,
-          model.tableName,
-          relation.foreignKey,
-          {
-            foreignKey: getVirtualFkTag(
-              relation.foreignKey,
-              relatedModel.tableName,
-            ),
-          },
-        );
+        addTagsToForeignKeyMap(foreignKeys, model.tableName, relation.foreignKey, {
+          foreignKey: getVirtualFkTag(relation.foreignKey, relatedModel.tableName),
+        });
         break;
       }
       case 'hasOne': {
-        addTagsToForeignKeyMap(
-          foreignKeys,
-          relatedModel.tableName,
-          relation.foreignKey,
-          {
-            singleForeignFieldName: relation.fieldName,
-          },
-        );
+        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
+          singleForeignFieldName: relation.fieldName,
+        });
         break;
       }
       case 'hasMany': {
-        addTagsToForeignKeyMap(
-          foreignKeys,
-          relatedModel.tableName,
-          relation.foreignKey,
-          {
-            foreignFieldName: relation.fieldName,
-          },
-        );
+        addTagsToForeignKeyMap(foreignKeys, relatedModel.tableName, relation.foreignKey, {
+          foreignFieldName: relation.fieldName,
+        });
         break;
       }
       default:
@@ -406,9 +329,7 @@ export class StoreService {
     }
   }
 
-  addIdAndBlockRangeAttributes(
-    attributes: ModelAttributes<Model<any, any>, any>,
-  ): void {
+  addIdAndBlockRangeAttributes(attributes: ModelAttributes<Model<any, any>, any>): void {
     (attributes.id as ModelAttributeColumnOptions).primaryKey = false;
     attributes.__id = {
       type: DataTypes.UUID,
@@ -429,8 +350,7 @@ export class StoreService {
       },
     });
     sequelizeModel.addHook('beforeFind', (options) => {
-      // eslint-disable-next-line
-      options.where['__block_range'] = {
+      (options.where as any).__block_range = {
         [Op.contains]: this.blockHeight as any,
       };
     });
@@ -450,14 +370,12 @@ export class StoreService {
   ): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
-        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
+        `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
       );
     }
     triggers.map((t) => {
       if (!NotifyTriggerManipulationType.includes(t.eventManipulation)) {
-        throw new Error(
-          `Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`,
-        );
+        throw new Error(`Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`);
       }
     });
   }
@@ -478,28 +396,16 @@ export class StoreService {
     this.blockHeight = blockHeight;
   }
 
-  async setMetadataBatch(
-    metadata: Metadata[],
-    options?: UpsertOptions<Metadata>,
-  ): Promise<void> {
-    await Promise.all(
-      metadata.map(({ key, value }) => this.setMetadata(key, value, options)),
-    );
+  async setMetadataBatch(metadata: Metadata[], options?: UpsertOptions<Metadata>): Promise<void> {
+    await Promise.all(metadata.map(({key, value}) => this.setMetadata(key, value, options)));
   }
 
-  async setMetadata(
-    key: string,
-    value: string | number | boolean,
-    options?: UpsertOptions<Metadata>,
-  ): Promise<void> {
+  async setMetadata(key: string, value: string | number | boolean, options?: UpsertOptions<Metadata>): Promise<void> {
     assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert({ key, value }, options);
+    await this.metaDataRepo.upsert({key, value}, options);
   }
 
-  async setPoi(
-    blockPoi: ProofOfIndex,
-    options?: UpsertOptions<ProofOfIndex>,
-  ): Promise<void> {
+  async setPoi(blockPoi: ProofOfIndex, options?: UpsertOptions<ProofOfIndex>): Promise<void> {
     assert(this.poiRepo, `Model _poi does not exist`);
     blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
     blockPoi.hash = u8aToBuffer(blockPoi.hash);
@@ -523,21 +429,13 @@ export class StoreService {
     const fields: IndexField[][] = [];
     for (const entity of this.modelsRelations.models) {
       const model = this.sequelize.model(entity.name);
-      const tableFields = await this.packEntityFields(
-        schema,
-        entity.name,
-        model.tableName,
-      );
+      const tableFields = await this.packEntityFields(schema, entity.name, model.tableName);
       fields.push(tableFields);
     }
     return flatten(fields);
   }
 
-  private async packEntityFields(
-    schema: string,
-    entity: string,
-    table: string,
-  ): Promise<IndexField[]> {
+  private async packEntityFields(schema: string, entity: string, table: string): Promise<IndexField[]> {
     const rows = await this.sequelize.query(
       `select
     '${entity}' as entity_name,
@@ -565,7 +463,7 @@ group by
     am.amname`,
       {
         type: QueryTypes.SELECT,
-      },
+      }
     );
     return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
@@ -576,7 +474,7 @@ group by
         __block_range: this.sequelize.fn(
           'int8range',
           this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          this.blockHeight,
+          this.blockHeight
         ),
       },
       {
@@ -588,7 +486,7 @@ group by
             [Op.contains]: this.blockHeight as any,
           },
         },
-      },
+      }
     );
   }
 
@@ -653,7 +551,7 @@ group by
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
           const record = await model.findOne({
-            where: { id },
+            where: {id},
             transaction: this.tx,
           });
           return record?.toJSON() as Entity;
@@ -661,41 +559,27 @@ group by
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
       },
-      getByField: async (
-        entity: string,
-        field: string,
-        value,
-      ): Promise<Entity[] | undefined> => {
+      getByField: async (entity: string, field: string, value): Promise<Entity[] | undefined> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
           const indexed =
             this.modelIndexedFields.findIndex(
               (indexField) =>
-                upperFirst(camelCase(indexField.entityName)) === entity &&
-                camelCase(indexField.fieldName) === field,
+                upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
             ) > -1;
-          assert(
-            indexed,
-            `to query by field ${field}, an index must be created on model ${entity}`,
-          );
+          assert(indexed, `to query by field ${field}, an index must be created on model ${entity}`);
           const records = await model.findAll({
-            where: { [field]: value },
+            where: {[field]: value},
             transaction: this.tx,
             limit: this.config.queryLimit,
           });
           return records.map((record) => record.toJSON() as Entity);
         } catch (e) {
-          throw new Error(
-            `Failed to getByField Entity ${entity} with field ${field}: ${e}`,
-          );
+          throw new Error(`Failed to getByField Entity ${entity} with field ${field}: ${e}`);
         }
       },
-      getOneByField: async (
-        entity: string,
-        field: string,
-        value,
-      ): Promise<Entity | undefined> => {
+      getOneByField: async (entity: string, field: string, value): Promise<Entity | undefined> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
@@ -704,21 +588,16 @@ group by
               (indexField) =>
                 upperFirst(camelCase(indexField.entityName)) === entity &&
                 camelCase(indexField.fieldName) === field &&
-                indexField.isUnique,
+                indexField.isUnique
             ) > -1;
-          assert(
-            indexed,
-            `to query by field ${field}, an unique index must be created on model ${entity}`,
-          );
+          assert(indexed, `to query by field ${field}, an unique index must be created on model ${entity}`);
           const record = await model.findOne({
-            where: { [field]: value },
+            where: {[field]: value},
             transaction: this.tx,
           });
           return record?.toJSON() as Entity;
         } catch (e) {
-          throw new Error(
-            `Failed to getOneByField Entity ${entity} with field ${field}: ${e}`,
-          );
+          throw new Error(`Failed to getOneByField Entity ${entity} with field ${field}: ${e}`);
         }
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
@@ -731,14 +610,8 @@ group by
               hooks: false,
               transaction: this.tx,
               where: this.sequelize.and(
-                { id: data.id },
-                this.sequelize.where(
-                  this.sequelize.fn(
-                    'lower',
-                    this.sequelize.col('_block_range'),
-                  ),
-                  this.blockHeight,
-                ),
+                {id: data.id},
+                this.sequelize.where(this.sequelize.fn('lower', this.sequelize.col('_block_range')), this.blockHeight)
               ),
             });
             if (updatedRows < 1) {
@@ -756,21 +629,16 @@ group by
             this.operationStack.put(OperationType.Set, entity, data);
           }
         } catch (e) {
-          throw new Error(
-            `Failed to set Entity ${entity} with _id ${_id}: ${e}`,
-          );
+          throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
         }
       },
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
-          await model.bulkCreate(
-            data as unknown as CreationAttributes<Model>[],
-            {
-              transaction: this.tx,
-            },
-          );
+          await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
+            transaction: this.tx,
+          });
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -856,15 +724,13 @@ group by
           if (this.historical) {
             await this.markAsDeleted(model, id);
           } else {
-            await model.destroy({ where: { id }, transaction: this.tx });
+            await model.destroy({where: {id}, transaction: this.tx});
           }
           if (this.config.proofOfIndex) {
             this.operationStack.put(OperationType.Remove, entity, id);
           }
         } catch (e) {
-          throw new Error(
-            `Failed to remove Entity ${entity} with id ${id}: ${e}`,
-          );
+          throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
         }
       },
     };

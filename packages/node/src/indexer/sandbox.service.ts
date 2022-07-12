@@ -7,7 +7,10 @@ import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-substrate';
+import { getYargsOption } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
+import { StoreService } from '@subql/node-core/indexer';
+import { timeout } from '@subql/node-core/utils';
 import { Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
@@ -15,10 +18,7 @@ import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
-import { timeout } from '@subql/node-core/utils';
-import { getYargsOption } from '@subql/node-core';
 import { ApiService } from './api.service';
-import { StoreService } from './store.service';
 import { ApiAt } from './types';
 
 const { argv } = getYargsOption();

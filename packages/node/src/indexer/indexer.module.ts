@@ -3,8 +3,9 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '@subql/node-core/db';
+import { BenchmarkService, StoreService } from '@subql/node-core/indexer';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -14,7 +15,6 @@ import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({

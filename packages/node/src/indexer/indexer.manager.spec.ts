@@ -6,11 +6,12 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryFactory } from '@subql/node-core/entities';
+import { StoreService } from '@subql/node-core/indexer';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryFactory } from '@subql/node-core/entities';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -19,7 +20,6 @@ import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
