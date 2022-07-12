@@ -136,7 +136,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
   }
 }
 
-export async function getDictEndpoint(chainId: string, url: string): Promise<string> {
+export async function getDictEndpoints(url: string): Promise<endpointType[]> {
   try {
     const result = (
       await axios({
@@ -145,14 +145,13 @@ export async function getDictEndpoint(chainId: string, url: string): Promise<str
         baseURL: url,
       })
     ).data;
-    const filtered = result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
-    return filtered;
+    return result;
   } catch (e) {
     errorHandle(e, 'Failed to get dictionary endpoint:');
   }
 }
 
-export async function getEndpoint(chainId: string, url: string): Promise<string> {
+export async function getEndpoints(url: string): Promise<endpointType[]> {
   try {
     const result = (
       await axios({
@@ -161,10 +160,14 @@ export async function getEndpoint(chainId: string, url: string): Promise<string>
         baseURL: url,
       })
     ).data;
-    return result.find((endpoint: endpointType) => endpoint.chainId === chainId).endpoint;
+    return result;
   } catch (e) {
     errorHandle(e, 'Failed to get endpoint:');
   }
+}
+
+export function processEndpoints(endpoints: endpointType[], chainId: string): string | undefined {
+  return endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId)?.endpoint;
 }
 
 export async function getImage_v(name: string, version: string, authToken: string, url: string): Promise<string[]> {

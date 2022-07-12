@@ -10,9 +10,10 @@ import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../.
 import {
   deployToHostedService,
   ipfsCID_validate,
-  getEndpoint,
-  getDictEndpoint,
+  getEndpoints,
+  getDictEndpoints,
   getImage_v,
+  processEndpoints,
 } from '../../controller/deploy-controller';
 import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
@@ -55,19 +56,21 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      const defaultEndpoint = await getEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.useDefaults) {
-        endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', defaultEndpoint);
+      const validateEndpoint = processEndpoints(await getEndpoints(ROOT_API_URL_PROD), validator.chainId);
+      if (!flags.useDefaults && !validateEndpoint) {
+        endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
+      } else {
+        endpoint = validateEndpoint ? validateEndpoint : validator.chainId;
       }
-      endpoint = defaultEndpoint;
     }
 
     if (!dict) {
-      const defaultDict = await getDictEndpoint(validator.chainId, ROOT_API_URL_PROD);
-      if (!flags.useDefaults) {
-        dict = await promptWithDefaultValues(cli, 'Enter dictionary', defaultDict);
+      const validateDictEndpoint = processEndpoints(await getDictEndpoints(ROOT_API_URL_PROD), validator.chainId);
+
+      if (!flags.useDefaults && !validateDictEndpoint) {
+        dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
-        dict = defaultDict;
+        dict = validateDictEndpoint;
       }
     }
 
@@ -80,7 +83,13 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(inquirer, 'Enter indexer version', null, indexerVersions);
+          const response = await promptWithDefaultValues(
+            inquirer,
+            'Enter indexer version',
+            null,
+            indexerVersions,
+            true
+          );
           indexerVersion = response;
         } else {
           indexerVersion = indexerVersions[0];
@@ -98,7 +107,7 @@ export default class Deploy extends Command {
           ROOT_API_URL_PROD
         );
         if (!flags.useDefaults) {
-          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions);
+          const response = await promptWithDefaultValues(inquirer, 'Enter query version', null, queryVersions, true);
           queryVersion = response;
         } else {
           queryVersion = queryVersions[0];
@@ -109,6 +118,7 @@ export default class Deploy extends Command {
     }
 
     this.log('Deploying SupQuery project to Hosted Service');
+
     const deployment_output = await deployToHostedService(
       org,
       projectName,

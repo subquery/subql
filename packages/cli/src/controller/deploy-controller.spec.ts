@@ -10,9 +10,10 @@ import {
   deleteDeployment,
   deploymentStatus,
   ipfsCID_validate,
-  getEndpoint,
-  getDictEndpoint,
+  getEndpoints,
+  getDictEndpoints,
   getImage_v,
+  processEndpoints,
 } from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
 
@@ -33,7 +34,7 @@ const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
 
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
-// const testAuth = 'process.env.SUBQL_ACCESS_TOKEN_TEST';
+
 describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
   beforeAll(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
@@ -78,8 +79,8 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       testAuth,
       ROOT_API_URL_DEV
     );
-    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
+    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
+    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
     const deploy_output = await deployToHostedService(
       org,
       project_name,
@@ -87,9 +88,9 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       ipfs,
       indexer_v[0],
       query_v[0],
-      endpoint,
+      processEndpoints(endpoint, validator.chainId),
       'stage',
-      dictEndpoint,
+      processEndpoints(dictEndpoint, validator.chainId),
       ROOT_API_URL_DEV
     );
 
@@ -116,8 +117,8 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       testAuth,
       ROOT_API_URL_DEV
     );
-    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
+    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
+    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
 
     const deploy_output = await deployToHostedService(
       org,
@@ -126,9 +127,9 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       ipfs,
       indexer_v[0],
       query_v[0],
-      endpoint,
+      processEndpoints(endpoint, validator.chainId),
       'stage',
-      dictEndpoint,
+      processEndpoints(dictEndpoint, validator.chainId),
       ROOT_API_URL_DEV
     );
 
@@ -157,12 +158,14 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
 
   it('get Endpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-    const endpoint = await getEndpoint(validator.chainId, ROOT_API_URL_DEV);
-    expect(endpoint).toBe('wss://polkadot.api.onfinality.io/public-ws');
+    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
+    expect(processEndpoints(endpoint, validator.chainId)).toBe('wss://polkadot.api.onfinality.io/public-ws');
   });
   it('get DictEndpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-    const dict = await getDictEndpoint(validator.chainId, ROOT_API_URL_DEV);
-    expect(dict).toBe('https://api.subquery.network/sq/subquery/dictionary-polkadot');
+    const dict = await getDictEndpoints(ROOT_API_URL_DEV);
+    expect(processEndpoints(dict, validator.chainId)).toBe(
+      'https://api.subquery.network/sq/subquery/dictionary-polkadot'
+    );
   });
 });

@@ -25,7 +25,8 @@ export async function promptWithDefaultValues(
   promptType: Inquirer | typeof ux,
   msg: string,
   defaultValue?: string,
-  choices?: string[]
+  choices?: string[],
+  required?: boolean
 ): Promise<string> {
   const promptValue =
     promptType === inquirer
@@ -37,7 +38,7 @@ export async function promptWithDefaultValues(
             choices: choices,
           })
         ).runnerVersions
-      : await promptType.prompt(msg, {default: defaultValue});
+      : await promptType.prompt(msg, {default: defaultValue, required: required});
   return promptValue;
 }
 
