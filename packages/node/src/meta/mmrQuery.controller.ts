@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Controller, Get, Param, UseFilters } from '@nestjs/common';
-import { MmrService } from '../indexer/mmr.service';
+import { MmrService } from '@subql/node-core/indexer';
 import { MmrExceptionsFilter } from '../utils/mmr-exception.filter';
 
 const mmrExceptionsFilter = new MmrExceptionsFilter();

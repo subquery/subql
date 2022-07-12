@@ -3,7 +3,7 @@
 
 import { Module } from '@nestjs/common';
 import { DbModule } from '@subql/node-core/db';
-import { BenchmarkService, StoreService, PoiService } from '@subql/node-core/indexer';
+import { BenchmarkService, MmrService, StoreService, PoiService } from '@subql/node-core/indexer';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -11,7 +11,6 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
-import { MmrService } from './mmr.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import {

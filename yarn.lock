@@ -3612,6 +3612,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
+    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
   languageName: unknown
   linkType: soft
 
@@ -3822,7 +3823,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2":
+"@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2, @subql/x-merkle-mountain-range@npm:^2.0.0-0.1.2":
   version: 2.0.0-0.1.2
   resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
   dependencies:

@@ -8,6 +8,7 @@ import {
   BenchmarkService,
   StoreService,
   PoiService,
+  MmrService,
 } from '@subql/node-core/indexer';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -15,7 +16,6 @@ import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
-import { MmrService } from './mmr.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';

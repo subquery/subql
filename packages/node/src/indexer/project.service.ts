@@ -10,7 +10,7 @@ import { getYargsOption, getLogger } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
 import { IndexerEvent } from '@subql/node-core/events';
-import { StoreService, PoiService } from '@subql/node-core/indexer';
+import { StoreService, PoiService, MmrService } from '@subql/node-core/indexer';
 import {
   MetadataFactory,
   MetadataRepo,
@@ -21,7 +21,6 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MmrService } from './mmr.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
