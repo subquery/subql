@@ -7,7 +7,6 @@ import { hexToU8a } from '@polkadot/util';
 import { NodeConfig } from '@subql/node-core/configure';
 import { PoiFactory, PoiRepo } from '@subql/node-core/indexer/entities';
 import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
 
@@ -18,11 +17,7 @@ export class PoiService implements OnApplicationShutdown {
   private poiRepo: PoiRepo;
   private schema: string;
 
-  constructor(
-    protected nodeConfig: NodeConfig,
-    protected project: SubqueryProject,
-    protected sequelize: Sequelize,
-  ) {}
+  constructor(protected nodeConfig: NodeConfig, protected sequelize: Sequelize) {}
 
   onApplicationShutdown(): void {
     this.isShutdown = true;

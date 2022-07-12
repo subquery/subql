@@ -4,7 +4,11 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { DbModule } from '@subql/node-core/db';
-import { BenchmarkService, StoreService } from '@subql/node-core/indexer';
+import {
+  BenchmarkService,
+  StoreService,
+  PoiService,
+} from '@subql/node-core/indexer';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -12,7 +16,6 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';

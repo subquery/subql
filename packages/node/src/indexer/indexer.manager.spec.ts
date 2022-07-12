@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryFactory } from '@subql/node-core/entities';
-import { StoreService } from '@subql/node-core/indexer';
+import { StoreService, PoiService } from '@subql/node-core/indexer';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -17,9 +18,9 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { FetchService } from './fetch.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
@@ -130,7 +131,7 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const dsProcessorService = new DsProcessorService(project);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const poiService = new PoiService(nodeConfig, project, sequilize);
+  const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const subqueryRepo = SubqueryFactory(sequilize);
   const mmrService = new MmrService(nodeConfig, project, sequilize);

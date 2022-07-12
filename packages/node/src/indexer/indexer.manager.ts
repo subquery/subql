@@ -20,7 +20,7 @@ import {
 import { getYargsOption, getLogger, profiler, profilerWrap } from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
-import { PoiBlock, StoreService } from '@subql/node-core/indexer';
+import { PoiBlock, StoreService, PoiService } from '@subql/node-core/indexer';
 import {
   SubstrateBlock,
   SubstrateEvent,
@@ -35,7 +35,6 @@ import {
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';

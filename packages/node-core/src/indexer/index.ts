@@ -8,3 +8,4 @@ export * from './BlockedQueue';
 export * from './types';
 export * from './StoreOperations';
 export * from './store.service';
+export * from './poi.service';
