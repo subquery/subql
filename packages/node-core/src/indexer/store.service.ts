@@ -6,8 +6,6 @@ import { isMainThread } from 'worker_threads';
 import {Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
-import {getYargsOption} from '@subql/node-core';
-import {NodeConfig} from '@subql/node-core/configure';
 import {OperationType, StoreOperations} from '@subql/node-core/indexer';
 import {Entity, Store} from '@subql/types';
 import {GraphQLModelsRelationsEnums, GraphQLRelationsType, IndexType} from '@subql/utils';
@@ -27,6 +25,7 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
+import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
   commentTableQuery,
@@ -47,6 +46,7 @@ import {
   camelCaseObjectKey,
   makeTriggerName,
 } from '../utils';
+import {getYargsOption} from '../yargs';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 
 const logger = getLogger('store');
