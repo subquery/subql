@@ -48,6 +48,8 @@ Priority: High. Fixes 1.6.0 failed to start issue.
 - Improve error log (#1174)
 - Update Polkadot to 8.12.2 (#1179)
 
+- Use `node-core` package
+
 ## [1.4.1] - 2022-07-07
 ### Fixed
 - Fix oversize subscription notification trigger name (#1171)

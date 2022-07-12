@@ -56,6 +56,11 @@ jobs:
           paths: packages/cli
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-node-core
+        with:
+          paths: packages/node-core
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-node
         with:
           paths: packages/node
@@ -107,6 +112,13 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/common-substrate
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Bump node-core & deploy
+        if: steps.changed-node-core.outputs.changed == 'true'
+        uses: ./.github/actions/create-prerelease
+        with:
+          package-path: packages/node-core
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy

@@ -57,6 +57,11 @@ jobs:
           paths: packages/cli
 
       - uses: marceloprado/has-changed-path@v1
+        id: changed-node-core
+        with:
+          paths: packages/node-core
+
+      - uses: marceloprado/has-changed-path@v1
         id: changed-node
         with:
           paths: packages/node
@@ -111,6 +116,14 @@ jobs:
         uses: ./.github/actions/create-release
         with:
           package-path: packages/common-substrate
+          repo-token: ${{ secrets.REPO_TOKEN }}
+          npm-token: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish Node Core
+        if: steps.changed-node-core.outputs.changed == 'true'
+        uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node-core
           repo-token: ${{ secrets.REPO_TOKEN }}
           npm-token: ${{ secrets.NPM_TOKEN }}
 
