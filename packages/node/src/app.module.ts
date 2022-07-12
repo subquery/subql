@@ -4,9 +4,9 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigureModule } from './configure/configure.module';
 import { DbModule } from '@subql/node-core/db';
 import { FetchModule } from './indexer/fetch.module';
+import { ConfigureModule } from './configure/configure.module';
 import { MetaModule } from './meta/meta.module';
 
 @Module({

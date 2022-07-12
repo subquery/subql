@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { getLogger } from '@subql/node-core';
-import { HealthService } from './health.service';
+import {Controller, Get, HttpException, HttpStatus} from '@nestjs/common';
+import {getLogger} from '../logger';
+import {HealthService} from './health.service';
 
 const logger = getLogger('health');
 
@@ -22,7 +22,7 @@ export class HealthController {
           status: HttpStatus.INTERNAL_SERVER_ERROR,
           error: e.message,
         },
-        HttpStatus.INTERNAL_SERVER_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR
       );
     }
   }

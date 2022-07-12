@@ -1,16 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
-import { NodeConfig } from '@subql/node-core/configure';
-import {
-  IndexerEvent,
-  ProcessBlockPayload,
-  TargetBlockPayload,
-} from '@subql/node-core/events';
-import { StoreService } from '@subql/node-core/indexer';
+import {Injectable} from '@nestjs/common';
+import {OnEvent} from '@nestjs/event-emitter';
+import {Interval} from '@nestjs/schedule';
+import {NodeConfig} from '../configure';
+import {IndexerEvent, ProcessBlockPayload, TargetBlockPayload} from '../events';
+import {StoreService} from '../indexer';
 
 const DEFAULT_TIMEOUT = 900000;
 const CHECK_HEALTH_INTERVAL = 60000;
@@ -25,18 +21,12 @@ export class HealthService {
   private healthTimeout: number;
   private indexerHealthy: boolean;
 
-  constructor(
-    protected nodeConfig: NodeConfig,
-    private storeService: StoreService,
-  ) {
-    this.healthTimeout = Math.max(
-      DEFAULT_TIMEOUT,
-      this.nodeConfig.timeout * 1000,
-    );
+  constructor(protected nodeConfig: NodeConfig, private storeService: StoreService) {
+    this.healthTimeout = Math.max(DEFAULT_TIMEOUT, this.nodeConfig.timeout * 1000);
   }
 
   @Interval(CHECK_HEALTH_INTERVAL)
-  async checkHealthStatus() {
+  async checkHealthStatus(): Promise<void> {
     let healthy: boolean;
 
     try {
@@ -68,17 +58,11 @@ export class HealthService {
     }
   }
 
-  getHealth() {
-    if (
-      this.recordBlockTimestamp &&
-      Date.now() - this.recordBlockTimestamp > this.blockTime * 10
-    ) {
+  getHealth(): void {
+    if (this.recordBlockTimestamp && Date.now() - this.recordBlockTimestamp > this.blockTime * 10) {
       throw new Error('Endpoint is not healthy');
     }
-    if (
-      this.currentProcessingTimestamp &&
-      Date.now() - this.currentProcessingTimestamp > this.healthTimeout
-    ) {
+    if (this.currentProcessingTimestamp && Date.now() - this.currentProcessingTimestamp > this.healthTimeout) {
       throw new Error('Indexer is not healthy');
     }
   }

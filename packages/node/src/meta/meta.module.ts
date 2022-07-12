@@ -11,12 +11,12 @@ import {
   MetricEventListener,
   ReadyController,
   ReadyService,
+  HealthController,
+  HealthService,
+  MmrQueryController,
 } from '@subql/node-core/meta';
-import { HealthController } from './health.controller';
-import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
-import { MmrQueryController } from './mmrQuery.controller';
 
 @Module({
   imports: [PrometheusModule.register(), FetchModule],
