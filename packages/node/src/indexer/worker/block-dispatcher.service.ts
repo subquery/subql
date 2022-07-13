@@ -19,7 +19,6 @@ import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
-import { MmrService } from '../mmr.service';
 import { ProjectService } from '../project.service';
 import {
   FetchBlock,
@@ -133,7 +132,6 @@ export class BlockDispatcherService
   }
 
   onApplicationShutdown(): void {
-    logger.info('onApplicationShutdown');
     this.isShutdown = true;
     this.processQueue.abort();
   }
@@ -148,7 +146,9 @@ export class BlockDispatcherService
 
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
-      throw e;
+      if (!this.isShutdown) {
+        throw e;
+      }
     });
   }
 
@@ -216,6 +216,9 @@ export class BlockDispatcherService
             await this.onDynamicDsCreated(height);
           }
         } catch (e) {
+          if (this.isShutdown) {
+            return;
+          }
           logger.error(
             e,
             `failed to index block at height ${height} ${
