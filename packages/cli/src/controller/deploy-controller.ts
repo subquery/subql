@@ -17,7 +17,7 @@ export async function deployToHostedService(
   dictEndpoint: string,
   url: string
 ): Promise<deploymentDataType> {
-  const key = `${org}/${project_name}`;
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     const result = (
       await axios({
@@ -54,7 +54,7 @@ export async function promoteDeployment(
   deploymentId: number,
   url: string
 ): Promise<string> {
-  const key = `${org}/${project_name}`;
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     await axios({
       headers: {
@@ -77,7 +77,7 @@ export async function deleteDeployment(
   deploymentId: number,
   url: string
 ): Promise<string> {
-  const key = `${org}/${project_name}`;
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     await axios({
       headers: {
@@ -100,7 +100,7 @@ export async function deploymentStatus(
   deployID: number,
   url: string
 ): Promise<string> {
-  const key = `${org}/${project_name}`;
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     const result = (
       await axios({
