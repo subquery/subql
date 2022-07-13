@@ -33,7 +33,8 @@
   "resolutions": {
     "@polkadot/api": "8.12.2",
     "@polkadot/util": "10.0.2",
-    "@terra-money/terra.js": "^3.0.11"
+    "@terra-money/terra.js": "^3.0.11",
+    "node-fetch": "2.6.7"
   },
   "scripts": {
     "build": "yarn workspaces foreach -ptA run build",
