@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-07-12
+### Added
+- add option `dictionary-timeout`, allow indexer decide timeout for query dictionary result (#1177)
+### Changed
+- Improve error log (#1174)
+- Update Polkadot to 8.12.2 (#1179)
+
 ## [1.4.1] - 2022-07-07
 ### Fixed
 - Fix oversize subscription notification trigger name (#1171)

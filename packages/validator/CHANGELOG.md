@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.2] - 2022-07-12
+### Fixed
+- Fix test (#1174)
+
 ## [1.2.1] - 2022-07-05
 ### Fixed
 - Tidy up dependency, move `ipfs-http-client` to common packages (#1160)
