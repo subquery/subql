@@ -34,7 +34,8 @@
     "webpack": "^5.68.0",
     "webpack-merge": "^5.8.0",
     "websocket": "^1.0.34",
-    "yaml-loader": "^0.6.0"
+    "yaml-loader": "^0.6.0",
+    "node-fetch": "2.6.7"
   },
   "devDependencies": {
     "@oclif/dev-cli": "^1.26.10",
