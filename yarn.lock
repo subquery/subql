@@ -3442,6 +3442,7 @@ __metadata:
     globby: ^11
     inquirer: ^8.2.0
     inquirer-autocomplete-prompt: ^1.4.0
+    node-fetch: 2.6.7
     oclif: ^2.4.4
     rimraf: ^3.0.2
     simple-git: ^3.1.1
