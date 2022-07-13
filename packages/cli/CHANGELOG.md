@@ -8,7 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [1.3.0] - 2022-07-13
+## [1.3.1] - 2022-07-13
 ### Fixed
 - Added resolution to downgrade `node-fetch` as we have not support ES module (1184)
 - Added encodedURI for project deployment key (#1183)
