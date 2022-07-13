@@ -12293,7 +12293,7 @@ __metadata:
   version: 3.0.0
   resolution: "native-fetch@npm:3.0.0"
   peerDependencies:
-    node-fetch: "*"
+    node-fetch: 2.6.7
   checksum: eec8cc78d6da4d0f3f56055e3e557473ac86dd35fd40053ea268d644af7b20babc891d2b53ef821b77ed2428265f60b85e49d754c555de89bfa071a743b853bb
   languageName: node
   linkType: hard

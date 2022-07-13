@@ -10,6 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ### Fixed
 - Add resolution for `node-fetch` to support `native-fetch` ES module.
+
 ## [1.3.0] - 2022-07-12
 ### Fixed
 - CLI deployment when no dictionary or matching endpoint is provided (#1180)
