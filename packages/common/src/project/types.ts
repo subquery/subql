@@ -28,7 +28,7 @@ export interface FileReference {
   file: string;
 }
 
-export type GenericSubstrateProjectManifest = Omit<IProjectManifest<GenericDatasource>, 'toDeployment'>;
+export type GenericProjectManifest = Omit<IProjectManifest<GenericDatasource>, 'toDeployment'>;
 
 export interface GenericDatasource<
   K extends string = string,

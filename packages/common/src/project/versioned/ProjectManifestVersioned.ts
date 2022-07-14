@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {plainToClass} from 'class-transformer';
-import {GenericDatasource, GenericSubstrateProjectManifest} from '../types';
+import {GenericDatasource, GenericProjectManifest} from '../types';
 import {GenericProjectManifestV0_2_0Impl} from './v0_2_0';
 import {GenericProjectManifestV0_2_1Impl} from './v0_2_1';
 import {GenericProjectManifestV1_0_0Impl} from './v1_0_0';
@@ -18,25 +18,19 @@ type Versions = keyof typeof GENERIC_SUPPORTED_VERSIONS;
 
 type ProjectManifestImpls = InstanceType<typeof GENERIC_SUPPORTED_VERSIONS[Versions]>;
 
-export function manifestIsV0_2_0(
-  manifest: GenericSubstrateProjectManifest
-): manifest is GenericProjectManifestV0_2_0Impl {
+export function manifestIsV0_2_0(manifest: GenericProjectManifest): manifest is GenericProjectManifestV0_2_0Impl {
   return manifest.specVersion === '0.2.0';
 }
 
-export function manifestIsV0_2_1(
-  manifest: GenericSubstrateProjectManifest
-): manifest is GenericProjectManifestV0_2_1Impl {
+export function manifestIsV0_2_1(manifest: GenericProjectManifest): manifest is GenericProjectManifestV0_2_1Impl {
   return manifest.specVersion === '0.2.1';
 }
 
-export function manifestIsV1_0_0(
-  manifest: GenericSubstrateProjectManifest
-): manifest is GenericProjectManifestV1_0_0Impl {
+export function manifestIsV1_0_0(manifest: GenericProjectManifest): manifest is GenericProjectManifestV1_0_0Impl {
   return manifest.specVersion === '1.0.0';
 }
 
-export class GenericProjectManifestVersioned implements GenericSubstrateProjectManifest {
+export class GenericProjectManifestVersioned implements GenericProjectManifest {
   private _impl: ProjectManifestImpls;
 
   constructor(projectManifest: VersionedProjectManifest) {
