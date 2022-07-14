@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Unable to create ds processor from template when project hosted on IPFS (#1190)
+
 ## [1.5.0] - 2022-07-12
 ### Added
 - add option `dictionary-timeout`, allow indexer decide timeout for query dictionary result (#1177)
