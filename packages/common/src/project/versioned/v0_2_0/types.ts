@@ -22,3 +22,13 @@ export interface ProjectManifestV0_2_0<D extends object = BaseDataSource> {
   repository?: string;
   description?: string;
 }
+
+export interface GenericNetworkFilter {
+  specName?: string;
+}
+
+export interface GenericHandlerInterface<K extends string = string, F = Record<string, unknown>> {
+  handler: string;
+  kind: K;
+  filter?: F;
+}

@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ValidatorConstraintInterface} from 'class-validator';
+import {validateSync, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
 import {satisfies, valid} from 'semver';
 
@@ -20,6 +20,14 @@ export async function findAvailablePort(startPort: number, range = 10): Promise<
   }
 
   return null;
+}
+
+export function validateObject(object: any, errorMessage = 'failed to validate object.'): void {
+  const errors = validateSync(object, {whitelist: true, forbidNonWhitelisted: true});
+  if (errors?.length) {
+    const errorMsgs = errors.map((e) => e.toString()).join('\n');
+    throw new Error(`${errorMessage}\n${errorMsgs}`);
+  }
 }
 
 export interface ProjectRootAndManifest {

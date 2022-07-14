@@ -1,0 +1,95 @@
+specVersion: '1.0.0'
+
+name: 'avalanche-subql-starter'
+version: '0.0.1'
+runner:
+  node:
+    name: '@subql/node-avalanche'
+    version: '*'
+  query:
+    name: '@subql/query'
+    version: '*'
+description: 'This project can be use as a starting point for developing your new Avalanche SubQuery project'
+repository: 'https://github.com/subquery/avalanche-subql-starter'
+
+schema:
+  file: './schema.graphql'
+
+network:
+  endpoint: 'http://avalanche.api.onfinality.io:9650'
+  # endpoint: "https://avalanche.api.onfinality.io"
+  # endpoint:  https://api.avax-test.network
+  chainId: 'mainnet'
+  subnet: 'C'
+  dictionary: https://api.subquery.network/sq/subquery/avalanche-dictionary
+
+dataSources:
+  - kind: avalanche/Runtime
+    startBlock: 1
+    options:
+      # Must be a key of assets
+      abi: erc20
+      ## Pangolin token https://snowtrace.io/token/0x60781c2586d68229fde47564546784ab3faca982
+      address: '0x60781C2586D68229fde47564546784ab3fACA982'
+    assets:
+      erc20:
+        file: './node_modules/@pangolindex/exchange-contracts/artifacts/contracts/pangolin-core/interfaces/IPangolinERC20.sol/IPangolinERC20.json'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        # - handler: handleBlock
+        #   kind: avalanche/BlockHandler
+        - handler: handleTransaction
+          kind: avalanche/TransactionHandler
+          filter:
+            ## The function can either be the function fragment or signature
+            # function: '0x095ea7b3'
+            # function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'
+            function: approve(address spender, uint256 rawAmount)
+            # from: "0x60781C2586D68229fde47564546784ab3fACA982"
+            # to: "0x60781C2586D68229fde47564546784ab3fACA982"
+        # - handler: handleReceipt
+        #   kind: avalanche/TransactionHandler
+        - handler: handleLog
+          kind: avalanche/LogHandler
+          filter:
+            topics:
+              ## Follows standard log filters https://docs.ethers.io/v5/concepts/events/
+              - Transfer(address indexed from, address indexed to, uint256 amount)
+              # address: "0x60781C2586D68229fde47564546784ab3fACA982"
+
+templates:
+  - name: TestTemplates
+    kind: avalanche/Runtime
+    startBlock: 1
+    options:
+      # Must be a key of assets
+      abi: erc20
+      ## Pangolin token https://snowtrace.io/token/0x60781c2586d68229fde47564546784ab3faca982
+      address: '0x60781C2586D68229fde47564546784ab3fACA982'
+    assets:
+      erc20:
+        file: './node_modules/@pangolindex/exchange-contracts/artifacts/contracts/pangolin-core/interfaces/IPangolinERC20.sol/IPangolinERC20.json'
+    mapping:
+      file: './dist/index.js'
+      handlers:
+        # - handler: handleBlock
+        #   kind: avalanche/BlockHandler
+        - handler: handleTransaction
+          kind: avalanche/TransactionHandler
+          filter:
+            ## The function can either be the function fragment or signature
+            # function: '0x095ea7b3'
+            # function: '0x7ff36ab500000000000000000000000000000000000000000000000000000000'
+            function: approve(address spender, uint256 rawAmount)
+            # from: "0x60781C2586D68229fde47564546784ab3fACA982"
+            # to: "0x60781C2586D68229fde47564546784ab3fACA982"
+        # - handler: handleReceipt
+        #   kind: avalanche/TransactionHandler
+        - handler: handleLog
+          kind: avalanche/LogHandler
+          filter:
+            topics:
+              ## Follows standard log filters https://docs.ethers.io/v5/concepts/events/
+              - Transfer(address indexed from, address indexed to, uint256 amount)
+              # address: "0x60781C2586D68229fde47564546784ab3fACA982"

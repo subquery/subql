@@ -24,6 +24,10 @@ export enum NETWORK_FAMILY {
   cosmos = 'Cosmos',
 }
 
+export enum TEST_NETWORK_FAMILY {
+  '@subql/node' = '@subql/node',
+}
+
 export const runnerMapping = {
   '@subql/node': NETWORK_FAMILY.substrate,
   '@subql/node-substrate': NETWORK_FAMILY.substrate,

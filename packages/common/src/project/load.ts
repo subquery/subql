@@ -6,7 +6,7 @@ import path from 'path';
 import yaml from 'js-yaml';
 import {gte} from 'semver';
 import {NETWORK_FAMILY, runnerMapping} from '../constants';
-import {ProjectManifestV0_2_0} from '../project/versioned';
+import {ProjectManifestV0_2_0, GenericProjectManifestVersioned, VersionedProjectManifest} from '../project/versioned';
 export function loadFromJsonOrYaml(file: string): unknown {
   const {ext} = path.parse(file);
   if (ext !== '.yaml' && ext !== '.yml' && ext !== '.json') {
@@ -51,4 +51,11 @@ export function getProjectNetwork(rawManifest: unknown): NETWORK_FAMILY {
   } else {
     throw new Error('Can not identify project network under spec version 1.0.0');
   }
+}
+
+export function loadGenericProjectManifest(file: string): GenericProjectManifestVersioned {
+  const doc = loadFromJsonOrYaml(getManifestPath(file));
+  const projectManifest = new GenericProjectManifestVersioned(doc as VersionedProjectManifest);
+  projectManifest.validate();
+  return projectManifest;
 }
