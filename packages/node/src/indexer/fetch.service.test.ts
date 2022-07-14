@@ -629,6 +629,8 @@ describe('FetchService', () => {
 
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
+    (fetchService as any).templateDynamicDatasouces = [];
+    fetchService.updateDictionary();
 
     fetchService.onApplicationShutdown();
 
