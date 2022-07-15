@@ -6,10 +6,10 @@ repository: ''
 runner:
   node:
     name: '@subql/node'
-    version: '^0.30.0-abc' #should not support
+    version: '*' #should support
   query:
     name: '@subql/query'
-    version: ^0.12.0
+    version: 'latest' #should not support
 schema:
   file: ./schema.graphql
 network:

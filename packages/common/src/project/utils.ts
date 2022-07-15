@@ -3,9 +3,9 @@
 
 import fs from 'fs';
 import path from 'path';
-import {ValidatorConstraintInterface} from 'class-validator';
+import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
-import {satisfies, valid} from 'semver';
+import {satisfies, validRange} from 'semver';
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {
@@ -45,27 +45,20 @@ export function getProjectRootAndManifest(subquery: string): ProjectRootAndManif
 }
 
 export function validateSemver(current: string, required: string): boolean {
-  // if (current !== 'latest' && current !== 'dev') {
-  //   return false
-  // }
   return satisfies(current, required, {includePrerelease: true});
 }
 
+@ValidatorConstraint({name: 'semver', async: false})
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
-    console.log(`semver value: ${value}`);
-
-    const validated = valid(value, {includePrerelease: false});
+    const validated = validRange(value, {includePrerelease: false});
     if (validated === null || validated === undefined) {
       return false;
     }
     return true;
   }
-  defaultMessage(): string {
-    // if (value.value !== 'latest'  && value.value !== 'dev') {
-    //   return 'Version number must follow Semver rules';
-    // }
-    return '"latest" and "dev" are not valid versions';
+  defaultMessage(args: ValidationArguments): string {
+    return `'${args.value}' is not valid version`;
   }
 }
 
