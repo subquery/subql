@@ -273,7 +273,7 @@ export class WorkerBlockDispatcherService
   private _latestBufferedHeight: number;
 
   constructor(
-    nodeConfig: NodeConfig,
+    private nodeConfig: NodeConfig,
     private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
@@ -398,7 +398,10 @@ export class WorkerBlockDispatcherService
           height,
         );
 
-        if (u8aEq(Buffer.from(operationHash, 'base64'), NULL_MERKEL_ROOT)) {
+        if (
+          this.nodeConfig.proofOfIndex &&
+          u8aEq(Buffer.from(operationHash, 'base64'), NULL_MERKEL_ROOT)
+        ) {
           void this.projectService.setBlockOffset(height - 1);
         }
 
