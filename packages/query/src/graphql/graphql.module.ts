@@ -21,6 +21,7 @@ import {Config} from '../configure';
 import {PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
+import {BlockHeightArgValidationPlugin} from './plugins/BlockHeightArgValidationPlugin';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
 import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {ProjectService} from './project.service';
@@ -108,6 +109,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         ? ApolloServerPluginLandingPageGraphQLPlayground()
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
+      BlockHeightArgValidationPlugin({dbSchema}),
     ];
 
     const server = new ApolloServer({
