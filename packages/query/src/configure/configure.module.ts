@@ -6,6 +6,7 @@ import {Pool} from 'pg';
 import {getLogger} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {Config} from './config';
+import {debugPgClient} from './x-postgraphile/debugClient';
 
 @Global()
 @Module({})
@@ -32,7 +33,13 @@ export class ConfigureModule {
       // tslint:disable-next-line no-console
       getLogger('db').error('PostgreSQL client generated error: ', err.message);
     });
-
+    if (opts['query-explain']) {
+      pgPool.on('connect', (pgClient) => {
+        // Enhance our Postgres client with debugging stuffs.
+        debugPgClient(pgClient, getLogger('explain'));
+        pgClient._explainResults = [];
+      });
+    }
     return {
       module: ConfigureModule,
       providers: [
