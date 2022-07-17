@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ApiPromise} from '@polkadot/api';
-import {RegistryTypes} from '@polkadot/types/types';
+import {AnyTuple, RegistryTypes} from '@polkadot/types/types';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './interfaces';
 
 export enum SubstrateDatasourceKind {
@@ -15,10 +15,10 @@ export enum SubstrateHandlerKind {
   Event = 'substrate/EventHandler',
 }
 
-export type RuntimeHandlerInputMap = {
+export type RuntimeHandlerInputMap<T extends AnyTuple = AnyTuple> = {
   [SubstrateHandlerKind.Block]: SubstrateBlock;
-  [SubstrateHandlerKind.Event]: SubstrateEvent;
-  [SubstrateHandlerKind.Call]: SubstrateExtrinsic;
+  [SubstrateHandlerKind.Event]: SubstrateEvent<T>;
+  [SubstrateHandlerKind.Call]: SubstrateExtrinsic<T>;
 };
 
 type RuntimeFilterMap = {
@@ -124,19 +124,21 @@ export interface SubstrateCustomDatasource<
 export interface HandlerInputTransformer_0_0_0<
   T extends SubstrateHandlerKind,
   E,
+  IT extends AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > {
-  (input: RuntimeHandlerInputMap[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
+  (input: RuntimeHandlerInputMap<IT>[T], ds: DS, api: ApiPromise, assets?: Record<string, string>): Promise<E>; //  | SubstrateBuiltinDataSource
 }
 
 export interface HandlerInputTransformer_1_0_0<
   T extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > {
   (params: {
-    input: RuntimeHandlerInputMap[T];
+    input: RuntimeHandlerInputMap<IT>[T];
     ds: DS;
     filter?: F;
     api: ApiPromise;
@@ -148,19 +150,20 @@ type SecondLayerHandlerProcessorArray<
   K extends string,
   F extends SubstrateNetworkFilter,
   T,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>
 > =
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, DS>
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, DS>
-  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, DS>;
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, F, T, IT, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, F, T, IT, DS>
+  | SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, F, T, IT, DS>;
 
 export interface SubstrateDatasourceProcessor<
   K extends string,
   F extends SubstrateNetworkFilter,
   DS extends SubstrateCustomDatasource<K, F> = SubstrateCustomDatasource<K, F>,
-  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, DS>> = Record<
+  P extends Record<string, SecondLayerHandlerProcessorArray<K, F, any, any, DS>> = Record<
     string,
-    SecondLayerHandlerProcessorArray<K, F, any, DS>
+    SecondLayerHandlerProcessorArray<K, F, any, any, DS>
   >
 > {
   kind: K;
@@ -195,27 +198,30 @@ export interface SecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: undefined;
-  transformer: HandlerInputTransformer_0_0_0<K, E, DS>;
-  filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap[K], ds: DS) => boolean;
+  transformer: HandlerInputTransformer_0_0_0<K, E, IT, DS>;
+  filterProcessor: (filter: F | undefined, input: RuntimeHandlerInputMap<IT>[K], ds: DS) => boolean;
 }
 
 export interface SecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
-  transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap[K]; ds: DS}) => boolean;
+  transformer: HandlerInputTransformer_1_0_0<K, F, E, IT, DS>;
+  filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap<IT>[K]; ds: DS}) => boolean;
 }
 
 export type SecondLayerHandlerProcessor<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource
-> = SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>;
+> = SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS> | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>;

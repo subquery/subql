@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {AnyTuple, Codec} from '@polkadot/types-codec/types';
-import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
+import {GenericExtrinsic} from '@polkadot/types/extrinsic';
+import {EventRecord, SignedBlock, Extrinsic} from '@polkadot/types/interfaces';
 import {IEvent, IExtrinsic} from '@polkadot/types/types';
 
 export interface Entity {
@@ -32,13 +33,13 @@ export interface SubstrateBlock extends SignedBlock {
 export interface SubstrateExtrinsic<A extends AnyTuple = AnyTuple> {
   // index in the block
   idx: number;
-  extrinsic: IExtrinsic<A>;
+  extrinsic: GenericExtrinsic<A>;
   block: SubstrateBlock;
-  events: TypeedEventRecord<Codec[]>[];
+  events: TypedEventRecord<Codec[]>[];
   success: boolean;
 }
 
-export interface SubstrateEvent<T extends Codec[] = Codec[]> extends TypeedEventRecord<T> {
+export interface SubstrateEvent<T extends AnyTuple = AnyTuple> extends TypedEventRecord<T> {
   // index in the block
   idx: number;
   extrinsic?: SubstrateExtrinsic;
@@ -47,6 +48,6 @@ export interface SubstrateEvent<T extends Codec[] = Codec[]> extends TypeedEvent
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
 
-type TypeedEventRecord<T extends Codec[]> = Omit<EventRecord, 'event'> & {
+type TypedEventRecord<T extends AnyTuple> = Omit<EventRecord, 'event'> & {
   event: IEvent<T>;
 };

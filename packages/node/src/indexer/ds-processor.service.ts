@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
+import { AnyTuple } from '@polkadot/types-codec/types';
 import {
   isCustomDs,
   SubstrateCustomDataSource,
@@ -35,12 +36,13 @@ export function isSecondLayerHandlerProcessor_0_0_0<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
-): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
+): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS> {
   // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
   return processor.specVersion === undefined;
 }
@@ -49,12 +51,13 @@ export function isSecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
-): processor is SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
+): processor is SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS> {
   return processor.specVersion === '1.0.0';
 }
 
@@ -62,12 +65,13 @@ export function asSecondLayerHandlerProcessor_1_0_0<
   K extends SubstrateHandlerKind,
   F,
   E,
+  IT extends AnyTuple = AnyTuple,
   DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
-): SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
+): SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS> {
   if (isSecondLayerHandlerProcessor_1_0_0(processor)) {
     return processor;
   }
