@@ -78,6 +78,7 @@ export class ApiService {
 
       const keepAliveClient = new KeepAliveClient(endpoint);
       const tendermint = await Tendermint34Client.create(keepAliveClient);
+      logger.info(`Connecting to ${network.endpoint}`);
       this.registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
       const chaintypes = await this.getChainType(network);
@@ -92,6 +93,7 @@ export class ApiService {
       };
 
       const chainId = await this.api.getChainId();
+      logger.info(chainId);
       if (network.chainId !== chainId) {
         const err = new Error(
           `The given chainId does not match with client: "${network.chainId}"`,
@@ -152,7 +154,7 @@ export class ApiService {
 export class CosmosClient extends CosmWasmClient {
   constructor(
     private readonly tendermintClient: Tendermint34Client,
-    private registry: Registry,
+    public registry: Registry,
   ) {
     super(tendermintClient);
   }

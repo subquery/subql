@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {CosmWasmClient} from '@cosmjs/cosmwasm-stargate';
+import {Registry} from '@cosmjs/proto-signing';
 import {CosmosBlock, CosmosTransaction, CosmosMessage, CosmosEvent} from './interfaces';
 
 export interface FileReference {
@@ -239,7 +240,12 @@ export interface SecondLayerHandlerProcessor_1_0_0<
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<K, F, E, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: CosmosRuntimeHandlerInputMap[K]; ds: DS}) => boolean;
+  filterProcessor: (params: {
+    filter: F | undefined;
+    input: CosmosRuntimeHandlerInputMap[K];
+    ds: DS;
+    registry: Registry;
+  }) => boolean;
 }
 
 export type SecondLayerHandlerProcessor<

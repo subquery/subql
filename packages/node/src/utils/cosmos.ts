@@ -74,9 +74,9 @@ export function filterMessages(
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
 
-  const filteredMessages = messages.filter((message) => {
-    filters.find((filter) => filterMessageData(message, filter));
-  });
+  const filteredMessages = messages.filter((message) =>
+    filters.find((filter) => filterMessageData(message, filter)),
+  );
   return filteredMessages;
 }
 
@@ -115,9 +115,9 @@ export function filterEvents(
 
   const filters =
     filterOrFilters instanceof Array ? filterOrFilters : [filterOrFilters];
-  const filteredEvents = events.filter((event) => {
-    filters.find((filter) => filterEvent(event, filter));
-  });
+  const filteredEvents = events.filter((event) =>
+    filters.find((filter) => filterEvent(event, filter)),
+  );
   return filteredEvents;
 }
 

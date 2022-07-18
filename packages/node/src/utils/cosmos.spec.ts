@@ -99,13 +99,9 @@ describe('CosmosUtils', () => {
 
     const registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
     api = new CosmosClient(tendermint, registry);
-    const txInfos = await api.txInfoByHeight(TEST_BLOCKNUMBER);
-    const txInfo = txInfos.find(
-      (txInfo) =>
-        txInfo.hash ===
-        '1A796F30DD866CA2E9A866084CB10BF13B5F6502256D6503E8B1BAC358B15701',
-    );
-    decodedTx = decodeTxRaw(txInfo.tx);
+    const block = await api.getBlock(TEST_BLOCKNUMBER);
+    const tx = block.txs[1];
+    decodedTx = decodeTxRaw(tx);
     msg = {
       idx: 0,
       block: {} as CosmosBlock,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Block } from '@cosmjs/tendermint-rpc';
-import { Inject, Injectable } from '@nestjs/common';
+import { ConsoleLogger, Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
@@ -303,6 +303,7 @@ export class IndexerManager {
       }
     } else if (isCustomCosmosDs(ds)) {
       const blockData = BlockContentTypeMap[kind](block);
+
       for (const data of blockData) {
         const handlers = this.filterCustomDsHandlers<K>(
           ds,
@@ -325,7 +326,6 @@ export class IndexerManager {
             }
           },
         );
-
         for (const handler of handlers) {
           await this.transformAndExecuteCustomDs(ds, vm, handler, data);
         }
@@ -334,7 +334,7 @@ export class IndexerManager {
   }
 
   private filterCustomDsHandlers<K extends SubqlCosmosHandlerKind>(
-    ds: SubqlCosmosCustomDataSource<string>,
+    ds: SubqlCosmosCustomDataSource<string, any>,
     data: CosmosRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
     baseFilter: (
@@ -344,18 +344,37 @@ export class IndexerManager {
   ): SubqlCosmosCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
 
-    return ds.mapping.handlers.filter((handler) => {
-      const processor = plugin.handlerProcessors[handler.kind];
-      if (baseHandlerCheck(processor)) {
-        processor.baseFilter;
-        return baseFilter(data, processor.baseFilter);
-      }
-      return false;
-    });
+    return ds.mapping.handlers
+      .filter((handler) => {
+        const processor = plugin.handlerProcessors[handler.kind];
+        if (baseHandlerCheck(processor)) {
+          processor.baseFilter;
+
+          return baseFilter(data, processor.baseFilter);
+        }
+        return false;
+      })
+      .filter((handler) => {
+        const processor = asSecondLayerHandlerProcessor_1_0_0(
+          plugin.handlerProcessors[handler.kind],
+        );
+
+        try {
+          return processor.filterProcessor({
+            filter: handler.filter,
+            input: data,
+            registry: this.api.registry,
+            ds,
+          });
+        } catch (e) {
+          logger.error(e, 'Failed to run ds processer filter.');
+          throw e;
+        }
+      });
   }
 
   private async transformAndExecuteCustomDs<K extends SubqlCosmosHandlerKind>(
-    ds: SubqlCosmosCustomDataSource<string>,
+    ds: SubqlCosmosCustomDataSource<string, any>,
     vm: IndexerSandbox,
     handler: SubqlCosmosCustomHandler,
     data: CosmosRuntimeHandlerInputMap[K],
@@ -372,6 +391,7 @@ export class IndexerManager {
         input: data,
         ds,
         api: this.api,
+        filter: handler.filter,
         assets,
       })
       .catch((e) => {
