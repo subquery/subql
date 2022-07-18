@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
+### Changed
+- Make handler data types generic (#1194)
+
 ## [1.1.0] - 2022-05-31
 ### Changed
 - Update name for substrate types (#1012)
