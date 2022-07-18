@@ -3,6 +3,7 @@
 
 import assert from 'assert';
 import fs from 'fs';
+import { off } from 'process';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -298,20 +299,20 @@ export class ProjectService {
     );
   }
 
-  async getMetadataBlockOffset(): Promise<number> {
+  async getMetadataBlockOffset(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
       where: { key: 'blockOffset' },
     });
 
-    return res?.value as number;
+    return res?.value as number | undefined;
   }
 
-  async getLastProcessedHeight(): Promise<number> {
+  async getLastProcessedHeight(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
       where: { key: 'lastProcessedHeight' },
     });
 
-    return res?.value as number;
+    return res?.value as number | undefined;
   }
 
   private async getStartHeight(): Promise<number> {
@@ -334,7 +335,12 @@ export class ProjectService {
   }
 
   async setBlockOffset(offset: number): Promise<void> {
-    if (this._blockOffset || !offset) {
+    if (
+      this._blockOffset ||
+      offset === null ||
+      offset === undefined ||
+      isNaN(offset)
+    ) {
       return;
     }
     logger.info(`set blockOffset to ${offset}`);

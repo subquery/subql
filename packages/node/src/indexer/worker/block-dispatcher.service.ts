@@ -33,6 +33,10 @@ import { Worker } from './worker.builder';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
+function isNullMerkelRoot(operationHash: Uint8Array): boolean {
+  return u8aEq(operationHash, NULL_MERKEL_ROOT);
+}
+
 type IIndexerWorker = {
   processBlock: ProcessBlock;
   fetchBlock: FetchBlock;
@@ -207,7 +211,7 @@ export class BlockDispatcherService
 
           if (
             this.nodeConfig.proofOfIndex &&
-            u8aEq(operationHash, NULL_MERKEL_ROOT)
+            !isNullMerkelRoot(operationHash)
           ) {
             void this.projectService.setBlockOffset(height - 1);
           }
@@ -400,7 +404,7 @@ export class WorkerBlockDispatcherService
 
         if (
           this.nodeConfig.proofOfIndex &&
-          u8aEq(Buffer.from(operationHash, 'base64'), NULL_MERKEL_ROOT)
+          !isNullMerkelRoot(Buffer.from(operationHash, 'base64'))
         ) {
           void this.projectService.setBlockOffset(height - 1);
         }
