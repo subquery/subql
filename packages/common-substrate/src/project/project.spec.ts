@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {RunnerQueryBaseModel} from '@subql/common';
+import {RunnerQueryBaseModel, SemverVersionValidator} from '@subql/common';
 import {validateSync} from 'class-validator';
+import {valid, validRange, prerelease, clean, coerce} from 'semver';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {loadSubstrateProjectManifest} from './load';
 
@@ -99,9 +100,36 @@ describe('project.yaml', () => {
     expect(() => manifest.toDeployment()).not.toThrow();
   });
 
-  // it('valid semver', () => {
-  //   const validate2 = validRange('^0.0.1-abc')
-  //   console.log(`validate2: ${validate2}`);
-  //   expect(validate2).toBeTruthy();
-  // });
+  // ^1.0.0 pass
+  // * pass
+  // latest or dev fail
+  // >=1.0.0 pass
+  // 1.2.0-120 fail
+  // ^1.2.0-120 fail
+  // we should in include prerelease
+
+  it('valid semver', () => {
+    const validate2 = prerelease('>=1.2.0-20');
+    // const validate3 = validRange('^1.0.0', {includePrerelease: false});
+    // const validate4 = valid('^0.0.1-20', {loose: true})
+    const validate7 = coerce('^1.2.0-abc');
+    // const validate5 = clean('^1.2.0-10')
+
+    console.log(`validate2: ${validate2}`);
+    // console.log(`validate3: ${validate3}`);
+    // console.log(`validate4: ${validate4}`);
+    // console.log(`validate5: ${validate5}`);
+    // console.log(`validate6: ${validate6}`);
+    console.log(`validate7: ${validate7}`);
+    // expect(validate2).toBeTruthy();
+
+    // need if prerelease is null return true
+    // 1.2.0-abc = null
+    // ^1.2.20-20 = null
+    // 1.2.0-20 = -20
+
+    const semverValidate = new SemverVersionValidator();
+    const result = semverValidate.validate('^1.2.0-abc');
+    console.log(`result: ${result}`);
+  });
 });
