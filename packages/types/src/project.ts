@@ -49,7 +49,9 @@ interface SubstrateBaseHandlerFilter {
   specVersion?: SpecVersionRange;
 }
 
-export type SubstrateBlockFilter = SubstrateBaseHandlerFilter;
+export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter {
+  modulo?: number;
+}
 
 export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {
   module?: string;

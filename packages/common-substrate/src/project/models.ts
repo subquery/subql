@@ -39,6 +39,9 @@ export class BlockFilter implements SubstrateBlockFilter {
   @IsArray()
   @ArrayMaxSize(2)
   specVersion?: [number, number];
+  @IsOptional()
+  @IsInt()
+  modulo?: number;
 }
 
 export class EventFilter extends BlockFilter implements SubstrateEventFilter {

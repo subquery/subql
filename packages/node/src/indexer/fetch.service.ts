@@ -400,6 +400,25 @@ export class FetchService implements OnApplicationShutdown {
     ]);
   }
 
+  getModulos(): number[] {
+    const modulos: number[] = [];
+    for (const ds of this.project.dataSources) {
+      if (isCustomDs(ds)) {
+        continue;
+      }
+      for (const handler of ds.mapping.handlers) {
+        if (
+          handler.kind === SubstrateHandlerKind.Block &&
+          handler.filter &&
+          handler.filter.modulo
+        ) {
+          modulos.push(handler.filter.modulo);
+        }
+      }
+    }
+    return modulos;
+  }
+
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
 
@@ -429,6 +448,13 @@ export class FetchService implements OnApplicationShutdown {
       }
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
+        const modulos = this.getModulos();
+        const moduloBlocks: number[] = [];
+        for (let i = startBlockHeight; i < queryEndBlock; i++) {
+          if (modulos.find((m) => i % m === 0)) {
+            moduloBlocks.push(i);
+          }
+        }
         try {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
@@ -448,7 +474,10 @@ export class FetchService implements OnApplicationShutdown {
             dictionary &&
             this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
-            const { batchBlocks } = dictionary;
+            let { batchBlocks } = dictionary;
+            batchBlocks = batchBlocks
+              .concat(moduloBlocks)
+              .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               this.setLatestBufferedHeight(
                 Math.min(
@@ -457,6 +486,11 @@ export class FetchService implements OnApplicationShutdown {
                 ),
               );
             } else {
+              const maxBlockSize = Math.min(
+                batchBlocks.length,
+                this.blockNumberBuffer.freeSize,
+              );
+              batchBlocks = batchBlocks.slice(0, maxBlockSize);
               this.blockNumberBuffer.putAll(batchBlocks);
               this.setLatestBufferedHeight(batchBlocks[batchBlocks.length - 1]);
             }
