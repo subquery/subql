@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
-import {prerelease, satisfies, validRange} from 'semver';
+import {prerelease, satisfies, valid, validRange} from 'semver';
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {
@@ -51,39 +51,18 @@ export function validateSemver(current: string, required: string): boolean {
 @ValidatorConstraint({name: 'semver', async: false})
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
-    const validated = validRange(value, {includePrerelease: false});
-    // console.log(validated)
-    if (validated) {
-      const prereleaseCheck = prerelease(value);
-      if (prereleaseCheck === null || prereleaseCheck === undefined) {
+    if (valid(value, {includePrerelease: false}) === null) {
+      if (validRange(value, {includePrerelease: false}) === null) {
+        return false;
+      } else {
+        return true;
+      }
+    } else {
+      if (prerelease(value) === null) {
         return true;
       }
       return false;
     }
-    return false;
-
-    // if (validated === null || validated === undefined) {
-    //   return false;
-    // } else {
-    //   const checkPrerelease = prerelease(value)
-    //   console.log(checkPrerelease);
-    //   return checkPrerelease === null || checkPrerelease === undefined;
-    // }
-    // if validRange gives a value
-    // then check prerelease
-    // if it returns a value
-    // returns false
-
-    // console.log(validated);
-    // if (validated !== null) {
-    //   const checkPrerelease = prerelease(value)
-    //   console.log(checkPrerelease)
-    //     if ( checkPrerelease !== null) {
-    //       return false;
-    //     }
-    //     return true;
-    // }
-    // return false
   }
   defaultMessage(args: ValidationArguments): string {
     return `'${args.value}' is not valid version`;

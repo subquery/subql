@@ -75,7 +75,6 @@ describe('project.yaml', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_runner.yaml'))).toThrow();
   });
 
-  //TODO, pre-release should be excluded
   it('can throw error with unsupported runner version', () => {
     expect(() =>
       loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_runner_version.yaml'))
@@ -100,36 +99,26 @@ describe('project.yaml', () => {
     expect(() => manifest.toDeployment()).not.toThrow();
   });
 
-  // ^1.0.0 pass
-  // * pass
-  // latest or dev fail
-  // >=1.0.0 pass
-  // 1.2.0-120 fail
-  // ^1.2.0-120 fail
-  // we should in include prerelease
+  it('validate versions', () => {
+    const checkVersion = new SemverVersionValidator();
 
-  it('valid semver', () => {
-    const validate2 = prerelease('>=1.2.0-20');
-    // const validate3 = validRange('^1.0.0', {includePrerelease: false});
-    // const validate4 = valid('^0.0.1-20', {loose: true})
-    const validate7 = coerce('^1.2.0-abc');
-    // const validate5 = clean('^1.2.0-10')
+    // Versions
+    expect(checkVersion.validate('*')).toBeTruthy();
+    expect(checkVersion.validate('0.0.0')).toBeTruthy();
+    expect(checkVersion.validate('0.1.0')).toBeTruthy();
+    expect(checkVersion.validate('1.2.0')).toBeTruthy();
+    expect(checkVersion.validate('^0.0.0')).toBeTruthy();
+    expect(checkVersion.validate('>=0.1.0')).toBeTruthy();
+    expect(checkVersion.validate('<0.1.1-1')).toBeTruthy();
+    expect(checkVersion.validate('>=1.2.0')).toBeTruthy();
+    expect(checkVersion.validate('~1.2.0-1')).toBeTruthy();
+    expect(checkVersion.validate('>=1.2.0-abc')).toBeTruthy();
 
-    console.log(`validate2: ${validate2}`);
-    // console.log(`validate3: ${validate3}`);
-    // console.log(`validate4: ${validate4}`);
-    // console.log(`validate5: ${validate5}`);
-    // console.log(`validate6: ${validate6}`);
-    console.log(`validate7: ${validate7}`);
-    // expect(validate2).toBeTruthy();
-
-    // need if prerelease is null return true
-    // 1.2.0-abc = null
-    // ^1.2.20-20 = null
-    // 1.2.0-20 = -20
-
-    const semverValidate = new SemverVersionValidator();
-    const result = semverValidate.validate('^1.2.0-abc');
-    console.log(`result: ${result}`);
+    expect(checkVersion.validate('0.1.1-1')).toBeFalsy();
+    expect(checkVersion.validate('1.2.0-1')).toBeFalsy();
+    expect(checkVersion.validate('1.2.0-abc')).toBeFalsy();
+    expect(checkVersion.validate('~')).toBeFalsy();
+    expect(checkVersion.validate('latest')).toBeFalsy();
+    expect(checkVersion.validate('dev')).toBeFalsy();
   });
 });
