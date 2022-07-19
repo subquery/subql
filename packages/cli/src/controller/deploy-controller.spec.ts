@@ -165,7 +165,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
     const dict = await getDictEndpoints(ROOT_API_URL_DEV);
     expect(processEndpoints(dict, validator.chainId)).toBe(
-      'https://api.subquery.network/sq/subquery/dictionary-polkadot'
+      'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
   });
 });
