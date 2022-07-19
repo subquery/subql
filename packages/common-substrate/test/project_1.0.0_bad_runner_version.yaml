@@ -6,7 +6,7 @@ repository: ''
 runner:
   node:
     name: '@subql/node'
-    version: 'dev' #should support
+    version: 'dev' #should not support
   query:
     name: '@subql/query'
     version: 'latest' #should not support

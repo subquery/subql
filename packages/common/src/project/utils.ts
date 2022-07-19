@@ -65,7 +65,7 @@ export class SemverVersionValidator implements ValidatorConstraintInterface {
     }
   }
   defaultMessage(args: ValidationArguments): string {
-    return `'${args.value}' is not valid version`;
+    return `'${args.value}' is not a valid version. Please provide a valid semver`;
   }
 }
 
