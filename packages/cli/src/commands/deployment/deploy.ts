@@ -60,7 +60,7 @@ export default class Deploy extends Command {
       if (!flags.useDefaults && !validateEndpoint) {
         endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
       } else {
-        endpoint = validateEndpoint ? validateEndpoint : validator.chainId;
+        endpoint = validateEndpoint;
       }
     }
 
