@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Fixed
+- `latest`, `dev` and `~` are no longer supported runner versions.
+
 ## [1.2.1] - 2022-07-05
 ### Fixed
 - Tidy up dependency, move `ipfs-http-client` to common packages (#1160)

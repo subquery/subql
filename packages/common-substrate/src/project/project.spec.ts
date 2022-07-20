@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {RunnerQueryBaseModel, validateSemver} from '@subql/common';
+import {RunnerQueryBaseModel, SemverVersionValidator} from '@subql/common';
 import {validateSync} from 'class-validator';
+import {valid, validRange, prerelease, clean, coerce} from 'semver';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {loadSubstrateProjectManifest} from './load';
 
@@ -74,8 +75,7 @@ describe('project.yaml', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_runner.yaml'))).toThrow();
   });
 
-  //TODO, pre-release should be excluded
-  it.skip('can throw error with unsupported runner version', () => {
+  it('can throw error with unsupported runner version', () => {
     expect(() =>
       loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_runner_version.yaml'))
     ).toThrow();
@@ -97,5 +97,28 @@ describe('project.yaml', () => {
     const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
     expect(manifest.isV1_0_0).toBeTruthy();
     expect(() => manifest.toDeployment()).not.toThrow();
+  });
+
+  it('validate versions', () => {
+    const checkVersion = new SemverVersionValidator();
+
+    // Versions
+    expect(checkVersion.validate('*')).toBeTruthy();
+    expect(checkVersion.validate('0.0.0')).toBeTruthy();
+    expect(checkVersion.validate('0.1.0')).toBeTruthy();
+    expect(checkVersion.validate('1.2.0')).toBeTruthy();
+    expect(checkVersion.validate('^0.0.0')).toBeTruthy();
+    expect(checkVersion.validate('>=0.1.0')).toBeTruthy();
+    expect(checkVersion.validate('<0.1.1-1')).toBeTruthy();
+    expect(checkVersion.validate('>=1.2.0')).toBeTruthy();
+    expect(checkVersion.validate('~1.2.0-1')).toBeTruthy();
+    expect(checkVersion.validate('>=1.2.0-abc')).toBeTruthy();
+
+    expect(checkVersion.validate('0.1.1-1')).toBeFalsy();
+    expect(checkVersion.validate('1.2.0-1')).toBeFalsy();
+    expect(checkVersion.validate('1.2.0-abc')).toBeFalsy();
+    expect(checkVersion.validate('~')).toBeFalsy();
+    expect(checkVersion.validate('latest')).toBeFalsy();
+    expect(checkVersion.validate('dev')).toBeFalsy();
   });
 });
