@@ -25,7 +25,6 @@ import {
   WorkerBlockDispatcherService,
   IBlockDispatcher,
 } from './worker/block-dispatcher.service';
-// import { BlockDispatcherService } from './worker/worker.service';
 
 const { argv } = getYargsOption();
 
@@ -51,28 +50,6 @@ const { argv } = getYargsOption();
       useClass: argv.workers
         ? WorkerBlockDispatcherService
         : BlockDispatcherService,
-      // useFactory: (
-      //   apiService: ApiService,
-      //   nodeConfig: NodeConfig,
-      //   eventEmitter: EventEmitter2,
-      //   indexerManager: IndexerManager,
-      // ) => {
-      //   if (argv.workers) {
-      //     return new WorkerBlockDispatcherService(
-      //       argv.workers,
-      //       nodeConfig.batchSize,
-      //       eventEmitter,
-      //     );
-      //   }
-      //
-      //   return new BlockDispatcherService(
-      //     apiService,
-      //     nodeConfig,
-      //     indexerManager,
-      //     eventEmitter,
-      //   );
-      // },
-      // inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
     },
     {
       provide: FetchService,

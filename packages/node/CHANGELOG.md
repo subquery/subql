@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Make handler data types generic (#1194)
 
+### Added
+
+- Support for worker threads. This will move block fetching and processing into a worker, this can increase performance by up to 4 times. By default this feature is disabled, you can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
+
 ## [1.5.1] - 2022-07-15
 ### Fixed
 - Unable to create ds processor from template when project hosted on IPFS (#1190)
