@@ -419,6 +419,17 @@ export class FetchService implements OnApplicationShutdown {
     return modulos;
   }
 
+  getModuloBlocks(startHeight: number, endHeight: number): number[] {
+    const modulos = this.getModulos();
+    const moduloBlocks: number[] = [];
+    for (let i = startHeight; i < endHeight; i++) {
+      if (modulos.find((m) => i % m === 0)) {
+        moduloBlocks.push(i);
+      }
+    }
+    return moduloBlocks;
+  }
+
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
 
@@ -448,13 +459,10 @@ export class FetchService implements OnApplicationShutdown {
       }
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
-        const modulos = this.getModulos();
-        const moduloBlocks: number[] = [];
-        for (let i = startBlockHeight; i < queryEndBlock; i++) {
-          if (modulos.find((m) => i % m === 0)) {
-            moduloBlocks.push(i);
-          }
-        }
+        const moduloBlocks = this.getModuloBlocks(
+          startBlockHeight,
+          queryEndBlock,
+        );
         try {
           const dictionary = await this.dictionaryService.getDictionary(
             startBlockHeight,
