@@ -52,16 +52,9 @@ export function validateSemver(current: string, required: string): boolean {
 export class SemverVersionValidator implements ValidatorConstraintInterface {
   validate(value: string | null | undefined): boolean {
     if (valid(value, {includePrerelease: false}) === null) {
-      if (validRange(value, {includePrerelease: false}) === null) {
-        return false;
-      } else {
-        return true;
-      }
+      return validRange(value, {includePrerelease: false}) !== null;
     } else {
-      if (prerelease(value) === null) {
-        return true;
-      }
-      return false;
+      return prerelease(value) === null;
     }
   }
   defaultMessage(args: ValidationArguments): string {
