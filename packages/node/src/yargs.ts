@@ -154,7 +154,8 @@ export function getYargsOption() {
     workers: {
       alias: 'w',
       demandOption: false,
-      describe: 'Number of worker threads to use for fetching blocks',
+      describe:
+        'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
     },
   });
