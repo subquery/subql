@@ -14,6 +14,8 @@ import {
   getDictEndpoints,
   getImage_v,
   processEndpoints,
+  reDeployment,
+  getDeployId,
 } from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
 
@@ -167,5 +169,50 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     expect(processEndpoints(dict, validator.chainId)).toBe(
       'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
+  });
+  it('reDeploy to Hosted Service', async () => {
+    const {ipfs, org, project_name} = projectSpec;
+    const newIPFS = 'QmbKvrzwSmzTZi5jrhEpa6yDDHQXRURi5S4ztLgJLpBxAi';
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+    const projectInfo = await getDeployId(testAuth, org, project_name, ROOT_API_URL_DEV);
+    const deployId = projectInfo.find(function (element) {
+      if (element.projectKey === `${org}/${project_name}`) {
+        return element;
+      }
+    });
+    const endpoints = await getEndpoints(ROOT_API_URL_DEV);
+    const dict = await getDictEndpoints(ROOT_API_URL_DEV);
+    const indexerV = await getImage_v(
+      validator.manifestRunner.node.name,
+      validator.manifestRunner.node.version,
+      testAuth,
+      ROOT_API_URL_DEV
+    );
+    const queryV = await getImage_v(
+      validator.manifestRunner.query.name,
+      validator.manifestRunner.query.version,
+      testAuth,
+      ROOT_API_URL_DEV
+    );
+    await reDeployment(
+      org,
+      project_name,
+      deployId.id,
+      testAuth,
+      newIPFS,
+      processEndpoints(endpoints, validator.chainId),
+      processEndpoints(dict, validator.chainId),
+      indexerV[0],
+      queryV[0],
+      ROOT_API_URL_DEV
+    );
+    const updatedInfo = await getDeployId(testAuth, org, project_name, ROOT_API_URL_DEV);
+    const newId = updatedInfo.find(function (element) {
+      if (element.projectKey === `${org}/${project_name}`) {
+        return element;
+      }
+    });
+
+    expect(newId.version).not.toEqual(projectSpec.ipfs);
   });
 });

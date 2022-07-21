@@ -128,8 +128,8 @@ export default class Deploy extends Command {
         return element;
       }
     });
-    if (deployId) {
-      console.log(deployId);
+
+    if (deployId !== undefined) {
       await reDeployment(
         org,
         projectName,
@@ -142,7 +142,7 @@ export default class Deploy extends Command {
         queryVersion,
         ROOT_API_URL_PROD
       );
-      this.log('issa re-deployed');
+      this.log(`Project: ${projectName} has been re-deployed`);
     } else {
       this.log('Deploying SubQuery project to Hosted Service');
       const deployment_output = await deployToHostedService(

@@ -153,35 +153,30 @@ export async function reDeployment(
   indexerVersion: string,
   queryVersion: string,
   url: string
-): Promise<any> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(projectName)}`;
-  console.log(key);
+): Promise<void> {
+  const key = encodeURIComponent(`${org}/${projectName}`);
   try {
-    const result = (
-      await axios({
-        headers: {
-          Authorization: `Bearer ${authToken}`,
+    await axios({
+      headers: {
+        Authorization: `Bearer ${authToken}`,
+      },
+      method: 'put',
+      url: `v2/subqueries/${key}/deployments/${deployID}`,
+      baseURL: url,
+      data: {
+        version: ipfsCID,
+        dictEndpoint: dictEndpoint,
+        endpoint: endpoint,
+        indexerImageVersion: indexerVersion,
+        queryImageVersion: queryVersion,
+        advancedSettings: {
+          indexer: {},
+          query: {},
         },
-        method: 'put',
-        url: `subqueries/${key}/deployments/${deployID}/status`,
-        baseURL: url,
-        data: {
-          advancedSettings: {
-            indexer: {},
-            query: {},
-          },
-          dictEndpoint: dictEndpoint,
-          endpoint: endpoint,
-          indexerImageVersion: indexerVersion,
-          queryImageVersion: queryVersion,
-          version: ipfsCID,
-        },
-      })
-    ).data;
-    console.log(JSON.stringify(result, null, 2));
-    return result;
+      },
+    });
   } catch (e) {
-    errorHandle(e, `Failed to redeploy project: ${projectName}`);
+    errorHandle(e, `Failed to redeploy project: ${e.message}`);
   }
 }
 export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<validateDataType> {
