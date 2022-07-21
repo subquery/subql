@@ -122,11 +122,21 @@ export function filterBlock(
   filter?: SubstrateBlockFilter,
 ): SubstrateBlock | undefined {
   if (!filter) return block;
+  if (!filterBlockModulo(block, filter)) return;
   return filter.specVersion === undefined ||
     block.specVersion === undefined ||
     checkSpecRange(filter.specVersion, block.specVersion)
     ? block
     : undefined;
+}
+
+export function filterBlockModulo(
+  block: SubstrateBlock,
+  filter: SubstrateBlockFilter,
+): boolean {
+  const { modulo } = filter;
+  if (!modulo) return true;
+  return block.block.header.number.toNumber() % modulo === 0;
 }
 
 export function filterExtrinsic(
