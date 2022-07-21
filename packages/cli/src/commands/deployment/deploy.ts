@@ -57,16 +57,17 @@ export default class Deploy extends Command {
 
     if (!endpoint) {
       const validateEndpoint = processEndpoints(await getEndpoints(ROOT_API_URL_PROD), validator.chainId);
-      if (!flags.useDefaults && !validateEndpoint) {
+      if (!flags.useDefaults) {
         endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
+      } else if (validateEndpoint) {
+        endpoint = validateEndpoint;
       } else {
-        endpoint = validateEndpoint ? validateEndpoint : validator.chainId;
+        throw new Error(chalk.red('Please use --endpoint flag when using a custom Endpoint'));
       }
     }
 
     if (!dict) {
       const validateDictEndpoint = processEndpoints(await getDictEndpoints(ROOT_API_URL_PROD), validator.chainId);
-
       if (!flags.useDefaults && !validateDictEndpoint) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
