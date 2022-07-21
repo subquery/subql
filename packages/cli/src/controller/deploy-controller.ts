@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {deploymentDataType, validateDataType} from '../types';
+import {deploymentDataType, projectDataType, validateDataType} from '../types';
 import {errorHandle} from '../utils';
 
 export async function deployToHostedService(
@@ -118,6 +118,72 @@ export async function deploymentStatus(
   }
 }
 
+export async function getDeployId(
+  authToken: string,
+  org: string,
+  projectName: string,
+  url: string
+): Promise<projectDataType[]> {
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(projectName)}`;
+  try {
+    const result = (
+      await axios({
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        method: 'get',
+        url: `subqueries/${key}/deployments`,
+        baseURL: url,
+      })
+    ).data;
+    return result;
+  } catch (e) {
+    errorHandle(e, 'Failed to get projects:');
+  }
+}
+
+export async function reDeployment(
+  org: string,
+  projectName: string,
+  deployID: number,
+  authToken: string,
+  ipfsCID: string,
+  endpoint: string,
+  dictEndpoint: string,
+  indexerVersion: string,
+  queryVersion: string,
+  url: string
+): Promise<any> {
+  const key = `${encodeURIComponent(org)}/${encodeURIComponent(projectName)}`;
+  console.log(key);
+  try {
+    const result = (
+      await axios({
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+        method: 'put',
+        url: `subqueries/${key}/deployments/${deployID}/status`,
+        baseURL: url,
+        data: {
+          advancedSettings: {
+            indexer: {},
+            query: {},
+          },
+          dictEndpoint: dictEndpoint,
+          endpoint: endpoint,
+          indexerImageVersion: indexerVersion,
+          queryImageVersion: queryVersion,
+          version: ipfsCID,
+        },
+      })
+    ).data;
+    console.log(JSON.stringify(result, null, 2));
+    return result;
+  } catch (e) {
+    errorHandle(e, `Failed to redeploy project: ${projectName}`);
+  }
+}
 export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<validateDataType> {
   try {
     const result = (

@@ -14,6 +14,8 @@ import {
   getDictEndpoints,
   getImage_v,
   processEndpoints,
+  reDeployment,
+  getDeployId,
 } from '../../controller/deploy-controller';
 import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
@@ -32,9 +34,11 @@ export default class Deploy extends Command {
     dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: false}),
 
+    reDeploy: Flags.boolean({char: 'r', description: 'Re-deploy project', required: false}),
+
     useDefaults: Flags.boolean({
       char: 'd',
-      description: 'Use default values for indexerVerion, queryVersion, dictionary, endpoint',
+      description: 'Use default values for indexerVersion, queryVersion, dictionary, endpoint',
       required: false,
     }),
   };
@@ -118,30 +122,52 @@ export default class Deploy extends Command {
       }
     }
 
-    this.log('Deploying SupQuery project to Hosted Service');
-
-    const deployment_output = await deployToHostedService(
-      org,
-      projectName,
-      authToken,
-      ipfsCID,
-      indexerVersion,
-      queryVersion,
-      endpoint,
-      flags.type,
-      dict,
-      ROOT_API_URL_PROD
-    ).catch((e) => this.error(e));
-    this.log(`Project: ${deployment_output.projectKey}
-    \nStatus: ${chalk.blue(deployment_output.status)} 
-    \nDeploymentID: ${deployment_output.id}
-    \nDeployment Type: ${deployment_output.type}
-    \nIndexer version: ${indexerVersion}
-    \nQuery version: ${queryVersion}
-    \nEndpoint: ${deployment_output.endpoint}
-    \nDictionary Endpoint: ${deployment_output.dictEndpoint}
-    \nQuery URL: ${deployment_output.queryUrl}
-    \nProject URL: ${BASE_PROJECT_URL}/project/${deployment_output.projectKey}
-    `);
+    const projectInfo = await getDeployId(authToken, org, projectName, ROOT_API_URL_PROD);
+    const deployId = projectInfo.find(function (element) {
+      if (element.projectKey === `${org}/${projectName}`) {
+        return element;
+      }
+    });
+    if (deployId) {
+      console.log(deployId);
+      await reDeployment(
+        org,
+        projectName,
+        deployId.id,
+        authToken,
+        ipfsCID,
+        endpoint,
+        dict,
+        indexerVersion,
+        queryVersion,
+        ROOT_API_URL_PROD
+      );
+      this.log('issa re-deployed');
+    } else {
+      this.log('Deploying SubQuery project to Hosted Service');
+      const deployment_output = await deployToHostedService(
+        org,
+        projectName,
+        authToken,
+        ipfsCID,
+        indexerVersion,
+        queryVersion,
+        endpoint,
+        flags.type,
+        dict,
+        ROOT_API_URL_PROD
+      ).catch((e) => this.error(e));
+      this.log(`Project: ${deployment_output.projectKey}
+      \nStatus: ${chalk.blue(deployment_output.status)} 
+      \nDeploymentID: ${deployment_output.id}
+      \nDeployment Type: ${deployment_output.type}
+      \nIndexer version: ${indexerVersion}
+      \nQuery version: ${queryVersion}
+      \nEndpoint: ${deployment_output.endpoint}
+      \nDictionary Endpoint: ${deployment_output.dictEndpoint}
+      \nQuery URL: ${deployment_output.queryUrl}
+      \nProject URL: ${BASE_PROJECT_URL}/project/${deployment_output.projectKey}
+      `);
+    }
   }
 }

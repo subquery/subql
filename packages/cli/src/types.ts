@@ -88,3 +88,29 @@ export interface deploymentDataType {
     };
   };
 }
+
+export interface projectDataType {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  projectKey: string;
+  version: string;
+  status: string;
+  cluster: string;
+  indexerImage: string;
+  queryImage: string;
+  subFolder: string;
+  endpoint: string;
+  dictEndpoint: string;
+  type: string;
+  queryUrl: string;
+  configuration: {
+    config: {
+      query: {};
+      indexer: {};
+    };
+  };
+  role: string;
+  chainId: string;
+  apiVersion: string;
+}
