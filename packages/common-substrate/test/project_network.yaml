@@ -1,0 +1,268 @@
+specVersion: 1.0.0
+name: subquery-query-registry-project
+version: 1.0.0
+runner:
+  node:
+    name: '@subql/node'
+    version: '>=1.1.0'
+  query:
+    name: '@subql/query'
+    version: '>=1.1.0'
+description: 'Query registry project for SubQuery Testnet'
+repository: ''
+schema:
+  file: ./schema.graphql
+network:
+  chainId: '0x5c562e6300954998233c9a40b6b86f3028977e6d32d0da1af207738d19f98c1b' #mandala-tc7
+  endpoint: 'wss://mandala-tc7-rpcnode.aca-dev.network/ws'
+  dictionary: 'https://api.subquery.network/sq/subquery/acala-mandala-tc7-dictionary'
+
+  chaintypes:
+    file: ./dist/chaintypes.js
+
+x-frontier: &frontier
+  kind: substrate/AcalaEvm
+  startBlock: 1398237
+  processor: &frontier-processor
+    file: './dist/acalaEvm.js'
+  assets:
+    eraManager:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/EraManager.sol/EraManager.json
+    staking:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/Staking.sol/Staking.json
+    indexerRegistry:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/IndexerRegistry.sol/IndexerRegistry.json
+    queryRegistry:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/QueryRegistry.sol/QueryRegistry.json
+    planManager:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PlanManager.sol/PlanManager.json
+    purchaseOfferMarket:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/PurchaseOfferMarket.sol/PurchaseOfferMarket.json
+    serviceAgreementRegistry:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/ServiceAgreementRegistry.sol/ServiceAgreementRegistry.json
+    rewardsDistributor:
+      file: ./node_modules/@subql/contract-sdk/artifacts/contracts/RewardsDistributer.sol/RewardsDistributer.json
+
+dataSources:
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: eraManager
+        address: '0xbD9bb7981a069B39f2A9f61c3e8c700E84B257EE'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleNewEra
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - NewEraStart(uint256 indexed era, address caller)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: indexerRegistry
+        address: '0x2608e875919453c3baA98121f1067Ba3954c373A'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRegisterIndexer
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - RegisterIndexer(address indexed indexer, uint256 amount, bytes32 metadata)
+        - handler: handleUpdateIndexerMetadata
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UpdateMetadata(address indexed indexer, bytes32 metadata)
+        - handler: handleSetControllerAccount
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - SetControllerAccount(address indexed indexer, address indexed controller)
+        - handler: handleRemoveControllerAccount
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - RemoveControllerAccount(address indexed indexer, address indexed controller)
+        - handler: handleUnregisterIndexer
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UnregisterIndexer(address indexed indexer)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: staking
+        address: '0x529b57A3b0dFB3feFA55535783C1af153A4f16f9'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleAddDelegation
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - DelegationAdded(address indexed source, address indexed indexer, uint256 amount)
+        - handler: handleRemoveDelegation
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - DelegationRemoved(address indexed source, address indexed indexer, uint256 amount)
+        - handler: handleWithdrawRequested
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UnbondRequested(address indexed source, address indexed indexer, uint256 amount, uint256 index)
+        - handler: handleWithdrawClaimed
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UnbondWithdrawn(address indexed source, uint256 amount, uint256 index)
+        - handler: handleSetCommissionRate
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - SetCommissionRate(address indexed indexer, uint256 amount)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: queryRegistry
+        address: '0xB1BD8D58C5E74D0FD2C8432410A3603433F7c04B'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleNewQuery
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - CreateQuery(uint256 queryId, address creator, bytes32 metadata, bytes32 deploymentId, bytes32 version)
+        - handler: handleUpdateQueryMetadata
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UpdateQueryMetadata(address owner, uint256 queryId, bytes32 metadata)
+        - handler: handleUpdateQueryDeployment
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UpdateQueryDeployment(address owner, uint256 queryId, bytes32 deploymentId, bytes32 version)
+        - handler: handleStartIndexing
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - StartIndexing(address indexer, bytes32 deploymentId)
+        - handler: handleIndexingUpdate
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UpdateDeploymentStatus(address indexer, bytes32 deploymentId, uint256 blockheight, bytes32 mmrRoot, uint256 timestamp)
+        - handler: handleIndexingReady
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - UpdateIndexingStatusToReady(address indexer, bytes32 deploymentId)
+        - handler: handleStopIndexing
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - StopIndexing(address indexer, bytes32 deploymentId)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: planManager
+        address: '0x520A2F95aAfa0732F5E998EB910277f59DE789bC'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handlePlanTemplateCreated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PlanTemplateCreated(uint256 indexed planTemplateId)
+        - handler: handlePlanTemplateMetadataUpdated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PlanTemplateMetadataChanged(uint256 indexed planTemplateId, bytes32 metadata)
+        - handler: handlePlanTemplateStatusUpdated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PlanTemplateStatusChanged(uint256 indexed planTemplateId, bool active)
+        - handler: handlePlanCreated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PlanCreated(address indexed creator, bytes32 indexed deploymentId, uint256 planTemplateId, uint256 planId, uint256 price)
+        - handler: handlePlanRemoved
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PlanRemoved(address indexed source, uint256 id, bytes32 deploymentId)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: serviceAgreementRegistry
+        address: '0xe7EB14dE60C0fA847abA3ef48E5f3129F812333C'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleServiceAgreementCreated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ClosedAgreementCreated(address indexed consumer, address indexed indexer, bytes32 indexed deploymentId, address serviceAgreement)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: rewardsDistributor
+        address: '0xf05c200B1d8608B748983084979e8F96e536DEaE'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handleRewardsDistributed
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - DistributeRewards(address indexed indexer, uint256 indexed eraIdx)
+        - handler: handleRewardsClaimed
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - ClaimRewards(address indexed indexer, address indexed delegator, uint256 rewards)
+        - handler: handleRewardsUpdated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - RewardsChanged(address indexed indexer, uint256 indexed eraIdx, uint256 additions, uint256 removals)
+  - <<: *frontier
+    processor:
+      <<: *frontier-processor
+      options:
+        abi: purchaseOfferMarket
+        address: '0x4851bE40De238Dd2978468c3Bd0f9D1c46180053'
+    mapping:
+      file: ./dist/index.js
+      handlers:
+        - handler: handlePurchaseOfferCreated
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PurchaseOfferCreated(address consumer, uint256 offerId, bytes32 deploymentId, uint256 planTemplateId, uint256 deposit, uint16 limit, uint256 minimumAcceptHeight, uint256 expireDate)
+        - handler: handlePurchaseOfferCancelled
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - PurchaseOfferCancelled(address indexed creator, uint256 offerId, uint256 penalty)
+        - handler: handlePurchaseOfferAccepted
+          kind: substrate/AcalaEvmEvent
+          filter:
+            topics:
+              - OfferAccepted(address indexed indexer, uint256 offerId, address agreement)

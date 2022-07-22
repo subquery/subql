@@ -5,7 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
-import {prerelease, satisfies, valid, validRange} from 'semver';
+import {prerelease, satisfies, valid, validRange,gte} from 'semver';
+import {GenericNetworkImp, ProjectManifestImp} from './versioned/genericManifest';
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {
@@ -59,6 +60,30 @@ export class SemverVersionValidator implements ValidatorConstraintInterface {
   }
   defaultMessage(args: ValidationArguments): string {
     return `'${args.value}' is not a valid version. Please provide a valid semver`;
+  }
+}
+
+@ValidatorConstraint()
+export class NetworkValidator implements ValidatorConstraintInterface {
+  private errMessage: string;
+  validate(network: GenericNetworkImp, args: ValidationArguments): boolean {
+    const specVersion = (args.object as ProjectManifestImp).specVersion;
+
+    if (gte(specVersion, '1.0.0')) {
+      if (!network.chainId) {
+        this.errMessage = 'for manifest 1.0.0 or newer, chainId must be defined';
+        return false;
+      }
+    } else {
+      if (!network.genesisHash) {
+        this.errMessage = 'manifest genesisHash must be defined';
+        return false;
+      }
+    }
+    return true;
+  }
+  defaultMessage(): string {
+    return `Network validation failed, ${this.errMessage}`;
   }
 }
 
