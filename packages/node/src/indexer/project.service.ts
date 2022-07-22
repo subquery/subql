@@ -286,17 +286,11 @@ export class ProjectService {
     return metadataRepo;
   }
 
-  async upsertMetadataBlockOffset(
-    height: number,
-    tx: Transaction,
-  ): Promise<void> {
-    await this.metadataRepo.upsert(
-      {
-        key: 'blockOffset',
-        value: height,
-      },
-      { transaction: tx },
-    );
+  async upsertMetadataBlockOffset(height: number): Promise<void> {
+    await this.metadataRepo.upsert({
+      key: 'blockOffset',
+      value: height,
+    });
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {

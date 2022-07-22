@@ -137,16 +137,6 @@ export class IndexerManager {
       );
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
-      if (
-        !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
-        this.projectService.blockOffset === undefined
-      ) {
-        await this.projectService.upsertMetadataBlockOffset(
-          blockHeight - 1,
-          tx,
-        );
-      }
-
       if (this.nodeConfig.proofOfIndex) {
         //check if operation is null, then poi will not be inserted
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {

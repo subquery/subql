@@ -213,6 +213,10 @@ export class BlockDispatcherService
             this.nodeConfig.proofOfIndex &&
             !isNullMerkelRoot(operationHash)
           ) {
+            if (!this.projectService.blockOffset) {
+              // Which means during project init, it has not found offset and set value
+              await this.projectService.upsertMetadataBlockOffset(height - 1);
+            }
             void this.projectService.setBlockOffset(height - 1);
           }
 
@@ -406,6 +410,10 @@ export class WorkerBlockDispatcherService
           this.nodeConfig.proofOfIndex &&
           !isNullMerkelRoot(Buffer.from(operationHash, 'base64'))
         ) {
+          if (!this.projectService.blockOffset) {
+            // Which means during project init, it has not found offset and set value
+            await this.projectService.upsertMetadataBlockOffset(height - 1);
+          }
           void this.projectService.setBlockOffset(height - 1);
         }
 
