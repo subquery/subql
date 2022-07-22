@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ROOT_API_URL_DEV} from '../constants';
-import {deploymentSpec} from '../types';
+import {deploymentDataType, deploymentSpec, validateDataType} from '../types';
 import {delay} from '../utils';
 import {
   deployToHostedService,
@@ -31,6 +31,42 @@ const projectSpec: deploymentSpec = {
   apiVersion: '2',
 };
 
+async function deployTestProject(
+  validator: validateDataType,
+  ipfs: string,
+  org: string,
+  project_name: string,
+  testAuth: string,
+  url: string
+): Promise<deploymentDataType> {
+  const indexer_v = await getImage_v(
+    validator.manifestRunner.node.name,
+    validator.manifestRunner.node.version,
+    testAuth,
+    url
+  );
+  const query_v = await getImage_v(
+    validator.manifestRunner.query.name,
+    validator.manifestRunner.query.version,
+    testAuth,
+    url
+  );
+  const endpoint = await getEndpoints(url);
+  const dictEndpoint = await getDictEndpoints(url);
+  return deployToHostedService(
+    org,
+    project_name,
+    testAuth,
+    ipfs,
+    indexer_v[0],
+    query_v[0],
+    processEndpoints(endpoint, validator.chainId),
+    'stage',
+    processEndpoints(dictEndpoint, validator.chainId),
+    url
+  );
+}
+
 const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
   condition ? describe(...args) : describe.skip(...args);
 
@@ -38,7 +74,7 @@ const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 
 describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
     try {
       await createProject(
@@ -57,7 +93,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     }
   });
 
-  afterAll(async () => {
+  afterEach(async () => {
     try {
       await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, ROOT_API_URL_DEV);
     } catch (e) {
@@ -69,32 +105,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     const {ipfs, org, project_name} = projectSpec;
 
     const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
-    const indexer_v = await getImage_v(
-      validator.manifestRunner.node.name,
-      validator.manifestRunner.node.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const query_v = await getImage_v(
-      validator.manifestRunner.query.name,
-      validator.manifestRunner.query.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
-    const deploy_output = await deployToHostedService(
-      org,
-      project_name,
-      testAuth,
-      ipfs,
-      indexer_v[0],
-      query_v[0],
-      processEndpoints(endpoint, validator.chainId),
-      'stage',
-      processEndpoints(dictEndpoint, validator.chainId),
-      ROOT_API_URL_DEV
-    );
+    const deploy_output = await deployTestProject(validator, ipfs, org, project_name, testAuth, ROOT_API_URL_DEV);
 
     const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
     expect(typeof deploy_output.id).toBe('number');
@@ -107,34 +118,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     let status: string;
     let attempt = 0;
     const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
-    const indexer_v = await getImage_v(
-      validator.manifestRunner.node.name,
-      validator.manifestRunner.node.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const query_v = await getImage_v(
-      validator.manifestRunner.query.name,
-      validator.manifestRunner.query.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
-
-    const deploy_output = await deployToHostedService(
-      org,
-      project_name,
-      testAuth,
-      ipfs,
-      indexer_v[0],
-      query_v[0],
-      processEndpoints(endpoint, validator.chainId),
-      'stage',
-      processEndpoints(dictEndpoint, validator.chainId),
-      ROOT_API_URL_DEV
-    );
-
+    const deploy_output = await deployTestProject(validator, ipfs, org, project_name, testAuth, ROOT_API_URL_DEV);
     while (status !== 'running') {
       if (attempt >= 5) break;
       attempt = attempt + 1;
@@ -174,12 +158,16 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
     const {ipfs, org, project_name} = projectSpec;
     const newIPFS = 'QmbKvrzwSmzTZi5jrhEpa6yDDHQXRURi5S4ztLgJLpBxAi';
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+
+    const deploy_output = await deployTestProject(validator, ipfs, org, project_name, testAuth, ROOT_API_URL_DEV);
+
     const projectInfo = await getDeployId(testAuth, org, project_name, ROOT_API_URL_DEV);
     const deployId = projectInfo.find(function (element) {
       if (element.projectKey === `${org}/${project_name}`) {
         return element;
       }
     });
+
     const endpoints = await getEndpoints(ROOT_API_URL_DEV);
     const dict = await getDictEndpoints(ROOT_API_URL_DEV);
     const indexerV = await getImage_v(
@@ -206,13 +194,14 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       queryV[0],
       ROOT_API_URL_DEV
     );
+
     const updatedInfo = await getDeployId(testAuth, org, project_name, ROOT_API_URL_DEV);
     const newId = updatedInfo.find(function (element) {
       if (element.projectKey === `${org}/${project_name}`) {
         return element;
       }
     });
-
-    expect(newId.version).not.toEqual(projectSpec.ipfs);
+    expect(newId.id).toBe(deployId.id);
+    expect(newId.version).not.toEqual(deploy_output.version);
   });
 });
