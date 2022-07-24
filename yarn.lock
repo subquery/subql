@@ -2913,27 +2913,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@workspace:packages/utils":
-  version: 0.0.0-use.local
-  resolution: "@subql/utils@workspace:packages/utils"
-  dependencies:
-    "@polkadot/util": ^9
-    "@types/semver": ^7
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: ^6.15.0
-    tar: ^6.1.11
-  languageName: unknown
-  linkType: soft
-
 "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2":
   version: 2.0.0-0.1.2
   resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
@@ -3336,7 +3315,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/semver@npm:^7, @types/semver@npm:^7.3.9":
+"@types/semver@npm:^7.3.9":
   version: 7.3.10
   resolution: "@types/semver@npm:7.3.10"
   checksum: 7047c2822b1759b2b950f39cfcf261f2b9dca47b4b55bdebba0905a8553631f1531eb0f59264ffe4834d1198c8331c8e0010a4cd742f4e0b60abbf399d134364
