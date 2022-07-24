@@ -24,5 +24,6 @@
     "@types/bn.js": "4.11.6",
     "@types/js-yaml": "^4.0.4",
     "@types/pino": "^6.3.12"
-  }
+  },
+  "stableVersion": "1.1.2-0"
 }

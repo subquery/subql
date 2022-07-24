@@ -295,7 +295,7 @@ export class IndexerManager {
 
       for (const data of blockData) {
         const filteredHandlers = handlers.filter((h) =>
-          FilterTypeMap[kind](data as any, h.filter),
+          FilterTypeMap[kind](data as any, h.filter as any),
         );
         for (const handler of filteredHandlers) {
           await vm.securedExec(handler.handler, [data]);
@@ -420,7 +420,7 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [SubqlCosmosHandlerKind.Block]: () => true,
+  [SubqlCosmosHandlerKind.Block]: CosmosUtil.filterBlock,
   [SubqlCosmosHandlerKind.Transaction]: () => true,
   [SubqlCosmosHandlerKind.Event]: CosmosUtil.filterEvent,
   [SubqlCosmosHandlerKind.Message]: CosmosUtil.filterMessageData,

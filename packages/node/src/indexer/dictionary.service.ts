@@ -15,9 +15,11 @@ import {
 } from '@subql/types-cosmos';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
+import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { getLogger } from '../utils/logger';
 import { profiler } from '../utils/profiler';
+import { timeout } from '../utils/promise';
 import { getYargsOption } from '../yargs';
 
 export type Dictionary = {
@@ -26,6 +28,7 @@ export type Dictionary = {
   //TODO
   // specVersions: number[];
 };
+
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
 
@@ -110,7 +113,10 @@ export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
-  constructor(protected project: SubqueryProject) {
+  constructor(
+    protected project: SubqueryProject,
+    private nodeConfig: NodeConfig,
+  ) {
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -152,10 +158,13 @@ export class DictionaryService implements OnApplicationShutdown {
     );
 
     try {
-      const resp = await this.client.query({
-        query: gql(query),
-        variables,
-      });
+      const resp = await timeout(
+        this.client.query({
+          query: gql(query),
+          variables,
+        }),
+        this.nodeConfig.dictionaryTimeout,
+      );
       const blockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {

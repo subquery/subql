@@ -65,6 +65,10 @@ export interface CosmosNetwork {
   chainTypes?: Map<string, CustomModule>;
 }
 
+export interface SubqlCosmosBlockFilter {
+  modulo?: number;
+}
+
 export interface SubqlCosmosMessageFilter {
   type: string;
   contractCall?: string;
@@ -83,7 +87,7 @@ export type SubqlCosmosHandlerFilter = SubqlCosmosEventFilter | SubqlCosmosMessa
 export interface SubqlCosmosBlockHandler {
   handler: string;
   kind: SubqlCosmosHandlerKind.Block;
-  filter?: undefined;
+  filter?: SubqlCosmosBlockFilter;
 }
 
 export interface SubqlCosmosTransactionHandler {

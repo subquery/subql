@@ -2,22 +2,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SubqlCosmosMessageFilter } from '@subql/common-cosmos';
+import { NodeConfig } from '../configure/NodeConfig';
 import { DictionaryService } from './dictionary.service';
-
 import { messageFilterToQueryEntry } from './fetch.service';
 
 type DictionaryQuery = DictionaryService['dictionaryQuery'];
-
 type DictionaryServicePrivate = DictionaryService & {
   dictionaryQuery: DictionaryQuery;
 };
 
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+  networkEndpoint: 'https://rpc.juno-1.api.onfinality.io',
+  dictionaryTimeout: 10,
+});
+
 function mockDictionaryService(url: string): DictionaryServicePrivate {
-  return new DictionaryService({
-    network: {
-      dictionary: url,
-    },
-  } as any) as DictionaryServicePrivate;
+  return new DictionaryService(
+    {
+      network: {
+        dictionary: url,
+      },
+    } as any,
+    nodeConfig,
+  ) as DictionaryServicePrivate;
 }
 
 describe('Dictionary Queries', () => {

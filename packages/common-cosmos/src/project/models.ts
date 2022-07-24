@@ -13,6 +13,7 @@ import {
   SubqlCosmosCustomDatasource,
   FileReference,
   CustomDataSourceAsset,
+  SubqlCosmosBlockFilter,
   SubqlCosmosBlockHandler,
   SubqlCosmosEventHandler,
   SubqlCosmosMessageFilter,
@@ -23,7 +24,23 @@ import {
 
 import {plainToClass, Transform, Type} from 'class-transformer';
 
-import {IsArray, IsEnum, IsInt, IsOptional, IsString, IsObject, ValidateNested, ValidateIf} from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  IsObject,
+  ValidateNested,
+  ValidateIf,
+  IsNumber,
+} from 'class-validator';
+
+export class CosmosBlockFilter implements SubqlCosmosBlockFilter {
+  @IsNumber()
+  @IsOptional()
+  modulo: number;
+}
 
 export class CosmosMessageFilter implements SubqlCosmosMessageFilter {
   @IsString()

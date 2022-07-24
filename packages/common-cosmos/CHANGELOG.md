@@ -15,6 +15,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.5...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/common-cosmos/0.0.6...HEAD
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...common-cosmos/0.0.6
 

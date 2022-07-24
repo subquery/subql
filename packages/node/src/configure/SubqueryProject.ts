@@ -159,7 +159,11 @@ async function loadProjectFromManifest1_0_0(
     path,
     networkOverrides,
   );
-  project.templates = await loadProjectTemplates(projectManifest, reader);
+  project.templates = await loadProjectTemplates(
+    projectManifest,
+    project.root,
+    reader,
+  );
   project.runner = projectManifest.runner;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
@@ -171,12 +175,11 @@ async function loadProjectFromManifest1_0_0(
 }
 
 async function loadProjectTemplates(
-  projectManifest: ProjectManifestV1_0_0Impl,
+  projectManifest: ProjectManifestV1_0_0Impl | ProjectManifestV1_0_0Impl,
+  root: string,
   reader: Reader,
 ): Promise<SubqlProjectDsTemplate[]> {
   if (projectManifest.templates && projectManifest.templates.length !== 0) {
-    const root = await getProjectRoot(reader);
-
     const dsTemplates = await updateDataSourcesV0_3_0(
       projectManifest.templates,
       reader,
