@@ -70,6 +70,9 @@ export class ProjectService {
     this.metadataRepo = await this.ensureMetadata();
     this.dynamicDsService.init(this.metadataRepo);
 
+    if (argv.reindex !== undefined) {
+      await this.reindex(argv.reindex);
+    }
     if (this.nodeConfig.proofOfIndex) {
       const blockOffset = await this.getMetadataBlockOffset();
       if (blockOffset !== null && blockOffset !== undefined) {
@@ -351,5 +354,34 @@ export class ProjectService {
         ds.filter.specName ===
           this.apiService.getApi().runtimeVersion.specName.toString(),
     );
+  }
+
+  private async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+    if (!this.storeService.historical) {
+      logger.warn('Unable to reindex, historical state not enabled');
+      return;
+    }
+    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
+      logger.warn(
+        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
+      );
+      return;
+    }
+    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.storeService.rewind(argv.reindex, transaction);
+
+      const blockOffset = await this.getMetadataBlockOffset();
+      if (blockOffset) {
+        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+      }
+      await transaction.commit();
+    } catch (err) {
+      logger.error(err, 'Reindexing failed');
+      await transaction.rollback();
+      throw err;
+    }
   }
 }

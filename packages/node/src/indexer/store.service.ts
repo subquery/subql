@@ -85,7 +85,7 @@ export class StoreService {
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
   private blockHeight: number;
-  private historical: boolean;
+  historical: boolean;
 
   constructor(
     private sequelize: Sequelize,
@@ -579,6 +579,59 @@ group by
         },
       },
     );
+  }
+
+  async rewind(
+    targetBlockHeight: number,
+    transaction: Transaction,
+  ): Promise<void> {
+    for (const model of Object.values(this.sequelize.models)) {
+      if ('__block_range' in model.getAttributes()) {
+        await model.destroy({
+          transaction,
+          hooks: false,
+          where: this.sequelize.where(
+            this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+            Op.gt,
+            targetBlockHeight,
+          ),
+        });
+        await model.update(
+          {
+            __block_range: this.sequelize.fn(
+              'int8range',
+              this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+              null,
+            ),
+          },
+          {
+            transaction,
+            hooks: false,
+            where: {
+              __block_range: {
+                [Op.contains]: targetBlockHeight,
+              },
+            },
+          },
+        );
+      }
+    }
+    await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
+      transaction,
+    });
+    if (this.config.proofOfIndex) {
+      await this.poiRepo.destroy({
+        transaction,
+        where: {
+          id: {
+            [Op.gt]: targetBlockHeight,
+          },
+        },
+      });
+      await this.setMetadata('lastPoiHeight', targetBlockHeight, {
+        transaction,
+      });
+    }
   }
 
   getStore(): Store {
