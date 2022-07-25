@@ -1,6 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
-// eslint-disable-next-line header/header
+
 import { u8aConcat, numberToU8a, hexToU8a, isHex, isU8a } from '@polkadot/util';
 import { blake2AsU8a } from '@polkadot/util-crypto';
 import { ProofOfIndex } from './entities/Poi.entity';

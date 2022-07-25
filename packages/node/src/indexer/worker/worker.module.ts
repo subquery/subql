@@ -4,10 +4,9 @@
 import { Module } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigureModule } from './configure/configure.module';
-import { DbModule } from './db/db.module';
-import { FetchModule } from './indexer/fetch.module';
-import { MetaModule } from './meta/meta.module';
+import { ConfigureModule } from '../../configure/configure.module';
+import { DbModule } from '../../db/db.module';
+import { IndexerModule } from '../indexer.module';
 
 @Module({
   imports: [
@@ -21,9 +20,8 @@ import { MetaModule } from './meta/meta.module';
     EventEmitterModule.forRoot(),
     ConfigureModule.register(),
     ScheduleModule.forRoot(),
-    FetchModule,
-    MetaModule,
+    IndexerModule,
   ],
   controllers: [],
 })
-export class AppModule {}
+export class WorkerModule {}
