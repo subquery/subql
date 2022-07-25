@@ -19,11 +19,11 @@ const projectSpec = {
 // Replace/Update your access token when test locally
 const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 
-const describeIf = (condition: boolean, ...args: Parameters<typeof it>) => (condition ? it(...args) : it.skip(...args));
+const testIf = (condition: boolean, ...args: Parameters<typeof it>) => (condition ? it(...args) : it.skip(...args));
 
 jest.setTimeout(120000);
-describeIf(!!testAuth, 'CLI create project and delete project', () => {
-  it('Create project and delete', async () => {
+describe('CLI create project and delete project', () => {
+  testIf(!!testAuth, 'Create project and delete', async () => {
     const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
     const create_project = await createProject(
       org,
