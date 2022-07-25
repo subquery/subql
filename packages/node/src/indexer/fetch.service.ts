@@ -39,10 +39,7 @@ import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
-import {
-  DictionaryService,
-  SpecVersion,
-} from './dictionary.service';
+import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerEvent } from './events';
@@ -420,7 +417,7 @@ export class FetchService implements OnApplicationShutdown {
             } else {
               const maxBlockSize = Math.min(
                 batchBlocks.length,
-                this.blockNumberBuffer.freeSize,
+                this.blockDispatcher.freeSize,
               );
               batchBlocks = batchBlocks.slice(0, maxBlockSize);
               this.blockDispatcher.enqueueBlocks(batchBlocks);
