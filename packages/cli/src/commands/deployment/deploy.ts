@@ -10,12 +10,12 @@ import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../.
 import {
   deployToHostedService,
   ipfsCID_validate,
-  getEndpoints,
-  getDictEndpoints,
-  getImage_v,
+  networkEndpoints,
+  dictionaryEndpoints,
+  imageVersions,
   processEndpoints,
-  reDeployment,
-  getDeployId,
+  redeploy,
+  projectsInfo,
 } from '../../controller/deploy-controller';
 import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
@@ -33,8 +33,6 @@ export default class Deploy extends Command {
     queryVersion: Flags.string({description: 'Enter query-version', required: false}),
     dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: false}),
-
-    reDeploy: Flags.boolean({char: 'r', description: 'Re-deploy project', required: false}),
 
     useDefaults: Flags.boolean({
       char: 'd',
@@ -60,7 +58,7 @@ export default class Deploy extends Command {
     }
 
     if (!endpoint) {
-      const validateEndpoint = processEndpoints(await getEndpoints(ROOT_API_URL_PROD), validator.chainId);
+      const validateEndpoint = processEndpoints(await networkEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults) {
         endpoint = await promptWithDefaultValues(cli, 'Enter endpoint', validateEndpoint, null, true);
       } else if (validateEndpoint) {
@@ -71,7 +69,7 @@ export default class Deploy extends Command {
     }
 
     if (!dict) {
-      const validateDictEndpoint = processEndpoints(await getDictEndpoints(ROOT_API_URL_PROD), validator.chainId);
+      const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
       } else {
@@ -81,7 +79,7 @@ export default class Deploy extends Command {
 
     if (!indexerVersion) {
       try {
-        const indexerVersions = await getImage_v(
+        const indexerVersions = await imageVersions(
           validator.manifestRunner.node.name,
           validator.manifestRunner.node.version,
           authToken,
@@ -105,7 +103,7 @@ export default class Deploy extends Command {
     }
     if (!queryVersion) {
       try {
-        const queryVersions = await getImage_v(
+        const queryVersions = await imageVersions(
           validator.manifestRunner.query.name,
           validator.manifestRunner.query.version,
           authToken,
@@ -122,18 +120,13 @@ export default class Deploy extends Command {
       }
     }
 
-    const projectInfo = await getDeployId(authToken, org, projectName, ROOT_API_URL_PROD);
-    const deployId = projectInfo.find(function (element) {
-      if (element.projectKey === `${org}/${projectName}`) {
-        return element;
-      }
-    });
+    const projectInfo = await projectsInfo(authToken, org, projectName, ROOT_API_URL_PROD, flags.type);
 
-    if (deployId !== undefined) {
-      await reDeployment(
+    if (projectInfo !== undefined) {
+      await redeploy(
         org,
         projectName,
-        deployId.id,
+        projectInfo.id,
         authToken,
         ipfsCID,
         endpoint,
@@ -145,7 +138,7 @@ export default class Deploy extends Command {
       this.log(`Project: ${projectName} has been re-deployed`);
     } else {
       this.log('Deploying SubQuery project to Hosted Service');
-      const deployment_output = await deployToHostedService(
+      const deploymentOutput = await deployToHostedService(
         org,
         projectName,
         authToken,
@@ -157,16 +150,16 @@ export default class Deploy extends Command {
         dict,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
-      this.log(`Project: ${deployment_output.projectKey}
-      \nStatus: ${chalk.blue(deployment_output.status)} 
-      \nDeploymentID: ${deployment_output.id}
-      \nDeployment Type: ${deployment_output.type}
-      \nIndexer version: ${indexerVersion}
-      \nQuery version: ${queryVersion}
-      \nEndpoint: ${deployment_output.endpoint}
-      \nDictionary Endpoint: ${deployment_output.dictEndpoint}
-      \nQuery URL: ${deployment_output.queryUrl}
-      \nProject URL: ${BASE_PROJECT_URL}/project/${deployment_output.projectKey}
+      this.log(`Project: ${deploymentOutput.projectKey}
+      \nStatus: ${chalk.blue(deploymentOutput.status)} 
+      \nDeploymentID: ${deploymentOutput.id}
+      \nDeployment Type: ${deploymentOutput.type}
+      \nIndexer version: ${deploymentOutput.indexerImage}
+      \nQuery version: ${deploymentOutput.queryImage}
+      \nEndpoint: ${deploymentOutput.endpoint}
+      \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
+      \nQuery URL: ${deploymentOutput.queryUrl}
+      \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
       `);
     }
   }

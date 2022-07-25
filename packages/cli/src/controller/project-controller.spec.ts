@@ -7,7 +7,7 @@ import {createProject, deleteProject} from './project-controller';
 
 const projectSpec = {
   org: process.env.SUBQL_ORG_TEST,
-  project_name: 'mocked_project',
+  projectName: 'mocked_project',
   repository: 'https://github.com/bz888/test-deployment-2',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
   subtitle: '',
@@ -23,13 +23,13 @@ const testIf = (condition: boolean, ...args: Parameters<typeof it>) => (conditio
 
 jest.setTimeout(120000);
 describe('CLI create project and delete project', () => {
-  testIf(!!testAuth, 'Create project and delete', async () => {
-    const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
+  it('Create project and delete', async () => {
+    const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
     const create_project = await createProject(
       org,
       subtitle,
       logoURl,
-      project_name,
+      projectName,
       testAuth,
       repository,
       description,
@@ -37,7 +37,7 @@ describe('CLI create project and delete project', () => {
       ROOT_API_URL_DEV
     );
     await delay(10);
-    const delete_project = await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, ROOT_API_URL_DEV);
+    const delete_project = await deleteProject(testAuth, org, projectName, ROOT_API_URL_DEV);
     expect(create_project.key).toMatch(`${process.env.SUBQL_ORG_TEST}/mocked_project`);
     expect(delete_project).toMatch(`${process.env.SUBQL_ORG_TEST}/mocked_project`);
   });

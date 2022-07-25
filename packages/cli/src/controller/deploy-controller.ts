@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {deploymentDataType, projectDataType, validateDataType} from '../types';
+import {DeploymentDataType, ProjectDataType, ValidateDataType} from '../types';
 import {errorHandle} from '../utils';
 
 export async function deployToHostedService(
@@ -16,8 +16,7 @@ export async function deployToHostedService(
   type: string,
   dictEndpoint: string,
   url: string
-): Promise<deploymentDataType> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
+): Promise<DeploymentDataType> {
   try {
     const result = (
       await axios({
@@ -25,7 +24,7 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `v2/subqueries/${key}/deployments`,
+        url: `v2/subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments`,
         baseURL: url,
         data: {
           version: ipfsCID,
@@ -54,14 +53,13 @@ export async function promoteDeployment(
   deploymentId: number,
   url: string
 ): Promise<string> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     await axios({
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `subqueries/${key}/deployments/${deploymentId}/release`,
+      url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deploymentId}/release`,
       baseURL: url,
     });
     return `${deploymentId}`;
@@ -77,14 +75,13 @@ export async function deleteDeployment(
   deploymentId: number,
   url: string
 ): Promise<string> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     await axios({
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `subqueries/${key}/deployments/${deploymentId}`,
+      url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deploymentId}`,
       baseURL: url,
     });
     return `${deploymentId}`;
@@ -100,7 +97,6 @@ export async function deploymentStatus(
   deployID: number,
   url: string
 ): Promise<string> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(project_name)}`;
   try {
     const result = (
       await axios({
@@ -108,7 +104,7 @@ export async function deploymentStatus(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `subqueries/${key}/deployments/${deployID}/status`,
+        url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deployID}/status`,
         baseURL: url,
       })
     ).data;
@@ -118,13 +114,14 @@ export async function deploymentStatus(
   }
 }
 
-export async function getDeployId(
+export async function projectsInfo(
   authToken: string,
   org: string,
   projectName: string,
-  url: string
-): Promise<projectDataType[]> {
-  const key = `${encodeURIComponent(org)}/${encodeURIComponent(projectName)}`;
+  url: string,
+  type: string
+): Promise<ProjectDataType> {
+  const key = `${org}/${projectName}`;
   try {
     const result = (
       await axios({
@@ -132,17 +129,17 @@ export async function getDeployId(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `subqueries/${key}/deployments`,
+        url: `subqueries/${encodeURIComponent(key)}/deployments`,
         baseURL: url,
       })
     ).data;
-    return result;
+    return result.find((element: ProjectDataType) => element.projectKey === `${key}` && element.type === type);
   } catch (e) {
     errorHandle(e, 'Failed to get projects:');
   }
 }
 
-export async function reDeployment(
+export async function redeploy(
   org: string,
   projectName: string,
   deployID: number,
@@ -154,14 +151,13 @@ export async function reDeployment(
   queryVersion: string,
   url: string
 ): Promise<void> {
-  const key = encodeURIComponent(`${org}/${projectName}`);
   try {
     await axios({
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
       method: 'put',
-      url: `v2/subqueries/${key}/deployments/${deployID}`,
+      url: `v2/subqueries/${encodeURIComponent(`${org}/${projectName}`)}/deployments/${deployID}`,
       baseURL: url,
       data: {
         version: ipfsCID,
@@ -179,7 +175,7 @@ export async function reDeployment(
     errorHandle(e, `Failed to redeploy project: ${e.message}`);
   }
 }
-export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<validateDataType> {
+export async function ipfsCID_validate(cid: string, authToken: string, url: string): Promise<ValidateDataType> {
   try {
     const result = (
       await axios({
@@ -197,7 +193,7 @@ export async function ipfsCID_validate(cid: string, authToken: string, url: stri
   }
 }
 
-export async function getDictEndpoints(url: string): Promise<endpointType[]> {
+export async function dictionaryEndpoints(url: string): Promise<EndpointType[]> {
   try {
     const result = (
       await axios({
@@ -212,7 +208,7 @@ export async function getDictEndpoints(url: string): Promise<endpointType[]> {
   }
 }
 
-export async function getEndpoints(url: string): Promise<endpointType[]> {
+export async function networkEndpoints(url: string): Promise<EndpointType[]> {
   try {
     const result = (
       await axios({
@@ -227,11 +223,11 @@ export async function getEndpoints(url: string): Promise<endpointType[]> {
   }
 }
 
-export function processEndpoints(endpoints: endpointType[], chainId: string): string | undefined {
-  return endpoints.find((endpoint: endpointType) => endpoint.chainId === chainId)?.endpoint;
+export function processEndpoints(endpoints: EndpointType[], chainId: string): string | undefined {
+  return endpoints.find((endpoint: EndpointType) => endpoint.chainId === chainId)?.endpoint;
 }
 
-export async function getImage_v(name: string, version: string, authToken: string, url: string): Promise<string[]> {
+export async function imageVersions(name: string, version: string, authToken: string, url: string): Promise<string[]> {
   try {
     const result = (
       await axios({
@@ -246,7 +242,7 @@ export async function getImage_v(name: string, version: string, authToken: strin
     errorHandle(e, 'Failed to get image:');
   }
 }
-interface endpointType {
+interface EndpointType {
   network: string;
   endpoint: string;
   chainId: string;
