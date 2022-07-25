@@ -37,9 +37,9 @@ import {
 } from 'class-validator';
 
 export class CosmosBlockFilter implements SubqlCosmosBlockFilter {
-  @IsNumber()
   @IsOptional()
-  modulo: number;
+  @IsInt()
+  modulo?: number;
 }
 
 export class CosmosMessageFilter implements SubqlCosmosMessageFilter {
@@ -67,6 +67,9 @@ export class CosmosBlockHandler implements SubqlCosmosBlockHandler {
   kind: SubqlCosmosHandlerKind.Block;
   @IsString()
   handler: string;
+  @IsOptional()
+  @Type(() => CosmosBlockFilter)
+  filter?: SubqlCosmosBlockFilter;
 }
 
 export class CosmosTransactionHandler implements SubqlCosmosTransactionHandler {
