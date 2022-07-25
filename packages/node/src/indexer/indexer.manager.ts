@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise } from '@polkadot/api';
+import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -36,15 +36,12 @@ import {
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerEvent } from './events';
-import { FetchService } from './fetch.service';
-import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
-import { BlockContent } from './types';
+import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -59,9 +56,7 @@ export class IndexerManager {
   constructor(
     private storeService: StoreService,
     private apiService: ApiService,
-    private fetchService: FetchService,
     private poiService: PoiService,
-    protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
@@ -69,28 +64,28 @@ export class IndexerManager {
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
-  ) {}
+  ) {
+    logger.info('indexer manager start');
+
+    this.api = this.apiService.getApi();
+  }
 
   @profiler(argv.profiler)
-  async indexBlock(blockContent: BlockContent): Promise<void> {
+  async indexBlock(
+    blockContent: BlockContent,
+    runtimeVersion: RuntimeVersion,
+  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
     const { block } = blockContent;
+    let dynamicDsCreated = false;
     const blockHeight = block.block.header.number.toNumber();
-    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height: blockHeight,
-      timestamp: Date.now(),
-    });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
 
+    let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
     try {
-      // Injected runtimeVersion from fetch service might be outdated
-      const runtimeVersion = await this.fetchService.getRuntimeVersion(block);
-      const apiAt = await this.apiService.getPatchedApi(block, runtimeVersion);
-
       this.filteredDataSources = this.filterDataSources(
         block.block.header.number.toNumber(),
       );
@@ -99,10 +94,17 @@ export class IndexerManager {
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
 
+      let apiAt: ApiAt;
+
       await this.indexBlockData(
         blockContent,
         datasources,
-        (ds: SubqlProjectDs) => {
+        async (ds: SubqlProjectDs) => {
+          // Injected runtimeVersion from fetch service might be outdated
+          apiAt =
+            apiAt ??
+            (await this.apiService.getPatchedApi(block, runtimeVersion));
+
           const vm = this.sandboxService.getDsProcessor(ds, apiAt);
 
           // Inject function to create ds into vm
@@ -118,7 +120,7 @@ export class IndexerManager {
               );
               // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
               datasources.push(newDs);
-              await this.fetchService.resetForNewDs(blockHeight);
+              dynamicDsCreated = true;
             },
             'createDynamicDatasource',
           );
@@ -135,18 +137,7 @@ export class IndexerManager {
         { transaction: tx },
       );
       // Need calculate operationHash to ensure correct offset insert all time
-      const operationHash = this.storeService.getOperationMerkleRoot();
-      if (
-        !u8aEq(operationHash, NULL_MERKEL_ROOT) &&
-        this.projectService.blockOffset === undefined
-      ) {
-        await this.projectService.upsertMetadataBlockOffset(
-          blockHeight - 1,
-          tx,
-        );
-        this.projectService.setBlockOffset(blockHeight - 1);
-      }
-
+      operationHash = this.storeService.getOperationMerkleRoot();
       if (this.nodeConfig.proofOfIndex) {
         //check if operation is null, then poi will not be inserted
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
@@ -170,23 +161,17 @@ export class IndexerManager {
       await tx.rollback();
       throw e;
     }
+
     await tx.commit();
-    this.fetchService.latestProcessed(block.block.header.number.toNumber());
+
+    return {
+      dynamicDsCreated,
+      operationHash,
+    };
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
-    await this.fetchService.init();
-
-    this.api = this.apiService.getApi();
-    const startHeight = this.projectService.startHeight;
-
-    void this.fetchService.startLoop(startHeight).catch((err) => {
-      logger.error(err, 'failed to fetch block');
-      // FIXME: retry before exit
-      process.exit(1);
-    });
-    this.fetchService.register((block) => this.indexBlock(block));
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
@@ -194,6 +179,7 @@ export class IndexerManager {
     filteredDs = this.project.dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
+
     if (filteredDs.length === 0) {
       logger.error(`Did not find any matching datasouces`);
       process.exit(1);
@@ -219,7 +205,7 @@ export class IndexerManager {
   private async indexBlockData(
     { block, events, extrinsics }: BlockContent,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
@@ -252,30 +238,30 @@ export class IndexerManager {
   private async indexBlockContent(
     block: SubstrateBlock,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM);
     }
   }
 
   private async indexExtrinsic(
     extrinsic: SubstrateExtrinsic,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM);
     }
   }
 
   private async indexEvent(
     event: SubstrateEvent,
     dataSources: SubqlProjectDs[],
-    getVM: (d: SubqlProjectDs) => IndexerSandbox,
+    getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM(ds));
+      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM);
     }
   }
 
@@ -283,14 +269,16 @@ export class IndexerManager {
     kind: K,
     data: SubstrateRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
-    vm: IndexerSandbox,
+    getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
+    let vm: IndexerSandbox;
     if (isRuntimeDs(ds)) {
       const handlers = ds.mapping.handlers.filter(
         (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
 
       for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
         await vm.securedExec(handler.handler, [data]);
       }
     } else if (isCustomDs(ds)) {
@@ -322,6 +310,7 @@ export class IndexerManager {
       );
 
       for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
         await this.transformAndExecuteCustomDs(ds, vm, handler, data);
       }
     }

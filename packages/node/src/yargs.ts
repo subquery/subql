@@ -156,6 +156,13 @@ export function getYargsOption() {
       describe: 'Reindex to specified block height',
       type: 'number',
     },
+    workers: {
+      alias: 'w',
+      demandOption: false,
+      describe:
+        'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+      type: 'number',
+    },
   });
 }
 
