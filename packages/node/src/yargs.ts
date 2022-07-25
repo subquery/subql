@@ -151,6 +151,11 @@ export function getYargsOption() {
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
+    reindex: {
+      demandOption: false,
+      describe: 'Reindex to specified block height',
+      type: 'number',
+    },
     workers: {
       alias: 'w',
       demandOption: false,

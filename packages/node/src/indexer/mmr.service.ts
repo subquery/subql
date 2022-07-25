@@ -250,4 +250,15 @@ export class MmrService implements OnApplicationShutdown {
       nodes,
     };
   }
+
+  async deleteMmrNode(blockHeight: number, blockOffset: number): Promise<void> {
+    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    const leafIndex = blockHeight - blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Target block height must greater equal to ${blockOffset + 1} `,
+      );
+    }
+    await this.fileBasedMmr.delete(leafIndex);
+  }
 }
