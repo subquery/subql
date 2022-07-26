@@ -44,7 +44,7 @@ export function isTerraProjectSpecV0_3_0(projectSpec: ProjectSpecBase): projectS
   return !!(projectSpec as TerraProjectSpecV0_3_0).chainId;
 }
 
-export interface validateDataType {
+export interface ValidateDataType {
   valid: boolean;
   manifestFile: string | null;
   chainId: string | null;
@@ -53,17 +53,18 @@ export interface validateDataType {
   errorMessage?: string;
 }
 
-export interface deploymentSpec {
+export interface DeploymentSpec {
   org: string;
-  project_name: string;
+  projectName: string;
   repository: string;
   ipfs: string;
   subtitle: string;
   description: string;
   logoURl: string;
   apiVersion: string;
+  type: string;
 }
-export interface deploymentDataType {
+export interface DeploymentDataType {
   projectKey: string;
   version: string;
   status: string;
@@ -87,4 +88,30 @@ export interface deploymentDataType {
       chainId: string;
     };
   };
+}
+
+export interface ProjectDataType {
+  createdAt: string;
+  updatedAt: string;
+  id: number;
+  projectKey: string;
+  version: string;
+  status: string;
+  cluster: string;
+  indexerImage: string;
+  queryImage: string;
+  subFolder: string;
+  endpoint: string;
+  dictEndpoint: string;
+  type: string;
+  queryUrl: string;
+  configuration: {
+    config: {
+      query: {};
+      indexer: {};
+    };
+  };
+  role: string;
+  chainId: string;
+  apiVersion: string;
 }

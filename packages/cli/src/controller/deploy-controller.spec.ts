@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ROOT_API_URL_DEV} from '../constants';
-import {deploymentSpec} from '../types';
+import {DeploymentDataType, DeploymentSpec, ValidateDataType} from '../types';
 import {delay} from '../utils';
 import {
   deployToHostedService,
@@ -10,24 +10,63 @@ import {
   deleteDeployment,
   deploymentStatus,
   ipfsCID_validate,
-  getEndpoints,
-  getDictEndpoints,
-  getImage_v,
+  networkEndpoints,
+  dictionaryEndpoints,
+  imageVersions,
   processEndpoints,
+  redeploy,
+  projectsInfo,
 } from './deploy-controller';
 import {createProject, deleteProject} from './project-controller';
 
 jest.setTimeout(120000);
-const projectSpec: deploymentSpec = {
+const projectSpec: DeploymentSpec = {
   org: process.env.SUBQL_ORG_TEST,
-  project_name: 'mocked_starter',
+  projectName: 'mockedstarter',
   repository: 'https://github.com/bz888/test-deployment-2',
   ipfs: 'QmaVh8DGzuRCJZ5zYEDxXQsXYqP9HihjjeuxNNteSDq8xX',
   subtitle: '',
   description: '',
   logoURl: '',
   apiVersion: '2',
+  type: 'stage',
 };
+
+async function deployTestProject(
+  validator: ValidateDataType,
+  ipfs: string,
+  org: string,
+  project_name: string,
+  testAuth: string,
+  url: string
+): Promise<DeploymentDataType> {
+  const indexerV = await imageVersions(
+    validator.manifestRunner.node.name,
+    validator.manifestRunner.node.version,
+    testAuth,
+    url
+  );
+  const queryV = await imageVersions(
+    validator.manifestRunner.query.name,
+    validator.manifestRunner.query.version,
+    testAuth,
+    url
+  );
+  const endpoint = await networkEndpoints(url);
+  const dictEndpoint = await dictionaryEndpoints(url);
+  return deployToHostedService(
+    org,
+    project_name,
+    testAuth,
+    ipfs,
+    indexerV[0],
+    queryV[0],
+    processEndpoints(endpoint, validator.chainId),
+    projectSpec.type,
+    processEndpoints(dictEndpoint, validator.chainId),
+    url
+  );
+}
 
 const describeIf = (condition: boolean, ...args: Parameters<typeof describe>) =>
   condition ? describe(...args) : describe.skip(...args);
@@ -37,13 +76,13 @@ const testAuth = process.env.SUBQL_ACCESS_TOKEN_TEST;
 
 describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
   beforeAll(async () => {
-    const {apiVersion, description, logoURl, org, project_name, repository, subtitle} = projectSpec;
+    const {apiVersion, description, logoURl, org, projectName, repository, subtitle} = projectSpec;
     try {
       await createProject(
         org,
         subtitle,
         logoURl,
-        project_name,
+        projectName,
         testAuth,
         repository,
         description,
@@ -51,96 +90,44 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
         ROOT_API_URL_DEV
       );
     } catch (e) {
-      console.warn(`Failed at create project ${project_name} ${e}`);
+      console.warn(`Failed at create project ${projectName} ${e}`);
     }
   });
 
   afterAll(async () => {
     try {
-      await deleteProject(testAuth, projectSpec.org, projectSpec.project_name, ROOT_API_URL_DEV);
+      await deleteProject(testAuth, projectSpec.org, projectSpec.projectName, ROOT_API_URL_DEV);
     } catch (e) {
       console.warn('Failed to delete project', e);
     }
   });
 
   it('Deploy to Hosted Service and Delete', async () => {
-    const {ipfs, org, project_name} = projectSpec;
+    const {ipfs, org, projectName} = projectSpec;
 
     const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
-    const indexer_v = await getImage_v(
-      validator.manifestRunner.node.name,
-      validator.manifestRunner.node.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const query_v = await getImage_v(
-      validator.manifestRunner.query.name,
-      validator.manifestRunner.query.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
-    const deploy_output = await deployToHostedService(
-      org,
-      project_name,
-      testAuth,
-      ipfs,
-      indexer_v[0],
-      query_v[0],
-      processEndpoints(endpoint, validator.chainId),
-      'stage',
-      processEndpoints(dictEndpoint, validator.chainId),
-      ROOT_API_URL_DEV
-    );
+    const deploy_output = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
 
-    const del_output = await deleteDeployment(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
+    const del_output = await deleteDeployment(org, projectName, testAuth, deploy_output.id, ROOT_API_URL_DEV);
     expect(typeof deploy_output.id).toBe('number');
     expect(+del_output).toBe(deploy_output.id);
   });
 
   // Only test locally
   it.skip('Promote Deployment', async () => {
-    const {ipfs, org, project_name} = projectSpec;
+    const {ipfs, org, projectName} = projectSpec;
     let status: string;
     let attempt = 0;
     const validator = await ipfsCID_validate(ipfs, testAuth, ROOT_API_URL_DEV);
-    const indexer_v = await getImage_v(
-      validator.manifestRunner.node.name,
-      validator.manifestRunner.node.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const query_v = await getImage_v(
-      validator.manifestRunner.query.name,
-      validator.manifestRunner.query.version,
-      testAuth,
-      ROOT_API_URL_DEV
-    );
-    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
-    const dictEndpoint = await getDictEndpoints(ROOT_API_URL_DEV);
-
-    const deploy_output = await deployToHostedService(
-      org,
-      project_name,
-      testAuth,
-      ipfs,
-      indexer_v[0],
-      query_v[0],
-      processEndpoints(endpoint, validator.chainId),
-      'stage',
-      processEndpoints(dictEndpoint, validator.chainId),
-      ROOT_API_URL_DEV
-    );
-
+    const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
     while (status !== 'running') {
       if (attempt >= 5) break;
       attempt = attempt + 1;
       await delay(30);
-      status = await deploymentStatus(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
+      status = await deploymentStatus(org, projectName, testAuth, deployOutput.id, ROOT_API_URL_DEV);
       if (status === 'running') {
-        const promote_output = await promoteDeployment(org, project_name, testAuth, deploy_output.id, ROOT_API_URL_DEV);
-        expect(+promote_output).toBe(deploy_output.id);
+        const promoteOutput = await promoteDeployment(org, projectName, testAuth, deployOutput.id, ROOT_API_URL_DEV);
+        expect(+promoteOutput).toBe(deployOutput.id);
       }
     }
   });
@@ -158,14 +145,54 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
 
   it('get Endpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-    const endpoint = await getEndpoints(ROOT_API_URL_DEV);
-    expect(processEndpoints(endpoint, validator.chainId)).toBe('wss://polkadot.api.onfinality.io/public-ws');
+    const endpoints = await networkEndpoints(ROOT_API_URL_DEV);
+    expect(processEndpoints(endpoints, validator.chainId)).toBe('wss://polkadot.api.onfinality.io/public-ws');
   });
   it('get DictEndpoint - polkadot', async () => {
     const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
-    const dict = await getDictEndpoints(ROOT_API_URL_DEV);
+    const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
     expect(processEndpoints(dict, validator.chainId)).toBe(
       'https://api.subquery.network/sq/subquery/polkadot-dictionary'
     );
+  });
+  it('reDeploy to Hosted Service', async () => {
+    const {ipfs, org, projectName, type} = projectSpec;
+    const newIPFS = 'QmbKvrzwSmzTZi5jrhEpa6yDDHQXRURi5S4ztLgJLpBxAi';
+    const validator = await ipfsCID_validate(projectSpec.ipfs, testAuth, ROOT_API_URL_DEV);
+
+    const deployOutput = await deployTestProject(validator, ipfs, org, projectName, testAuth, ROOT_API_URL_DEV);
+    const initProjectInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
+
+    const endpoints = await networkEndpoints(ROOT_API_URL_DEV);
+    const dict = await dictionaryEndpoints(ROOT_API_URL_DEV);
+    const indexerV = await imageVersions(
+      validator.manifestRunner.node.name,
+      validator.manifestRunner.node.version,
+      testAuth,
+      ROOT_API_URL_DEV
+    );
+    const queryV = await imageVersions(
+      validator.manifestRunner.query.name,
+      validator.manifestRunner.query.version,
+      testAuth,
+      ROOT_API_URL_DEV
+    );
+
+    await redeploy(
+      org,
+      projectName,
+      deployOutput.id,
+      testAuth,
+      newIPFS,
+      processEndpoints(endpoints, validator.chainId),
+      processEndpoints(dict, validator.chainId),
+      indexerV[0],
+      queryV[0],
+      ROOT_API_URL_DEV
+    );
+    const updatedInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
+
+    expect(updatedInfo.id).toBe(initProjectInfo.id);
+    expect(updatedInfo.version).not.toEqual(deployOutput.version);
   });
 });

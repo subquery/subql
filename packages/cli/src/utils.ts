@@ -64,3 +64,7 @@ export function errorHandle(e: any, msg: string): string {
     throw new Error(`${msg} ${e.message}`);
   }
 }
+
+export function buildProjectKey(org: string, projectName: string): string {
+  return encodeURIComponent(`${org}/${projectName}`);
+}

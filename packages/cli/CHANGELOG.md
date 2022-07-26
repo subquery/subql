@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Added redeploy deployment feature (#1205)
+- Rename `--project_name` flag to `--projectName` (#1205)
+
 ## [1.3.1] - 2022-07-13
 ### Fixed
 - Added resolution to downgrade `node-fetch` as we have not support ES module (1184)
