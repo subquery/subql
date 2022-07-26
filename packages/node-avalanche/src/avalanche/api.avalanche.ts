@@ -76,8 +76,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
     assert(options.endpoint, 'Network endpoint not provided');
 
-    const { hostname, port, protocol } = url.parse(options.endpoint);
-
+    const { hostname, pathname, port, protocol } = new URL(options.endpoint);
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 
@@ -88,7 +87,7 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
       ? undefined
       : 80;
 
-    this.client = new Avalanche(hostname, portNum, protocolStr);
+    this.client = new Avalanche(hostname + pathname, portNum, protocolStr);
 
     this.client.setRequestConfig('httpAgent', httpAgent as any);
     this.client.setRequestConfig('httpsAgent', httpsAgent as any);
