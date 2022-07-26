@@ -151,7 +151,7 @@ export class BlockDispatcherService
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
-        throw e;
+        process.exit(1);
       }
     });
   }
