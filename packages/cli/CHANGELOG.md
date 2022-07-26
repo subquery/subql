@@ -10,6 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ### Added
 - Added redeploy deployment feature
+- Rename `--project_name` flag to `--projectName`
 
 ## [1.3.1] - 2022-07-13
 ### Fixed
