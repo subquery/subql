@@ -3,11 +3,11 @@
 
 import axios from 'axios';
 import {DeploymentDataType, ProjectDataType, ValidateDataType} from '../types';
-import {errorHandle} from '../utils';
+import {buildProjectKey, errorHandle} from '../utils';
 
 export async function deployToHostedService(
   org: string,
-  project_name: string,
+  projectName: string,
   authToken: string,
   ipfsCID: string,
   indexerImageVersion: string,
@@ -24,7 +24,7 @@ export async function deployToHostedService(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'post',
-        url: `v2/subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments`,
+        url: `v2/subqueries/${buildProjectKey(org, projectName)}/deployments`,
         baseURL: url,
         data: {
           version: ipfsCID,
@@ -48,7 +48,7 @@ export async function deployToHostedService(
 
 export async function promoteDeployment(
   org: string,
-  project_name: string,
+  projectName: string,
   authToken: string,
   deploymentId: number,
   url: string
@@ -59,7 +59,7 @@ export async function promoteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'post',
-      url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deploymentId}/release`,
+      url: `subqueries/${buildProjectKey(org, projectName)}/deployments/${deploymentId}/release`,
       baseURL: url,
     });
     return `${deploymentId}`;
@@ -70,7 +70,7 @@ export async function promoteDeployment(
 
 export async function deleteDeployment(
   org: string,
-  project_name: string,
+  projectName: string,
   authToken: string,
   deploymentId: number,
   url: string
@@ -81,7 +81,7 @@ export async function deleteDeployment(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'delete',
-      url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deploymentId}`,
+      url: `subqueries/${buildProjectKey(org, projectName)}/deployments/${deploymentId}`,
       baseURL: url,
     });
     return `${deploymentId}`;
@@ -92,7 +92,7 @@ export async function deleteDeployment(
 
 export async function deploymentStatus(
   org: string,
-  project_name: string,
+  projectName: string,
   authToken: string,
   deployID: number,
   url: string
@@ -104,7 +104,7 @@ export async function deploymentStatus(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `subqueries/${encodeURIComponent(`${org}/${project_name}`)}/deployments/${deployID}/status`,
+        url: `subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}/status`,
         baseURL: url,
       })
     ).data;
@@ -129,7 +129,7 @@ export async function projectsInfo(
           Authorization: `Bearer ${authToken}`,
         },
         method: 'get',
-        url: `subqueries/${encodeURIComponent(key)}/deployments`,
+        url: `subqueries/${buildProjectKey(org, projectName)}/deployments`,
         baseURL: url,
       })
     ).data;
@@ -157,7 +157,7 @@ export async function redeploy(
         Authorization: `Bearer ${authToken}`,
       },
       method: 'put',
-      url: `v2/subqueries/${encodeURIComponent(`${org}/${projectName}`)}/deployments/${deployID}`,
+      url: `v2/subqueries/${buildProjectKey(org, projectName)}/deployments/${deployID}`,
       baseURL: url,
       data: {
         version: ipfsCID,
