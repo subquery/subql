@@ -8,9 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-07-27
 ### Added
 - Added redeploy deployment feature (#1205)
 - Rename `--project_name` flag to `--projectName` (#1205)
+### Fixed
+- Use latest runner validation from common package (#1195)
 
 ## [1.3.1] - 2022-07-13
 ### Fixed

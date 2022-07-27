@@ -5,12 +5,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [1.6.0] - 2022-07-27
 ### Changed
 - Make handler data types generic (#1194)
-
 ### Added
-
-- Support for worker threads. This will move block fetching and processing into a worker, this can increase performance by up to 4 times. By default this feature is disabled, you can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
+- [Experimental Feature] Support for worker threads. This will move block fetching and processing into a worker, this can increase performance by up to 4 times. By default, this feature is disabled, you can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
+- [Experimental Feature] Add reindexing feature, by `--reindex=<blockNumber>` this will remove indexed data and reindex from specified block height. (#1208)
+- Add block modulo filter on substrate blockHandler, E.g. if modulo: 50, the block handler will run on every 50 blocks (#1196)
 
 ## [1.5.1] - 2022-07-15
 ### Fixed
