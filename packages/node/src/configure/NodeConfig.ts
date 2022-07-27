@@ -33,6 +33,7 @@ export interface IConfig {
   readonly mmrPath?: string;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
+  readonly workers?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> &
@@ -122,6 +123,7 @@ export class NodeConfig implements IConfig {
   get debug(): boolean {
     return this._config.debug;
   }
+
   get preferRange(): boolean {
     return this._config.preferRange;
   }
@@ -163,6 +165,10 @@ export class NodeConfig implements IConfig {
 
   get dbSchema(): string {
     return this._config.dbSchema ?? this.subqueryName;
+  }
+
+  get workers(): number {
+    return this._config.workers;
   }
 
   merge(config: Partial<IConfig>): this {

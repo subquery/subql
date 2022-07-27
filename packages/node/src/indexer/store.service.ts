@@ -55,7 +55,6 @@ import {
   MetadataRepo,
 } from './entities/Metadata.entity';
 import { PoiFactory, PoiRepo, ProofOfIndex } from './entities/Poi.entity';
-import { PoiService } from './poi.service';
 import { StoreOperations } from './StoreOperations';
 import { OperationType } from './types';
 
@@ -85,13 +84,9 @@ export class StoreService {
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
   private blockHeight: number;
-  private historical: boolean;
+  historical: boolean;
 
-  constructor(
-    private sequelize: Sequelize,
-    private config: NodeConfig,
-    private poiService: PoiService,
-  ) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
   async init(
     modelsRelations: GraphQLModelsRelationsEnums,
@@ -100,6 +95,7 @@ export class StoreService {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
+
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -335,7 +331,7 @@ export class StoreService {
     return enabled;
   }
 
-  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]) {
+  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
     indexes.forEach((index) => {
       if (index.using === IndexType.GIN) {
         return;
@@ -436,7 +432,7 @@ export class StoreService {
   validateNotifyTriggers(
     triggerName: string,
     triggers: NotifyTriggerPayload[],
-  ) {
+  ): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
         `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `,
@@ -579,6 +575,59 @@ group by
         },
       },
     );
+  }
+
+  async rewind(
+    targetBlockHeight: number,
+    transaction: Transaction,
+  ): Promise<void> {
+    for (const model of Object.values(this.sequelize.models)) {
+      if ('__block_range' in model.getAttributes()) {
+        await model.destroy({
+          transaction,
+          hooks: false,
+          where: this.sequelize.where(
+            this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+            Op.gt,
+            targetBlockHeight,
+          ),
+        });
+        await model.update(
+          {
+            __block_range: this.sequelize.fn(
+              'int8range',
+              this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+              null,
+            ),
+          },
+          {
+            transaction,
+            hooks: false,
+            where: {
+              __block_range: {
+                [Op.contains]: targetBlockHeight,
+              },
+            },
+          },
+        );
+      }
+    }
+    await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
+      transaction,
+    });
+    if (this.config.proofOfIndex) {
+      await this.poiRepo.destroy({
+        transaction,
+        where: {
+          id: {
+            [Op.gt]: targetBlockHeight,
+          },
+        },
+      });
+      await this.setMetadata('lastPoiHeight', targetBlockHeight, {
+        transaction,
+      });
+    }
   }
 
   getStore(): Store {

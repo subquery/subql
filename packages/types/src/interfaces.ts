@@ -5,6 +5,7 @@ import {DecodedTxRaw} from '@cosmjs/proto-signing';
 import {Block} from '@cosmjs/stargate';
 import {Event, Log} from '@cosmjs/stargate/build/logs';
 import {TxData} from '@cosmjs/tendermint-rpc';
+
 export interface Entity {
   id: string;
 }

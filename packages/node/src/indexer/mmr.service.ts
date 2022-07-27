@@ -19,12 +19,13 @@ const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
 
-const keccak256Hash = (...nodeValues) =>
+const keccak256Hash = (...nodeValues: Uint8Array[]) =>
   Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
   private isShutdown = false;
+  private isSyncing = false;
   private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
@@ -46,6 +47,8 @@ export class MmrService implements OnApplicationShutdown {
     schema: string,
     blockOffset: number,
   ): Promise<void> {
+    if (this.isSyncing) return;
+    this.isSyncing = true;
     this.metadataRepo = MetadataFactory(this.sequelize, schema);
     this.poiRepo = PoiFactory(this.sequelize, schema);
     this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
@@ -108,9 +111,10 @@ export class MmrService implements OnApplicationShutdown {
         await delay(MMR_AWAIT_TIME);
       }
     }
+    this.isSyncing = false;
   }
 
-  async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
+  private async appendMmrNode(poiBlock: ProofOfIndex): Promise<void> {
     const newLeaf = poiBlock.hash;
     if (newLeaf.length !== DEFAULT_WORD_SIZE) {
       throw new Error(
@@ -125,12 +129,12 @@ export class MmrService implements OnApplicationShutdown {
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
 
-  validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array) {
+  private validatePoiMmr(poiWithMmr: ProofOfIndex, mmrValue: Uint8Array): void {
     if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(
           poiWithMmr.mmrRoot,
-        )} not same as filebased mmr: ${u8aToHex(mmrValue)}`,
+        )} not the same as filebased mmr: ${u8aToHex(mmrValue)}`,
       );
     } else {
       logger.info(
@@ -139,7 +143,10 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  async updatePoiMmrRoot(id: number, mmrValue: Uint8Array): Promise<void> {
+  private async updatePoiMmrRoot(
+    id: number,
+    mmrValue: Uint8Array,
+  ): Promise<void> {
     const poiBlock = await this.poiRepo.findByPk(id);
     if (poiBlock.mmrRoot === null) {
       poiBlock.mmrRoot = mmrValue;
@@ -149,7 +156,9 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
+  private async getPoiBlocksByRange(
+    startHeight: number,
+  ): Promise<ProofOfIndex[]> {
     const poiBlocks = await this.poiRepo.findAll({
       limit: DEFAULT_FETCH_RANGE,
       where: { id: { [Op.gte]: startHeight } },
@@ -162,7 +171,7 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
+  private async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
     const poiBlock = await this.poiRepo.findOne({
       order: [['id', 'DESC']],
       where: { mmrRoot: { [Op.ne]: null } },
@@ -170,15 +179,15 @@ export class MmrService implements OnApplicationShutdown {
     return poiBlock;
   }
 
-  async getFirstPoiWithoutMmr(): Promise<ProofOfIndex> {
-    const poiBlock = await this.poiRepo.findOne({
-      order: [['id', 'ASC']],
-      where: { mmrRoot: { [Op.eq]: null } },
-    });
-    return poiBlock;
-  }
+  // async getFirstPoiWithoutMmr(): Promise<ProofOfIndex> {
+  //   const poiBlock = await this.poiRepo.findOne({
+  //     order: [['id', 'ASC']],
+  //     where: { mmrRoot: { [Op.eq]: null } },
+  //   });
+  //   return poiBlock;
+  // }
 
-  async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
+  private async ensureFileBasedMmr(projectMmrPath: string): Promise<MMR> {
     let fileBasedDb: FileBasedDb;
     if (fs.existsSync(projectMmrPath)) {
       fileBasedDb = await FileBasedDb.open(projectMmrPath);
@@ -240,5 +249,16 @@ export class MmrService implements OnApplicationShutdown {
       leafLength: mmrProof.db.leafLength,
       nodes,
     };
+  }
+
+  async deleteMmrNode(blockHeight: number, blockOffset: number): Promise<void> {
+    this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
+    const leafIndex = blockHeight - blockOffset - 1;
+    if (leafIndex < 0) {
+      throw new Error(
+        `Target block height must greater equal to ${blockOffset + 1} `,
+      );
+    }
+    await this.fileBasedMmr.delete(leafIndex);
   }
 }

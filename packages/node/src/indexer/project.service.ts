@@ -1,7 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import fs from 'fs';
+import { off } from 'process';
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getAllEntitiesRelations } from '@subql/utils';
@@ -62,23 +65,41 @@ export class ProjectService {
   }
 
   async init(): Promise<void> {
-    await this.dsProcessorService.validateProjectCustomDatasources();
+    // Do extra work on main thread to setup stuff
+    if (isMainThread) {
+      await this.dsProcessorService.validateProjectCustomDatasources();
 
-    this._schema = await this.ensureProject();
-    await this.initDbSchema();
-    this.metadataRepo = await this.ensureMetadata();
-    this.dynamicDsService.init(this.metadataRepo);
+      this._schema = await this.ensureProject();
+      await this.initDbSchema();
+      this.metadataRepo = await this.ensureMetadata();
+      this.dynamicDsService.init(this.metadataRepo);
 
-    if (this.nodeConfig.proofOfIndex) {
-      const blockOffset = await this.getMetadataBlockOffset();
-      if (blockOffset !== null && blockOffset !== undefined) {
-        this.setBlockOffset(Number(blockOffset));
+      if (this.nodeConfig.proofOfIndex) {
+        const blockOffset = await this.getMetadataBlockOffset();
+        void this.setBlockOffset(Number(blockOffset));
+        await this.poiService.init(this.schema);
       }
-      await this.poiService.init(this.schema);
-    }
 
-    // TODO parse this to fetch service
-    this._startHeight = await this.getStartHeight();
+      this._startHeight = await this.getStartHeight();
+
+      if (argv.reindex !== undefined) {
+        await this.reindex(argv.reindex);
+      }
+    } else {
+      this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+
+      this.dynamicDsService.init(this.metadataRepo);
+
+      await this.sequelize.sync();
+
+      this._schema = await this.getExistingProjectSchema();
+      assert(this._schema, 'Schema should be created in main thread');
+      await this.initDbSchema();
+
+      if (this.nodeConfig.proofOfIndex) {
+        await this.poiService.init(this.schema);
+      }
+    }
   }
 
   private async ensureProject(): Promise<string> {
@@ -245,33 +266,27 @@ export class ProjectService {
     return metadataRepo;
   }
 
-  async upsertMetadataBlockOffset(
-    height: number,
-    tx: Transaction,
-  ): Promise<void> {
-    await this.metadataRepo.upsert(
-      {
-        key: 'blockOffset',
-        value: height,
-      },
-      { transaction: tx },
-    );
+  async upsertMetadataBlockOffset(height: number): Promise<void> {
+    await this.metadataRepo.upsert({
+      key: 'blockOffset',
+      value: height,
+    });
   }
 
-  async getMetadataBlockOffset(): Promise<number> {
+  async getMetadataBlockOffset(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
       where: { key: 'blockOffset' },
     });
 
-    return res?.value as number;
+    return res?.value as number | undefined;
   }
 
-  async getLastProcessedHeight(): Promise<number> {
+  async getLastProcessedHeight(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
       where: { key: 'lastProcessedHeight' },
     });
 
-    return res?.value as number;
+    return res?.value as number | undefined;
   }
 
   private async getStartHeight(): Promise<number> {
@@ -293,11 +308,18 @@ export class ProjectService {
     return startHeight;
   }
 
-  // FIXME Dedupe with indexer manager
-  setBlockOffset(offset: number): void {
+  async setBlockOffset(offset: number): Promise<void> {
+    if (
+      this._blockOffset ||
+      offset === null ||
+      offset === undefined ||
+      isNaN(offset)
+    ) {
+      return;
+    }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    void this.mmrService
+    return this.mmrService
       .syncFileBaseFromPoi(this.schema, offset)
       .catch((err) => {
         logger.error(err, 'failed to sync poi to mmr');
@@ -316,6 +338,35 @@ export class ProjectService {
       process.exit(1);
     } else {
       return Math.min(...startBlocksList);
+    }
+  }
+
+  private async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+    if (!this.storeService.historical) {
+      logger.warn('Unable to reindex, historical state not enabled');
+      return;
+    }
+    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
+      logger.warn(
+        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
+      );
+      return;
+    }
+    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.storeService.rewind(argv.reindex, transaction);
+
+      const blockOffset = await this.getMetadataBlockOffset();
+      if (blockOffset) {
+        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+      }
+      await transaction.commit();
+    } catch (err) {
+      logger.error(err, 'Reindexing failed');
+      await transaction.rollback();
+      throw err;
     }
   }
 }

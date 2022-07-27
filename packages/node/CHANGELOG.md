@@ -8,6 +8,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 =======
 ## [Unreleased]
+### Changed
+- Make handler data types generic (#1194)
+
+### Added
+
+- Support for worker threads. This will move block fetching and processing into a worker, this can increase performance by up to 4 times. By default this feature is disabled, you can enable it with the `--workers=<number>` flag. The number of workers will be capped to the number of CPU cores. (#1103)
+
+## [1.5.1] - 2022-07-15
+### Fixed
+- Unable to create ds processor from template when project hosted on IPFS (#1190)
+
+## [1.5.0] - 2022-07-12
+### Added
+- add option `dictionary-timeout`, allow indexer decide timeout for query dictionary result (#1177)
+### Changed
+- Improve error log (#1174)
+- Update Polkadot to 8.12.2 (#1179)
+
+## [1.4.1] - 2022-07-07
+### Fixed
+- Fix oversize subscription notification trigger name (#1171)
+
+## [1.4.0] - 2022-07-05
+### Fixed
+- Fix DI issue with EventEmitter not being resolved (#1154)
+- Validate dictionary before use its specVersion (#1152)
+### Changed
+- use Http keepAlive and maxSockets, use http2 (#1150)
+
+## [1.3.0] - 2022-06-29
+### Changed
+- Update tests with Manifest v1.0.0 (#1114)
+- Update redecorate api, allow apiAt object to query data earlier than current indexing block (#1111)
+- Using chain block time as interval to fetch latest finalized and best block height (#1134)
+### Fixed
+- Fix set block offset twice issue (#1133)
+- Fix warning for fetch specVersion when dictionary undefined, and tidy up logs (#1127)
+- Fix pending data being used when it should be reset with new DS (#1140)
 
 ## [1.5.1] - 2022-07-15
 ### Fixed
