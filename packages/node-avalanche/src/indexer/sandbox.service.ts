@@ -85,7 +85,9 @@ export class IndexerSandbox extends Sandbox {
     } catch (e) {
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
-        e.handlerArgs = JSON.stringify(args);
+        e.handlerArgs = JSON.stringify(args, (key, value) =>
+          typeof value === 'bigint' ? `${value.toString()}n` : value,
+        );
       }
       throw e;
     } finally {

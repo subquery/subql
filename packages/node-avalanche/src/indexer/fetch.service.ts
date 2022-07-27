@@ -232,7 +232,7 @@ export class FetchService implements OnApplicationShutdown {
             logger.error(
               e,
               `failed to index block at height ${block.blockHeight} ${
-                e.handler ? `${e.handler}(${e.handlerArgs ?? ''})` : ''
+                e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
               }`,
             );
             process.exit(1);
