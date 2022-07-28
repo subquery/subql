@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 import fs from 'fs';
-import { off } from 'process';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
@@ -202,10 +201,6 @@ export class ProjectService {
   private async ensureMetadata(): Promise<MetadataRepo> {
     const metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
-    const project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
       this.apiService.networkMeta,
@@ -230,7 +225,7 @@ export class ProjectService {
       return arr;
     }, {} as { [key in typeof keys[number]]: string | boolean | number });
 
-    const { chainId } = this.apiService.networkMeta;
+    const { chain } = this.apiService.networkMeta;
 
     if (this.project.runner) {
       await Promise.all([
@@ -252,8 +247,8 @@ export class ProjectService {
         }),
       ]);
     }
-    if (keyValue.chain !== chainId) {
-      await metadataRepo.upsert({ key: 'chain', value: chainId });
+    if (keyValue.chain !== chain) {
+      await metadataRepo.upsert({ key: 'chain', value: chain });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {

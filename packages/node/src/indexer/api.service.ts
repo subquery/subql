@@ -89,14 +89,13 @@ export class ApiService {
       this.api = new CosmosClient(tendermint, this.registry);
 
       this.networkMeta = {
-        chainId: network.chainId,
+        chain: network.chainId,
       };
 
       const chainId = await this.api.getChainId();
-      logger.info(chainId);
       if (network.chainId !== chainId) {
         const err = new Error(
-          `The given chainId does not match with client: "${network.chainId}"`,
+          `Network chainId doesn't match expected chainId. expected="${network.chainId}" actual="${chainId}`,
         );
         logger.error(err, err.message);
         throw err;
