@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-07-27
+### Added
+- Add `query-explain` flag, by enable this console will log actual SQL statement been queried. (#1192)
+
 ## [1.3.0] - 2022-07-05
 ### Changed
 - Try to catch error if create server failed, also give retry build schema (#1153)

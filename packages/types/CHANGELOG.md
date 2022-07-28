@@ -9,8 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-07-27
 ### Changed
-- Make `SubstrateExtrinsic` and `SubstrateEvent` types generic. This allows specifying the data/args type rather than being provided with `Codec[]` or `AnyTuple` (#1194)
+- Update `SubstrateBlockFilter` with new `modulo` filter. (#1196)
+- Make `SubstrateExtrinsic` and `SubstrateEvent` types generic. This allows specifying the data/args type rather than being provided with `Codec[]` or `AnyTuple`. (#1194)
 
 ## [1.1.0] - 2022-05-31
 ### Changed
