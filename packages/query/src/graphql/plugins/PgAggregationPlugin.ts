@@ -18,10 +18,10 @@ import {makePluginByCombiningPlugins} from 'graphile-utils';
 
 import {argv} from '../../yargs';
 
-const unsafe = argv('unsafe') as boolean;
+const aggregate = argv('aggregate') as boolean;
 
 // overwrite the official plugin: https://github.com/graphile/pg-aggregates/blob/main/src/AggregateSpecsPlugin.ts
-// Removes all aggregation functions when not using --unsafe flag.
+// Removes all aggregation functions when not using --aggregate flag.
 
 const AggregateSpecsPluginSafe: Plugin = (builder) => {
   builder.hook('build', (build) => {
@@ -49,7 +49,7 @@ const plugins = [
 
 let PgAggregationPlugin: Plugin;
 
-if (unsafe) {
+if (aggregate) {
   PgAggregationPlugin = makePluginByCombiningPlugins(...plugins, AggregateSpecsPlugin);
 } else {
   PgAggregationPlugin = makePluginByCombiningPlugins(...plugins, AggregateSpecsPluginSafe);
