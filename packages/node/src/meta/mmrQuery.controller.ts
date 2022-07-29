@@ -14,7 +14,6 @@ export class MmrQueryController {
   @Get('latest')
   @UseFilters(mmrExceptionsFilter)
   async getLatestMmr(@Param() params) {
-    // eslint-disable-next-line no-return-await
     return this.mmrService.getLatestMmr();
   }
 
@@ -27,7 +26,6 @@ export class MmrQueryController {
   @Get(':blockHeight')
   @UseFilters(mmrExceptionsFilter)
   async getMmr(@Param() params) {
-    // eslint-disable-next-line no-return-await
     return this.mmrService.getMmr(params.blockHeight);
   }
 
