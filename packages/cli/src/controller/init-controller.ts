@@ -110,11 +110,6 @@ export async function prepare(projectPath: string, project: ProjectSpecBase): Pr
   } catch (e) {
     throw new Error('Failed to remove .git from template project');
   }
-  try {
-    await promisify(rimraf)(`${projectPath}/.github`);
-  } catch (e) {
-    throw new Error('Failed to remove .github from template project');
-  }
 }
 
 async function preparePackage(projectPath: string, project: ProjectSpecBase): Promise<void> {
