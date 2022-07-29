@@ -3,11 +3,6 @@
 
 import { Module } from '@nestjs/common';
 import {
-  makeGaugeProvider,
-  PrometheusModule,
-} from '@willsoto/nestjs-prometheus';
-import { FetchModule } from '../indexer/fetch.module';
-import {
   MetricEventListener,
   ReadyController,
   ReadyService,
@@ -15,6 +10,11 @@ import {
   HealthService,
   MmrQueryController,
 } from '@subql/node-core/meta';
+import {
+  makeGaugeProvider,
+  PrometheusModule,
+} from '@willsoto/nestjs-prometheus';
+import { FetchModule } from '../indexer/fetch.module';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
 
