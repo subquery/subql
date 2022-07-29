@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { hideBin } from 'yargs/helpers';
+import {hideBin} from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -71,8 +71,7 @@ export function getYargsOption() {
     },
     debug: {
       demandOption: false,
-      describe:
-        'Show debug information to console output. will forcefully set log level to debug',
+      describe: 'Show debug information to console output. will forcefully set log level to debug',
       type: 'boolean',
       default: false,
     },
@@ -150,6 +149,17 @@ export function getYargsOption() {
       default: true,
       describe: 'Disable storing historical state entities',
       type: 'boolean',
+    },
+    reindex: {
+      demandOption: false,
+      describe: 'Reindex to specified block height',
+      type: 'number',
+    },
+    workers: {
+      alias: 'w',
+      demandOption: false,
+      describe: 'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+      type: 'number',
     },
   });
 }

@@ -3,8 +3,13 @@
 
 import { Module } from '@nestjs/common';
 import { DbModule } from '@subql/node-core/db';
-import { BenchmarkService, MmrService, StoreService, PoiService } from '@subql/node-core/indexer';
-import { getYargsOption } from '../yargs';
+import {
+  BenchmarkService,
+  MmrService,
+  StoreService,
+  PoiService,
+} from '@subql/node-core/indexer';
+import { getYargsOption } from '@subql/node-core/yargs';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';

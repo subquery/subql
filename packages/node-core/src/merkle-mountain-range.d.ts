@@ -10,6 +10,7 @@ declare module '@subql/x-merkle-mountain-range' {
     getRoot(leafIndex: number): Promise<Uint8Array>;
     append(value: Uint8Array, leafIndex?: number): Promise<void>;
     getProof(leafIndexes: number[], referenceTreeLength?: any): Promise<MMR<MemoryBasedDb>>;
+    delete(leafIndex: number): Promise<void>;
   }
 
   type Digest = (...nodeValues: Uint8Array[]) => Uint8Array;
