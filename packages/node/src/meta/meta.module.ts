@@ -7,8 +7,6 @@ import {
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
 import { FetchModule } from '../indexer/fetch.module';
-import { FetchService } from '../indexer/fetch.service';
-import { StoreService } from '../indexer/store.service';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';

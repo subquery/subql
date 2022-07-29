@@ -2,23 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Injectable } from '@nestjs/common';
-import { OnEvent } from '@nestjs/event-emitter';
-import { EventPayload, IndexerEvent } from '../indexer/events';
+import { ProjectService } from '../indexer/project.service';
 
 @Injectable()
 export class ReadyService {
-  private _ready: boolean;
+  constructor(private projectService: ProjectService) {}
 
-  constructor() {
-    this._ready = false;
-  }
-
-  @OnEvent(IndexerEvent.Ready)
-  handleReady({ value }: EventPayload<boolean>): void {
-    this._ready = value;
-  }
-
-  get ready() {
-    return this._ready;
+  get ready(): boolean {
+    return !!this.projectService.schema;
   }
 }

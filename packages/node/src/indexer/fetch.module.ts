@@ -104,6 +104,6 @@ const { argv } = getYargsOption();
     MmrService,
     ProjectService,
   ],
-  exports: [StoreService, MmrService],
+  exports: [StoreService, MmrService, ProjectService],
 })
 export class FetchModule {}
