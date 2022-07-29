@@ -11,6 +11,7 @@ const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TO
 
 export default class Create_project extends Command {
   static description = 'Create Project on Hosted Service';
+  static aliases = ['project:create', 'project:create-project'];
 
   static flags = {
     org: Flags.string({description: 'Enter organization name'}),
