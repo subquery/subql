@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as workers from 'worker_threads';
-import { Logger } from 'pino';
-import { getLogger } from '@subql/node-core/logger';
+import {Logger} from 'pino';
+import {getLogger} from '../..//logger';
 
 export type SerializableError = {
   message: string;
@@ -22,9 +22,7 @@ export type Response<T = any> = {
   result?: T;
 };
 
-export type AsyncFunc<T = any> = (
-  ...args: any[]
-) => T | Promise<T | void> | void;
+export type AsyncFunc<T = any> = (...args: any[]) => T | Promise<T | void> | void;
 type AsyncMethods = Record<string, AsyncFunc>;
 
 // TODO can we pass an event emitter rather than use parent port
@@ -116,18 +114,15 @@ export class Worker<T extends AsyncMethods> {
     });
 
     // Add expected methods to class
-    fns.map((fn: string) => {
-      if (this[fn]) {
+    fns.map((fn) => {
+      if ((this as any)[fn]) {
         throw new Error(`Method ${fn} is already defined`);
       }
-      Object.assign(this, { [fn]: (...args: any[]) => this.execute(fn, args) });
+      Object.assign(this, {[fn]: (...args: any[]) => this.execute(fn, args)});
     });
   }
 
-  static create<T extends AsyncMethods>(
-    path: string,
-    fns: (keyof T)[],
-  ): Worker<T> & T {
+  static create<T extends AsyncMethods>(path: string, fns: (keyof T)[]): Worker<T> & T {
     const worker = new Worker(path, fns);
 
     return worker as Worker<T> & T;
@@ -141,7 +136,7 @@ export class Worker<T extends AsyncMethods> {
     return this.worker.terminate();
   }
 
-  private async execute<T>(fnName: string, ...args: any[]): Promise<T> {
+  private async execute<T>(fnName: keyof T, ...args: any[]): Promise<T> {
     const id = this.getReqId();
 
     return new Promise<T>((resolve, reject) => {

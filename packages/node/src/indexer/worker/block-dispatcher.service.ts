@@ -10,6 +10,7 @@ import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { NodeConfig } from '@subql/node-core/configure';
 import { IndexerEvent } from '@subql/node-core/events';
+import { Worker } from '@subql/node-core/indexer';
 import { getLogger } from '@subql/node-core/logger';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
@@ -28,7 +29,6 @@ import {
   SetCurrentRuntimeVersion,
   GetWorkerStatus,
 } from './worker';
-import { Worker } from './worker.builder';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 

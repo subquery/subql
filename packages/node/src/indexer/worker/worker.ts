@@ -5,9 +5,9 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { registerWorker } from '@subql/node-core/indexer';
 import { getLogger, NestLogger } from '@subql/node-core/logger';
 import { IndexerManager } from '../indexer.manager';
-import { registerWorker } from './worker.builder';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
