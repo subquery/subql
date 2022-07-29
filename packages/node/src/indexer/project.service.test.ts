@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Test } from '@nestjs/testing';
-import { GraphQLSchema } from 'graphql';
-import { Sequelize } from 'sequelize';
 import { NodeConfig } from '@subql/node-core/configure';
-import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '@subql/node-core/db';
 import { SubqueryRepo } from '@subql/node-core/entities';
-import { IndexerManager } from './indexer.manager';
+import { GraphQLSchema } from 'graphql';
+import { Sequelize } from 'sequelize';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ProjectService } from './project.service';
 
 function testSubqueryProject(): SubqueryProject {
@@ -57,34 +56,6 @@ const prepare = async (): Promise<ProjectService> => {
         },
         inject: [Sequelize, SubqueryProject, 'Subquery'],
       },
-      // {
-      //   provide: IndexerManager,
-      //   useFactory: (
-      //     sequelize: Sequelize,
-      //     project: SubqueryProject,
-      //     projectService: ProjectService,
-      //     subqueryRepo: SubqueryRepo,
-      //   ) => {
-      //     const indexerManager = new IndexerManager(
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       sequelize,
-      //       project,
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       undefined,
-      //       subqueryRepo,
-      //       undefined,
-      //       projectService,
-      //     );
-      //     return indexerManager;
-      //   },
-      //   inject: [Sequelize, SubqueryProject, ProjectService, 'Subquery'],
-      // },
     ],
     imports: [
       DbModule.forRoot({

@@ -1,14 +1,14 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
-import { getYargsOption } from '../yargs';
-import { getLogger } from '../logger';
+import {getHeapStatistics} from 'v8';
+import {getLogger} from '../logger';
+import {getYargsOption} from '../yargs';
 
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 
-const { argv } = getYargsOption();
+const {argv} = getYargsOption();
 const logger = getLogger('memory');
 
 export function checkMemoryUsage(batchSizeScale: number): number {

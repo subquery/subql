@@ -10,9 +10,9 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { GraphQLSchema } from 'graphql';
 import { NodeConfig } from '@subql/node-core/configure';
 import { IndexerEvent } from '@subql/node-core/events';
+import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
@@ -19,7 +18,6 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
-import { FetchService } from './fetch.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
