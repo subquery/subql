@@ -3,8 +3,8 @@
 
 import {Command, Flags} from '@oclif/core';
 import * as inquirer from 'inquirer';
-import Create_project from './create-project';
-import Delete_project from './delete-project';
+import Create_project from './create';
+import Delete_project from './delete';
 
 type projectOptions = 'create' | 'delete';
 
