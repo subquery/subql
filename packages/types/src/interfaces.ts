@@ -48,6 +48,6 @@ export interface SubstrateEvent<T extends AnyTuple = AnyTuple> extends TypedEven
 
 export type DynamicDatasourceCreator = (name: string, args: Record<string, unknown>) => Promise<void>;
 
-type TypedEventRecord<T extends AnyTuple> = Omit<EventRecord, 'event'> & {
+export type TypedEventRecord<T extends AnyTuple> = Omit<EventRecord, 'event'> & {
   event: IEvent<T>;
 };
