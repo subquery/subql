@@ -86,6 +86,12 @@ export function getYargsOption() {
       describe: 'Explain query in SQL statement',
       type: 'boolean',
     },
+    aggregate: {
+      demandOption: false,
+      default: true,
+      describe: 'Enable aggregate feature',
+      type: 'boolean',
+    },
   });
 }
 
