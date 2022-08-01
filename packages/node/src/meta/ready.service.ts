@@ -18,7 +18,7 @@ export class ReadyService {
     this._ready = value;
   }
 
-  get ready() {
+  get ready(): boolean {
     return this._ready;
   }
 }

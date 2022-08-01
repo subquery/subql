@@ -5,12 +5,12 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
-import { EventEmitter2 } from 'eventemitter2';
 import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
@@ -240,7 +240,13 @@ export class BlockDispatcherService
       // There can be enough of a delay after fetching blocks that shutdown could now be true
       if (this.isShutdown) break;
 
-      await Promise.all(this.processQueue.putMany(blockTasks));
+      const pendingBlockTasks = this.processQueue.putMany(blockTasks);
+
+      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+        value: this.processQueue.size,
+      });
+
+      await Promise.all(pendingBlockTasks);
     }
 
     this.fetching = false;
@@ -456,6 +462,11 @@ export class WorkerBlockDispatcherService
 
   set latestBufferedHeight(height: number) {
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
+      value: this.queueSize,
+    });
+
+    // There is only a single queue with workers so we treat them as the same
+    this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
       value: this.queueSize,
     });
     this._latestBufferedHeight = height;

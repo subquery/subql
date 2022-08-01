@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 import fs from 'fs';
-import { off } from 'process';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
