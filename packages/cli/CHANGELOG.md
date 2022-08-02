@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Support for Algorand projects
+
 ## [1.4.0] - 2022-07-27
 ### Added
 - Added redeploy deployment feature (#1205)

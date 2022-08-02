@@ -4,6 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectRootAndManifest} from '@subql/common';
+import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
@@ -44,7 +45,16 @@ export async function uploadToIpfs(projectPath: string, authToken: string, ipfsE
         manifest = parseCosmosProjectManifest(schema).asImpl;
       } catch (e) {
         //avalanche
-        manifest = parseAvalancheProjectManifest(schema).asImpl;
+        try {
+          manifest = parseAvalancheProjectManifest(schema).asImpl;
+        } catch (e) {
+          // algorand
+          try {
+            manifest = parseAlgorandProjectManifest(schema).asImpl;
+          } catch (e) {
+            throw new Error('Unable to pass project manifest');
+          }
+        }
       }
     }
   }
