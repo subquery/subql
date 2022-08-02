@@ -303,7 +303,9 @@ export class StoreService {
     }
     this.metaDataRepo = MetadataFactory(this.sequelize, schema);
 
-    await this.sequelize.sync();
+    // this will allow alter current entity, including fields
+    // TODO, add rules for changes, eg only allow add nullable field
+    await this.sequelize.sync({ alter: { drop: true } });
     await this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
