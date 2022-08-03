@@ -52,6 +52,7 @@ import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
+import PgDictionaryPlugin from './PgDictionaryPlugin';
 
 /* eslint-enable */
 
@@ -101,6 +102,7 @@ export const pgDefaultPlugins = [
 const plugins = [
   ...defaultPlugins,
   ...pgDefaultPlugins,
+  PgDictionaryPlugin,
   PgSimplifyInflectorPlugin,
   PgManyToManyPlugin,
   ConnectionFilterPlugin,
