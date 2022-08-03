@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.6.1] - 2022-08-02
+Priority: High. Fixes 1.6.0 failed to start issue.
+### Fixed
+- Fix one off events being missed on startup (#1224)
+
 ## [1.6.0] - 2022-07-27
 ### Changed
 - Make handler data types generic (#1194)
