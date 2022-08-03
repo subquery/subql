@@ -22,6 +22,7 @@ export enum NETWORK_FAMILY {
   avalanche = 'Avalanche',
   terra = 'Terra',
   cosmos = 'Cosmos',
+  algorand = 'Algorand',
 }
 
 export const runnerMapping = {
@@ -30,4 +31,5 @@ export const runnerMapping = {
   '@subql/node-avalanche': NETWORK_FAMILY.avalanche,
   '@subql/node-terra': NETWORK_FAMILY.terra,
   '@subql/node-cosmos': NETWORK_FAMILY.cosmos,
+  '@subql/node-algorand': NETWORK_FAMILY.algorand,
 };
