@@ -3256,7 +3256,7 @@ __metadata:
     "@oclif/dev-cli": ^1.26.10
     "@oclif/plugin-help": ^3.2.3
     "@subql/common": "workspace:*"
-    "@subql/common-algorand": dev
+    "@subql/common-algorand": latest
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
     "@subql/common-substrate": "workspace:*"
@@ -3293,33 +3293,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-algorand@npm:dev":
-  version: 0.0.2-1
-  resolution: "@subql/common-algorand@npm:0.0.2-1"
-  dependencies:
-    "@subql/common": latest
-    "@subql/types-algorand": 1.1.1-1
-    class-transformer: 0.4.0
-    class-validator: ^0.13.2
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.3.7
-  checksum: 53e576087fcd48d20f1df0e134b66fd64ce2869719fa6fe63334969ba08990662fc5a58e9917a75d8094fc44bdfd53b40e003c1dd10eb0e7854544e1e76473a2
-  languageName: node
-  linkType: hard
-
 "@subql/common-algorand@npm:latest":
-  version: 0.0.2-0
-  resolution: "@subql/common-algorand@npm:0.0.2-0"
+  version: 1.0.0
+  resolution: "@subql/common-algorand@npm:1.0.0"
   dependencies:
     "@subql/common": latest
-    "@subql/types-algorand": 1.1.1-0
+    "@subql/types-algorand": 1.2.1
     class-transformer: 0.4.0
     class-validator: ^0.13.2
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.7
-  checksum: 1c6d047b0407783d450537227ea565774cb376fdb3568a57ba7cceb33626a6826a836c7248ab4fe25a4a3c807e6940cdc64e09ee34e4bab7882e51c5ab54b72b
+  checksum: c60bbe97468e63bb3dfa56214b15de85e205a4e4dcfae9306e936fc3e9e3072f1fa580c6ecb840d5270f3621e78f31a6621048ba79167f205c32908d6cf6e1d8
   languageName: node
   linkType: hard
 
@@ -3548,21 +3533,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-algorand@npm:1.1.1-0":
-  version: 1.1.1-0
-  resolution: "@subql/types-algorand@npm:1.1.1-0"
-  peerDependencies:
-    "@polkadot/api": ^8
-  checksum: b9f9d8d024920ce86add54ba7d6eb1090199f9e48b06ff34962e472d4d8c294f1c0af39818f07d0a27b574228b4a585994de50087686f697f89b0c72cef66bfc
-  languageName: node
-  linkType: hard
-
-"@subql/types-algorand@npm:1.1.1-1":
-  version: 1.1.1-1
-  resolution: "@subql/types-algorand@npm:1.1.1-1"
+"@subql/types-algorand@npm:1.2.1":
+  version: 1.2.1
+  resolution: "@subql/types-algorand@npm:1.2.1"
   peerDependencies:
     algosdk: ^1.19.0
-  checksum: f3178a971f2ee136fde6a73aebbf39580576d66f8533adb418e2c31b788d25e9e430442e449b02fbd805e64275e144caddfd39e8b28f8ad69b66fd7123412be1
+  checksum: be32fe64260d4d13f9a993585612f07c9fa4da8c002e9369c6b18d770cac9feda2ce5a0c5a6771f652515475cf516f9ebc531126417c86b53b6fbc42812831f9
   languageName: node
   linkType: hard
 
