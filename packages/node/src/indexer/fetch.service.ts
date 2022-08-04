@@ -19,6 +19,7 @@ import {
   SubstrateHandler,
   SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
+  SubstrateBlockFilter,
 } from '@subql/common-substrate';
 import {
   DictionaryQueryEntry,
@@ -174,7 +175,12 @@ export class FetchService implements OnApplicationShutdown {
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubstrateHandlerKind.Block:
-            return [];
+            for (const filter of filterList as SubstrateBlockFilter[]) {
+              if (filter.modulo === undefined) {
+                return [];
+              }
+            }
+            break;
           case SubstrateHandlerKind.Call: {
             for (const filter of filterList as SubstrateCallFilter[]) {
               if (filter.module !== undefined && filter.method !== undefined) {
