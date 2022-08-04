@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-08-04
+### Added
+- Support for Algorand projects (#1228)
+
 ## [1.3.0] - 2022-07-27
 ### Changed
 - Update dependencies with `@subql/common`

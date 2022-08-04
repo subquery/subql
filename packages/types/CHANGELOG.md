@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.1] - 2022-08-04
+### Fixed
+- Export `EventTypeRecord` (#1225)
+
 ## [1.2.0] - 2022-07-27
 ### Changed
 - Update `SubstrateBlockFilter` with new `modulo` filter. (#1196)
