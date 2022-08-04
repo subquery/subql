@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Utilise dictionary if all block filters have `modulo` set (#1232)
+
 ## [1.6.1] - 2022-08-02
 Priority: High. Fixes 1.6.0 failed to start issue.
 ### Fixed
