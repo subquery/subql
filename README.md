@@ -5,7 +5,7 @@
 
 SubQuery allows every Substrate/Polkadot team to process and query their data. The project is inspired by the growth of data protocols serving the application layer and its aim is to help Polkadot/Substrate projects build better dApps by allowing anyone to reliably find and consume data faster. Today, anyone can query and extract Polkadot network data in only minutes and at no cost.
 
-SubQuery aims to support all Substrate-compatible networks. For SubQuery support on other networks please visit:
+SubQuery aims to support all Substrate-compatible networks. For SubQuery support on other networks, please visit:
 * [SubQuery Algorand](https://github.com/subquery/subql-algorand)
 * [SubQuery Cosmos](https://github.com/subquery/subql-cosmos)
 
