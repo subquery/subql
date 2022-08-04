@@ -6,7 +6,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {ReaderFactory} from '@subql/common';
+import {NETWORK_FAMILY, ReaderFactory} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
 import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
@@ -81,7 +81,9 @@ export async function createTestProject(projectSpec: ProjectSpecBase): Promise<s
     tmpdir,
     projectSpec.name,
     'https://github.com/subquery/subql-starter',
-    branch
+    `multi`,
+    NETWORK_FAMILY.substrate,
+    'Polkadot'
   );
   await prepare(projectPath, projectSpec);
 

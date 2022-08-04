@@ -90,6 +90,7 @@ export default class Init extends Command {
   private project: ProjectSpecBase;
   private location: string;
   private networkFamily: NETWORK_FAMILY;
+  private network: string;
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
@@ -113,9 +114,12 @@ export default class Init extends Command {
 
     let templates: Template[];
     let selectedTemplate: Template;
-    let selectedNetwork: string;
 
-    templates = (await fetchTemplates()).filter(({specVersion}) => specVersion === flags.specVersion);
+    //use branch name as SpecVersion here
+    // TODO, deprecate specVersion. add back filter here  .filter(({branch}) => branch === flags.specVersion);
+    // Put starter under family->network->project
+
+    templates = await fetchTemplates();
     await this.observeTemplates(templates, flags);
 
     //Family selection
@@ -153,9 +157,9 @@ export default class Init extends Command {
         },
       ])
       .then(({networkResponse}) => {
-        selectedNetwork = networkResponse;
+        this.network = networkResponse;
       });
-    const candidateTemplates = templates.filter(({network}) => network === selectedNetwork);
+    const candidateTemplates = templates.filter(({network}) => network === this.network);
     await this.observeTemplates(candidateTemplates, flags);
 
     // Templates selection
@@ -182,6 +186,7 @@ export default class Init extends Command {
         } else {
           selectedTemplate = templates.find(({name}) => name === templateName);
           flags.specVersion = selectedTemplate.specVersion;
+          await this.observeTemplates([selectedTemplate], flags);
         }
       });
     this.projectPath = await cloneProjectTemplate(this.location, this.project.name, selectedTemplate);
@@ -189,11 +194,16 @@ export default class Init extends Command {
   }
   // observe templates, if no option left or manually select use custom templates
   async observeTemplates(templates: Template[], flags: any): Promise<void> {
-    if (templates.length === 0) {
-      const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-      this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
-      await this.setupProject(flags);
-    }
+    const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+    this.projectPath = await cloneProjectGit(
+      this.location,
+      this.project.name,
+      gitRemote,
+      gitBranch,
+      this.networkFamily,
+      this.network
+    );
+    await this.setupProject(flags);
   }
 
   async setupProject(flags: any): Promise<void> {

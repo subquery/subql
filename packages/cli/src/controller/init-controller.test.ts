@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as fs from 'fs';
-import os from 'os';
 import path from 'path';
-import {fetchTemplates, cloneProjectGit, cloneProjectTemplate, prepare, readDefaults} from './init-controller';
+import {makeTempDir, NETWORK_FAMILY} from '@subql/common';
+import {cloneProjectGit, cloneProjectTemplate, fetchTemplates, prepare, readDefaults} from './init-controller';
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {
@@ -15,12 +15,6 @@ const fileExists = async (file: string): Promise<boolean> => {
   });
 };
 
-async function makeTempDir() {
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
-  return tempPath;
-}
 jest.setTimeout(30000);
 
 const projectSpec = {
@@ -49,7 +43,9 @@ describe('Cli can create project', () => {
       tempPath,
       projectSpec.name,
       'https://github.com/subquery/subql-starter',
-      'v0.2.0'
+      'multi',
+      NETWORK_FAMILY.substrate,
+      'Polkadot'
     );
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
@@ -78,4 +74,19 @@ describe('Cli can create project', () => {
     expect(projectSpec.description).toEqual(description);
     expect(projectSpec.license).toEqual(license);
   });
+
+  it('allow git from sub directory', async () => {
+    const tempPath = await makeTempDir();
+
+    const projectPath = await cloneProjectGit(
+      tempPath,
+      projectSpec.name,
+      'https://github.com/subquery/subql-starter',
+      'multi',
+      NETWORK_FAMILY.substrate,
+      'Polkadot'
+    );
+    // await prepare(projectPath, projectSpec);
+    // await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
+  }, 5000000);
 });

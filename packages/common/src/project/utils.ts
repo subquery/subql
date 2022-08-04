@@ -2,10 +2,18 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface} from 'class-validator';
 import detectPort from 'detect-port';
 import {prerelease, satisfies, valid, validRange} from 'semver';
+
+export async function makeTempDir(): Promise<string> {
+  const sep = path.sep;
+  const tmpDir = os.tmpdir();
+  const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
+  return tempPath;
+}
 
 export async function findAvailablePort(startPort: number, range = 10): Promise<number> {
   for (let port = startPort; port <= startPort + range; port++) {

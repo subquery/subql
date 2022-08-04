@@ -4,8 +4,9 @@
 import * as fs from 'fs';
 import os from 'os';
 import path from 'path';
+import {NETWORK_FAMILY} from '@subql/common';
 import git from 'simple-git';
-import {cloneProjectGit, prepare} from './init-controller';
+import {cloneProjectGit} from './init-controller';
 
 jest.mock('simple-git', () => {
   const mGit = {
@@ -38,8 +39,15 @@ describe('Cli can create project (mocked)', () => {
     (git().clone as jest.Mock).mockImplementationOnce((cb) => {
       cb(new Error());
     });
-    await expect(cloneProjectGit(tempPath, projectSpec.name, 'invalid_url', 'invalid_branch')).rejects.toThrow(
-      /Failed to clone starter template from git/
-    );
+    await expect(
+      cloneProjectGit(
+        tempPath,
+        projectSpec.name,
+        'invalid_url',
+        'invalid_branch',
+        NETWORK_FAMILY.substrate,
+        'invalid_network'
+      )
+    ).rejects.toThrow(/Failed to clone starter template from git/);
   });
 });
