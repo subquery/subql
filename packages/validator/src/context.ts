@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Reader} from '@subql/common';
+import {AlgorandProjectManifestVersioned} from '@subql/common-algorand';
 import {SubstrateProjectManifestVersioned as AvalancheProjectManifestVersioned} from '@subql/common-avalanche';
 import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
@@ -15,7 +16,8 @@ export interface ContextData {
     | SubstrateProjectManifestVersioned
     | TerraProjectManifestVersioned
     | CosmosProjectManifestVersioned
-    | AvalancheProjectManifestVersioned;
+    | AvalancheProjectManifestVersioned
+    | AlgorandProjectManifestVersioned;
 }
 
 export interface Context {
