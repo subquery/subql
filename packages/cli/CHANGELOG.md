@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
-
+## [1.5.0] - 2022-08-04
 ### Added
-- Support for Algorand projects
+- Support for Algorand projects (#1228)
+
+### Fixed
+- Removing `.github` directory from starter templates (#1223)
 
 ## [1.4.0] - 2022-07-27
 ### Added
