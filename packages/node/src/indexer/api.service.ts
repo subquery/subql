@@ -60,6 +60,7 @@ export class ApiService implements OnApplicationShutdown {
     this.apiOption = {
       provider,
       throwOnConnect,
+      noInitWarn: true,
       ...chainTypes,
     };
     this.api = await ApiPromise.create(this.apiOption);
