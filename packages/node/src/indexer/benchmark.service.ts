@@ -65,6 +65,7 @@ export class BenchmarkService {
     }
   }
 
+  // counter for handleProcessingBlock
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;

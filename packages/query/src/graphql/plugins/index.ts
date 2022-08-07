@@ -53,7 +53,7 @@ import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
 import PgDictionaryPlugin from './PgDictionaryPlugin';
-import {PgTestPlugin} from './PgTestPlugin';
+import {PgDistinct} from './PgDistinct';
 
 /* eslint-enable */
 
@@ -111,7 +111,7 @@ const plugins = [
   GetMetadataPlugin,
   PgAggregationPlugin,
   PgBlockHeightPlugin,
-  PgTestPlugin,
+  PgDistinct,
   PgRowByVirtualIdPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
