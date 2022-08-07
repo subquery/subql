@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { fetchBlocks, fetchBlocksViaRangeQuery } from './substrate';
+import { fetchBlocks } from './substrate';
 
 const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
 
@@ -34,15 +34,5 @@ describe('substrate utils', () => {
     await expect(fetchBlocks(api, 100000000, 100000019)).rejects.toThrow(
       /Unable to retrieve header and parent from supplied hash/,
     );
-  });
-
-  it.skip('query range of blocks via range query', async () => {
-    const blocks = await fetchBlocksViaRangeQuery(api, 100000, 100019);
-    expect(blocks).toHaveLength(20);
-    for (const block of blocks) {
-      expect(block).toHaveProperty('block');
-      expect(block).toHaveProperty('extrinsics');
-      expect(block).toHaveProperty('events');
-    }
   });
 });
