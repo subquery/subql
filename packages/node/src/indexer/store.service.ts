@@ -110,6 +110,7 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
+    await this.setMetadata('processedBlockHeight', 0);
   }
 
   // eslint-disable-next-line complexity
@@ -616,6 +617,7 @@ group by
         );
       }
     }
+
     await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
       transaction,
     });

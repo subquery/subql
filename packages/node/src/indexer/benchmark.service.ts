@@ -25,6 +25,8 @@ export class BenchmarkService {
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
 
+  private currentProcessedCount: number;
+
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
     if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
@@ -35,6 +37,13 @@ export class BenchmarkService {
           this.currentProcessingHeight - this.lastRegisteredHeight;
         const timeDiff =
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
+
+        // currently if currentBlockHeight is 30000, but lastRegisteredHeight is 20000,
+        // heightDiff does not apply to dictionary
+        // time-diff = 3000 - 2000 = 1000
+        // 30000 - 20000 = 10000
+        // 10000 / 1000 = 10
+        // 10 blocks per second
         this.blockPerSecond =
           heightDiff === 0 || timeDiff === 0
             ? 0
@@ -70,6 +79,10 @@ export class BenchmarkService {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }
+
+  // expose the number of processed blocks / 15 seconds
+  // emitter
+  // listen
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
