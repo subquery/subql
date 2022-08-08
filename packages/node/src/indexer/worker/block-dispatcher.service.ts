@@ -15,7 +15,9 @@ import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { fetchBlocksBatches } from '../../utils/substrate';
+import { profilerWrap } from '../../utils/profiler';
+import * as SubstrateUtil from '../../utils/substrate';
+import { getYargsOption } from '../../yargs';
 import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
@@ -115,6 +117,9 @@ export class BlockDispatcherService
   private onDynamicDsCreated: (height: number) => Promise<void>;
   private _latestBufferedHeight: number;
 
+  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
+  private latestProcessedHeight: number;
+
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
@@ -124,6 +129,16 @@ export class BlockDispatcherService
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
+
+    const { argv } = getYargsOption();
+
+    if (argv.profiler) {
+      this.fetchBlocksBatches = profilerWrap(
+        SubstrateUtil.fetchBlocksBatches,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
+      );
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -190,7 +205,7 @@ export class BlockDispatcherService
         }], total ${blockNums.length} blocks`,
       );
 
-      const blocks = await fetchBlocksBatches(
+      const blocks = await this.fetchBlocksBatches(
         this.apiService.getApi(),
         blockNums,
       );
@@ -227,6 +242,12 @@ export class BlockDispatcherService
           if (dynamicDsCreated) {
             await this.onDynamicDsCreated(height);
           }
+
+          assert(
+            !this.latestProcessedHeight || height > this.latestProcessedHeight,
+            `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
+          );
+          this.latestProcessedHeight = height;
         } catch (e) {
           if (this.isShutdown) {
             return;
@@ -244,13 +265,11 @@ export class BlockDispatcherService
       // There can be enough of a delay after fetching blocks that shutdown could now be true
       if (this.isShutdown) break;
 
-      const pendingBlockTasks = this.processQueue.putMany(blockTasks);
+      void this.processQueue.putMany(blockTasks);
 
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.processQueue.size,
       });
-
-      await Promise.all(pendingBlockTasks);
     }
 
     this.fetching = false;
