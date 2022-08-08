@@ -11,7 +11,6 @@ import cli from 'cli-ux';
 import fuzzy from 'fuzzy';
 import * as inquirer from 'inquirer';
 import {uniq} from 'lodash';
-import {lt, gte} from 'semver';
 import {
   fetchTemplates,
   Template,
@@ -21,8 +20,7 @@ import {
   readDefaults,
   prepare,
 } from '../controller/init-controller';
-import {getGenesisHash} from '../jsonrpc';
-import {ProjectSpecBase, ProjectSpecV0_2_0, ProjectSpecV1_0_0} from '../types';
+import {ProjectSpecBase} from '../types';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
 const RECOMMEND_VERSION = '1.0.0';
@@ -72,12 +70,6 @@ export default class Init extends Command {
     location: Flags.string({char: 'l', description: 'local folder to create the project in'}),
     'install-dependencies': Flags.boolean({description: 'Install dependencies as well', default: false}),
     npm: Flags.boolean({description: 'Force using NPM instead of yarn, only works with `install-dependencies` flag'}),
-    specVersion: Flags.string({
-      required: false,
-      options: ['0.2.0', '1.0.0'],
-      default: RECOMMEND_VERSION,
-      description: 'The spec version to be used by the project',
-    }),
   };
 
   static args = [
@@ -94,14 +86,6 @@ export default class Init extends Command {
 
   async run(): Promise<void> {
     const {args, flags} = await this.parse(Init);
-
-    if (lt(flags.specVersion, RECOMMEND_VERSION)) {
-      this.log(
-        `${chalk.yellow('WARNING')} Using specVersion ${
-          flags.specVersion
-        } is deprecated and in the future will be denied from being uploaded to the subquery hosted service. Consider initializing your project with specVersion ${RECOMMEND_VERSION}`
-      );
-    }
 
     this.location = flags.location ? path.resolve(flags.location) : process.cwd();
     this.project = {} as ProjectSpecBase;
@@ -185,7 +169,6 @@ export default class Init extends Command {
           await this.observeTemplates([], flags);
         } else {
           selectedTemplate = templates.find(({name}) => name === templateName);
-          flags.specVersion = selectedTemplate.specVersion;
           await this.observeTemplates([selectedTemplate], flags);
         }
       });
@@ -194,16 +177,10 @@ export default class Init extends Command {
   }
   // observe templates, if no option left or manually select use custom templates
   async observeTemplates(templates: Template[], flags: any): Promise<void> {
-    const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
-    this.projectPath = await cloneProjectGit(
-      this.location,
-      this.project.name,
-      gitRemote,
-      gitBranch,
-      this.networkFamily,
-      this.network
-    );
-    await this.setupProject(flags);
+    if (templates.length === 0) {
+      const [gitRemote, gitBranch] = await promptValidRemoteAndBranch();
+      this.projectPath = await cloneProjectGit(this.location, this.project.name, gitRemote, gitBranch);
+    }
   }
 
   async setupProject(flags: any): Promise<void> {
@@ -226,17 +203,6 @@ export default class Init extends Command {
     });
 
     this.project.repository = await cli.prompt('Git repository', {required: false, default: defaultRepository});
-
-    //TODO, only substrate family project should fetch its genesis hash, keep it this way for now
-    if (this.networkFamily === NETWORK_FAMILY.substrate && flags.specVersion !== '0.0.1') {
-      cli.action.start('Fetching network genesis hash');
-      if (gte(flags.specVersion, '1.0.0')) {
-        (this.project as ProjectSpecV1_0_0).chainId = await getGenesisHash(this.project.endpoint);
-      } else {
-        (this.project as ProjectSpecV0_2_0).genesisHash = await getGenesisHash(this.project.endpoint);
-      }
-      cli.action.stop();
-    }
 
     const descriptionHint = defaultDescription.substring(0, 40).concat('...');
     this.project.author = await cli.prompt('Author', {required: true, default: defaultAuthor});

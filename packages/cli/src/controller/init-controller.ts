@@ -5,7 +5,7 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {makeTempDir, NETWORK_FAMILY, ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
+import {makeTempDir, ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
 import {ProjectManifestV0_0_1} from '@subql/common-substrate';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
@@ -21,7 +21,6 @@ export interface Template {
   remote: string;
   branch: string;
   network: string;
-  specVersion: string; //TODO, remove this, use branch as specVersion
   family: string;
 }
 
@@ -35,13 +34,13 @@ export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise
     });
 }
 
-export async function cloneProjectGit(
+export async function cloneProjectGit2(
   localPath: string,
   projectName: string,
   projectRemote: string,
   projectBranch: string,
-  family: NETWORK_FAMILY,
-  network: string
+  network: string,
+  template: string
 ): Promise<any> {
   const projectPath = path.join(localPath, projectName);
   console.log(`projectPath: ${projectPath}`);
@@ -52,12 +51,52 @@ export async function cloneProjectGit(
 
   //use sparse-checkout to clone project to temp directory
   await git(tempPath).init().addRemote('origin', 'https://github.com/subquery/subql-starter.git');
-  await git(tempPath).raw('sparse-checkout', 'set', `${family}/${network}`);
+  await git(tempPath).raw('sparse-checkout', 'set', `${network}/${template}`);
   await git(tempPath).raw('pull', 'origin', projectBranch);
   // Copy content to project path
-  copySync(path.join(tempPath, `${family}/${network}`), projectPath);
+  copySync(path.join(tempPath, `${network}/${template}`), projectPath);
   // Clean temp folder
   fs.rmSync(tempPath, {recursive: true, force: true});
+}
+
+export async function cloneProjectGit(
+  localPath: string,
+  projectName: string,
+  projectRemote: string,
+  branch: string
+): Promise<string> {
+  const projectPath = path.join(localPath, projectName);
+  try {
+    await git().clone(projectRemote, projectPath, ['-b', branch, '--single-branch']);
+  } catch (e) {
+    let err = 'Failed to clone starter template from git';
+    try {
+      execSync('git --version');
+    } catch (_) {
+      err += ', please install git and ensure that it is available from command line';
+    }
+    throw new Error(err);
+  }
+  return projectPath;
+}
+
+export async function cloneProjectTemplate(
+  localPath: string,
+  projectName: string,
+  selectedTemplate: Template
+): Promise<string> {
+  const projectPath = path.join(localPath, projectName);
+  //make temp directory to store project
+  const tempPath = await makeTempDir();
+  //use sparse-checkout to clone project to temp directory
+  await git(tempPath).init().addRemote('origin', 'https://github.com/subquery/subql-starter.git');
+  await git(tempPath).raw('sparse-checkout', 'set', `${selectedTemplate.network}/${selectedTemplate.name}`);
+  await git(tempPath).raw('pull', 'origin', selectedTemplate.branch);
+  // Copy content to project path
+  copySync(path.join(tempPath, `${selectedTemplate.network}/${selectedTemplate.name}`), projectPath);
+  // Clean temp folder
+  fs.rmSync(tempPath, {recursive: true, force: true});
+  return projectPath;
 }
 
 // export async function cloneProjectTemplate(
