@@ -252,42 +252,6 @@ export async function fetchBlocks(
   });
 }
 
-export async function fetchBlocksViaRangeQuery(
-  api: ApiPromise,
-  startHeight: number,
-  endHeight: number,
-): Promise<BlockContent[]> {
-  const blocks = await fetchBlocksRange(api, startHeight, endHeight);
-  const firstBlockHash = blocks[0].block.header.hash;
-  const endBlockHash = last(blocks).block.header.hash;
-  const [blockEvents, runtimeUpgrades] = await Promise.all([
-    api.query.system.events.range([firstBlockHash, endBlockHash]),
-    api.query.system.lastRuntimeUpgrade.range([firstBlockHash, endBlockHash]),
-  ]);
-
-  let lastEvents: Vec<EventRecord>;
-  let lastRuntimeUpgrade: Option<LastRuntimeUpgradeInfo>;
-  return blocks.map((block, idx) => {
-    const [, events = lastEvents] = blockEvents[idx] ?? [];
-    const [, runtimeUpgrade = lastRuntimeUpgrade] = runtimeUpgrades[idx] ?? [];
-    lastEvents = events;
-    lastRuntimeUpgrade = runtimeUpgrade;
-
-    const wrappedBlock = wrapBlock(
-      block,
-      events,
-      runtimeUpgrade.unwrap()?.specVersion.toNumber(),
-    );
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
-  });
-}
-
 async function getBlockByHeight(
   api: ApiPromise,
   height: number,
