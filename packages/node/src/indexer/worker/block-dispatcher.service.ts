@@ -189,7 +189,9 @@ export class BlockDispatcherService
     this.fetching = true;
 
     while (!this.isShutdown) {
-      const blockNums = this.fetchQueue.takeMany(this.nodeConfig.batchSize);
+      const blockNums = this.fetchQueue.takeMany(
+        Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace),
+      );
 
       // Used to compare before and after as a way to check if queue was flushed
       const bufferedHeight = this._latestBufferedHeight;
@@ -265,7 +267,7 @@ export class BlockDispatcherService
       // There can be enough of a delay after fetching blocks that shutdown could now be true
       if (this.isShutdown) break;
 
-      void this.processQueue.putMany(blockTasks);
+      this.processQueue.putMany(blockTasks);
 
       this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
         value: this.processQueue.size,
