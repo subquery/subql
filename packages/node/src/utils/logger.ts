@@ -46,3 +46,23 @@ export class NestLogger implements LoggerService {
     this.logger.warn(message);
   }
 }
+
+export function bpsHelper(context: benchmarkArgs): number {
+  const { currentNum, currentTimestamp, lastNum, lastTimestamp } = context;
+  if (lastNum && lastTimestamp) {
+    const diff = currentNum - lastNum;
+    const timeDiff = currentTimestamp - lastTimestamp;
+    const bps = diff === 0 || timeDiff === 0 ? 0 : diff / (timeDiff / 1000);
+    console.log(`bps: ${bps}`);
+    return bps;
+  }
+  // }
+}
+
+interface benchmarkArgs {
+  lastNum: number;
+  currentNum: number;
+  lastTimestamp: number;
+  currentTimestamp: number;
+  // targetHeight: number;
+}

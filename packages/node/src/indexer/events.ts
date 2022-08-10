@@ -17,6 +17,7 @@ export enum IndexerEvent {
 export interface ProcessBlockPayload {
   height: number;
   timestamp: number;
+  processedBlockCount: number;
 }
 
 export interface TargetBlockPayload {

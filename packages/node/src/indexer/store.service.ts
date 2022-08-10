@@ -110,7 +110,12 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
-    await this.setMetadata('processedBlockHeight', 0);
+  }
+
+  async incrementBlockCount(key: string): Promise<void> {
+    await this.sequelize.query(
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+    );
   }
 
   // eslint-disable-next-line complexity

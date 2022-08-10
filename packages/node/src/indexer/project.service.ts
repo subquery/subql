@@ -218,6 +218,7 @@ export class ProjectService {
       'specName',
       'genesisHash',
       'chainId',
+      'processedBlockCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -277,6 +278,10 @@ export class ProjectService {
 
     if (keyValue.specName !== specName) {
       await metadataRepo.upsert({ key: 'specName', value: specName });
+    }
+
+    if (!keyValue.processedBlockCount) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
@@ -348,6 +353,13 @@ export class ProjectService {
         logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
       });
+  }
+  async getProcessedBlockCount(): Promise<number> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'processedBlockCount' },
+    });
+
+    return res?.value as number | undefined;
   }
 
   private getStartBlockFromDataSources() {

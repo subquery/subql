@@ -212,17 +212,21 @@ export class BlockDispatcherService
         blockNums,
       );
 
+      const processedBlockCount =
+        await this.projectService.getProcessedBlockCount();
+
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
         continue;
       }
-
+      // console.log('block-dispatcher',processedBlockCount)
       const blockTasks = blocks.map((block) => async () => {
         const height = block.block.block.header.number.toNumber();
         try {
           this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
             height,
             timestamp: Date.now(),
+            processedBlockCount,
           });
 
           const runtimeVersion = await this.getRuntimeVersion(block.block);

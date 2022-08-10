@@ -5,7 +5,7 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { getLogger } from '../utils/logger';
+import { bpsHelper, getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
 import {
   IndexerEvent,
@@ -25,39 +25,55 @@ export class BenchmarkService {
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
 
-  private currentProcessedCount: number;
+  private processedBlockPerSecond: number;
+
+  private lastProcessedBlockCount: number;
+  private currentProcessedBlockCount: number;
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
-    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
+    if (
+      !this.currentProcessingHeight ||
+      !this.currentProcessingTimestamp ||
+      !this.currentProcessedBlockCount
+    ) {
       await delay(10);
     } else {
+      // console.log('current',this.currentProcessedBlockCount)
+      // console.log('last',this.lastProcessedBlockCount)
+      // console.log('current height ',this.currentProcessingHeight)
+      // console.log('last height ', this.lastRegisteredHeight)
       if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
         const heightDiff =
           this.currentProcessingHeight - this.lastRegisteredHeight;
         const timeDiff =
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
 
-        // currently if currentBlockHeight is 30000, but lastRegisteredHeight is 20000,
-        // heightDiff does not apply to dictionary
-        // time-diff = 3000 - 2000 = 1000
-        // 30000 - 20000 = 10000
-        // 10000 / 1000 = 10
-        // 10 blocks per second
+        const countDiff =
+          this.currentProcessedBlockCount - this.lastProcessedBlockCount;
         this.blockPerSecond =
           heightDiff === 0 || timeDiff === 0
             ? 0
             : heightDiff / (timeDiff / 1000);
 
-        const duration = dayjs.duration(
+        this.processedBlockPerSecond =
+          countDiff === 0 || timeDiff === 0 ? 0 : countDiff / (timeDiff / 1000);
+
+        const blockDuration = dayjs.duration(
           (this.targetHeight - this.currentProcessingHeight) /
             this.blockPerSecond,
           'seconds',
         );
-        const hoursMinsStr = duration.format('HH [hours] mm [mins]');
-        const days = Math.floor(duration.asDays());
+
+        const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
+        const days = Math.floor(blockDuration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
 
+        logger.info(
+          `Processed Blocks Per (${SAMPLING_TIME_VARIANCE}secs): ${this.processedBlockPerSecond.toFixed(
+            2,
+          )} secs`,
+        );
         logger.info(
           this.targetHeight === this.lastRegisteredHeight &&
             this.blockPerSecond === 0
@@ -71,6 +87,8 @@ export class BenchmarkService {
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;
       this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
+
+      this.lastProcessedBlockCount = this.currentProcessedBlockCount;
     }
   }
 
@@ -78,11 +96,8 @@ export class BenchmarkService {
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
+    this.currentProcessedBlockCount = blockPayload.processedBlockCount;
   }
-
-  // expose the number of processed blocks / 15 seconds
-  // emitter
-  // listen
 
   @OnEvent(IndexerEvent.BlockTarget)
   handleTargetBlock(blockPayload: TargetBlockPayload): void {
