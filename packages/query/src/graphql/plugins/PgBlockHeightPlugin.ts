@@ -63,7 +63,7 @@ export const PgBlockHeightPlugin: Plugin = (builder) => {
       addArgDataGenerator(({blockHeight}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
           // Save blockHeight to context, so it gets passed down to children
-          if (!queryBuilder.context.args?.blockHeight) {
+          if (!queryBuilder.context.args?.blockHeight || !queryBuilder.parentQueryBuilder) {
             queryBuilder.context.args = {blockHeight: sql.fragment`${sql.value(blockHeight)}::bigint`};
           }
           queryBuilder.where(
