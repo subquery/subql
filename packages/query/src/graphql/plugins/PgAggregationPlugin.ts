@@ -11,12 +11,11 @@ import AggregateSpecsPlugin from '@graphile/pg-aggregates/dist/AggregateSpecsPlu
 import FilterRelationalAggregatesPlugin from '@graphile/pg-aggregates/dist/FilterRelationalAggregatesPlugin';
 import InflectionPlugin from '@graphile/pg-aggregates/dist/InflectionPlugin';
 import {AggregateSpec, AggregateGroupBySpec} from '@graphile/pg-aggregates/dist/interfaces';
-import OrderByAggregatesPlugin from '@graphile/pg-aggregates/dist/OrderByAggregatesPlugin';
 
 import type {Plugin} from 'graphile-build';
 import {makePluginByCombiningPlugins} from 'graphile-utils';
-
 import {argv} from '../../yargs';
+import OrderByAggregatesPlugin from './PgOrderByAggregatesPlugin';
 
 const aggregate = argv('aggregate') as boolean;
 
