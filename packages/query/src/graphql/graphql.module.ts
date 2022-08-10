@@ -18,7 +18,7 @@ import {makePluginHook} from 'postgraphile';
 import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
-import {PinoConfig} from '../utils/logger';
+import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
 import {PgSubscriptionPlugin} from './plugins/PgSubscriptionPlugin';
@@ -26,6 +26,8 @@ import {queryComplexityPlugin} from './plugins/QueryComplexityPlugin';
 import {ProjectService} from './project.service';
 
 const {argv} = getYargsOption();
+const logger = getLogger('graphql-module');
+
 const SCHEMA_RETRY_INTERVAL = 10; //seconds
 const SCHEMA_RETRY_NUMBER = 5;
 @Module({
@@ -68,6 +70,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         return graphqlSchema;
       } catch (e) {
         await delay(SCHEMA_RETRY_INTERVAL);
+        if (retries === 1) {
+          logger.error(e);
+        }
         return this.buildSchema(dbSchema, options, --retries);
       }
     } else {
