@@ -380,9 +380,11 @@ export class IndexerManager {
         throw e;
       });
 
-    await Promise.all(
-      transformedData.map((data) => vm.securedExec(handler.handler, [data])),
-    );
+    // We can not run this in parallel. the transformed data items may be dependent on one another.
+    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
+    for (const _data of transformedData) {
+      await vm.securedExec(handler.handler, [_data]);
+    }
   }
 }
 
