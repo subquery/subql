@@ -219,7 +219,6 @@ export class BlockDispatcherService
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
         continue;
       }
-      // console.log('block-dispatcher',processedBlockCount)
       const blockTasks = blocks.map((block) => async () => {
         const height = block.block.block.header.number.toNumber();
         try {
