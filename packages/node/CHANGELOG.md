@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Utilise dictionary if all block filters have `modulo` set (#1232)
 - Bring back profiling fetchBlocksBatches, remove unnecessary await (#1235)
-- Fix Queue exceeds max size error (#1239)
 - Fix running custom ds processors in parallel on different data (#1243)
 
 ## [1.6.1] - 2022-08-02
