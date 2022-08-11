@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-08-11
+### Fixed
+- Fix db selection in configuration when subscription is enabled (#1241)
+- Fork OrderByAggregatesPlugin and modify to be compatible with historical feature (#1242)
+- Fix block height being applied to all queries (#1238)
+### Changed
+- Move aggregation feature out from `unsafe` and apply it by default, can be control though `aggregate` flag.
+
 ## [1.4.0] - 2022-07-27
 ### Added
 - Add `query-explain` flag, by enable this console will log actual SQL statement been queried. (#1192)
