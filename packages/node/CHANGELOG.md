@@ -6,8 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-08-11
+### Changed
+- Update Polkadot/api to v9 (#1234)
+- schema migration, allow user add/remove entity field after indexing started (#1226)
 ### Fixed
 - Utilise dictionary if all block filters have `modulo` set (#1232)
+- Bring back profiling fetchBlocksBatches, remove unnecessary await (#1235)
+- Fix Queue exceeds max size error (#1239)
+- Fix running custom ds processors in parallel on different data (#1243)
 
 ## [1.6.1] - 2022-08-02
 Priority: High. Fixes 1.6.0 failed to start issue.

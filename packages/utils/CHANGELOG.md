@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-08-11
+### Changed
+- Update `@polkadot/util` to v10 (#1230)
+
 ## [1.0.1] - 2022-07-05
 ### Fixed
 - Tidy up dependency, move `ipfs-http-client` to common packages (#1160)
