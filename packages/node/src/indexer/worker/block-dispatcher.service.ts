@@ -431,10 +431,13 @@ export class WorkerBlockDispatcherService
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
+        const processedBlockCount =
+          await this.projectService.getProcessedBlockCount();
 
         this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
           height,
           timestamp: Date.now(),
+          processedBlockCount,
         });
 
         const { dynamicDsCreated, operationHash } = await worker.processBlock(

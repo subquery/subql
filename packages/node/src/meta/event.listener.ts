@@ -32,6 +32,8 @@ export class MetricEventListener {
     private usingDictionaryMetric: Gauge<string>,
     @InjectMetric('subql_indexer_skip_dictionary_count')
     private skipDictionaryCountMetric: Gauge<string>,
+    @InjectMetric('subql_indexer_processed_block_count')
+    private processedBlockCountMetric: Gauge<string>,
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
@@ -52,6 +54,7 @@ export class MetricEventListener {
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.processingBlockHeight.set(blockPayload.height);
+    this.processedBlockCountMetric.set(blockPayload.processedBlockCount);
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

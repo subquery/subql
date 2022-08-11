@@ -58,6 +58,10 @@ import { ReadyService } from './ready.service';
       name: 'subql_indexer_skip_dictionary_count',
       help: 'The number of times indexer been skip use dictionary',
     }),
+    makeGaugeProvider({
+      name: 'subql_indexer_processed_block_count',
+      help: 'The number of processed block',
+    }),
     MetaService,
     HealthService,
     ReadyService,
