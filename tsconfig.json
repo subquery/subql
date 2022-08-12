@@ -18,16 +18,10 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
-      "@subql/utils": ["packages/utils/src"],
-      "@subql/utils/*": ["packages/utils/src/*"],
-      "@subql/common": ["packages/common/src"],
-      "@subql/common/*": ["packages/common/src/*"],
       "@subql/common-substrate": ["packages/common-substrate/src"],
       "@subql/common-substrate/*": ["packages/common-substrate/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
-      "@subql/validator": ["packages/validator/src"],
-      "@subql/validator/*": ["packages/validator/src/*"]
     },
     "skipLibCheck": true
   },
