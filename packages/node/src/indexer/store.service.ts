@@ -62,6 +62,7 @@ const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const { argv } = getYargsOption();
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
+const KEY_FIELDS = ['id', '__id', '__block_range'];
 
 interface IndexField {
   entityName: string;
@@ -767,6 +768,37 @@ group by
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
+
+      bulkUpdate: async (
+        entity: string,
+        data: Entity[],
+        fields?: string[],
+      ): Promise<void> => {
+        try {
+          const model = this.sequelize.model(entity);
+          const modelFields =
+            fields ??
+            Object.keys(model.getAttributes()).filter(
+              (item) => !KEY_FIELDS.includes(item),
+            );
+          assert(model, `model ${entity} not exists`);
+          await model.bulkCreate(
+            data as unknown as CreationAttributes<Model>[],
+            {
+              transaction: this.tx,
+              updateOnDuplicate: modelFields,
+            },
+          );
+          if (this.config.proofOfIndex) {
+            for (const item of data) {
+              this.operationStack.put(OperationType.Set, entity, item);
+            }
+          }
+        } catch (e) {
+          throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
+        }
+      },
+
       remove: async (entity: string, id: string): Promise<void> => {
         try {
           const model = this.sequelize.model(entity);
