@@ -776,12 +776,12 @@ group by
       ): Promise<void> => {
         try {
           const model = this.sequelize.model(entity);
+          assert(model, `model ${entity} not exists`);
           const modelFields =
             fields ??
             Object.keys(model.getAttributes()).filter(
               (item) => !KEY_FIELDS.includes(item),
             );
-          assert(model, `model ${entity} not exists`);
           await model.bulkCreate(
             data as unknown as CreationAttributes<Model>[],
             {
