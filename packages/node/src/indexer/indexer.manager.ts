@@ -137,7 +137,10 @@ export class IndexerManager {
         { transaction: tx },
       );
 
-      await this.storeService.incrementBlockCount('processedBlockCount');
+      await this.storeService.incrementBlockCount();
+      this.projectService.setBlockCount(
+        this.projectService.processedBlockCount + 1,
+      );
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();

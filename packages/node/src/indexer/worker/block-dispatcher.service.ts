@@ -212,8 +212,7 @@ export class BlockDispatcherService
         blockNums,
       );
 
-      const processedBlockCount =
-        await this.projectService.getProcessedBlockCount();
+      const processedBlockCount = this.projectService.processedBlockCount;
 
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
@@ -430,8 +429,7 @@ export class WorkerBlockDispatcherService
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
-        const processedBlockCount =
-          await this.projectService.getProcessedBlockCount();
+        const processedBlockCount = this.projectService.processedBlockCount;
 
         this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
           height,

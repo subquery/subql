@@ -112,9 +112,9 @@ export class StoreService {
     }
   }
 
-  async incrementBlockCount(key: string): Promise<void> {
+  async incrementBlockCount(): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
     );
   }
 

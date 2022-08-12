@@ -26,11 +26,17 @@ export class BenchmarkService {
   private lastRegisteredHeight: number;
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
-  private processedBlockAmount: number;
+
+  private currentProcessedBlockAmount: number;
+  private lastProcessedBlockAmount: number;
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
-    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
+    if (
+      !this.currentProcessingHeight ||
+      !this.currentProcessingTimestamp ||
+      !this.currentProcessedBlockAmount
+    ) {
       await delay(10);
     } else {
       if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
@@ -54,9 +60,9 @@ export class BenchmarkService {
 
         if (argv.profiler) {
           logger.info(
-            `Total processed block amount: ${
-              this.processedBlockAmount ? this.processedBlockAmount : 0
-            }`,
+            `Processed ${
+              this.currentProcessedBlockAmount - this.lastProcessedBlockAmount
+            } blocks in the last ${SAMPLING_TIME_VARIANCE}secs `,
           );
         }
 
@@ -73,6 +79,7 @@ export class BenchmarkService {
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;
       this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
+      this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
     }
   }
 
@@ -80,7 +87,7 @@ export class BenchmarkService {
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
-    this.processedBlockAmount = blockPayload.processedBlockCount;
+    this.currentProcessedBlockAmount = blockPayload.processedBlockCount;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)
