@@ -19,6 +19,7 @@ import {
   Model,
   ModelAttributeColumnOptions,
   ModelAttributes,
+  ModelCtor,
   ModelStatic,
   Op,
   QueryTypes,
@@ -633,6 +634,32 @@ group by
     }
   }
 
+  private async updateHistorical(
+    model: ModelCtor<Model>,
+    data: Entity,
+    attributes: CreationAttributes<Model>,
+  ) {
+    const [updatedRows] = await model.update(attributes, {
+      hooks: false,
+      transaction: this.tx,
+      where: this.sequelize.and(
+        { id: data.id },
+        this.sequelize.where(
+          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+          this.blockHeight,
+        ),
+      ),
+    });
+    if (updatedRows < 1) {
+      // TODO, can be improved here if called from BulkUpdate
+      // We can collect entities meet this conditions, use promise.all and bulkCreate here
+      await this.markAsDeleted(model, data.id);
+      await model.create(attributes, {
+        transaction: this.tx,
+      });
+    }
+  }
+
   getStore(): Store {
     return {
       get: async (entity: string, id: string): Promise<Entity | undefined> => {
@@ -715,26 +742,7 @@ group by
           const attributes = data as unknown as CreationAttributes<Model>;
           if (this.historical) {
             // If entity was already saved in current block, update that entity instead
-            const [updatedRows] = await model.update(attributes, {
-              hooks: false,
-              transaction: this.tx,
-              where: this.sequelize.and(
-                { id: data.id },
-                this.sequelize.where(
-                  this.sequelize.fn(
-                    'lower',
-                    this.sequelize.col('_block_range'),
-                  ),
-                  this.blockHeight,
-                ),
-              ),
-            });
-            if (updatedRows < 1) {
-              await this.markAsDeleted(model, data.id);
-              await model.create(attributes, {
-                transaction: this.tx,
-              });
-            }
+            await this.updateHistorical(model, data, attributes);
           } else {
             await model.upsert(attributes, {
               transaction: this.tx,
@@ -777,18 +785,34 @@ group by
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
-          const modelFields =
-            fields ??
-            Object.keys(model.getAttributes()).filter(
-              (item) => !KEY_FIELDS.includes(item),
+          if (this.historical) {
+            if (fields.length !== 0) {
+              logger.warn(
+                `Update specified fields with historical feature is not supported`,
+              );
+            }
+            await Promise.all(
+              data.map(async (record) => {
+                const attributes =
+                  record as unknown as CreationAttributes<Model>;
+                await this.updateHistorical(model, record, attributes);
+              }),
             );
-          await model.bulkCreate(
-            data as unknown as CreationAttributes<Model>[],
-            {
-              transaction: this.tx,
-              updateOnDuplicate: modelFields,
-            },
-          );
+          } else {
+            const modelFields =
+              fields ??
+              Object.keys(model.getAttributes()).filter(
+                (item) => !KEY_FIELDS.includes(item),
+              );
+            await model.bulkCreate(
+              data as unknown as CreationAttributes<Model>[],
+              {
+                transaction: this.tx,
+                ignoreDuplicates: true,
+                updateOnDuplicate: modelFields,
+              },
+            );
+          }
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
