@@ -21,7 +21,7 @@ import {
   ProjectSpecV0_2_0,
   ProjectSpecV1_0_0,
 } from '../types';
-import {cloneProjectGit, prepare} from './init-controller';
+import {cloneProjectTemplate, fetchTemplates, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -75,16 +75,9 @@ jest.setTimeout(150000);
 export async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
+  const templates = await fetchTemplates();
 
-  const branch = isProjectSpecV0_0_1(projectSpec) ? 'v0.0.1' : isProjectSpecV1_0_0(projectSpec) ? 'v1.0.0' : 'v0.2.0';
-  const projectPath = await cloneProjectGit(
-    tmpdir,
-    projectSpec.name,
-    'https://github.com/subquery/subql-starter',
-    `multi`,
-    NETWORK_FAMILY.substrate,
-    'Polkadot'
-  );
+  const projectPath = await cloneProjectTemplate(tmpdir, projectSpec.name, templates[0]);
   await prepare(projectPath, projectSpec);
 
   // Install dependencies

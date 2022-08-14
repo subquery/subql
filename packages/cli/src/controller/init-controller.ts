@@ -34,31 +34,6 @@ export async function fetchTemplates(remote: string = TEMPLATES_REMOTE): Promise
     });
 }
 
-export async function cloneProjectGit2(
-  localPath: string,
-  projectName: string,
-  projectRemote: string,
-  projectBranch: string,
-  network: string,
-  template: string
-): Promise<any> {
-  const projectPath = path.join(localPath, projectName);
-  console.log(`projectPath: ${projectPath}`);
-
-  //make temp directory to store project
-  const tempPath = await makeTempDir();
-  console.log(`tempPath :${tempPath}`);
-
-  //use sparse-checkout to clone project to temp directory
-  await git(tempPath).init().addRemote('origin', 'https://github.com/subquery/subql-starter.git');
-  await git(tempPath).raw('sparse-checkout', 'set', `${network}/${template}`);
-  await git(tempPath).raw('pull', 'origin', projectBranch);
-  // Copy content to project path
-  copySync(path.join(tempPath, `${network}/${template}`), projectPath);
-  // Clean temp folder
-  fs.rmSync(tempPath, {recursive: true, force: true});
-}
-
 export async function cloneProjectGit(
   localPath: string,
   projectName: string,
@@ -98,26 +73,6 @@ export async function cloneProjectTemplate(
   fs.rmSync(tempPath, {recursive: true, force: true});
   return projectPath;
 }
-
-// export async function cloneProjectTemplate(
-//   localPath: string,
-//   projectName: string,
-//   template: Template
-// ): Promise<string> {
-//   const projectPath = path.join(localPath, projectName);
-//   try {
-//     await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
-//   } catch (e) {
-//     let err = 'Failed to clone starter template from git';
-//     try {
-//       execSync('git --version');
-//     } catch (_) {
-//       err += ', please install git and ensure that it is available from command line';
-//     }
-//     throw new Error(err);
-//   }
-//   return projectPath;
-// }
 
 export async function readDefaults(projectPath: string): Promise<string[]> {
   const packageData = await fs.promises.readFile(`${projectPath}/package.json`);

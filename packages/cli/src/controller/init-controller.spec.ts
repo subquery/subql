@@ -39,15 +39,8 @@ describe('Cli can create project (mocked)', () => {
     (git().clone as jest.Mock).mockImplementationOnce((cb) => {
       cb(new Error());
     });
-    await expect(
-      cloneProjectGit(
-        tempPath,
-        projectSpec.name,
-        'invalid_url',
-        'invalid_branch',
-        NETWORK_FAMILY.substrate,
-        'invalid_network'
-      )
-    ).rejects.toThrow(/Failed to clone starter template from git/);
+    await expect(cloneProjectGit(tempPath, projectSpec.name, 'invalid_url', 'invalid_branch')).rejects.toThrow(
+      /Failed to clone starter template from git/
+    );
   });
 });
