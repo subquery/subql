@@ -338,7 +338,9 @@ export class WorkerBlockDispatcherService
     this.queue.abort();
 
     // Stop all workers
-    await Promise.all(this.workers.map((w) => w.terminate()));
+    if (this.workers) {
+      await Promise.all(this.workers.map((w) => w.terminate()));
+    }
   }
 
   enqueueBlocks(heights: number[]): void {

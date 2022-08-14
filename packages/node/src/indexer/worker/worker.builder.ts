@@ -5,6 +5,11 @@ import * as workers from 'worker_threads';
 import { Logger } from 'pino';
 import { getLogger } from '../../utils/logger';
 
+export type SerializableError = {
+  message: string;
+  stack?: string;
+};
+
 export type Request = {
   id: number | string;
   name: string;
@@ -13,7 +18,7 @@ export type Request = {
 
 export type Response<T = any> = {
   id: number | string;
-  error?: string;
+  error?: SerializableError;
   result?: T;
 };
 
@@ -39,7 +44,9 @@ export function registerWorker(fns: AsyncMethods): void {
     if (!fn) {
       workers.parentPort.postMessage(<Response>{
         id: req.id,
-        error: `handleRequest: Function "${req.name}" not found`,
+        error: {
+          message: `handleRequest: Function "${req.name}" not found`,
+        },
       });
       return;
     }
@@ -54,7 +61,7 @@ export function registerWorker(fns: AsyncMethods): void {
     } catch (e) {
       workers.parentPort.postMessage(<Response>{
         id: req.id,
-        error: e.message,
+        error: e,
       });
     }
   }
@@ -73,7 +80,7 @@ export class Worker<T extends AsyncMethods> {
 
   private responseListeners: Record<
     number | string,
-    (data?: any, error?: string) => void
+    (data?: any, error?: SerializableError) => void
   > = {};
 
   private _reqCounter = 0;
@@ -140,7 +147,9 @@ export class Worker<T extends AsyncMethods> {
     return new Promise<T>((resolve, reject) => {
       this.responseListeners[id] = (data, error) => {
         if (error) {
-          reject(new Error(error));
+          const e = new Error(error.message);
+          e.stack = error.stack ?? e.stack;
+          reject(e);
         } else {
           resolve(data);
         }

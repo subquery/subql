@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { isMainThread } from 'worker_threads';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aToBuffer } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
@@ -305,7 +306,8 @@ export class StoreService {
 
     // this will allow alter current entity, including fields
     // TODO, add rules for changes, eg only allow add nullable field
-    await this.sequelize.sync({ alter: { drop: true } });
+    // Only allow altering the tables on the main thread
+    await this.sequelize.sync({ alter: { drop: isMainThread } });
     await this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
