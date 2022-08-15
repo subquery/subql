@@ -20,6 +20,8 @@ export interface Store {
   getOneByField(entity: string, field: string, value: any): Promise<Entity | null>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;
+  //if fields in provided, only specify fields will be updated
+  bulkUpdate(entity: string, data: Entity[], fields?: string[]): Promise<void>;
   remove(entity: string, id: string): Promise<void>;
 }
 
