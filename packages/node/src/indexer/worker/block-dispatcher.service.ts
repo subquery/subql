@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -76,11 +75,6 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
 }
 
 type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
-
-function getMaxWorkers(numWorkers?: number): number {
-  const maxCPUs = os.cpus().length;
-  return Math.min(numWorkers ?? maxCPUs, maxCPUs);
-}
 
 export interface IBlockDispatcher {
   init(
@@ -316,7 +310,7 @@ export class WorkerBlockDispatcherService
     private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
-    this.numWorkers = getMaxWorkers(nodeConfig.workers);
+    this.numWorkers = nodeConfig.workers;
     this.queue = new AutoQueue(this.numWorkers * nodeConfig.batchSize * 2);
   }
 
@@ -338,7 +332,9 @@ export class WorkerBlockDispatcherService
     this.queue.abort();
 
     // Stop all workers
-    await Promise.all(this.workers.map((w) => w.terminate()));
+    if (this.workers) {
+      await Promise.all(this.workers.map((w) => w.terminate()));
+    }
   }
 
   enqueueBlocks(heights: number[]): void {
