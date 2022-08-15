@@ -27,7 +27,7 @@ import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
+import { profiler, profilerWrap } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
 import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
@@ -136,6 +136,13 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
+      // DB
+      await this.storeService.incrementBlockCount(tx);
+      // Memeory
+      this.projectService.setBlockCount(
+        this.projectService.processedBlockCount + 1,
+      );
+
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
       if (this.nodeConfig.proofOfIndex) {
@@ -279,7 +286,13 @@ export class IndexerManager {
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
-        await vm.securedExec(handler.handler, [data]);
+        argv.profiler
+          ? await profilerWrap(
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler,
+            )(handler.handler, [data])
+          : await vm.securedExec(handler.handler, [data]);
       }
     } else if (isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(
@@ -304,7 +317,7 @@ export class IndexerManager {
                 baseFilter,
               ).length;
             default:
-              throw new Error('Unsuported handler kind');
+              throw new Error('Unsupported handler kind');
           }
         },
       );

@@ -7,6 +7,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import { getLogger } from '../utils/logger';
 import { delay } from '../utils/promise';
+import { getYargsOption } from '../yargs';
 import {
   IndexerEvent,
   ProcessBlockPayload,
@@ -15,6 +16,7 @@ import {
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
+const { argv } = getYargsOption();
 dayjs.extend(duration);
 
 export class BenchmarkService {
@@ -25,9 +27,16 @@ export class BenchmarkService {
   private lastRegisteredTimestamp: number;
   private blockPerSecond: number;
 
+  private currentProcessedBlockAmount: number;
+  private lastProcessedBlockAmount: number;
+
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
-    if (!this.currentProcessingHeight || !this.currentProcessingTimestamp) {
+    if (
+      !this.currentProcessingHeight ||
+      !this.currentProcessingTimestamp ||
+      !this.currentProcessedBlockAmount
+    ) {
       await delay(10);
     } else {
       if (this.lastRegisteredHeight && this.lastRegisteredTimestamp) {
@@ -40,14 +49,22 @@ export class BenchmarkService {
             ? 0
             : heightDiff / (timeDiff / 1000);
 
-        const duration = dayjs.duration(
+        const blockDuration = dayjs.duration(
           (this.targetHeight - this.currentProcessingHeight) /
             this.blockPerSecond,
           'seconds',
         );
-        const hoursMinsStr = duration.format('HH [hours] mm [mins]');
-        const days = Math.floor(duration.asDays());
+        const hoursMinsStr = blockDuration.format('HH [hours] mm [mins]');
+        const days = Math.floor(blockDuration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
+
+        if (argv.profiler) {
+          logger.info(
+            `Processed ${
+              this.currentProcessedBlockAmount - this.lastProcessedBlockAmount
+            } blocks in the last ${SAMPLING_TIME_VARIANCE}secs `,
+          );
+        }
 
         logger.info(
           this.targetHeight === this.lastRegisteredHeight &&
@@ -62,6 +79,7 @@ export class BenchmarkService {
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;
       this.lastRegisteredTimestamp = this.currentProcessingTimestamp;
+      this.lastProcessedBlockAmount = this.currentProcessedBlockAmount;
     }
   }
 
@@ -69,6 +87,7 @@ export class BenchmarkService {
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
+    this.currentProcessedBlockAmount = blockPayload.processedBlockCount;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

@@ -31,6 +31,7 @@ export class MetaService {
   private usingDictionary: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
+  private processedBlockCount: number;
 
   constructor(private storeService: StoreService) {}
 
@@ -45,6 +46,7 @@ export class MetaService {
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
       polkadotSdkVersion,
+      processedBlockCount: this.processedBlockCount,
       apiConnected: this.apiConnected,
       usingDictionary: this.usingDictionary,
       ...this.networkMeta,
@@ -60,6 +62,7 @@ export class MetaService {
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
+    this.processedBlockCount = blockPayload.processedBlockCount;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

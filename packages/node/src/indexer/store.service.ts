@@ -113,6 +113,13 @@ export class StoreService {
     }
   }
 
+  async incrementBlockCount(tx: Transaction): Promise<void> {
+    await this.sequelize.query(
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
+      { transaction: tx },
+    );
+  }
+
   // eslint-disable-next-line complexity
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
@@ -618,6 +625,7 @@ group by
         );
       }
     }
+
     await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
       transaction,
     });

@@ -36,6 +36,7 @@ export class ProjectService {
   private metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
+  private _processedBlockCount: number;
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
@@ -63,6 +64,14 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  get processedBlockCount(): number {
+    return this._processedBlockCount;
+  }
+
+  setBlockCount(count: number): void {
+    this._processedBlockCount = count;
+  }
+
   async init(): Promise<void> {
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
@@ -80,6 +89,13 @@ export class ProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
+
+      const blockAmount = await this.getProcessedBlockCount();
+      if (blockAmount) {
+        this._processedBlockCount = blockAmount;
+      } else {
+        this._processedBlockCount = 0;
+      }
 
       if (argv.reindex !== undefined) {
         await this.reindex(argv.reindex);
@@ -218,6 +234,7 @@ export class ProjectService {
       'specName',
       'genesisHash',
       'chainId',
+      'processedBlockCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -277,6 +294,11 @@ export class ProjectService {
 
     if (keyValue.specName !== specName) {
       await metadataRepo.upsert({ key: 'specName', value: specName });
+    }
+
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
@@ -348,6 +370,13 @@ export class ProjectService {
         logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
       });
+  }
+  async getProcessedBlockCount(): Promise<number> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'processedBlockCount' },
+    });
+
+    return res?.value as number | undefined;
   }
 
   private getStartBlockFromDataSources() {
