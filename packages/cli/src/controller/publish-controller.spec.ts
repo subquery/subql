@@ -156,18 +156,17 @@ describe('Cli publish', () => {
   });
 
   it('convert to deployment and removed descriptive field', async () => {
-    projectDir = await createTestProject(projectSpecV0_2_0);
+    projectDir = await createTestProject(projectSpecV1_0_0);
     const reader = await ReaderFactory.create(projectDir);
     const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
     const deployment = manifest.toDeployment();
-    expect(deployment).not.toContain('name');
     expect(deployment).not.toContain('author');
     expect(deployment).not.toContain('endpoint');
     expect(deployment).not.toContain('dictionary');
     expect(deployment).not.toContain('description');
     expect(deployment).not.toContain('repository');
 
-    expect(deployment).toContain('genesisHash');
+    expect(deployment).toContain('chainId');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
   });

@@ -23,8 +23,6 @@ import {
 import {ProjectSpecBase} from '../types';
 inquirer.registerPrompt('autocomplete', require('inquirer-autocomplete-prompt'));
 
-const RECOMMEND_VERSION = '1.0.0';
-
 // Helper function for fuzzy search on prompt input
 function filterInput(arr: string[]) {
   return (_: any, input: string) => {
@@ -98,10 +96,6 @@ export default class Init extends Command {
 
     let templates: Template[];
     let selectedTemplate: Template;
-
-    //use branch name as SpecVersion here
-    // TODO, deprecate specVersion. add back filter here  .filter(({branch}) => branch === flags.specVersion);
-    // Put starter under family->network->project
 
     templates = await fetchTemplates();
     await this.observeTemplates(templates, flags);

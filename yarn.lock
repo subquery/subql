@@ -3445,7 +3445,7 @@ __metadata:
     node-fetch: 2.6.7
     oclif: ^2.4.4
     rimraf: ^3.0.2
-    simple-git: ^3.1.1
+    simple-git: ^3.12.0
     ts-loader: ^9.2.6
     tslib: ^2.3.1
     webpack: ^5.68.0
@@ -14771,14 +14771,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"simple-git@npm:^3.1.1":
-  version: 3.7.1
-  resolution: "simple-git@npm:3.7.1"
+"simple-git@npm:^3.12.0":
+  version: 3.12.0
+  resolution: "simple-git@npm:3.12.0"
   dependencies:
     "@kwsites/file-exists": ^1.1.1
     "@kwsites/promise-deferred": ^1.1.1
-    debug: ^4.3.3
-  checksum: df5361e892cadf73f0bfad2b34f3609809465c4ba1c8f3f95b2650e8a40c366c78a1a99c5e4f0eafc2acd33a85a9660d834690bb6331ef11bc1c064f526cd4a8
+    debug: ^4.3.4
+  checksum: a862851030a3f2100f33cafe68de255ba13a8ddef30cbb17a9b8d9a74cc903c7c39ab8b4afde9f6c362a9f4bb65b09989356f6c58171c190611d3916a4802a1e
   languageName: node
   linkType: hard
 
