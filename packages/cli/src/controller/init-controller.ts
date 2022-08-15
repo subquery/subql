@@ -5,15 +5,15 @@ import childProcess, {execSync} from 'child_process';
 import fs from 'fs';
 import * as path from 'path';
 import {promisify} from 'util';
-import {ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
+import {makeTempDir, ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/common';
 import {ProjectManifestV0_0_1} from '@subql/common-substrate';
 import axios from 'axios';
+import {copySync} from 'fs-extra';
 import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-
-const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
+const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/multi/templates.json';
 
 export interface Template {
   name: string;
@@ -21,7 +21,6 @@ export interface Template {
   remote: string;
   branch: string;
   network: string;
-  specVersion: string;
   family: string;
 }
 
@@ -59,20 +58,19 @@ export async function cloneProjectGit(
 export async function cloneProjectTemplate(
   localPath: string,
   projectName: string,
-  template: Template
+  selectedTemplate: Template
 ): Promise<string> {
   const projectPath = path.join(localPath, projectName);
-  try {
-    await git().clone(template.remote, projectPath, ['-b', template.branch, '--single-branch']);
-  } catch (e) {
-    let err = 'Failed to clone starter template from git';
-    try {
-      execSync('git --version');
-    } catch (_) {
-      err += ', please install git and ensure that it is available from command line';
-    }
-    throw new Error(err);
-  }
+  //make temp directory to store project
+  const tempPath = await makeTempDir();
+  //use sparse-checkout to clone project to temp directory
+  await git(tempPath).init().addRemote('origin', 'https://github.com/subquery/subql-starter.git');
+  await git(tempPath).raw('sparse-checkout', 'set', `${selectedTemplate.network}/${selectedTemplate.name}`);
+  await git(tempPath).raw('pull', 'origin', selectedTemplate.branch);
+  // Copy content to project path
+  copySync(path.join(tempPath, `${selectedTemplate.network}/${selectedTemplate.name}`), projectPath);
+  // Clean temp folder
+  fs.rmSync(tempPath, {recursive: true, force: true});
   return projectPath;
 }
 

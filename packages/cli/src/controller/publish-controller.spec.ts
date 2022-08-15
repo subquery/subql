@@ -6,7 +6,7 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {promisify} from 'util';
-import {ReaderFactory} from '@subql/common';
+import {NETWORK_FAMILY, ReaderFactory} from '@subql/common';
 import {parseSubstrateProjectManifest, ProjectManifestV1_0_0Impl} from '@subql/common-substrate';
 import {create} from 'ipfs-http-client';
 import rimraf from 'rimraf';
@@ -21,7 +21,7 @@ import {
   ProjectSpecV0_2_0,
   ProjectSpecV1_0_0,
 } from '../types';
-import {cloneProjectGit, prepare} from './init-controller';
+import {cloneProjectTemplate, fetchTemplates, prepare} from './init-controller';
 import {uploadFile, uploadToIpfs} from './publish-controller';
 
 const projectSpecV0_0_1: ProjectSpecV0_0_1 = {
@@ -75,14 +75,9 @@ jest.setTimeout(150000);
 export async function createTestProject(projectSpec: ProjectSpecBase): Promise<string> {
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
+  const templates = await fetchTemplates();
 
-  const branch = isProjectSpecV0_0_1(projectSpec) ? 'v0.0.1' : isProjectSpecV1_0_0(projectSpec) ? 'v1.0.0' : 'v0.2.0';
-  const projectPath = await cloneProjectGit(
-    tmpdir,
-    projectSpec.name,
-    'https://github.com/subquery/subql-starter',
-    branch
-  );
+  const projectPath = await cloneProjectTemplate(tmpdir, projectSpec.name, templates[0]);
   await prepare(projectPath, projectSpec);
 
   // Install dependencies
@@ -161,18 +156,17 @@ describe('Cli publish', () => {
   });
 
   it('convert to deployment and removed descriptive field', async () => {
-    projectDir = await createTestProject(projectSpecV0_2_0);
+    projectDir = await createTestProject(projectSpecV1_0_0);
     const reader = await ReaderFactory.create(projectDir);
     const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
     const deployment = manifest.toDeployment();
-    expect(deployment).not.toContain('name');
     expect(deployment).not.toContain('author');
     expect(deployment).not.toContain('endpoint');
     expect(deployment).not.toContain('dictionary');
     expect(deployment).not.toContain('description');
     expect(deployment).not.toContain('repository');
 
-    expect(deployment).toContain('genesisHash');
+    expect(deployment).toContain('chainId');
     expect(deployment).toContain('specVersion');
     expect(deployment).toContain('dataSources');
   });

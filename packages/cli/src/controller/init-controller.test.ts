@@ -2,9 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as fs from 'fs';
-import os from 'os';
 import path from 'path';
-import {fetchTemplates, cloneProjectGit, cloneProjectTemplate, prepare, readDefaults} from './init-controller';
+import {makeTempDir} from '@subql/common';
+import {
+  cloneProjectGit,
+  cloneProjectTemplate,
+  fetchTemplates,
+  prepare,
+  readDefaults,
+  Template,
+} from './init-controller';
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {
@@ -15,12 +22,6 @@ const fileExists = async (file: string): Promise<boolean> => {
   });
 };
 
-async function makeTempDir() {
-  const sep = path.sep;
-  const tmpDir = os.tmpdir();
-  const tempPath = await fs.promises.mkdtemp(`${tmpDir}${sep}`);
-  return tempPath;
-}
 jest.setTimeout(30000);
 
 const projectSpec = {
@@ -49,7 +50,7 @@ describe('Cli can create project', () => {
       tempPath,
       projectSpec.name,
       'https://github.com/subquery/subql-starter',
-      'v0.2.0'
+      'v1.0.0'
     );
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
@@ -66,7 +67,7 @@ describe('Cli can create project', () => {
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
     const templates = await fetchTemplates();
-    const template = templates.find(({name, specVersion}) => name === 'subql-starter' && specVersion === '1.0.0');
+    const template = templates.find(({name}) => name === 'Polkadot-starter');
     const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
     await prepare(projectPath, projectSpec);
     const [specVersion, repository, endpoint, author, version, description, license] = await readDefaults(projectPath);
@@ -78,4 +79,21 @@ describe('Cli can create project', () => {
     expect(projectSpec.description).toEqual(description);
     expect(projectSpec.license).toEqual(license);
   });
+
+  it('allow git from sub directory', async () => {
+    const tempPath = await makeTempDir();
+
+    const template: Template = {
+      remote: 'https://github.com/subquery/subql-starter',
+      family: 'Substrate',
+      branch: 'multi',
+      network: 'Polkadot',
+      name: 'Polkadot-starter',
+      description: '',
+    };
+
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
+    await prepare(projectPath, projectSpec);
+    await expect(fileExists(path.join(tempPath, `${projectSpec.name}`))).resolves.toEqual(true);
+  }, 5000000);
 });

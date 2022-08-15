@@ -3281,7 +3281,7 @@ __metadata:
     node-fetch: 2.6.7
     oclif: ^2.4.4
     rimraf: ^3.0.2
-    simple-git: ^3.1.1
+    simple-git: ^3.12.0
     ts-loader: ^9.2.6
     tslib: ^2.3.1
     webpack: ^5.68.0
@@ -3421,6 +3421,7 @@ __metadata:
   dependencies:
     "@types/bn.js": 4.11.6
     "@types/detect-port": ^1
+    "@types/fs-extra": ^9.0.13
     "@types/js-yaml": ^4.0.5
     "@types/pino": ^6.3.12
     "@types/semver": ^7.3.9
@@ -3428,6 +3429,7 @@ __metadata:
     axios: ^0.27.2
     class-transformer: 0.5.1
     class-validator: ^0.13.2
+    fs-extra: ^10.1.0
     ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
@@ -3927,6 +3929,15 @@ __metadata:
     "@types/qs": "*"
     "@types/serve-static": "*"
   checksum: 12a2a0e6c4b993fc0854bec665906788aea0d8ee4392389d7a98a5de1eefdd33c9e1e40a91f3afd274011119c506f7b4126acb97fae62ae20b654974d44cba12
+  languageName: node
+  linkType: hard
+
+"@types/fs-extra@npm:^9.0.13":
+  version: 9.0.13
+  resolution: "@types/fs-extra@npm:9.0.13"
+  dependencies:
+    "@types/node": "*"
+  checksum: add79e212acd5ac76b97b9045834e03a7996aef60a814185e0459088fd290519a3c1620865d588fa36c4498bf614210d2a703af5cf80aa1dbc125db78f6edac3
   languageName: node
   linkType: hard
 
@@ -8536,7 +8547,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:10.1.0, fs-extra@npm:^10.0.0":
+"fs-extra@npm:10.1.0, fs-extra@npm:^10.0.0, fs-extra@npm:^10.1.0":
   version: 10.1.0
   resolution: "fs-extra@npm:10.1.0"
   dependencies:
@@ -14619,14 +14630,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"simple-git@npm:^3.1.1":
-  version: 3.7.1
-  resolution: "simple-git@npm:3.7.1"
+"simple-git@npm:^3.12.0":
+  version: 3.12.0
+  resolution: "simple-git@npm:3.12.0"
   dependencies:
     "@kwsites/file-exists": ^1.1.1
     "@kwsites/promise-deferred": ^1.1.1
-    debug: ^4.3.3
-  checksum: df5361e892cadf73f0bfad2b34f3609809465c4ba1c8f3f95b2650e8a40c366c78a1a99c5e4f0eafc2acd33a85a9660d834690bb6331ef11bc1c064f526cd4a8
+    debug: ^4.3.4
+  checksum: a862851030a3f2100f33cafe68de255ba13a8ddef30cbb17a9b8d9a74cc903c7c39ab8b4afde9f6c362a9f4bb65b09989356f6c58171c190611d3916a4802a1e
   languageName: node
   linkType: hard
 
