@@ -823,7 +823,6 @@ group by
               data as unknown as CreationAttributes<Model>[],
               {
                 transaction: this.tx,
-                ignoreDuplicates: true,
                 updateOnDuplicate: modelFields,
               },
             );
