@@ -136,8 +136,9 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
-
-      await this.storeService.incrementBlockCount();
+      // DB
+      await this.storeService.incrementBlockCount(tx);
+      // Memeory
       this.projectService.setBlockCount(
         this.projectService.processedBlockCount + 1,
       );
