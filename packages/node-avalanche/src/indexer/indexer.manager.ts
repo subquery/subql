@@ -79,7 +79,11 @@ export class IndexerManager {
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
-  ) {}
+  ) {
+    logger.info('indexer manager start');
+
+    this.api = this.apiService.api;
+  }
 
   @profiler(argv.profiler)
   async indexBlock(blockContent: AvalancheBlockWrapper): Promise<{ dynamicDsCreated: boolean, operationHash: Uint8Array}> {

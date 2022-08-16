@@ -7,7 +7,7 @@ import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { AvalancheApiService } from '../../avalanche/api.service.avalanche'
+import { ApiService } from '@subql/common-node'
 import { IndexerManager } from '../indexer.manager';
 import { AvalancheBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
 
@@ -37,7 +37,7 @@ export class WorkerService {
   private queue: AutoQueue<FetchBlockResponse>;
 
   constructor(
-    private apiService: AvalancheApiService,
+    private apiService: ApiService,
     private indexerManager: IndexerManager,
     nodeConfig: NodeConfig,
   ) {
