@@ -10,7 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.6.0] - 2022-08-17
 ### Changed
-- Support new templates mono-repo structur.e (#1236)
+- Support new templates mono-repo structure. (#1236)
 
 ## [1.5.1] - 2022-08-11
 ### Fixed
