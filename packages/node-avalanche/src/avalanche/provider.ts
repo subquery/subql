@@ -25,7 +25,7 @@ function BNishToHex(value: BigNumberish): string {
   return BigNumber.from(value).toHexString();
 }
 
-export class CChainProvider implements Provider {
+export class CChainProvider extends Provider {
   private api: EVMAPI;
 
   constructor(
@@ -33,19 +33,20 @@ export class CChainProvider implements Provider {
     private readonly blockHeight: number,
     readonly path = '/ext/bc/C/rpc',
   ) {
+    super();
     this.api = avalanche.CChain();
   }
 
   private async resolveHeight(
     blockTag?: BlockTag | Promise<BlockTag>,
   ): Promise<BlockTag> {
-    if (!blockTag) return this.blockHeight;
+    if (!blockTag) return BNishToHex(this.blockHeight);
 
     const resolvedBlockTag = await blockTag;
 
-    if (resolvedBlockTag === 'latest') return this.blockHeight;
+    if (resolvedBlockTag === 'latest') return BNishToHex(this.blockHeight);
     if (typeof resolvedBlockTag === 'number') {
-      return Math.min(resolvedBlockTag, this.blockHeight);
+      return BNishToHex(Math.min(resolvedBlockTag, this.blockHeight));
     }
 
     // Will be 'earliest'
@@ -145,7 +146,7 @@ export class CChainProvider implements Provider {
     const {
       data: { result },
     } = await this.api.callMethod(
-      'eth_getStorageAt',
+      'eth_call',
       [
         {
           ...tx,
@@ -153,7 +154,6 @@ export class CChainProvider implements Provider {
           gas: tx.gasLimit && BNishToHex(tx.gasLimit),
           gasPrice: tx.gasPrice && BNishToHex(tx.gasPrice),
           value: tx.value && BNishToHex(tx.value),
-          data: tx.data,
         },
         await this.resolveHeight(blockTag),
       ],
@@ -231,5 +231,4 @@ export class CChainProvider implements Provider {
   ): Promise<TransactionReceipt> {
     throw new Error('Method not available at specific block heights');
   }
-  _isProvider: boolean;
 }
