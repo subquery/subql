@@ -8,9 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-08-17
+### Changed
+- Support new templates mono-repo structur.e (#1236)
+
 ## [1.5.1] - 2022-08-11
 ### Fixed
-- Bump version for missing update `subql-common` in previous release
+- Bump version for missing update `subql-common` in previous release.
 
 ## [1.5.0] - 2022-08-04
 ### Added
