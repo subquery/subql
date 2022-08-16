@@ -34,10 +34,20 @@ export function modelsTypeToModelAttributes(
     if (field.type === 'BigInt') {
       columnOption.get = function () {
         const dataValue = this.getDataValue(field.name);
+        if (field.isArray) {
+          return dataValue ? dataValue.map((v) => BigInt(v)) : null;
+        }
         return dataValue ? BigInt(dataValue) : null;
       };
       columnOption.set = function (val: unknown) {
-        this.setDataValue(field.name, val?.toString());
+        if (field.isArray) {
+          this.setDataValue(
+            field.name,
+            (val as unknown[])?.map((v) => v.toString()),
+          );
+        } else {
+          this.setDataValue(field.name, val?.toString());
+        }
       };
     }
     if (field.type === 'Bytes') {
