@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.8.0] - 2022-08-17
 ### Fixed
 - Not parsing BigInt array entity fields correctly. (#1252)
-- Worker threads not working. (#1250)
+- Cache lookup error with worker threads due to schema migration changes. (#1250)
 ### Added
 - Improved performance logging. (#1244)
-- `bulkUpdate` and `bulkGet` to the injected store. (#1246)
+- `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing. (#1246)
 
 
 ## [1.7.0] - 2022-08-11
