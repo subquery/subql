@@ -11,7 +11,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.3.0] - 2022-08-17
 ### Added
-- `bulkUpdate` and `bulkGet` to the injected store. (#1246)
+- `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing. (#1246)
 
 ## [1.2.1] - 2022-08-04
 ### Fixed
