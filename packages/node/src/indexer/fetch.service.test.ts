@@ -128,7 +128,10 @@ async function createApp(
         },
         inject: [DsProcessorService, SubqueryProject],
       },
-      DictionaryService,
+      {
+        provide: DictionaryService,
+        useFactory: () => new DictionaryService(project, nodeConfig),
+      },
       SchedulerRegistry,
       FetchService,
     ],
@@ -148,8 +151,8 @@ describe('FetchService', () => {
   let fetchService: FetchService;
 
   afterEach(async () => {
-    fetchService.onApplicationShutdown();
-    app.get('IBlockDispatcher').onApplicationShutdown();
+    fetchService?.onApplicationShutdown();
+    app?.get('IBlockDispatcher').onApplicationShutdown();
     await delay(2);
     await app?.close();
   });

@@ -77,6 +77,7 @@ describe('ApiService', () => {
     expect(ApiPromise.create).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),
+      noInitWarn: true,
       ...omit(testNetwork, ['endpoint']),
     });
   });
