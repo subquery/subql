@@ -6,6 +6,7 @@ export enum IndexerEvent {
   BlockTarget = 'block_target_height',
   BlockBest = 'block_best_height',
   BlockProcessing = 'block_processing_height',
+  BlockProcessedCount = 'block_processed_count',
   BlockQueueSize = 'block_queue_size',
   BlocknumberQueueSize = 'blocknumber_queue_size',
   NetworkMetadata = 'network_metadata',
@@ -17,7 +18,11 @@ export enum IndexerEvent {
 export interface ProcessBlockPayload {
   height: number;
   timestamp: number;
+}
+
+export interface ProcessedBlockCountPayload {
   processedBlockCount: number;
+  timestamp: number;
 }
 
 export interface TargetBlockPayload {

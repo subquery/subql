@@ -10,6 +10,7 @@ import {
   IndexerEvent,
   NetworkMetadataPayload,
   ProcessBlockPayload,
+  ProcessedBlockCountPayload,
   TargetBlockPayload,
 } from '@subql/node-core/events';
 import { StoreService } from '@subql/node-core/indexer';
@@ -62,7 +63,12 @@ export class MetaService {
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
     this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+
+  @OnEvent(IndexerEvent.BlockProcessedCount)
+  handleProcessedBlock(blockPayload: ProcessedBlockCountPayload): void {
     this.processedBlockCount = blockPayload.processedBlockCount;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
   }
 
   @OnEvent(IndexerEvent.BlockTarget)

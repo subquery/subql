@@ -17,7 +17,12 @@ import {
   SubstrateNetworkFilter,
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
-import { getYargsOption, getLogger, profiler, profilerWrap } from '@subql/node-core';
+import {
+  getYargsOption,
+  getLogger,
+  profiler,
+  profilerWrap,
+} from '@subql/node-core';
 import { NodeConfig } from '@subql/node-core/configure';
 import { SubqueryRepo } from '@subql/node-core/entities';
 import { PoiBlock, StoreService, PoiService } from '@subql/node-core/indexer';
@@ -132,12 +137,8 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
-      // DB
+      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
       await this.storeService.incrementBlockCount(tx);
-      // Memeory
-      this.projectService.setBlockCount(
-        this.projectService.processedBlockCount + 1,
-      );
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();

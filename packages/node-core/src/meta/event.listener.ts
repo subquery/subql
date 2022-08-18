@@ -1,14 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OnEvent } from '@nestjs/event-emitter';
-import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { Gauge } from 'prom-client';
+import {OnEvent} from '@nestjs/event-emitter';
+import {InjectMetric} from '@willsoto/nestjs-prometheus';
+import {Gauge} from 'prom-client';
 import {
   BestBlockPayload,
   EventPayload,
   IndexerEvent,
   ProcessBlockPayload,
+  ProcessedBlockCountPayload,
   TargetBlockPayload,
 } from '../events';
 
@@ -33,27 +34,31 @@ export class MetricEventListener {
     @InjectMetric('subql_indexer_skip_dictionary_count')
     private skipDictionaryCountMetric: Gauge<string>,
     @InjectMetric('subql_indexer_processed_block_count')
-    private processedBlockCountMetric: Gauge<string>,
+    private processedBlockCountMetric: Gauge<string>
   ) {}
 
   @OnEvent(IndexerEvent.ApiConnected)
-  handleApiConnected({ value }: EventPayload<number>): void {
+  handleApiConnected({value}: EventPayload<number>): void {
     this.apiConnectedMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlockQueueSize)
-  handleBlockQueueSizeMetric({ value }: EventPayload<number>): void {
+  handleBlockQueueSizeMetric({value}: EventPayload<number>): void {
     this.blockQueueSizeMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlocknumberQueueSize)
-  handleBlocknumberQueueSizeMetric({ value }: EventPayload<number>): void {
+  handleBlocknumberQueueSizeMetric({value}: EventPayload<number>): void {
     this.blocknumberQueueSizeMetric.set(value);
   }
 
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.processingBlockHeight.set(blockPayload.height);
+  }
+
+  @OnEvent(IndexerEvent.BlockProcessedCount)
+  handleProcessedBlockCount(blockPayload: ProcessedBlockCountPayload): void {
     this.processedBlockCountMetric.set(blockPayload.processedBlockCount);
   }
 
@@ -68,7 +73,7 @@ export class MetricEventListener {
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)
-  handleUsingDictionary({ value }: EventPayload<number>): void {
+  handleUsingDictionary({value}: EventPayload<number>): void {
     this.usingDictionaryMetric.set(value);
   }
 
