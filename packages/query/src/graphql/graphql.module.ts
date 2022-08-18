@@ -82,6 +82,11 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
 
     let options: PostGraphileCoreOptions = {
+      graphileBuildOptions: {
+        // To support root-level, many-to-one filtering
+        // see: https://github.com/graphile-contrib/postgraphile-plugin-connection-filter/blob/master/docs/examples.md#relations-root-level-many-to-one
+        connectionFilterRelations: true,
+      },
       replaceAllPlugins: plugins,
       subscriptions: true,
       dynamicJson: true,
