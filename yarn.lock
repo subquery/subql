@@ -3706,7 +3706,7 @@ __metadata:
     pg: ^8.7.1
     postgraphile: ^4.12.9
     postgraphile-core: ^4.12.2
-    postgraphile-plugin-connection-filter: ^2.2.2
+    postgraphile-plugin-connection-filter: ^2.3.0
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
@@ -13435,7 +13435,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postgraphile-plugin-connection-filter@npm:^2.2.2":
+"postgraphile-plugin-connection-filter@npm:^2.3.0":
   version: 2.3.0
   resolution: "postgraphile-plugin-connection-filter@npm:2.3.0"
   dependencies:
