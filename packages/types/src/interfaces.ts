@@ -3,7 +3,7 @@
 
 import {AnyTuple, Codec} from '@polkadot/types-codec/types';
 import {GenericExtrinsic} from '@polkadot/types/extrinsic';
-import {EventRecord, SignedBlock, Extrinsic} from '@polkadot/types/interfaces';
+import {EventRecord, SignedBlock} from '@polkadot/types/interfaces';
 import {IEvent} from '@polkadot/types/types';
 
 export interface Entity {
@@ -15,9 +15,14 @@ export type FunctionPropertyNames<T> = {
 }[keyof T];
 
 export interface Store {
-  get(entity: string, id: string): Promise<Entity | null>;
-  getByField(entity: string, field: string, value: any): Promise<Entity[]>;
-  getOneByField(entity: string, field: string, value: any): Promise<Entity | null>;
+  get<T extends Entity>(entity: string, id: string): Promise<T | null>;
+  getByField<T extends Entity>(
+    entity: string,
+    field: keyof T,
+    value: T[keyof T] | T[keyof T][],
+    options?: {offset?: number; limit?: number}
+  ): Promise<T[]>;
+  getOneByField<T extends Entity>(entity: string, field: keyof T, value: T[keyof T]): Promise<T | null>;
   set(entity: string, id: string, data: Entity): Promise<void>;
   bulkCreate(entity: string, data: Entity[]): Promise<void>;
   //if fields in provided, only specify fields will be updated
