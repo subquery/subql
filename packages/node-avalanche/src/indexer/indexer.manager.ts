@@ -12,16 +12,15 @@ import {
   SubstrateRuntimeHandlerInputMap,
   isBlockHandlerProcessor,
   isEventHandlerProcessor,
-  isCallHandlerProcessor
+  isCallHandlerProcessor,
 } from '@subql/common-avalanche';
 import {
   getLogger,
   getYargsOption,
   IndexerEvent,
   profiler,
-  ApiService
+  ApiService,
 } from '@subql/common-node';
-import { AvalancheApiService } from '../avalanche';
 import {
   ApiWrapper,
   AvalancheTransaction,
@@ -30,24 +29,23 @@ import {
   AvalancheBlock,
   RuntimeHandlerInputMap,
   SubqlRuntimeHandler,
-  AvalancheBlockWrapper
+  AvalancheBlockWrapper,
 } from '@subql/types-avalanche';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { AvalancheApiService } from '../avalanche';
+import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
-import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { FetchService } from './fetch.service';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { PoiBlock } from './PoiBlock';
+import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
-import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
-import { ProjectService } from './project.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -67,14 +65,12 @@ export class IndexerManager {
   constructor(
     private storeService: StoreService,
     private apiService: ApiService,
-    private fetchService: FetchService,
     private poiService: PoiService,
     protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
-    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
@@ -86,7 +82,9 @@ export class IndexerManager {
   }
 
   @profiler(argv.profiler)
-  async indexBlock(blockContent: AvalancheBlockWrapper): Promise<{ dynamicDsCreated: boolean, operationHash: Uint8Array}> {
+  async indexBlock(
+    blockContent: AvalancheBlockWrapper,
+  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
     const { blockHeight } = blockContent;
     let dynamicDsCreated = false;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
@@ -101,20 +99,22 @@ export class IndexerManager {
     let poiBlockHash: Uint8Array;
 
     try {
-      this.filteredDataSources = this.filterDataSources(
-        blockHeight
-      );
+      this.filteredDataSources = this.filterDataSources(blockHeight);
 
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
-      )
-      
+      );
+
       await this.indexBlockData(
         blockContent,
         datasources,
+        // eslint-disable-next-line @typescript-eslint/require-await
         async (ds: SubqlProjectDs) => {
-
-          const vm = this.sandboxService.getDsProcessorWrapper(ds, this.api, blockContent);
+          const vm = this.sandboxService.getDsProcessorWrapper(
+            ds,
+            this.api,
+            blockContent,
+          );
 
           // Inject function to create ds into vm
           vm.freeze(
@@ -137,7 +137,7 @@ export class IndexerManager {
           return vm;
         },
       );
-      
+
       await this.storeService.setMetadataBatch(
         [
           { key: 'lastProcessedHeight', value: blockHeight },
@@ -404,7 +404,7 @@ export class IndexerManager {
   }
 
   private async indexBlockData(
-    { block, transactions, logs }: AvalancheBlockWrapper,
+    { block, logs, transactions }: AvalancheBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -456,14 +456,15 @@ export class IndexerManager {
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     let vm: IndexerSandbox;
-      const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
-        (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
-      );
+    const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
+      (h) =>
+        h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+    );
 
-      for (const handler of handlers) {
-        vm = vm ?? (await getVM(ds));
-        await vm.securedExec(handler.handler, [data]);
-      }
+    for (const handler of handlers) {
+      vm = vm ?? (await getVM(ds));
+      await vm.securedExec(handler.handler, [data]);
+    }
   }
 }
 
@@ -483,4 +484,4 @@ const FilterTypeMap = {
   [SubqlHandlerKind.Block]: () => true,
   [SubqlHandlerKind.Event]: AvalancheBlockWrapped.filterLogsProcessor,
   [SubqlHandlerKind.Call]: AvalancheBlockWrapped.filterTransactionsProcessor,
-}
+};

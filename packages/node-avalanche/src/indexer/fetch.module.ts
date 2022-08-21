@@ -4,11 +4,12 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
+import { ApiService } from '@subql/common-node';
+import { AvalancheApiService } from '../avalanche/api.service.avalanche';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { getYargsOption } from '../yargs';
-import { AvalancheApiService } from '../avalanche/api.service.avalanche';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -25,7 +26,6 @@ import {
   WorkerBlockDispatcherService,
   IBlockDispatcher,
 } from './worker/block-dispatcher.service';
-import { ApiService } from '@subql/common-node';
 
 const { argv } = getYargsOption();
 
@@ -35,15 +35,12 @@ const { argv } = getYargsOption();
     StoreService,
     {
       provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        eventEmitter: EventEmitter2,
-      ) => {
+      useFactory: async (project: SubqueryProject) => {
         const apiService = new AvalancheApiService(project);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject, EventEmitter2],
+      inject: [SubqueryProject],
     },
     IndexerManager,
     {

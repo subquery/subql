@@ -19,7 +19,10 @@ import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
-import { BlockDispatcherService, WorkerBlockDispatcherService } from './worker/block-dispatcher.service';
+import {
+  BlockDispatcherService,
+  WorkerBlockDispatcherService,
+} from './worker/block-dispatcher.service';
 import { WorkerService } from './worker/worker.service';
 
 const { argv } = getYargsOption();
@@ -31,7 +34,7 @@ const ApiServiceProvider = {
     await apiService.init();
     return apiService;
   },
-  inject: [SubqueryProject, EventEmitter2],
+  inject: [SubqueryProject],
 };
 
 const BaseProvider = [
