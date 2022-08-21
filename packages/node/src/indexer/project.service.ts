@@ -5,22 +5,22 @@ import assert from 'assert';
 import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { getYargsOption, getLogger } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryRepo } from '@subql/node-core/entities';
+import { IndexerEvent } from '@subql/node-core/events';
+import { StoreService, PoiService, MmrService } from '@subql/node-core/indexer';
+import {
+  MetadataFactory,
+  MetadataRepo,
+} from '@subql/node-core/indexer/entities';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
-import { getLogger } from '../utils/logger';
-import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { IndexerEvent } from './events';
-import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
-import { StoreService } from './store.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -36,7 +36,6 @@ export class ProjectService {
   private metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
-  private _processedBlockCount: number;
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
@@ -64,14 +63,6 @@ export class ProjectService {
     return this._startHeight;
   }
 
-  get processedBlockCount(): number {
-    return this._processedBlockCount;
-  }
-
-  setBlockCount(count: number): void {
-    this._processedBlockCount = count;
-  }
-
   async init(): Promise<void> {
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
@@ -89,14 +80,6 @@ export class ProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
-
-      const blockAmount = await this.getProcessedBlockCount();
-      if (blockAmount) {
-        this._processedBlockCount = blockAmount;
-      } else {
-        this._processedBlockCount = 0;
-      }
-
       if (argv.reindex !== undefined) {
         await this.reindex(argv.reindex);
       }

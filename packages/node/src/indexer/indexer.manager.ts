@@ -18,29 +18,30 @@ import {
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
 import {
+  getYargsOption,
+  getLogger,
+  profiler,
+  profilerWrap,
+} from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryRepo } from '@subql/node-core/entities';
+import { PoiBlock, StoreService, PoiService } from '@subql/node-core/indexer';
+import {
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
-import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
 import * as SubstrateUtil from '../utils/substrate';
-import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -136,12 +137,8 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
-      // DB
+      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
       await this.storeService.incrementBlockCount(tx);
-      // Memeory
-      this.projectService.setBlockCount(
-        this.projectService.processedBlockCount + 1,
-      );
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();

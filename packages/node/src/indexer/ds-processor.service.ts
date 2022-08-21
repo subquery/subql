@@ -12,6 +12,7 @@ import {
   SubstrateDatasourceProcessor,
   SubstrateNetworkFilter,
 } from '@subql/common-substrate';
+import { getLogger } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
@@ -21,7 +22,6 @@ import {
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {

@@ -6,20 +6,18 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
+import { NodeConfig } from '@subql/node-core/configure';
+import { SubqueryFactory } from '@subql/node-core/entities';
+import { StoreService, PoiService, MmrService } from '@subql/node-core/indexer';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryFactory } from '../entities';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
-import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
@@ -130,10 +128,10 @@ function createIndexerManager(project: SubqueryProject): IndexerManager {
   const dsProcessorService = new DsProcessorService(project);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const poiService = new PoiService(nodeConfig, project, sequilize);
+  const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const subqueryRepo = SubqueryFactory(sequilize);
-  const mmrService = new MmrService(nodeConfig, project, sequilize);
+  const mmrService = new MmrService(nodeConfig, sequilize);
   const sandboxService = new SandboxService(
     apiService,
     storeService,

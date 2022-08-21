@@ -4,15 +4,11 @@
 import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
-import {
-  BlockHash,
-  RuntimeVersion,
-  SignedBlock,
-} from '@polkadot/types/interfaces';
+import { BlockHash, RuntimeVersion } from '@polkadot/types/interfaces';
+import { delay } from '@subql/node-core/utils';
 import { SubstrateBlock } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import { wrapBlock } from '../utils/substrate';
 import { ApiService } from './api.service';
 

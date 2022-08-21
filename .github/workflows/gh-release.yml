@@ -35,6 +35,12 @@ jobs:
           package-path: packages/common-substrate
           repo-token: ${{ secrets.REPO_TOKEN }}
 
+
+      - uses: ./.github/actions/create-release
+        with:
+          package-path: packages/node-core
+          repo-token: ${{ secrets.REPO_TOKEN }}
+
       - uses: ./.github/actions/create-release
         with:
           package-path: packages/node

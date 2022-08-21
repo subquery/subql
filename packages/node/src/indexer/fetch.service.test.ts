@@ -7,14 +7,14 @@ import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
 import { ApiOptions } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { delay } from '@subql/common';
 import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
+import { NodeConfig } from '@subql/node-core/configure';
 import { GraphQLSchema } from 'graphql';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -128,7 +128,10 @@ async function createApp(
         },
         inject: [DsProcessorService, SubqueryProject],
       },
-      DictionaryService,
+      {
+        provide: DictionaryService,
+        useFactory: () => new DictionaryService(project, nodeConfig),
+      },
       SchedulerRegistry,
       FetchService,
     ],
@@ -148,8 +151,8 @@ describe('FetchService', () => {
   let fetchService: FetchService;
 
   afterEach(async () => {
-    fetchService.onApplicationShutdown();
-    app.get('IBlockDispatcher').onApplicationShutdown();
+    fetchService?.onApplicationShutdown();
+    app?.get('IBlockDispatcher').onApplicationShutdown();
     await delay(2);
     await app?.close();
   });

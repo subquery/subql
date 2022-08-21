@@ -1,0 +1,34 @@
+{
+  "name": "@subql/node-core",
+  "version": "0.0.3",
+  "description": "Common node features that are agnostic to blockchains",
+  "homepage": "https://github.com/subquery/subql",
+  "repository": "github:subquery/subql",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rm -rf dist && tsc -b",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "author": "Ian He",
+  "main": "dist/index.js",
+  "license": "Apache-2.0",
+  "files": [
+    "src/global.d.ts",
+    "/dist"
+  ],
+  "dependencies": {
+    "@nestjs/common": "^8.2.6",
+    "@nestjs/event-emitter": "^1.3.0",
+    "@nestjs/schedule": "^1.0.2",
+    "@polkadot/api": "9.1.1",
+    "@subql/common": "workspace:*",
+    "@subql/types": "workspace:*",
+    "@subql/utils": "workspace:*",
+    "@subql/x-merkle-mountain-range": "^2.0.0-0.1.2",
+    "@willsoto/nestjs-prometheus": "^4.4.0",
+    "lodash": "^4.17.21",
+    "prom-client": "^14.0.1",
+    "sequelize": "6.19.0",
+    "yargs": "^16.2.0"
+  }
+}

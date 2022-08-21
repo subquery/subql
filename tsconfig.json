@@ -24,6 +24,8 @@
       "@subql/common/*": ["packages/common/src/*"],
       "@subql/common-substrate": ["packages/common-substrate/src"],
       "@subql/common-substrate/*": ["packages/common-substrate/src/*"],
+      "@subql/node-core": ["packages/node-core/src"],
+      "@subql/node-core/*": ["packages/node-core/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
       "@subql/validator": ["packages/validator/src"],
@@ -36,6 +38,7 @@
     {"path": "packages/common"},
     {"path": "packages/common-substrate"},
     {"path": "packages/node"},
+    {"path": "packages/node-core"},
     {"path": "packages/types"},
     {"path": "packages/utils"},
     {"path": "packages/validator"}

@@ -1,10 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { NodeConfig } from '@subql/node-core';
 import { DictionaryQueryEntry } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { range } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 

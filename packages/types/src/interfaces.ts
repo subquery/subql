@@ -4,7 +4,7 @@
 import {AnyTuple, Codec} from '@polkadot/types-codec/types';
 import {GenericExtrinsic} from '@polkadot/types/extrinsic';
 import {EventRecord, SignedBlock, Extrinsic} from '@polkadot/types/interfaces';
-import {IEvent, IExtrinsic} from '@polkadot/types/types';
+import {IEvent} from '@polkadot/types/types';
 
 export interface Entity {
   id: string;

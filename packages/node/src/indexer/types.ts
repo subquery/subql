@@ -4,7 +4,6 @@
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
 import {
-  Entity,
   SubstrateBlock,
   SubstrateEvent,
   SubstrateExtrinsic,
@@ -15,16 +14,5 @@ export interface BlockContent {
   extrinsics: SubstrateExtrinsic[];
   events: SubstrateEvent[];
 }
-
-export enum OperationType {
-  Set = 'Set',
-  Remove = 'Remove',
-}
-
-export type OperationEntity = {
-  operation: OperationType;
-  entityType: string;
-  data: Entity | string;
-};
 
 export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };

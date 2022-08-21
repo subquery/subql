@@ -8,17 +8,17 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
+import { getYargsOption, profilerWrap } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core/configure';
+import { IndexerEvent } from '@subql/node-core/events';
+import { Worker } from '@subql/node-core/indexer';
+import { getLogger } from '@subql/node-core/logger';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
-import { getLogger } from '../../utils/logger';
-import { profilerWrap } from '../../utils/profiler';
 import * as SubstrateUtil from '../../utils/substrate';
-import { getYargsOption } from '../../yargs';
 import { ApiService } from '../api.service';
-import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import {
@@ -30,7 +30,6 @@ import {
   SetCurrentRuntimeVersion,
   GetWorkerStatus,
 } from './worker';
-import { Worker } from './worker.builder';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -110,6 +109,7 @@ export class BlockDispatcherService
   private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
   private _latestBufferedHeight: number;
+  private _processedBlockCount: number;
 
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
   private latestProcessedHeight: number;
@@ -142,6 +142,8 @@ export class BlockDispatcherService
   ): Promise<void> {
     this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
+    const blockAmount = await this.projectService.getProcessedBlockCount();
+    this.setProcessedBlockCount(blockAmount ?? 0);
   }
 
   onApplicationShutdown(): void {
@@ -175,6 +177,14 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
+  private setProcessedBlockCount(processedBlockCount: number) {
+    this._processedBlockCount = processedBlockCount;
+    this.eventEmitter.emit(IndexerEvent.BlockProcessedCount, {
+      processedBlockCount,
+      timestamp: Date.now(),
+    });
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
@@ -206,8 +216,6 @@ export class BlockDispatcherService
         blockNums,
       );
 
-      const processedBlockCount = this.projectService.processedBlockCount;
-
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
         continue;
@@ -218,7 +226,6 @@ export class BlockDispatcherService
           this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
             height,
             timestamp: Date.now(),
-            processedBlockCount,
           });
 
           const runtimeVersion = await this.getRuntimeVersion(block.block);
@@ -226,6 +233,8 @@ export class BlockDispatcherService
           const { dynamicDsCreated, operationHash } =
             await this.indexerManager.indexBlock(block, runtimeVersion);
 
+          // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+          this.setProcessedBlockCount(this._processedBlockCount + 1);
           if (
             this.nodeConfig.proofOfIndex &&
             !isNullMerkelRoot(operationHash)
@@ -306,6 +315,7 @@ export class WorkerBlockDispatcherService
   private isShutdown = false;
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
+  private _processedBlockCount: number;
 
   constructor(
     private nodeConfig: NodeConfig,
@@ -326,6 +336,17 @@ export class WorkerBlockDispatcherService
 
     this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
+
+    const blockAmount = await this.projectService.getProcessedBlockCount();
+    this.setProcessedBlockCount(blockAmount ?? 0);
+  }
+
+  private setProcessedBlockCount(processedBlockCount: number) {
+    this._processedBlockCount = processedBlockCount;
+    this.eventEmitter.emit(IndexerEvent.BlockProcessedCount, {
+      processedBlockCount,
+      timestamp: Date.now(),
+    });
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -425,17 +446,17 @@ export class WorkerBlockDispatcherService
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
-        const processedBlockCount = this.projectService.processedBlockCount;
 
         this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
           height,
           timestamp: Date.now(),
-          processedBlockCount,
         });
 
         const { dynamicDsCreated, operationHash } = await worker.processBlock(
           height,
         );
+        // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+        this.setProcessedBlockCount(this._processedBlockCount + 1);
 
         if (
           this.nodeConfig.proofOfIndex &&
