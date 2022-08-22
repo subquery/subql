@@ -12,18 +12,22 @@ export interface IProjectManifest<D> {
   validate(): void;
 }
 
-export interface GenericManifest<
-  H extends GenericHandler = GenericHandler,
-  N extends ProjectNetworkConfig = ProjectNetworkConfig
-> extends IProjectManifest<GenericDataSource<H>> {
+export interface GenericManifest<H, N> {
   name: string;
   version: string;
   network: N;
+  specVersion: string;
+  description: string;
+  repository: string;
+  dataSources: GenericDataSource<H>[];
+  //undefined for GenericManifest
+  toDeployment(): string | undefined;
+  validate(): void;
 }
 
 export type GenericHandler = BaseHandler<any>;
 
-export interface GenericDataSource<H extends GenericHandler, O = any> {
+export interface GenericDataSource<H extends Partial<GenericHandler>, O = any> {
   name?: string;
   kind: string;
   mapping: GenericMapping<H>;
@@ -34,12 +38,12 @@ export interface GenericDataSource<H extends GenericHandler, O = any> {
   options?: Record<string, unknown>;
 }
 
-export class GenericMapping<H extends GenericHandler> {
+export class GenericMapping<H> {
   file: string;
-  handler: H;
+  handlers: H[];
 }
 
-export declare class GenericNetworkConfig implements ProjectNetworkConfig {
+export interface GenericNetworkConfig {
   endpoint?: string;
   dictionary?: string;
   chainId?: string;
@@ -59,6 +63,6 @@ export interface FileReference {
 
 export type Processor<O = any> = FileReference & {options?: O};
 
-export interface GenericTemplate<H extends GenericHandler, O = any>
+export interface GenericTemplate<H = Partial<GenericHandler>, O = any>
   extends Omit<GenericDataSource<H, O>, 'name'>,
     TemplateBase {}

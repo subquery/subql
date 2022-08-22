@@ -2,12 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import {getManifestPath, loadFromJsonOrYaml, RunnerQueryBaseModel, SemverVersionValidator} from '@subql/common';
-import {SubstrateProjectNetworkConfig} from '@subql/common-substrate';
-import {parseGenericProjectManifest} from '@subql/common/project/versioned/genericManifest';
+import {
+  getManifestPath,
+  loadFromJsonOrYaml,
+  RunnerQueryBaseModel,
+  SemverVersionValidator,
+  parseGenericProjectManifest,
+} from '@subql/common';
 import {SubstrateRuntimeHandler} from '@subql/types';
+import {plainToClassFromExist} from 'class-transformer';
 import {validateSync} from 'class-validator';
+import {SubstrateProjectNetworkConfig} from '../project/types';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
+import {SubstrateProjectManifestImp} from './generic/ProjectManifest';
 import {loadSubstrateProjectManifest} from './load';
 
 const projectsDir = path.join(__dirname, '../../test');
@@ -137,5 +144,13 @@ describe('project.yaml', () => {
     // missing chainId
     const doc3 = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_1.0.0_missing_chainId.yaml')));
     expect(() => parseGenericProjectManifest<SubstrateRuntimeHandler, SubstrateProjectNetworkConfig>(doc3)).toThrow();
+  });
+
+  it('can be validate with project manifest', () => {
+    const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_0.2.0.yaml')));
+    const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw);
+    console.log(manifest.specVersion);
+    manifest.validate();
+    // console.log(manifest.toDeployment())
   });
 });

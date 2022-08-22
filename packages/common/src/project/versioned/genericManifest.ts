@@ -199,7 +199,7 @@ export class ProjectManifestImp<
     });
   }
 
-  toDeployment(): string {
+  toDeployment(): undefined {
     throw new Error('Method not implemented.');
   }
   validate(): void {

@@ -9,6 +9,7 @@ schema:
   file: ./schema.graphql
 
 network:
+  endpoint: 'wss://test.com'
   genesisHash: '0x'
   dictionary: 'https://api.subquery.network/sq/subquery/dictionary-polkadot'
   chaintypes:
