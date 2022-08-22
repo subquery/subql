@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { isMainThread } from 'worker_threads';
+import {isMainThread} from 'worker_threads';
 import {Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
@@ -102,7 +102,7 @@ export class StoreService {
   async incrementBlockCount(tx: Transaction): Promise<void> {
     await this.sequelize.query(
       `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
-      { transaction: tx },
+      {transaction: tx}
     );
   }
 
@@ -260,7 +260,7 @@ export class StoreService {
     // this will allow alter current entity, including fields
     // TODO, add rules for changes, eg only allow add nullable field
     // Only allow altering the tables on the main thread
-    await this.sequelize.sync({ alter: { drop: isMainThread } });
+    await this.sequelize.sync({alter: {drop: isMainThread}});
     await this.setMetadata('historicalStateEnabled', this.historical);
     for (const query of extraQueries) {
       await this.sequelize.query(query);
@@ -364,10 +364,7 @@ export class StoreService {
     });
   }
 
-  validateNotifyTriggers(
-    triggerName: string,
-    triggers: NotifyTriggerPayload[],
-  ): void {
+  validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
         `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
@@ -490,10 +487,7 @@ group by
     );
   }
 
-  async rewind(
-    targetBlockHeight: number,
-    transaction: Transaction,
-  ): Promise<void> {
+  async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
         await model.destroy({
@@ -502,7 +496,7 @@ group by
           where: this.sequelize.where(
             this.sequelize.fn('lower', this.sequelize.col('_block_range')),
             Op.gt,
-            targetBlockHeight,
+            targetBlockHeight
           ),
         });
         await model.update(
@@ -510,7 +504,7 @@ group by
             __block_range: this.sequelize.fn(
               'int8range',
               this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-              null,
+              null
             ),
           },
           {
@@ -521,7 +515,7 @@ group by
                 [Op.contains]: targetBlockHeight,
               },
             },
-          },
+          }
         );
       }
     }
@@ -546,7 +540,7 @@ group by
 
   getStore(): Store {
     return {
-      get: async (entity: string, id: string): Promise<Entity | undefined> => {
+      get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
@@ -554,12 +548,20 @@ group by
             where: {id},
             transaction: this.tx,
           });
-          return record?.toJSON() as Entity;
+          return record?.toJSON() as T;
         } catch (e) {
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
       },
-      getByField: async (entity: string, field: string, value): Promise<Entity[] | undefined> => {
+      getByField: async <T extends Entity>(
+        entity: string,
+        field: keyof T,
+        value: T[keyof T] | T[keyof T][],
+        options?: {
+          offset?: number;
+          limit?: number;
+        }
+      ): Promise<T[] | undefined> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
@@ -572,14 +574,19 @@ group by
           const records = await model.findAll({
             where: {[field]: value},
             transaction: this.tx,
-            limit: this.config.queryLimit,
+            limit: options?.limit ?? this.config.queryLimit,
+            offset: options?.offset,
           });
-          return records.map((record) => record.toJSON() as Entity);
+          return records.map((record) => record.toJSON() as T);
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${field}: ${e}`);
         }
       },
-      getOneByField: async (entity: string, field: string, value): Promise<Entity | undefined> => {
+      getOneByField: async <T extends Entity>(
+        entity: string,
+        field: keyof T,
+        value: T[keyof T]
+      ): Promise<T | undefined> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
@@ -595,7 +602,7 @@ group by
             where: {[field]: value},
             transaction: this.tx,
           });
-          return record?.toJSON() as Entity;
+          return record?.toJSON() as T;
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${field}: ${e}`);
         }
@@ -649,44 +656,34 @@ group by
         }
       },
 
-      bulkUpdate: async (
-        entity: string,
-        data: Entity[],
-        fields?: string[],
-      ): Promise<void> => {
+      bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
           if (this.historical) {
             if (fields.length !== 0) {
-              logger.warn(
-                `Update specified fields with historical feature is not supported`,
-              );
+              logger.warn(`Update specified fields with historical feature is not supported`);
             }
             const newRecordAttributes: CreationAttributes<Model>[] = [];
             await Promise.all(
               data.map(async (record) => {
-                const attributes =
-                  record as unknown as CreationAttributes<Model>;
+                const attributes = record as unknown as CreationAttributes<Model>;
                 const [updatedRows] = await model.update(attributes, {
                   hooks: false,
                   transaction: this.tx,
                   where: this.sequelize.and(
-                    { id: record.id },
+                    {id: record.id},
                     this.sequelize.where(
-                      this.sequelize.fn(
-                        'lower',
-                        this.sequelize.col('_block_range'),
-                      ),
-                      this.blockHeight,
-                    ),
+                      this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+                      this.blockHeight
+                    )
                   ),
                 });
                 if (updatedRows < 1) {
                   await this.markAsDeleted(model, record.id);
                   newRecordAttributes.push(attributes);
                 }
-              }),
+              })
             );
             if (newRecordAttributes.length !== 0) {
               await model.bulkCreate(newRecordAttributes, {
@@ -695,17 +692,11 @@ group by
             }
           } else {
             const modelFields =
-              fields ??
-              Object.keys(model.getAttributes()).filter(
-                (item) => !KEY_FIELDS.includes(item),
-              );
-            await model.bulkCreate(
-              data as unknown as CreationAttributes<Model>[],
-              {
-                transaction: this.tx,
-                updateOnDuplicate: modelFields,
-              },
-            );
+              fields ?? Object.keys(model.getAttributes()).filter((item) => !KEY_FIELDS.includes(item));
+            await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
+              transaction: this.tx,
+              updateOnDuplicate: modelFields,
+            });
           }
           if (this.config.proofOfIndex) {
             for (const item of data) {

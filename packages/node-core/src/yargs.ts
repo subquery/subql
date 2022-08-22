@@ -161,6 +161,12 @@ export function getYargsOption() {
       describe: 'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
     },
+    'query-limit': {
+      demandOption: false,
+      describe: 'The limit of items a project can query with store.getByField at once',
+      type: 'number',
+      default: 100,
+    },
   });
 }
 
