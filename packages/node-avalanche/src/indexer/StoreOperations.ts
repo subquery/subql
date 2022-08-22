@@ -3,8 +3,7 @@
 
 import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
 import { Entity } from '@subql/types-avalanche';
-import { getTypeByScalarName } from '@subql/utils';
-import { GraphQLModelsType } from '@subql/utils';
+import { getTypeByScalarName, GraphQLModelsType } from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import { OperationEntity, OperationType } from './types';
 

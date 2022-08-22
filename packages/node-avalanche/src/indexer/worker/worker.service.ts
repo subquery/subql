@@ -3,17 +3,14 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
+import { ApiService } from '@subql/common-node';
+import { AvalancheBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { ApiService } from '@subql/common-node'
 import { IndexerManager } from '../indexer.manager';
-import { AvalancheBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
 
-export type FetchBlockResponse =
-  | { parentHash: string }
-  | undefined;
+export type FetchBlockResponse = { parentHash: string } | undefined;
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
@@ -49,18 +46,14 @@ export class WorkerService {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
         if (!this.fetchedBlocks[height]) {
-          const [block] = await this.apiService.api.fetchBlocks([
-            height,
-          ]);
+          const [block] = await this.apiService.api.fetchBlocks([height]);
           this.fetchedBlocks[height] = block;
         }
 
         const block = this.fetchedBlocks[height];
 
-
-
         // Return info to get the runtime version, this lets the worker thread know
-        return undefined
+        return undefined;
       });
     } catch (e) {
       logger.error(e, `Failed to fetch block ${height}`);
@@ -78,9 +71,7 @@ export class WorkerService {
 
       delete this.fetchedBlocks[height];
 
-      const response = await this.indexerManager.indexBlock(
-        block,
-      );
+      const response = await this.indexerManager.indexBlock(block);
 
       this._isIndexing = false;
       return {

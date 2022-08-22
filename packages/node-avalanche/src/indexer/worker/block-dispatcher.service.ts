@@ -5,15 +5,16 @@ import assert from 'assert';
 import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { hexToU8a, u8aEq } from '@polkadot/util';
+import { ApiService } from '@subql/common-node';
+import { AvalancheBlockWrapper } from '@subql/types-avalanche';
 import chalk from 'chalk';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { ApiService } from '@subql/common-node';
 import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
@@ -26,7 +27,6 @@ import {
   GetWorkerStatus,
 } from './worker';
 import { Worker } from './worker.builder';
-import { AvalancheBlockWrapper } from '@subql/types-avalanche';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -173,9 +173,7 @@ export class BlockDispatcherService
         }], total ${blockNums.length} blocks`,
       );
 
-      const blocks = await this.apiService.api.fetchBlocks(
-        blockNums,
-      );
+      const blocks = await this.apiService.api.fetchBlocks(blockNums);
 
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
@@ -191,7 +189,9 @@ export class BlockDispatcherService
           });
 
           const { dynamicDsCreated, operationHash } =
-            await this.indexerManager.indexBlock(block as AvalancheBlockWrapper);
+            await this.indexerManager.indexBlock(
+              block as AvalancheBlockWrapper,
+            );
 
           if (
             this.nodeConfig.proofOfIndex &&

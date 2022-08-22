@@ -7,9 +7,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import {
   isCustomDs,
-  isRuntimeDs,
-  SubstrateDataSource,
-  SubstrateHandler,
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-avalanche';
@@ -26,18 +23,17 @@ import {
   AvalancheLogFilter,
   AvalancheTransactionFilter,
 } from '@subql/types-avalanche';
-import { isUndefined, range, sortBy, uniqBy } from 'lodash';
+import { range, sortBy, uniqBy } from 'lodash';
+import { calcInterval } from '../avalanche/utils.avalanche';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { delay } from '../utils/promise';
 import { eventToTopic, functionToSighash } from '../utils/string';
 import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
-import { IBlockDispatcher } from './worker/block-dispatcher.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { calcInterval } from '../avalanche/utils.avalanche';
+import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000;
@@ -265,8 +261,7 @@ export class FetchService implements OnApplicationShutdown {
 
   async init(startHeight: number): Promise<void> {
     if (this.api) {
-      const CHAIN_INTERVAL =
-        calcInterval(this.api) * INTERVAL_PERCENT;
+      const CHAIN_INTERVAL = calcInterval(this.api) * INTERVAL_PERCENT;
 
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
@@ -285,7 +280,7 @@ export class FetchService implements OnApplicationShutdown {
 
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
 
-    void this.startLoop(startHeight);    
+    void this.startLoop(startHeight);
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -531,5 +526,4 @@ export class FetchService implements OnApplicationShutdown {
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
-
 }
