@@ -3,9 +3,9 @@
 
 import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
-import { AlgorandBlock } from './algorand';
-import { AvalancheBlock, AvalancheLog, AvalancheTransaction } from './avalanche';
-import { SubstrateBlock, SubstrateEvent, SubstrateExtrinsic } from './substrate';
+import {AlgorandBlock} from './algorand';
+import {AvalancheBlock, AvalancheLog, AvalancheTransaction} from './avalanche';
+import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './substrate';
 
 export enum SubqlDatasourceKind {
   Runtime = 'substrate/Runtime',
@@ -17,6 +17,18 @@ export enum SubqlHandlerKind {
   Call = 'substrate/CallHandler',
   Event = 'substrate/EventHandler',
 }
+
+export enum AvalancheHandlerKind {
+  Block = 'avalanche/BlockHandler',
+  Call = 'avalanche/CallHandler',
+  Event = 'avalanche/EventHandler',
+}
+
+export type AvalancheRuntimeHandlerInputMap = {
+  [AvalancheHandlerKind.Block]: AvalancheBlock;
+  [AvalancheHandlerKind.Call]: AvalancheTransaction;
+  [AvalancheHandlerKind.Event]: AvalancheLog;
+};
 
 export type RuntimeHandlerInputMap = {
   [SubqlHandlerKind.Block]: SubstrateBlock | AlgorandBlock | AvalancheBlock;
@@ -69,19 +81,19 @@ export interface SubqlCallFilter extends SubqlEventFilter {
 
 export interface SubqlBlockHandler {
   handler: string;
-  kind: SubqlHandlerKind.Block;
+  kind: SubqlHandlerKind.Block | AvalancheHandlerKind.Block;
   filter?: SubqlBlockFilter;
 }
 
 export interface SubqlCallHandler {
   handler: string;
-  kind: SubqlHandlerKind.Call;
+  kind: SubqlHandlerKind.Call | AvalancheHandlerKind.Call;
   filter?: SubqlCallFilter;
 }
 
 export interface SubqlEventHandler {
   handler: string;
-  kind: SubqlHandlerKind.Event;
+  kind: SubqlHandlerKind.Event | AvalancheHandlerKind.Event;
   filter?: SubqlEventFilter;
 }
 

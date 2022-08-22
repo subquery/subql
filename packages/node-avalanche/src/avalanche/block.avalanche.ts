@@ -13,6 +13,7 @@ import {
   AvalancheLogFilter,
   AvalancheResult,
   AvalancheTransaction,
+  AvalancheBlockFilter,
 } from '@subql/types-avalanche';
 import { flatten } from 'lodash';
 import {
@@ -50,6 +51,16 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
 
   get logs(): AvalancheLog<AvalancheResult>[] {
     return this._logs;
+  }
+
+  static filterBlocksProcessor(
+    block: AvalancheBlock,
+    filter: AvalancheBlockFilter,
+  ): boolean {
+    if (filter.modulo && block.number % filter.modulo !== 0) {
+      return false;
+    }
+    return true;
   }
 
   static filterTransactionsProcessor(

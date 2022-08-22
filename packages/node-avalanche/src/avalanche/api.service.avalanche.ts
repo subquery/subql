@@ -21,7 +21,6 @@ export class AvalancheApiService extends ApiService {
         logger.error(Object.keys(e));
         process.exit(1);
       }
-      logger.info(JSON.stringify(this.project.network));
 
       this.api = new AvalancheApi(network);
       await this.api.init();

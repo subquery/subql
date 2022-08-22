@@ -30,6 +30,8 @@ import {
   RuntimeHandlerInputMap,
   SubqlRuntimeHandler,
   AvalancheBlockWrapper,
+  AvalancheHandlerKind,
+  AvalancheRuntimeHandlerInputMap,
 } from '@subql/types-avalanche';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
@@ -425,7 +427,7 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubqlHandlerKind.Block, block, ds, getVM);
+      await this.indexData(AvalancheHandlerKind.Block, block, ds, getVM);
     }
   }
 
@@ -435,7 +437,7 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubqlHandlerKind.Call, tx, ds, getVM);
+      await this.indexData(AvalancheHandlerKind.Call, tx, ds, getVM);
     }
   }
 
@@ -445,13 +447,13 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubqlHandlerKind.Event, log, ds, getVM);
+      await this.indexData(AvalancheHandlerKind.Event, log, ds, getVM);
     }
   }
 
-  private async indexData<K extends SubqlHandlerKind>(
+  private async indexData<K extends AvalancheHandlerKind>(
     kind: K,
-    data: RuntimeHandlerInputMap[K],
+    data: AvalancheRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -481,7 +483,8 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [SubqlHandlerKind.Block]: () => true,
-  [SubqlHandlerKind.Event]: AvalancheBlockWrapped.filterLogsProcessor,
-  [SubqlHandlerKind.Call]: AvalancheBlockWrapped.filterTransactionsProcessor,
+  [AvalancheHandlerKind.Block]: AvalancheBlockWrapped.filterBlocksProcessor,
+  [AvalancheHandlerKind.Event]: AvalancheBlockWrapped.filterLogsProcessor,
+  [AvalancheHandlerKind.Call]:
+    AvalancheBlockWrapped.filterTransactionsProcessor,
 };

@@ -44,15 +44,6 @@ async function bootstrap() {
     });
     await app.init();
 
-    const projectService = app.get(ProjectService);
-    const fetchService = app.get(FetchService);
-    const apiService = app.get(ApiService);
-
-    // Initialise async services, we do this here rather than in factories so we can capture one off events
-    await apiService.init();
-    await projectService.init();
-    await fetchService.init(projectService.startHeight);
-
     await app.listen(port);
 
     logger.info(`Node started on port: ${port}`);

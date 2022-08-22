@@ -3,6 +3,10 @@
 
 import {BlockWrapper} from '../interfaces';
 
+export interface AvalancheBlockFilter {
+  modulo?: number;
+}
+
 export interface AvalancheTransactionFilter {
   from?: string;
   to?: string;
