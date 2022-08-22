@@ -8,7 +8,11 @@ import {
   SubstrateDataSource,
 } from '@subql/common-avalanche';
 import { getYargsOption, getLogger } from '@subql/common-node';
-import { ApiWrapper, AvalancheBlockWrapper, BlockWrapper, Store } from '@subql/types-avalanche';
+import {
+  ApiWrapper,
+  AvalancheBlockWrapper,
+  Store,
+} from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
 import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
@@ -17,7 +21,6 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
 import { StoreService } from './store.service';
-import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
 
 const { argv } = getYargsOption();
 
