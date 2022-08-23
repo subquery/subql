@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {TemplateBase, BaseHandler} from '../project/versioned';
+import {TemplateBase, BaseHandler, RunnerSpecs} from '../project/versioned';
 
 export interface IProjectManifest<D> {
   specVersion: string;
@@ -13,6 +13,7 @@ export interface IProjectManifest<D> {
 }
 
 export interface GenericManifest<H, N> {
+  runner?: RunnerSpecs;
   name: string;
   version: string;
   network: N;
@@ -20,6 +21,7 @@ export interface GenericManifest<H, N> {
   description: string;
   repository: string;
   dataSources: GenericDataSource<H>[];
+  templates?: GenericTemplates<H>[];
   //undefined for GenericManifest
   toDeployment(): string | undefined;
   validate(): void;
@@ -37,6 +39,8 @@ export interface GenericDataSource<H extends Partial<GenericHandler>, O = any> {
   processor?: Processor<O>;
   options?: Record<string, unknown>;
 }
+
+export interface GenericTemplates<H> extends Omit<GenericDataSource<H>, 'name'>, TemplateBase {}
 
 export class GenericMapping<H> {
   file: string;

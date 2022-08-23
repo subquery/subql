@@ -11,7 +11,7 @@ import {
   RunnerSpecs,
 } from '@subql/common';
 import {FileType, GenericRunnerSpecsImpl, GenericTemplateImp} from '@subql/common/project/versioned/genericManifest';
-import {classToPlain, plainToClass, plainToClassFromExist, Type} from 'class-transformer';
+import {classToPlain, plainToClass, Type} from 'class-transformer';
 import {
   IsArray,
   IsObject,
@@ -23,13 +23,16 @@ import {
   validateSync,
 } from 'class-validator';
 import yaml from 'js-yaml';
-import {DeploymentV0_2_0, DeploymentV1_0_0} from '../versioned';
+import {DeploymentV0_2_0, DeploymentV1_0_0, SubstrateRunnerSpecsImpl} from '../versioned';
 import {
   SubstrateDataSourceBaseImp,
   SubstrateRuntimeDataSource,
   SubstrateCustomDataSource,
   SubstrateRuntimeDataSourceImp,
   SubstrateCustomDataSourceImp,
+  SubstrateTemplateBaseImp,
+  SubstrateRuntimeTemplateImp,
+  SubstrateCustomTemplateImp,
 } from './substrateDatasource';
 import {getVersionedNetwork, SubstrateNetworkBaseImp} from './substrateNetwork';
 
@@ -43,8 +46,8 @@ export class SubstrateProjectManifestImp<
   @ValidateIf((o) => o.specVersion === '1.0.0')
   @IsObject()
   @ValidateNested()
-  @Type(() => GenericRunnerSpecsImpl)
-  runner: RunnerSpecs;
+  @Type(() => SubstrateRunnerSpecsImpl)
+  runner?: RunnerSpecs;
   @IsString()
   name: string;
   @IsString()
@@ -57,14 +60,7 @@ export class SubstrateProjectManifestImp<
   repository: string;
   @IsArray()
   @ValidateNested()
-  // @Type(() => SubstrateDataSourceBaseImp, {keepDiscriminatorProperty: true})
-  @Type(() => SubstrateRuntimeDataSourceImp, {
-    discriminator: {
-      property: 'kind',
-      subTypes: [{value: SubstrateCustomDataSourceImp, name: 'substrate/Runtime'}],
-    },
-    keepDiscriminatorProperty: true,
-  })
+  @Type(() => SubstrateDataSourceBaseImp, {keepDiscriminatorProperty: true})
   dataSources: (SubstrateRuntimeDataSource<H> | SubstrateCustomDataSource<H, O>)[];
   @ValidateNested()
   @Type(() => FileType)
@@ -76,8 +72,8 @@ export class SubstrateProjectManifestImp<
   @IsOptional()
   @IsArray()
   @ValidateNested()
-  @Type(() => GenericTemplateImp, {keepDiscriminatorProperty: true})
-  templates: GenericTemplate<H, O>[];
+  @Type(() => SubstrateTemplateBaseImp, {keepDiscriminatorProperty: true})
+  templates: (SubstrateRuntimeTemplateImp<H> | SubstrateCustomTemplateImp<H, O>)[];
 
   constructor(raw: any) {
     const manifest = raw as GenericManifest<H, N>;
@@ -88,6 +84,14 @@ export class SubstrateProjectManifestImp<
       }
       return plainToClass(SubstrateCustomDataSourceImp, d, {enableImplicitConversion: true});
     });
+    if (manifest.templates && manifest.templates.length !== 0) {
+      this.templates = manifest.templates.map((t) => {
+        if (t.kind === 'substrate/Runtime') {
+          return plainToClass(SubstrateRuntimeTemplateImp, t, {enableImplicitConversion: true});
+        }
+        return plainToClass(SubstrateCustomTemplateImp, t, {enableImplicitConversion: true});
+      });
+    }
   }
 
   toDeployment(): string {
@@ -102,10 +106,20 @@ export class SubstrateProjectManifestImp<
         default:
           throw new Error(`specVersion ${this.specVersion} to deployment not supported`);
       }
-      validateSync(this._deployment, {whitelist: true});
+      const errors = validateSync(this._deployment, {whitelist: true});
+      console.log(errors);
     }
 
-    return yaml.dump(classToPlain(this._deployment), {
+    console.log(this._deployment);
+    let plain: any;
+    try {
+      plain = classToPlain(this._deployment, {exposeUnsetFields: false});
+    } catch (e) {
+      console.log(e.stack);
+    }
+    console.log(plain);
+
+    return yaml.dump(plain, {
       sortKeys: true,
       condenseFlow: true,
     });

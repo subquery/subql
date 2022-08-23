@@ -197,6 +197,11 @@ export class ProjectManifestImp<
     this.dataSources = manifest.dataSources.map((d) => {
       return plainToClass(GenericDataSourceImp, d, {enableImplicitConversion: true});
     });
+    if (manifest.templates && manifest.templates.length !== 0) {
+      this.templates = manifest.templates.map((t) => {
+        return plainToClass(GenericTemplateImp, t, {enableImplicitConversion: true});
+      });
+    }
   }
 
   toDeployment(): undefined {

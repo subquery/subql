@@ -146,11 +146,17 @@ describe('project.yaml', () => {
     expect(() => parseGenericProjectManifest<SubstrateRuntimeHandler, SubstrateProjectNetworkConfig>(doc3)).toThrow();
   });
 
-  it('can be validate with project manifest', () => {
+  it('can be validate with project 0.2.0 manifest', () => {
     const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_0.2.0.yaml')));
-    const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw);
-    console.log(manifest.specVersion);
+    const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw, {enableImplicitConversion: true});
     manifest.validate();
-    // console.log(manifest.toDeployment())
+    console.log(manifest.toDeployment());
+  });
+
+  it('can be validate with project 1.0.0 manifest', () => {
+    const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_1.0.0.yaml')));
+    const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw, {enableImplicitConversion: true});
+    manifest.validate();
+    console.log(manifest.toDeployment());
   });
 });
