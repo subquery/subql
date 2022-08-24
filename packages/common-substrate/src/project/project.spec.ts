@@ -10,11 +10,11 @@ import {
   parseGenericProjectManifest,
 } from '@subql/common';
 import {SubstrateRuntimeHandler} from '@subql/types';
-import {classToPlain, plainToClassFromExist} from 'class-transformer';
+import {plainToClassFromExist} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {SubstrateProjectNetworkConfig} from '../project/types';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
-import {SubstrateProjectManifestImp} from './generic/ProjectManifest';
+import {SubstrateProjectManifestImp} from './generic/projectManifest';
 import {loadSubstrateProjectManifest} from './load';
 
 const projectsDir = path.join(__dirname, '../../test');
