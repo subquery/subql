@@ -10,6 +10,7 @@ schema:
 
 network:
   genesisHash: '0x'
+  endpoint: 'wss://test.com'
   chaintypes:
     file: ./types.json
 

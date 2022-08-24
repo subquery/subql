@@ -10,7 +10,7 @@ import {
   parseGenericProjectManifest,
 } from '@subql/common';
 import {SubstrateRuntimeHandler} from '@subql/types';
-import {plainToClassFromExist} from 'class-transformer';
+import {classToPlain, plainToClassFromExist} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {SubstrateProjectNetworkConfig} from '../project/types';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
@@ -109,6 +109,12 @@ describe('project.yaml', () => {
     expect(() => manifest.toDeployment()).not.toThrow();
   });
 
+  it('can convert project with assets to deployment 2', () => {
+    const manifest = loadSubstrateProjectManifest(path.join(projectsDir, 'project_0.2.0_custom_ds.yaml'));
+    expect(manifest.isV0_2_0).toBeTruthy();
+    console.log(manifest.toDeployment());
+  });
+
   it('validate versions', () => {
     const checkVersion = new SemverVersionValidator();
 
@@ -153,8 +159,15 @@ describe('project.yaml', () => {
     console.log(manifest.toDeployment());
   });
 
+  it('can be validate with project 0.2.0 custom_ds manifest', () => {
+    const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_0.2.0_custom_ds.yaml')));
+    const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw, {enableImplicitConversion: true});
+    manifest.validate();
+    console.log(manifest.toDeployment());
+  });
+
   it('can be validate with project 1.0.0 manifest', () => {
-    const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_1.0.0.yaml')));
+    const raw = loadFromJsonOrYaml(getManifestPath(path.join(projectsDir, 'project_1.0.0_chainId.yaml')));
     const manifest = plainToClassFromExist(new SubstrateProjectManifestImp(raw), raw, {enableImplicitConversion: true});
     manifest.validate();
     console.log(manifest.toDeployment());

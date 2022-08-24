@@ -8,19 +8,20 @@ import {
   GenericHandlerImp,
   GenericMapping,
   Processor,
+  FileType,
+  GenericMappingImp,
 } from '@subql/common';
 import {
-  BlockFilter,
-  CallFilter,
-  EventFilter,
+  SubstrateBlockFilter,
+  SubstrateHandlerKind,
   SubstrateCallFilter,
   SubstrateEventFilter,
   SubstrateRuntimeHandler,
-} from '@subql/common-substrate';
-import {FileType, GenericMappingImp} from '@subql/common/project/versioned/genericManifest';
-import {SubstrateBlockFilter, SubstrateHandlerKind} from '@subql/types';
+  SubstrateDatasourceKind,
+} from '@subql/types';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {IsArray, IsEnum, IsInt, IsObject, IsOptional, IsString, ValidateNested} from 'class-validator';
+import {BlockFilter, CallFilter, EventFilter} from '../models';
 
 export interface SubstrateDataSourceBase<H> extends Partial<GenericDataSource<H>> {
   name?: string;
@@ -52,6 +53,7 @@ export interface SubstrateEventHandler extends Partial<GenericHandler> {
 }
 
 export interface SubstrateCustomHandler extends Partial<GenericHandler> {
+  name?: string;
   kind: string;
   filter?: Record<string, unknown>;
   startBlock?: number;
@@ -60,11 +62,11 @@ export interface SubstrateCustomHandler extends Partial<GenericHandler> {
 export type SubstrateHandler =
   | SubstrateBlockHandler
   | SubstrateEventHandler
-  | SubstrateEventHandler
+  | SubstrateCallHandler
   | SubstrateCustomHandler;
 
 // H need to be runtime handler
-export type SubstrateRuntimeDataSource<H = SubstrateBlockHandler | SubstrateEventHandler | SubstrateEventHandler> =
+export type SubstrateRuntimeDataSource<H = SubstrateBlockHandler | SubstrateEventHandler | SubstrateCallHandler> =
   SubstrateDataSourceBase<H>;
 
 // H need to be custom handler
@@ -167,12 +169,26 @@ export class SubstrateRuntimeMappingImp<H = SubstrateBlockHandler | SubstrateEve
 export class SubstrateRuntimeDataSourceImp<
   H = SubstrateBlockHandler | SubstrateEventHandler | SubstrateCallHandler
 > extends SubstrateDataSourceBaseImp<H> {
+  @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
+  kind: SubstrateDatasourceKind.Runtime;
   @Type(() => SubstrateRuntimeMappingImp)
   @ValidateNested()
   mapping: GenericMapping<H>;
 }
 
+export class SubstrateCustomMappingImp<H = SubstrateCustomHandler> implements GenericMapping<H> {
+  @Type(() => SubstrateCustomHandlerImp)
+  @IsArray()
+  @ValidateNested()
+  handlers: H[];
+  @IsString()
+  file: string;
+}
+
 export class SubstrateCustomDataSourceImp<H = SubstrateCustomHandler, O = any> extends SubstrateDataSourceBaseImp<H> {
+  @Type(() => SubstrateCustomMappingImp)
+  @ValidateNested()
+  mapping: GenericMapping<H>;
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()

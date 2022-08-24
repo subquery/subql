@@ -6,11 +6,10 @@ import {
   GenericHandler,
   GenericManifest,
   GenericNetworkConfig,
-  GenericTemplate,
   NetworkValidator,
   RunnerSpecs,
+  FileType,
 } from '@subql/common';
-import {FileType, GenericRunnerSpecsImpl, GenericTemplateImp} from '@subql/common/project/versioned/genericManifest';
 import {classToPlain, plainToClass, Type} from 'class-transformer';
 import {
   IsArray,
@@ -23,7 +22,8 @@ import {
   validateSync,
 } from 'class-validator';
 import yaml from 'js-yaml';
-import {DeploymentV0_2_0, DeploymentV1_0_0, SubstrateRunnerSpecsImpl} from '../versioned';
+import {SubstrateRunnerSpecsImpl} from '../versioned';
+import {SubstrateDeploymentV0_2_0, SubstrateDeploymentV0_2_1, SubstrateDeploymentV1_0_0} from './deployment';
 import {
   SubstrateDataSourceBaseImp,
   SubstrateRuntimeDataSource,
@@ -42,7 +42,7 @@ export class SubstrateProjectManifestImp<
   O = any
 > implements GenericManifest<H, N>
 {
-  protected _deployment: DeploymentV1_0_0 | DeploymentV0_2_0;
+  protected _deployment?: SubstrateDeploymentV1_0_0 | SubstrateDeploymentV0_2_0 | SubstrateDeploymentV0_2_1;
   @ValidateIf((o) => o.specVersion === '1.0.0')
   @IsObject()
   @ValidateNested()
@@ -97,29 +97,22 @@ export class SubstrateProjectManifestImp<
   toDeployment(): string {
     if (!this._deployment) {
       switch (this.specVersion) {
-        case '1.0.0':
-          this._deployment = plainToClass(DeploymentV1_0_0, this);
+        case '0.2.0':
+          this._deployment = plainToClass(SubstrateDeploymentV0_2_0, this);
           break;
-        case '0.2.0' || '0.2.1' || '0.3.0':
-          this._deployment = plainToClass(DeploymentV0_2_0, this);
+        case '0.2.1' || '0.3.0':
+          this._deployment = plainToClass(SubstrateDeploymentV0_2_1, this);
+          break;
+        case '1.0.0':
+          this._deployment = plainToClass(SubstrateDeploymentV1_0_0, this);
           break;
         default:
           throw new Error(`specVersion ${this.specVersion} to deployment not supported`);
       }
-      const errors = validateSync(this._deployment, {whitelist: true});
-      console.log(errors);
+      validateSync(this._deployment, {whitelist: true});
     }
 
-    console.log(this._deployment);
-    let plain: any;
-    try {
-      plain = classToPlain(this._deployment, {exposeUnsetFields: false});
-    } catch (e) {
-      console.log(e.stack);
-    }
-    console.log(plain);
-
-    return yaml.dump(plain, {
+    return yaml.dump(classToPlain(this._deployment), {
       sortKeys: true,
       condenseFlow: true,
     });

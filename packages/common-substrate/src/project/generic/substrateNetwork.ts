@@ -25,6 +25,9 @@ export function getVersionedNetwork(specVersion: string, network: Partial<Generi
 
 export class SubstrateNetworkBaseImp implements Partial<GenericNetworkConfig> {
   @IsString()
+  @IsOptional()
+  genesisHash: string;
+  @IsString()
   endpoint: string;
   @IsString()
   @IsOptional()
