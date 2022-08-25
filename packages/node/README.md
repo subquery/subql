@@ -18,7 +18,7 @@ Options:
       --help                Show help                                  [boolean]
       --version             Show version number                        [boolean]
   -f, --subquery            Local path or IPFS cid of the subquery project
-       [string] [required] [default: "/Users/hz/Projects/Subquery/Test/js-test"]
+       [string] [required] [default: process.cwd()]
       --subquery-name       Name of the subquery project   [deprecated] [string]
   -c, --config              Specify configuration file                  [string]
       --local               Use local mode                [deprecated] [boolean]
