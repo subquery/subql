@@ -76,10 +76,7 @@ export class Worker<T extends AsyncMethods> {
   private worker: workers.Worker;
   private logger: Logger;
 
-  private responseListeners: Record<
-    number | string,
-    (data?: any, error?: SerializableError) => void
-  > = {};
+  private responseListeners: Record<number | string, (data?: any, error?: SerializableError) => void> = {};
 
   private _reqCounter = 0;
 
@@ -116,7 +113,7 @@ export class Worker<T extends AsyncMethods> {
     // Add expected methods to class
     fns.map((fn) => {
       if ((this as any)[fn]) {
-        throw new Error(`Method ${fn} is already defined`);
+        throw new Error(`Method ${String(fn)} is already defined`);
       }
       Object.assign(this, {[fn]: (...args: any[]) => this.execute(fn, args)});
     });
