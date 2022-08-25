@@ -570,7 +570,7 @@ group by
               (indexField) =>
                 upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
             ) > -1;
-          assert(indexed, `to query by field ${field}, an index must be created on model ${entity}`);
+          assert(indexed, `to query by field ${String(field)}, an index must be created on model ${entity}`);
           const records = await model.findAll({
             where: {[field]: value},
             transaction: this.tx,
@@ -579,7 +579,7 @@ group by
           });
           return records.map((record) => record.toJSON() as T);
         } catch (e) {
-          throw new Error(`Failed to getByField Entity ${entity} with field ${field}: ${e}`);
+          throw new Error(`Failed to getByField Entity ${String(entity)} with field ${field}: ${e}`);
         }
       },
       getOneByField: async <T extends Entity>(
@@ -597,14 +597,14 @@ group by
                 camelCase(indexField.fieldName) === field &&
                 indexField.isUnique
             ) > -1;
-          assert(indexed, `to query by field ${field}, an unique index must be created on model ${entity}`);
+          assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
           const record = await model.findOne({
             where: {[field]: value},
             transaction: this.tx,
           });
           return record?.toJSON() as T;
         } catch (e) {
-          throw new Error(`Failed to getOneByField Entity ${entity} with field ${field}: ${e}`);
+          throw new Error(`Failed to getOneByField Entity ${String(entity)} with field ${field}: ${e}`);
         }
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
