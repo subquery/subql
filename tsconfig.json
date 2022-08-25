@@ -18,21 +18,17 @@
     "inlineSources": true,
     "composite": true,
     "paths": {
-      "@subql/common-substrate": ["packages/common-substrate/src"],
-      "@subql/common-substrate/*": ["packages/common-substrate/src/*"],
+      "@subql/common-avalanche": ["packages/common-avalanche/src"],
+      "@subql/common-avalanche/*": ["packages/common-avalanche/src/*"],
       "@subql/types": ["packages/types/src"],
       "@subql/types/*": ["packages/types/src/*"],
     },
     "skipLibCheck": true
   },
   "references": [
-    {"path": "packages/cli"},
-    {"path": "packages/common"},
-    {"path": "packages/common-substrate"},
+    {"path": "packages/common-avalanche"},
     {"path": "packages/node"},
     {"path": "packages/types"},
-    {"path": "packages/utils"},
-    {"path": "packages/validator"}
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
