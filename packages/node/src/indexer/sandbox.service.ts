@@ -6,20 +6,21 @@ import { Injectable } from '@nestjs/common';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
-} from '@subql/common-substrate';
-import { Store } from '@subql/types';
+} from '@subql/common-avalanche';
+import { getYargsOption, getLogger } from '@subql/common-node';
+import {
+  ApiWrapper,
+  AvalancheBlockWrapper,
+  Store,
+} from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
+import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
-import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { getProjectEntry } from '../utils/project';
 import { timeout } from '../utils/promise';
-import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
 import { StoreService } from './store.service';
-import { ApiAt } from './types';
 
 const { argv } = getYargsOption();
 
@@ -88,7 +89,9 @@ export class IndexerSandbox extends Sandbox {
     } catch (e) {
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
-        e.handlerArgs = JSON.stringify(args);
+        e.handlerArgs = JSON.stringify(args, (key, value) =>
+          typeof value === 'bigint' ? `${value.toString()}n` : value,
+        );
       }
       throw e;
     } finally {
@@ -110,19 +113,21 @@ export class SandboxService {
   private processorCache: Record<string, IndexerSandbox> = {};
 
   constructor(
-    private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
+  getDsProcessorWrapper(
+    ds: SubqlProjectDs,
+    api: ApiWrapper,
+    blockContent: AvalancheBlockWrapper,
+  ): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
-          // api: await this.apiService.getPatchedApi(),
           store: this.storeService.getStore(),
           root: this.project.root,
           script: ds.mapping.entryScript,
@@ -132,10 +137,7 @@ export class SandboxService {
       );
       this.processorCache[entry] = processor;
     }
-    processor.freeze(api, 'api');
-    if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi(), 'unsafeApi');
-    }
+    api.freezeApi(processor, blockContent);
     return processor;
   }
 

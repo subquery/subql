@@ -113,7 +113,9 @@ export class Worker<T extends AsyncMethods> {
       if (this[fn]) {
         throw new Error(`Method ${fn} is already defined`);
       }
-      Object.assign(this, { [fn]: (...args: any[]) => this.execute(fn, args) });
+      Object.assign(this, {
+        [fn]: (...args: any[]) => this.execute(fn, ...args),
+      });
     });
   }
 

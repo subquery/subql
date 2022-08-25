@@ -2,9 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { ApiService } from '@subql/common-node';
+import { AvalancheApiService } from '../avalanche/api.service.avalanche';
+import { NodeConfig } from '../configure/NodeConfig';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
 import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -19,6 +24,7 @@ import { StoreService } from './store.service';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
+  IBlockDispatcher,
 } from './worker/block-dispatcher.service';
 
 const { argv } = getYargsOption();
@@ -27,15 +33,67 @@ const { argv } = getYargsOption();
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
-    ApiService,
+    {
+      provide: ApiService,
+      useFactory: async (project: SubqueryProject) => {
+        const apiService = new AvalancheApiService(project);
+        await apiService.init();
+        return apiService;
+      },
+      inject: [SubqueryProject],
+    },
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
+      inject: [SubqueryProject, EventEmitter2],
       useClass: argv.workers
         ? WorkerBlockDispatcherService
         : BlockDispatcherService,
     },
-    FetchService,
+    {
+      provide: FetchService,
+      useFactory: async (
+        apiService: ApiService,
+        nodeConfig: NodeConfig,
+        project: SubqueryProject,
+        blockDispatcher: IBlockDispatcher,
+        dictionaryService: DictionaryService,
+        dsProcessorService: DsProcessorService,
+        eventEmitter: EventEmitter2,
+        projectService: ProjectService,
+        dynamicDsService: DynamicDsService,
+        schedulerRegistry: SchedulerRegistry,
+      ) => {
+        await projectService.init();
+
+        const fetchService = new FetchService(
+          apiService,
+          nodeConfig,
+          project,
+          blockDispatcher,
+          dictionaryService,
+          dsProcessorService,
+          dynamicDsService,
+          eventEmitter,
+          schedulerRegistry,
+        );
+
+        await fetchService.init(projectService.startHeight);
+        return fetchService;
+      },
+      inject: [
+        ApiService,
+        NodeConfig,
+        SubqueryProject,
+        'IBlockDispatcher',
+        DictionaryService,
+        DsProcessorService,
+        EventEmitter2,
+        ProjectService,
+        DynamicDsService,
+        SchedulerRegistry,
+      ],
+    },
     BenchmarkService,
     DictionaryService,
     SandboxService,

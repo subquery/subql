@@ -7,18 +7,14 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { SubstrateBlock } from '@subql/types';
+import { ApiService } from '@subql/common-node';
+import { AvalancheBlockWrapper } from '@subql/types-avalanche';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
-import { profilerWrap } from '../../utils/profiler';
-import * as SubstrateUtil from '../../utils/substrate';
-import { getYargsOption } from '../../yargs';
-import { ApiService } from '../api.service';
 import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
@@ -28,7 +24,6 @@ import {
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
-  SetCurrentRuntimeVersion,
   GetWorkerStatus,
 } from './worker';
 import { Worker } from './worker.builder';
@@ -44,7 +39,6 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
-  setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
   getStatus: GetWorkerStatus;
 };
 
@@ -65,7 +59,6 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
-      'setCurrentRuntimeVersion',
       'getStatus',
     ],
   );
@@ -75,18 +68,13 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
   return indexerWorker;
 }
 
-type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
-
 function getMaxWorkers(numWorkers?: number): number {
   const maxCPUs = os.cpus().length;
   return Math.min(numWorkers ?? maxCPUs, maxCPUs);
 }
 
 export interface IBlockDispatcher {
-  init(
-    runtimeVersionGetter: GetRuntimeVersion,
-    onDynamicDsCreated: (height: number) => Promise<void>,
-  ): Promise<void>;
+  init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
 
   enqueueBlocks(heights: number[]): void;
 
@@ -113,12 +101,8 @@ export class BlockDispatcherService
 
   private fetching = false;
   private isShutdown = false;
-  private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
   private _latestBufferedHeight: number;
-
-  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
-  private latestProcessedHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -129,24 +113,12 @@ export class BlockDispatcherService
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-
-    const { argv } = getYargsOption();
-
-    if (argv.profiler) {
-      this.fetchBlocksBatches = profilerWrap(
-        SubstrateUtil.fetchBlocksBatches,
-        'SubstrateUtil',
-        'fetchBlocksBatches',
-      );
-    }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
   }
 
@@ -158,11 +130,7 @@ export class BlockDispatcherService
   enqueueBlocks(heights: number[]): void {
     if (!heights.length) return;
 
-    logger.info(
-      `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
-      } blocks`,
-    );
+    logger.info(`Enqueing blocks ${heights[0]}...${last(heights)}`);
 
     this.fetchQueue.putMany(heights);
     this.latestBufferedHeight = last(heights);
@@ -170,7 +138,7 @@ export class BlockDispatcherService
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
-        process.exit(1);
+        throw e;
       }
     });
   }
@@ -205,10 +173,7 @@ export class BlockDispatcherService
         }], total ${blockNums.length} blocks`,
       );
 
-      const blocks = await this.fetchBlocksBatches(
-        this.apiService.getApi(),
-        blockNums,
-      );
+      const blocks = await this.apiService.api.fetchBlocks(blockNums);
 
       if (bufferedHeight > this._latestBufferedHeight) {
         logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
@@ -216,17 +181,17 @@ export class BlockDispatcherService
       }
 
       const blockTasks = blocks.map((block) => async () => {
-        const height = block.block.block.header.number.toNumber();
+        const height = block.blockHeight;
         try {
           this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
             height,
             timestamp: Date.now(),
           });
 
-          const runtimeVersion = await this.getRuntimeVersion(block.block);
-
           const { dynamicDsCreated, operationHash } =
-            await this.indexerManager.indexBlock(block, runtimeVersion);
+            await this.indexerManager.indexBlock(
+              block as AvalancheBlockWrapper,
+            );
 
           if (
             this.nodeConfig.proofOfIndex &&
@@ -242,12 +207,6 @@ export class BlockDispatcherService
           if (dynamicDsCreated) {
             await this.onDynamicDsCreated(height);
           }
-
-          assert(
-            !this.latestProcessedHeight || height > this.latestProcessedHeight,
-            `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
-          );
-          this.latestProcessedHeight = height;
         } catch (e) {
           if (this.isShutdown) {
             return;
@@ -265,11 +224,7 @@ export class BlockDispatcherService
       // There can be enough of a delay after fetching blocks that shutdown could now be true
       if (this.isShutdown) break;
 
-      void this.processQueue.putMany(blockTasks);
-
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.processQueue.size,
-      });
+      await Promise.all(this.processQueue.putMany(blockTasks));
     }
 
     this.fetching = false;
@@ -301,7 +256,6 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
-  private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
 
   private taskCounter = 0;
@@ -319,14 +273,12 @@ export class WorkerBlockDispatcherService
   }
 
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
     this.workers = await Promise.all(
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );
 
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
   }
 
@@ -409,19 +361,6 @@ export class WorkerBlockDispatcherService
           );
         }
 
-        if (result) {
-          const runtimeVersion = await this.getRuntimeVersion({
-            specVersion: result.specVersion,
-            block: {
-              header: {
-                parentHash: result.parentHash,
-              },
-            },
-          } as any);
-
-          await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
-        }
-
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
@@ -485,11 +424,6 @@ export class WorkerBlockDispatcherService
 
   set latestBufferedHeight(height: number) {
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-      value: this.queueSize,
-    });
-
-    // There is only a single queue with workers so we treat them as the same
-    this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
       value: this.queueSize,
     });
     this._latestBufferedHeight = height;

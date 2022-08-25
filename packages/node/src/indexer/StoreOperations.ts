@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { u8aConcat, u8aToBuffer, isString } from '@polkadot/util';
-import { Entity } from '@subql/types';
+import { Entity } from '@subql/types-avalanche';
 import { getTypeByScalarName, GraphQLModelsType } from '@subql/utils';
 import MerkleTools from 'merkle-tools';
 import { OperationEntity, OperationType } from './types';
@@ -30,7 +30,7 @@ export class StoreOperations {
         ({ name }) => name === operation.entityType,
       );
       for (const field of operationModel.fields) {
-        const fieldValue = operation.data[field.name];
+        const fieldValue = (operation.data as Entity)[field.name];
         dataBufferArray.push(Buffer.from(field.name));
 
         if (fieldValue !== undefined && fieldValue !== null) {
@@ -64,10 +64,11 @@ export class StoreOperations {
   }
 
   reset(): void {
-    this.merkleTools.resetTree();
+    // TODO doesn't exists
+    // this.merkleTools.resetTree();
   }
 
-  makeOperationMerkleTree(): void {
+  makeOperationMerkleTree() {
     this.merkleTools.makeTree();
   }
 
@@ -81,7 +82,7 @@ export class StoreOperations {
     }
   }
 
-  getOperationLeafCount(): any {
+  getOperationLeafCount() {
     return this.merkleTools.getLeafCount();
   }
 }

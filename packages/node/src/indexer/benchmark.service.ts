@@ -3,15 +3,15 @@
 
 import { OnEvent } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import dayjs from 'dayjs';
-import duration from 'dayjs/plugin/duration';
-import { getLogger } from '../utils/logger';
-import { delay } from '../utils/promise';
 import {
+  getLogger,
   IndexerEvent,
   ProcessBlockPayload,
   TargetBlockPayload,
-} from './events';
+} from '@subql/common-node';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import { delay } from '../utils/promise';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
@@ -35,10 +35,7 @@ export class BenchmarkService {
           this.currentProcessingHeight - this.lastRegisteredHeight;
         const timeDiff =
           this.currentProcessingTimestamp - this.lastRegisteredTimestamp;
-        this.blockPerSecond =
-          heightDiff === 0 || timeDiff === 0
-            ? 0
-            : heightDiff / (timeDiff / 1000);
+        this.blockPerSecond = heightDiff / (timeDiff / 1000);
 
         const duration = dayjs.duration(
           (this.targetHeight - this.currentProcessingHeight) /
@@ -48,16 +45,12 @@ export class BenchmarkService {
         const hoursMinsStr = duration.format('HH [hours] mm [mins]');
         const days = Math.floor(duration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
-
         logger.info(
-          this.targetHeight === this.lastRegisteredHeight &&
-            this.blockPerSecond === 0
-            ? 'Fully synced, waiting for new blocks'
-            : `${this.blockPerSecond.toFixed(2)} bps, target: #${
-                this.targetHeight
-              }, current: #${this.currentProcessingHeight}, estimate time: ${
-                this.blockPerSecond === 0 ? 'unknown' : durationStr
-              }`,
+          `${this.blockPerSecond.toFixed(2)} bps, target: #${
+            this.targetHeight
+          }, current: #${
+            this.currentProcessingHeight
+          }, estimate time: ${durationStr}`,
         );
       }
       this.lastRegisteredHeight = this.currentProcessingHeight;

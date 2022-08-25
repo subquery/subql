@@ -6,6 +6,7 @@ import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { ApiService } from '@subql/common-node';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { NodeConfig } from '../configure/NodeConfig';
@@ -13,7 +14,6 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
 import { getLogger } from '../utils/logger';
 import { getYargsOption } from '../yargs';
-import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
@@ -351,7 +351,7 @@ export class ProjectService {
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
+    const startBlocksList = this.project.dataSources.map(
       (item) => item.startBlock ?? 1,
     );
     if (startBlocksList.length === 0) {
@@ -362,15 +362,6 @@ export class ProjectService {
     } else {
       return Math.min(...startBlocksList);
     }
-  }
-
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName ===
-          this.apiService.getApi().runtimeVersion.specName.toString(),
-    );
   }
 
   private async reindex(targetBlockHeight: number): Promise<void> {

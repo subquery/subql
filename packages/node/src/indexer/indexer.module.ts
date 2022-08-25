@@ -3,46 +3,66 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { ApiService } from '@subql/common-node';
+import { AvalancheApiService } from '../avalanche';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
-import { ApiService } from './api.service';
+import { getYargsOption } from '../yargs';
+import { BenchmarkService } from './benchmark.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { MmrService } from './mmr.service';
 import { PoiService } from './poi.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { StoreService } from './store.service';
+import {
+  BlockDispatcherService,
+  WorkerBlockDispatcherService,
+} from './worker/block-dispatcher.service';
 import { WorkerService } from './worker/worker.service';
+
+const { argv } = getYargsOption();
+
+const ApiServiceProvider = {
+  provide: ApiService,
+  useFactory: async (project: SubqueryProject) => {
+    const apiService = new AvalancheApiService(project);
+    await apiService.init();
+    return apiService;
+  },
+  inject: [SubqueryProject],
+};
+
+const BaseProvider = [
+  IndexerManager,
+  StoreService,
+  FetchService,
+  ApiServiceProvider,
+  BenchmarkService,
+  DictionaryService,
+  SandboxService,
+  DsProcessorService,
+  DynamicDsService,
+  PoiService,
+  MmrService,
+  ProjectService,
+  WorkerService,
+  {
+    provide: 'IBlockDispatcher',
+    inject: [SubqueryProject, EventEmitter2],
+    useClass: argv.workers
+      ? WorkerBlockDispatcherService
+      : BlockDispatcherService,
+  },
+];
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  providers: [
-    IndexerManager,
-    StoreService,
-    {
-      provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        eventEmitter: EventEmitter2,
-      ) => {
-        const apiService = new ApiService(project, eventEmitter);
-        await apiService.init();
-        return apiService;
-      },
-      inject: [SubqueryProject, EventEmitter2],
-    },
-    DictionaryService,
-    SandboxService,
-    DsProcessorService,
-    DynamicDsService,
-    PoiService,
-    MmrService,
-    ProjectService,
-    WorkerService,
-  ],
-  exports: [StoreService, MmrService],
+  providers: BaseProvider,
+  exports: [StoreService],
 })
 export class IndexerModule {}

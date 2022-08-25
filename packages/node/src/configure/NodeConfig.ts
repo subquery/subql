@@ -5,9 +5,9 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import { loadFromJsonOrYaml } from '@subql/common';
+import { getLogger } from '@subql/common-node';
 import { last } from 'lodash';
 import { LevelWithSilent } from 'pino';
-import { getLogger } from '../utils/logger';
 import { assign } from '../utils/object';
 
 const logger = getLogger('configure');
@@ -110,7 +110,6 @@ export class NodeConfig implements IConfig {
   get debug(): boolean {
     return this._config.debug;
   }
-
   get preferRange(): boolean {
     return this._config.preferRange;
   }

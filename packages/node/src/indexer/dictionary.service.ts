@@ -9,34 +9,19 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
+import { getLogger, getYargsOption, profiler } from '@subql/common-node';
+import {
+  DictionaryQueryCondition,
+  DictionaryQueryEntry,
+} from '@subql/types-avalanche';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
-import { timeout } from '../utils/promise';
-import { getYargsOption } from '../yargs';
-
-export type SpecVersion = {
-  id: string;
-  start: number; //start with this block
-  end: number;
-};
 
 export type Dictionary = {
   _metadata: MetaData;
   batchBlocks: number[];
-  //TODO
-  // specVersions: number[];
 };
-
-export type SpecVersionDictionary = {
-  _metadata: MetaData;
-  specVersions: SpecVersion[];
-};
-
 const logger = getLogger('dictionary');
 const { argv } = getYargsOption();
 
@@ -99,8 +84,8 @@ function buildDictQueryFragment(
       filter: {
         ...filter,
         blockHeight: {
-          greaterThanOrEqualTo: `"${startBlock}"`,
-          lessThan: `"${queryEndBlock}"`,
+          greaterThanOrEqualTo: `${startBlock}`,
+          lessThan: `${queryEndBlock}`,
         },
       },
       orderBy: 'BLOCK_HEIGHT_ASC',
@@ -115,10 +100,7 @@ export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
-  constructor(
-    protected project: SubqueryProject,
-    private nodeConfig: NodeConfig,
-  ) {
+  constructor(protected project: SubqueryProject) {
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -160,31 +142,18 @@ export class DictionaryService implements OnApplicationShutdown {
     );
 
     try {
-      const resp = await timeout(
-        this.client.query({
-          query: gql(query),
-          variables,
-        }),
-        this.nodeConfig.dictionaryTimeout,
-      );
+      const resp = await this.client.query({
+        query: gql(query),
+        variables,
+      });
       const blockHeightSet = new Set<number>();
-      const specVersionBlockHeightSet = new Set<number>();
       const entityEndBlock: { [entity: string]: number } = {};
       for (const entity of Object.keys(resp.data)) {
-        if (
-          entity !== 'specVersions' &&
-          entity !== '_metadata' &&
-          resp.data[entity].nodes.length >= 0
-        ) {
+        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
-            entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
+            entityEndBlock[entity] = Number(node.blockHeight);
           }
-        }
-      }
-      if (resp.data.specVersions && resp.data.specVersions.nodes.length >= 0) {
-        for (const node of resp.data.specVersions.nodes) {
-          specVersionBlockHeightSet.add(Number(node.blockHeight));
         }
       }
       const _metadata = resp.data._metadata;
@@ -196,8 +165,6 @@ export class DictionaryService implements OnApplicationShutdown {
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
-      //TODO
-      // const specVersions = Array.from(specVersionBlockHeightSet);
       return {
         _metadata,
         batchBlocks,
@@ -229,15 +196,6 @@ export class DictionaryService implements OnApplicationShutdown {
         entity: '_metadata',
         project: ['lastProcessedHeight', 'genesisHash'],
       },
-      {
-        entity: 'specVersions',
-        project: [
-          {
-            entity: 'nodes',
-            project: ['id', 'blockHeight'],
-          },
-        ],
-      },
     ];
     for (const entity of Object.keys(mapped)) {
       const [pVars, node] = buildDictQueryFragment(
@@ -251,83 +209,5 @@ export class DictionaryService implements OnApplicationShutdown {
       vars.push(...pVars);
     }
     return buildQuery(vars, nodes);
-  }
-
-  parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
-    if (raw === undefined) {
-      return [];
-    }
-    const specVersionBlockHeightSet = new Set<SpecVersion>();
-    const specVersions = (raw.specVersions as any).nodes;
-    const _metadata = raw._metadata;
-
-    // Add range for -1 specVersions
-    for (let i = 0; i < specVersions.length - 1; i++) {
-      specVersionBlockHeightSet.add({
-        id: specVersions[i].id,
-        start: Number(specVersions[i].blockHeight),
-        end: Number(specVersions[i + 1].blockHeight) - 1,
-      });
-    }
-    if (specVersions && specVersions.length >= 0) {
-      // Add range for the last specVersion
-      if (_metadata.lastProcessedHeight) {
-        specVersionBlockHeightSet.add({
-          id: specVersions[specVersions.length - 1].id,
-          start: Number(specVersions[specVersions.length - 1].blockHeight),
-          end: Number(_metadata.lastProcessedHeight),
-        });
-      }
-    }
-    return Array.from(specVersionBlockHeightSet);
-  }
-
-  async getSpecVersionsRaw(): Promise<SpecVersionDictionary> {
-    const { query } = this.specVersionQuery();
-    try {
-      const resp = await timeout(
-        this.client.query({
-          query: gql(query),
-        }),
-        this.nodeConfig.dictionaryTimeout,
-      );
-
-      const _metadata = resp.data._metadata;
-      const specVersions = resp.data.specVersions;
-      return { _metadata, specVersions };
-    } catch (err) {
-      logger.warn(err, `failed to fetch specVersion result`);
-      return undefined;
-    }
-  }
-
-  async getSpecVersions(): Promise<SpecVersion[]> {
-    try {
-      return this.parseSpecVersions(await this.getSpecVersionsRaw());
-    } catch {
-      return undefined;
-    }
-  }
-
-  private specVersionQuery(): GqlQuery {
-    const nodes: GqlNode[] = [
-      {
-        entity: '_metadata',
-        project: ['lastProcessedHeight', 'genesisHash'],
-      },
-      {
-        entity: 'specVersions',
-        project: [
-          {
-            entity: 'nodes',
-            project: ['id', 'blockHeight'],
-          },
-        ],
-        args: {
-          orderBy: 'BLOCK_HEIGHT_ASC',
-        },
-      },
-    ];
-    return buildQuery([], nodes);
   }
 }

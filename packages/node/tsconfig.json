@@ -8,11 +8,8 @@
     "outDir": "./dist"
   },
   "references": [
-    { "path": "../common" },
-    { "path": "../common-substrate" },
-    { "path": "../types" },
-    { "path": "../utils" }
+    { "path": "../common-avalanche" },
+    { "path": "../types-avalanche" },
   ],
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "test", "dist"]
+  "include": ["src/**/*"]
 }

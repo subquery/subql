@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { getLogger } from '../utils/logger';
 import { ReadyService } from './ready.service';
-
-const logger = getLogger('ready');
 
 @Controller('ready')
 export class ReadyController {

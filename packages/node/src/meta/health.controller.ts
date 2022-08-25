@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
-import { getLogger } from '../utils/logger';
+import { getLogger } from '@subql/common-node';
 import { HealthService } from './health.service';
 
 const logger = getLogger('health');

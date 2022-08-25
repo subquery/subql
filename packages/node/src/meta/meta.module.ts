@@ -6,24 +6,18 @@ import {
   makeGaugeProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
-import { FetchModule } from '../indexer/fetch.module';
+import { IndexerModule } from '../indexer/indexer.module';
 import { MetricEventListener } from './event.listener';
 import { HealthController } from './health.controller';
 import { HealthService } from './health.service';
 import { MetaController } from './meta.controller';
 import { MetaService } from './meta.service';
-import { MmrQueryController } from './mmrQuery.controller';
 import { ReadyController } from './ready.controller';
 import { ReadyService } from './ready.service';
 
 @Module({
-  imports: [PrometheusModule.register(), FetchModule],
-  controllers: [
-    MetaController,
-    HealthController,
-    ReadyController,
-    MmrQueryController,
-  ],
+  imports: [PrometheusModule.register(), IndexerModule],
+  controllers: [MetaController, HealthController, ReadyController],
   providers: [
     MetricEventListener,
     makeGaugeProvider({
@@ -31,8 +25,16 @@ import { ReadyService } from './ready.service';
       help: 'The indexer api connection status',
     }),
     makeGaugeProvider({
+      name: 'subql_indexer_injected_api_connected',
+      help: 'The indexer injected api connection status',
+    }),
+    makeGaugeProvider({
       name: 'subql_indexer_processing_block_height',
       help: 'The current processing block height',
+    }),
+    makeGaugeProvider({
+      name: 'subql_indexer_processed_block_height',
+      help: 'The last processed block height',
     }),
     makeGaugeProvider({
       name: 'subql_indexer_target_block_height',
