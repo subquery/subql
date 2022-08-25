@@ -9,4 +9,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-- Move blockchain agnostic code from `node` to `node-core` package
+## [0.1.0] - 2022-08-26
+
+- Move blockchain agnostic code from `node` to `node-core` package. (#1222)
