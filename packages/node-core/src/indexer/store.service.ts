@@ -579,7 +579,7 @@ group by
           });
           return records.map((record) => record.toJSON() as T);
         } catch (e) {
-          throw new Error(`Failed to getByField Entity ${String(entity)} with field ${field}: ${e}`);
+          throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
       },
       getOneByField: async <T extends Entity>(
@@ -604,7 +604,7 @@ group by
           });
           return record?.toJSON() as T;
         } catch (e) {
-          throw new Error(`Failed to getOneByField Entity ${String(entity)} with field ${field}: ${e}`);
+          throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
