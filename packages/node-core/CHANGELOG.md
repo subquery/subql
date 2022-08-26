@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.1] - 2022-08-26
+### Fixed
+- Imports not being relative (#1268)
+
 ## [0.1.0] - 2022-08-26
 
 - Move blockchain agnostic code from `node` to `node-core` package. (#1222)

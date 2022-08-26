@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-core",
-  "version": "0.1.1-0",
+  "version": "0.1.1",
   "description": "Common node features that are agnostic to blockchains",
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
@@ -30,6 +30,5 @@
     "prom-client": "^14.0.1",
     "sequelize": "6.19.0",
     "yargs": "^16.2.0"
-  },
-  "stableVersion": "0.1.0"
+  }
 }
