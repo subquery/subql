@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Fixed `@subql/node-core` and manual prerelease
+
 ## [1.9.0] - 2022-08-26
 ### Changed
 - Use `@subql/node-core` package. (#1222)
