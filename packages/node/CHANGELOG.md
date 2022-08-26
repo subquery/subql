@@ -6,6 +6,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.0] - 2022-08-26
+### Changed
+- Use `@subql/node-core` package. (#1222)
+- Updated store.getByField to have limit and offset options. `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`. (#1259)
+
+### Fixed
+- Indexing stop processing blocks. (#1261)
+
 ## [1.8.0] - 2022-08-17
 ### Fixed
 - Not parsing BigInt array entity fields correctly. (#1252)
