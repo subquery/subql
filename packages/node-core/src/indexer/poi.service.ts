@@ -1,12 +1,12 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { isMainThread } from 'node:worker_threads';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import { hexToU8a } from '@polkadot/util';
-import { NodeConfig } from '@subql/node-core/configure';
-import { PoiFactory, PoiRepo } from '@subql/node-core/indexer/entities';
-import { Sequelize } from 'sequelize';
+import {isMainThread} from 'node:worker_threads';
+import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {hexToU8a} from '@polkadot/util';
+import {Sequelize} from 'sequelize';
+import {NodeConfig} from '../configure';
+import {PoiFactory, PoiRepo} from './entities';
 
 const DEFAULT_PARENT_HASH = hexToU8a('0x00');
 
