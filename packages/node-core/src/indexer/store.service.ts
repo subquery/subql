@@ -6,7 +6,6 @@ import {isMainThread} from 'worker_threads';
 import {Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
-import {OperationType, StoreOperations} from '@subql/node-core/indexer';
 import {Entity, Store} from '@subql/types';
 import {GraphQLModelsRelationsEnums, GraphQLRelationsType, IndexType} from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
@@ -48,6 +47,8 @@ import {
 } from '../utils';
 import {getYargsOption} from '../yargs';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import {StoreOperations} from './StoreOperations';
+import {OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
