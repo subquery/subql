@@ -8,11 +8,15 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { delay, getYargsOption, profilerWrap } from '@subql/node-core';
-import { NodeConfig } from '@subql/node-core/configure';
-import { IndexerEvent } from '@subql/node-core/events';
-import { Worker } from '@subql/node-core/indexer';
-import { getLogger } from '@subql/node-core/logger';
+import {
+  getLogger,
+  NodeConfig,
+  IndexerEvent,
+  Worker,
+  delay,
+  getYargsOption,
+  profilerWrap,
+} from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';

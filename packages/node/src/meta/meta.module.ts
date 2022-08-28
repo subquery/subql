@@ -9,7 +9,7 @@ import {
   HealthController,
   HealthService,
   MmrQueryController,
-} from '@subql/node-core/meta';
+} from '@subql/node-core';
 import {
   makeGaugeProvider,
   PrometheusModule,

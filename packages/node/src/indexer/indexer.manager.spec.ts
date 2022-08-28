@@ -6,9 +6,13 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { NodeConfig } from '@subql/node-core/configure';
-import { SubqueryFactory } from '@subql/node-core/entities';
-import { StoreService, PoiService, MmrService } from '@subql/node-core/indexer';
+import {
+  StoreService,
+  PoiService,
+  MmrService,
+  SubqueryFactory,
+  NodeConfig,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';

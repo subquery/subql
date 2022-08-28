@@ -5,8 +5,7 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { registerWorker } from '@subql/node-core/indexer';
-import { getLogger, NestLogger } from '@subql/node-core/logger';
+import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {

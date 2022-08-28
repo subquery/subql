@@ -7,8 +7,11 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
-import { getLogger } from '@subql/node-core';
-import { IndexerEvent, NetworkMetadataPayload } from '@subql/node-core/events';
+import {
+  IndexerEvent,
+  NetworkMetadataPayload,
+  getLogger,
+} from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiAt } from './types';

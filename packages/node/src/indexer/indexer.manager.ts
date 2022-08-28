@@ -18,14 +18,16 @@ import {
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
 import {
+  PoiBlock,
+  StoreService,
+  PoiService,
+  SubqueryRepo,
+  NodeConfig,
   getYargsOption,
   getLogger,
   profiler,
   profilerWrap,
 } from '@subql/node-core';
-import { NodeConfig } from '@subql/node-core/configure';
-import { SubqueryRepo } from '@subql/node-core/entities';
-import { PoiBlock, StoreService, PoiService } from '@subql/node-core/indexer';
 import {
   SubstrateBlock,
   SubstrateEvent,
