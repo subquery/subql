@@ -12,8 +12,8 @@ import {
   ProcessBlockPayload,
   ProcessedBlockCountPayload,
   TargetBlockPayload,
-} from '@subql/node-core/events';
-import { StoreService } from '@subql/node-core/indexer';
+  StoreService,
+} from '@subql/node-core';
 
 const UPDATE_HEIGHT_INTERVAL = 60000;
 

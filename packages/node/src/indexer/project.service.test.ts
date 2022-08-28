@@ -2,9 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Test } from '@nestjs/testing';
-import { NodeConfig } from '@subql/node-core/configure';
-import { DbModule } from '@subql/node-core/db';
-import { SubqueryRepo } from '@subql/node-core/entities';
+import { SubqueryRepo, DbModule, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';

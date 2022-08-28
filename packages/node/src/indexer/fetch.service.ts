@@ -21,10 +21,15 @@ import {
   SubstrateRuntimeHandlerFilter,
   SubstrateBlockFilter,
 } from '@subql/common-substrate';
-import { getYargsOption, getLogger, profiler } from '@subql/node-core';
-import { NodeConfig } from '@subql/node-core/configure';
-import { IndexerEvent } from '@subql/node-core/events';
-import { delay, checkMemoryUsage } from '@subql/node-core/utils';
+import {
+  delay,
+  checkMemoryUsage,
+  NodeConfig,
+  IndexerEvent,
+  getYargsOption,
+  getLogger,
+  profiler,
+} from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   SubstrateBlock,

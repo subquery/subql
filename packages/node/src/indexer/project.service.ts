@@ -6,15 +6,18 @@ import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { getYargsOption, getLogger } from '@subql/node-core';
-import { NodeConfig } from '@subql/node-core/configure';
-import { SubqueryRepo } from '@subql/node-core/entities';
-import { IndexerEvent } from '@subql/node-core/events';
-import { StoreService, PoiService, MmrService } from '@subql/node-core/indexer';
 import {
   MetadataFactory,
   MetadataRepo,
-} from '@subql/node-core/indexer/entities';
+  SubqueryRepo,
+  NodeConfig,
+  IndexerEvent,
+  StoreService,
+  PoiService,
+  MmrService,
+  getYargsOption,
+  getLogger,
+} from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
