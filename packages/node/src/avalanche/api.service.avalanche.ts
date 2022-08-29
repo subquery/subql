@@ -4,15 +4,15 @@
 import { Injectable } from '@nestjs/common';
 import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
 import { ApiService, getLogger } from '@subql/common-node';
-import { AvalancheApi } from './api.avalanche';
+import { EthereumApi } from './api.avalanche';
 
 const logger = getLogger('api');
 
 @Injectable()
-export class AvalancheApiService extends ApiService {
-  private _api: AvalancheApi;
+export class EthereumApiService extends ApiService {
+  private _api: EthereumApi;
 
-  async init(): Promise<AvalancheApiService> {
+  async init(): Promise<EthereumApiService> {
     try {
       let network: ProjectNetworkV1_0_0;
       try {
@@ -22,7 +22,7 @@ export class AvalancheApiService extends ApiService {
         process.exit(1);
       }
 
-      this.api = new AvalancheApi(network);
+      this.api = new EthereumApi(network.endpoint);
       await this.api.init();
       this.networkMeta = {
         chain: this.api.getRuntimeChain(),
@@ -30,7 +30,7 @@ export class AvalancheApiService extends ApiService {
         genesisHash: this.api.getGenesisHash(),
       };
 
-      if (network.chainId !== this.api.getChainId()) {
+      if (network.chainId !== this.api.getChainId().toString()) {
         const err = new Error(
           `Network chainId doesn't match expected chainId. expected="${
             network.chainId
@@ -47,11 +47,11 @@ export class AvalancheApiService extends ApiService {
     }
   }
 
-  get api(): AvalancheApi {
+  get api(): EthereumApi {
     return this._api;
   }
 
-  private set api(value: AvalancheApi) {
+  private set api(value: EthereumApi) {
     this._api = value;
   }
 }

@@ -10,7 +10,7 @@ import {
 import { getYargsOption, getLogger } from '@subql/common-node';
 import {
   ApiWrapper,
-  AvalancheBlockWrapper,
+  EthereumBlockWrapper,
   Store,
 } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
@@ -121,7 +121,7 @@ export class SandboxService {
   getDsProcessorWrapper(
     ds: SubqlProjectDs,
     api: ApiWrapper,
-    blockContent: AvalancheBlockWrapper,
+    blockContent: EthereumBlockWrapper,
   ): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];

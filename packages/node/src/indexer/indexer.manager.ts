@@ -23,20 +23,22 @@ import {
 } from '@subql/common-node';
 import {
   ApiWrapper,
-  AvalancheTransaction,
-  AvalancheLog,
+  EthereumTransaction,
+  EthereumLog,
   SubqlHandlerKind,
   AvalancheBlock,
   RuntimeHandlerInputMap,
   SubqlRuntimeHandler,
-  AvalancheBlockWrapper,
+  EthereumBlockWrapper,
   AvalancheHandlerKind,
   AvalancheRuntimeHandlerInputMap,
+  EthereumBlock,
+  EthereumRuntimeHandlerInputMap,
 } from '@subql/types-avalanche';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize, Transaction } from 'sequelize';
-import { AvalancheApiService } from '../avalanche';
-import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
+import { EthereumApiService } from '../avalanche';
+import { EthereumBlockWrapped } from '../avalanche/block.ethereum';
 import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { SubqueryRepo } from '../entities';
@@ -85,7 +87,7 @@ export class IndexerManager {
 
   @profiler(argv.profiler)
   async indexBlock(
-    blockContent: AvalancheBlockWrapper,
+    blockContent: EthereumBlockWrapper,
   ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
     const { blockHeight } = blockContent;
     let dynamicDsCreated = false;
@@ -406,7 +408,7 @@ export class IndexerManager {
   }
 
   private async indexBlockData(
-    { block, logs, transactions }: AvalancheBlockWrapper,
+    { block, logs, transactions }: EthereumBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -422,7 +424,7 @@ export class IndexerManager {
   }
 
   private async indexBlockContent(
-    block: AvalancheBlock,
+    block: EthereumBlock,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -432,7 +434,7 @@ export class IndexerManager {
   }
 
   private async indexExtrinsic(
-    tx: AvalancheTransaction,
+    tx: EthereumTransaction,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -442,7 +444,7 @@ export class IndexerManager {
   }
 
   private async indexEvent(
-    log: AvalancheLog,
+    log: EthereumLog,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -453,7 +455,7 @@ export class IndexerManager {
 
   private async indexData<K extends AvalancheHandlerKind>(
     kind: K,
-    data: AvalancheRuntimeHandlerInputMap[K],
+    data: EthereumRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
@@ -483,8 +485,8 @@ const ProcessorTypeMap = {
 };
 
 const FilterTypeMap = {
-  [AvalancheHandlerKind.Block]: AvalancheBlockWrapped.filterBlocksProcessor,
-  [AvalancheHandlerKind.Event]: AvalancheBlockWrapped.filterLogsProcessor,
+  [AvalancheHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
+  [AvalancheHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
   [AvalancheHandlerKind.Call]:
-    AvalancheBlockWrapped.filterTransactionsProcessor,
+    EthereumBlockWrapped.filterTransactionsProcessor,
 };

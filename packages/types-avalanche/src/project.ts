@@ -5,6 +5,7 @@ import {ApiPromise} from '@polkadot/api';
 import {RegistryTypes} from '@polkadot/types/types';
 import {AlgorandBlock} from './algorand';
 import {AvalancheBlock, AvalancheLog, AvalancheTransaction} from './avalanche';
+import { EthereumBlock, EthereumLog, EthereumTransaction } from './ethereum';
 import {SubstrateBlock, SubstrateEvent, SubstrateExtrinsic} from './substrate';
 
 export enum SubqlDatasourceKind {
@@ -24,10 +25,22 @@ export enum AvalancheHandlerKind {
   Event = 'avalanche/EventHandler',
 }
 
+export enum EthereumHandlerKind {
+  Block = 'ethereum/BlockHandler',
+  Call = 'ethereum/CallHandler',
+  Event = 'ethereum/EventHandler',
+}
+
 export type AvalancheRuntimeHandlerInputMap = {
   [AvalancheHandlerKind.Block]: AvalancheBlock;
   [AvalancheHandlerKind.Call]: AvalancheTransaction;
   [AvalancheHandlerKind.Event]: AvalancheLog;
+};
+
+export type EthereumRuntimeHandlerInputMap = {
+  [AvalancheHandlerKind.Block]: EthereumBlock;
+  [AvalancheHandlerKind.Call]: EthereumTransaction;
+  [AvalancheHandlerKind.Event]: EthereumLog;
 };
 
 export type RuntimeHandlerInputMap = {

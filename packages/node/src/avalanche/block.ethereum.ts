@@ -14,6 +14,8 @@ import {
   AvalancheResult,
   AvalancheTransaction,
   AvalancheBlockFilter,
+  EthereumBlockWrapper,
+  EthereumTransaction,
 } from '@subql/types-avalanche';
 import { flatten } from 'lodash';
 import {
@@ -23,17 +25,18 @@ import {
   stringNormalizedEq,
 } from '../utils/string';
 import { formatLog } from './utils.avalanche';
+import { ethers } from 'ethers';
 
-export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
-  private _logs: AvalancheLog[];
-  constructor(private _block: AvalancheBlock) {
-    this._logs = flatten(_block.transactions.map((tx) => tx.receipt.logs)).map(
-      (log) => formatLog(log, _block),
-    ) as AvalancheLog<AvalancheResult>[];
-    this.block.logs = this._logs;
+export class EthereumBlockWrapped implements EthereumBlockWrapper {
+  private _logs: ethers.providers.Log[];
+  constructor(
+    private _block: ethers.providers.Block,
+    private _txs: EthereumTransaction[],
+  ) {
+    this._logs = flatten(_txs.map((tx) => tx.receipt.logs));
   }
 
-  get block(): AvalancheBlock {
+  get block(): ethers.providers.Block {
     return this._block;
   }
 
@@ -45,16 +48,16 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     return this.block.hash;
   }
 
-  get transactions(): AvalancheTransaction[] {
-    return this.block.transactions;
+  get transactions(): EthereumTransaction[] {
+    return this._txs;
   }
 
-  get logs(): AvalancheLog<AvalancheResult>[] {
+  get logs(): ethers.providers.Log[] {
     return this._logs;
   }
 
   static filterBlocksProcessor(
-    block: AvalancheBlock,
+    block: ethers.providers.Block,
     filter: AvalancheBlockFilter,
   ): boolean {
     if (filter.modulo && block.number % filter.modulo !== 0) {
@@ -64,7 +67,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
   }
 
   static filterTransactionsProcessor(
-    transaction: AvalancheTransaction,
+    transaction: EthereumTransaction,
     filter: AvalancheTransactionFilter,
     address?: string,
   ): boolean {
@@ -79,7 +82,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     }
     if (
       filter.function &&
-      transaction.input.indexOf(functionToSighash(filter.function)) !== 0
+      transaction.data.indexOf(functionToSighash(filter.function)) !== 0
     ) {
       return false;
     }

@@ -4,7 +4,7 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiService } from '@subql/common-node';
-import { AvalancheApiService } from '../avalanche';
+import { EthereumApiService } from '../avalanche';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { DbModule } from '../db/db.module';
 import { getYargsOption } from '../yargs';
@@ -30,7 +30,7 @@ const { argv } = getYargsOption();
 const ApiServiceProvider = {
   provide: ApiService,
   useFactory: async (project: SubqueryProject) => {
-    const apiService = new AvalancheApiService(project);
+    const apiService = new EthereumApiService(project);
     await apiService.init();
     return apiService;
   },
