@@ -91,7 +91,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
       } catch (e) {
-        console.log('SCHEMA ERROR', e);
         await delay(SCHEMA_RETRY_INTERVAL);
         if (retries === 1) {
           logger.error(e);
