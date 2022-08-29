@@ -6,6 +6,7 @@ import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
 import { ApiService, getLogger } from '@subql/common-node';
 import { EthereumApi } from './api.ethereum';
 
+
 const logger = getLogger('api');
 
 @Injectable()
@@ -23,6 +24,7 @@ export class EthereumApiService extends ApiService {
       }
 
       this.api = new EthereumApi(network.endpoint);
+
       await this.api.init();
       this.networkMeta = {
         chain: this.api.getRuntimeChain(),
@@ -31,6 +33,7 @@ export class EthereumApiService extends ApiService {
       };
 
       if (network.chainId !== this.api.getChainId().toString()) {
+
         const err = new Error(
           `Network chainId doesn't match expected chainId. expected="${
             network.chainId

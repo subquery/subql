@@ -190,7 +190,6 @@ export class BlockDispatcherService
 
           const { dynamicDsCreated, operationHash } =
             await this.indexerManager.indexBlock(block as EthereumBlockWrapper);
-
           if (
             this.nodeConfig.proofOfIndex &&
             !isNullMerkelRoot(operationHash)
