@@ -16,13 +16,13 @@ import {
   EthereumBlockWrapper,
   EthereumTransaction,
   EthereumResult,
-  EthereumLog
+  EthereumLog,
 } from '@subql/types-avalanche';
 import { EVMAPI } from 'avalanche/dist/apis/evm';
 import { IndexAPI } from 'avalanche/dist/apis/index';
-import { EthereumBlockWrapped } from './block.avalanche';
+import { ethers } from 'ethers';
+import { EthereumBlockWrapped } from './block.ethereum';
 
-import {ethers} from 'ethers';
 const Web3HttpProvider = require('web3-providers-http');
 const Web3WsProvider = require('web3-providers-ws');
 
@@ -74,8 +74,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       ? undefined
       : 80;
 
-    var provider;
-    if(protocolStr === 'https' || protocolStr === 'http') {
+    let provider;
+    if (protocolStr === 'https' || protocolStr === 'http') {
       const options = {
         keepAlive: true,
         headers: {
@@ -85,18 +85,18 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         agent: {
           http: httpAgent,
           https: httpsAgent,
-        }
-      }
+        },
+      };
       provider = new Web3HttpProvider(endpoint, options);
-    } else if(protocolStr === 'ws' || protocolStr === 'wss') {
+    } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       const options = {
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },
         clientConfig: {
           keepAlive: true,
-        }
-      }
+        },
+      };
       provider = new Web3WsProvider(endpoint, options);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
@@ -106,13 +106,11 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async init(): Promise<void> {
-    this.genesisBlock = await this.client.getBlock(0)
-    this.chainId = (
-      await this.client.getNetwork()
-    ).chainId;
+    this.genesisBlock = await this.client.getBlock(0);
+    this.chainId = (await this.client.getNetwork()).chainId;
   }
 
-  getLastHeight(): Promise<number> {
+  async getLastHeight(): Promise<number> {
     return this.client.getBlockNumber();
   }
 
@@ -149,7 +147,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
             block.transactions.map(async (tx) => {
               const transaction = await this.client.getTransaction(tx);
               const receipt = await this.client.getTransactionReceipt(tx);
-              
+
               (transaction as EthereumTransaction).receipt = receipt;
               return transaction as EthereumTransaction;
             }),
@@ -166,10 +164,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   freezeApi(processor: any, blockContent: BlockWrapper): void {
-    processor.freeze(
-      this.client,
-      'api',
-    );
+    processor.freeze(this.client, 'api');
   }
 
   private buildInterface(

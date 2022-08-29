@@ -4,7 +4,7 @@
 import { Injectable } from '@nestjs/common';
 import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
 import { ApiService, getLogger } from '@subql/common-node';
-import { EthereumApi } from './api.avalanche';
+import { EthereumApi } from './api.ethereum';
 
 const logger = getLogger('api');
 

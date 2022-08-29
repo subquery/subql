@@ -9,7 +9,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { ApiService } from '@subql/common-node';
-import { AvalancheBlockWrapper } from '@subql/types-avalanche';
+import { EthereumBlockWrapper } from '@subql/types-avalanche';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { NodeConfig } from '../../configure/NodeConfig';
@@ -189,9 +189,7 @@ export class BlockDispatcherService
           });
 
           const { dynamicDsCreated, operationHash } =
-            await this.indexerManager.indexBlock(
-              block as AvalancheBlockWrapper,
-            );
+            await this.indexerManager.indexBlock(block as EthereumBlockWrapper);
 
           if (
             this.nodeConfig.proofOfIndex &&

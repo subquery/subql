@@ -4,7 +4,7 @@
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
 import { ApiService } from '@subql/common-node';
-import { AvalancheBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
+import { EthereumBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
 import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
 import { getLogger } from '../../utils/logger';
@@ -63,7 +63,7 @@ export class WorkerService {
   async processBlock(height: number): Promise<ProcessBlockResponse> {
     try {
       this._isIndexing = true;
-      const block = this.fetchedBlocks[height] as AvalancheBlockWrapper;
+      const block = this.fetchedBlocks[height] as EthereumBlockWrapper;
 
       if (!block) {
         throw new Error(`Block ${height} has not been fetched`);

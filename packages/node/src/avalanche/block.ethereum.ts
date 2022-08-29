@@ -17,6 +17,7 @@ import {
   EthereumBlockWrapper,
   EthereumTransaction,
 } from '@subql/types-avalanche';
+import { ethers } from 'ethers';
 import { flatten } from 'lodash';
 import {
   eventToTopic,
@@ -24,8 +25,6 @@ import {
   hexStringEq,
   stringNormalizedEq,
 } from '../utils/string';
-import { formatLog } from './utils.avalanche';
-import { ethers } from 'ethers';
 
 export class EthereumBlockWrapped implements EthereumBlockWrapper {
   private _logs: ethers.providers.Log[];
