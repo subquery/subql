@@ -74,7 +74,7 @@ export const PgDistinctPlugin: Plugin = (builder) => {
 
       addArgDataGenerator(({distinct}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
-          distinct.map((field: number) => {
+          distinct?.map((field: number) => {
             const {name: fieldName} = enumType.getValues()[field];
             if (!pgFieldIntrospection?.attributes?.map((a) => a.name).includes(fieldName)) {
               console.warn(`Distinct field ${fieldName} doesn't exist on entity ${pgFieldIntrospection?.name}`);
