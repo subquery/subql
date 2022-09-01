@@ -13,7 +13,7 @@ const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 const { argv } = getYargsOption();
 
-async function bootstrap() {
+export async function bootstrap() {
   const debug = argv.debug;
 
   const validate = (x: any) => {
