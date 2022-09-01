@@ -32,7 +32,6 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { EventEmitter2 } from 'eventemitter2';
 import {
   CosmosProjectNetConfig,
   SubqueryProject,
@@ -49,10 +48,7 @@ export class ApiService {
   networkMeta: NetworkMetadataPayload;
   dsProcessor: DsProcessorService;
   registry: Registry;
-  constructor(
-    protected project: SubqueryProject,
-    private eventEmitter: EventEmitter2,
-  ) {}
+  constructor(protected project: SubqueryProject) {}
 
   async init(): Promise<ApiService> {
     try {
