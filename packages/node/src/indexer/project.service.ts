@@ -6,21 +6,24 @@ import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import {
+  MetadataFactory,
+  MetadataRepo,
+  SubqueryRepo,
+  NodeConfig,
+  IndexerEvent,
+  StoreService,
+  PoiService,
+  MmrService,
+  getYargsOption,
+  getLogger,
+} from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
-import { getLogger } from '../utils/logger';
-import { getYargsOption } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { IndexerEvent } from './events';
-import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
-import { StoreService } from './store.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -212,6 +215,7 @@ export class ProjectService {
       'indexerNodeVersion',
       'chain',
       'chainId',
+      'processedBlockCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -249,6 +253,11 @@ export class ProjectService {
     }
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
+    }
+
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
     if (keyValue.indexerNodeVersion !== packageVersion) {
@@ -320,6 +329,13 @@ export class ProjectService {
         logger.error(err, 'failed to sync poi to mmr');
         process.exit(1);
       });
+  }
+  async getProcessedBlockCount(): Promise<number> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'processedBlockCount' },
+    });
+
+    return res?.value as number | undefined;
   }
 
   private getStartBlockFromDataSources() {

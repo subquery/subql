@@ -8,7 +8,7 @@ import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
 import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
-import { isRuntimeCosmosDs } from '@subql/common-cosmos';
+import { getLogger } from '@subql/node-core';
 import {
   SubqlCosmosEventFilter,
   SubqlCosmosMessageFilter,
@@ -16,14 +16,10 @@ import {
   CosmosEvent,
   CosmosTransaction,
   CosmosMessage,
-  SubqlCosmosHandlerKind,
   SubqlCosmosBlockFilter,
 } from '@subql/types-cosmos';
-import { transpileModule } from 'typescript';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
-import { getLogger } from './logger';
 
 const logger = getLogger('fetch');
 

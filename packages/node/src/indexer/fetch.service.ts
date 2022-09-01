@@ -4,7 +4,6 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import {
   isCustomCosmosDs,
@@ -16,7 +15,16 @@ import {
   SubqlCosmosHandler,
   SubqlCosmosDataSource,
   SubqlCosmosHandlerFilter,
+  CosmosCustomHandler,
 } from '@subql/common-cosmos';
+import {
+  delay,
+  checkMemoryUsage,
+  NodeConfig,
+  IndexerEvent,
+  getYargsOption,
+  getLogger,
+} from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   DictionaryQueryCondition,
@@ -26,21 +34,14 @@ import {
 } from '@subql/types-cosmos';
 
 import { MetaData } from '@subql/utils';
-import { isUndefined, range, sortBy, uniqBy, setWith } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
+import { range, sortBy, uniqBy, setWith } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { checkMemoryUsage } from '../utils/batch-size';
 import * as CosmosUtil from '../utils/cosmos';
-import { getLogger } from '../utils/logger';
-import { profiler, profilerWrap } from '../utils/profiler';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import { delay } from '../utils/promise';
-import { getYargsOption } from '../yargs';
 import { ApiService, CosmosClient } from './api.service';
-import { Dictionary, DictionaryService } from './dictionary.service';
+import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { IndexerEvent } from './events';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
@@ -51,14 +52,6 @@ const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
-
-const fetchBlocksBatches = argv.profiler
-  ? profilerWrap(
-      CosmosUtil.fetchBlocksBatches,
-      'CosmosUtil',
-      'fetchBlocksBatches',
-    )
-  : CosmosUtil.fetchBlocksBatches;
 
 export function eventFilterToQueryEntry(
   filter: SubqlCosmosEventFilter,
@@ -178,6 +171,16 @@ export class FetchService implements OnApplicationShutdown {
         let filterList: SubqlCosmosHandlerFilter[];
         if (isCustomCosmosDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
+          if (processor.dictionaryQuery) {
+            const queryEntry = processor.dictionaryQuery(
+              (handler as CosmosCustomHandler).filter,
+              ds,
+            );
+            if (queryEntry) {
+              queryEntries.push(queryEntry);
+              continue;
+            }
+          }
           filterList = this.getBaseHandlerFilters<SubqlCosmosHandlerFilter>(
             ds,
             handler.kind,
@@ -244,6 +247,7 @@ export class FetchService implements OnApplicationShutdown {
         setInterval(() => void this.getLatestBlockHead(), BLOCK_TIME_VARIANCE),
       );
     }
+
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {

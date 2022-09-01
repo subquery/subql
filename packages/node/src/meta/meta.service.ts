@@ -10,9 +10,10 @@ import {
   IndexerEvent,
   NetworkMetadataPayload,
   ProcessBlockPayload,
+  ProcessedBlockCountPayload,
   TargetBlockPayload,
-} from '../indexer/events';
-import { StoreService } from '../indexer/store.service';
+  StoreService,
+} from '@subql/node-core';
 
 const UPDATE_HEIGHT_INTERVAL = 60000;
 
@@ -29,9 +30,9 @@ export class MetaService {
   private networkMeta: NetworkMetadataPayload;
   private apiConnected: boolean;
   private usingDictionary: boolean;
-  private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
+  private processedBlockCount: number;
 
   constructor(private storeService: StoreService) {}
 
@@ -46,8 +47,8 @@ export class MetaService {
       lastProcessedTimestamp: this.lastProcessedTimestamp,
       uptime: process.uptime(),
       cosmosSdkVersion,
+      processedBlockCount: this.processedBlockCount,
       apiConnected: this.apiConnected,
-      injectedApiConnected: this.injectedApiConnected,
       usingDictionary: this.usingDictionary,
       ...this.networkMeta,
     };
@@ -61,6 +62,12 @@ export class MetaService {
   @OnEvent(IndexerEvent.BlockProcessing)
   handleProcessingBlock(blockPayload: ProcessBlockPayload): void {
     this.currentProcessingHeight = blockPayload.height;
+    this.currentProcessingTimestamp = blockPayload.timestamp;
+  }
+
+  @OnEvent(IndexerEvent.BlockProcessedCount)
+  handleProcessedBlock(blockPayload: ProcessedBlockCountPayload): void {
+    this.processedBlockCount = blockPayload.processedBlockCount;
     this.currentProcessingTimestamp = blockPayload.timestamp;
   }
 
@@ -82,11 +89,6 @@ export class MetaService {
   @OnEvent(IndexerEvent.ApiConnected)
   handleApiConnected({ value }: EventPayload<number>): void {
     this.apiConnected = !!value;
-  }
-
-  @OnEvent(IndexerEvent.InjectedApiConnected)
-  handleInjectedApiConnected({ value }: EventPayload<number>): void {
-    this.injectedApiConnected = !!value;
   }
 
   @OnEvent(IndexerEvent.UsingDictionary)

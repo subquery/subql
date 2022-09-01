@@ -3,9 +3,11 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
+import { getYargsOption, getLogger, NestLogger } from '@subql/node-core';
 import { AppModule } from './app.module';
-import { getLogger, NestLogger } from './utils/logger';
-import { getYargsOption } from './yargs';
+import { ApiService } from './indexer/api.service';
+import { FetchService } from './indexer/fetch.service';
+import { ProjectService } from './indexer/project.service';
 
 const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
@@ -40,6 +42,15 @@ async function bootstrap() {
       logger: debug ? new NestLogger() : false,
     });
     await app.init();
+
+    const projectService = app.get(ProjectService);
+    const fetchService = app.get(FetchService);
+    const apiService = app.get(ApiService);
+
+    // Initialise async services, we do this here rather than in factories so we can capture one off events
+    await apiService.init();
+    await projectService.init();
+    await fetchService.init(projectService.startHeight);
 
     await app.listen(port);
 

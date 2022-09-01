@@ -22,8 +22,8 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
-import axios, { AxiosInstance, AxiosError } from 'axios';
-import { MsgVoteWeighted } from 'cosmjs-types/cosmos/gov/v1beta1/tx';
+import { getLogger, NetworkMetadataPayload } from '@subql/node-core';
+import axios, { AxiosInstance } from 'axios';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -37,9 +37,7 @@ import {
   CosmosProjectNetConfig,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { getLogger } from '../utils/logger';
 import { DsProcessorService } from './ds-processor.service';
-import { NetworkMetadataPayload } from './events';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -90,6 +88,8 @@ export class ApiService {
 
       this.networkMeta = {
         chain: network.chainId,
+        specName: undefined,
+        genesisHash: undefined,
       };
 
       const chainId = await this.api.getChainId();

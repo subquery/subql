@@ -6,10 +6,15 @@ import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { CosmosProjectNetworkConfig } from '@subql/common-cosmos';
+import {
+  IConfig,
+  MinConfig,
+  NodeConfig,
+  getYargsOption,
+  getLogger,
+  setLevel,
+} from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
-import { getLogger, setLevel } from '../utils/logger';
-import { getYargsOption } from '../yargs';
-import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './SubqueryProject';
 
 const YargsNameMapping = {

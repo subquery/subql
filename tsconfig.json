@@ -28,6 +28,7 @@
   "references": [
     {"path": "packages/common-cosmos"},
     {"path": "packages/node"},
+    {"path": "packages/node-core"},
     {"path": "packages/types"},
   ],
   "include": ["packages/**/*"],

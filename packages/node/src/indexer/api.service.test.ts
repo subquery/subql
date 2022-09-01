@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
-import { fromAscii, toHex } from '@cosmjs/encoding';
+import { toHex } from '@cosmjs/encoding';
 import { Uint53 } from '@cosmjs/math';
 import { toRfc3339WithNanoseconds } from '@cosmjs/tendermint-rpc';
 import { INestApplication } from '@nestjs/common';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { Test } from '@nestjs/testing';
 import { loadFromJsonOrYaml } from '@subql/common';
+import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 

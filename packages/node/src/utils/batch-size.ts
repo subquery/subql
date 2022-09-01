@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getHeapStatistics } from 'v8';
-import { getYargsOption } from '../yargs';
-import { getLogger } from './logger';
+import { getYargsOption, getLogger } from '@subql/node-core';
 
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;

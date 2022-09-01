@@ -1,8 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Block } from '@cosmjs/tendermint-rpc';
-import { ConsoleLogger, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -17,31 +16,28 @@ import {
   CosmosRuntimeHandlerInputMap,
 } from '@subql/common-cosmos';
 import {
-  CosmosBlock,
-  CosmosEvent,
-  CosmosMessage,
-  CosmosTransaction,
-} from '@subql/types-cosmos';
-import { conformsTo } from 'lodash';
+  PoiBlock,
+  StoreService,
+  PoiService,
+  SubqueryRepo,
+  NodeConfig,
+  getYargsOption,
+  getLogger,
+  profiler,
+  profilerWrap,
+} from '@subql/node-core';
+import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
 import { Sequelize } from 'sequelize';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
 import * as CosmosUtil from '../utils/cosmos';
-import { getLogger } from '../utils/logger';
-import { profiler } from '../utils/profiler';
-import { getYargsOption } from '../yargs';
 import { ApiService, CosmosClient, CosmosSafeClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
 import { BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -131,6 +127,9 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
+      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
+      await this.storeService.incrementBlockCount(tx);
+
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
       if (this.nodeConfig.proofOfIndex) {
@@ -277,7 +276,13 @@ export class IndexerManager {
         );
         for (const handler of filteredHandlers) {
           vm = vm ?? (await getVM(ds));
-          await vm.securedExec(handler.handler, [data]);
+          argv.profiler
+            ? await profilerWrap(
+                vm.securedExec.bind(vm),
+                'handlerPerformance',
+                handler.handler,
+              )(handler.handler, [data])
+            : await vm.securedExec(handler.handler, [data]);
         }
       }
     } else if (isCustomCosmosDs(ds)) {
@@ -379,9 +384,11 @@ export class IndexerManager {
         throw e;
       });
 
-    await Promise.all(
-      transformedData.map((data) => vm.securedExec(handler.handler, [data])),
-    );
+    // We can not run this in parallel. the transformed data items may be dependent on one another.
+    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
+    for (const _data of transformedData) {
+      await vm.securedExec(handler.handler, [_data]);
+    }
   }
 }
 

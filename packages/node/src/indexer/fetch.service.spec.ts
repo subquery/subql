@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SubqlCosmosMessageFilter } from '@subql/common-cosmos';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeConfig } from '@subql/node-core';
 import { DictionaryService } from './dictionary.service';
 import { messageFilterToQueryEntry } from './fetch.service';
 

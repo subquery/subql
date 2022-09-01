@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as workers from 'worker_threads';
+import { getLogger } from '@subql/node-core';
 import { Logger } from 'pino';
-import { getLogger } from '../../utils/logger';
 
 export type Request = {
   id: number | string;
