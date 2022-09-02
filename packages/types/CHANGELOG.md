@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-09-02
+
+### Changed
+Sync changes from main SDK:
+- Updated `store.getByField` to have limit and offset options: `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`.
+- Added `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing.
+
+
 ## [0.1.1] - 2022-07-01
 - Inject the types registry into the sandbox (#34)
 
@@ -25,7 +33,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.1.1...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/types/0.2.0...HEAD
+[0.2.0]: https://github.com/subquery/subql-cosmos/compare/types/0.1.1...types/0.2.0
 [0.1.1]: https://github.com/subquery/subql-cosmos/compare/types/0.1.0...types/0.1.1
 [0.1.0]: https://github.com/subquery/subql-cosmos/compare/types/0.0.6...types/0.1.0
 [0.0.6]: https://github.com/subquery/subql-cosmos/compare/types/0.0.5...types/0.0.6

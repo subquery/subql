@@ -8,6 +8,17 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.9.0] - 2022-09-02
+
+### Changed
+- Update to same version numbering as Substrate SDK.
+- Sync with latest changes on Substrate SDK:
+  - Use `@subql/node-core` package.
+  - Updated `store.getByField` to have limit and offset options: `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>`;.
+  - Improved performance logging.
+  - Added `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing.
+  - Fixed indexing stop processing blocks.
+
 ## [0.3.0] - 2022-07-28
 ### Changed
 - Sync with latest development from origin. See [@subql/node changelog](https://github.com/subquery/subql/blob/main/packages/node/CHANGELOG.md) from v1.2.1 to v1.6.0 (#44) (#45)
@@ -75,7 +86,8 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.0.5] - 2022-06-15
 First release
 
-[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/0.3.0...HEAD
+[Unreleased]: https://github.com/subquery/subql-cosmos/compare/node/1.9.0...HEAD
+[1.9.0]: https://github.com/subquery/subql-cosmos/compare/node/0.3.0...node/1.9.0
 [0.3.0]: https://github.com/subquery/subql-cosmos/compare/node/0.2.0...node/0.3.0
 [0.2.0]: https://github.com/subquery/subql-cosmos/compare/node/0.1.3...node/0.2.0
 [0.1.3]: https://github.com/subquery/subql-cosmos/compare/node/0.1.2...node/0.1.3
