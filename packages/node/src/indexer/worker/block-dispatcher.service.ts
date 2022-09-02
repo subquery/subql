@@ -16,11 +16,12 @@ import {
   delay,
   getYargsOption,
   profilerWrap,
+  AutoQueue,
+  Queue,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { AutoQueue, Queue } from '../../utils/autoQueue';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
