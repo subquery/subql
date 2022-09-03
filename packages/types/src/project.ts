@@ -215,7 +215,12 @@ export interface SecondLayerHandlerProcessor_1_0_0<
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<K, F, E, IT, DS>;
-  filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap<IT>[K]; ds: DS}) => boolean;
+  filterProcessor: (params: {
+    filter: F | undefined;
+    input: RuntimeHandlerInputMap<IT>[K];
+    ds: DS;
+    assets?: Record<string, string>;
+  }) => boolean;
 }
 
 export type SecondLayerHandlerProcessor<
