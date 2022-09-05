@@ -55,7 +55,6 @@ const { argv } = getYargsOption();
 export class IndexerManager {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
-  private dsAssets: Record<string, Record<string, string>>;
 
   constructor(
     private storeService: StoreService,
