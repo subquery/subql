@@ -219,7 +219,6 @@ export interface SecondLayerHandlerProcessor_1_0_0<
     filter: F | undefined;
     input: RuntimeHandlerInputMap<IT>[K];
     ds: DS;
-    assets?: Record<string, string>;
   }) => boolean | Promise<boolean>;
 }
 
