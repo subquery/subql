@@ -10,12 +10,16 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-avalanche';
+import { ApiService } from '@subql/common-node';
 import {
-  ApiService,
+  delay,
+  checkMemoryUsage,
+  NodeConfig,
+  IndexerEvent,
   getYargsOption,
   getLogger,
-  IndexerEvent,
-} from '@subql/common-node';
+  profiler,
+} from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
@@ -25,11 +29,8 @@ import {
 } from '@subql/types-avalanche';
 import { range, sortBy, uniqBy } from 'lodash';
 import { calcInterval } from '../avalanche/utils.avalanche';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import { eventToTopic, functionToSighash } from '../utils/string';
-import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -100,39 +101,12 @@ function callFilterToQueryEntry(
   };
 }
 
-function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
-  const memoryData = getHeapStatistics();
-  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
-  if (argv.profiler) {
-    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
-    logger.info(`Heap Usage: ${ratio}`);
-  }
-  let scale = batchSizeScale;
-
-  if (ratio > HIGH_THRESHOLD) {
-    if (scale > 0) {
-      scale = Math.max(scale - 0.1, 0);
-      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
-    }
-  }
-
-  if (ratio < LOW_THRESHOLD) {
-    if (scale < 1) {
-      scale = Math.min(scale + 0.1, 1);
-      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
-    }
-  }
-  return scale;
-}
-
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private latestProcessedHeight: number;
   private latestBufferedHeight: number;
-  private blockBuffer: BlockedQueue<BlockWrapper>;
-  private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
@@ -150,12 +124,6 @@ export class FetchService implements OnApplicationShutdown {
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
   ) {
-    this.blockBuffer = new BlockedQueue<BlockWrapper>(
-      this.nodeConfig.batchSize * 3,
-    );
-    this.blockNumberBuffer = new BlockedQueue<number>(
-      this.nodeConfig.batchSize * 3,
-    );
     this.batchSizeScale = 1;
   }
 
@@ -231,34 +199,6 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary;
   }
 
-  register(next: (value: BlockWrapper) => Promise<void>): () => void {
-    let stopper = false;
-    void (async () => {
-      while (!stopper && !this.isShutdown) {
-        const block = await this.blockBuffer.take();
-        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-          value: this.blockBuffer.size,
-        });
-        let success = false;
-        while (!success) {
-          try {
-            await next(block);
-            success = true;
-          } catch (e) {
-            logger.error(
-              e,
-              `failed to index block at height ${block.blockHeight} ${
-                e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
-              }`,
-            );
-            process.exit(1);
-          }
-        }
-      }
-    })();
-    return () => (stopper = true);
-  }
-
   async init(startHeight: number): Promise<void> {
     if (this.api) {
       const CHAIN_INTERVAL = calcInterval(this.api) * INTERVAL_PERCENT;
@@ -286,10 +226,7 @@ export class FetchService implements OnApplicationShutdown {
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
     if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(
-        this.nodeConfig.batchSize,
-        this.batchSizeScale,
-      );
+      const scale = checkMemoryUsage(this.batchSizeScale);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -457,32 +394,6 @@ export class FetchService implements OnApplicationShutdown {
       this.blockDispatcher.enqueueBlocks(
         range(startBlockHeight, endHeight + 1),
       );
-    }
-  }
-
-  async fillBlockBuffer(): Promise<void> {
-    while (!this.isShutdown) {
-      const takeCount = Math.min(
-        this.blockBuffer.freeSize,
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-      );
-
-      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-        await delay(1);
-        continue;
-      }
-
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await this.api.fetchBlocks(bufferBlocks);
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
-      this.blockBuffer.putAll(blocks);
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
-      });
     }
   }
 

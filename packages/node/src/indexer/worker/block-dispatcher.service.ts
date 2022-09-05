@@ -2,20 +2,25 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import os from 'os';
 import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { ApiService } from '@subql/common-node';
+import {
+  getLogger,
+  NodeConfig,
+  IndexerEvent,
+  Worker,
+  delay,
+  getYargsOption,
+  profilerWrap,
+} from '@subql/node-core';
 import { AvalancheBlockWrapper } from '@subql/types-avalanche';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue, Queue } from '../../utils/autoQueue';
-import { getLogger } from '../../utils/logger';
-import { IndexerEvent } from '../events';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import {
@@ -26,7 +31,6 @@ import {
   NumFetchingBlocks,
   GetWorkerStatus,
 } from './worker';
-import { Worker } from './worker.builder';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -68,11 +72,6 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
   return indexerWorker;
 }
 
-function getMaxWorkers(numWorkers?: number): number {
-  const maxCPUs = os.cpus().length;
-  return Math.min(numWorkers ?? maxCPUs, maxCPUs);
-}
-
 export interface IBlockDispatcher {
   init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
 
@@ -103,6 +102,9 @@ export class BlockDispatcherService
   private isShutdown = false;
   private onDynamicDsCreated: (height: number) => Promise<void>;
   private _latestBufferedHeight: number;
+  private _processedBlockCount: number;
+
+  private latestProcessedHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -120,6 +122,8 @@ export class BlockDispatcherService
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
     this.onDynamicDsCreated = onDynamicDsCreated;
+    const blockAmount = await this.projectService.getProcessedBlockCount();
+    this.setProcessedBlockCount(blockAmount ?? 0);
   }
 
   onApplicationShutdown(): void {
@@ -149,6 +153,14 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
+  private setProcessedBlockCount(processedBlockCount: number) {
+    this._processedBlockCount = processedBlockCount;
+    this.eventEmitter.emit(IndexerEvent.BlockProcessedCount, {
+      processedBlockCount,
+      timestamp: Date.now(),
+    });
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
@@ -156,78 +168,99 @@ export class BlockDispatcherService
 
     this.fetching = true;
 
-    while (!this.isShutdown) {
-      const blockNums = this.fetchQueue.takeMany(this.nodeConfig.batchSize);
+    try {
+      while (!this.isShutdown) {
+        const blockNums = this.fetchQueue.takeMany(
+          Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace),
+        );
+        // Used to compare before and after as a way to check if queue was flushed
+        const bufferedHeight = this._latestBufferedHeight;
 
-      // Used to compare before and after as a way to check if queue was flushed
-      const bufferedHeight = this._latestBufferedHeight;
-
-      // Queue is empty
-      if (!blockNums.length) {
-        break;
-      }
-
-      logger.info(
-        `fetch block [${blockNums[0]},${
-          blockNums[blockNums.length - 1]
-        }], total ${blockNums.length} blocks`,
-      );
-
-      const blocks = await this.apiService.api.fetchBlocks(blockNums);
-
-      if (bufferedHeight > this._latestBufferedHeight) {
-        logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-        continue;
-      }
-
-      const blockTasks = blocks.map((block) => async () => {
-        const height = block.blockHeight;
-        try {
-          this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-            height,
-            timestamp: Date.now(),
-          });
-
-          const { dynamicDsCreated, operationHash } =
-            await this.indexerManager.indexBlock(
-              block as AvalancheBlockWrapper,
-            );
-
-          if (
-            this.nodeConfig.proofOfIndex &&
-            !isNullMerkelRoot(operationHash)
-          ) {
-            if (!this.projectService.blockOffset) {
-              // Which means during project init, it has not found offset and set value
-              await this.projectService.upsertMetadataBlockOffset(height - 1);
-            }
-            void this.projectService.setBlockOffset(height - 1);
+        // Queue is empty
+        if (!blockNums.length) {
+          // The process queue might be full so no block nums were taken, wait and try again
+          if (this.fetchQueue.size) {
+            await delay(1);
+            continue;
           }
-
-          if (dynamicDsCreated) {
-            await this.onDynamicDsCreated(height);
-          }
-        } catch (e) {
-          if (this.isShutdown) {
-            return;
-          }
-          logger.error(
-            e,
-            `failed to index block at height ${height} ${
-              e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
-            }`,
-          );
-          throw e;
+          break;
         }
-      });
 
-      // There can be enough of a delay after fetching blocks that shutdown could now be true
-      if (this.isShutdown) break;
+        logger.info(
+          `fetch block [${blockNums[0]},${
+            blockNums[blockNums.length - 1]
+          }], total ${blockNums.length} blocks`,
+        );
 
-      await Promise.all(this.processQueue.putMany(blockTasks));
+        const blocks = await this.apiService.api.fetchBlocks(blockNums);
+
+        if (bufferedHeight > this._latestBufferedHeight) {
+          logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+          continue;
+        }
+
+        const blockTasks = blocks.map((block) => async () => {
+          const height = block.blockHeight;
+          try {
+            this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+              height,
+              timestamp: Date.now(),
+            });
+
+            const { dynamicDsCreated, operationHash } =
+              await this.indexerManager.indexBlock(
+                block as AvalancheBlockWrapper,
+              );
+
+            // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+            this.setProcessedBlockCount(this._processedBlockCount + 1);
+            if (
+              this.nodeConfig.proofOfIndex &&
+              !isNullMerkelRoot(operationHash)
+            ) {
+              if (!this.projectService.blockOffset) {
+                // Which means during project init, it has not found offset and set value
+                await this.projectService.upsertMetadataBlockOffset(height - 1);
+              }
+              void this.projectService.setBlockOffset(height - 1);
+            }
+
+            if (dynamicDsCreated) {
+              await this.onDynamicDsCreated(height);
+            }
+
+            assert(
+              !this.latestProcessedHeight ||
+                height > this.latestProcessedHeight,
+              `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
+            );
+            this.latestProcessedHeight = height;
+          } catch (e) {
+            if (this.isShutdown) {
+              return;
+            }
+            logger.error(
+              e,
+              `failed to index block at height ${height} ${
+                e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
+              }`,
+            );
+            throw e;
+          }
+        });
+
+        // There can be enough of a delay after fetching blocks that shutdown could now be true
+        if (this.isShutdown) break;
+
+        this.processQueue.putMany(blockTasks);
+
+        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
+          value: this.processQueue.size,
+        });
+      }
+    } finally {
+      this.fetching = false;
     }
-
-    this.fetching = false;
   }
 
   get queueSize(): number {
@@ -262,13 +295,14 @@ export class WorkerBlockDispatcherService
   private isShutdown = false;
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
+  private _processedBlockCount: number;
 
   constructor(
     private nodeConfig: NodeConfig,
     private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
-    this.numWorkers = getMaxWorkers(nodeConfig.workers);
+    this.numWorkers = nodeConfig.workers;
     this.queue = new AutoQueue(this.numWorkers * nodeConfig.batchSize * 2);
   }
 
@@ -280,6 +314,17 @@ export class WorkerBlockDispatcherService
     );
 
     this.onDynamicDsCreated = onDynamicDsCreated;
+
+    const blockAmount = await this.projectService.getProcessedBlockCount();
+    this.setProcessedBlockCount(blockAmount ?? 0);
+  }
+
+  private setProcessedBlockCount(processedBlockCount: number) {
+    this._processedBlockCount = processedBlockCount;
+    this.eventEmitter.emit(IndexerEvent.BlockProcessedCount, {
+      processedBlockCount,
+      timestamp: Date.now(),
+    });
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -288,7 +333,9 @@ export class WorkerBlockDispatcherService
     this.queue.abort();
 
     // Stop all workers
-    await Promise.all(this.workers.map((w) => w.terminate()));
+    if (this.workers) {
+      await Promise.all(this.workers.map((w) => w.terminate()));
+    }
   }
 
   enqueueBlocks(heights: number[]): void {
@@ -373,6 +420,8 @@ export class WorkerBlockDispatcherService
         const { dynamicDsCreated, operationHash } = await worker.processBlock(
           height,
         );
+        // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+        this.setProcessedBlockCount(this._processedBlockCount + 1);
 
         if (
           this.nodeConfig.proofOfIndex &&
