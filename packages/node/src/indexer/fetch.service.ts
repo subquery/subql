@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
@@ -10,20 +9,18 @@ import {
   SubstrateHandlerKind,
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-avalanche';
-import { ApiService } from '@subql/common-node';
 import {
+  ApiService,
   delay,
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
   getYargsOption,
   getLogger,
-  profiler,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
-  BlockWrapper,
   AvalancheLogFilter,
   AvalancheTransactionFilter,
 } from '@subql/types-avalanche';
@@ -40,8 +37,6 @@ const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
-const HIGH_THRESHOLD = 0.85;
-const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
 

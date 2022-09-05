@@ -54,10 +54,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.1.1",
-  "dependencies": {
-    "@subql/node-core": "^0.1.1",
-    "@subql/utils": "^1.1.0",
-    "fetch-h2": "^3.0.2"
-  }
+  "packageManager": "yarn@3.1.1"
 }

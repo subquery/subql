@@ -4,8 +4,8 @@
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SchedulerRegistry } from '@nestjs/schedule';
-import { ApiService } from '@subql/common-node';
 import {
+  ApiService,
   BenchmarkService,
   MmrService,
   StoreService,

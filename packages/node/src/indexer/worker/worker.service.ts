@@ -3,8 +3,7 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { ApiService } from '@subql/common-node';
-import { NodeConfig, getLogger } from '@subql/node-core';
+import { ApiService, NodeConfig, getLogger } from '@subql/node-core';
 import { AvalancheBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
 import { AutoQueue } from '../../utils/autoQueue';
 import { IndexerManager } from '../indexer.manager';

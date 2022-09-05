@@ -2,9 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiService } from '@subql/common-node';
 import {
+  ApiService,
   DbModule,
   StoreService,
   PoiService,

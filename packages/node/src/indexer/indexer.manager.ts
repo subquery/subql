@@ -1,21 +1,11 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
-import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
-  SubstrateRuntimeDataSource,
-  SubstrateHandlerKind,
-  SubstrateRuntimeHandlerInputMap,
-  isBlockHandlerProcessor,
-  isEventHandlerProcessor,
-  isCallHandlerProcessor,
-} from '@subql/common-avalanche';
-import { ApiService } from '@subql/common-node';
-import {
+  ApiService,
   PoiBlock,
   StoreService,
   PoiService,
@@ -30,25 +20,19 @@ import {
   ApiWrapper,
   AvalancheTransaction,
   AvalancheLog,
-  SubqlHandlerKind,
   AvalancheBlock,
-  RuntimeHandlerInputMap,
   SubqlRuntimeHandler,
   AvalancheBlockWrapper,
   AvalancheHandlerKind,
   AvalancheRuntimeHandlerInputMap,
 } from '@subql/types-avalanche';
-import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize, Transaction } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
 
-const DEFAULT_DB_SCHEMA = 'public';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');

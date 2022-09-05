@@ -5,11 +5,10 @@ import assert from 'assert';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import url from 'url';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-avalanche';
-import { getLogger } from '@subql/common-node';
+import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
   AvalancheLog,

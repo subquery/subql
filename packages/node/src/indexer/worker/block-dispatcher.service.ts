@@ -7,8 +7,8 @@ import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { ApiService } from '@subql/common-node';
 import {
+  ApiService,
   getLogger,
   NodeConfig,
   IndexerEvent,
@@ -104,6 +104,7 @@ export class BlockDispatcherService
   private _latestBufferedHeight: number;
   private _processedBlockCount: number;
 
+  private fetchBlocksBatches: ApiService['api']['fetchBlocks'];
   private latestProcessedHeight: number;
 
   constructor(
@@ -115,6 +116,18 @@ export class BlockDispatcherService
   ) {
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
+
+    const { argv } = getYargsOption();
+
+    if (argv.profiler) {
+      this.fetchBlocksBatches = profilerWrap(
+        this.apiService.api.fetchBlocks,
+        'AvalancheUtil',
+        'fetchBlocksBatches',
+      );
+    } else {
+      this.fetchBlocksBatches = this.apiService.api.fetchBlocks;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -192,7 +205,7 @@ export class BlockDispatcherService
           }], total ${blockNums.length} blocks`,
         );
 
-        const blocks = await this.apiService.api.fetchBlocks(blockNums);
+        const blocks = await this.fetchBlocksBatches(blockNums);
 
         if (bufferedHeight > this._latestBufferedHeight) {
           logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
