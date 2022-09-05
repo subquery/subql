@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import {EventEmitter2} from '@nestjs/event-emitter';
 
 export class Queue<T> {
   private items: T[] = [];
@@ -116,7 +116,7 @@ export class AutoQueue<T> {
 
     return tasks.map((task, index) => {
       return new Promise((resolve, reject) => {
-        this.queue.put({ task, resolve, reject });
+        this.queue.put({task, resolve, reject});
         if (tasks.length - 1 === index) {
           void this.take();
         }
@@ -151,7 +151,7 @@ export class AutoQueue<T> {
           } catch (e) {
             action.reject(e);
           }
-        }),
+        })
       );
     }
     this.pendingPromise = false;
@@ -167,10 +167,7 @@ export class AutoQueue<T> {
     this._abort = true;
   }
 
-  on(
-    evt: 'size',
-    callback: (size: number) => void | Promise<void>,
-  ): () => void {
+  on(evt: 'size', callback: (size: number) => void | Promise<void>): () => void {
     this.eventEmitter.on(evt, callback as (size: number) => void);
 
     return () => this.eventEmitter.off(evt, callback as (size: number) => void);
