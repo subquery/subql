@@ -190,7 +190,7 @@ interface SecondLayerHandlerProcessorBase<
   baseHandlerKind: K;
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
   filterValidator: (filter?: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
+  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined | Promise<DictionaryQueryEntry | undefined>;
 }
 
 // only allow one custom handler for each baseHandler kind
