@@ -3,17 +3,22 @@
 
 import {NestFactory} from '@nestjs/core';
 import {AppModule} from './cliAppModule';
+import {subcommandsService} from './indexer/subcommands.service';
 
-export async function bootstrap(): Promise<void> {
+// const logger = getLogger('subcommand');
+
+export async function bootstrap2(): Promise<void> {
   try {
     const app = await NestFactory.create(AppModule, {
       logger: false,
     });
+    const subcommandService = app.get(subcommandsService);
     await app.init();
 
-    // start store.service
-    // start project.service
-    // start mmrService
+    await subcommandService.forceClean().then(() => {
+      console.log('yay it clean');
+      process.exit(0);
+    });
 
     console.log('yay, your code works');
   } catch (e) {

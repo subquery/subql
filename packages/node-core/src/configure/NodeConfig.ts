@@ -7,10 +7,12 @@ import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {last} from 'lodash';
 import {LevelWithSilent} from 'pino';
-import {getLogger} from '../logger';
+import * as L from '../logger';
 import {assign} from '../utils/object';
 
-const logger = getLogger('configure');
+console.log('WHAT', L);
+
+const logger = L.getLogger('configure');
 
 export interface IConfig {
   readonly subquery: string;
