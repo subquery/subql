@@ -72,7 +72,6 @@ export class IndexerManager {
   ) {
     logger.info('indexer manager start');
     this.api = this.apiService.getApi();
-    this.dsAssets = {};
   }
 
   @profiler(argv.profiler)
@@ -272,16 +271,6 @@ export class IndexerManager {
     }
   }
 
-  //Avoid repeat read same asset
-  private async getDsAsset(
-    ds: SubstrateCustomDataSource,
-  ): Promise<Record<string, string>> {
-    if (!this.dsAssets[ds.name]) {
-      this.dsAssets[ds.name] = await this.dsProcessorService.getAssets(ds);
-    }
-    return this.dsAssets[ds.name];
-  }
-
   private async indexData<K extends SubstrateHandlerKind>(
     kind: K,
     data: SubstrateRuntimeHandlerInputMap[K],
@@ -305,7 +294,7 @@ export class IndexerManager {
           : await vm.securedExec(handler.handler, [data]);
       }
     } else if (isCustomDs(ds)) {
-      const handlers = await this.filterCustomDsHandlers<K>(
+      const handlers = this.filterCustomDsHandlers<K>(
         ds,
         data,
         ProcessorTypeMap[kind],
@@ -339,7 +328,7 @@ export class IndexerManager {
     }
   }
 
-  private async filterCustomDsHandlers<K extends SubstrateHandlerKind>(
+  private filterCustomDsHandlers<K extends SubstrateHandlerKind>(
     ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
     data: SubstrateRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
@@ -347,10 +336,8 @@ export class IndexerManager {
       data: SubstrateRuntimeHandlerInputMap[K],
       baseFilter: any,
     ) => boolean,
-  ): Promise<SubstrateCustomHandler[]> {
+  ): SubstrateCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
-    const assets = await this.getDsAsset(ds);
-
     return ds.mapping.handlers
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
@@ -360,7 +347,7 @@ export class IndexerManager {
         }
         return false;
       })
-      .filter((handler) => {
+      .filter(async (handler) => {
         const processor = asSecondLayerHandlerProcessor_1_0_0(
           plugin.handlerProcessors[handler.kind],
         );
@@ -369,7 +356,6 @@ export class IndexerManager {
             filter: handler.filter,
             input: data,
             ds,
-            assets,
           });
         } catch (e) {
           logger.error(e, 'Failed to run ds processer filter.');
@@ -385,8 +371,7 @@ export class IndexerManager {
     data: SubstrateRuntimeHandlerInputMap[K],
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
-    const assets = await this.getDsAsset(ds);
-
+    const assets = await this.dsProcessorService.getAssets(ds);
     const processor = asSecondLayerHandlerProcessor_1_0_0(
       plugin.handlerProcessors[handler.kind],
     );

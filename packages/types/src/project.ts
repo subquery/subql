@@ -220,7 +220,7 @@ export interface SecondLayerHandlerProcessor_1_0_0<
     input: RuntimeHandlerInputMap<IT>[K];
     ds: DS;
     assets?: Record<string, string>;
-  }) => boolean;
+  }) => boolean | Promise<boolean>;
 }
 
 export type SecondLayerHandlerProcessor<
