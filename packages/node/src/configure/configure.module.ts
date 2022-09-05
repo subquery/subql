@@ -6,9 +6,15 @@ import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-avalanche';
-import { getLogger, getYargsOption, setLevel } from '@subql/common-node';
+import {
+  IConfig,
+  MinConfig,
+  NodeConfig,
+  getYargsOption,
+  getLogger,
+  setLevel,
+} from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
-import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './SubqueryProject';
 const logger = getLogger('configure');
 

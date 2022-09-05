@@ -7,20 +7,23 @@ import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-avalanche';
-import { getYargsOption, getLogger } from '@subql/common-node';
+import {
+  timeout,
+  NodeConfig,
+  StoreService,
+  getYargsOption,
+  getLogger,
+} from '@subql/node-core';
 import {
   ApiWrapper,
   AvalancheBlockWrapper,
   Store,
 } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
-import { timeout } from '../utils/promise';
-import { StoreService } from './store.service';
 
 const { argv } = getYargsOption();
 
