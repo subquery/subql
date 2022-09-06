@@ -69,7 +69,11 @@ export interface SubqlCosmosBlockFilter {
   modulo?: number;
 }
 
-export interface SubqlCosmosMessageFilter {
+export interface SubqlCosmosTxFilter {
+  includeFailedTx?: boolean;
+}
+
+export interface SubqlCosmosMessageFilter extends SubqlCosmosTxFilter {
   type: string;
   contractCall?: string;
   values?: {

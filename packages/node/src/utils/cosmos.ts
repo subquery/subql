@@ -17,6 +17,7 @@ import {
   CosmosTransaction,
   CosmosMessage,
   SubqlCosmosBlockFilter,
+  SubqlCosmosTxFilter,
 } from '@subql/types-cosmos';
 import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
@@ -36,11 +37,28 @@ export function filterBlock(
   return true;
 }
 
+export function filterTx(
+  data: CosmosTransaction,
+  filter?: SubqlCosmosTxFilter,
+): boolean {
+  if ((!filter || !filter.includeFailedTx) && data.tx.code !== 0) {
+    logger.error(`filter out failed tx {${data.hash}}`);
+    return false;
+  }
+  if (filter?.includeFailedTx) {
+    return true;
+  }
+  return true;
+}
+
 export function filterMessageData(
   data: CosmosMessage,
   filter?: SubqlCosmosMessageFilter,
 ): boolean {
   if (!filter) return true;
+  if (!filterTx(data.tx, filter)) {
+    return false;
+  }
   if (filter.type !== data.msg.typeUrl) {
     return false;
   }
