@@ -3,7 +3,7 @@
 
 import { Injectable } from '@nestjs/common';
 import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
-import { ApiService, getLogger } from '@subql/common-node';
+import { ApiService, getLogger } from '@subql/node-core';
 import { AvalancheApi } from './api.avalanche';
 
 const logger = getLogger('api');

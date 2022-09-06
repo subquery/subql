@@ -5,9 +5,8 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { getLogger, NestLogger } from '../../utils/logger';
+import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
 import { IndexerManager } from '../indexer.manager';
-import { registerWorker } from './worker.builder';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
@@ -22,21 +21,28 @@ let workerService: WorkerService;
 const logger = getLogger(`worker #${threadId}`);
 
 async function initWorker(): Promise<void> {
-  if (app) {
-    logger.warn('Worker already initialised');
-    return;
+  try {
+    if (app) {
+      logger.warn('Worker already initialised');
+      return;
+    }
+
+    app = await NestFactory.create(WorkerModule, {
+      logger: new NestLogger(),
+    });
+
+    await app.init();
+
+    const indexerManager = app.get(IndexerManager);
+    // Initialise async services, we do this here rather than in factories so we can capture one off events
+    await indexerManager.start();
+
+    workerService = app.get(WorkerService);
+  } catch (e) {
+    console.log('Failed to start worker', e);
+    logger.error(e, 'Failed to start worker');
+    throw e;
   }
-
-  app = await NestFactory.create(WorkerModule, {
-    logger: new NestLogger(),
-  });
-
-  await app.init();
-
-  const indexerManager = app.get(IndexerManager);
-  await indexerManager.start();
-
-  workerService = app.get(WorkerService);
 }
 
 async function fetchBlock(height: number): Promise<FetchBlockResponse> {
@@ -88,3 +94,8 @@ export type ProcessBlock = typeof processBlock;
 export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
 export type GetWorkerStatus = typeof getStatus;
+
+process.on('uncaughtException', (e) => {
+  logger.error(e, 'Uncaught Exception');
+  throw e;
+});

@@ -2175,6 +2175,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/event-emitter@npm:^1.3.0":
+  version: 1.3.1
+  resolution: "@nestjs/event-emitter@npm:1.3.1"
+  dependencies:
+    eventemitter2: 6.4.6
+  peerDependencies:
+    "@nestjs/common": ^7.0.0 || ^8.0.0 || ^9.0.0
+    "@nestjs/core": ^7.0.0 || ^8.0.0 || ^9.0.0
+    reflect-metadata: ^0.1.12
+  checksum: fd4b8f2ec6ff8f2aa5dce41d5bc4492ab22af908e42eff3b21978c929514ce816649ca1f077255171a8a586db731d0268b171a2e909f64dda7d6f2598b75a6fe
+  languageName: node
+  linkType: hard
+
 "@nestjs/platform-express@npm:^8.2.6":
   version: 8.4.4
   resolution: "@nestjs/platform-express@npm:8.4.4"
@@ -2900,43 +2913,19 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common-node@npm:dev":
-  version: 0.0.4-0
-  resolution: "@subql/common-node@npm:0.0.4-0"
-  dependencies:
-    "@subql/common": 0.22.0
-    "@subql/types-avalanche": 0.0.3-0
-    "@subql/utils": 0.0.1-0
-  checksum: 851cd055911038f0dfa3475037736512fc3296d681e9518d2df23fa87f506ce5671874e75310342baedcdc8cbdfe20b905cc478cf077b2df7458cbcef29d882b
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:0.22.0":
-  version: 0.22.0
-  resolution: "@subql/common@npm:0.22.0"
+"@subql/common@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@subql/common@npm:1.4.0"
   dependencies:
     axios: ^0.27.2
     class-transformer: 0.5.1
     class-validator: ^0.13.2
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.3.5
-  checksum: 58259f15f19cae5f3a2aab3de8d8a6eba54c681960e32c9e83bfe7dcede185734ddd28e71518939fad35df83c9ef18b426ac7b224331b9468918ad401926f698
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:dev":
-  version: 1.2.3-0
-  resolution: "@subql/common@npm:1.2.3-0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: 0.5.1
-    class-validator: ^0.13.2
+    fs-extra: ^10.1.0
     ipfs-http-client: ^52.0.3
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 6ac19cb28302de74ad153f9f0a2dfdde646184f1c71c25f2ca1f2675506af1f3086ce5e05a8706be6db7448f5a7161b5109b9b8057f1b6e55072ec382fc80bdd
+  checksum: b53a929c70586c26433488a2360f2df8da740f2121068f4def73934c0b28298a30676376b4f32f15df3515c5c71e812ce2ae0a36a0e12149580262868b856fdc
   languageName: node
   linkType: hard
 
@@ -2966,11 +2955,11 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": dev
+    "@subql/common": latest
     "@subql/common-avalanche": "workspace:*"
-    "@subql/common-node": dev
+    "@subql/node-core": latest
     "@subql/types-avalanche": "workspace:*"
-    "@subql/utils": 0.1.0
+    "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.1
     "@subql/x-vm2": ^3.9.3-0.1.0
     "@types/app-module-path": ^2.2.0
@@ -3009,12 +2998,24 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types-avalanche@npm:0.0.3-0":
-  version: 0.0.3-0
-  resolution: "@subql/types-avalanche@npm:0.0.3-0"
-  peerDependencies:
-    "@polkadot/api": ^8
-  checksum: bbac8b83fb42ddee4ba33eaebae9250f62b12692fb1829eea2a6058715c822bf86478e52b898f51050c25abe1c783cd7f015c3035aceaa64a4eede141fb7b8e4
+"@subql/node-core@npm:latest":
+  version: 0.1.1
+  resolution: "@subql/node-core@npm:0.1.1"
+  dependencies:
+    "@nestjs/common": ^8.2.6
+    "@nestjs/event-emitter": ^1.3.0
+    "@nestjs/schedule": ^1.0.2
+    "@polkadot/api": 9.1.1
+    "@subql/common": 1.4.0
+    "@subql/types": 1.4.0
+    "@subql/utils": 1.1.0
+    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
+    "@willsoto/nestjs-prometheus": ^4.4.0
+    lodash: ^4.17.21
+    prom-client: ^14.0.1
+    sequelize: 6.19.0
+    yargs: ^16.2.0
+  checksum: 4f06f5ff10c1fb4a9628ce244a5400dd2fc6471f9b799000777938e9ecd2eb4cc414895d2d529692d5f152551a364d6a4ad73b74f76b0d5501216d6cb2250e99
   languageName: node
   linkType: hard
 
@@ -3030,51 +3031,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/utils@npm:0.0.1-0":
-  version: 0.0.1-0
-  resolution: "@subql/utils@npm:0.0.1-0"
-  dependencies:
-    "@polkadot/util": ^8
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    ipfs-http-client: ^52.0.3
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: ^6.15.0
-    tar: ^6.1.11
-  checksum: 9a37b3a84bd829c0d142ab6e7994533025aa44ac1ddadd35a5d0866be07e9ae1be1318bd258d0aa433b783cefd5b35891172d8545b67cc73a938efb8129fa7da
+"@subql/types@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@subql/types@npm:1.4.0"
+  peerDependencies:
+    "@polkadot/api": ^8
+  checksum: 4a194eccfc9daba612b425970124eefff476fa07bf02ef32e8f2fcbd9d9b13e490a7f2c970fc809b417214d8596b37ef4e854dd8c830f91b3825d2926c78e255
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:0.1.0":
-  version: 0.1.0
-  resolution: "@subql/utils@npm:0.1.0"
-  dependencies:
-    "@polkadot/util": ^9
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    ipfs-http-client: ^52.0.3
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: ^6.15.0
-    tar: ^6.1.11
-  checksum: 149d386689a24dd4a381d6ff7993e8131a5c7b1097c24fa90cc0220fa852989153ac52c53d9d189dd6da99af696ea086b18bcedf8760cdb846fd76acd5197286
-  languageName: node
-  linkType: hard
-
-"@subql/utils@npm:^1.1.0":
+"@subql/utils@npm:1.1.0, @subql/utils@npm:latest":
   version: 1.1.0
   resolution: "@subql/utils@npm:1.1.0"
   dependencies:
@@ -3107,6 +3073,21 @@ __metadata:
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
   checksum: e7286aee9ae657c6952bc7e753253ca80a6f7ce4f12987b4a528b7c8acdedb2e4225484930fb21b2a130a1f11ad95846725de84b18c87ac8cb812b4071cf47c8
+  languageName: node
+  linkType: hard
+
+"@subql/x-merkle-mountain-range@npm:^2.0.0-0.1.2":
+  version: 2.0.0-0.1.2
+  resolution: "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2"
+  dependencies:
+    bignumber.js: ^8.1.1
+    buffer: ^5.4.3
+    js-sha3: ^0.8.0
+    level: ^6.0.0
+    rlp: ^2.2.3
+    semaphore-async-await: ^1.5.1
+    sha.js: ^2.4.11
+  checksum: 732eaa8441be71806dd197be6c5811f43bb14a3bc615c7d1be44a638b43ea53a5229d10edff12cf0ceec4ee9ca05938ce3a973dcdf31ce57e12cc30258342429
   languageName: node
   linkType: hard
 
@@ -6821,7 +6802,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fs-extra@npm:10.1.0":
+"fs-extra@npm:10.1.0, fs-extra@npm:^10.1.0":
   version: 10.1.0
   resolution: "fs-extra@npm:10.1.0"
   dependencies:
@@ -11332,7 +11313,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.15.0":
+"sequelize@npm:6.19.0, sequelize@npm:^6.15.0":
   version: 6.19.0
   resolution: "sequelize@npm:6.19.0"
   dependencies:
@@ -11835,7 +11816,6 @@ __metadata:
     "@actions/core": ^1.6.0
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
-    "@subql/utils": ^1.1.0
     "@types/node": ^14.18.10
     "@typescript-eslint/eslint-plugin": ^5.10.2
     "@typescript-eslint/parser": ^5.10.2

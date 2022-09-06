@@ -57,7 +57,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     block: AvalancheBlock,
     filter: AvalancheBlockFilter,
   ): boolean {
-    if (filter.modulo && block.number % filter.modulo !== 0) {
+    if (filter?.modulo && block.number % filter.modulo !== 0) {
       return false;
     }
     return true;
@@ -68,6 +68,7 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     filter: AvalancheTransactionFilter,
     address?: string,
   ): boolean {
+    if (!filter) return true;
     if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
       return false;
     }
@@ -94,6 +95,8 @@ export class AvalancheBlockWrapped implements AvalancheBlockWrapper {
     if (address && !stringNormalizedEq(address, log.address)) {
       return false;
     }
+
+    if (!filter) return true;
 
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {

@@ -20,15 +20,15 @@
     "paths": {
       "@subql/common-avalanche": ["packages/common-avalanche/src"],
       "@subql/common-avalanche/*": ["packages/common-avalanche/src/*"],
-      "@subql/types": ["packages/types/src"],
-      "@subql/types/*": ["packages/types/src/*"],
+      "@subql/types-avalanche": ["packages/types-avalanche/src"],
+      "@subql/types-avalanche/*": ["packages/types-avalanche/src/*"],
     },
     "skipLibCheck": true
   },
   "references": [
     {"path": "packages/common-avalanche"},
     {"path": "packages/node"},
-    {"path": "packages/types"},
+    {"path": "packages/types-avalanche"},
   ],
   "include": ["packages/**/*"],
   "exclude": ["**/node_modules/**"],
