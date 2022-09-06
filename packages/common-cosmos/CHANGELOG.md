@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Filter for `includeFailedTx` on Transaction and Message handlers. (#53)
+
 ## [0.0.7] - 2022-07-28
 ### Added
 - Add block modulo filter on cosmos blockHandler. E.g. if modulo: 50, the block handler will run on every 50 blocks. (#43)

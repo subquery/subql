@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Added
+- Filter for `includeFailedTx` on Transaction and Message handlers. This will now exclude failed transactions by default. (#53)
+
 ## [1.9.0] - 2022-09-02
 
 ### Changed
