@@ -3,16 +3,17 @@
 
 import {OnEvent} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
+import {NodeConfig} from '@subql/node-core/configure';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import {IndexerEvent, ProcessBlockPayload, ProcessedBlockCountPayload, TargetBlockPayload} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
-import {getYargsOption} from '../yargs';
+
+// import {getYargsOption} from '../yargs';
 
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
-const {argv} = getYargsOption();
 dayjs.extend(duration);
 
 export class BenchmarkService {
@@ -25,6 +26,8 @@ export class BenchmarkService {
 
   private currentProcessedBlockAmount: number;
   private lastProcessedBlockAmount: number;
+
+  private nodeConfig: NodeConfig;
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {
@@ -44,7 +47,7 @@ export class BenchmarkService {
         const days = Math.floor(blockDuration.asDays());
         const durationStr = `${days} days ${hoursMinsStr}`;
 
-        if (argv.profiler) {
+        if (this.nodeConfig.profiler) {
           logger.info(
             `Processed ${
               this.currentProcessedBlockAmount - this.lastProcessedBlockAmount

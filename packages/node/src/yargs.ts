@@ -1,12 +1,21 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {hideBin} from 'yargs/helpers';
+// import {initLogger} from "@subql/node-core"
+import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function getYargsOption() {
-  return yargs(hideBin(process.argv)).options({
+export const yargsOptions = yargs(hideBin(process.argv))
+  .command({
+    command: 'force-clean',
+    handler: (argv) => {
+      console.log('CLI, Hi');
+
+      process.exit(0);
+    },
+  })
+  .options({
     subquery: {
       alias: 'f',
       demandOption: true,
@@ -31,11 +40,6 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
       describe: 'Use local mode',
-    },
-    'force-clean': {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Force clean the database, dropping project schemas and tables',
     },
     'db-schema': {
       demandOption: false,
@@ -71,7 +75,8 @@ export function getYargsOption() {
     },
     debug: {
       demandOption: false,
-      describe: 'Show debug information to console output. will forcefully set log level to debug',
+      describe:
+        'Show debug information to console output. will forcefully set log level to debug',
       type: 'boolean',
       default: false,
     },
@@ -150,26 +155,18 @@ export function getYargsOption() {
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
-    reindex: {
-      demandOption: false,
-      describe: 'Reindex to specified block height',
-      type: 'number',
-    },
     workers: {
       alias: 'w',
       demandOption: false,
-      describe: 'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+      describe:
+        'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
     },
     'query-limit': {
       demandOption: false,
-      describe: 'The limit of items a project can query with store.getByField at once',
+      describe:
+        'The limit of items a project can query with store.getByField at once',
       type: 'number',
       default: 100,
     },
   });
-}
-
-export function argv(arg: string): unknown {
-  return getYargsOption().argv[arg];
-}

@@ -10,7 +10,7 @@ import {
   IConfig,
   MinConfig,
   NodeConfig,
-  getYargsOption,
+  yargsOptions,
   getLogger,
   setLevel,
 } from '@subql/node-core';
@@ -22,7 +22,7 @@ const YargsNameMapping = {
   local: 'localMode',
 };
 
-type Args = ReturnType<typeof getYargsOption>['argv'];
+type Args = typeof yargsOptions.argv['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
@@ -79,7 +79,6 @@ export function validDbSchemaName(name: string): boolean {
 }
 
 function warnDeprecations() {
-  const yargsOptions = getYargsOption();
   const { argv } = yargsOptions;
   if (argv['subquery-name']) {
     logger.warn(
@@ -95,11 +94,10 @@ function warnDeprecations() {
 @Module({})
 export class ConfigureModule {
   static register(): DynamicModule {
-    const yargsOptions = getYargsOption();
     const { argv } = yargsOptions;
     let config: NodeConfig;
     if (argv.config) {
-      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
+      config = NodeConfig.fromFile(argv.config, argv);
     } else {
       if (!argv.subquery) {
         logger.error(
