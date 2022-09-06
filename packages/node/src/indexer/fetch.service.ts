@@ -133,7 +133,7 @@ export class FetchService implements OnApplicationShutdown {
       await this.dynamicDsService.getDynamicDatasources();
   }
 
-  getDictionaryQueryEntries(): DictionaryQueryEntry[] {
+  async getDictionaryQueryEntries(): Promise<DictionaryQueryEntry[]> {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter(
@@ -155,7 +155,7 @@ export class FetchService implements OnApplicationShutdown {
         if (isCustomDs(ds)) {
           const processor = plugin.handlerProcessors[handler.kind];
           if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(
+            const queryEntry = await processor.dictionaryQuery(
               (handler as SubstrateCustomHandler).filter,
               ds,
             );
@@ -216,8 +216,8 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  updateDictionary(): void {
-    this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
+  async updateDictionary(): Promise<void> {
+    this.dictionaryQueryEntries = await this.getDictionaryQueryEntries();
     this.useDictionary =
       !!this.dictionaryQueryEntries?.length &&
       !!this.project.network.dictionary;
