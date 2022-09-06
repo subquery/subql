@@ -9,6 +9,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+### Changed
+- change types to support wasm processor (#1280)
+
 ## [1.4.0] - 2022-08-26
 
 ### Changed
