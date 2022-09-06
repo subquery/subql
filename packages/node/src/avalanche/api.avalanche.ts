@@ -75,7 +75,9 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
 
     assert(options.endpoint, 'Network endpoint not provided');
 
-    const { hostname, pathname, port, protocol } = new URL(options.endpoint);
+    const { hostname, pathname, port, protocol, searchParams } = new URL(
+      options.endpoint,
+    );
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 
@@ -91,11 +93,19 @@ export class AvalancheApi implements ApiWrapper<AvalancheBlockWrapper> {
     this.client.setRequestConfig('httpAgent', httpAgent as any);
     this.client.setRequestConfig('httpsAgent', httpsAgent as any);
 
+    if (searchParams.get('apikey')) {
+      // OnFinality supports api key via params or `apikey` header, but the api doesn't support params so we convert to header
+      this.client.setHeader('apikey', searchParams.get('apikey'));
+      // Support for other potential api providers
+      this.client.setAuthToken(searchParams.get('apikey'));
+    }
+
     if (this.options.token) {
       this.client.setAuthToken(this.options.token);
     }
     this.indexApi = this.client.Index();
     this.cchain = this.client.CChain();
+
     switch (this.options.subnet) {
       case 'XV':
         this.baseUrl = '/ext/index/X/vtx';

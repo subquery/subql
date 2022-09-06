@@ -100,8 +100,6 @@ function callFilterToQueryEntry(
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
-  private latestProcessedHeight: number;
-  private latestBufferedHeight: number;
   private isShutdown = false;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
@@ -114,7 +112,6 @@ export class FetchService implements OnApplicationShutdown {
     private project: SubqueryProject,
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
-    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
@@ -265,10 +262,6 @@ export class FetchService implements OnApplicationShutdown {
     } catch (e) {
       logger.error(e, `Having a problem when get best block`);
     }
-  }
-
-  latestProcessed(height: number): void {
-    this.latestProcessedHeight = height;
   }
 
   async startLoop(initBlockHeight: number): Promise<void> {

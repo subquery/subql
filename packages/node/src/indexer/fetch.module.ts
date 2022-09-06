@@ -3,16 +3,14 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { SchedulerRegistry } from '@nestjs/schedule';
 import {
-  ApiService,
   BenchmarkService,
   MmrService,
   StoreService,
   PoiService,
   getYargsOption,
   DbModule,
-  NodeConfig,
+  ApiService,
 } from '@subql/node-core';
 import { AvalancheApiService } from '../avalanche';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -26,7 +24,6 @@ import { SandboxService } from './sandbox.service';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
-  IBlockDispatcher,
 } from './worker/block-dispatcher.service';
 const { argv } = getYargsOption();
 
@@ -51,49 +48,7 @@ const { argv } = getYargsOption();
         ? WorkerBlockDispatcherService
         : BlockDispatcherService,
     },
-    {
-      provide: FetchService,
-      useFactory: async (
-        apiService: ApiService,
-        nodeConfig: NodeConfig,
-        project: SubqueryProject,
-        blockDispatcher: IBlockDispatcher,
-        dictionaryService: DictionaryService,
-        dsProcessorService: DsProcessorService,
-        eventEmitter: EventEmitter2,
-        projectService: ProjectService,
-        dynamicDsService: DynamicDsService,
-        schedulerRegistry: SchedulerRegistry,
-      ) => {
-        await projectService.init();
-
-        const fetchService = new FetchService(
-          apiService,
-          nodeConfig,
-          project,
-          blockDispatcher,
-          dictionaryService,
-          dsProcessorService,
-          dynamicDsService,
-          eventEmitter,
-          schedulerRegistry,
-        );
-
-        await fetchService.init(projectService.startHeight);
-        return fetchService;
-      },
-      inject: [
-        ApiService,
-        SubqueryProject,
-        'IBlockDispatcher',
-        DictionaryService,
-        DsProcessorService,
-        EventEmitter2,
-        ProjectService,
-        DynamicDsService,
-        SchedulerRegistry,
-      ],
-    },
+    FetchService,
     BenchmarkService,
     DictionaryService,
     SandboxService,

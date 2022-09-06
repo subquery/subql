@@ -20,34 +20,30 @@ import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';
 
-const ApiServiceProvider = {
-  provide: ApiService,
-  useFactory: async (project: SubqueryProject) => {
-    const apiService = new AvalancheApiService(project);
-    await apiService.init();
-    return apiService;
-  },
-  inject: [SubqueryProject],
-};
-
-const BaseProvider = [
-  IndexerManager,
-  StoreService,
-  FetchService,
-  ApiServiceProvider,
-  DictionaryService,
-  SandboxService,
-  DsProcessorService,
-  DynamicDsService,
-  PoiService,
-  MmrService,
-  ProjectService,
-  WorkerService,
-];
-
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  providers: BaseProvider,
+  providers: [
+    IndexerManager,
+    StoreService,
+    FetchService,
+    {
+      provide: ApiService,
+      useFactory: async (project: SubqueryProject) => {
+        const apiService = new AvalancheApiService(project);
+        await apiService.init();
+        return apiService;
+      },
+      inject: [SubqueryProject],
+    },
+    DictionaryService,
+    SandboxService,
+    DsProcessorService,
+    DynamicDsService,
+    PoiService,
+    MmrService,
+    ProjectService,
+    WorkerService,
+  ],
   exports: [StoreService],
 })
 export class IndexerModule {}

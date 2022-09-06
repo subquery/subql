@@ -119,14 +119,17 @@ export class BlockDispatcherService
 
     const { argv } = getYargsOption();
 
+    const fetchBlocks = this.apiService.api.fetchBlocks.bind(
+      this.apiService.api,
+    );
     if (argv.profiler) {
       this.fetchBlocksBatches = profilerWrap(
-        this.apiService.api.fetchBlocks,
+        fetchBlocks,
         'AvalancheUtil',
         'fetchBlocksBatches',
       );
     } else {
-      this.fetchBlocksBatches = this.apiService.api.fetchBlocks;
+      this.fetchBlocksBatches = fetchBlocks;
     }
   }
 
