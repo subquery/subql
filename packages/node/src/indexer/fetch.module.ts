@@ -7,7 +7,7 @@ import {
   MmrService,
   StoreService,
   PoiService,
-  getYargsOption,
+  NodeConfig,
   DbModule,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
@@ -23,7 +23,7 @@ import {
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
 
-const { argv } = getYargsOption();
+// const { argv } = getYargsOption();
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],

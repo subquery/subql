@@ -33,6 +33,7 @@ export interface IConfig {
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
   readonly workers?: number;
+  readonly profiler?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -152,6 +153,10 @@ export class NodeConfig implements IConfig {
 
   get workers(): number {
     return this._config.workers;
+  }
+
+  get profiler(): boolean {
+    return this._config.profiler;
   }
 
   merge(config: Partial<IConfig>): this {

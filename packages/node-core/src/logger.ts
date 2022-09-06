@@ -1,21 +1,26 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { isMainThread, threadId } from 'node:worker_threads';
-import { LoggerService } from '@nestjs/common';
-import { Logger } from '@subql/utils';
+import {isMainThread, threadId} from 'node:worker_threads';
+import {LoggerService} from '@nestjs/common';
+import {Logger} from '@subql/utils';
 import Pino from 'pino';
-import { argv } from './yargs';
+import {NodeConfig} from './configure/NodeConfig';
+// import { argv } from './yargs';
 
-const outputFmt = argv('output-fmt') as 'json' | 'colored';
-const debug = argv('debug');
-const logLevel = argv('log-level') as string | undefined;
+// const outputFmt = argv('output-fmt') as 'json' | 'colored';
+// const debug = argv('debug');
+// const logLevel = argv('log-level') as string | undefined;
 
-const logger = new Logger({
-  level: debug ? 'debug' : logLevel,
-  outputFormat: outputFmt,
-  nestedKey: 'payload',
-});
+let logger: Logger;
+
+export function initLogger(debug: boolean, outputFmt: 'json' | 'colored', logLevel: string | undefined): void {
+  logger = new Logger({
+    level: debug ? 'debug' : logLevel,
+    outputFormat: outputFmt,
+    nestedKey: 'payload',
+  });
+}
 
 export function getLogger(category: string): Pino.Logger {
   return logger.getLogger(category);
@@ -26,13 +31,13 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 }
 
 export class NestLogger implements LoggerService {
-  private logger = logger.getLogger(
-    `nestjs${isMainThread ? '-0' : `-#${threadId}`}`,
-  );
+  constructor(private nodeConfig: NodeConfig) {}
+
+  private logger = logger.getLogger(`nestjs${isMainThread ? '-0' : `-#${threadId}`}`);
 
   error(message: any, trace?: string): void {
     if (trace) {
-      this.logger.error({ trace }, message);
+      this.logger.error({trace}, message);
     } else {
       this.logger.error(message);
     }
