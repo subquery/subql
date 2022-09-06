@@ -70,7 +70,6 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-
     this.api = this.apiService.getApi();
   }
 
@@ -338,7 +337,6 @@ export class IndexerManager {
     ) => boolean,
   ): SubstrateCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
-
     return ds.mapping.handlers
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
@@ -348,11 +346,10 @@ export class IndexerManager {
         }
         return false;
       })
-      .filter((handler) => {
+      .filter(async (handler) => {
         const processor = asSecondLayerHandlerProcessor_1_0_0(
           plugin.handlerProcessors[handler.kind],
         );
-
         try {
           return processor.filterProcessor({
             filter: handler.filter,
@@ -374,7 +371,6 @@ export class IndexerManager {
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
-
     const processor = asSecondLayerHandlerProcessor_1_0_0(
       plugin.handlerProcessors[handler.kind],
     );
