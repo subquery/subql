@@ -3024,10 +3024,10 @@ __metadata:
   resolution: "@subql/types-avalanche@workspace:packages/types-avalanche"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
-    "@polkadot/api": ^8
+    "@polkadot/api": ^9
     "@types/app-module-path": ^2.2.0
   peerDependencies:
-    "@polkadot/api": ^8
+    "@polkadot/api": ^9
   languageName: unknown
   linkType: soft
 
