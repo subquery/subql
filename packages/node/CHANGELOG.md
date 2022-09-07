@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1] - 2022-09-08
 ### Fixed
 - Fix issue with chain id being compared to genesis hash. (#8)
 
