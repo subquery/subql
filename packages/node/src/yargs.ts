@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // import {initLogger} from "@subql/node-core"
+import { initLogger } from '@subql/node-core/src/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -11,8 +12,14 @@ export const yargsOptions = yargs(hideBin(process.argv))
     command: 'force-clean',
     handler: (argv) => {
       console.log('CLI, Hi');
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFormat as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
 
-      process.exit(0);
+      const subcommandInit = require('./subcommandInit');
+      return subcommandInit.subcommandInit();
     },
   })
   .options({

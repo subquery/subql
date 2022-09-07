@@ -20,6 +20,7 @@ import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { yargsOptions } from '../yargs';
 
 export type SpecVersion = {
   id: string;
@@ -116,8 +117,6 @@ function buildDictQueryFragment(
   return [gqlVars, node];
 }
 
-let localNodeConfig: NodeConfig;
-
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
@@ -127,7 +126,6 @@ export class DictionaryService implements OnApplicationShutdown {
     protected project: SubqueryProject,
     private nodeConfig: NodeConfig,
   ) {
-    localNodeConfig = this.nodeConfig;
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -155,7 +153,7 @@ export class DictionaryService implements OnApplicationShutdown {
    */
 
   // TODO: fix
-  @profiler(localNodeConfig.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async getDictionary(
     startBlock: number,
     queryEndBlock: number,

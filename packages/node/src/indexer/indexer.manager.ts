@@ -23,7 +23,6 @@ import {
   PoiService,
   SubqueryRepo,
   NodeConfig,
-  // getYargsOption,
   getLogger,
   profiler,
   profilerWrap,
@@ -36,6 +35,7 @@ import {
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -49,8 +49,7 @@ import { ApiAt, BlockContent } from './types';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
-// const { argv } = getYargsOption();
-let localNodeConfig: NodeConfig;
+// let localNodeConfig: NodeConfig;
 
 @Injectable()
 export class IndexerManager {
@@ -72,11 +71,11 @@ export class IndexerManager {
   ) {
     logger.info('indexer manager start');
 
-    localNodeConfig = this.nodeConfig;
+    // localNodeConfig = this.nodeConfig;
     this.api = this.apiService.getApi();
   }
 
-  @profiler(localNodeConfig.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
@@ -287,7 +286,7 @@ export class IndexerManager {
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
-        localNodeConfig.profiler
+        this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
               'handlerPerformance',
