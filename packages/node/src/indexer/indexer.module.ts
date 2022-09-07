@@ -14,7 +14,6 @@ import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
@@ -25,7 +24,6 @@ import { WorkerService } from './worker/worker.service';
   providers: [
     IndexerManager,
     StoreService,
-    FetchService,
     {
       provide: ApiService,
       useFactory: async (project: SubqueryProject) => {

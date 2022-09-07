@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   ApiService,
@@ -53,7 +52,6 @@ export class IndexerManager {
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
