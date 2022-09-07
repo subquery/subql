@@ -1,10 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getLogger, initLogger } from '@subql/node-core';
+// import { NestFactory } from '@nestjs/core';
+// import { findAvailablePort } from '@subql/common';
+import { initLogger } from '@subql/node-core/dist/logger';
+// import { AppModule } from './app.module';
+// import {bootstrap} from "./init";
+// import { ApiService } from './indexer/api.service';
+// import { FetchService } from './indexer/fetch.service';
+// import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
-
-//
 
 const { argv } = yargsOptions;
 
@@ -14,22 +19,12 @@ initLogger(
   argv.logLevel as string | undefined,
 );
 
-const logger = getLogger('test');
+const { bootstrap } = require('./init');
+void bootstrap();
 
-logger.info('yes HERE !');
-
-// import { NestFactory } from '@nestjs/core';
-// import { findAvailablePort } from '@subql/common';
-// import { getYargsOption, getLogger, NestLogger } from '@subql/node-core';
-// import { AppModule } from './app.module';
-// import { ApiService } from './indexer/api.service';
-// import { FetchService } from './indexer/fetch.service';
-// import { ProjectService } from './indexer/project.service';
+// const subcommandInit = require('./subcommandInit')
 //
-// const DEFAULT_PORT = 3000;
-// const logger = getLogger('subql-node');
-// const { argv } = getYargsOption();
-//
+// void subcommandInit();
 // async function bootstrap() {
 //   const debug = argv.debug;
 //

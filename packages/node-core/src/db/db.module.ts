@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DynamicModule, Global} from '@nestjs/common';
-import {NodeConfig} from '@subql/node-core/configure';
 import {Sequelize, Options as SequelizeOption} from 'sequelize';
+import {NodeConfig} from '../configure/NodeConfig';
 import * as entities from '../entities';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
@@ -67,7 +67,7 @@ export class DbModule {
                   : false,
               },
               nodeConfig.migrate
-            ),
+            )(),
           inject: [NodeConfig],
         },
       ],
@@ -81,7 +81,10 @@ export class DbModule {
       providers: models.map((model) => ({
         provide: model,
         inject: [Sequelize],
-        useFactory: (sequelize: Sequelize) => sequelize.model(model),
+        useFactory: (sequelize: Sequelize) => {
+          console.log('heheh', sequelize);
+          return sequelize.model(model);
+        },
       })),
       exports: models,
     };

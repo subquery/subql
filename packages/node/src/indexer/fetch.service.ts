@@ -41,6 +41,7 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -87,8 +88,6 @@ function callFilterToQueryEntry(
   };
 }
 
-let localNodeConfig: NodeConfig;
-
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
@@ -114,7 +113,6 @@ export class FetchService implements OnApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry,
   ) {
     this.batchSizeScale = 1;
-    localNodeConfig = this.nodeConfig;
   }
 
   onApplicationShutdown(): void {
@@ -510,7 +508,7 @@ export class FetchService implements OnApplicationShutdown {
     return this.currentRuntimeVersion;
   }
 
-  @profiler(localNodeConfig.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async specChanged(height: number): Promise<boolean> {
     const specVersion = await this.getSpecVersion(height);
     if (this.parentSpecVersion !== specVersion) {
@@ -521,7 +519,7 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  @profiler(localNodeConfig.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (

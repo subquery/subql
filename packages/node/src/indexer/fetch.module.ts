@@ -23,8 +23,6 @@ import {
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
 
-// const { argv } = getYargsOption();
-
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
@@ -37,6 +35,7 @@ import {
         nodeConfig.workers
           ? WorkerBlockDispatcherService
           : BlockDispatcherService,
+      inject: [NodeConfig],
     },
     FetchService,
     BenchmarkService,
