@@ -20,6 +20,7 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { ProjectService } from './project.service';
 import { BlockContent } from './types';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
@@ -261,6 +262,15 @@ function testSubqueryProjectV0_2_0(): SubqueryProject {
   };
 }
 
+function mockProjectService(): ProjectService {
+  return {
+    blockOffset: 1,
+    getProcessedBlockCount: jest.fn(() => Promise.resolve(0)),
+    upsertMetadataBlockOffset: jest.fn(),
+    setBlockOffset: jest.fn(),
+  } as any;
+}
+
 function createFetchService(
   apiService = mockApiService(),
   indexerManager: IndexerManager,
@@ -287,7 +297,7 @@ function createFetchService(
       nodeConfig,
       indexerManager,
       eventEmitter,
-      null,
+      mockProjectService(),
     ),
     dictionaryService,
     dsProcessorService,
@@ -450,7 +460,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      null,
+      mockProjectService(),
     );
     fetchService = new FetchService(
       apiService,
@@ -534,7 +544,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      null,
+      mockProjectService(),
     );
     fetchService = new FetchService(
       apiService,
@@ -611,7 +621,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      null,
+      mockProjectService(),
     );
     fetchService = new FetchService(
       apiService,
