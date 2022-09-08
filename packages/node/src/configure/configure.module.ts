@@ -98,7 +98,7 @@ export class ConfigureModule {
     const { argv } = yargsOptions;
     let config: NodeConfig;
     if (argv.config) {
-      config = NodeConfig.fromFile(argv.config, argv);
+      config = NodeConfig.fromFile(argv.config, yargsToIConfig(argv));
     } else {
       if (!argv.subquery) {
         logger.error(

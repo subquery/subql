@@ -49,7 +49,6 @@ import { ApiAt, BlockContent } from './types';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
-// let localNodeConfig: NodeConfig;
 
 @Injectable()
 export class IndexerManager {
@@ -71,7 +70,6 @@ export class IndexerManager {
   ) {
     logger.info('indexer manager start');
 
-    // localNodeConfig = this.nodeConfig;
     this.api = this.apiService.getApi();
   }
 

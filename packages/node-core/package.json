@@ -16,6 +16,12 @@
     "src/global.d.ts",
     "/dist"
   ],
+  "exports": {
+    "./logger": {
+      "nodemon": "./src/logger",
+      "subql": "./dist/logger.js"
+    }
+  },
   "dependencies": {
     "@nestjs/common": "^8.2.6",
     "@nestjs/event-emitter": "^1.3.0",
