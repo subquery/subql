@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { initLogger } from '@subql/node-core/src/logger';
+import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -16,6 +16,8 @@ export const yargsOptions = yargs(hideBin(process.argv))
         argv.logLevel as string | undefined,
       );
 
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { forceCleanInit } = require('./subcommands/forceClean.init');
       return forceCleanInit();
     },
@@ -175,3 +177,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       default: 100,
     },
   });
+
+// export function yargsArgv(arg: string ): unknown {
+//   return
+// }

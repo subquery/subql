@@ -141,7 +141,6 @@ export class DictionaryService implements OnApplicationShutdown {
    * @param conditions
    */
 
-  // TODO: fix
   @profiler(yargsOptions.argv.profiler)
   async getDictionary(
     startBlock: number,

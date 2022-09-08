@@ -128,7 +128,7 @@ export class BlockDispatcherService
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
-    if (nodeConfig.profiler) {
+    if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         SubstrateUtil.fetchBlocksBatches,
         'SubstrateUtil',

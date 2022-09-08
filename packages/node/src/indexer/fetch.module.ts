@@ -7,9 +7,10 @@ import {
   MmrService,
   StoreService,
   PoiService,
-  NodeConfig,
+  // NodeConfig,
   DbModule,
 } from '@subql/node-core';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -23,6 +24,8 @@ import {
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
 
+const { argv } = yargsOptions;
+
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
@@ -31,11 +34,14 @@ import {
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      useFactory: (nodeConfig: NodeConfig) =>
-        nodeConfig.workers
-          ? WorkerBlockDispatcherService
-          : BlockDispatcherService,
-      inject: [NodeConfig],
+      // useFactory: (nodeConfig: NodeConfig) =>
+      //   nodeConfig.workers !== undefined
+      //     ? WorkerBlockDispatcherService
+      //     : BlockDispatcherService,
+      // inject: [NodeConfig, WorkerBlockDispatcherService, BlockDispatcherService],
+      useClass: argv.workers
+        ? WorkerBlockDispatcherService
+        : BlockDispatcherService,
     },
     FetchService,
     BenchmarkService,

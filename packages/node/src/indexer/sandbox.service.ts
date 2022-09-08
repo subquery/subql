@@ -50,6 +50,7 @@ export class Sandbox extends NodeVM {
     readonly nodeConfig?: NodeConfig,
   ) {
     super(
+      // TOOD: fix nodeConfig
       merge(DEFAULT_OPTION(nodeConfig), {
         require: {
           root: option.root,
