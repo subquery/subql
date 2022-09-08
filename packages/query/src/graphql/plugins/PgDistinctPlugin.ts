@@ -32,7 +32,7 @@ export const PgDistinctPlugin: Plugin = (builder) => {
         const entityEnumValues: Record<string, {value: number}> = {};
         cls?.attributes?.forEach((attr, index) => {
           if (attr.name.indexOf('_') !== 0) {
-            entityEnumValues[attr.name] = {value: index};
+            entityEnumValues[attr.name.toUpperCase()] = {value: index};
           }
         });
 
@@ -75,7 +75,8 @@ export const PgDistinctPlugin: Plugin = (builder) => {
       addArgDataGenerator(({distinct}) => ({
         pgQuery: (queryBuilder: QueryBuilder) => {
           distinct?.map((field: number) => {
-            const {name: fieldName} = enumType.getValues()[field];
+            const {name} = enumType.getValues()[field];
+            const fieldName = name.toLowerCase();
             if (!pgFieldIntrospection?.attributes?.map((a) => a.name).includes(fieldName)) {
               console.warn(`Distinct field ${fieldName} doesn't exist on entity ${pgFieldIntrospection?.name}`);
 
