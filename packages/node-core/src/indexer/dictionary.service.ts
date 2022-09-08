@@ -27,6 +27,8 @@ export type SpecVersionDictionary = {
 
 const logger = getLogger('dictionary');
 
+const distinctErrorEscaped = `Unknown argument \\"distinct\\"`;
+
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   let gqlType: string;
   switch (typeof cond.value) {
@@ -96,7 +98,8 @@ function buildDictQueryFragment(
   startBlock: number,
   queryEndBlock: number,
   conditions: DictionaryQueryCondition[][],
-  batchSize: number
+  batchSize: number,
+  useDistinct: boolean,
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
 
@@ -120,6 +123,11 @@ function buildDictQueryFragment(
       first: batchSize.toString(),
     },
   };
+
+  if (useDistinct) {
+    node.args.distinct = ['BLOCK_HEIGHT'];
+  }
+
   return [gqlVars, node];
 }
 
@@ -128,6 +136,7 @@ export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
   private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
+  private useDistinct = true;
 
   constructor(
     readonly dictionaryEndpoint: string,
@@ -197,6 +206,18 @@ export class DictionaryService implements OnApplicationShutdown {
         batchBlocks,
       };
     } catch (err) {
+      // Check if the error is about distinct argument and disable distinct if so
+      if (JSON.stringify(err).includes(distinctErrorEscaped)) {
+        this.useDistinct = false;
+        logger.warn(`Dictionary doesn't support distinct query.`);
+        // Rerun the qeury now with distinct disabled
+        return this.getDictionary(
+          startBlock,
+          queryEndBlock,
+          batchSize,
+          conditions,
+        );
+      }
       logger.warn(err, `failed to fetch dictionary result`);
       return undefined;
     }
@@ -223,7 +244,7 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize);
+      const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
       nodes.push(node);
       vars.push(...pVars);
     }
