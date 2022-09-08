@@ -7,7 +7,6 @@ import {NodeConfig} from '../configure/NodeConfig';
 import * as entities from '../entities';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
-// import {getYargsOption} from '../yargs';
 
 export interface DbOption {
   host: string;
@@ -33,14 +32,13 @@ async function establishConnection(sequelize: Sequelize, numRetries: number): Pr
   }
 }
 
-const sequelizeFactory = (option: SequelizeOption, migrate: any) => async () => {
+const sequelizeFactory = (option: SequelizeOption, migrate: boolean) => async () => {
   const sequelize = new Sequelize(option);
   const numRetries = 5;
   await establishConnection(sequelize, numRetries);
   for (const factoryFn of Object.keys(entities).filter((k) => /Factory$/.exec(k))) {
     entities[factoryFn as keyof typeof entities](sequelize);
   }
-  // const {migrate} = getYargsOption().argv;
   await sequelize.sync({alter: migrate});
   return sequelize;
 };
@@ -48,7 +46,6 @@ const sequelizeFactory = (option: SequelizeOption, migrate: any) => async () => 
 @Global()
 export class DbModule {
   static forRoot(option: DbOption): DynamicModule {
-    // const {argv} = getYargsOption();
     const logger = getLogger('db');
     return {
       module: DbModule,
@@ -81,10 +78,7 @@ export class DbModule {
       providers: models.map((model) => ({
         provide: model,
         inject: [Sequelize],
-        useFactory: (sequelize: Sequelize) => {
-          console.log('heheh', sequelize);
-          return sequelize.model(model);
-        },
+        useFactory: (sequelize: Sequelize) => sequelize.model(model),
       })),
       exports: models,
     };

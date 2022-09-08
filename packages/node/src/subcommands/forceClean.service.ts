@@ -6,11 +6,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { getLogger, NodeConfig, SubqueryRepo } from '@subql/node-core';
 import { QueryTypes, Sequelize } from 'sequelize';
 
-const logger = getLogger('Subcommand');
+const logger = getLogger('Force-clean');
 const DEFAULT_DB_SCHEMA = 'public';
 
 @Injectable()
-export class SubcommandService {
+export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -46,14 +46,6 @@ export class SubcommandService {
     return schema;
   }
 
-  // async getLastProcessedHeight(): Promise<number | undefined> {
-  //     const res = await this.metadataRepo.findOne({
-  //         where: { key: 'lastProcessedHeight' },
-  //     });
-  //
-  //     return res?.value as number | undefined;
-  // }
-  //
   async forceClean(): Promise<void> {
     const schema = await this.getExistingProjectSchema();
     try {
@@ -84,34 +76,4 @@ export class SubcommandService {
       logger.error(err, 'failed to force clean');
     }
   }
-
-  // async reindex (targetBlockHeight: number ): Promise<void> {
-  //
-  //       const lastProcessedHeight = await this.getLastProcessedHeight();
-  //       if (!this.storeService.historical) {
-  //         logger.warn('Unable to reindex, historical state not enabled');
-  //         return;
-  //       }
-  //       if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
-  //         logger.warn(
-  //           `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
-  //         );
-  //         return;
-  //       }
-  //       logger.info(`Reindexing to block: ${targetBlockHeight}`);
-  //       const transaction = await this.sequelize.transaction();
-  //       try {
-  //         await this.storeService.rewind(argv.reindex, transaction);
-  //
-  //         const blockOffset = await this.getMetadataBlockOffset();
-  //         if (blockOffset) {
-  //           await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
-  //         }
-  //         await transaction.commit();
-  //       } catch (err) {
-  //         logger.error(err, 'Reindexing failed');
-  //         await transaction.rollback();
-  //         throw err;
-  //       }
-  // }
 }

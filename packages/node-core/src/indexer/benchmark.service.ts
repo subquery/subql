@@ -10,8 +10,6 @@ import {IndexerEvent, ProcessBlockPayload, ProcessedBlockCountPayload, TargetBlo
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
 
-// import {getYargsOption} from '../yargs';
-
 const SAMPLING_TIME_VARIANCE = 15;
 const logger = getLogger('benchmark');
 dayjs.extend(duration);

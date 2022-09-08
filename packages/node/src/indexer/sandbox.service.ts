@@ -7,13 +7,7 @@ import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
 } from '@subql/common-substrate';
-import {
-  timeout,
-  NodeConfig,
-  StoreService,
-  // getYargsOption,
-  getLogger,
-} from '@subql/node-core';
+import { timeout, NodeConfig, StoreService, getLogger } from '@subql/node-core';
 import { Store } from '@subql/types';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
@@ -22,8 +16,6 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
 import { ApiService } from './api.service';
 import { ApiAt } from './types';
-
-// const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;

@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
 import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -30,7 +29,6 @@ const { version: packageVersion } = require('../../package.json');
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('Project');
-// const { argv } = getYargsOption();
 
 @Injectable()
 export class ProjectService {
@@ -82,9 +80,9 @@ export class ProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
-      // if (argv.reindex !== undefined) {
-      //   await this.reindex(argv.reindex);
-      // }
+      if (this.nodeConfig.reindex !== undefined) {
+        await this.reindex(this.nodeConfig.reindex);
+      }
     } else {
       this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
@@ -107,39 +105,6 @@ export class ProjectService {
     if (!schema) {
       schema = await this.createProjectSchema();
     }
-    //   else {
-    //   if (argv['force-clean']) {
-    //     try {
-    //       // drop existing project schema and metadata table
-    //       await this.sequelize.dropSchema(`"${schema}"`, {
-    //         logging: false,
-    //         benchmark: false,
-    //       });
-    //
-    //       // remove schema from subquery table (might not exist)
-    //       await this.sequelize.query(
-    //         ` DELETE
-    //           FROM public.subqueries
-    //           WHERE name = :name`,
-    //         {
-    //           replacements: { name: this.nodeConfig.subqueryName },
-    //           type: QueryTypes.DELETE,
-    //         },
-    //       );
-    //
-    //       logger.info('force cleaned schema and tables');
-    //
-    //       if (fs.existsSync(this.nodeConfig.mmrPath)) {
-    //         await fs.promises.unlink(this.nodeConfig.mmrPath);
-    //         logger.info('force cleaned file based mmr');
-    //       }
-    //     } catch (err) {
-    //       logger.error(err, 'failed to force clean');
-    //     }
-    //     schema = await this.createProjectSchema();
-    //   }
-    // }
-
     this.eventEmitter.emit(IndexerEvent.Ready, {
       value: true,
     });
@@ -388,32 +353,32 @@ export class ProjectService {
     );
   }
 
-  // private async reindex(targetBlockHeight: number): Promise<void> {
-  //   const lastProcessedHeight = await this.getLastProcessedHeight();
-  //   if (!this.storeService.historical) {
-  //     logger.warn('Unable to reindex, historical state not enabled');
-  //     return;
-  //   }
-  //   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
-  //     logger.warn(
-  //       `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
-  //     );
-  //     return;
-  //   }
-  //   logger.info(`Reindexing to block: ${targetBlockHeight}`);
-  //   const transaction = await this.sequelize.transaction();
-  //   try {
-  //     await this.storeService.rewind(argv.reindex, transaction);
-  //
-  //     const blockOffset = await this.getMetadataBlockOffset();
-  //     if (blockOffset) {
-  //       await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
-  //     }
-  //     await transaction.commit();
-  //   } catch (err) {
-  //     logger.error(err, 'Reindexing failed');
-  //     await transaction.rollback();
-  //     throw err;
-  //   }
-  // }
+  private async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+    if (!this.storeService.historical) {
+      logger.warn('Unable to reindex, historical state not enabled');
+      return;
+    }
+    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
+      logger.warn(
+        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
+      );
+      return;
+    }
+    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.storeService.rewind(this.nodeConfig.reindex, transaction);
+
+      const blockOffset = await this.getMetadataBlockOffset();
+      if (blockOffset) {
+        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+      }
+      await transaction.commit();
+    } catch (err) {
+      logger.error(err, 'Reindexing failed');
+      await transaction.rollback();
+      throw err;
+    }
+  }
 }

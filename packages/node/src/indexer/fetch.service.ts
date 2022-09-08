@@ -26,7 +26,6 @@ import {
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
-  // getYargsOption,
   getLogger,
   profiler,
 } from '@subql/node-core';
@@ -55,8 +54,6 @@ const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
-
-// const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,

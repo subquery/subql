@@ -38,6 +38,7 @@ export interface IConfig {
   readonly unsafe?: boolean;
   readonly subscription: boolean;
   readonly 'disable-historical': boolean;
+  readonly reindex?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -181,6 +182,10 @@ export class NodeConfig implements IConfig {
 
   get 'disable-historical'(): boolean {
     return this._config['disable-historical'];
+  }
+
+  get reindex(): number {
+    return this._config.reindex;
   }
 
   merge(config: Partial<IConfig>): this {

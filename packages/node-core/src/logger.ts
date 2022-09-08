@@ -5,11 +5,6 @@ import {isMainThread, threadId} from 'node:worker_threads';
 import {LoggerService} from '@nestjs/common';
 import {Logger} from '@subql/utils';
 import Pino from 'pino';
-// import { argv } from './yargs';
-
-// const outputFmt = argv('output-fmt') as 'json' | 'colored';
-// const debug = argv('debug');
-// const logLevel = argv('log-level') as string | undefined;
 
 let logger: Logger;
 
