@@ -22,6 +22,7 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
+import { ProjectService } from './project.service';
 import { BlockContent } from './types';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
@@ -74,6 +75,15 @@ function mockIndexerManager(): IndexerManager & {
   } as any;
 }
 
+function mockProjectService(): ProjectService {
+  return {
+    blockOffset: 1,
+    getProcessedBlockCount: jest.fn(() => Promise.resolve(0)),
+    upsertMetadataBlockOffset: jest.fn(),
+    setBlockOffset: jest.fn(),
+  } as any;
+}
+
 jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
@@ -109,7 +119,7 @@ async function createApp(
             nodeConfig,
             indexerManager,
             eventEmitter,
-            null,
+            mockProjectService(),
           ),
         inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
       },

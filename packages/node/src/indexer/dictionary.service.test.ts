@@ -191,6 +191,5 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(project, nodeConfig);
 
     const specVersions = await dictionaryService.getSpecVersions();
-    console.log(specVersions);
   }, 500000);
 });
