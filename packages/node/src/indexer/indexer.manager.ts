@@ -35,6 +35,7 @@ import {
 } from '@subql/types';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { asyncFilter } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import {
@@ -293,7 +294,7 @@ export class IndexerManager {
           : await vm.securedExec(handler.handler, [data]);
       }
     } else if (isCustomDs(ds)) {
-      const handlers = this.filterCustomDsHandlers<K>(
+      const handlers = await this.filterCustomDsHandlers<K>(
         ds,
         data,
         ProcessorTypeMap[kind],
@@ -327,7 +328,7 @@ export class IndexerManager {
     }
   }
 
-  private filterCustomDsHandlers<K extends SubstrateHandlerKind>(
+  private async filterCustomDsHandlers<K extends SubstrateHandlerKind>(
     ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
     data: SubstrateRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
@@ -335,32 +336,31 @@ export class IndexerManager {
       data: SubstrateRuntimeHandlerInputMap[K],
       baseFilter: any,
     ) => boolean,
-  ): SubstrateCustomHandler[] {
+  ): Promise<SubstrateCustomHandler[]> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
-    return ds.mapping.handlers
-      .filter((handler) => {
-        const processor = plugin.handlerProcessors[handler.kind];
-        if (baseHandlerCheck(processor)) {
-          processor.baseFilter;
-          return baseFilter(data, processor.baseFilter);
-        }
-        return false;
-      })
-      .filter(async (handler) => {
-        const processor = asSecondLayerHandlerProcessor_1_0_0(
-          plugin.handlerProcessors[handler.kind],
-        );
-        try {
-          return processor.filterProcessor({
-            filter: handler.filter,
-            input: data,
-            ds,
-          });
-        } catch (e) {
-          logger.error(e, 'Failed to run ds processer filter.');
-          throw e;
-        }
-      });
+    const baseHandlers = ds.mapping.handlers.filter((handler) => {
+      const processor = plugin.handlerProcessors[handler.kind];
+      if (baseHandlerCheck(processor)) {
+        processor.baseFilter;
+        return baseFilter(data, processor.baseFilter);
+      }
+      return false;
+    });
+    return asyncFilter(baseHandlers, async (handler) => {
+      const processor = asSecondLayerHandlerProcessor_1_0_0(
+        plugin.handlerProcessors[handler.kind],
+      );
+      try {
+        return processor.filterProcessor({
+          filter: handler.filter,
+          input: data,
+          ds,
+        });
+      } catch (e) {
+        logger.error(e, 'Failed to run ds processer filter.');
+        throw e;
+      }
+    });
   }
 
   private async transformAndExecuteCustomDs<K extends SubstrateHandlerKind>(
