@@ -45,14 +45,12 @@ import {
   camelCaseObjectKey,
   makeTriggerName,
 } from '../utils';
-// import {getYargsOption} from '../yargs';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-// const {argv} = getYargsOption();
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 const KEY_FIELDS = ['id', '__id', '__block_range'];
 

@@ -15,8 +15,6 @@ const { argv } = yargsOptions;
 const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 
-logger.info('hi');
-
 export async function bootstrap() {
   const debug = argv.debug;
 
