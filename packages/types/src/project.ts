@@ -190,7 +190,7 @@ interface SecondLayerHandlerProcessorBase<
   baseHandlerKind: K;
   baseFilter: RuntimeFilterMap[K] | RuntimeFilterMap[K][];
   filterValidator: (filter?: F) => void;
-  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined | Promise<DictionaryQueryEntry | undefined>;
+  dictionaryQuery?: (filter: F, ds: DS) => DictionaryQueryEntry | undefined;
 }
 
 // only allow one custom handler for each baseHandler kind
@@ -215,11 +215,7 @@ export interface SecondLayerHandlerProcessor_1_0_0<
 > extends SecondLayerHandlerProcessorBase<K, F, DS> {
   specVersion: '1.0.0';
   transformer: HandlerInputTransformer_1_0_0<K, F, E, IT, DS>;
-  filterProcessor: (params: {
-    filter: F | undefined;
-    input: RuntimeHandlerInputMap<IT>[K];
-    ds: DS;
-  }) => boolean | Promise<boolean>;
+  filterProcessor: (params: {filter: F | undefined; input: RuntimeHandlerInputMap<IT>[K]; ds: DS}) => boolean;
 }
 
 export type SecondLayerHandlerProcessor<

@@ -346,7 +346,7 @@ export class IndexerManager {
         }
         return false;
       })
-      .filter(async (handler) => {
+      .filter((handler) => {
         const processor = asSecondLayerHandlerProcessor_1_0_0(
           plugin.handlerProcessors[handler.kind],
         );
