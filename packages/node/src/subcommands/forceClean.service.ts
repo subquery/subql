@@ -21,16 +21,20 @@ export class ForceCleanService {
       ? DEFAULT_DB_SCHEMA
       : this.nodeConfig.dbSchema;
 
-    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-    const schemas = (await this.sequelize
-      .query(`SELECT schema_name FROM information_schema.schemata`, {
-        type: QueryTypes.SELECT,
-      })
-      .then((xs) => xs.map((x: any) => x.schema_name))
-      .catch((err) => {
-        logger.error(`Unable to fetch all schemas: ${err}`);
-        process.exit(1);
-      })) as [string];
+    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists, so we must make a raw query
+    let schemas: string[];
+    try {
+      const result = await this.sequelize.query(
+        `SELECT schema_name FROM information_schema.schemata`,
+        {
+          type: QueryTypes.SELECT,
+        },
+      );
+      schemas = result.map((x: any) => x.schema_name) as [string];
+    } catch (err) {
+      logger.error(`Unable to fetch all schemas: ${err}`);
+      process.exit(1);
+    }
 
     if (!schemas.includes(schema)) {
       // fallback to subqueries table
@@ -49,6 +53,10 @@ export class ForceCleanService {
   async forceClean(): Promise<void> {
     const schema = await this.getExistingProjectSchema();
     try {
+      if (!schema) {
+        logger.error('Unable to locate schema');
+        throw new Error('Schema does not exist.');
+      }
       // drop existing project schema and metadata table
       await this.sequelize.dropSchema(`"${schema}"`, {
         logging: false,
