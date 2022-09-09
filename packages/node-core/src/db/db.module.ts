@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {DynamicModule, Global} from '@nestjs/common';
+import {NodeConfig} from '@subql/node-core/configure';
 import {Sequelize, Options as SequelizeOption} from 'sequelize';
 import * as entities from '../entities';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
-import {getYargsOption} from '../yargs';
+// import {getYargsOption} from '../yargs';
 
 export interface DbOption {
   host: string;
@@ -32,14 +33,14 @@ async function establishConnection(sequelize: Sequelize, numRetries: number): Pr
   }
 }
 
-const sequelizeFactory = (option: SequelizeOption) => async () => {
+const sequelizeFactory = (option: SequelizeOption, migrate: any) => async () => {
   const sequelize = new Sequelize(option);
   const numRetries = 5;
   await establishConnection(sequelize, numRetries);
   for (const factoryFn of Object.keys(entities).filter((k) => /Factory$/.exec(k))) {
     entities[factoryFn as keyof typeof entities](sequelize);
   }
-  const {migrate} = getYargsOption().argv;
+  // const {migrate} = getYargsOption().argv;
   await sequelize.sync({alter: migrate});
   return sequelize;
 };
@@ -47,22 +48,27 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 @Global()
 export class DbModule {
   static forRoot(option: DbOption): DynamicModule {
-    const {argv} = getYargsOption();
+    // const {argv} = getYargsOption();
     const logger = getLogger('db');
     return {
       module: DbModule,
       providers: [
         {
           provide: Sequelize,
-          useFactory: sequelizeFactory({
-            ...option,
-            dialect: 'postgres',
-            logging: argv.debug
-              ? (sql: string, timing?: number) => {
-                  logger.debug(sql);
-                }
-              : false,
-          }),
+          useFactory: (nodeConfig: NodeConfig) =>
+            sequelizeFactory(
+              {
+                ...option,
+                dialect: 'postgres',
+                logging: nodeConfig.debug
+                  ? (sql: string, timing?: number) => {
+                      logger.debug(sql);
+                    }
+                  : false,
+              },
+              nodeConfig.migrate
+            ),
+          inject: [NodeConfig],
         },
       ],
       exports: [Sequelize],

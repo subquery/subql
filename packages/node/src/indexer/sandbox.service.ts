@@ -11,7 +11,7 @@ import {
   timeout,
   NodeConfig,
   StoreService,
-  getYargsOption,
+  // getYargsOption,
   getLogger,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
@@ -23,7 +23,7 @@ import { getProjectEntry } from '../utils/project';
 import { ApiService } from './api.service';
 import { ApiAt } from './types';
 
-const { argv } = getYargsOption();
+// const { argv } = getYargsOption();
 
 export interface SandboxOption {
   store?: Store;
@@ -32,27 +32,33 @@ export interface SandboxOption {
   entry: string;
 }
 
-const DEFAULT_OPTION: NodeVMOptions = {
-  console: 'redirect',
-  wasm: argv.unsafe,
-  sandbox: {},
-  require: {
-    builtin: argv.unsafe
-      ? ['*']
-      : ['assert', 'buffer', 'crypto', 'util', 'path'],
-    external: true,
-    context: 'sandbox',
-  },
-  wrapper: 'commonjs',
-  sourceExtensions: ['js', 'cjs'],
+const DEFAULT_OPTION = (nodeConfig: NodeConfig): NodeVMOptions => {
+  return {
+    console: 'redirect',
+    wasm: nodeConfig.unsafe,
+    sandbox: {},
+    require: {
+      builtin: nodeConfig.unsafe
+        ? ['*']
+        : ['assert', 'buffer', 'crypto', 'util', 'path'],
+      external: true,
+      context: 'sandbox',
+    },
+    wrapper: 'commonjs',
+    sourceExtensions: ['js', 'cjs'],
+  };
 };
 
 const logger = getLogger('sandbox');
 
 export class Sandbox extends NodeVM {
-  constructor(option: SandboxOption, protected readonly script: VMScript) {
+  constructor(
+    option: SandboxOption,
+    protected readonly script: VMScript,
+    readonly nodeConfig?: NodeConfig,
+  ) {
     super(
-      merge(DEFAULT_OPTION, {
+      merge(DEFAULT_OPTION(nodeConfig), {
         require: {
           root: option.root,
           resolve: (moduleName: string) => {
@@ -135,7 +141,7 @@ export class SandboxService {
       this.processorCache[entry] = processor;
     }
     processor.freeze(api, 'api');
-    if (argv.unsafe) {
+    if (this.nodeConfig.unsafe) {
       processor.freeze(this.apiService.getApi(), 'unsafeApi');
     }
     return processor;

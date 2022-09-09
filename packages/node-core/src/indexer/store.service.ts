@@ -45,14 +45,14 @@ import {
   camelCaseObjectKey,
   makeTriggerName,
 } from '../utils';
-import {getYargsOption} from '../yargs';
+// import {getYargsOption} from '../yargs';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
 import {OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
-const {argv} = getYargsOption();
+// const {argv} = getYargsOption();
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
 const KEY_FIELDS = ['id', '__id', '__block_range'];
 
@@ -157,7 +157,7 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
-    if (argv.subscription) {
+    if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
     for (const model of this.modelsRelations.models) {
@@ -187,7 +187,7 @@ export class StoreService {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
-      if (argv.subscription) {
+      if (this.config.subscription) {
         const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
           replacements: {triggerName},
@@ -282,7 +282,7 @@ export class StoreService {
         enabled = false;
       }
     } catch (e) {
-      enabled = !argv['disable-historical'];
+      enabled = !this.config['disable-historical'];
     }
     logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
     return enabled;

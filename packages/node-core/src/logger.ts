@@ -5,7 +5,6 @@ import {isMainThread, threadId} from 'node:worker_threads';
 import {LoggerService} from '@nestjs/common';
 import {Logger} from '@subql/utils';
 import Pino from 'pino';
-import {NodeConfig} from './configure/NodeConfig';
 // import { argv } from './yargs';
 
 // const outputFmt = argv('output-fmt') as 'json' | 'colored';
@@ -31,8 +30,6 @@ export function setLevel(level: Pino.LevelWithSilent): void {
 }
 
 export class NestLogger implements LoggerService {
-  constructor(private nodeConfig: NodeConfig) {}
-
   private logger = logger.getLogger(`nestjs${isMainThread ? '-0' : `-#${threadId}`}`);
 
   error(message: any, trace?: string): void {

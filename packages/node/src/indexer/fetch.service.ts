@@ -26,7 +26,7 @@ import {
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
-  getYargsOption,
+  // getYargsOption,
   getLogger,
   profiler,
 } from '@subql/node-core';
@@ -55,7 +55,7 @@ const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
 
-const { argv } = getYargsOption();
+// const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
@@ -87,6 +87,8 @@ function callFilterToQueryEntry(
   };
 }
 
+let localNodeConfig: NodeConfig;
+
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
@@ -112,6 +114,7 @@ export class FetchService implements OnApplicationShutdown {
     private schedulerRegistry: SchedulerRegistry,
   ) {
     this.batchSizeScale = 1;
+    localNodeConfig = this.nodeConfig;
   }
 
   onApplicationShutdown(): void {
@@ -276,7 +279,7 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
-    if (argv['scale-batch-size']) {
+    if (this.nodeConfig['scale-batch-size']) {
       const scale = checkMemoryUsage(this.batchSizeScale);
 
       if (this.batchSizeScale !== scale) {
@@ -507,7 +510,7 @@ export class FetchService implements OnApplicationShutdown {
     return this.currentRuntimeVersion;
   }
 
-  @profiler(argv.profiler)
+  @profiler(localNodeConfig.profiler)
   async specChanged(height: number): Promise<boolean> {
     const specVersion = await this.getSpecVersion(height);
     if (this.parentSpecVersion !== specVersion) {
@@ -518,7 +521,7 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  @profiler(argv.profiler)
+  @profiler(localNodeConfig.profiler)
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (
