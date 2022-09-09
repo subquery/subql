@@ -27,7 +27,7 @@ export class BenchmarkService {
   private currentProcessedBlockAmount: number;
   private lastProcessedBlockAmount: number;
 
-  private nodeConfig: NodeConfig;
+  constructor(private nodeConfig: NodeConfig) {}
 
   @Interval(SAMPLING_TIME_VARIANCE * 1000)
   async benchmark(): Promise<void> {

@@ -10,12 +10,13 @@ import {
   IConfig,
   MinConfig,
   NodeConfig,
-  yargsOptions,
   getLogger,
   setLevel,
 } from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
+import { yargsOptions } from '../yargs';
 import { SubqueryProject } from './SubqueryProject';
+
 const logger = getLogger('configure');
 
 const YargsNameMapping = {

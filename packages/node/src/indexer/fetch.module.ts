@@ -33,9 +33,10 @@ import {
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      useClass: argv.workers
-        ? WorkerBlockDispatcherService
-        : BlockDispatcherService,
+      useFactory: (nodeConfig: NodeConfig) =>
+        nodeConfig.workers
+          ? WorkerBlockDispatcherService
+          : BlockDispatcherService,
     },
     FetchService,
     BenchmarkService,

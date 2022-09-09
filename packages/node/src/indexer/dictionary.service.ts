@@ -10,7 +10,7 @@ import {
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
-  getYargsOption,
+  // getYargsOption,
   NodeConfig,
   timeout,
   getLogger,
@@ -40,7 +40,7 @@ export type SpecVersionDictionary = {
 };
 
 const logger = getLogger('dictionary');
-const { argv } = getYargsOption();
+// const { argv } = getYargsOption();
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
@@ -112,6 +112,8 @@ function buildDictQueryFragment(
   return [gqlVars, node];
 }
 
+let localNodeConfig: NodeConfig;
+
 @Injectable()
 export class DictionaryService implements OnApplicationShutdown {
   private client: ApolloClient<NormalizedCacheObject>;
@@ -121,6 +123,7 @@ export class DictionaryService implements OnApplicationShutdown {
     protected project: SubqueryProject,
     private nodeConfig: NodeConfig,
   ) {
+    localNodeConfig = this.nodeConfig;
     this.client = new ApolloClient({
       cache: new InMemoryCache({ resultCaching: true }),
       link: new HttpLink({ uri: this.project.network.dictionary, fetch }),
@@ -147,7 +150,8 @@ export class DictionaryService implements OnApplicationShutdown {
    * @param conditions
    */
 
-  @profiler(argv.profiler)
+  // TODO: fix
+  @profiler(localNodeConfig.profiler)
   async getDictionary(
     startBlock: number,
     queryEndBlock: number,
