@@ -280,7 +280,7 @@ export class StoreService {
         enabled = false;
       }
     } catch (e) {
-      enabled = !this.config['disable-historical'];
+      enabled = !this.config.disableHistorical;
     }
     logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
     return enabled;

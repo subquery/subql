@@ -27,7 +27,7 @@ export interface SandboxOption {
 const DEFAULT_OPTION = (nodeConfig: NodeConfig): NodeVMOptions => {
   return {
     console: 'redirect',
-    wasm: nodeConfig.unsafe,
+    wasm: nodeConfig?.unsafe,
     sandbox: {},
     require: {
       builtin: nodeConfig.unsafe
@@ -47,11 +47,10 @@ export class Sandbox extends NodeVM {
   constructor(
     option: SandboxOption,
     protected readonly script: VMScript,
-    readonly nodeConfig?: NodeConfig,
+    protected config: NodeConfig,
   ) {
     super(
-      // TOOD: fix nodeConfig
-      merge(DEFAULT_OPTION(nodeConfig), {
+      merge(DEFAULT_OPTION(config), {
         require: {
           root: option.root,
           resolve: (moduleName: string) => {
@@ -68,7 +67,7 @@ export class Sandbox extends NodeVM {
 }
 
 export class IndexerSandbox extends Sandbox {
-  constructor(option: SandboxOption, private readonly config: NodeConfig) {
+  constructor(option: SandboxOption, config: NodeConfig) {
     super(
       option,
       new VMScript(
@@ -77,6 +76,7 @@ export class IndexerSandbox extends Sandbox {
     `,
         path.join(option.root, 'sandbox'),
       ),
+      config,
     );
     this.injectGlobals(option);
   }

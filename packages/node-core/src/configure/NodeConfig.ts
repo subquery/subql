@@ -37,7 +37,7 @@ export interface IConfig {
   readonly migrate: boolean;
   readonly unsafe?: boolean;
   readonly subscription: boolean;
-  readonly 'disable-historical': boolean;
+  readonly disableHistorical: boolean;
   readonly reindex?: number;
 }
 
@@ -57,7 +57,7 @@ const DEFAULT_CONFIG = {
   profiler: false,
   migrate: false,
   subscription: false,
-  'disable-historical': true,
+  disableHistorical: true,
 };
 
 export class NodeConfig implements IConfig {
@@ -180,8 +180,8 @@ export class NodeConfig implements IConfig {
     return this._config.subscription;
   }
 
-  get 'disable-historical'(): boolean {
-    return this._config['disable-historical'];
+  get disableHistorical(): boolean {
+    return this._config.disableHistorical;
   }
 
   get reindex(): number {
