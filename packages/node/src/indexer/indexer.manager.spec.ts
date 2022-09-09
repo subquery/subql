@@ -124,12 +124,14 @@ function testSubqueryProject_2(): SubqueryProject {
   };
 }
 
-function createIndexerManager(project: SubqueryProject): IndexerManager {
+function createIndexerManager(
+  project: SubqueryProject,
+  nodeConfig: NodeConfig,
+): IndexerManager {
   const sequilize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-
   const apiService = new ApiService(project, eventEmitter);
-  const dsProcessorService = new DsProcessorService(project);
+  const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
   const poiService = new PoiService(nodeConfig, sequilize);
@@ -182,14 +184,14 @@ describe('IndexerManager', () => {
   });
 
   xit('should be able to start the manager (v0.0.1)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_1());
+    indexerManager = createIndexerManager(testSubqueryProject_1(), nodeConfig);
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   xit('should be able to start the manager (v0.2.0)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_2());
+    indexerManager = createIndexerManager(testSubqueryProject_2(), nodeConfig);
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);

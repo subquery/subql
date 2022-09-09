@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   BenchmarkService,
   MmrService,
@@ -9,8 +10,9 @@ import {
   PoiService,
   // NodeConfig,
   DbModule,
+  NodeConfig,
 } from '@subql/node-core';
-import { yargsOptions } from '../yargs';
+// import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -24,7 +26,7 @@ import {
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
 
-const { argv } = yargsOptions;
+// const { argv } = yargsOptions;
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
@@ -34,14 +36,33 @@ const { argv } = yargsOptions;
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      // useFactory: (nodeConfig: NodeConfig) =>
-      //   nodeConfig.workers !== undefined
-      //     ? WorkerBlockDispatcherService
-      //     : BlockDispatcherService,
-      // inject: [NodeConfig, WorkerBlockDispatcherService, BlockDispatcherService],
-      useClass: argv.workers
-        ? WorkerBlockDispatcherService
-        : BlockDispatcherService,
+      useFactory: (
+        nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
+        projectService: ProjectService,
+        apiService: ApiService,
+        indexerManager: IndexerManager,
+      ) =>
+        nodeConfig.workers !== undefined
+          ? new WorkerBlockDispatcherService(
+              nodeConfig,
+              eventEmitter,
+              projectService,
+            )
+          : new BlockDispatcherService(
+              apiService,
+              nodeConfig,
+              indexerManager,
+              eventEmitter,
+              projectService,
+            ),
+      inject: [
+        NodeConfig,
+        EventEmitter2,
+        ProjectService,
+        ApiService,
+        IndexerManager,
+      ],
     },
     FetchService,
     BenchmarkService,
