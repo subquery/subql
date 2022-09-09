@@ -18,8 +18,8 @@
   ],
   "exports": {
     "./logger": {
-      "nodemon": "./src/logger",
-      "subql": "./dist/logger.js"
+      "import": "./src/logger",
+      "require": "./dist/logger.js"
     }
   },
   "dependencies": {
