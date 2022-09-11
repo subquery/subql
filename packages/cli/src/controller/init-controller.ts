@@ -64,7 +64,7 @@ export async function cloneProjectTemplate(
   //make temp directory to store project
   const tempPath = await makeTempDir();
   //use sparse-checkout to clone project to temp directory
-  await git(tempPath).init().addRemote('origin', 'https://github.com/subquery/subql-starter.git');
+  await git(tempPath).init().addRemote('origin', selectedTemplate.remote);
   await git(tempPath).raw('sparse-checkout', 'set', `${selectedTemplate.network}/${selectedTemplate.name}`);
   await git(tempPath).raw('pull', 'origin', selectedTemplate.branch);
   // Copy content to project path
