@@ -82,6 +82,7 @@ export class ForceCleanService {
       }
     } catch (err) {
       logger.error(err, 'failed to force clean');
+      throw err;
     }
   }
 }

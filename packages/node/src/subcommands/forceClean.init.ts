@@ -11,8 +11,8 @@ export async function forceCleanInit() {
   try {
     const app = await NestFactory.create(ForceCleanModule);
     await app.init();
-    const subcommandService = app.get(ForceCleanService);
-    await subcommandService.forceClean();
+    const forceCleanService = app.get(ForceCleanService);
+    await forceCleanService.forceClean();
   } catch (e) {
     logger.error(e, 'Force-clean failed to execute');
     process.exit(1);
