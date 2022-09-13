@@ -275,7 +275,7 @@ export class FetchService implements OnApplicationShutdown {
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
     if (this.nodeConfig['scale-batch-size']) {
-      const scale = checkMemoryUsage(this.batchSizeScale);
+      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;

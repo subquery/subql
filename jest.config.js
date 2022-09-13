@@ -62,7 +62,7 @@ module.exports = {
   // forceCoverageMatch: [],
 
   // A path to a module which exports an async function that is triggered once before all test suites
-  // globalSetup: undefined,
+  // globalSetup: undefined
 
   // A path to a module which exports an async function that is triggered once after all test suites
   // globalTeardown: undefined,
@@ -94,6 +94,7 @@ module.exports = {
     '^@subql/common/(.*)$': '<rootDir>/packages/common/src/$1',
     '^@subql/node-core/(.*)$': '<rootDir>/packages/node-core/src/$1',
     '^@subql/utils/(.*)$': '<rootDir>/packages/utils/src/$1',
+    '^@subql/node-core/logger': '<rootDir>/packages/node-core/logger',
   },
 
   // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
@@ -140,7 +141,7 @@ module.exports = {
 
   // The paths to modules that run some code to configure or set up the testing environment before each test
   // setupFiles: [],
-  setupFiles: ['./test/jest-setup.ts'],
+  setupFiles: ['<rootDir>/test/jest-setup.ts'],
 
   // A list of paths to modules that run some code to configure or set up the testing framework before each test
   // setupFilesAfterEnv: [],
