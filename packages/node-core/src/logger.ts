@@ -8,7 +8,7 @@ import Pino from 'pino';
 
 let logger: Logger;
 
-export function initLogger(debug: boolean, outputFmt: 'json' | 'colored', logLevel: string | undefined): void {
+export function initLogger(debug = true, outputFmt: 'json' | 'colored' = 'json', logLevel?: string): void {
   logger = new Logger({
     level: debug ? 'debug' : logLevel,
     outputFormat: outputFmt,
@@ -16,8 +16,12 @@ export function initLogger(debug: boolean, outputFmt: 'json' | 'colored', logLev
   });
 }
 
+// Init logger for tests
+if ((global as any).__TEST__) {
+  initLogger();
+}
+
 export function getLogger(category: string): Pino.Logger {
-  console.log(logger);
   return logger.getLogger(category);
 }
 
