@@ -17,8 +17,9 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { getExistingProjectSchema } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -90,7 +91,13 @@ export class ProjectService {
 
       await this.sequelize.sync();
 
-      this._schema = await this.getExistingProjectSchema();
+      // this._schema = await this.getExistingProjectSchema();
+      this._schema = await getExistingProjectSchema(
+        this.nodeConfig,
+        this.sequelize,
+        this.subqueryRepo,
+        logger,
+      );
       assert(this._schema, 'Schema should be created in main thread');
       await this.initDbSchema();
 
@@ -101,7 +108,12 @@ export class ProjectService {
   }
 
   private async ensureProject(): Promise<string> {
-    let schema = await this.getExistingProjectSchema();
+    let schema = await getExistingProjectSchema(
+      this.nodeConfig,
+      this.sequelize,
+      this.subqueryRepo,
+      logger,
+    );
     if (!schema) {
       schema = await this.createProjectSchema();
     }
@@ -113,35 +125,35 @@ export class ProjectService {
   }
 
   // Get existing project schema, undefined when doesn't exist
-  private async getExistingProjectSchema(): Promise<string> {
-    let schema = this.nodeConfig.localMode
-      ? DEFAULT_DB_SCHEMA
-      : this.nodeConfig.dbSchema;
-
-    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-    const schemas = (await this.sequelize
-      .query(`SELECT schema_name FROM information_schema.schemata`, {
-        type: QueryTypes.SELECT,
-      })
-      .then((xs) => xs.map((x: any) => x.schema_name))
-      .catch((err) => {
-        logger.error(`Unable to fetch all schemas: ${err}`);
-        process.exit(1);
-      })) as [string];
-
-    if (!schemas.includes(schema)) {
-      // fallback to subqueries table
-      const subqueryModel = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (subqueryModel) {
-        schema = subqueryModel.dbSchema;
-      } else {
-        schema = undefined;
-      }
-    }
-    return schema;
-  }
+  // async getExistingProjectSchema(): Promise<string> {
+  //   let schema = this.nodeConfig.localMode
+  //     ? DEFAULT_DB_SCHEMA
+  //     : this.nodeConfig.dbSchema;
+  //
+  //   // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
+  //   const schemas = (await this.sequelize
+  //     .query(`SELECT schema_name FROM information_schema.schemata`, {
+  //       type: QueryTypes.SELECT,
+  //     })
+  //     .then((xs) => xs.map((x: any) => x.schema_name))
+  //     .catch((err) => {
+  //       logger.error(`Unable to fetch all schemas: ${err}`);
+  //       process.exit(1);
+  //     })) as [string];
+  //
+  //   if (!schemas.includes(schema)) {
+  //     // fallback to subqueries table
+  //     const subqueryModel = await this.subqueryRepo.findOne({
+  //       where: { name: this.nodeConfig.subqueryName },
+  //     });
+  //     if (subqueryModel) {
+  //       schema = subqueryModel.dbSchema;
+  //     } else {
+  //       schema = undefined;
+  //     }
+  //   }
+  //   return schema;
+  // }
 
   private async createProjectSchema(): Promise<string> {
     let schema: string;

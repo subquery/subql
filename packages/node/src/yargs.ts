@@ -177,7 +177,3 @@ export const yargsOptions = yargs(hideBin(process.argv))
       default: 100,
     },
   });
-
-// export function yargsArgv(arg: string ): unknown {
-//   return
-// }

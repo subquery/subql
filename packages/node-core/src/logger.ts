@@ -16,9 +16,8 @@ export function initLogger(debug: boolean, outputFmt: 'json' | 'colored', logLev
   });
 }
 
-console.log('hi, logger.ts');
-
 export function getLogger(category: string): Pino.Logger {
+  console.log(logger);
   return logger.getLogger(category);
 }
 
