@@ -6,8 +6,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import {
   isCustomDs,
-  SubstrateHandlerKind,
-  SubstrateRuntimeHandlerFilter,
+  AvalancheHandlerKind,
+  SubqlHandlerFilter,
 } from '@subql/common-avalanche';
 import {
   ApiService,
@@ -139,14 +139,14 @@ export class FetchService implements OnApplicationShutdown {
     const dataSources = this.project.dataSources;
     for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       for (const handler of ds.mapping.handlers) {
-        let filterList: SubstrateRuntimeHandlerFilter[];
+        let filterList: SubqlHandlerFilter[];
         filterList = [handler.filter];
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (handler.kind) {
-          case SubstrateHandlerKind.Block:
+          case AvalancheHandlerKind.Block:
             return [];
-          case SubstrateHandlerKind.Call: {
+          case AvalancheHandlerKind.Call: {
             for (const filter of filterList as AvalancheTransactionFilter[]) {
               if (
                 filter.from !== undefined ||
@@ -160,7 +160,7 @@ export class FetchService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubstrateHandlerKind.Event: {
+          case AvalancheHandlerKind.Event: {
             for (const filter of filterList as AvalancheLogFilter[]) {
               if (filter.address || filter.topics) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
@@ -276,7 +276,7 @@ export class FetchService implements OnApplicationShutdown {
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === SubstrateHandlerKind.Block &&
+          handler.kind === AvalancheHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {

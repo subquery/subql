@@ -4,6 +4,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
+  isBlockHandlerProcessor,
+  isCallHandlerProcessor,
+  isEventHandlerProcessor,
+  isCustomDs,
+  isRuntimeDs,
+  SubqlAvalancheCustomDataSource,
+  SubqlCustomHandler,
+  AvalancheHandlerKind,
+  AvalancheRuntimeHandlerInputMap,
+} from '@subql/common-avalanche';
+import {
   ApiService,
   PoiBlock,
   StoreService,
@@ -22,12 +33,14 @@ import {
   AvalancheBlock,
   SubqlRuntimeHandler,
   AvalancheBlockWrapper,
-  AvalancheHandlerKind,
-  AvalancheRuntimeHandlerInputMap,
 } from '@subql/types-avalanche';
 import { Sequelize } from 'sequelize';
 import { AvalancheBlockWrapped } from '../avalanche/block.avalanche';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  asSecondLayerHandlerProcessor_1_0_0,
+  DsProcessorService,
+} from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
@@ -51,6 +64,7 @@ export class IndexerManager {
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,
+    private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private projectService: ProjectService,
   ) {
@@ -161,7 +175,7 @@ export class IndexerManager {
   }
 
   private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.getDataSourcesForSpecName();
+    let filteredDs = this.project.dataSources;
     if (filteredDs.length === 0) {
       logger.error(
         `Did not find any dataSource match with network specName ${this.api.getSpecName()}`,
@@ -182,13 +196,6 @@ export class IndexerManager {
       process.exit(1);
     }
     return filteredDs;
-  }
-
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName || ds.filter.specName === this.api.getSpecName(),
-    );
   }
 
   private async indexBlockData(
@@ -244,17 +251,141 @@ export class IndexerManager {
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     let vm: IndexerSandbox;
-    const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
-      (h) =>
-        h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+    if (isRuntimeDs(ds)) {
+      const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
+        (h) =>
+          h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+      );
+
+      for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
+        argv.profiler
+          ? await profilerWrap(
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler,
+            )(handler.handler, [data])
+          : await vm.securedExec(handler.handler, [data]);
+      }
+    } else if (isCustomDs(ds)) {
+      const handlers = this.filterCustomDsHandlers<K>(
+        ds,
+        data,
+        ProcessorTypeMap[kind],
+        (data, baseFilter) => {
+          switch (kind) {
+            case AvalancheHandlerKind.Block:
+              return AvalancheBlockWrapped.filterBlocksProcessor(
+                data as AvalancheBlock,
+                baseFilter,
+              );
+            case AvalancheHandlerKind.Call:
+              return AvalancheBlockWrapped.filterTransactionsProcessor(
+                data as AvalancheTransaction,
+                baseFilter,
+              );
+            case AvalancheHandlerKind.Event:
+              return AvalancheBlockWrapped.filterLogsProcessor(
+                data as AvalancheLog,
+                baseFilter,
+              );
+            default:
+              throw new Error('Unsupported handler kind');
+          }
+        },
+      );
+
+      for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
+        await this.transformAndExecuteCustomDs(ds, vm, handler, data);
+      }
+    }
+  }
+
+  private filterCustomDsHandlers<K extends AvalancheHandlerKind>(
+    ds: SubqlAvalancheCustomDataSource<string, any>,
+    data: AvalancheRuntimeHandlerInputMap[K],
+    baseHandlerCheck: ProcessorTypeMap[K],
+    baseFilter: (
+      data: AvalancheRuntimeHandlerInputMap[K],
+      baseFilter: any,
+    ) => boolean,
+  ): SubqlCustomHandler[] {
+    const plugin = this.dsProcessorService.getDsProcessor(ds);
+
+    return ds.mapping.handlers
+      .filter((handler) => {
+        const processor = plugin.handlerProcessors[handler.kind];
+        if (baseHandlerCheck(processor)) {
+          processor.baseFilter;
+
+          return baseFilter(data, processor.baseFilter);
+        }
+        return false;
+      })
+      .filter((handler) => {
+        const processor = asSecondLayerHandlerProcessor_1_0_0(
+          plugin.handlerProcessors[handler.kind],
+        );
+
+        try {
+          return processor.filterProcessor({
+            filter: handler.filter,
+            input: data,
+            ds,
+          });
+        } catch (e) {
+          logger.error(e, 'Failed to run ds processer filter.');
+          throw e;
+        }
+      });
+  }
+
+  private async transformAndExecuteCustomDs<K extends AvalancheHandlerKind>(
+    ds: SubqlAvalancheCustomDataSource<string, any>,
+    vm: IndexerSandbox,
+    handler: SubqlCustomHandler,
+    data: AvalancheRuntimeHandlerInputMap[K],
+  ): Promise<void> {
+    const plugin = this.dsProcessorService.getDsProcessor(ds);
+    const assets = await this.dsProcessorService.getAssets(ds);
+
+    const processor = asSecondLayerHandlerProcessor_1_0_0(
+      plugin.handlerProcessors[handler.kind],
     );
 
-    for (const handler of handlers) {
-      vm = vm ?? (await getVM(ds));
-      await vm.securedExec(handler.handler, [data]);
+    const transformedData = await processor
+      .transformer({
+        input: data,
+        ds,
+        api: this.api,
+        filter: handler.filter,
+        assets,
+      })
+      .catch((e) => {
+        logger.error(e, 'Failed to transform data with ds processor.');
+        throw e;
+      });
+
+    // We can not run this in parallel. the transformed data items may be dependent on one another.
+    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
+    for (const _data of transformedData) {
+      await vm.securedExec(handler.handler, [_data]);
     }
   }
 }
+
+type ProcessorTypeMap = {
+  [AvalancheHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [AvalancheHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [AvalancheHandlerKind.Call]: typeof isCallHandlerProcessor;
+};
+
+const ProcessorTypeMap = {
+  [AvalancheHandlerKind.Block]: isBlockHandlerProcessor,
+  [AvalancheHandlerKind.Event]: isEventHandlerProcessor,
+  [AvalancheHandlerKind.Call]: isCallHandlerProcessor,
+};
 
 const FilterTypeMap = {
   [AvalancheHandlerKind.Block]: AvalancheBlockWrapped.filterBlocksProcessor,

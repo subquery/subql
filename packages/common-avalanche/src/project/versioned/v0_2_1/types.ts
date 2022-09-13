@@ -11,7 +11,7 @@ import {CustomDatasourceV0_2_0, RuntimeDataSourceV0_2_0} from '../v0_2_0';
 export interface RuntimeDatasourceTemplate extends Omit<RuntimeDataSourceV0_2_0, 'name'>, TemplateBase {}
 export interface CustomDatasourceTemplate extends Omit<CustomDatasourceV0_2_0, 'name'>, TemplateBase {}
 
-export type SubstrateProjectManifestV0_2_1 = ProjectManifestV0_2_1<
+export type AvalancheProjectManifestV0_2_1 = ProjectManifestV0_2_1<
   RuntimeDatasourceTemplate | CustomDatasourceTemplate,
   RuntimeDataSourceV0_2_0 | CustomDatasourceV0_2_0
 >;

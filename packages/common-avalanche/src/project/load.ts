@@ -8,10 +8,10 @@ import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {NodeVM, VMScript} from 'vm2';
 import {ChainTypes} from './models';
-import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
+import {AvalancheProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectManifestVersioned {
-  const projectManifest = new SubstrateProjectManifestVersioned(raw as VersionedProjectManifest);
+export function parseAvalancheProjectManifest(raw: unknown): AvalancheProjectManifestVersioned {
+  const projectManifest = new AvalancheProjectManifestVersioned(raw as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }
@@ -33,7 +33,7 @@ export function loadChainTypes(file: string, projectRoot: string): unknown {
   }
 }
 
-export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
+export function loadAvalancheProjectManifest(file: string): AvalancheProjectManifestVersioned {
   let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
@@ -48,7 +48,7 @@ export function loadSubstrateProjectManifest(file: string): SubstrateProjectMani
   }
 
   const doc = loadFromJsonOrYaml(manifestPath);
-  const projectManifest = new SubstrateProjectManifestVersioned(doc as VersionedProjectManifest);
+  const projectManifest = new AvalancheProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }

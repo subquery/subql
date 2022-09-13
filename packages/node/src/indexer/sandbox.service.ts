@@ -5,7 +5,7 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
   isDatasourceV0_2_0,
-  SubstrateDataSource,
+  SubqlAvalancheDataSource,
 } from '@subql/common-avalanche';
 import {
   timeout,
@@ -144,7 +144,7 @@ export class SandboxService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubstrateDataSource): string {
+  private getDataSourceEntry(ds: SubqlAvalancheDataSource): string {
     if (isDatasourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {
