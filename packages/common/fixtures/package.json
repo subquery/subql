@@ -9,7 +9,6 @@
     "test": "jest",
     "codegen": "./node_modules/.bin/subql codegen"
   },
-
   "homepage": "https://github.com/subquery/subql-starter",
   "repository": "github:subquery/subql-starter",
   "files": [
@@ -21,7 +20,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@polkadot/api": "^3",
-    "@subql/types": "^0.6.0",
+    "@subql/types": "latest",
     "typescript": "^4.1.3",
     "@subql/cli": "^0.7.3"
   }

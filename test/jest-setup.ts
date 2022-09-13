@@ -1,4 +1,5 @@
 import 'reflect-metadata';
 import 'regenerator-runtime/runtime';
-// @ts-ignore
-import './jest.module';
+
+// Causes the logger to be init
+(global as any).__TEST__ = true;
