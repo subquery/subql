@@ -5,22 +5,25 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
   isDatasourceV0_2_0,
-  SubstrateDataSource,
+  SubqlEthereumDataSource,
 } from '@subql/common-avalanche';
-import { getYargsOption, getLogger } from '@subql/common-node';
+import {
+  timeout,
+  NodeConfig,
+  StoreService,
+  getYargsOption,
+  getLogger,
+} from '@subql/node-core';
 import {
   ApiWrapper,
   EthereumBlockWrapper,
   Store,
 } from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
-import { NodeVM, NodeVMOptions, VMScript } from '@subql/x-vm2';
 import { merge } from 'lodash';
-import { NodeConfig } from '../configure/NodeConfig';
+import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
-import { timeout } from '../utils/promise';
-import { StoreService } from './store.service';
 
 const { argv } = getYargsOption();
 
@@ -141,7 +144,7 @@ export class SandboxService {
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubstrateDataSource): string {
+  private getDataSourceEntry(ds: SubqlEthereumDataSource): string {
     if (isDatasourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {

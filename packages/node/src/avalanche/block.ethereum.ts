@@ -2,18 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  isRuntimeDataSourceV0_2_0,
-  SubstrateDataSource,
-} from '@subql/common-avalanche';
-import {
-  AvalancheBlock,
-  AvalancheBlockWrapper,
-  AvalancheTransactionFilter,
-  AvalancheLog,
-  AvalancheLogFilter,
-  AvalancheResult,
-  AvalancheTransaction,
-  AvalancheBlockFilter,
+  EthereumBlock,
+  EthereumTransactionFilter,
+  EthereumLog,
+  EthereumLogFilter,
+  EthereumResult,
+  EthereumBlockFilter,
   EthereumBlockWrapper,
   EthereumTransaction,
 } from '@subql/types-avalanche';
@@ -27,15 +21,24 @@ import {
 } from '../utils/string';
 
 export class EthereumBlockWrapped implements EthereumBlockWrapper {
-  private _logs: ethers.providers.Log[];
+  private _logs: EthereumLog[];
   constructor(
-    private _block: ethers.providers.Block,
+    private _block: EthereumBlock,
     private _txs: EthereumTransaction[],
   ) {
-    this._logs = flatten(_txs.map((tx) => tx.receipt.logs));
+    this._logs = flatten(_txs.map((tx) => tx.receipt.logs)) as unknown as EthereumLog[];
+    this._logs.map((log)=> {
+      log.block = this.block;
+      return log;
+    })
+    this.block.logs = this._logs.map((log) => {
+      const logCopy = { ...log };
+      logCopy.block = undefined;
+      return logCopy;
+    });
   }
 
-  get block(): ethers.providers.Block {
+  get block(): EthereumBlock {
     return this._block;
   }
 
@@ -51,15 +54,15 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
     return this._txs;
   }
 
-  get logs(): ethers.providers.Log[] {
+  get logs(): EthereumLog[] {
     return this._logs;
   }
 
   static filterBlocksProcessor(
     block: ethers.providers.Block,
-    filter: AvalancheBlockFilter,
+    filter: EthereumBlockFilter,
   ): boolean {
-    if (filter.modulo && block.number % filter.modulo !== 0) {
+    if (filter?.modulo && block.number % filter.modulo !== 0) {
       return false;
     }
     return true;
@@ -67,9 +70,10 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
 
   static filterTransactionsProcessor(
     transaction: EthereumTransaction,
-    filter: AvalancheTransactionFilter,
+    filter: EthereumTransactionFilter,
     address?: string,
   ): boolean {
+    if (!filter) return true;
     if (filter.to && !stringNormalizedEq(filter.to, transaction.to)) {
       return false;
     }
@@ -89,13 +93,15 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
   }
 
   static filterLogsProcessor(
-    log: AvalancheLog,
-    filter: AvalancheLogFilter,
+    log: EthereumLog,
+    filter: EthereumLogFilter,
     address?: string,
   ): boolean {
     if (address && !stringNormalizedEq(address, log.address)) {
       return false;
     }
+
+    if (!filter) return true;
 
     if (filter.topics) {
       for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
@@ -104,6 +110,9 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
           continue;
         }
 
+        if (!log.topics[i]) {
+          return false;
+        }
         if (!hexStringEq(eventToTopic(topic), log.topics[i])) {
           return false;
         }

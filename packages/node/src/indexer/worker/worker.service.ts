@@ -3,11 +3,9 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { ApiService } from '@subql/common-node';
+import { ApiService, NodeConfig, getLogger } from '@subql/node-core';
 import { EthereumBlockWrapper, BlockWrapper } from '@subql/types-avalanche';
-import { NodeConfig } from '../../configure/NodeConfig';
 import { AutoQueue } from '../../utils/autoQueue';
-import { getLogger } from '../../utils/logger';
 import { IndexerManager } from '../indexer.manager';
 
 export type FetchBlockResponse = { parentHash: string } | undefined;

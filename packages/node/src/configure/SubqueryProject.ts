@@ -10,10 +10,9 @@ import {
   validateSemver,
 } from '@subql/common';
 import {
-  SubstrateProjectNetworkConfig,
-  parseSubstrateProjectManifest,
-  ProjectManifestV0_2_0Impl,
-  SubstrateDataSource,
+  EthereumProjectNetworkConfig,
+  parseEthereumProjectManifest,
+  SubqlEthereumDataSource,
   FileType,
   ProjectManifestV1_0_0Impl,
 } from '@subql/common-avalanche';
@@ -25,8 +24,8 @@ import {
   updateDataSourcesV0_2_0,
 } from '../utils/project';
 
-export type SubqlProjectDs = SubstrateDataSource & {
-  mapping: SubstrateDataSource['mapping'] & { entryScript: string };
+export type SubqlProjectDs = SubqlEthereumDataSource & {
+  mapping: SubqlEthereumDataSource['mapping'] & { entryScript: string };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -40,7 +39,7 @@ const NOT_SUPPORT = (name: string) => () => {
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<SubstrateProjectNetworkConfig>;
+  network: Partial<EthereumProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -49,7 +48,7 @@ export class SubqueryProject {
 
   static async create(
     path: string,
-    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+    networkOverrides?: Partial<EthereumProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
@@ -59,7 +58,7 @@ export class SubqueryProject {
     if (projectSchema === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
-    const manifest = parseSubstrateProjectManifest(projectSchema);
+    const manifest = parseEthereumProjectManifest(projectSchema);
 
     if (manifest.isV1_0_0) {
       return loadProjectFromManifest1_0_0(
@@ -97,7 +96,7 @@ async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<EthereumProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
 
@@ -151,7 +150,7 @@ async function loadProjectFromManifest1_0_0(
   projectManifest: ProjectManifestV1_0_0Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<EthereumProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
     projectManifest,

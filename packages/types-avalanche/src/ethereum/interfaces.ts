@@ -2,12 +2,29 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {ethers} from 'ethers';
-import {AvalancheBlockFilter, AvalancheTransactionFilter, AvalancheLogFilter, AvalancheResult} from '../avalanche';
 import {BlockWrapper} from '../interfaces';
 
-export type EthereumResult = AvalancheResult;
+export interface EthereumBlockFilter {
+  modulo?: number;
+}
 
-export type EthereumBlock = ethers.providers.Block;
+export interface EthereumTransactionFilter {
+  from?: string;
+  to?: string;
+  function?: string;
+}
+
+export interface EthereumLogFilter {
+  topics?: Array<string | null | undefined>;
+  address?: string;
+}
+
+export interface EthereumResult extends ReadonlyArray<any> {
+  readonly [key: string]: any;
+}
+export type EthereumBlock = ethers.providers.Block & {
+  logs: EthereumLog[];
+};
 
 export type EthereumTransaction = ethers.providers.TransactionResponse & {
   receipt: ethers.providers.TransactionReceipt;
@@ -15,12 +32,13 @@ export type EthereumTransaction = ethers.providers.TransactionResponse & {
 
 export type EthereumLog<T extends EthereumResult = EthereumResult> = ethers.providers.Log & {
   args?: T;
+  block: EthereumBlock;
 };
 
 export type EthereumBlockWrapper = BlockWrapper<
   EthereumBlock,
   EthereumTransaction,
   EthereumLog,
-  AvalancheTransactionFilter,
-  AvalancheLogFilter
+  EthereumTransactionFilter,
+  EthereumLogFilter
 >;

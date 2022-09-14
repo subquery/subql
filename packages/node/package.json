@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-avalanche",
-  "version": "0.3.0",
+  "version": "1.9.2-0",
   "description": "",
   "author": "Ian He",
   "license": "Apache-2.0",
@@ -21,14 +21,14 @@
     "@apollo/client": "3.5.8",
     "@nestjs/common": "^8.2.6",
     "@nestjs/core": "^8.2.6",
-    "@nestjs/event-emitter": "^1.0.0",
+    "@nestjs/event-emitter": "^1.3.0",
     "@nestjs/platform-express": "^8.2.6",
     "@nestjs/schedule": "^1.0.2",
-    "@subql/common": "dev",
+    "@subql/common": "latest",
     "@subql/common-avalanche": "workspace:*",
-    "@subql/common-node": "dev",
+    "@subql/node-core": "latest",
     "@subql/types-avalanche": "workspace:*",
-    "@subql/utils": "0.1.0",
+    "@subql/utils": "latest",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.1",
     "@subql/x-vm2": "^3.9.3-0.1.0",
     "@willsoto/nestjs-prometheus": "^4.4.0",
@@ -46,7 +46,7 @@
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
     "rxjs": "^7.5.2",
-    "sequelize": "^6.15.0",
+    "sequelize": "6.19.0",
     "tar": "^6.1.11",
     "typescript": "^4.4.4",
     "yargs": "^16.2.0"
@@ -59,7 +59,6 @@
     "@types/jest": "^27.4.0",
     "@types/lodash": "^4.14.178",
     "@types/pino": "^6.3.12",
-    "@types/sequelize": "^4.28.10",
     "@types/supertest": "^2.0.11",
     "@types/tar": "^6.1.1",
     "@types/yargs": "^16.0.4",
@@ -73,5 +72,6 @@
   "files": [
     "/dist",
     "/bin"
-  ]
+  ],
+  "stableVersion": "1.9.1"
 }

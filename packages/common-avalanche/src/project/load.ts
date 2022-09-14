@@ -8,10 +8,10 @@ import {plainToClass} from 'class-transformer';
 import {validateSync} from 'class-validator';
 import {NodeVM, VMScript} from 'vm2';
 import {ChainTypes} from './models';
-import {SubstrateProjectManifestVersioned, VersionedProjectManifest} from './versioned';
+import {EthereumProjectManifestVersioned, VersionedProjectManifest} from './versioned';
 
-export function parseSubstrateProjectManifest(raw: unknown): SubstrateProjectManifestVersioned {
-  const projectManifest = new SubstrateProjectManifestVersioned(raw as VersionedProjectManifest);
+export function parseEthereumProjectManifest(raw: unknown): EthereumProjectManifestVersioned {
+  const projectManifest = new EthereumProjectManifestVersioned(raw as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }
@@ -33,7 +33,7 @@ export function loadChainTypes(file: string, projectRoot: string): unknown {
   }
 }
 
-export function loadSubstrateProjectManifest(file: string): SubstrateProjectManifestVersioned {
+export function loadEthereumProjectManifest(file: string): EthereumProjectManifestVersioned {
   let manifestPath = file;
   if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
     const yamlFilePath = path.join(file, 'project.yaml');
@@ -48,7 +48,7 @@ export function loadSubstrateProjectManifest(file: string): SubstrateProjectMani
   }
 
   const doc = loadFromJsonOrYaml(manifestPath);
-  const projectManifest = new SubstrateProjectManifestVersioned(doc as VersionedProjectManifest);
+  const projectManifest = new EthereumProjectManifestVersioned(doc as VersionedProjectManifest);
   projectManifest.validate();
   return projectManifest;
 }

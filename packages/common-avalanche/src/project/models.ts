@@ -3,7 +3,26 @@
 
 import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} from '@polkadot/types/types';
 
-import {BaseMapping, FileReference} from '@subql/common';
+import {BaseMapping} from '@subql/common';
+import {
+  EthereumLogFilter,
+  EthereumHandlerKind,
+  SubqlCustomHandler,
+  SubqlMapping,
+  SubqlHandler,
+  SubqlRuntimeHandler,
+  SubqlRuntimeDatasource,
+  EthereumDatasourceKind,
+  SubqlCustomDatasource,
+  FileReference,
+  CustomDataSourceAsset,
+  EthereumBlockFilter,
+  SubqlBlockHandler,
+  SubqlEventHandler,
+  SubqlCallHandler,
+  EthereumTransactionFilter,
+  SubqlDatasource,
+} from '@subql/types-avalanche';
 import {plainToClass, Transform, Type} from 'class-transformer';
 import {
   ArrayMaxSize,
@@ -16,44 +35,20 @@ import {
   IsObject,
   ValidateNested,
 } from 'class-validator';
-import {
-  SubstrateCustomDataSourceAsset,
-  SubstrateBlockFilter,
-  SubstrateBlockHandler,
-  SubstrateCallFilter,
-  SubstrateCallHandler,
-  SubstrateCustomHandler,
-  SubstrateDatasourceKind,
-  SubstrateEventFilter,
-  SubstrateEventHandler,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateCustomDataSource,
-  AvalancheBaseFilter,
-  AvalancheHandler,
-  AvalancheDataSource,
-  AvalancheCallHandler,
-  AvalancheEventHandler,
-  AvalancheBlockHandler,
-} from './types';
 
-export class BlockFilter implements SubstrateBlockFilter {
-  @IsOptional()
-  @IsArray()
-  @ArrayMaxSize(2)
-  specVersion?: [number, number];
+export class BlockFilter implements EthereumBlockFilter {
   @IsOptional()
   @IsInt()
   modulo?: number;
 }
 
-export class EventFilter extends BlockFilter implements SubstrateEventFilter {
+export class LogFilter implements EthereumLogFilter {
+  @IsOptional()
+  @IsArray()
+  topics?: string[];
   @IsOptional()
   @IsString()
-  module?: string;
-  @IsOptional()
-  @IsString()
-  method?: string;
+  address?: string;
 }
 
 export class ChainTypes implements RegisteredTypes {
@@ -74,43 +69,52 @@ export class ChainTypes implements RegisteredTypes {
   typesSpec?: Record<string, RegistryTypes>;
 }
 
-export class CallFilter extends EventFilter implements SubstrateCallFilter {
+export class TransactionFilter implements EthereumTransactionFilter {
   @IsOptional()
-  @IsBoolean()
-  success?: boolean;
+  @IsString()
+  from?: string;
+  @IsOptional()
+  @IsString()
+  to?: string;
+  @IsOptional()
+  @IsString()
+  function?: string;
 }
 
-export class BlockHandler implements AvalancheBlockHandler {
+export class BlockHandler implements SubqlBlockHandler {
   @IsObject()
   @IsOptional()
-  filter?: AvalancheBaseFilter;
-  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Block]})
-  kind: SubstrateHandlerKind.Block;
+  @Type(() => BlockFilter)
+  filter?: BlockFilter;
+  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Block]})
+  kind: EthereumHandlerKind.Block;
   @IsString()
   handler: string;
 }
 
-export class CallHandler implements AvalancheCallHandler {
+export class CallHandler implements SubqlCallHandler {
   @IsObject()
   @IsOptional()
-  filter?: AvalancheBaseFilter;
-  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Call]})
-  kind: SubstrateHandlerKind.Call;
+  @Type(() => TransactionFilter)
+  filter?: TransactionFilter;
+  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Call]})
+  kind: EthereumHandlerKind.Call;
   @IsString()
   handler: string;
 }
 
-export class EventHandler implements AvalancheEventHandler {
+export class EventHandler implements SubqlEventHandler {
   @IsObject()
   @IsOptional()
-  filter?: AvalancheBaseFilter;
-  @IsEnum(SubstrateHandlerKind, {groups: [SubstrateHandlerKind.Event]})
-  kind: SubstrateHandlerKind.Event;
+  @Type(() => LogFilter)
+  filter?: LogFilter;
+  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Event]})
+  kind: EthereumHandlerKind.Event;
   @IsString()
   handler: string;
 }
 
-export class CustomHandler implements SubstrateCustomHandler {
+export class CustomHandler implements SubqlCustomHandler {
   @IsString()
   kind: string;
   @IsString()
@@ -120,16 +124,16 @@ export class CustomHandler implements SubstrateCustomHandler {
   filter?: Record<string, unknown>;
 }
 
-export class RuntimeMapping implements BaseMapping<AvalancheBaseFilter, AvalancheHandler> {
+export class EthereumMapping implements SubqlMapping {
   @Transform((params) => {
-    const handlers: AvalancheHandler[] = params.value;
+    const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case SubstrateHandlerKind.Event:
+        case EthereumHandlerKind.Event:
           return plainToClass(EventHandler, handler);
-        case SubstrateHandlerKind.Call:
+        case EthereumHandlerKind.Call:
           return plainToClass(CallHandler, handler);
-        case SubstrateHandlerKind.Block:
+        case EthereumHandlerKind.Block:
           return plainToClass(BlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
@@ -138,12 +142,12 @@ export class RuntimeMapping implements BaseMapping<AvalancheBaseFilter, Avalanch
   })
   @IsArray()
   @ValidateNested()
-  handlers: AvalancheHandler[];
+  handlers: SubqlHandler[];
   @IsString()
   file: string;
 }
 
-export class CustomMapping implements BaseMapping<Record<string, unknown>, SubstrateCustomHandler> {
+export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
   @IsArray()
   @Type(() => CustomHandler)
   @ValidateNested()
@@ -152,25 +156,15 @@ export class CustomMapping implements BaseMapping<Record<string, unknown>, Subst
   file: string;
 }
 
-export class SubqlNetworkFilterImpl implements SubstrateNetworkFilter {
-  @IsString()
-  @IsOptional()
-  specName?: string;
-}
-
-export class RuntimeDataSourceBase implements AvalancheDataSource {
-  @IsEnum(SubstrateDatasourceKind, {groups: [SubstrateDatasourceKind.Runtime]})
-  kind: SubstrateDatasourceKind.Runtime;
-  @Type(() => RuntimeMapping)
+export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
+  @IsEnum(EthereumDatasourceKind, {groups: [EthereumDatasourceKind.Runtime]})
+  kind: EthereumDatasourceKind.Runtime;
+  @Type(() => EthereumMapping)
   @ValidateNested()
-  mapping: RuntimeMapping;
+  mapping: M;
   @IsOptional()
   @IsInt()
   startBlock?: number;
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => SubqlNetworkFilterImpl)
-  filter?: SubstrateNetworkFilter;
   @IsOptional()
   assets?: Map<string, FileReference>;
   @IsOptional()
@@ -182,8 +176,8 @@ export class FileReferenceImpl implements FileReference {
   file: string;
 }
 
-export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFilter, M extends CustomMapping, O = any>
-  implements SubstrateCustomDataSource<K, T, O>
+export class CustomDataSourceBase<K extends string, M extends SubqlMapping = SubqlMapping<SubqlCustomHandler>>
+  implements SubqlCustomDatasource<K, M>
 {
   @IsString()
   kind: K;
@@ -195,11 +189,8 @@ export class CustomDataSourceBase<K extends string, T extends SubstrateNetworkFi
   startBlock?: number;
   @Type(() => FileReferenceImpl)
   @ValidateNested({each: true})
-  assets: Map<string, SubstrateCustomDataSourceAsset>;
+  assets: Map<string, CustomDataSourceAsset>;
   @Type(() => FileReferenceImpl)
   @IsObject()
   processor: FileReference;
-  @IsOptional()
-  @IsObject()
-  filter?: T;
 }

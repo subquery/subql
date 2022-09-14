@@ -1,35 +1,33 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import {
   isCustomDs,
-  SubstrateHandlerKind,
-  SubstrateRuntimeHandlerFilter,
+  EthereumHandlerKind,
+  SubqlHandlerFilter,
 } from '@subql/common-avalanche';
 import {
   ApiService,
+  delay,
+  checkMemoryUsage,
+  NodeConfig,
+  IndexerEvent,
   getYargsOption,
   getLogger,
-  IndexerEvent,
-} from '@subql/common-node';
+} from '@subql/node-core';
 import {
   DictionaryQueryEntry,
   ApiWrapper,
-  BlockWrapper,
-  AvalancheLogFilter,
-  AvalancheTransactionFilter,
+  EthereumLogFilter,
+  EthereumTransactionFilter,
 } from '@subql/types-avalanche';
 import { range, sortBy, uniqBy } from 'lodash';
 import { calcInterval } from '../avalanche/utils.avalanche';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { delay } from '../utils/promise';
 import { eventToTopic, functionToSighash } from '../utils/string';
-import { BlockedQueue } from './BlockedQueue';
 import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -39,15 +37,13 @@ const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
-const HIGH_THRESHOLD = 0.85;
-const LOW_THRESHOLD = 0.6;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
-  filter: AvalancheLogFilter,
+  filter: EthereumLogFilter,
 ): DictionaryQueryEntry {
   const conditions = [];
   if (filter.address) {
@@ -73,7 +69,7 @@ function eventFilterToQueryEntry(
 }
 
 function callFilterToQueryEntry(
-  filter: AvalancheTransactionFilter,
+  filter: EthereumTransactionFilter,
 ): DictionaryQueryEntry {
   const conditions = [];
   if (filter.from) {
@@ -100,39 +96,10 @@ function callFilterToQueryEntry(
   };
 }
 
-function checkMemoryUsage(batchSize: number, batchSizeScale: number): number {
-  const memoryData = getHeapStatistics();
-  const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
-  if (argv.profiler) {
-    logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
-    logger.info(`Heap Usage: ${ratio}`);
-  }
-  let scale = batchSizeScale;
-
-  if (ratio > HIGH_THRESHOLD) {
-    if (scale > 0) {
-      scale = Math.max(scale - 0.1, 0);
-      logger.debug(`Heap usage: ${ratio}, decreasing batch size by 10%`);
-    }
-  }
-
-  if (ratio < LOW_THRESHOLD) {
-    if (scale < 1) {
-      scale = Math.min(scale + 0.1, 1);
-      logger.debug(`Heap usage: ${ratio} increasing batch size by 10%`);
-    }
-  }
-  return scale;
-}
-
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
-  private latestProcessedHeight: number;
-  private latestBufferedHeight: number;
-  private blockBuffer: BlockedQueue<BlockWrapper>;
-  private blockNumberBuffer: BlockedQueue<number>;
   private isShutdown = false;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
@@ -145,17 +112,10 @@ export class FetchService implements OnApplicationShutdown {
     private project: SubqueryProject,
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
-    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
   ) {
-    this.blockBuffer = new BlockedQueue<BlockWrapper>(
-      this.nodeConfig.batchSize * 3,
-    );
-    this.blockNumberBuffer = new BlockedQueue<number>(
-      this.nodeConfig.batchSize * 3,
-    );
     this.batchSizeScale = 1;
   }
 
@@ -179,15 +139,15 @@ export class FetchService implements OnApplicationShutdown {
     const dataSources = this.project.dataSources;
     for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       for (const handler of ds.mapping.handlers) {
-        let filterList: SubstrateRuntimeHandlerFilter[];
+        let filterList: SubqlHandlerFilter[];
         filterList = [handler.filter];
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (handler.kind) {
-          case SubstrateHandlerKind.Block:
+          case EthereumHandlerKind.Block:
             return [];
-          case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as AvalancheTransactionFilter[]) {
+          case EthereumHandlerKind.Call: {
+            for (const filter of filterList as EthereumTransactionFilter[]) {
               if (
                 filter.from !== undefined ||
                 filter.to !== undefined ||
@@ -200,8 +160,8 @@ export class FetchService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as AvalancheLogFilter[]) {
+          case EthereumHandlerKind.Event: {
+            for (const filter of filterList as EthereumLogFilter[]) {
               if (filter.address || filter.topics) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
@@ -231,34 +191,6 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary;
   }
 
-  register(next: (value: BlockWrapper) => Promise<void>): () => void {
-    let stopper = false;
-    void (async () => {
-      while (!stopper && !this.isShutdown) {
-        const block = await this.blockBuffer.take();
-        this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-          value: this.blockBuffer.size,
-        });
-        let success = false;
-        while (!success) {
-          try {
-            await next(block);
-            success = true;
-          } catch (e) {
-            logger.error(
-              e,
-              `failed to index block at height ${block.blockHeight} ${
-                e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
-              }`,
-            );
-            process.exit(1);
-          }
-        }
-      }
-    })();
-    return () => (stopper = true);
-  }
-
   async init(startHeight: number): Promise<void> {
     if (this.api) {
       const CHAIN_INTERVAL = calcInterval(this.api) * INTERVAL_PERCENT;
@@ -286,10 +218,7 @@ export class FetchService implements OnApplicationShutdown {
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
     if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(
-        this.nodeConfig.batchSize,
-        this.batchSizeScale,
-      );
+      const scale = checkMemoryUsage(this.batchSizeScale);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -335,10 +264,6 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  latestProcessed(height: number): void {
-    this.latestProcessedHeight = height;
-  }
-
   async startLoop(initBlockHeight: number): Promise<void> {
     await this.fillNextBlockBuffer(initBlockHeight);
   }
@@ -351,7 +276,7 @@ export class FetchService implements OnApplicationShutdown {
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === SubstrateHandlerKind.Block &&
+          handler.kind === EthereumHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {
@@ -457,32 +382,6 @@ export class FetchService implements OnApplicationShutdown {
       this.blockDispatcher.enqueueBlocks(
         range(startBlockHeight, endHeight + 1),
       );
-    }
-  }
-
-  async fillBlockBuffer(): Promise<void> {
-    while (!this.isShutdown) {
-      const takeCount = Math.min(
-        this.blockBuffer.freeSize,
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-      );
-
-      if (this.blockNumberBuffer.size === 0 || takeCount === 0) {
-        await delay(1);
-        continue;
-      }
-
-      const bufferBlocks = await this.blockNumberBuffer.takeAll(takeCount);
-      const blocks = await this.api.fetchBlocks(bufferBlocks);
-      logger.info(
-        `fetch block [${bufferBlocks[0]},${
-          bufferBlocks[bufferBlocks.length - 1]
-        }], total ${bufferBlocks.length} blocks`,
-      );
-      this.blockBuffer.putAll(blocks);
-      this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-        value: this.blockBuffer.size,
-      });
     }
   }
 

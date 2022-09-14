@@ -3,38 +3,35 @@
 
 import {
   SecondLayerHandlerProcessor,
-  SubstrateCustomDataSource,
-  SubstrateDataSource,
-  SubstrateDatasourceKind,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateRuntimeDataSource,
-} from './types';
+  SubqlCustomDatasource,
+  SubqlDatasource,
+  EthereumDatasourceKind,
+  EthereumHandlerKind,
+  SubqlRuntimeDatasource,
+} from '@subql/types-avalanche';
 
-export function isBlockHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Block, T, E> {
-  return hp.baseHandlerKind === SubstrateHandlerKind.Block;
+export function isBlockHandlerProcessor<E>(
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Block, unknown, E> {
+  return hp.baseHandlerKind === EthereumHandlerKind.Block;
 }
 
-export function isEventHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Event, T, E> {
-  return hp.baseHandlerKind === SubstrateHandlerKind.Event;
+export function isEventHandlerProcessor<E>(
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Event, unknown, E> {
+  return hp.baseHandlerKind === EthereumHandlerKind.Event;
 }
 
-export function isCallHandlerProcessor<T extends SubstrateNetworkFilter, E>(
-  hp: SecondLayerHandlerProcessor<SubstrateHandlerKind, T, unknown>
-): hp is SecondLayerHandlerProcessor<SubstrateHandlerKind.Call, T, E> {
-  return hp.baseHandlerKind === SubstrateHandlerKind.Call;
+export function isCallHandlerProcessor<E>(
+  hp: SecondLayerHandlerProcessor<EthereumHandlerKind, unknown, unknown>
+): hp is SecondLayerHandlerProcessor<EthereumHandlerKind.Call, unknown, E> {
+  return hp.baseHandlerKind === EthereumHandlerKind.Call;
 }
 
-export function isCustomDs<F extends SubstrateNetworkFilter>(
-  ds: SubstrateDataSource
-): ds is SubstrateCustomDataSource<string, F> {
-  return ds.kind !== SubstrateDatasourceKind.Runtime && !!(ds as SubstrateCustomDataSource<string, F>).processor;
+export function isCustomDs(ds: SubqlDatasource): ds is SubqlCustomDatasource<string> {
+  return ds.kind !== EthereumDatasourceKind.Runtime && !!(ds as SubqlCustomDatasource<string>).processor;
 }
 
-export function isRuntimeDs(ds: SubstrateDataSource): ds is SubstrateRuntimeDataSource {
-  return ds.kind === SubstrateDatasourceKind.Runtime;
+export function isRuntimeDs(ds: SubqlDatasource): ds is SubqlRuntimeDatasource {
+  return ds.kind === EthereumDatasourceKind.Runtime;
 }

@@ -21,25 +21,37 @@ import {
   ValidateNested,
   validateSync,
 } from 'class-validator';
-import {AvalancheDataSource} from '../../types';
+import {SubqlEthereumDataSource} from '../../types';
+import {CustomDatasourceTemplate, RuntimeDatasourceTemplate} from '../v0_2_1';
 import {
-  AvalancheDatasourceV0_2_0,
-  AvalancheRuntimeDataSourceV0_2_0Impl,
   FileType,
-  SubstrateCustomDataSourceV0_2_0Impl,
-} from '../v0_2_0';
-import {
-  CustomDatasourceTemplate,
-  CustomDatasourceTemplateImpl,
-  RuntimeDatasourceTemplate,
-  RuntimeDatasourceTemplateImpl,
-} from '../v0_2_1';
-import {SubstrateProjectManifestV1_0_0} from './types';
+  EthereumCustomDataSourceV0_3_0Impl,
+  EthereumRuntimeDataSourceV0_3_0Impl,
+  RuntimeDataSourceV0_3_0,
+  CustomDatasourceV0_3_0,
+} from '../v0_3_0';
+import {EthereumProjectManifestV1_0_0} from './types';
 
-const AVALANCHE_NODE_NAME = `@subql/node-avalanche`;
+const Ethereum_NODE_NAME = `@subql/node-ethereum`;
 
-export class SubstrateRunnerNodeImpl implements NodeSpec {
-  @Equals(AVALANCHE_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${AVALANCHE_NODE_NAME}'`})
+export class RuntimeDatasourceTemplateImpl
+  extends EthereumRuntimeDataSourceV0_3_0Impl
+  implements RuntimeDatasourceTemplate
+{
+  @IsString()
+  name: string;
+}
+
+export class CustomDatasourceTemplateImpl
+  extends EthereumCustomDataSourceV0_3_0Impl
+  implements CustomDatasourceTemplate
+{
+  @IsString()
+  name: string;
+}
+
+export class EthereumRunnerNodeImpl implements NodeSpec {
+  @Equals(Ethereum_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${Ethereum_NODE_NAME}'`})
   name: string;
   @IsString()
   @Validate(SemverVersionValidator)
@@ -47,10 +59,10 @@ export class SubstrateRunnerNodeImpl implements NodeSpec {
   version: string;
 }
 
-export class SubstrateRunnerSpecsImpl implements RunnerSpecs {
+export class EthereumRunnerSpecsImpl implements RunnerSpecs {
   @IsObject()
   @ValidateNested()
-  @Type(() => SubstrateRunnerNodeImpl)
+  @Type(() => EthereumRunnerNodeImpl)
   node: NodeSpec;
   @IsObject()
   @ValidateNested()
@@ -95,28 +107,28 @@ export class DeploymentV1_0_0 {
   specVersion: string;
   @IsObject()
   @ValidateNested()
-  @Type(() => SubstrateRunnerSpecsImpl)
+  @Type(() => EthereumRunnerSpecsImpl)
   runner: RunnerSpecs;
   @ValidateNested()
   @Type(() => FileType)
   schema: FileType;
   @IsArray()
   @ValidateNested()
-  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
+  @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: AvalancheDatasourceV0_2_0[];
+  dataSources: (RuntimeDataSourceV0_3_0 | CustomDatasourceV0_3_0)[];
   @IsOptional()
   @IsArray()
   @ValidateNested()
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -125,18 +137,18 @@ export class DeploymentV1_0_0 {
 
 export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   extends ProjectManifestBaseImpl<D>
-  implements SubstrateProjectManifestV1_0_0
+  implements EthereumProjectManifestV1_0_0
 {
   @Equals('1.0.0')
   specVersion: string;
-  @Type(() => SubstrateCustomDataSourceV0_2_0Impl, {
+  @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: AvalancheRuntimeDataSourceV0_2_0Impl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
-  dataSources: AvalancheDataSource[];
+  dataSources: SubqlEthereumDataSource[];
   @Type(() => ProjectNetworkV1_0_0)
   network: ProjectNetworkV1_0_0;
   @IsString()
@@ -152,14 +164,14 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'avalanche/Runtime'}],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'Ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
   @IsObject()
   @ValidateNested()
-  @Type(() => SubstrateRunnerSpecsImpl)
+  @Type(() => EthereumRunnerSpecsImpl)
   runner: RunnerSpecs;
   protected _deployment: D;
 

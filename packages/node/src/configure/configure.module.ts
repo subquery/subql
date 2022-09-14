@@ -5,10 +5,16 @@ import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
-import { SubstrateProjectNetworkConfig } from '@subql/common-avalanche';
-import { getLogger, getYargsOption, setLevel } from '@subql/common-node';
+import { EthereumProjectNetworkConfig } from '@subql/common-avalanche';
+import {
+  IConfig,
+  MinConfig,
+  NodeConfig,
+  getYargsOption,
+  getLogger,
+  setLevel,
+} from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
-import { IConfig, MinConfig, NodeConfig } from './NodeConfig';
 import { SubqueryProject } from './SubqueryProject';
 const logger = getLogger('configure');
 
@@ -119,7 +125,7 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryProject.create(
         argv.subquery,
-        omitBy<Partial<SubstrateProjectNetworkConfig>>(
+        omitBy<Partial<EthereumProjectNetworkConfig>>(
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,

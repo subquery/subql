@@ -9,6 +9,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-09-07
+
+### Changed
+- Sync with Substrate SDK.
+
+
 ## [0.2.0] - 2022-06-29
 ### Added
 - Add CChain provider that implements Eth provider interface for querying contracts, add block to log object (#1143)

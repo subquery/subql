@@ -12,12 +12,12 @@ import {
   loadChainTypes,
   loadChainTypesFromJs,
   parseChainTypes,
-  RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-  SubstrateRuntimeHandler,
-  SubstrateCustomHandler,
-  SubstrateHandler,
-  SubstrateHandlerKind,
+  SubqlRuntimeHandler,
+  SubqlCustomHandler,
+  SubqlHandler,
+  AvalancheHandlerKind,
+  RuntimeDataSourceV0_0_1,
 } from '@subql/common-avalanche';
 import yaml from 'js-yaml';
 import tar from 'tar';
@@ -61,14 +61,14 @@ export function getProjectEntry(root: string): string {
 }
 
 export function isBaseHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateRuntimeHandler {
-  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
+  handler: SubqlHandler,
+): handler is SubqlRuntimeHandler {
+  return Object.values<string>(AvalancheHandlerKind).includes(handler.kind);
 }
 
 export function isCustomHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateCustomHandler {
+  handler: SubqlHandler,
+): handler is SubqlCustomHandler {
   return !isBaseHandler(handler);
 }
 

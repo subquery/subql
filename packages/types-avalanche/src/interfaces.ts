@@ -3,17 +3,8 @@
 
 // import {ApiPromise} from '@polkadot/api';
 // import {ApiDecoration} from '@polkadot/api/types';
-import {AlgorandBlock, AlgorandBlockWrapper, AlgorandEvent, AlgorandTransaction} from './algorand';
-import {
-  AvalancheBlock,
-  AvalancheBlockWrapper,
-  AvalancheTransactionFilter,
-  AvalancheLog,
-  AvalancheLogFilter,
-  AvalancheTransaction,
-} from './avalanche';
-import {SubqlCallFilter, SubqlEventFilter} from './project';
-import {SubstrateBlock, SubstrateBlockWrapper, SubstrateEvent, SubstrateExtrinsic} from './substrate';
+import { Block } from '@ethersproject/abstract-provider';
+import { EthereumBlock, EthereumBlockWrapper, EthereumLog, EthereumLogFilter, EthereumTransaction, EthereumTransactionFilter } from './ethereum';
 
 export interface Entity {
   id: string;
@@ -35,14 +26,11 @@ export interface Store {
 }
 
 export interface BlockWrapper<
-  B extends SubstrateBlock | AlgorandBlock | AvalancheBlock = SubstrateBlock | AlgorandBlock | AvalancheBlock,
-  C extends SubstrateExtrinsic | AlgorandTransaction | AvalancheTransaction =
-    | SubstrateExtrinsic
-    | AlgorandTransaction
-    | AvalancheTransaction,
-  E extends SubstrateEvent | AlgorandEvent | AvalancheLog = SubstrateEvent | AlgorandEvent | AvalancheLog,
-  CF extends SubqlCallFilter | AvalancheTransactionFilter = SubqlCallFilter | AvalancheTransactionFilter,
-  EF extends SubqlEventFilter | AvalancheLogFilter = SubqlEventFilter | AvalancheLogFilter
+  B extends EthereumBlock = EthereumBlock,
+  C extends EthereumTransaction = EthereumTransaction,
+  E extends EthereumLog = EthereumLog,
+  CF extends EthereumTransactionFilter = EthereumTransactionFilter,
+  EF extends EthereumLogFilter = EthereumLogFilter
 > {
   block: B;
   blockHeight: number;
@@ -54,9 +42,7 @@ export interface BlockWrapper<
   logs?: E[];
 }
 
-export interface ApiWrapper<
-  BW extends BlockWrapper = SubstrateBlockWrapper | AvalancheBlockWrapper | AlgorandBlockWrapper
-> {
+export interface ApiWrapper<BW extends BlockWrapper = EthereumBlockWrapper> {
   init: () => Promise<void>;
   getGenesisHash: () => string;
   getRuntimeChain: () => string;

@@ -2,5 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './api.ethereum';
-export * from './api.service.avalanche';
+export * from './api.service.ethereum';
 export * from './provider';

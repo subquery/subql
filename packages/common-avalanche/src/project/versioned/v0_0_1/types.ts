@@ -1,34 +1,19 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {RegisteredTypes} from '@polkadot/types/types';
-import {BaseMapping, IProjectManifest} from '@subql/common';
+import {BaseMapping} from '@subql/common';
 import {
-  SubstrateProjectNetworkConfig,
-  SubstrateRuntimeDataSource,
-  SubstrateNetworkFilter,
-  SubstrateRuntimeHandlerFilter,
-  SubstrateRuntimeHandler,
-  SubstrateDatasourceKind,
-} from '../../types';
+  EthereumDatasourceKind,
+  SubqlHandler,
+  SubqlHandlerFilter,
+  SubqlRuntimeDatasource,
+  SubqlRuntimeHandler,
+} from '@subql/types-avalanche';
 
-export type ProjectNetworkConfigV0_0_1 = SubstrateProjectNetworkConfig & RegisteredTypes;
+export type ManifestV0_0_1Mapping = Omit<BaseMapping<SubqlHandlerFilter, SubqlRuntimeHandler>, 'file'>;
 
-// export interface RuntimeDataSourceV0_0_1 extends SubstrateRuntimeDataSource {
-//   name: string;
-//   filter?: SubstrateNetworkFilter;
-// }
-
-export type ManifestV0_0_1Mapping = Omit<BaseMapping<SubstrateRuntimeHandlerFilter, SubstrateRuntimeHandler>, 'file'>;
-
-export interface RuntimeDataSourceV0_0_1 extends Omit<SubstrateRuntimeDataSource, 'mapping'> {
+export interface RuntimeDataSourceV0_0_1 extends Omit<SubqlRuntimeDatasource, 'mapping'> {
   name: string;
-  filter?: SubstrateNetworkFilter;
-  kind: SubstrateDatasourceKind.Runtime;
+  kind: EthereumDatasourceKind.Runtime;
   mapping: ManifestV0_0_1Mapping;
-}
-
-export interface ProjectManifestV0_0_1 extends IProjectManifest<RuntimeDataSourceV0_0_1> {
-  schema: string;
-  network: ProjectNetworkConfigV0_0_1;
 }

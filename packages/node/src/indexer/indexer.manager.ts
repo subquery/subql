@@ -1,59 +1,50 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
-import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
-  SubstrateRuntimeDataSource,
-  SubstrateHandlerKind,
-  SubstrateRuntimeHandlerInputMap,
   isBlockHandlerProcessor,
-  isEventHandlerProcessor,
   isCallHandlerProcessor,
+  isEventHandlerProcessor,
+  isCustomDs,
+  isRuntimeDs,
+  SubqlEthereumCustomDataSource,
+  SubqlCustomHandler,
+  EthereumHandlerKind,
+  EthereumRuntimeHandlerInputMap,
 } from '@subql/common-avalanche';
 import {
-  getLogger,
-  getYargsOption,
-  IndexerEvent,
-  profiler,
   ApiService,
-} from '@subql/common-node';
+  PoiBlock,
+  StoreService,
+  PoiService,
+  SubqueryRepo,
+  NodeConfig,
+  getYargsOption,
+  getLogger,
+  profiler,
+  profilerWrap,
+} from '@subql/node-core';
 import {
   ApiWrapper,
   EthereumTransaction,
   EthereumLog,
-  SubqlHandlerKind,
-  AvalancheBlock,
-  RuntimeHandlerInputMap,
   SubqlRuntimeHandler,
   EthereumBlockWrapper,
-  AvalancheHandlerKind,
-  AvalancheRuntimeHandlerInputMap,
   EthereumBlock,
-  EthereumRuntimeHandlerInputMap,
 } from '@subql/types-avalanche';
-import { getAllEntitiesRelations } from '@subql/utils';
-import { QueryTypes, Sequelize, Transaction } from 'sequelize';
-import { EthereumApiService } from '../avalanche';
+import { Sequelize } from 'sequelize';
 import { EthereumBlockWrapped } from '../avalanche/block.ethereum';
-import { NodeConfig } from '../configure/NodeConfig';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { SubqueryRepo } from '../entities';
+import {
+  asSecondLayerHandlerProcessor_1_0_0,
+  DsProcessorService,
+} from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { MetadataFactory, MetadataRepo } from './entities/Metadata.entity';
-import { MmrService } from './mmr.service';
-import { PoiService } from './poi.service';
-import { PoiBlock } from './PoiBlock';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-import { StoreService } from './store.service';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
 
-const DEFAULT_DB_SCHEMA = 'public';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
@@ -62,22 +53,19 @@ const { argv } = getYargsOption();
 @Injectable()
 export class IndexerManager {
   private api: ApiWrapper;
-  private prevSpecVersion?: number;
-  protected metadataRepo: MetadataRepo;
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
     private storeService: StoreService,
     private apiService: ApiService,
     private poiService: PoiService,
-    protected mmrService: MmrService,
     private sequelize: Sequelize,
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,
+    private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
-    private eventEmitter: EventEmitter2,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -91,10 +79,6 @@ export class IndexerManager {
   ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
     const { blockHeight } = blockContent;
     let dynamicDsCreated = false;
-    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
-      height: blockHeight,
-      timestamp: Date.now(),
-    });
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
@@ -149,7 +133,10 @@ export class IndexerManager {
         ],
         { transaction: tx },
       );
+      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
+      await this.storeService.incrementBlockCount(tx);
 
+      // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
       if (this.nodeConfig.proofOfIndex) {
         //check if operation is null, then poi will not be inserted
@@ -187,183 +174,8 @@ export class IndexerManager {
     await this.projectService.init();
   }
 
-  private async ensureProject(): Promise<string> {
-    let schema = await this.getExistingProjectSchema();
-    if (!schema) {
-      schema = await this.createProjectSchema();
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema and metadata table
-          await this.sequelize.dropSchema(`"${schema}"`, {
-            logging: false,
-            benchmark: false,
-          });
-
-          // remove schema from subquery table (might not exist)
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              WHERE name = :name`,
-            {
-              replacements: { name: this.nodeConfig.subqueryName },
-              type: QueryTypes.DELETE,
-            },
-          );
-
-          logger.info('force cleaned schema and tables');
-
-          if (fs.existsSync(this.nodeConfig.mmrPath)) {
-            await fs.promises.unlink(this.nodeConfig.mmrPath);
-            logger.info('force cleaned file based mmr');
-          }
-        } catch (err) {
-          logger.error(err, 'failed to force clean');
-        }
-        schema = await this.createProjectSchema();
-      }
-    }
-
-    this.eventEmitter.emit(IndexerEvent.Ready, {
-      value: true,
-    });
-
-    return schema;
-  }
-
-  // Get existing project schema, undefined when doesn't exist
-  private async getExistingProjectSchema(): Promise<string> {
-    let schema = this.nodeConfig.localMode
-      ? DEFAULT_DB_SCHEMA
-      : this.nodeConfig.dbSchema;
-
-    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-    const schemas = (await this.sequelize
-      .query(`SELECT schema_name FROM information_schema.schemata`, {
-        type: QueryTypes.SELECT,
-      })
-      .then((xs) => xs.map((x: any) => x.schema_name))
-      .catch((err) => {
-        logger.error(`Unable to fetch all schemas: ${err}`);
-        process.exit(1);
-      })) as [string];
-
-    if (!schemas.includes(schema)) {
-      // fallback to subqueries table
-      const subqueryModel = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (subqueryModel) {
-        schema = subqueryModel.dbSchema;
-      } else {
-        schema = undefined;
-      }
-    }
-    return schema;
-  }
-
-  private async createProjectSchema(): Promise<string> {
-    let schema: string;
-    if (this.nodeConfig.localMode) {
-      // create tables in default schema if local mode is enabled
-      schema = DEFAULT_DB_SCHEMA;
-    } else {
-      schema = this.nodeConfig.dbSchema;
-      const schemas = await this.sequelize.showAllSchemas(undefined);
-      if (!(schemas as unknown as string[]).includes(schema)) {
-        await this.sequelize.createSchema(`"${schema}"`, undefined);
-      }
-    }
-
-    return schema;
-  }
-
-  private async initDbSchema(schema: string): Promise<void> {
-    const graphqlSchema = this.project.schema;
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, schema);
-  }
-
-  private async ensureMetadata(schema: string): Promise<MetadataRepo> {
-    const metadataRepo = MetadataFactory(this.sequelize, schema);
-
-    const project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-
-    this.eventEmitter.emit(
-      IndexerEvent.NetworkMetadata,
-      this.apiService.networkMeta,
-    );
-
-    const keys = [
-      'lastProcessedHeight',
-      'blockOffset',
-      'indexerNodeVersion',
-      'chain',
-      'specName',
-      'genesisHash',
-    ] as const;
-
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-    });
-
-    const keyValue = entries.reduce((arr, curr) => {
-      arr[curr.key] = curr.value;
-      return arr;
-    }, {} as { [key in typeof keys[number]]: string | boolean | number });
-
-    const { chain, genesisHash, specName } = this.apiService.networkMeta;
-
-    // blockOffset and genesisHash should only have been created once, never updated.
-    // If blockOffset is changed, will require re-index and re-sync poi.
-    if (!keyValue.blockOffset) {
-      const offsetValue = (this.getStartBlockFromDataSources() - 1).toString();
-      await metadataRepo.upsert({ key: 'blockOffset', value: offsetValue });
-    }
-
-    if (!keyValue.genesisHash) {
-      if (project) {
-        await metadataRepo.upsert({
-          key: 'genesisHash',
-          value: project.networkGenesis,
-        });
-      } else {
-        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
-      }
-    } else {
-      // Check if the configured genesisHash matches the currently stored genesisHash
-      assert(
-        // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
-        (this.project.network.genesisHash ?? genesisHash) ===
-          keyValue.genesisHash,
-        'Specified project manifest genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
-      );
-    }
-
-    if (keyValue.chain !== chain) {
-      await metadataRepo.upsert({ key: 'chain', value: chain });
-    }
-
-    if (keyValue.specName !== specName) {
-      await metadataRepo.upsert({ key: 'specName', value: specName });
-    }
-
-    if (keyValue.indexerNodeVersion !== packageVersion) {
-      await metadataRepo.upsert({
-        key: 'indexerNodeVersion',
-        value: packageVersion,
-      });
-    }
-
-    return metadataRepo;
-  }
-
   private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.getDataSourcesForSpecName();
+    let filteredDs = this.project.dataSources;
     if (filteredDs.length === 0) {
       logger.error(
         `Did not find any dataSource match with network specName ${this.api.getSpecName()}`,
@@ -384,27 +196,6 @@ export class IndexerManager {
       process.exit(1);
     }
     return filteredDs;
-  }
-
-  private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
-      (item) => item.startBlock ?? 1,
-    );
-    if (startBlocksList.length === 0) {
-      logger.error(
-        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
-      );
-      process.exit(1);
-    } else {
-      return Math.min(...startBlocksList);
-    }
-  }
-
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName || ds.filter.specName === this.api.getSpecName(),
-    );
   }
 
   private async indexBlockData(
@@ -429,7 +220,7 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(AvalancheHandlerKind.Block, block, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Block, block, ds, getVM);
     }
   }
 
@@ -439,7 +230,7 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(AvalancheHandlerKind.Call, tx, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Call, tx, ds, getVM);
     }
   }
 
@@ -449,44 +240,156 @@ export class IndexerManager {
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(AvalancheHandlerKind.Event, log, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Event, log, ds, getVM);
     }
   }
 
-  private async indexData<K extends AvalancheHandlerKind>(
+  private async indexData<K extends EthereumHandlerKind>(
     kind: K,
     data: EthereumRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     let vm: IndexerSandbox;
-    const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
-      (h) =>
-        h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+    if (isRuntimeDs(ds)) {
+      const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
+        (h) =>
+          h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+      );
+
+      for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
+        argv.profiler
+          ? await profilerWrap(
+              vm.securedExec.bind(vm),
+              'handlerPerformance',
+              handler.handler,
+            )(handler.handler, [data])
+          : await vm.securedExec(handler.handler, [data]);
+      }
+    } else if (isCustomDs(ds)) {
+      const handlers = this.filterCustomDsHandlers<K>(
+        ds,
+        data,
+        ProcessorTypeMap[kind],
+        (data, baseFilter) => {
+          switch (kind) {
+            case EthereumHandlerKind.Block:
+              return EthereumBlockWrapped.filterBlocksProcessor(
+                data as EthereumBlock,
+                baseFilter,
+              );
+            case EthereumHandlerKind.Call:
+              return EthereumBlockWrapped.filterTransactionsProcessor(
+                data as EthereumTransaction,
+                baseFilter,
+              );
+            case EthereumHandlerKind.Event:
+              return EthereumBlockWrapped.filterLogsProcessor(
+                data as EthereumLog,
+                baseFilter,
+              );
+            default:
+              throw new Error('Unsupported handler kind');
+          }
+        },
+      );
+
+      for (const handler of handlers) {
+        vm = vm ?? (await getVM(ds));
+        await this.transformAndExecuteCustomDs(ds, vm, handler, data);
+      }
+    }
+  }
+
+  private filterCustomDsHandlers<K extends EthereumHandlerKind>(
+    ds: SubqlEthereumCustomDataSource<string, any>,
+    data: EthereumRuntimeHandlerInputMap[K],
+    baseHandlerCheck: ProcessorTypeMap[K],
+    baseFilter: (
+      data: EthereumRuntimeHandlerInputMap[K],
+      baseFilter: any,
+    ) => boolean,
+  ): SubqlCustomHandler[] {
+    const plugin = this.dsProcessorService.getDsProcessor(ds);
+
+    return ds.mapping.handlers
+      .filter((handler) => {
+        const processor = plugin.handlerProcessors[handler.kind];
+        if (baseHandlerCheck(processor)) {
+          processor.baseFilter;
+
+          return baseFilter(data, processor.baseFilter);
+        }
+        return false;
+      })
+      .filter((handler) => {
+        const processor = asSecondLayerHandlerProcessor_1_0_0(
+          plugin.handlerProcessors[handler.kind],
+        );
+
+        try {
+          return processor.filterProcessor({
+            filter: handler.filter,
+            input: data,
+            ds,
+          });
+        } catch (e) {
+          logger.error(e, 'Failed to run ds processer filter.');
+          throw e;
+        }
+      });
+  }
+
+  private async transformAndExecuteCustomDs<K extends EthereumHandlerKind>(
+    ds: SubqlEthereumCustomDataSource<string, any>,
+    vm: IndexerSandbox,
+    handler: SubqlCustomHandler,
+    data: EthereumRuntimeHandlerInputMap[K],
+  ): Promise<void> {
+    const plugin = this.dsProcessorService.getDsProcessor(ds);
+    const assets = await this.dsProcessorService.getAssets(ds);
+
+    const processor = asSecondLayerHandlerProcessor_1_0_0(
+      plugin.handlerProcessors[handler.kind],
     );
 
-    for (const handler of handlers) {
-      vm = vm ?? (await getVM(ds));
-      await vm.securedExec(handler.handler, [data]);
+    const transformedData = await processor
+      .transformer({
+        input: data,
+        ds,
+        api: this.api,
+        filter: handler.filter,
+        assets,
+      })
+      .catch((e) => {
+        logger.error(e, 'Failed to transform data with ds processor.');
+        throw e;
+      });
+
+    // We can not run this in parallel. the transformed data items may be dependent on one another.
+    // An example of this is with Acala EVM packing multiple EVM logs into a single Substrate event
+    for (const _data of transformedData) {
+      await vm.securedExec(handler.handler, [_data]);
     }
   }
 }
 
 type ProcessorTypeMap = {
-  [SubqlHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [SubqlHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [SubqlHandlerKind.Call]: typeof isCallHandlerProcessor;
+  [EthereumHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [EthereumHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [EthereumHandlerKind.Call]: typeof isCallHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [SubqlHandlerKind.Block]: isBlockHandlerProcessor,
-  [SubqlHandlerKind.Event]: isEventHandlerProcessor,
-  [SubqlHandlerKind.Call]: isCallHandlerProcessor,
+  [EthereumHandlerKind.Block]: isBlockHandlerProcessor,
+  [EthereumHandlerKind.Event]: isEventHandlerProcessor,
+  [EthereumHandlerKind.Call]: isCallHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [AvalancheHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
-  [AvalancheHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
-  [AvalancheHandlerKind.Call]:
+  [EthereumHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
+  [EthereumHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
+  [EthereumHandlerKind.Call]:
     EthereumBlockWrapped.filterTransactionsProcessor,
 };
