@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.9.1] - 2022-09-15
+
+### Fixed
+- OnFinality endpoints with api key in query params working. (#54)
+
 ### Added
 - Filter for `includeFailedTx` on Transaction and Message handlers. This will now exclude failed transactions by default. (#53)
 
