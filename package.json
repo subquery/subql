@@ -56,8 +56,10 @@
   },
   "packageManager": "yarn@3.1.1",
   "dependencies": {
+    "@subql/node-core": "^0.1.1",
     "@subql/utils": "^1.1.0",
     "ethers": "^5.7.0",
+    "sequelize": "6.19.0",
     "web3-providers-http": "^1.7.5",
     "web3-providers-ws": "^1.7.5"
   }

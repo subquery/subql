@@ -3,9 +3,8 @@
 
 import { Injectable } from '@nestjs/common';
 import { ProjectNetworkV1_0_0 } from '@subql/common-avalanche';
-import { ApiService, getLogger } from '@subql/common-node';
+import { ApiService, getLogger } from '@subql/node-core';
 import { EthereumApi } from './api.ethereum';
-
 
 const logger = getLogger('api');
 
@@ -33,7 +32,6 @@ export class EthereumApiService extends ApiService {
       };
 
       if (network.chainId !== this.api.getChainId().toString()) {
-
         const err = new Error(
           `Network chainId doesn't match expected chainId. expected="${
             network.chainId

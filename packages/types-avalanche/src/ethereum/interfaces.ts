@@ -23,7 +23,7 @@ export interface EthereumResult extends ReadonlyArray<any> {
   readonly [key: string]: any;
 }
 export type EthereumBlock = ethers.providers.Block & {
-  logs: EthereumLog[];
+  logs?: EthereumLog[];
 };
 
 export type EthereumTransaction = ethers.providers.TransactionResponse & {
@@ -32,7 +32,7 @@ export type EthereumTransaction = ethers.providers.TransactionResponse & {
 
 export type EthereumLog<T extends EthereumResult = EthereumResult> = ethers.providers.Log & {
   args?: T;
-  block: EthereumBlock;
+  block?: EthereumBlock;
 };
 
 export type EthereumBlockWrapper = BlockWrapper<

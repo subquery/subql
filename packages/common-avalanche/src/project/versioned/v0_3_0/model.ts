@@ -84,7 +84,7 @@ export class DeploymentV0_3_0 {
   @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -116,7 +116,7 @@ export class ProjectManifestV0_3_0Impl
   @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: EthereumCustomDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: EthereumCustomDataSourceV0_3_0Impl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

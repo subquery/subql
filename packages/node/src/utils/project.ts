@@ -16,7 +16,7 @@ import {
   SubqlRuntimeHandler,
   SubqlCustomHandler,
   SubqlHandler,
-  AvalancheHandlerKind,
+  EthereumHandlerKind,
   RuntimeDataSourceV0_0_1,
 } from '@subql/common-avalanche';
 import yaml from 'js-yaml';
@@ -63,7 +63,7 @@ export function getProjectEntry(root: string): string {
 export function isBaseHandler(
   handler: SubqlHandler,
 ): handler is SubqlRuntimeHandler {
-  return Object.values<string>(AvalancheHandlerKind).includes(handler.kind);
+  return Object.values<string>(EthereumHandlerKind).includes(handler.kind);
 }
 
 export function isCustomHandler(

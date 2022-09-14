@@ -1,10 +1,16 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ApiWrapper} from './interfaces';
 import {RegistryTypes} from '@polkadot/types/types';
-import { EthereumBlock, EthereumBlockFilter, EthereumLog, EthereumLogFilter, EthereumTransaction, EthereumTransactionFilter } from './ethereum';
-
+import {
+  EthereumBlock,
+  EthereumBlockFilter,
+  EthereumLog,
+  EthereumLogFilter,
+  EthereumTransaction,
+  EthereumTransactionFilter,
+} from './ethereum';
+import {ApiWrapper} from './interfaces';
 
 export enum EthereumDatasourceKind {
   Runtime = 'ethereum/Runtime',
@@ -12,8 +18,8 @@ export enum EthereumDatasourceKind {
 
 export enum EthereumHandlerKind {
   Block = 'ethereum/BlockHandler',
-  Call = 'ethereum/CallHandler',
-  Event = 'ethereum/EventHandler',
+  Call = 'ethereum/TransactionHandler',
+  Event = 'ethereum/LogHandler',
 }
 
 export type EthereumRuntimeHandlerInputMap = {

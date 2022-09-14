@@ -117,7 +117,7 @@ export class DeploymentV1_0_0 {
   @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -128,7 +128,7 @@ export class DeploymentV1_0_0 {
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -144,7 +144,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => EthereumCustomDataSourceV0_3_0Impl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })
@@ -164,7 +164,7 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @Type(() => CustomDatasourceTemplateImpl, {
     discriminator: {
       property: 'kind',
-      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'Ethereum/Runtime'}],
+      subTypes: [{value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'}],
     },
     keepDiscriminatorProperty: true,
   })

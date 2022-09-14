@@ -125,7 +125,7 @@ export class BlockDispatcherService
     if (argv.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         fetchBlocks,
-        'AvalancheUtil',
+        'EthereumUtil',
         'fetchBlocksBatches',
       );
     } else {
@@ -225,7 +225,7 @@ export class BlockDispatcherService
 
             const { dynamicDsCreated, operationHash } =
               await this.indexerManager.indexBlock(
-                block as AvalancheBlockWrapper,
+                block as EthereumBlockWrapper,
               );
 
             // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager

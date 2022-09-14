@@ -9,7 +9,7 @@ import url from 'url';
 import { Interface } from '@ethersproject/abi';
 import { hexDataSlice } from '@ethersproject/bytes';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-avalanche';
-import { getLogger } from '@subql/common-node';
+import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -18,8 +18,6 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-avalanche';
-import { EVMAPI } from 'avalanche/dist/apis/evm';
-import { IndexAPI } from 'avalanche/dist/apis/index';
 import { ethers } from 'ethers';
 import { EthereumBlockWrapped } from './block.ethereum';
 
@@ -52,17 +50,11 @@ async function loadAssets(
 
 export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private client: ethers.providers.Web3Provider;
-  private indexApi: IndexAPI;
   private genesisBlock: Record<string, any>;
-  private encoding: string;
-  private baseUrl: string;
-  private cchain: EVMAPI;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
 
   constructor(private endpoint: string) {
-    this.encoding = 'cb58';
-
     const { hostname, pathname, port, protocol } = new URL(endpoint);
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
@@ -87,7 +79,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
           https: httpsAgent,
         },
       };
-      provider = new Web3HttpProvider(endpoint, options);
+      provider = new Web3HttpProvider(this.endpoint, options);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       const options = {
         headers: {
