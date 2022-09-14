@@ -287,8 +287,17 @@ export class KeepAliveClient implements RpcClient {
       this.url = endpoint.url;
       this.headers = endpoint.headers;
     }
+
+    const { searchParams } = new URL(this.url);
+
+    // Support OnFinality api keys
+    if (searchParams.get('apikey')) {
+      this.headers.apikey = searchParams.get('apikey');
+    }
+
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
     const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
+
     this.connection = axios.create({
       httpAgent,
       httpsAgent,
