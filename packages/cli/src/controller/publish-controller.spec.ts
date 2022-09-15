@@ -68,8 +68,7 @@ export const projectSpecV1_0_0: ProjectSpecV1_0_0 = {
 
 const ipfsEndpoint = 'http://localhost:5001/api/v0';
 // Replace/Update your access token when test locally
-const testAuth = 'ODkzMzUwMzM=cHmQrFmWI74MOh5CwVj3';
-// const testAuth = process.env.SUBQL_ACCESS_TOKEN;
+const testAuth = process.env.SUBQL_ACCESS_TOKEN;
 
 jest.setTimeout(150000);
 
