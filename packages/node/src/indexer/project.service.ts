@@ -124,37 +124,6 @@ export class ProjectService {
     return schema;
   }
 
-  // Get existing project schema, undefined when doesn't exist
-  // async getExistingProjectSchema(): Promise<string> {
-  //   let schema = this.nodeConfig.localMode
-  //     ? DEFAULT_DB_SCHEMA
-  //     : this.nodeConfig.dbSchema;
-  //
-  //   // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-  //   const schemas = (await this.sequelize
-  //     .query(`SELECT schema_name FROM information_schema.schemata`, {
-  //       type: QueryTypes.SELECT,
-  //     })
-  //     .then((xs) => xs.map((x: any) => x.schema_name))
-  //     .catch((err) => {
-  //       logger.error(`Unable to fetch all schemas: ${err}`);
-  //       process.exit(1);
-  //     })) as [string];
-  //
-  //   if (!schemas.includes(schema)) {
-  //     // fallback to subqueries table
-  //     const subqueryModel = await this.subqueryRepo.findOne({
-  //       where: { name: this.nodeConfig.subqueryName },
-  //     });
-  //     if (subqueryModel) {
-  //       schema = subqueryModel.dbSchema;
-  //     } else {
-  //       schema = undefined;
-  //     }
-  //   }
-  //   return schema;
-  // }
-
   private async createProjectSchema(): Promise<string> {
     let schema: string;
     if (this.nodeConfig.localMode) {

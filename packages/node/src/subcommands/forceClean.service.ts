@@ -8,7 +8,6 @@ import { QueryTypes, Sequelize } from 'sequelize';
 import { getExistingProjectSchema } from '../utils/project';
 
 const logger = getLogger('Force-clean');
-// const DEFAULT_DB_SCHEMA = 'public';
 
 @Injectable()
 export class ForceCleanService {
@@ -17,39 +16,6 @@ export class ForceCleanService {
     private readonly nodeConfig: NodeConfig,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
-
-  // private async getExistingProjectSchema(): Promise<string> {
-  //   let schema = this.nodeConfig.localMode
-  //     ? DEFAULT_DB_SCHEMA
-  //     : this.nodeConfig.dbSchema;
-  //
-  //   // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists, so we must make a raw query
-  //   let schemas: string[];
-  //   try {
-  //     const result = await this.sequelize.query(
-  //       `SELECT schema_name FROM information_schema.schemata`,
-  //       {
-  //         type: QueryTypes.SELECT,
-  //       },
-  //     );
-  //     schemas = result.map((x: any) => x.schema_name) as [string];
-  //   } catch (err) {
-  //     logger.error(`Unable to fetch all schemas: ${err}`);
-  //     process.exit(1);
-  //   }
-  //   if (!schemas.includes(schema)) {
-  //     // fallback to subqueries table
-  //     const subqueryModel = await this.subqueryRepo.findOne({
-  //       where: { name: this.nodeConfig.subqueryName },
-  //     });
-  //     if (subqueryModel) {
-  //       schema = subqueryModel.dbSchema;
-  //     } else {
-  //       schema = undefined;
-  //     }
-  //   }
-  //   return schema;
-  // }
 
   async forceClean(): Promise<void> {
     const schema = await getExistingProjectSchema(
