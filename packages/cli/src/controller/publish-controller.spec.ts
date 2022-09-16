@@ -140,15 +140,6 @@ describe('Cli publish', () => {
     await expect(uploadToIpfs('', ipfsEndpoint, projectDir)).rejects.toBeDefined();
   });
 
-  it.skip('throw error when v0.0.1 try to deploy', async () => {
-    projectDir = await createTestProject(projectSpecV0_0_1);
-    const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
-    expect(() => manifest.toDeployment()).toThrowError(
-      'Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above'
-    );
-  });
-
   it('v1.0.0 should deploy', async () => {
     projectDir = await createTestProject(projectSpecV1_0_0);
     const reader = await ReaderFactory.create(projectDir);
