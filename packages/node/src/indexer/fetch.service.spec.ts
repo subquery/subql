@@ -670,6 +670,7 @@ describe('FetchService', () => {
       new DictionaryService(project, nodeConfig),
       project,
       20,
+      nodeConfig,
     );
 
     const baseHandlerFilters = jest.spyOn(

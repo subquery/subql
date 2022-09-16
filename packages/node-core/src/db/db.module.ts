@@ -45,6 +45,34 @@ const sequelizeFactory = (option: SequelizeOption, migrate: boolean) => async ()
 
 @Global()
 export class DbModule {
+  static forRootTest(option: DbOption, nodeConfig: NodeConfig): DynamicModule {
+    const logger = getLogger('db');
+
+    const factory = sequelizeFactory(
+      {
+        ...option,
+        dialect: 'postgres',
+        logging: nodeConfig.debug
+          ? (sql: string, timing?: number) => {
+              logger.debug(sql);
+            }
+          : false,
+      },
+      nodeConfig.migrate
+    )();
+
+    return {
+      module: DbModule,
+      providers: [
+        {
+          provide: Sequelize,
+          useFactory: () => factory,
+        },
+      ],
+      exports: [Sequelize],
+    };
+  }
+
   static forRoot(option: DbOption): DynamicModule {
     const logger = getLogger('db');
     return {
