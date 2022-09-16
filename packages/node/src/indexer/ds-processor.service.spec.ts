@@ -35,17 +35,16 @@ function getTestProject(
     templates: [],
   };
 }
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+});
 
 describe('DsProcessorService', () => {
   let service: DsProcessorService;
   let project: SubqueryProject;
-  let nodeConfig: NodeConfig;
 
   beforeEach(() => {
-    nodeConfig = new NodeConfig({
-      subquery: 'asdf',
-      subqueryName: 'asdf',
-    });
     project = getTestProject([]);
     service = new DsProcessorService(project, nodeConfig);
   });

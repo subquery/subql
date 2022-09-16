@@ -13,7 +13,6 @@ const logger = getLogger('memory');
 export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig): number {
   const memoryData = getHeapStatistics();
   const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
-  // TODO: fix where used
   if (nodeConfig.profiler) {
     logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
     logger.info(`Heap Usage: ${ratio}`);
