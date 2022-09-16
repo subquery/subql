@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { DynamicModule, Global, Module } from '@nestjs/common';
+import { DynamicModule, Global, Injectable, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import {
@@ -94,6 +94,50 @@ function warnDeprecations() {
 @Global()
 @Module({})
 export class ConfigureModule {
+  static testRegister(config: NodeConfig): DynamicModule {
+    if (!validDbSchemaName(config.dbSchema)) {
+      process.exit(1);
+    }
+
+    if (config.debug) {
+      setLevel('debug');
+    }
+
+    const project = async () => {
+      const p = await SubqueryProject.create(
+        config.subquery,
+        omitBy<SubstrateProjectNetworkConfig>(
+          {
+            endpoint: config.networkEndpoint,
+            dictionary: config.networkDictionary,
+          },
+          isNil,
+        ),
+        {
+          ipfs: config.ipfs,
+        },
+      ).catch((err) => {
+        logger.error(err, 'Create Subquery project from given path failed!');
+        process.exit(1);
+      });
+      return p;
+    };
+
+    return {
+      module: ConfigureModule,
+      providers: [
+        {
+          provide: NodeConfig,
+          useValue: config,
+        },
+        {
+          provide: SubqueryProject,
+          useFactory: project,
+        },
+      ],
+      exports: [NodeConfig, SubqueryProject],
+    };
+  }
   static register(): DynamicModule {
     const { argv } = yargsOptions;
     let config: NodeConfig;

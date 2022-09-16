@@ -42,6 +42,10 @@ describe('DsProcessorService', () => {
   let nodeConfig: NodeConfig;
 
   beforeEach(() => {
+    nodeConfig = new NodeConfig({
+      subquery: 'asdf',
+      subqueryName: 'asdf',
+    });
     project = getTestProject([]);
     service = new DsProcessorService(project, nodeConfig);
   });
