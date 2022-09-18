@@ -67,7 +67,7 @@ describe('Cli can create project', () => {
   it('prepare correctly applies project details', async () => {
     const tempPath = await makeTempDir();
     const templates = await fetchTemplates();
-    const template = templates.find(({name}) => name === 'Polkadot-starter');
+    const template = templates.find(({name}) => name === 'polkadot-starter');
     const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, template);
     await prepare(projectPath, projectSpec);
     const [specVersion, repository, endpoint, author, version, description, license] = await readDefaults(projectPath);

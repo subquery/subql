@@ -76,12 +76,13 @@ export async function createTestProject(projectSpec: ProjectSpecBase): Promise<s
   const tmpdir = await fs.promises.mkdtemp(`${os.tmpdir()}${path.sep}`);
   const projectDir = path.join(tmpdir, projectSpec.name);
   const templates = await fetchTemplates();
-
   const projectPath = await cloneProjectTemplate(tmpdir, projectSpec.name, templates[0]);
   await prepare(projectPath, projectSpec);
 
   // Install dependencies
-  childProcess.execSync(`npm i`, {cwd: projectDir});
+  // node-fetch and subql/types are tempt solutions for resolving dependency issues
+  // @subql/types can be removed once v1.4.1 is released
+  childProcess.execSync(`npm i --save-dev @subql/types@1.4.1-1 && npm i`, {cwd: projectDir});
 
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-f', projectDir]);
@@ -137,15 +138,6 @@ describe('Cli publish', () => {
   it('should not allow uploading a v0.0.1 spec version project', async () => {
     projectDir = await createTestProject(projectSpecV0_0_1);
     await expect(uploadToIpfs('', ipfsEndpoint, projectDir)).rejects.toBeDefined();
-  });
-
-  it('throw error when v0.0.1 try to deploy', async () => {
-    projectDir = await createTestProject(projectSpecV0_0_1);
-    const reader = await ReaderFactory.create(projectDir);
-    const manifest = parseSubstrateProjectManifest(await reader.getProjectSchema()).asImpl;
-    expect(() => manifest.toDeployment()).toThrowError(
-      'Manifest spec 0.0.1 is not support for deployment, please migrate to 0.2.0 or above'
-    );
   });
 
   it('v1.0.0 should deploy', async () => {
