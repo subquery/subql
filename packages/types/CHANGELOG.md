@@ -9,8 +9,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-09-13
 ### Changed
-- change types to support wasm processor (#1280)
+- Change types to support wasm processor and update polkadot API to v9. (#1280)
 
 ## [1.4.0] - 2022-08-26
 

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.1] - 2022-09-13
+### Fixed
+- Fixed `subql-init` for Algorand, Avalanche and Cosmos.
+
 ## [1.6.0] - 2022-08-17
 ### Changed
 - Support new templates mono-repo structure. (#1236)
