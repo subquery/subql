@@ -19,7 +19,7 @@ import { SubqueryProject } from './SubqueryProject';
 
 const logger = getLogger('configure');
 
-const YargsNameMapping = {
+const YargsNameMapping: Record<string, string> = {
   local: 'localMode',
 };
 
@@ -38,7 +38,7 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
     }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
-  }, {});
+  }, {} as any);
 }
 
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
