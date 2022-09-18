@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { DynamicModule, Global, Injectable, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
 import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
 import {
