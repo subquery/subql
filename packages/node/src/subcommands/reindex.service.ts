@@ -4,7 +4,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
-  IndexerEvent,
   MetadataFactory,
   MetadataRepo,
   MmrService,
@@ -13,14 +12,18 @@ import {
   SubqueryRepo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-// import {SubqueryProject} from "../configure/SubqueryProject";
-import { getExistingProjectSchema } from '../utils/project';
+import { SubqueryProject } from '../configure/SubqueryProject';
+import {
+  getExistingProjectSchema,
+  getMetaDataInfo,
+  initDbSchemaUtil,
+} from '../utils/project';
 
 const logger = getLogger('Reindex');
 
 @Injectable()
 export class ReindexService {
-  // private _schema: string;
+  private _schema: string;
   private metadataRepo: MetadataRepo;
 
   constructor(
@@ -28,41 +31,49 @@ export class ReindexService {
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
-    // private readonly project: SubqueryProject,
+    private readonly project: SubqueryProject,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
-  async getLastProcessedHeight(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'lastProcessedHeight' },
-    });
-
-    return res?.value as number | undefined;
-  }
-
-  async getMetadataBlockOffset(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'blockOffset' },
-    });
-
-    return res?.value as number | undefined;
-  }
-
-  async reindex(targetBlockHeight: number): Promise<void> {
-    // check Schema exists
-
-    const schema = await getExistingProjectSchema(
+  private async getExistingProjectSchema(): Promise<string> {
+    return getExistingProjectSchema(
       this.nodeConfig,
       this.sequelize,
       this.subqueryRepo,
-      logger,
     );
-    if (!schema) {
+  }
+
+  get schema(): string {
+    return this._schema;
+  }
+
+  private async getLastProcessedHeight(): Promise<number | undefined> {
+    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
+  }
+
+  private async getMetadataBlockOffset(): Promise<number | undefined> {
+    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
+  }
+
+  private async initDbSchema(): Promise<void> {
+    await initDbSchemaUtil(this.project, this.schema, this.storeService);
+  }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    this._schema = await this.getExistingProjectSchema();
+
+    if (!this.schema) {
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
     }
 
+    await this.initDbSchema();
+
+    // check Schema exists
+    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+
     const lastProcessedHeight = await this.getLastProcessedHeight();
+
     if (!this.storeService.historical) {
       logger.warn('Unable to reindex, historical state not enabled');
       return;
@@ -76,13 +87,14 @@ export class ReindexService {
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
     const transaction = await this.sequelize.transaction();
     try {
-      await this.storeService.rewind(this.nodeConfig.reindex, transaction);
+      await this.storeService.rewind(targetBlockHeight, transaction);
 
       const blockOffset = await this.getMetadataBlockOffset();
       if (blockOffset) {
         await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
       await transaction.commit();
+      logger.info('Reindex Success');
     } catch (err) {
       logger.error(err, 'Reindexing failed');
       await transaction.rollback();

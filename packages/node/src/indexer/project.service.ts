@@ -19,7 +19,11 @@ import {
 import { getAllEntitiesRelations } from '@subql/utils';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { getExistingProjectSchema } from '../utils/project';
+import {
+  getExistingProjectSchema,
+  getMetaDataInfo,
+  initDbSchemaUtil,
+} from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -89,9 +93,6 @@ export class ProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
-      // if (this.nodeConfig.reindex !== undefined) {
-      //   await this.reindex(this.nodeConfig.reindex);
-      // }
     } else {
       this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
@@ -138,9 +139,7 @@ export class ProjectService {
   }
 
   private async initDbSchema(): Promise<void> {
-    const graphqlSchema = this.project.schema;
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, this.schema);
+    await initDbSchemaUtil(this.project, this.schema, this.storeService);
   }
 
   private async ensureMetadata(): Promise<MetadataRepo> {
@@ -248,19 +247,11 @@ export class ProjectService {
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'blockOffset' },
-    });
-
-    return res?.value as number | undefined;
+    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
   async getLastProcessedHeight(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'lastProcessedHeight' },
-    });
-
-    return res?.value as number | undefined;
+    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {
@@ -330,33 +321,4 @@ export class ProjectService {
           this.apiService.getApi().runtimeVersion.specName.toString(),
     );
   }
-
-  // private async reindex(targetBlockHeight: number): Promise<void> {
-  //   const lastProcessedHeight = await this.getLastProcessedHeight();
-  //   if (!this.storeService.historical) {
-  //     logger.warn('Unable to reindex, historical state not enabled');
-  //     return;
-  //   }
-  //   if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
-  //     logger.warn(
-  //       `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
-  //     );
-  //     return;
-  //   }
-  //   logger.info(`Reindexing to block: ${targetBlockHeight}`);
-  //   const transaction = await this.sequelize.transaction();
-  //   try {
-  //     await this.storeService.rewind(this.nodeConfig.reindex, transaction);
-  //
-  //     const blockOffset = await this.getMetadataBlockOffset();
-  //     if (blockOffset) {
-  //       await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
-  //     }
-  //     await transaction.commit();
-  //   } catch (err) {
-  //     logger.error(err, 'Reindexing failed');
-  //     await transaction.rollback();
-  //     throw err;
-  //   }
-  // }
 }

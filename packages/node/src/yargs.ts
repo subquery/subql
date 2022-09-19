@@ -30,12 +30,11 @@ export const yargsOptions = yargs(hideBin(process.argv))
         argv.outputFormat as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
-      console.log(argv);
 
       // lazy import to make sure logger is instantiated before all other services
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { reindexInit } = require('./subcommands/reindex.init');
-      return reindexInit(100);
+      return reindexInit(argv._[1]);
     },
   })
   .options({
