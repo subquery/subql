@@ -14,14 +14,9 @@
   "license": "Apache-2.0",
   "files": [
     "src/global.d.ts",
-    "/dist"
+    "/dist",
+    "logger.js"
   ],
-  "exports": {
-    "./logger": {
-      "import": "./src/logger",
-      "require": "./dist/logger.js"
-    }
-  },
   "dependencies": {
     "@nestjs/common": "^8.2.6",
     "@nestjs/event-emitter": "^1.3.0",
