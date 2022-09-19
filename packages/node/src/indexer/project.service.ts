@@ -64,6 +64,14 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  private async getExistingProjectSchema(): Promise<string> {
+    return getExistingProjectSchema(
+      this.nodeConfig,
+      this.sequelize,
+      this.subqueryRepo,
+    );
+  }
+
   async init(): Promise<void> {
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
@@ -91,12 +99,7 @@ export class ProjectService {
 
       await this.sequelize.sync();
 
-      // this._schema = await this.getExistingProjectSchema();
-      this._schema = await getExistingProjectSchema(
-        this.nodeConfig,
-        this.sequelize,
-        this.subqueryRepo,
-      );
+      this._schema = await this.getExistingProjectSchema();
       assert(this._schema, 'Schema should be created in main thread');
       await this.initDbSchema();
 
@@ -106,13 +109,6 @@ export class ProjectService {
     }
   }
 
-  private async getExistingProjectSchema(): Promise<string> {
-    return getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-      this.subqueryRepo,
-    );
-  }
   private async ensureProject(): Promise<string> {
     let schema = await this.getExistingProjectSchema();
     if (!schema) {
