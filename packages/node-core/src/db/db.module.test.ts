@@ -3,7 +3,6 @@
 
 import {INestApplication} from '@nestjs/common';
 import {Test} from '@nestjs/testing';
-import {ConfigureModule} from '@subql/node/src/configure/configure.module';
 import {Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {SubqueryRepo} from '../entities';
@@ -18,10 +17,9 @@ describe('DbModule', () => {
     return app?.close();
   });
 
-  // TODO: loop dependency with ConfigureModule, refactor ConfigureModule to be apart of node-core
-  it.skip('can connect to database', async () => {
+  it('can connect to database', async () => {
     const module = await Test.createTestingModule({
-      imports: [ConfigureModule.registerWithConfig(nodeConfig), DbModule.forRootWithConfig(nodeConfig)],
+      imports: [DbModule.forRootWithConfig(nodeConfig)],
     }).compile();
 
     app = module.createNestApplication();
@@ -30,13 +28,9 @@ describe('DbModule', () => {
     await expect(sequelize.authenticate()).resolves.not.toThrow();
   }, 30000);
 
-  it.skip('can load subquery model', async () => {
+  it('can load subquery model', async () => {
     const module = await Test.createTestingModule({
-      imports: [
-        ConfigureModule.registerWithConfig(nodeConfig),
-        DbModule.forRootWithConfig(nodeConfig),
-        DbModule.forFeature(['Subquery']),
-      ],
+      imports: [DbModule.forRootWithConfig(nodeConfig), DbModule.forFeature(['Subquery'])],
     }).compile();
 
     app = module.createNestApplication();
