@@ -13,7 +13,12 @@ import { ReindexService } from './reindex.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  providers: [ReindexService],
+  // needed providers
+  // Sequelize ( from forRoot)
+  // NodeConfig ( from register() )
+  // storeService
+  // mmrService
+  providers: [StoreService, ReindexService, MmrService],
   controllers: [],
 })
 export class ReindexFeatureModule {}
