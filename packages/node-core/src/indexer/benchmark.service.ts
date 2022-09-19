@@ -3,9 +3,9 @@
 
 import {OnEvent} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
-import {NodeConfig} from '@subql/node-core/configure';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import {NodeConfig} from '../configure';
 import {IndexerEvent, ProcessBlockPayload, ProcessedBlockCountPayload, TargetBlockPayload} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
