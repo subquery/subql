@@ -96,7 +96,6 @@ export class ProjectService {
         this.nodeConfig,
         this.sequelize,
         this.subqueryRepo,
-        logger,
       );
       assert(this._schema, 'Schema should be created in main thread');
       await this.initDbSchema();
@@ -107,13 +106,15 @@ export class ProjectService {
     }
   }
 
-  private async ensureProject(): Promise<string> {
-    let schema = await getExistingProjectSchema(
+  private async getExistingProjectSchema(): Promise<string> {
+    return getExistingProjectSchema(
       this.nodeConfig,
       this.sequelize,
       this.subqueryRepo,
-      logger,
     );
+  }
+  private async ensureProject(): Promise<string> {
+    let schema = await this.getExistingProjectSchema();
     if (!schema) {
       schema = await this.createProjectSchema();
     }
