@@ -23,6 +23,7 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
+import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
 import { BlockContent } from '../indexer/types';
 const logger = getLogger('fetch');
 const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
@@ -41,7 +42,7 @@ export function wrapBlock(
   });
 }
 
-function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
+export function getTimestamp({ block: { extrinsics } }: SignedBlock): Date {
   for (const e of extrinsics) {
     const {
       method: { method, section },
@@ -123,6 +124,11 @@ export function filterBlock(
 ): SubstrateBlock | undefined {
   if (!filter) return block;
   if (!filterBlockModulo(block, filter)) return;
+  if (filter.timestamp) {
+    if (!filterBlockTimestamp(block, filter as SubqlProjectBlockFilter)) {
+      return;
+    }
+  }
   return filter.specVersion === undefined ||
     block.specVersion === undefined ||
     checkSpecRange(filter.specVersion, block.specVersion)
@@ -137,6 +143,15 @@ export function filterBlockModulo(
   const { modulo } = filter;
   if (!modulo) return true;
   return block.block.header.number.toNumber() % modulo === 0;
+}
+
+export function filterBlockTimestamp(
+  block: SubstrateBlock,
+  filter: SubqlProjectBlockFilter,
+): boolean {
+  const unixTimestamp = Math.floor(block.timestamp.getTime() / 1000);
+
+  return unixTimestamp > filter.cronSchedule.next;
 }
 
 export function filterExtrinsic(
@@ -252,7 +267,7 @@ export async function fetchBlocks(
   });
 }
 
-async function getBlockByHeight(
+export async function getBlockByHeight(
   api: ApiPromise,
   height: number,
 ): Promise<SignedBlock> {

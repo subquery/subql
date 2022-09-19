@@ -7,6 +7,11 @@ import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  isCustomDs,
+  isRuntimeDs,
+  SubstrateHandlerKind,
+} from '@subql/common-substrate';
+import {
   MetadataFactory,
   MetadataRepo,
   SubqueryRepo,
@@ -19,8 +24,14 @@ import {
   getLogger,
 } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
+import Cron from 'cron-converter';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  SubqlProjectBlockFilter,
+  SubqlProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
+import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -415,5 +426,39 @@ export class ProjectService {
       await transaction.rollback();
       throw err;
     }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  async generateTimestampReferenceForBlockFilters(): Promise<SubqlProjectDs[]> {
+    const cron = new Cron();
+
+    this.project.dataSources.map(async (ds) => {
+      if (isRuntimeDs(ds)) {
+        const startBlock = ds.startBlock ?? 1;
+        const block = await getBlockByHeight(
+          this.apiService.getApi(),
+          startBlock,
+        );
+        const timestampReference = getTimestamp(block);
+        ds.mapping.handlers.map((handler) => {
+          if (handler.kind === SubstrateHandlerKind.Block) {
+            if (handler.filter.timestamp) {
+              cron.fromString(handler.filter.timestamp);
+              const schedule = cron.schedule(timestampReference);
+              (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
+                schedule: schedule,
+                get next() {
+                  return Date.parse(this.schedule.next().format());
+                },
+              };
+            }
+          }
+          return handler;
+        });
+      }
+      return ds;
+    });
+
+    return this.project.dataSources;
   }
 }

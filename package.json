@@ -8,6 +8,7 @@
     "@actions/core": "^1.6.0",
     "@babel/preset-env": "^7.16.11",
     "@octokit/request": "^5.6.3",
+    "@types/cron-converter": "^1",
     "@types/node": "^14.18.10",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
@@ -54,5 +55,8 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.1.1"
+  "packageManager": "yarn@3.1.1",
+  "dependencies": {
+    "cron-converter": "^1.0.2"
+  }
 }

@@ -51,6 +51,7 @@ interface SubstrateBaseHandlerFilter {
 
 export interface SubstrateBlockFilter extends SubstrateBaseHandlerFilter {
   modulo?: number;
+  timestamp?: string;
 }
 
 export interface SubstrateEventFilter extends SubstrateBaseHandlerFilter {

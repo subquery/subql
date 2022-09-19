@@ -18,8 +18,10 @@ import {
   SubstrateDataSource,
   FileType,
   ProjectManifestV1_0_0Impl,
+  SubstrateBlockFilter,
 } from '@subql/common-substrate';
 import { buildSchemaFromString } from '@subql/utils';
+import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import {
   getChainTypes,
@@ -29,6 +31,13 @@ import {
 
 export type SubqlProjectDs = SubstrateDataSource & {
   mapping: SubstrateDataSource['mapping'] & { entryScript: string };
+};
+
+export type SubqlProjectBlockFilter = SubstrateBlockFilter & {
+  cronSchedule?: {
+    schedule: Cron.Seeker;
+    next: number;
+  };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {

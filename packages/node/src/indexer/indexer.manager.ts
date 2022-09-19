@@ -88,7 +88,7 @@ export class IndexerManager {
     let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
     try {
-      this.filteredDataSources = this.filterDataSources(
+      this.filteredDataSources = await this.filterDataSources(
         block.block.header.number.toNumber(),
       );
 
@@ -179,11 +179,13 @@ export class IndexerManager {
     await this.projectService.init();
   }
 
-  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
+  private async filterDataSources(
+    nextProcessingHeight: number,
+  ): Promise<SubqlProjectDs[]> {
     let filteredDs: SubqlProjectDs[];
-    filteredDs = this.project.dataSources.filter(
-      (ds) => ds.startBlock <= nextProcessingHeight,
-    );
+    filteredDs = (
+      await this.projectService.generateTimestampReferenceForBlockFilters()
+    ).filter((ds) => ds.startBlock <= nextProcessingHeight);
 
     if (filteredDs.length === 0) {
       logger.error(`Did not find any matching datasouces`);

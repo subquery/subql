@@ -100,6 +100,7 @@ export async function updateDataSourcesV0_2_0(
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
+      const startBlock = dataSource.startBlock ?? 1;
       const entryScript = await loadDataSourceScript(
         reader,
         dataSource.mapping.file,
