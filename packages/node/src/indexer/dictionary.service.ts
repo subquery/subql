@@ -68,6 +68,8 @@ function extractVars(
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
           return {
+            // Use case insensitive here due to go-dictionary generate name is in lower cases
+            // Origin dictionary still using camelCase
             [sanitizeArgField(j.field)]: { equalToInsensitive: `$${v.name}` },
           };
         }),
