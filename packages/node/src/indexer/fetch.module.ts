@@ -8,11 +8,9 @@ import {
   MmrService,
   StoreService,
   PoiService,
-  // NodeConfig,
   DbModule,
   NodeConfig,
 } from '@subql/node-core';
-// import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -25,8 +23,6 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
-
-// const { argv } = yargsOptions;
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],

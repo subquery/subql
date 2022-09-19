@@ -66,14 +66,8 @@ const prepare = async (): Promise<ProjectService> => {
       },
     ],
     imports: [
-      ConfigureModule.testRegister(nodeConfig),
-      DbModule.forRoot({
-        host: process.env.DB_HOST ?? '127.0.0.1',
-        port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
-        username: process.env.DB_USER ?? 'postgres',
-        password: process.env.DB_PASS ?? 'postgres',
-        database: process.env.DB_DATABASE ?? 'postgres',
-      }),
+      ConfigureModule.registerWithConfig(nodeConfig),
+      DbModule.forRoot(),
       DbModule.forFeature(['Subquery']),
     ],
   }).compile();
@@ -113,7 +107,6 @@ describe('ProjectService Integration Tests', () => {
   }
 
   beforeAll(async () => {
-    logger = getLogger('Project.service test');
     projectService = await prepare();
     subqueryRepo = (projectService as any).subqueryRepo;
   });
@@ -131,7 +124,6 @@ describe('ProjectService Integration Tests', () => {
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
       (projectService as any).subqueryRepo,
-      logger,
     );
     await expect(schema).resolves.toBe(schemaName);
   });
@@ -144,7 +136,6 @@ describe('ProjectService Integration Tests', () => {
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
       (projectService as any).subqueryRepo,
-      logger,
     );
 
     await expect(schema).resolves.toBe(TEST_PROJECT);
@@ -170,7 +161,6 @@ describe('ProjectService Integration Tests', () => {
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
       (projectService as any).subqueryRepo,
-      logger,
     );
 
     await expect(schema).resolves.toBe('public');

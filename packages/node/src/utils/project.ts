@@ -24,13 +24,14 @@ import {
   SubstrateHandler,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { NodeConfig, SubqueryRepo } from '@subql/node-core';
+import { getLogger, NodeConfig, SubqueryRepo } from '@subql/node-core';
 import yaml from 'js-yaml';
-import Pino from 'pino';
 import { QueryTypes, Sequelize } from 'sequelize';
 import tar from 'tar';
 import { NodeVM, VMScript } from 'vm2';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
+
+const logger = getLogger('Project-Utils');
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -307,7 +308,6 @@ export async function getExistingProjectSchema(
   nodeConfig: NodeConfig,
   sequelize: Sequelize,
   subqueryRepo: SubqueryRepo,
-  logger: Pino.Logger,
 ): Promise<string> {
   const DEFAULT_DB_SCHEMA = 'public';
   let schema = nodeConfig.localMode ? DEFAULT_DB_SCHEMA : nodeConfig.dbSchema;

@@ -94,7 +94,7 @@ function warnDeprecations() {
 @Global()
 @Module({})
 export class ConfigureModule {
-  static testRegister(config: NodeConfig): DynamicModule {
+  static registerWithConfig(config: NodeConfig): DynamicModule {
     if (!validDbSchemaName(config.dbSchema)) {
       process.exit(1);
     }

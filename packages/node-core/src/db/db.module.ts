@@ -18,6 +18,14 @@ export interface DbOption {
 
 const logger = getLogger('db');
 
+const DEFAULT_DB_OPTION: DbOption = {
+  host: process.env.DB_HOST ?? '127.0.0.1',
+  port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
+  username: process.env.DB_USER ?? 'postgres',
+  password: process.env.DB_PASS ?? 'postgres',
+  database: process.env.DB_DATABASE ?? 'postgres',
+};
+
 async function establishConnection(sequelize: Sequelize, numRetries: number): Promise<void> {
   try {
     await sequelize.authenticate();
@@ -45,7 +53,7 @@ const sequelizeFactory = (option: SequelizeOption, migrate: boolean) => async ()
 
 @Global()
 export class DbModule {
-  static forRootTest(option: DbOption, nodeConfig: NodeConfig): DynamicModule {
+  static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
 
     const factory = sequelizeFactory(
@@ -73,7 +81,7 @@ export class DbModule {
     };
   }
 
-  static forRoot(option: DbOption): DynamicModule {
+  static forRoot(option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
     return {
       module: DbModule,

@@ -22,7 +22,6 @@ export class ForceCleanService {
       this.nodeConfig,
       this.sequelize,
       this.subqueryRepo,
-      logger,
     );
     if (!schema) {
       logger.error('Unable to locate schema');
