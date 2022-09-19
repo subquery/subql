@@ -67,14 +67,18 @@ function extractVars(
         and: i.map((j, innerIdx) => {
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
-          return { [sanitizeArgField(j.field)]: { equalTo: `$${v.name}` } };
+          return {
+            // Use case insensitive here due to go-dictionary generate name is in lower cases
+            // Origin dictionary still using camelCase
+            [sanitizeArgField(j.field)]: { equalToInsensitive: `$${v.name}` },
+          };
         }),
       };
     } else if (i.length === 1) {
       const v = extractVar(`${entity}_${outerIdx}_0`, i[0]);
       gqlVars.push(v);
       filter.or[outerIdx] = {
-        [sanitizeArgField(i[0].field)]: { equalTo: `$${v.name}` },
+        [sanitizeArgField(i[0].field)]: { equalToInsensitive: `$${v.name}` },
       };
     }
   });
