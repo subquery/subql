@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.2] - 2022-09-19
+### Changed
+- In order use go-dictionary, changed dictionary query to use case-insensitive for events/extrinsics name (#1301)
+
+
 ## [1.9.1] - 2022-08-29
 ### Fixed
 - Fixed `@subql/node-core` import path issues (#1272)
