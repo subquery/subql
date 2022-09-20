@@ -2,36 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import {
-  DbModule,
-  MmrService,
-  NodeConfig,
-  StoreService,
-} from '@subql/node-core';
+import { DbModule, MmrService, StoreService } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
+import { ForceCleanService } from './forceClean.service';
 import { ReindexService } from './reindex.service';
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
-  // needed providers
-  // Sequelize ( from forRoot)
-  // NodeConfig ( from register() )
-  // storeService
-  // mmrService
-  providers: [StoreService, ReindexService, MmrService],
+  providers: [StoreService, ReindexService, MmrService, ForceCleanService],
   controllers: [],
 })
 export class ReindexFeatureModule {}
 
 @Module({
   imports: [
-    DbModule.forRoot({
-      host: process.env.DB_HOST ?? '127.0.0.1',
-      port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
-      username: process.env.DB_USER ?? 'postgres',
-      password: process.env.DB_PASS ?? 'postgres',
-      database: process.env.DB_DATABASE ?? 'postgres',
-    }),
+    DbModule.forRoot(),
     ConfigureModule.register(),
     ReindexFeatureModule,
   ],

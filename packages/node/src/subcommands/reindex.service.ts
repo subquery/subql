@@ -12,11 +12,11 @@ import {
   SubqueryRepo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import {
   getExistingProjectSchema,
   getMetaDataInfo,
-  initDbSchemaUtil,
+  initDbSchema,
 } from '../utils/project';
 
 const logger = getLogger('Reindex');
@@ -25,7 +25,8 @@ const logger = getLogger('Reindex');
 export class ReindexService {
   private _schema: string;
   private metadataRepo: MetadataRepo;
-
+  private _specName: string;
+  private _startHeight: number;
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -47,6 +48,14 @@ export class ReindexService {
     return this._schema;
   }
 
+  get specName(): string {
+    return this._specName;
+  }
+
+  get startHeight(): number {
+    return this._startHeight;
+  }
+
   private async getLastProcessedHeight(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
@@ -55,8 +64,38 @@ export class ReindexService {
     return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
+  private async getMetadataSpecName(): Promise<string | undefined> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'specName' },
+    });
+    return res?.value as string | undefined;
+  }
+
   private async initDbSchema(): Promise<void> {
-    await initDbSchemaUtil(this.project, this.schema, this.storeService);
+    await initDbSchema(this.project, this.schema, this.storeService);
+  }
+
+  private async getDataSourcesForSpecName(): Promise<SubqlProjectDs[]> {
+    this._specName = await this.getMetadataSpecName();
+    return this.project.dataSources.filter(
+      (ds) => !ds.filter?.specName || ds.filter.specName === this.specName,
+    );
+  }
+
+  private async getStartBlockFromDataSources() {
+    const _startBlocksList = await this.getDataSourcesForSpecName();
+
+    const startBlocksList = _startBlocksList.map(
+      (item) => item.startBlock ?? 1,
+    );
+    if (startBlocksList.length === 0) {
+      logger.error(
+        `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
+      );
+      process.exit(1);
+    } else {
+      return Math.min(...startBlocksList);
+    }
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
@@ -66,11 +105,11 @@ export class ReindexService {
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
     }
-
     await this.initDbSchema();
 
-    // check Schema exists
     this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+
+    this._startHeight = await this.getStartBlockFromDataSources();
 
     const lastProcessedHeight = await this.getLastProcessedHeight();
 
@@ -84,21 +123,33 @@ export class ReindexService {
       );
       return;
     }
-    logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    const transaction = await this.sequelize.transaction();
-    try {
-      await this.storeService.rewind(targetBlockHeight, transaction);
 
-      const blockOffset = await this.getMetadataBlockOffset();
-      if (blockOffset) {
-        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+    // if startHeight is greater than the targetHeight, just force clean
+    if (targetBlockHeight < this.startHeight) {
+      logger.info(
+        `targetHeight: ${targetBlockHeight} is less than startHeight: ${this.startHeight}. Hence executing force-clean`,
+      );
+      // await this.forceCleanService.forceClean();
+    } else {
+      logger.info(`Reindexing to block: ${targetBlockHeight}`);
+      const transaction = await this.sequelize.transaction();
+      try {
+        await this.storeService.rewind(targetBlockHeight, transaction);
+
+        const blockOffset = await this.getMetadataBlockOffset();
+        if (blockOffset) {
+          await this.mmrService.deleteMmrNode(
+            targetBlockHeight + 1,
+            blockOffset,
+          );
+        }
+        await transaction.commit();
+        logger.info('Reindex Success');
+      } catch (err) {
+        logger.error(err, 'Reindexing failed');
+        await transaction.rollback();
+        throw err;
       }
-      await transaction.commit();
-      logger.info('Reindex Success');
-    } catch (err) {
-      logger.error(err, 'Reindexing failed');
-      await transaction.rollback();
-      throw err;
     }
   }
 }

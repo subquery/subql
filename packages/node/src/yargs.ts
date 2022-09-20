@@ -9,6 +9,9 @@ import yargs from 'yargs/yargs';
 export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'force-clean',
+    describe:
+      'Force cleans the database, dropping project schemas and tables (Once the command is executed, the application would exit upon completion)',
+    builder: {},
     handler: (argv) => {
       initLogger(
         argv.debug as boolean,
@@ -24,17 +27,24 @@ export const yargsOptions = yargs(hideBin(process.argv))
   })
   .command({
     command: 'reindex',
+    describe:
+      'Reindex to specified block height (Once the command is executed, the application would exit upon completion).',
+    builder: (yargs) =>
+      yargs.options('targetHeight', {
+        type: 'number',
+        description: 'set targetHeight',
+        require: true,
+      }),
     handler: (argv) => {
       initLogger(
         argv.debug as boolean,
         argv.outputFormat as 'json' | 'colored',
         argv.logLevel as string | undefined,
       );
-
       // lazy import to make sure logger is instantiated before all other services
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { reindexInit } = require('./subcommands/reindex.init');
-      return reindexInit(argv._[1]);
+      return reindexInit(argv.targetHeight);
     },
   })
   .options({

@@ -16,12 +16,12 @@ $ npm i -g @subql/node
 $> subql-node
 
 Commands:
-        force-clean         Force clean the database, dropping project schemas
-                            and tables. (Once the command is executed, the application
-                            would exit)
-        reindex             Reindex to specified block height (Once the command
-        [number]            is executed, the application
-                            would exit)
+  run force-clean  Force cleans the database, dropping project schemas and
+                   tables (Once the command is executed, the application would
+                   exit upon completion)
+
+  run reindex      Reindex to specified block height (Once the command is
+                   executed, the application would exit upon completion).
 
 Options:
       --help                Show help                                  [boolean]

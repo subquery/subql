@@ -353,11 +353,10 @@ export async function getMetaDataInfo(
   const res = await metadataRepo.findOne({
     where: { key: key },
   });
-
   return res?.value as number | undefined;
 }
 
-export async function initDbSchemaUtil(
+export async function initDbSchema(
   project: SubqueryProject,
   schema: string,
   storeService: StoreService,

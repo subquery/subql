@@ -16,13 +16,12 @@ import {
   MmrService,
   getLogger,
 } from '@subql/node-core';
-import { getAllEntitiesRelations } from '@subql/utils';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import {
   getExistingProjectSchema,
   getMetaDataInfo,
-  initDbSchemaUtil,
+  initDbSchema,
 } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -139,7 +138,7 @@ export class ProjectService {
   }
 
   private async initDbSchema(): Promise<void> {
-    await initDbSchemaUtil(this.project, this.schema, this.storeService);
+    await initDbSchema(this.project, this.schema, this.storeService);
   }
 
   private async ensureMetadata(): Promise<MetadataRepo> {
