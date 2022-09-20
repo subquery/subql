@@ -149,9 +149,12 @@ export function filterBlockTimestamp(
   block: SubstrateBlock,
   filter: SubqlProjectBlockFilter,
 ): boolean {
-  const unixTimestamp = Math.floor(block.timestamp.getTime() / 1000);
+  const unixTimestamp = block.timestamp.getTime();
 
   if (unixTimestamp > filter.cronSchedule.next) {
+    logger.info(`Block with timestamp ${unixTimestamp} is about to be indexed`);
+    logger.info(`Next block will be indexed at ${filter.cronSchedule.next}`);
+    filter.cronSchedule.schedule.prev();
     return true;
   } else {
     filter.cronSchedule.schedule.prev();

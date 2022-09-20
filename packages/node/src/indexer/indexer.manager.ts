@@ -55,6 +55,7 @@ const { argv } = getYargsOption();
 export class IndexerManager {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
+  private modifiedDataSources: SubqlProjectDs[];
 
   constructor(
     private storeService: StoreService,
@@ -177,15 +178,20 @@ export class IndexerManager {
 
   async start(): Promise<void> {
     await this.projectService.init();
+    logger.info('indexer manager started');
   }
 
   private async filterDataSources(
     nextProcessingHeight: number,
   ): Promise<SubqlProjectDs[]> {
     let filteredDs: SubqlProjectDs[];
-    filteredDs = (
-      await this.projectService.generateTimestampReferenceForBlockFilters()
-    ).filter((ds) => ds.startBlock <= nextProcessingHeight);
+    if (!this.modifiedDataSources) {
+      this.modifiedDataSources =
+        await this.projectService.generateTimestampReferenceForBlockFilters();
+    }
+    filteredDs = this.modifiedDataSources.filter(
+      (ds) => ds.startBlock <= nextProcessingHeight,
+    );
 
     if (filteredDs.length === 0) {
       logger.error(`Did not find any matching datasouces`);

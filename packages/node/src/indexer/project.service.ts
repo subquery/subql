@@ -432,32 +432,34 @@ export class ProjectService {
   async generateTimestampReferenceForBlockFilters(): Promise<SubqlProjectDs[]> {
     const cron = new Cron();
 
-    this.project.dataSources.map(async (ds) => {
-      if (isRuntimeDs(ds)) {
-        const startBlock = ds.startBlock ?? 1;
-        const block = await getBlockByHeight(
-          this.apiService.getApi(),
-          startBlock,
-        );
-        const timestampReference = getTimestamp(block);
-        ds.mapping.handlers.map((handler) => {
-          if (handler.kind === SubstrateHandlerKind.Block) {
-            if (handler.filter.timestamp) {
-              cron.fromString(handler.filter.timestamp);
-              const schedule = cron.schedule(timestampReference);
-              (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
-                schedule: schedule,
-                get next() {
-                  return Date.parse(this.schedule.next().format());
-                },
-              };
+    this.project.dataSources = await Promise.all(
+      this.project.dataSources.map(async (ds) => {
+        if (isRuntimeDs(ds)) {
+          const startBlock = ds.startBlock ?? 1;
+          const block = await getBlockByHeight(
+            this.apiService.getApi(),
+            startBlock,
+          );
+          const timestampReference = getTimestamp(block);
+          ds.mapping.handlers = ds.mapping.handlers.map((handler) => {
+            if (handler.kind === SubstrateHandlerKind.Block) {
+              if (handler.filter?.timestamp) {
+                cron.fromString(handler.filter.timestamp);
+                const schedule = cron.schedule(timestampReference);
+                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
+                  schedule: schedule,
+                  get next() {
+                    return Date.parse(this.schedule.next().format());
+                  },
+                };
+              }
             }
-          }
-          return handler;
-        });
-      }
-      return ds;
-    });
+            return handler;
+          });
+        }
+        return ds;
+      }),
+    );
 
     return this.project.dataSources;
   }
