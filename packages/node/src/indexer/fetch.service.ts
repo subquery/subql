@@ -42,9 +42,11 @@ import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
@@ -106,8 +108,10 @@ export class FetchService implements OnApplicationShutdown {
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private bestBlockService: BestBlockService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+    private projectService: ProjectService,
   ) {
     this.batchSizeScale = 1;
   }
@@ -291,6 +295,7 @@ export class FetchService implements OnApplicationShutdown {
     try {
       const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
       const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
+      this.bestBlockService.registerFinalizedBlock(finalizedBlock);
       const currentFinalizedHeight =
         finalizedBlock.block.header.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
@@ -312,6 +317,10 @@ export class FetchService implements OnApplicationShutdown {
     try {
       const bestHeader = await this.api.rpc.chain.getHeader();
       const currentBestHeight = bestHeader.number.toNumber();
+      this.bestBlockService.registerBestBlock(
+        bestHeader.number.toNumber(),
+        bestHeader.hash.toHex(),
+      );
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
@@ -436,7 +445,7 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
       // the original method: fill next batch size of blocks
-      const endHeight = this.nextEndBlockHeight(
+      const endHeight = await this.nextEndBlockHeight(
         startBlockHeight,
         scaledBatchSize,
       );
@@ -543,13 +552,31 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private nextEndBlockHeight(
+  private async nextEndBlockHeight(
     startBlockHeight: number,
     scaledBatchSize: number,
-  ): number {
+  ): Promise<number> {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
-
     if (endBlockHeight > this.latestFinalizedHeight) {
+      // if project enable historical we are capable to re
+      if (this.projectService.isHistorical) {
+        const bestBlock = await this.bestBlockService.getBestBlock();
+        if (!bestBlock) {
+          const bestRollbackBlock =
+            await this.bestBlockService.getLastCorrectBestBlock();
+          if (!bestRollbackBlock) {
+            throw new Error(`Failed to determine rollback block height`);
+          }
+          logger.warn(
+            `Found prefetched best block and finalized block different, last block matches hash is at ${bestRollbackBlock}, app will rollback data from there`,
+          );
+          await this.blockDispatcher.rewind(bestRollbackBlock);
+        }
+        if (endBlockHeight > bestBlock) {
+          endBlockHeight = bestBlock;
+        }
+      }
+      // without historical
       endBlockHeight = this.latestFinalizedHeight;
     }
     return endBlockHeight;
