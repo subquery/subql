@@ -18,6 +18,7 @@ import {
   getMetaDataInfo,
   initDbSchema,
 } from '../utils/project';
+import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('Reindex');
 
@@ -33,6 +34,7 @@ export class ReindexService {
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
     private readonly project: SubqueryProject,
+    private readonly forceCleanService: ForceCleanService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
@@ -129,7 +131,7 @@ export class ReindexService {
       logger.info(
         `targetHeight: ${targetBlockHeight} is less than startHeight: ${this.startHeight}. Hence executing force-clean`,
       );
-      // await this.forceCleanService.forceClean();
+      await this.forceCleanService.forceClean();
     } else {
       logger.info(`Reindexing to block: ${targetBlockHeight}`);
       const transaction = await this.sequelize.transaction();
