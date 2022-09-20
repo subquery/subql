@@ -24,6 +24,7 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
+import {yargsOptions} from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -34,6 +35,7 @@ const { version: packageVersion } = require('../../package.json');
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('Project');
+const { argv } = yargsOptions;
 
 @Injectable()
 export class ProjectService {
@@ -71,6 +73,11 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  get isHistorical(): boolean {
+    return this.storeService.historical;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async getExistingProjectSchema(): Promise<string> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
@@ -238,10 +245,12 @@ export class ProjectService {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getMetadataBlockOffset(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getLastProcessedHeight(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
@@ -305,5 +314,34 @@ export class ProjectService {
         ds.filter.specName ===
           this.apiService.getApi().runtimeVersion.specName.toString(),
     );
+  }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+    if (!this.storeService.historical) {
+      logger.warn('Unable to reindex, historical state not enabled');
+      return;
+    }
+    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
+      logger.warn(
+        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
+      );
+      return;
+    }
+    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    const transaction = await this.sequelize.transaction();
+    try {
+      await this.storeService.rewind(targetBlockHeight, transaction);
+
+      const blockOffset = await this.getMetadataBlockOffset();
+      if (blockOffset) {
+        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
+      }
+      await transaction.commit();
+    } catch (err) {
+      logger.error(err, 'Reindexing failed');
+      await transaction.rollback();
+      throw err;
+    }
   }
 }

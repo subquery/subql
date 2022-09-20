@@ -93,6 +93,7 @@ export interface IBlockDispatcher {
 
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
+  rewind(height: number): Promise<void>;
 }
 
 const logger = getLogger('BlockDispatcherService');
@@ -117,6 +118,7 @@ export class BlockDispatcherService
 
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
   private latestProcessedHeight: number;
+  private currentProcessingHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -178,6 +180,16 @@ export class BlockDispatcherService
     this.fetchQueue.flush(); // Empty
     this.processQueue.flush();
   }
+  //  Compare it with current indexing number, if last corrected is already indexed
+  //  rewind, also drop all queued blocks, drop current indexing transaction too
+  //  if best Rollback is greater than current index
+  //  and flush queue only
+  async rewind(lastCorrectHeight: number): Promise<void> {
+    if (lastCorrectHeight <= this.currentProcessingHeight) {
+      await this.projectService.reindex(lastCorrectHeight);
+    }
+    this.flushQueue(lastCorrectHeight);
+  }
 
   private setProcessedBlockCount(processedBlockCount: number) {
     this._processedBlockCount = processedBlockCount;
@@ -229,6 +241,7 @@ export class BlockDispatcherService
         }
         const blockTasks = blocks.map((block) => async () => {
           const height = block.block.block.header.number.toNumber();
+          this.currentProcessingHeight = height;
           try {
             this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
               height,
@@ -325,6 +338,7 @@ export class WorkerBlockDispatcherService
   private queue: AutoQueue<void>;
   private _latestBufferedHeight: number;
   private _processedBlockCount: number;
+  private currentProcessingHeight: number;
 
   constructor(
     private nodeConfig: NodeConfig,
@@ -455,7 +469,7 @@ export class WorkerBlockDispatcherService
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
-
+        this.currentProcessingHeight = height;
         this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
           height,
           timestamp: Date.now(),
@@ -493,6 +507,13 @@ export class WorkerBlockDispatcherService
     };
 
     void this.queue.put(processBlock);
+  }
+
+  async rewind(lastCorrectHeight: number): Promise<void> {
+    if (lastCorrectHeight <= this.currentProcessingHeight) {
+      await this.projectService.reindex(lastCorrectHeight);
+    }
+    this.flushQueue(lastCorrectHeight);
   }
 
   @Interval(15000)
