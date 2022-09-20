@@ -151,7 +151,12 @@ export function filterBlockTimestamp(
 ): boolean {
   const unixTimestamp = Math.floor(block.timestamp.getTime() / 1000);
 
-  return unixTimestamp > filter.cronSchedule.next;
+  if (unixTimestamp > filter.cronSchedule.next) {
+    return true;
+  } else {
+    filter.cronSchedule.schedule.prev();
+    return false;
+  }
 }
 
 export function filterExtrinsic(
