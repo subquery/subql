@@ -151,7 +151,7 @@ export class StoreService {
 
       const comment = `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`;
 
-      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E?`, {
+      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS ?`, {
         replacements: [comment],
       });
       enumTypeMap.set(e.name, `"${enumTypeName}"`);

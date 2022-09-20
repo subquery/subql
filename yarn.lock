@@ -3452,7 +3452,7 @@ __metadata:
     "@willsoto/nestjs-prometheus": ^4.4.0
     lodash: ^4.17.21
     prom-client: ^14.0.1
-    sequelize: 6.19.0
+    sequelize: 6.23.0
     yargs: ^16.2.0
   languageName: unknown
   linkType: soft
@@ -3499,7 +3499,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
     rxjs: ^7.5.2
-    sequelize: 6.19.0
+    sequelize: 6.23.0
     supertest: ^6.2.2
     tar: ^6.1.11
     typescript: ^4.4.4
@@ -3632,7 +3632,7 @@ __metadata:
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
-    sequelize: ^6.15.0
+    sequelize: 6.23.0
     tar: ^6.1.11
   languageName: unknown
   linkType: soft
@@ -14185,6 +14185,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"retry-as-promised@npm:^6.1.0":
+  version: 6.1.0
+  resolution: "retry-as-promised@npm:6.1.0"
+  checksum: cde3ad5c827d3f51b9161b9453dfd5eb8b8b6c22b6b405f7294eaa1939ef1966f8bd4c8a228ce2d66a24959d1dcc48b113c4c810ecdaddec2968b6d20576329d
+  languageName: node
+  linkType: hard
+
 "retry@npm:0.13.1":
   version: 0.13.1
   resolution: "retry@npm:0.13.1"
@@ -14449,9 +14456,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:6.19.0, sequelize@npm:^6.15.0":
-  version: 6.19.0
-  resolution: "sequelize@npm:6.19.0"
+"sequelize@npm:6.23.0":
+  version: 6.23.0
+  resolution: "sequelize@npm:6.23.0"
   dependencies:
     "@types/debug": ^4.1.7
     "@types/validator": ^13.7.1
@@ -14462,7 +14469,7 @@ __metadata:
     moment: ^2.29.1
     moment-timezone: ^0.5.34
     pg-connection-string: ^2.5.0
-    retry-as-promised: ^5.0.0
+    retry-as-promised: ^6.1.0
     semver: ^7.3.5
     sequelize-pool: ^7.1.0
     toposort-class: ^1.0.1
@@ -14476,6 +14483,8 @@ __metadata:
       optional: true
     mysql2:
       optional: true
+    oracledb:
+      optional: true
     pg:
       optional: true
     pg-hstore:
@@ -14486,7 +14495,7 @@ __metadata:
       optional: true
     tedious:
       optional: true
-  checksum: e1faa389fe8bf4e58f4781763d313e6a28b5cf8376f9c34ba6a6af9f158a309d8fa30277706bbee004caa8068a5f3030cf1620735a2d9f84a33f204ab2dae2f2
+  checksum: bee85b96c5520284a7bca5b5ef296a8acbe43299003e95eee89a803b2841e36f56c39cf7826f3217e5a9206095b861b64e7981a6b7da0534decf278454eb9b71
   languageName: node
   linkType: hard
 
