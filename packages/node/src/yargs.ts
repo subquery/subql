@@ -5,7 +5,6 @@ import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'force-clean',
@@ -28,7 +27,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'reindex',
     describe:
-      'Reindex to specified block height (Once the command is executed, the application would exit upon completion).',
+      'Reindex to specified block height (Once the command is executed, the application would exit upon completion). Note: historical must be enabled to use this feature',
     builder: (yargs) =>
       yargs.options('targetHeight', {
         type: 'number',

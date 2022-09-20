@@ -24,10 +24,10 @@ const logger = getLogger('Reindex');
 
 @Injectable()
 export class ReindexService {
-  private _schema: string;
+  private schema: string;
   private metadataRepo: MetadataRepo;
-  private _specName: string;
-  private _startHeight: number;
+  private specName: string;
+  private startHeight: number;
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
@@ -46,17 +46,17 @@ export class ReindexService {
     );
   }
 
-  get schema(): string {
-    return this._schema;
-  }
-
-  get specName(): string {
-    return this._specName;
-  }
-
-  get startHeight(): number {
-    return this._startHeight;
-  }
+  // get schema(): string {
+  //   return this._schema;
+  // }
+  //
+  // get specName(): string {
+  //   return this._specName;
+  // }
+  //
+  // get startHeight(): number {
+  //   return this._startHeight;
+  // }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
@@ -78,18 +78,16 @@ export class ReindexService {
   }
 
   private async getDataSourcesForSpecName(): Promise<SubqlProjectDs[]> {
-    this._specName = await this.getMetadataSpecName();
+    this.specName = await this.getMetadataSpecName();
     return this.project.dataSources.filter(
       (ds) => !ds.filter?.specName || ds.filter.specName === this.specName,
     );
   }
 
   private async getStartBlockFromDataSources() {
-    const _startBlocksList = await this.getDataSourcesForSpecName();
+    const datasources = await this.getDataSourcesForSpecName();
 
-    const startBlocksList = _startBlocksList.map(
-      (item) => item.startBlock ?? 1,
-    );
+    const startBlocksList = datasources.map((item) => item.startBlock ?? 1);
     if (startBlocksList.length === 0) {
       logger.error(
         `Failed to find a valid datasource, Please check your endpoint if specName filter is used.`,
@@ -101,7 +99,7 @@ export class ReindexService {
   }
 
   async reindex(targetBlockHeight: number): Promise<void> {
-    this._schema = await this.getExistingProjectSchema();
+    this.schema = await this.getExistingProjectSchema();
 
     if (!this.schema) {
       logger.error('Unable to locate schema');
@@ -111,7 +109,7 @@ export class ReindexService {
 
     this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
-    this._startHeight = await this.getStartBlockFromDataSources();
+    this.startHeight = await this.getStartBlockFromDataSources();
 
     const lastProcessedHeight = await this.getLastProcessedHeight();
 

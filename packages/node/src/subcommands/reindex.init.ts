@@ -7,7 +7,7 @@ import { ReindexModule } from './reindex.module';
 import { ReindexService } from './reindex.service';
 
 const logger = getLogger('CLI-Reindex');
-export async function reindexInit(targetHeight: number) {
+export async function reindexInit(targetHeight: number): Promise<void> {
   try {
     const app = await NestFactory.create(ReindexModule);
 
@@ -15,7 +15,7 @@ export async function reindexInit(targetHeight: number) {
     const reindexService = app.get(ReindexService);
     await reindexService.reindex(targetHeight);
   } catch (e) {
-    logger.error(`${e}, Reindex failed to execute`);
+    logger.error(e, 'Reindex failed to execute');
     process.exit(1);
   }
   process.exit(0);
