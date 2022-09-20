@@ -46,18 +46,6 @@ export class ReindexService {
     );
   }
 
-  // get schema(): string {
-  //   return this._schema;
-  // }
-  //
-  // get specName(): string {
-  //   return this._specName;
-  // }
-  //
-  // get startHeight(): number {
-  //   return this._startHeight;
-  // }
-
   private async getLastProcessedHeight(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
