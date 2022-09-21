@@ -9,7 +9,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'force-clean',
     describe:
-      'Force cleans the database, dropping project schemas and tables (Once the command is executed, the application would exit upon completion)',
+      'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',
     builder: {},
     handler: (argv) => {
       initLogger(
@@ -27,7 +27,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'reindex',
     describe:
-      'Reindex to specified block height (Once the command is executed, the application would exit upon completion). Note: historical must be enabled to use this feature',
+      'Reindex to specified block height. Historical must be enabled for the targeted project (--disable-historical=false). Once the command is executed, the application would exit upon completion.',
     builder: (yargs) =>
       yargs.options('targetHeight', {
         type: 'number',
