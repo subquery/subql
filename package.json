@@ -55,8 +55,5 @@
       "prettier --write"
     ]
   },
-  "packageManager": "yarn@3.1.1",
-  "dependencies": {
-    "cron-converter": "^1.0.2"
-  }
+  "packageManager": "yarn@3.1.1"
 }

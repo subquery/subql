@@ -436,26 +436,33 @@ export class ProjectService {
       this.project.dataSources.map(async (ds) => {
         if (isRuntimeDs(ds)) {
           const startBlock = ds.startBlock ?? 1;
-          const block = await getBlockByHeight(
-            this.apiService.getApi(),
-            startBlock,
-          );
-          const timestampReference = getTimestamp(block);
-          ds.mapping.handlers = ds.mapping.handlers.map((handler) => {
-            if (handler.kind === SubstrateHandlerKind.Block) {
-              if (handler.filter?.timestamp) {
-                cron.fromString(handler.filter.timestamp);
-                const schedule = cron.schedule(timestampReference);
-                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
-                  schedule: schedule,
-                  get next() {
-                    return Date.parse(this.schedule.next().format());
-                  },
-                };
+          let block;
+          let timestampReference;
+
+          ds.mapping.handlers = await Promise.all(
+            ds.mapping.handlers.map(async (handler) => {
+              if (handler.kind === SubstrateHandlerKind.Block) {
+                if (handler.filter?.timestamp) {
+                  if (!block) {
+                    block = await getBlockByHeight(
+                      this.apiService.getApi(),
+                      startBlock,
+                    );
+                    timestampReference = getTimestamp(block);
+                  }
+                  cron.fromString(handler.filter.timestamp);
+                  const schedule = cron.schedule(timestampReference);
+                  (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
+                    schedule: schedule,
+                    get next() {
+                      return Date.parse(this.schedule.next().format());
+                    },
+                  };
+                }
               }
-            }
-            return handler;
-          });
+              return handler;
+            }),
+          );
         }
         return ds;
       }),
