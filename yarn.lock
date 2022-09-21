@@ -6324,7 +6324,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^5.6.1, ethers@npm:^5.7.0":
+"ethers@npm:^5.6.1, ethers@npm:^5.7.1":
   version: 5.7.1
   resolution: "ethers@npm:5.7.1"
   dependencies:
@@ -11495,7 +11495,7 @@ __metadata:
     eslint-plugin-import: ^2.25.4
     eslint-plugin-prettier: ^4.0.0
     eslint-plugin-sort-destructure-keys: ^1.4.0
-    ethers: ^5.7.0
+    ethers: ^5.7.1
     husky: ^7.0.4
     jest: ^27.4.7
     lint-staged: ^12.3.3
