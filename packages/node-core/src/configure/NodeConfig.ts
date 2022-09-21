@@ -184,10 +184,6 @@ export class NodeConfig implements IConfig {
     return this._config.disableHistorical;
   }
 
-  get reindex(): number {
-    return this._config.reindex;
-  }
-
   merge(config: Partial<IConfig>): this {
     assign(this._config, config);
     return this;
