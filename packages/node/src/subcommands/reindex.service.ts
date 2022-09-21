@@ -10,14 +10,13 @@ import {
   NodeConfig,
   StoreService,
   SubqueryRepo,
+  getExistingProjectSchema,
+  getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import {
-  getExistingProjectSchema,
-  getMetaDataInfo,
-  initDbSchema,
-} from '../utils/project';
+import { initDbSchema } from '../utils/project';
+
 import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('Reindex');

@@ -3,9 +3,13 @@
 
 import fs from 'fs';
 import { Inject, Injectable } from '@nestjs/common';
-import { getLogger, NodeConfig, SubqueryRepo } from '@subql/node-core';
+import {
+  getLogger,
+  NodeConfig,
+  SubqueryRepo,
+  getExistingProjectSchema,
+} from '@subql/node-core';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { getExistingProjectSchema } from '../utils/project';
 
 const logger = getLogger('Force-clean');
 

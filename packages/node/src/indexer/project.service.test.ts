@@ -6,13 +6,12 @@ import {
   SubqueryRepo,
   DbModule,
   NodeConfig,
-  getLogger,
+  getExistingProjectSchema,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { getExistingProjectSchema } from '../utils/project';
 import { ProjectService } from './project.service';
 
 function testSubqueryProject(): SubqueryProject {

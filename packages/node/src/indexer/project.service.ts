@@ -15,14 +15,12 @@ import {
   PoiService,
   MmrService,
   getLogger,
+  getExistingProjectSchema,
+  getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import {
-  getExistingProjectSchema,
-  getMetaDataInfo,
-  initDbSchema,
-} from '../utils/project';
+import { initDbSchema } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';

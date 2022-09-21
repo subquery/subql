@@ -24,21 +24,12 @@ import {
   SubstrateHandler,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import {
-  getLogger,
-  MetadataRepo,
-  NodeConfig,
-  StoreService,
-  SubqueryRepo,
-} from '@subql/node-core';
+import { StoreService } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import yaml from 'js-yaml';
-import { QueryTypes, Sequelize } from 'sequelize';
 import tar from 'tar';
 import { NodeVM, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-
-const logger = getLogger('Project-Utils');
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -309,51 +300,6 @@ export function loadChainTypesFromJs(
     );
   }
   return rawContent;
-}
-
-export async function getExistingProjectSchema(
-  nodeConfig: NodeConfig,
-  sequelize: Sequelize,
-  subqueryRepo: SubqueryRepo,
-): Promise<string> {
-  const DEFAULT_DB_SCHEMA = 'public';
-  let schema = nodeConfig.localMode ? DEFAULT_DB_SCHEMA : nodeConfig.dbSchema;
-
-  let schemas: string[];
-  try {
-    const result = await sequelize.query(
-      `SELECT schema_name FROM information_schema.schemata`,
-      {
-        type: QueryTypes.SELECT,
-      },
-    );
-    schemas = result.map((x: any) => x.schema_name) as [string];
-  } catch (err) {
-    logger.error(`Unable to fetch all schemas: ${err}`);
-    process.exit(1);
-  }
-  if (!schemas.includes(schema)) {
-    // fallback to subqueries table
-    const subqueryModel = await subqueryRepo.findOne({
-      where: { name: nodeConfig.subqueryName },
-    });
-    if (subqueryModel) {
-      schema = subqueryModel.dbSchema;
-    } else {
-      schema = undefined;
-    }
-  }
-  return schema;
-}
-
-export async function getMetaDataInfo(
-  metadataRepo: MetadataRepo,
-  key: string,
-): Promise<number | undefined> {
-  const res = await metadataRepo.findOne({
-    where: { key: key },
-  });
-  return res?.value as number | undefined;
 }
 
 export async function initDbSchema(
