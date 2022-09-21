@@ -5,8 +5,8 @@ import path from 'path';
 import { Injectable } from '@nestjs/common';
 import {
   isDatasourceV0_2_0,
-  SubstrateDataSource,
-} from '@subql/common-substrate';
+  SubqlEthereumDataSource,
+} from '@subql/common-avalanche';
 import {
   timeout,
   NodeConfig,
@@ -14,14 +14,16 @@ import {
   getYargsOption,
   getLogger,
 } from '@subql/node-core';
-import { Store } from '@subql/types';
+import {
+  ApiWrapper,
+  EthereumBlockWrapper,
+  Store,
+} from '@subql/types-avalanche';
 import { levelFilter } from '@subql/utils';
 import { merge } from 'lodash';
 import { NodeVM, NodeVMOptions, VMScript } from 'vm2';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { getProjectEntry } from '../utils/project';
-import { ApiService } from './api.service';
-import { ApiAt } from './types';
 
 const { argv } = getYargsOption();
 
@@ -90,7 +92,9 @@ export class IndexerSandbox extends Sandbox {
     } catch (e) {
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
-        e.handlerArgs = JSON.stringify(args);
+        e.handlerArgs = JSON.stringify(args, (key, value) =>
+          typeof value === 'bigint' ? `${value.toString()}n` : value,
+        );
       }
       throw e;
     } finally {
@@ -112,19 +116,21 @@ export class SandboxService {
   private processorCache: Record<string, IndexerSandbox> = {};
 
   constructor(
-    private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly project: SubqueryProject,
   ) {}
 
-  getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {
+  getDsProcessorWrapper(
+    ds: SubqlProjectDs,
+    api: ApiWrapper,
+    blockContent: EthereumBlockWrapper,
+  ): IndexerSandbox {
     const entry = this.getDataSourceEntry(ds);
     let processor = this.processorCache[entry];
     if (!processor) {
       processor = new IndexerSandbox(
         {
-          // api: await this.apiService.getPatchedApi(),
           store: this.storeService.getStore(),
           root: this.project.root,
           script: ds.mapping.entryScript,
@@ -134,14 +140,11 @@ export class SandboxService {
       );
       this.processorCache[entry] = processor;
     }
-    processor.freeze(api, 'api');
-    if (argv.unsafe) {
-      processor.freeze(this.apiService.getApi(), 'unsafeApi');
-    }
+    api.freezeApi(processor, blockContent);
     return processor;
   }
 
-  private getDataSourceEntry(ds: SubstrateDataSource): string {
+  private getDataSourceEntry(ds: SubqlEthereumDataSource): string {
     if (isDatasourceV0_2_0(ds)) {
       return ds.mapping.file;
     } else {

@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
-import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
+import { isCustomDs, isRuntimeDs } from '@subql/common-avalanche';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -52,7 +52,7 @@ export class DynamicDsService {
 
       return ds;
     } catch (e) {
-      logger.error(e, 'Failed to create dynamic ds');
+      logger.error(e.message);
       process.exit(1);
     }
   }
@@ -66,7 +66,7 @@ export class DynamicDsService {
           params.map((params) => this.getDatasource(params)),
         );
       } catch (e) {
-        logger.error(e, `Unable to get dynamic datasources`);
+        logger.error(`Unable to get dynamic datasources:\n${e.message}`);
         process.exit(1);
       }
     }

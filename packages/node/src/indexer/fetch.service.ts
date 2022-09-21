@@ -4,86 +4,95 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
-import { ApiPromise } from '@polkadot/api';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
-
 import {
-  isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_0_1,
   isCustomDs,
-  isRuntimeDs,
-  isRuntimeDataSourceV0_3_0,
-  SubstrateCallFilter,
-  SubstrateEventFilter,
-  SubstrateHandlerKind,
-  SubstrateHandler,
-  SubstrateDataSource,
-  SubstrateRuntimeHandlerFilter,
-  SubstrateBlockFilter,
-} from '@subql/common-substrate';
+  EthereumHandlerKind,
+  SubqlHandlerFilter,
+} from '@subql/common-avalanche';
 import {
+  ApiService,
   delay,
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
   getYargsOption,
   getLogger,
-  profiler,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
-  SubstrateBlock,
-  SubstrateCustomHandler,
-} from '@subql/types';
-import { MetaData } from '@subql/utils';
+  ApiWrapper,
+  EthereumLogFilter,
+  EthereumTransactionFilter,
+} from '@subql/types-avalanche';
 import { range, sortBy, uniqBy } from 'lodash';
+import { calcInterval } from '../avalanche/utils.avalanche';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { isBaseHandler, isCustomHandler } from '../utils/project';
-import * as SubstrateUtil from '../utils/substrate';
-import { calcInterval } from '../utils/substrate';
-import { ApiService } from './api.service';
-import { DictionaryService, SpecVersion } from './dictionary.service';
+import { eventToTopic, functionToSighash } from '../utils/string';
+import { Dictionary, DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
-let BLOCK_TIME_VARIANCE = 5000; //ms
+let BLOCK_TIME_VARIANCE = 5000;
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
-const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
 
 const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
-  filter: SubstrateEventFilter,
+  filter: EthereumLogFilter,
 ): DictionaryQueryEntry {
+  const conditions = [];
+  if (filter.address) {
+    conditions.push({
+      field: 'address',
+      value: filter.address.toLowerCase(),
+    });
+  }
+  if (filter.topics) {
+    for (let i = 0; i < Math.min(filter.topics.length, 4); i++) {
+      const topic = filter.topics[i];
+      if (!topic) {
+        continue;
+      }
+      const field = `topics${i}`;
+      conditions.push({ field, value: eventToTopic(topic) });
+    }
+  }
   return {
-    entity: 'events',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'event',
-        value: filter.method,
-      },
-    ],
+    entity: 'evmLogs',
+    conditions,
   };
 }
 
 function callFilterToQueryEntry(
-  filter: SubstrateCallFilter,
+  filter: EthereumTransactionFilter,
 ): DictionaryQueryEntry {
+  const conditions = [];
+  if (filter.from) {
+    conditions.push({
+      field: 'from',
+      value: filter.from.toLowerCase(),
+    });
+  }
+  if (filter.to) {
+    conditions.push({
+      field: 'to',
+      value: filter.to.toLowerCase(),
+    });
+  }
+  if (filter.function) {
+    conditions.push({
+      field: 'func',
+      value: functionToSighash(filter.function),
+    });
+  }
   return {
-    entity: 'extrinsics',
-    conditions: [
-      { field: 'module', value: filter.module },
-      {
-        field: 'call',
-        value: filter.method,
-      },
-    ],
+    entity: 'evmTransactions',
+    conditions,
   };
 }
 
@@ -92,12 +101,9 @@ export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private isShutdown = false;
-  private parentSpecVersion: number;
   private useDictionary: boolean;
   private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
-  private specVersionMap: SpecVersion[];
-  private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
 
   constructor(
@@ -106,7 +112,6 @@ export class FetchService implements OnApplicationShutdown {
     private project: SubqueryProject,
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
-    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
@@ -115,17 +120,11 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   onApplicationShutdown(): void {
-    try {
-      this.schedulerRegistry.deleteInterval('getFinalizedBlockHead');
-      this.schedulerRegistry.deleteInterval('getBestBlockHead');
-    } catch (e) {
-      //ignore if interval not exist
-    }
     this.isShutdown = true;
   }
 
-  get api(): ApiPromise {
-    return this.apiService.getApi();
+  get api(): ApiWrapper {
+    return this.apiService.api;
   }
 
   async syncDynamicDatascourcesFromMeta(): Promise<void> {
@@ -133,58 +132,27 @@ export class FetchService implements OnApplicationShutdown {
       await this.dynamicDsService.getDynamicDatasources();
   }
 
+  // TODO: if custom ds doesn't support dictionary, use baseFilter, if yes, let
   getDictionaryQueryEntries(): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter(
-      (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
-    );
-
+    const dataSources = this.project.dataSources;
     for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
-      const plugin = isCustomDs(ds)
-        ? this.dsProcessorService.getDsProcessor(ds)
-        : undefined;
       for (const handler of ds.mapping.handlers) {
-        const baseHandlerKind = this.getBaseHandlerKind(ds, handler);
-        let filterList: SubstrateRuntimeHandlerFilter[];
-        if (isCustomDs(ds)) {
-          const processor = plugin.handlerProcessors[handler.kind];
-          if (processor.dictionaryQuery) {
-            const queryEntry = processor.dictionaryQuery(
-              (handler as SubstrateCustomHandler).filter,
-              ds,
-            );
-            if (queryEntry) {
-              queryEntries.push(queryEntry);
-              continue;
-            }
-          }
-          filterList =
-            this.getBaseHandlerFilters<SubstrateRuntimeHandlerFilter>(
-              ds,
-              handler.kind,
-            );
-        } else {
-          filterList = [handler.filter];
-        }
+        let filterList: SubqlHandlerFilter[];
+        filterList = [handler.filter];
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
-        switch (baseHandlerKind) {
-          case SubstrateHandlerKind.Block:
-            for (const filter of filterList as SubstrateBlockFilter[]) {
-              if (filter.modulo === undefined) {
-                return [];
-              }
-            }
-            break;
-          case SubstrateHandlerKind.Call: {
-            for (const filter of filterList as SubstrateCallFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+        switch (handler.kind) {
+          case EthereumHandlerKind.Block:
+            return [];
+          case EthereumHandlerKind.Call: {
+            for (const filter of filterList as EthereumTransactionFilter[]) {
+              if (
+                filter.from !== undefined ||
+                filter.to !== undefined ||
+                filter.function
+              ) {
                 queryEntries.push(callFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -192,9 +160,9 @@ export class FetchService implements OnApplicationShutdown {
             }
             break;
           }
-          case SubstrateHandlerKind.Event: {
-            for (const filter of filterList as SubstrateEventFilter[]) {
-              if (filter.module !== undefined && filter.method !== undefined) {
+          case EthereumHandlerKind.Event: {
+            for (const filter of filterList as EthereumLogFilter[]) {
+              if (filter.address || filter.topics) {
                 queryEntries.push(eventFilterToQueryEntry(filter));
               } else {
                 return [];
@@ -225,25 +193,15 @@ export class FetchService implements OnApplicationShutdown {
 
   async init(startHeight: number): Promise<void> {
     if (this.api) {
-      const CHAIN_INTERVAL = calcInterval(this.api)
-        .muln(INTERVAL_PERCENT)
-        .toNumber();
+      const CHAIN_INTERVAL = calcInterval(this.api) * INTERVAL_PERCENT;
 
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
       this.schedulerRegistry.addInterval(
-        'getFinalizedBlockHead',
-        setInterval(
-          () => void this.getFinalizedBlockHead(),
-          BLOCK_TIME_VARIANCE,
-        ),
-      );
-      this.schedulerRegistry.addInterval(
-        'getBestBlockHead',
+        'getLatestBlockHead',
         setInterval(() => void this.getBestBlockHead(), BLOCK_TIME_VARIANCE),
       );
     }
-
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -252,24 +210,7 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    const validChecker = this.dictionaryValidation(
-      await this.dictionaryService.getSpecVersionsRaw(),
-    );
-
-    if (this.useDictionary && validChecker) {
-      const specVersionResponse =
-        await this.dictionaryService.getSpecVersions();
-      if (specVersionResponse !== undefined) {
-        this.specVersionMap = specVersionResponse;
-      }
-    } else {
-      this.specVersionMap = [];
-    }
-
-    await this.blockDispatcher.init(
-      this.getRuntimeVersion.bind(this),
-      this.resetForNewDs.bind(this),
-    );
+    await this.blockDispatcher.init(this.resetForNewDs.bind(this));
 
     void this.startLoop(startHeight);
   }
@@ -285,16 +226,14 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getFinalizedBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch finalized block until API is ready`);
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const currentFinalizedHeight = await this.api.getFinalizedBlockHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         this.eventEmitter.emit(IndexerEvent.BlockTarget, {
@@ -302,18 +241,18 @@ export class FetchService implements OnApplicationShutdown {
         });
       }
     } catch (e) {
-      logger.error(e, `Having a problem when getting finalized block`);
+      logger.error(e, `Having a problem when get finalized block`);
     }
   }
 
+  @Interval(BLOCK_TIME_VARIANCE * 1000)
   async getBestBlockHead(): Promise<void> {
     if (!this.api) {
       logger.debug(`Skip fetch best block until API is ready`);
       return;
     }
     try {
-      const bestHeader = await this.api.rpc.chain.getHeader();
-      const currentBestHeight = bestHeader.number.toNumber();
+      const currentBestHeight = await this.api.getLastHeight();
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
@@ -325,7 +264,7 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  private async startLoop(initBlockHeight: number): Promise<void> {
+  async startLoop(initBlockHeight: number): Promise<void> {
     await this.fillNextBlockBuffer(initBlockHeight);
   }
 
@@ -337,7 +276,7 @@ export class FetchService implements OnApplicationShutdown {
       }
       for (const handler of ds.mapping.handlers) {
         if (
-          handler.kind === SubstrateHandlerKind.Block &&
+          handler.kind === EthereumHandlerKind.Block &&
           handler.filter &&
           handler.filter.modulo
         ) {
@@ -360,8 +299,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
-    await this.prefetchMeta(initBlockHeight);
-
     let startBlockHeight: number;
     let scaledBatchSize: number;
 
@@ -448,103 +385,6 @@ export class FetchService implements OnApplicationShutdown {
     }
   }
 
-  async getSpecFromApi(height: number): Promise<number> {
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
-      Math.max(height - 1, 0),
-    );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
-    const specVersion = runtimeVersion.specVersion.toNumber();
-    return specVersion;
-  }
-
-  getSpecFromMap(
-    blockHeight: number,
-    specVersions: SpecVersion[],
-  ): number | undefined {
-    //return undefined if can not find inside range
-    const spec = specVersions.find(
-      (spec) => blockHeight >= spec.start && blockHeight <= spec.end,
-    );
-    return spec ? Number(spec.id) : undefined;
-  }
-
-  async getSpecVersion(blockHeight: number): Promise<number> {
-    let currentSpecVersion: number;
-    // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
-    // therefore instead of check .useDictionary, we check it length before use it.
-    if (this.specVersionMap && this.specVersionMap.length !== 0) {
-      currentSpecVersion = this.getSpecFromMap(
-        blockHeight,
-        this.specVersionMap,
-      );
-    }
-    if (currentSpecVersion === undefined) {
-      currentSpecVersion = await this.getSpecFromApi(blockHeight);
-      // Assume dictionary is synced
-      if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
-        const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersions()
-          : undefined;
-        if (response !== undefined) {
-          this.specVersionMap = response;
-        }
-      }
-    }
-    return currentSpecVersion;
-  }
-
-  async getRuntimeVersion(block: SubstrateBlock): Promise<RuntimeVersion> {
-    if (
-      !this.currentRuntimeVersion ||
-      this.currentRuntimeVersion.specVersion.toNumber() !== block.specVersion
-    ) {
-      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
-        block.block.header.parentHash,
-      );
-    }
-    return this.currentRuntimeVersion;
-  }
-
-  @profiler(argv.profiler)
-  async specChanged(height: number): Promise<boolean> {
-    const specVersion = await this.getSpecVersion(height);
-    if (this.parentSpecVersion !== specVersion) {
-      await this.prefetchMeta(height);
-      this.parentSpecVersion = specVersion;
-      return true;
-    }
-    return false;
-  }
-
-  @profiler(argv.profiler)
-  async prefetchMeta(height: number): Promise<void> {
-    const blockHash = await this.api.rpc.chain.getBlockHash(height);
-    if (
-      this.parentSpecVersion &&
-      this.specVersionMap &&
-      this.specVersionMap.length !== 0
-    ) {
-      const parentSpecVersion = this.specVersionMap.find(
-        (spec) => Number(spec.id) === this.parentSpecVersion,
-      );
-      for (const specVersion of this.specVersionMap) {
-        if (
-          specVersion.start > parentSpecVersion.end &&
-          specVersion.start <= height
-        ) {
-          const blockHash = await this.api.rpc.chain.getBlockHash(
-            specVersion.start,
-          );
-          await SubstrateUtil.prefetchMetadata(this.api, blockHash);
-        }
-      }
-    } else {
-      await SubstrateUtil.prefetchMetadata(this.api, blockHash);
-    }
-  }
-
   private nextEndBlockHeight(
     startBlockHeight: number,
     scaledBatchSize: number,
@@ -557,74 +397,32 @@ export class FetchService implements OnApplicationShutdown {
     return endBlockHeight;
   }
 
+  private dictionaryValidation(
+    { _metadata: metaData }: Dictionary,
+    startBlockHeight: number,
+  ): boolean {
+    if (metaData.genesisHash !== this.api.getGenesisHash()) {
+      logger.warn(`Dictionary is disabled since now`);
+      this.useDictionary = false;
+      this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
+        value: Number(this.useDictionary),
+      });
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+      return false;
+    }
+    if (metaData.lastProcessedHeight < startBlockHeight) {
+      logger.warn(
+        `Dictionary indexed block is behind current indexing block height`,
+      );
+      this.eventEmitter.emit(IndexerEvent.SkipDictionary);
+      return false;
+    }
+    return true;
+  }
+
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
-  }
-
-  private dictionaryValidation(
-    dictionary: { _metadata: MetaData },
-    startBlockHeight?: number,
-  ): boolean {
-    if (dictionary !== undefined) {
-      const { _metadata: metaData } = dictionary;
-
-      if (metaData.genesisHash !== this.api.genesisHash.toString()) {
-        logger.warn(`Dictionary is disabled since now`);
-        this.useDictionary = false;
-        this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
-          value: Number(this.useDictionary),
-        });
-        this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-        return false;
-      }
-
-      if (startBlockHeight !== undefined) {
-        if (metaData.lastProcessedHeight < startBlockHeight) {
-          logger.warn(
-            `Dictionary indexed block is behind current indexing block height`,
-          );
-          this.eventEmitter.emit(IndexerEvent.SkipDictionary);
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
-  }
-
-  private getBaseHandlerKind(
-    ds: SubstrateDataSource,
-    handler: SubstrateHandler,
-  ): SubstrateHandlerKind {
-    if (isRuntimeDs(ds) && isBaseHandler(handler)) {
-      return handler.kind;
-    } else if (isCustomDs(ds) && isCustomHandler(handler)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const baseHandler =
-        plugin.handlerProcessors[handler.kind]?.baseHandlerKind;
-      if (!baseHandler) {
-        throw new Error(
-          `handler type ${handler.kind} not found in processor for ${ds.kind}`,
-        );
-      }
-      return baseHandler;
-    }
-  }
-
-  private getBaseHandlerFilters<T extends SubstrateRuntimeHandlerFilter>(
-    ds: SubstrateDataSource,
-    handlerKind: string,
-  ): T[] {
-    if (isCustomDs(ds)) {
-      const plugin = this.dsProcessorService.getDsProcessor(ds);
-      const processor = plugin.handlerProcessors[handlerKind];
-      return processor.baseFilter instanceof Array
-        ? (processor.baseFilter as T[])
-        : ([processor.baseFilter] as T[]);
-    } else {
-      throw new Error(`expect custom datasource here`);
-    }
   }
 }

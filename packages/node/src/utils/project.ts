@@ -4,29 +4,23 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import {
-  GithubReader,
-  IPFSReader,
-  LocalReader,
-  Reader,
-  loadFromJsonOrYaml,
-} from '@subql/common';
+import { GithubReader, IPFSReader, LocalReader, Reader } from '@subql/common';
 import {
   ChainTypes,
   CustomDatasourceV0_2_0,
   isCustomDs,
-  // loadChainTypesFromJs,
+  loadChainTypes,
+  loadChainTypesFromJs,
   parseChainTypes,
-  RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,
-  SubstrateRuntimeHandler,
-  SubstrateCustomHandler,
-  SubstrateHandler,
-  SubstrateHandlerKind,
-} from '@subql/common-substrate';
+  SubqlRuntimeHandler,
+  SubqlCustomHandler,
+  SubqlHandler,
+  EthereumHandlerKind,
+  RuntimeDataSourceV0_0_1,
+} from '@subql/common-avalanche';
 import yaml from 'js-yaml';
 import tar from 'tar';
-import { NodeVM, VMScript } from 'vm2';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
@@ -67,14 +61,14 @@ export function getProjectEntry(root: string): string {
 }
 
 export function isBaseHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateRuntimeHandler {
-  return Object.values<string>(SubstrateHandlerKind).includes(handler.kind);
+  handler: SubqlHandler,
+): handler is SubqlRuntimeHandler {
+  return Object.values<string>(EthereumHandlerKind).includes(handler.kind);
 }
 
 export function isCustomHandler(
-  handler: SubstrateHandler,
-): handler is SubstrateCustomHandler {
+  handler: SubqlHandler,
+): handler is SubqlCustomHandler {
   return !isBaseHandler(handler);
 }
 
@@ -110,6 +104,21 @@ export async function updateDataSourcesV0_2_0(
         root,
         entryScript,
       );
+      if (dataSource.assets) {
+        for (const [, asset] of Object.entries(dataSource.assets)) {
+          if (reader instanceof LocalReader) {
+            asset.file = path.resolve(root, asset.file);
+          } else {
+            const res = await reader.getFile(asset.file);
+            const outputPath = path.resolve(
+              root,
+              asset.file.replace('ipfs://', ''),
+            );
+            await fs.promises.writeFile(outputPath, res as string);
+            asset.file = outputPath;
+          }
+        }
+      }
       if (isCustomDs(dataSource)) {
         if (dataSource.processor) {
           dataSource.processor.file = await updateProcessor(
@@ -241,61 +250,4 @@ export async function getProjectRoot(reader: Reader): Promise<string> {
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }
-}
-
-export function loadChainTypes(file: string, projectRoot: string): unknown {
-  const { ext } = path.parse(file);
-  const filePath = path.resolve(projectRoot, file);
-  if (fs.existsSync(filePath)) {
-    if (ext === '.js' || ext === '.cjs') {
-      //load can be self contained js file, or js depend on node_module which will require project root
-      return loadChainTypesFromJs(filePath, projectRoot);
-    } else if (ext === '.yaml' || ext === '.yml' || ext === '.json') {
-      return loadFromJsonOrYaml(filePath);
-    } else {
-      throw new Error(`Extension ${ext} not supported`);
-    }
-  } else {
-    throw new Error(`Load from file ${file} not exist`);
-  }
-}
-
-export function loadChainTypesFromJs(
-  filePath: string,
-  requireRoot?: string,
-): unknown {
-  const { base, ext } = path.parse(filePath);
-  const root = requireRoot ?? path.dirname(filePath);
-  const vm = new NodeVM({
-    console: 'redirect',
-    wasm: false,
-    sandbox: {},
-    require: {
-      context: 'sandbox',
-      external: true,
-      builtin: ['path'],
-      root: root,
-      resolve: (moduleName: string) => {
-        return require.resolve(moduleName, { paths: [root] });
-      },
-    },
-    wrapper: 'commonjs',
-    sourceExtensions: ['js', 'cjs'],
-  });
-  let rawContent: unknown;
-  try {
-    const script = new VMScript(
-      `module.exports = require('${filePath}').default;`,
-      path.join(root, 'sandbox'),
-    ).compile();
-    rawContent = vm.run(script) as unknown;
-  } catch (err) {
-    throw new Error(`\n NodeVM error: ${err}`);
-  }
-  if (rawContent === undefined) {
-    throw new Error(
-      `There was no default export found from required ${base} file`,
-    );
-  }
-  return rawContent;
 }

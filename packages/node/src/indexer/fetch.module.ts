@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   BenchmarkService,
   MmrService,
@@ -9,8 +10,10 @@ import {
   PoiService,
   getYargsOption,
   DbModule,
+  ApiService,
 } from '@subql/node-core';
-import { ApiService } from './api.service';
+import { EthereumApiService } from '../avalanche/api.service.ethereum';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -22,17 +25,26 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
-
 const { argv } = getYargsOption();
 
 @Module({
   imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
-    ApiService,
+    {
+      provide: ApiService,
+      useFactory: async (project: SubqueryProject) => {
+        const apiService = new EthereumApiService(project);
+
+        await apiService.init();
+        return apiService;
+      },
+      inject: [SubqueryProject],
+    },
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
+      inject: [SubqueryProject, EventEmitter2],
       useClass: argv.workers
         ? WorkerBlockDispatcherService
         : BlockDispatcherService,

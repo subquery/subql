@@ -6,9 +6,9 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
+  ApiService,
   getLogger,
   NodeConfig,
   IndexerEvent,
@@ -16,14 +16,11 @@ import {
   delay,
   getYargsOption,
   profilerWrap,
-  AutoQueue,
-  Queue,
 } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
+import { EthereumBlockWrapper } from '@subql/types-avalanche';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import * as SubstrateUtil from '../../utils/substrate';
-import { ApiService } from '../api.service';
+import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import {
@@ -32,7 +29,6 @@ import {
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
-  SetCurrentRuntimeVersion,
   GetWorkerStatus,
 } from './worker';
 
@@ -47,7 +43,6 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
-  setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
   getStatus: GetWorkerStatus;
 };
 
@@ -68,7 +63,6 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
-      'setCurrentRuntimeVersion',
       'getStatus',
     ],
   );
@@ -78,13 +72,8 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
   return indexerWorker;
 }
 
-type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
-
 export interface IBlockDispatcher {
-  init(
-    runtimeVersionGetter: GetRuntimeVersion,
-    onDynamicDsCreated: (height: number) => Promise<void>,
-  ): Promise<void>;
+  init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
 
   enqueueBlocks(heights: number[]): void;
 
@@ -111,12 +100,11 @@ export class BlockDispatcherService
 
   private fetching = false;
   private isShutdown = false;
-  private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
   private _latestBufferedHeight: number;
   private _processedBlockCount: number;
 
-  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
+  private fetchBlocksBatches: ApiService['api']['fetchBlocks'];
   private latestProcessedHeight: number;
 
   constructor(
@@ -131,21 +119,24 @@ export class BlockDispatcherService
 
     const { argv } = getYargsOption();
 
+    const fetchBlocks = this.apiService.api.fetchBlocks.bind(
+      this.apiService.api,
+    );
     if (argv.profiler) {
       this.fetchBlocksBatches = profilerWrap(
-        SubstrateUtil.fetchBlocksBatches,
-        'SubstrateUtil',
+        fetchBlocks,
+        'EthereumUtil',
         'fetchBlocksBatches',
       );
+    } else {
+      this.fetchBlocksBatches = fetchBlocks;
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
@@ -159,11 +150,7 @@ export class BlockDispatcherService
   enqueueBlocks(heights: number[]): void {
     if (!heights.length) return;
 
-    logger.info(
-      `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
-      } blocks`,
-    );
+    logger.info(`Enqueing blocks ${heights[0]}...${last(heights)}`);
 
     this.fetchQueue.putMany(heights);
     this.latestBufferedHeight = last(heights);
@@ -171,7 +158,7 @@ export class BlockDispatcherService
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
-        process.exit(1);
+        throw e;
       }
     });
   }
@@ -221,27 +208,25 @@ export class BlockDispatcherService
           }], total ${blockNums.length} blocks`,
         );
 
-        const blocks = await this.fetchBlocksBatches(
-          this.apiService.getApi(),
-          blockNums,
-        );
+        const blocks = await this.fetchBlocksBatches(blockNums);
 
         if (bufferedHeight > this._latestBufferedHeight) {
           logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
           continue;
         }
+
         const blockTasks = blocks.map((block) => async () => {
-          const height = block.block.block.header.number.toNumber();
+          const height = block.blockHeight;
           try {
             this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
               height,
               timestamp: Date.now(),
             });
 
-            const runtimeVersion = await this.getRuntimeVersion(block.block);
-
             const { dynamicDsCreated, operationHash } =
-              await this.indexerManager.indexBlock(block, runtimeVersion);
+              await this.indexerManager.indexBlock(
+                block as EthereumBlockWrapper,
+              );
 
             // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
             this.setProcessedBlockCount(this._processedBlockCount + 1);
@@ -320,7 +305,6 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
-  private getRuntimeVersion: GetRuntimeVersion;
   private onDynamicDsCreated: (height: number) => Promise<void>;
 
   private taskCounter = 0;
@@ -339,14 +323,12 @@ export class WorkerBlockDispatcherService
   }
 
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
     this.workers = await Promise.all(
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );
 
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
@@ -442,19 +424,6 @@ export class WorkerBlockDispatcherService
           );
         }
 
-        if (result) {
-          const runtimeVersion = await this.getRuntimeVersion({
-            specVersion: result.specVersion,
-            block: {
-              header: {
-                parentHash: result.parentHash,
-              },
-            },
-          } as any);
-
-          await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
-        }
-
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
         // );
@@ -520,11 +489,6 @@ export class WorkerBlockDispatcherService
 
   set latestBufferedHeight(height: number) {
     this.eventEmitter.emit(IndexerEvent.BlocknumberQueueSize, {
-      value: this.queueSize,
-    });
-
-    // There is only a single queue with workers so we treat them as the same
-    this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
       value: this.queueSize,
     });
     this._latestBufferedHeight = height;

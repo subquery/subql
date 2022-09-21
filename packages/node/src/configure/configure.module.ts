@@ -5,7 +5,7 @@ import assert from 'assert';
 import path from 'path';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { getProjectRootAndManifest, IPFS_REGEX } from '@subql/common';
-import { SubstrateProjectNetworkConfig } from '@subql/common-substrate';
+import { EthereumProjectNetworkConfig } from '@subql/common-avalanche';
 import {
   IConfig,
   MinConfig,
@@ -125,7 +125,7 @@ export class ConfigureModule {
     const project = async () => {
       const p = await SubqueryProject.create(
         argv.subquery,
-        omitBy<SubstrateProjectNetworkConfig>(
+        omitBy<Partial<EthereumProjectNetworkConfig>>(
           {
             endpoint: config.networkEndpoint,
             dictionary: config.networkDictionary,

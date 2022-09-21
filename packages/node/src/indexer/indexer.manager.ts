@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Inject, Injectable } from '@nestjs/common';
-import { ApiPromise } from '@polkadot/api';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -11,13 +9,13 @@ import {
   isEventHandlerProcessor,
   isCustomDs,
   isRuntimeDs,
-  SubstrateCustomDataSource,
-  SubstrateCustomHandler,
-  SubstrateHandlerKind,
-  SubstrateNetworkFilter,
-  SubstrateRuntimeHandlerInputMap,
-} from '@subql/common-substrate';
+  SubqlEthereumCustomDataSource,
+  SubqlCustomHandler,
+  EthereumHandlerKind,
+  EthereumRuntimeHandlerInputMap,
+} from '@subql/common-avalanche';
 import {
+  ApiService,
   PoiBlock,
   StoreService,
   PoiService,
@@ -29,14 +27,16 @@ import {
   profilerWrap,
 } from '@subql/node-core';
 import {
-  SubstrateBlock,
-  SubstrateEvent,
-  SubstrateExtrinsic,
-} from '@subql/types';
+  ApiWrapper,
+  EthereumTransaction,
+  EthereumLog,
+  SubqlRuntimeHandler,
+  EthereumBlockWrapper,
+  EthereumBlock,
+} from '@subql/types-avalanche';
 import { Sequelize } from 'sequelize';
+import { EthereumBlockWrapped } from '../avalanche/block.ethereum';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import * as SubstrateUtil from '../utils/substrate';
-import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -44,7 +44,6 @@ import {
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { IndexerSandbox, SandboxService } from './sandbox.service';
-import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -53,7 +52,7 @@ const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
-  private api: ApiPromise;
+  private api: ApiWrapper;
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
@@ -64,50 +63,46 @@ export class IndexerManager {
     private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
-    private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private dsProcessorService: DsProcessorService,
     @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-    this.api = this.apiService.getApi();
+
+    this.api = this.apiService.api;
   }
 
   @profiler(argv.profiler)
   async indexBlock(
-    blockContent: BlockContent,
-    runtimeVersion: RuntimeVersion,
+    blockContent: EthereumBlockWrapper,
   ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
-    const { block } = blockContent;
+    const { blockHeight } = blockContent;
     let dynamicDsCreated = false;
-    const blockHeight = block.block.header.number.toNumber();
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
 
     let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
+
     try {
-      this.filteredDataSources = this.filterDataSources(
-        block.block.header.number.toNumber(),
-      );
+      this.filteredDataSources = this.filterDataSources(blockHeight);
 
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
 
-      let apiAt: ApiAt;
-
       await this.indexBlockData(
         blockContent,
         datasources,
+        // eslint-disable-next-line @typescript-eslint/require-await
         async (ds: SubqlProjectDs) => {
-          // Injected runtimeVersion from fetch service might be outdated
-          apiAt =
-            apiAt ??
-            (await this.apiService.getPatchedApi(block, runtimeVersion));
-
-          const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+          const vm = this.sandboxService.getDsProcessorWrapper(
+            ds,
+            this.api,
+            blockContent,
+          );
 
           // Inject function to create ds into vm
           vm.freeze(
@@ -148,7 +143,7 @@ export class IndexerManager {
         if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
           const poiBlock = PoiBlock.create(
             blockHeight,
-            block.block.header.hash.toHex(),
+            blockContent.block.hash,
             operationHash,
             await this.poiService.getLatestPoiBlockHash(),
             this.project.id,
@@ -179,27 +174,23 @@ export class IndexerManager {
     await this.projectService.init();
   }
 
-  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
-    let filteredDs: SubqlProjectDs[];
-    filteredDs = this.project.dataSources.filter(
-      (ds) => ds.startBlock <= nextProcessingHeight,
-    );
-
+  private filterDataSources(processedHeight: number): SubqlProjectDs[] {
+    let filteredDs = this.project.dataSources;
     if (filteredDs.length === 0) {
-      logger.error(`Did not find any matching datasouces`);
+      logger.error(
+        `Did not find any dataSource match with network specName ${this.api.getSpecName()}`,
+      );
+      process.exit(1);
+    }
+    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
+    if (filteredDs.length === 0) {
+      logger.error(
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight}
+         or delete your database and start again from the currently specified startBlock`,
+      );
       process.exit(1);
     }
     // perform filter for custom ds
-    filteredDs = filteredDs.filter((ds) => {
-      if (isCustomDs(ds)) {
-        return this.dsProcessorService
-          .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
-      } else {
-        return true;
-      }
-    });
-
     if (!filteredDs.length) {
       logger.error(`Did not find any datasources with associated processor`);
       process.exit(1);
@@ -208,78 +199,62 @@ export class IndexerManager {
   }
 
   private async indexBlockData(
-    { block, events, extrinsics }: BlockContent,
+    { block, logs, transactions }: EthereumBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
-    // Run initialization events
-    const initEvents = events.filter((evt) => evt.phase.isInitialization);
-    for (const event of initEvents) {
-      await this.indexEvent(event, dataSources, getVM);
+    for (const log of logs) {
+      await this.indexEvent(log, dataSources, getVM);
     }
 
-    for (const extrinsic of extrinsics) {
-      await this.indexExtrinsic(extrinsic, dataSources, getVM);
-
-      // Process extrinsic events
-      const extrinsicEvents = events
-        .filter((e) => e.extrinsic?.idx === extrinsic.idx)
-        .sort((a, b) => a.idx - b.idx);
-
-      for (const event of extrinsicEvents) {
-        await this.indexEvent(event, dataSources, getVM);
-      }
-    }
-
-    // Run finalization events
-    const finalizeEvents = events.filter((evt) => evt.phase.isFinalization);
-    for (const event of finalizeEvents) {
-      await this.indexEvent(event, dataSources, getVM);
+    for (const tx of transactions) {
+      await this.indexExtrinsic(tx, dataSources, getVM);
     }
   }
 
   private async indexBlockContent(
-    block: SubstrateBlock,
+    block: EthereumBlock,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Block, block, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Block, block, ds, getVM);
     }
   }
 
   private async indexExtrinsic(
-    extrinsic: SubstrateExtrinsic,
+    tx: EthereumTransaction,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Call, extrinsic, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Call, tx, ds, getVM);
     }
   }
 
   private async indexEvent(
-    event: SubstrateEvent,
+    log: EthereumLog,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     for (const ds of dataSources) {
-      await this.indexData(SubstrateHandlerKind.Event, event, ds, getVM);
+      await this.indexData(EthereumHandlerKind.Event, log, ds, getVM);
     }
   }
 
-  private async indexData<K extends SubstrateHandlerKind>(
+  private async indexData<K extends EthereumHandlerKind>(
     kind: K,
-    data: SubstrateRuntimeHandlerInputMap[K],
+    data: EthereumRuntimeHandlerInputMap[K],
     ds: SubqlProjectDs,
     getVM: (ds: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     let vm: IndexerSandbox;
     if (isRuntimeDs(ds)) {
-      const handlers = ds.mapping.handlers.filter(
-        (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
+      const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
+        (h) =>
+          h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
       );
 
       for (const handler of handlers) {
@@ -299,21 +274,21 @@ export class IndexerManager {
         ProcessorTypeMap[kind],
         (data, baseFilter) => {
           switch (kind) {
-            case SubstrateHandlerKind.Block:
-              return !!SubstrateUtil.filterBlock(
-                data as SubstrateBlock,
+            case EthereumHandlerKind.Block:
+              return EthereumBlockWrapped.filterBlocksProcessor(
+                data as EthereumBlock,
                 baseFilter,
               );
-            case SubstrateHandlerKind.Call:
-              return !!SubstrateUtil.filterExtrinsics(
-                [data as SubstrateExtrinsic],
+            case EthereumHandlerKind.Call:
+              return EthereumBlockWrapped.filterTransactionsProcessor(
+                data as EthereumTransaction,
                 baseFilter,
-              ).length;
-            case SubstrateHandlerKind.Event:
-              return !!SubstrateUtil.filterEvents(
-                [data as SubstrateEvent],
+              );
+            case EthereumHandlerKind.Event:
+              return EthereumBlockWrapped.filterLogsProcessor(
+                data as EthereumLog,
                 baseFilter,
-              ).length;
+              );
             default:
               throw new Error('Unsupported handler kind');
           }
@@ -327,21 +302,22 @@ export class IndexerManager {
     }
   }
 
-  private filterCustomDsHandlers<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
-    data: SubstrateRuntimeHandlerInputMap[K],
+  private filterCustomDsHandlers<K extends EthereumHandlerKind>(
+    ds: SubqlEthereumCustomDataSource<string, any>,
+    data: EthereumRuntimeHandlerInputMap[K],
     baseHandlerCheck: ProcessorTypeMap[K],
     baseFilter: (
-      data: SubstrateRuntimeHandlerInputMap[K],
+      data: EthereumRuntimeHandlerInputMap[K],
       baseFilter: any,
     ) => boolean,
-  ): SubstrateCustomHandler[] {
+  ): SubqlCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     return ds.mapping.handlers
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
         if (baseHandlerCheck(processor)) {
           processor.baseFilter;
+
           return baseFilter(data, processor.baseFilter);
         }
         return false;
@@ -363,11 +339,11 @@ export class IndexerManager {
       });
   }
 
-  private async transformAndExecuteCustomDs<K extends SubstrateHandlerKind>(
-    ds: SubstrateCustomDataSource<string, SubstrateNetworkFilter>,
+  private async transformAndExecuteCustomDs<K extends EthereumHandlerKind>(
+    ds: SubqlEthereumCustomDataSource<string, any>,
     vm: IndexerSandbox,
-    handler: SubstrateCustomHandler,
-    data: SubstrateRuntimeHandlerInputMap[K],
+    handler: SubqlCustomHandler,
+    data: EthereumRuntimeHandlerInputMap[K],
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
@@ -379,8 +355,8 @@ export class IndexerManager {
       .transformer({
         input: data,
         ds,
-        filter: handler.filter,
         api: this.api,
+        filter: handler.filter,
         assets,
       })
       .catch((e) => {
@@ -397,19 +373,19 @@ export class IndexerManager {
 }
 
 type ProcessorTypeMap = {
-  [SubstrateHandlerKind.Block]: typeof isBlockHandlerProcessor;
-  [SubstrateHandlerKind.Event]: typeof isEventHandlerProcessor;
-  [SubstrateHandlerKind.Call]: typeof isCallHandlerProcessor;
+  [EthereumHandlerKind.Block]: typeof isBlockHandlerProcessor;
+  [EthereumHandlerKind.Event]: typeof isEventHandlerProcessor;
+  [EthereumHandlerKind.Call]: typeof isCallHandlerProcessor;
 };
 
 const ProcessorTypeMap = {
-  [SubstrateHandlerKind.Block]: isBlockHandlerProcessor,
-  [SubstrateHandlerKind.Event]: isEventHandlerProcessor,
-  [SubstrateHandlerKind.Call]: isCallHandlerProcessor,
+  [EthereumHandlerKind.Block]: isBlockHandlerProcessor,
+  [EthereumHandlerKind.Event]: isEventHandlerProcessor,
+  [EthereumHandlerKind.Call]: isCallHandlerProcessor,
 };
 
 const FilterTypeMap = {
-  [SubstrateHandlerKind.Block]: SubstrateUtil.filterBlock,
-  [SubstrateHandlerKind.Event]: SubstrateUtil.filterEvent,
-  [SubstrateHandlerKind.Call]: SubstrateUtil.filterExtrinsic,
+  [EthereumHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
+  [EthereumHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
+  [EthereumHandlerKind.Call]: EthereumBlockWrapped.filterTransactionsProcessor,
 };

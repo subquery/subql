@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  ApiService,
   DbModule,
   StoreService,
   PoiService,
   MmrService,
 } from '@subql/node-core';
+import { EthereumApiService } from '../avalanche';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -26,15 +26,12 @@ import { WorkerService } from './worker/worker.service';
     StoreService,
     {
       provide: ApiService,
-      useFactory: async (
-        project: SubqueryProject,
-        eventEmitter: EventEmitter2,
-      ) => {
-        const apiService = new ApiService(project, eventEmitter);
+      useFactory: async (project: SubqueryProject) => {
+        const apiService = new EthereumApiService(project);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject, EventEmitter2],
+      inject: [SubqueryProject],
     },
     DictionaryService,
     SandboxService,
@@ -45,6 +42,6 @@ import { WorkerService } from './worker/worker.service';
     ProjectService,
     WorkerService,
   ],
-  exports: [StoreService, MmrService],
+  exports: [StoreService],
 })
 export class IndexerModule {}
