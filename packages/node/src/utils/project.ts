@@ -24,12 +24,19 @@ import {
   SubstrateHandler,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { getLogger, NodeConfig, SubqueryRepo } from '@subql/node-core';
+import {
+  getLogger,
+  MetadataRepo,
+  NodeConfig,
+  StoreService,
+  SubqueryRepo,
+} from '@subql/node-core';
+import { getAllEntitiesRelations } from '@subql/utils';
 import yaml from 'js-yaml';
 import { QueryTypes, Sequelize } from 'sequelize';
 import tar from 'tar';
 import { NodeVM, VMScript } from 'vm2';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 
 const logger = getLogger('Project-Utils');
 
@@ -337,4 +344,23 @@ export async function getExistingProjectSchema(
     }
   }
   return schema;
+}
+
+export async function getMetaDataInfo(
+  metadataRepo: MetadataRepo,
+  key: string,
+): Promise<number | undefined> {
+  const res = await metadataRepo.findOne({
+    where: { key: key },
+  });
+  return res?.value as number | undefined;
+}
+
+export async function initDbSchema(
+  project: SubqueryProject,
+  schema: string,
+  storeService: StoreService,
+): Promise<void> {
+  const modelsRelation = getAllEntitiesRelations(project.schema);
+  await storeService.init(modelsRelation, schema);
 }

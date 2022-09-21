@@ -7,7 +7,7 @@ import { ForceCleanModule } from './forceClean.module';
 import { ForceCleanService } from './forceClean.service';
 
 const logger = getLogger('CLI');
-export async function forceCleanInit() {
+export async function forceCleanInit(): Promise<void> {
   try {
     const app = await NestFactory.create(ForceCleanModule);
     await app.init();

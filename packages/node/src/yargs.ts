@@ -5,10 +5,12 @@ import { initLogger } from '@subql/node-core/logger';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export const yargsOptions = yargs(hideBin(process.argv))
   .command({
     command: 'force-clean',
+    describe:
+      'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',
+    builder: {},
     handler: (argv) => {
       initLogger(
         argv.debug as boolean,
@@ -20,6 +22,28 @@ export const yargsOptions = yargs(hideBin(process.argv))
       // eslint-disable-next-line @typescript-eslint/no-var-requires
       const { forceCleanInit } = require('./subcommands/forceClean.init');
       return forceCleanInit();
+    },
+  })
+  .command({
+    command: 'reindex',
+    describe:
+      'Reindex to specified block height. Historical must be enabled for the targeted project (--disable-historical=false). Once the command is executed, the application would exit upon completion.',
+    builder: (yargs) =>
+      yargs.options('targetHeight', {
+        type: 'number',
+        description: 'set targetHeight',
+        require: true,
+      }),
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFormat as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { reindexInit } = require('./subcommands/reindex.init');
+      return reindexInit(argv.targetHeight);
     },
   })
   .options({
