@@ -1,12 +1,52 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {hideBin} from 'yargs/helpers';
+import { initLogger } from '@subql/node-core/logger';
+import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
-// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function getYargsOption() {
-  return yargs(hideBin(process.argv)).options({
+export const yargsOptions = yargs(hideBin(process.argv))
+  .command({
+    command: 'force-clean',
+    describe:
+      'Clean the database dropping project schemas and tables. Once the command is executed, the application would exit upon completion.',
+    builder: {},
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFormat as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { forceCleanInit } = require('./subcommands/forceClean.init');
+      return forceCleanInit();
+    },
+  })
+  .command({
+    command: 'reindex',
+    describe:
+      'Reindex to specified block height. Historical must be enabled for the targeted project (--disable-historical=false). Once the command is executed, the application would exit upon completion.',
+    builder: (yargs) =>
+      yargs.options('targetHeight', {
+        type: 'number',
+        description: 'set targetHeight',
+        require: true,
+      }),
+    handler: (argv) => {
+      initLogger(
+        argv.debug as boolean,
+        argv.outputFormat as 'json' | 'colored',
+        argv.logLevel as string | undefined,
+      );
+      // lazy import to make sure logger is instantiated before all other services
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { reindexInit } = require('./subcommands/reindex.init');
+      return reindexInit(argv.targetHeight);
+    },
+  })
+  .options({
     subquery: {
       alias: 'f',
       demandOption: true,
@@ -31,11 +71,6 @@ export function getYargsOption() {
       type: 'boolean',
       demandOption: false,
       describe: 'Use local mode',
-    },
-    'force-clean': {
-      type: 'boolean',
-      demandOption: false,
-      describe: 'Force clean the database, dropping project schemas and tables',
     },
     'db-schema': {
       demandOption: false,
@@ -71,7 +106,8 @@ export function getYargsOption() {
     },
     debug: {
       demandOption: false,
-      describe: 'Show debug information to console output. will forcefully set log level to debug',
+      describe:
+        'Show debug information to console output. will forcefully set log level to debug',
       type: 'boolean',
       default: false,
     },
@@ -150,26 +186,18 @@ export function getYargsOption() {
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
-    reindex: {
-      demandOption: false,
-      describe: 'Reindex to specified block height',
-      type: 'number',
-    },
     workers: {
       alias: 'w',
       demandOption: false,
-      describe: 'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
+      describe:
+        'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
     },
     'query-limit': {
       demandOption: false,
-      describe: 'The limit of items a project can query with store.getByField at once',
+      describe:
+        'The limit of items a project can query with store.getByField at once',
       type: 'number',
       default: 100,
     },
   });
-}
-
-export function argv(arg: string): unknown {
-  return getYargsOption().argv[arg];
-}

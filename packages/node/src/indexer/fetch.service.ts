@@ -26,7 +26,6 @@ import {
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
-  getYargsOption,
   getLogger,
   profiler,
 } from '@subql/node-core';
@@ -41,6 +40,7 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -54,8 +54,6 @@ const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
-
-const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
   filter: SubstrateEventFilter,
@@ -276,8 +274,8 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
-    if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(this.batchSizeScale);
+    if (this.nodeConfig['scale-batch-size']) {
+      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -507,7 +505,7 @@ export class FetchService implements OnApplicationShutdown {
     return this.currentRuntimeVersion;
   }
 
-  @profiler(argv.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async specChanged(height: number): Promise<boolean> {
     const specVersion = await this.getSpecVersion(height);
     if (this.parentSpecVersion !== specVersion) {
@@ -518,7 +516,7 @@ export class FetchService implements OnApplicationShutdown {
     return false;
   }
 
-  @profiler(argv.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async prefetchMeta(height: number): Promise<void> {
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (

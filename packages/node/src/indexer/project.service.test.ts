@@ -2,9 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Test } from '@nestjs/testing';
-import { SubqueryRepo, DbModule, NodeConfig } from '@subql/node-core';
+import {
+  SubqueryRepo,
+  DbModule,
+  NodeConfig,
+  getExistingProjectSchema,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
+import { ConfigureModule } from '../configure/configure.module';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ProjectService } from './project.service';
 
@@ -21,6 +27,11 @@ function testSubqueryProject(): SubqueryProject {
     templates: [],
   };
 }
+const TEST_PROJECT = 'test-user/TEST_PROJECT';
+const nodeConfig = new NodeConfig({
+  subquery: 'packages/node/test/projectFixture/v1.0.0',
+  subqueryName: TEST_PROJECT,
+});
 
 const prepare = async (): Promise<ProjectService> => {
   const module = await Test.createTestingModule({
@@ -35,8 +46,9 @@ const prepare = async (): Promise<ProjectService> => {
           sequelize: Sequelize,
           project: SubqueryProject,
           subqueryRepo: SubqueryRepo,
-        ) => {
-          const projectService = new ProjectService(
+          nodeConfig: NodeConfig,
+        ) =>
+          new ProjectService(
             undefined,
             undefined,
             undefined,
@@ -44,25 +56,17 @@ const prepare = async (): Promise<ProjectService> => {
             sequelize,
             project,
             undefined,
-            undefined,
+            nodeConfig,
             undefined,
             subqueryRepo,
             undefined,
-          );
-
-          return projectService;
-        },
-        inject: [Sequelize, SubqueryProject, 'Subquery'],
+          ),
+        inject: [Sequelize, SubqueryProject, 'Subquery', NodeConfig],
       },
     ],
     imports: [
-      DbModule.forRoot({
-        host: process.env.DB_HOST ?? '127.0.0.1',
-        port: process.env.DB_PORT ? Number(process.env.DB_PORT) : 5432,
-        username: process.env.DB_USER ?? 'postgres',
-        password: process.env.DB_PASS ?? 'postgres',
-        database: process.env.DB_DATABASE ?? 'postgres',
-      }),
+      ConfigureModule.registerWithConfig(nodeConfig),
+      DbModule.forRoot(),
       DbModule.forFeature(['Subquery']),
     ],
   }).compile();
@@ -87,11 +91,10 @@ function prepareProject(
   };
 }
 
-const TEST_PROJECT = 'test-user/TEST_PROJECT';
-
 describe('ProjectService Integration Tests', () => {
   let projectService: ProjectService;
   let subqueryRepo: SubqueryRepo;
+  let logger: any;
 
   async function createSchema(name: string): Promise<void> {
     await subqueryRepo.sequelize.createSchema(`"${name}"`, undefined);
@@ -108,37 +111,40 @@ describe('ProjectService Integration Tests', () => {
   });
 
   beforeEach(async () => {
-    delete (projectService as any).nodeConfig;
     await subqueryRepo.destroy({ where: { name: TEST_PROJECT } });
     await subqueryRepo.sequelize.dropSchema(`"${TEST_PROJECT}"`, undefined);
   });
 
   it("read existing project's schema from subqueries table", async () => {
     const schemaName = 'subql_99999';
-    (projectService as any).nodeConfig = new NodeConfig({
-      subquery: '/test/dir/test-query-project',
-      subqueryName: TEST_PROJECT,
-    });
-
     await subqueryRepo.create(prepareProject(TEST_PROJECT, schemaName, 1));
 
-    await expect(
-      (projectService as any).getExistingProjectSchema(),
-    ).resolves.toBe(schemaName);
+    const schema = getExistingProjectSchema(
+      (projectService as any).nodeConfig,
+      (projectService as any).sequelize,
+      (projectService as any).subqueryRepo,
+    );
+    await expect(schema).resolves.toBe(schemaName);
   });
 
   it("read existing project's schema from nodeConfig", async () => {
-    (projectService as any).nodeConfig = new NodeConfig({
-      subquery: '/test/dir/test-query-project',
-      subqueryName: TEST_PROJECT,
-    });
-
     await createSchema(TEST_PROJECT);
     await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
-    await expect(
-      (projectService as any).getExistingProjectSchema(),
-    ).resolves.toBe(TEST_PROJECT);
+    const schema = getExistingProjectSchema(
+      (projectService as any).nodeConfig,
+      (projectService as any).sequelize,
+      (projectService as any).subqueryRepo,
+    );
+
+    await expect(schema).resolves.toBe(TEST_PROJECT);
+  });
+
+  it('create project schema', async () => {
+    await expect((projectService as any).createProjectSchema()).resolves.toBe(
+      TEST_PROJECT,
+    );
+    await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);
   });
 
   it("read existing project's schema when --local", async () => {
@@ -150,19 +156,12 @@ describe('ProjectService Integration Tests', () => {
     await createSchema(TEST_PROJECT);
     await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
-    await expect(
-      (projectService as any).getExistingProjectSchema(),
-    ).resolves.toBe('public');
-  });
-
-  it('create project schema', async () => {
-    (projectService as any).nodeConfig = new NodeConfig({
-      subquery: '/test/dir/test-query-project',
-      subqueryName: TEST_PROJECT,
-    });
-    await expect((projectService as any).createProjectSchema()).resolves.toBe(
-      TEST_PROJECT,
+    const schema = getExistingProjectSchema(
+      (projectService as any).nodeConfig,
+      (projectService as any).sequelize,
+      (projectService as any).subqueryRepo,
     );
-    await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);
+
+    await expect(schema).resolves.toBe('public');
   });
 });

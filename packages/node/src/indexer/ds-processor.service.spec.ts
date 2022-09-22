@@ -3,6 +3,7 @@
 
 import path from 'path';
 import { isCustomDs } from '@subql/common-substrate';
+import { NodeConfig } from '@subql/node-core';
 import { SubstrateCustomDatasource } from '@subql/types';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -34,6 +35,10 @@ function getTestProject(
     templates: [],
   };
 }
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+});
 
 describe('DsProcessorService', () => {
   let service: DsProcessorService;
@@ -41,7 +46,7 @@ describe('DsProcessorService', () => {
 
   beforeEach(() => {
     project = getTestProject([]);
-    service = new DsProcessorService(project);
+    service = new DsProcessorService(project, nodeConfig);
   });
 
   it('can validate custom ds', async () => {
@@ -62,7 +67,7 @@ describe('DsProcessorService', () => {
     };
 
     project = getTestProject([badDs]);
-    service = new DsProcessorService(project);
+    service = new DsProcessorService(project, nodeConfig);
 
     await expect(service.validateProjectCustomDatasources()).rejects.toThrow();
   });

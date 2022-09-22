@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+### Changes
+- Moved `yargs` file from `node-core` to `node`. (#1281)
 
 ## [0.1.1] - 2022-08-26
 ### Fixed

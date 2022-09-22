@@ -23,7 +23,6 @@ import {
   PoiService,
   SubqueryRepo,
   NodeConfig,
-  getYargsOption,
   getLogger,
   profiler,
   profilerWrap,
@@ -36,6 +35,7 @@ import {
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -49,7 +49,6 @@ import { ApiAt, BlockContent } from './types';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
-const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
@@ -70,10 +69,11 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
+
     this.api = this.apiService.getApi();
   }
 
-  @profiler(argv.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
@@ -284,7 +284,7 @@ export class IndexerManager {
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
-        argv.profiler
+        this.nodeConfig.profiler
           ? await profilerWrap(
               vm.securedExec.bind(vm),
               'handlerPerformance',
@@ -337,6 +337,7 @@ export class IndexerManager {
     ) => boolean,
   ): SubstrateCustomHandler[] {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
+
     return ds.mapping.handlers
       .filter((handler) => {
         const processor = plugin.handlerProcessors[handler.kind];
@@ -350,6 +351,7 @@ export class IndexerManager {
         const processor = asSecondLayerHandlerProcessor_1_0_0(
           plugin.handlerProcessors[handler.kind],
         );
+
         try {
           return processor.filterProcessor({
             filter: handler.filter,
@@ -371,6 +373,7 @@ export class IndexerManager {
   ): Promise<void> {
     const plugin = this.dsProcessorService.getDsProcessor(ds);
     const assets = await this.dsProcessorService.getAssets(ds);
+
     const processor = asSecondLayerHandlerProcessor_1_0_0(
       plugin.handlerProcessors[handler.kind],
     );

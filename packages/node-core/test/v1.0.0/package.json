@@ -1,6 +1,6 @@
 {
   "name": "subquery-starter",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "This project can be use as a starting point for developing your SubQuery project",
   "main": "dist/index.js",
   "scripts": {
@@ -19,8 +19,12 @@
   "author": "Ian He & Jay Ji",
   "license": "Apache-2.0",
   "devDependencies": {
+    "@polkadot/api": "^8",
     "@subql/types": "latest",
     "typescript": "^4.1.3",
-    "@subql/cli": "^0.7.3"
+    "@subql/cli": "latest"
+  },
+  "resolutions": {
+    "ipfs-unixfs": "6.0.6"
   }
 }

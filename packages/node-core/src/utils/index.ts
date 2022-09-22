@@ -7,3 +7,4 @@ export * from './graphql';
 export * from './sync-helper';
 export * from './batch-size';
 export * from './autoQueue';
+export * from './project';
