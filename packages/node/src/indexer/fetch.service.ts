@@ -569,7 +569,7 @@ export class FetchService implements OnApplicationShutdown {
       const { _metadata: metaData } = dictionary;
 
       if (metaData.genesisHash !== this.api.genesisHash.toString()) {
-        logger.warn(`Dictionary is disabled since now`);
+        logger.error('The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary');
         this.useDictionary = false;
         this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
           value: Number(this.useDictionary),
