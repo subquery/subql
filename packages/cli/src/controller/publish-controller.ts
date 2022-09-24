@@ -79,7 +79,7 @@ async function replaceFileReferences<T>(
     return (await Promise.all(
       input.map((val) => replaceFileReferences(projectDir, val, authToken, ipfs))
     )) as unknown as T;
-  } else if (typeof input === 'object') {
+  } else if (typeof input === 'object' && input !== null) {
     if (input instanceof Map) {
       input = mapToObject(input) as T;
     }
@@ -165,7 +165,7 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isFileReference(value: any): value is FileReference {
-  return value.file && typeof value.file === 'string';
+  return value?.file && typeof value.file === 'string';
 }
 
 interface ClusterResponseData {
