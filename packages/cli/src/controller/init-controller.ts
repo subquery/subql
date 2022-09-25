@@ -13,7 +13,7 @@ import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import git from 'simple-git';
 import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
-const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/multi/templates.json';
+const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
 
 export interface Template {
   name: string;
