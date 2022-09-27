@@ -68,6 +68,9 @@ export class CosmosEventFilter implements SubqlCosmosEventFilter {
   @IsOptional()
   @Type(() => CosmosMessageFilter)
   messageFilter?: SubqlCosmosMessageFilter;
+  @IsOptional()
+  @IsObject()
+  attributes?: Record<string, string | number>;
 }
 
 export class CosmosBlockHandler implements SubqlCosmosBlockHandler {

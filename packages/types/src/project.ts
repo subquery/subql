@@ -84,6 +84,7 @@ export interface SubqlCosmosMessageFilter extends SubqlCosmosTxFilter {
 export interface SubqlCosmosEventFilter {
   type: string;
   messageFilter?: SubqlCosmosMessageFilter;
+  attributes?: Record<string, string | number>;
 }
 
 export type SubqlCosmosHandlerFilter = SubqlCosmosEventFilter | SubqlCosmosMessageFilter;

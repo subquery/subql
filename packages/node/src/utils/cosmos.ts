@@ -124,6 +124,17 @@ export function filterEvent(
     return false;
   }
 
+  for (const filterKey in filter.attributes) {
+    if (
+      !event.event.attributes.find(
+        ({ key, value }) =>
+          key === filterKey && value === filter.attributes[filterKey],
+      )
+    ) {
+      return false;
+    }
+  }
+
   return true;
 }
 
