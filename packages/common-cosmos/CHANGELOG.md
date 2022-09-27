@@ -8,7 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.0] - 2022-09-27
+
 ### Added
+- `attributes` filter to event handlers. (#56)
 - Filter for `includeFailedTx` on Transaction and Message handlers. (#53)
 
 ## [0.0.7] - 2022-07-28

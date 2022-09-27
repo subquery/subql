@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.1] - 2022-09-27
+
+### Added
+- `attributes` filter to event handlers. (#56)
+
 ## [1.9.1] - 2022-09-15
 
 ### Fixed
