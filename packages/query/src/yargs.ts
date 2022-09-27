@@ -75,11 +75,13 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Max connection to pg pool',
       type: 'number',
+      default: 10,
     },
     'query-timeout': {
       demandOption: false,
       describe: 'Query timeout in milliseconds',
       type: 'number',
+      default: 10000,
     },
     'query-explain': {
       demandOption: false,
