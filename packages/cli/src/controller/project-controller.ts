@@ -40,7 +40,7 @@ export async function createProject(
           gitRepository: gitRepository,
           key: `${organization}/${name}`,
           logoUrl: logoUrl,
-          name: name,
+          name: project_name,
           subtitle: subtitle,
         },
       })
