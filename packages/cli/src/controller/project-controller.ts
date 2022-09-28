@@ -7,6 +7,12 @@ import {errorHandle} from '../utils';
 interface createProjectType {
   key: string;
 }
+export const suffixFormat = (value: string) => {
+  return value
+    .replace(/(^\s*)|(\s*$)/g, '')
+    .replace(/\s+/g, '-')
+    .toLowerCase();
+};
 export async function createProject(
   organization: string,
   subtitle: string,
@@ -18,6 +24,7 @@ export async function createProject(
   apiVersion: string,
   url: string
 ): Promise<createProjectType> {
+  const name = suffixFormat(project_name);
   try {
     const result = (
       await axios({
@@ -31,9 +38,9 @@ export async function createProject(
           apiVersion: `v${apiVersion}`,
           description: description,
           gitRepository: gitRepository,
-          key: `${organization}/${project_name}`,
+          key: `${organization}/${name}`,
           logoUrl: logoUrl,
-          name: project_name,
+          name: name,
           subtitle: subtitle,
         },
       })
