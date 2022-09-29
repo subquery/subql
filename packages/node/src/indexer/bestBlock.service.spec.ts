@@ -84,10 +84,10 @@ describe('BestBlockService', () => {
   });
 
   it('can get closest block for finalized', () => {
-    bestBlockService.registerBestBlock(100, '0x50abcd');
-    bestBlockService.registerBestBlock(120, '0x50abcd');
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x50abcd');
+    bestBlockService.storeBestBlock(100, '0x50abcd');
+    bestBlockService.storeBestBlock(120, '0x50abcd');
+    bestBlockService.storeBestBlock(50, '0x50abcd');
+    bestBlockService.storeBestBlock(80, '0x50abcd');
     expect(bestBlockService.getClosestRecord(110).blockHeight).toBe(100);
     expect(bestBlockService.getClosestRecord(40)).toBeUndefined();
     expect(bestBlockService.getClosestRecord(120).blockHeight).toBe(120);
@@ -95,10 +95,10 @@ describe('BestBlockService', () => {
   });
 
   it('can remove bestBlock less equal than finalized', () => {
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x80abcd');
-    bestBlockService.registerBestBlock(100, '0x100abc');
-    bestBlockService.registerBestBlock(120, '0x120abc');
+    bestBlockService.storeBestBlock(50, '0x50abcd');
+    bestBlockService.storeBestBlock(80, '0x80abcd');
+    bestBlockService.storeBestBlock(100, '0x100abc');
+    bestBlockService.storeBestBlock(120, '0x120abc');
     // bestBlockService.registerFinalizedBlock({block:{header:{toNumber: 110}}} as unknown as SignedBlock)
     bestBlockService.removeFinalized(90);
     expect((bestBlockService as any).bestBlocks[100]).toBeDefined();
@@ -112,10 +112,10 @@ describe('BestBlockService', () => {
   });
 
   it('can validate best block if finalized block can be found in its record', async () => {
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x80abcd');
-    bestBlockService.registerBestBlock(100, '0x100abc');
-    bestBlockService.registerBestBlock(120, '0x120abc');
+    bestBlockService.storeBestBlock(50, '0x50abcd');
+    bestBlockService.storeBestBlock(80, '0x80abcd');
+    bestBlockService.storeBestBlock(100, '0x100abc');
+    bestBlockService.storeBestBlock(120, '0x120abc');
     bestBlockService.registerFinalizedBlock({
       block: { header: { number: { toNumber: () => 100 } } },
       hash: { toHex: () => '0x100abc' },
@@ -130,10 +130,10 @@ describe('BestBlockService', () => {
   });
 
   it('can validate best block if finalized block can NOT be found in its record', async () => {
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x80abcd');
-    bestBlockService.registerBestBlock(100, '0x100abc');
-    bestBlockService.registerBestBlock(120, '0x123456');
+    bestBlockService.storeBestBlock(50, '0x50abcd');
+    bestBlockService.storeBestBlock(80, '0x80abcd');
+    bestBlockService.storeBestBlock(100, '0x100abc');
+    bestBlockService.storeBestBlock(120, '0x123456');
     bestBlockService.registerFinalizedBlock({
       block: { header: { number: { toNumber: () => 150 } } },
       hash: { toHex: () => '0x100abc' },
@@ -142,8 +142,8 @@ describe('BestBlockService', () => {
   });
 
   it('and invalid best block will be remove', async () => {
-    bestBlockService.registerBestBlock(100, '0x100abc');
-    bestBlockService.registerBestBlock(120, '0x120abc');
+    bestBlockService.storeBestBlock(100, '0x100abc');
+    bestBlockService.storeBestBlock(120, '0x120abc');
     bestBlockService.registerFinalizedBlock({
       block: { header: { number: { toNumber: () => 150 } } },
       hash: { toHex: () => '0x100abc' },
@@ -153,41 +153,12 @@ describe('BestBlockService', () => {
     expect(bestBlockService.bestBlock(120)).toBeUndefined();
   });
 
-  it('return best block by current finalized block', async () => {
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x80abcd');
-    bestBlockService.registerBestBlock(90, '0x80abcd');
-    bestBlockService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 80 } } },
-      hash: { toHex: () => '0x80abcd' },
-    } as unknown as SignedBlock);
-    // it get current best block
-    await expect(bestBlockService.getBestBlock()).resolves.toBe(90);
-    // any best block less equal than finalized block should be removed
-    expect(bestBlockService.bestBlock(80)).toBeUndefined();
-    bestBlockService.registerBestBlock(100, '0x100abc');
-    bestBlockService.registerBestBlock(110, '0x123456');
-    // use api to fetch block 110 has and compare, if pass validation, return 110
-    bestBlockService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 120 } } },
-      hash: { toHex: () => '0x120abc' },
-    } as unknown as SignedBlock);
-    await expect(bestBlockService.getBestBlock()).resolves.toBe(110);
-    expect(bestBlockService.bestBlock(110)).toBeUndefined();
-    bestBlockService.registerBestBlock(120, '0x120abc');
-    bestBlockService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 130 } } },
-      hash: { toHex: () => '0x130abc' },
-    } as unknown as SignedBlock);
-    await expect(bestBlockService.getBestBlock()).resolves.toBeUndefined();
-  });
-
   it('get last correct best block', async () => {
-    bestBlockService.registerBestBlock(30, '0x50abcd');
-    bestBlockService.registerBestBlock(40, '0x123456');
-    bestBlockService.registerBestBlock(50, '0x50abcd');
-    bestBlockService.registerBestBlock(80, '0x80abcd');
-    bestBlockService.registerBestBlock(90, '0x80abcd');
+    bestBlockService.storeBestBlock(30, '0x50abcd');
+    bestBlockService.storeBestBlock(40, '0x123456');
+    bestBlockService.storeBestBlock(50, '0x50abcd');
+    bestBlockService.storeBestBlock(80, '0x80abcd');
+    bestBlockService.storeBestBlock(90, '0x80abcd');
     bestBlockService.registerFinalizedBlock({
       block: { header: { number: { toNumber: () => 80 } } },
       hash: { toHex: () => '0x10abcd' },

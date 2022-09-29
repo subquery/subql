@@ -5,6 +5,7 @@ import assert from 'assert';
 import { isMainThread } from 'worker_threads';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { HexString } from '@polkadot/util/types';
 import {
   MetadataFactory,
   MetadataRepo,
@@ -26,6 +27,7 @@ import {
 import { initDbSchema } from '../utils/project';
 import {yargsOptions} from '../yargs';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 
@@ -37,12 +39,15 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('Project');
 const { argv } = yargsOptions;
 
+type BestBlocks = Record<number, HexString>;
+
 @Injectable()
 export class ProjectService {
   private _schema: string;
-  private metadataRepo: MetadataRepo;
+  metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
+  private _startBestBlocks: BestBlocks;
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
@@ -55,6 +60,7 @@ export class ProjectService {
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
+    private bestBlockService: BestBlockService,
   ) {}
 
   get schema(): string {
@@ -71,6 +77,10 @@ export class ProjectService {
 
   get startHeight(): number {
     return this._startHeight;
+  }
+
+  get startBestBlocks(): BestBlocks {
+    return this._startBestBlocks;
   }
 
   get isHistorical(): boolean {
@@ -116,6 +126,39 @@ export class ProjectService {
 
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init(this.schema);
+      }
+    }
+
+    // bestBlocks
+    const startBestBlocks = await this.getMetadataBestBlocks();
+    const LastFinalizedVerifiedHeight =
+      await this.getLastFinalizedVerifiedHeight();
+    if (argv['best-block']) {
+      this._startBestBlocks = startBestBlocks ?? {};
+      this.bestBlockService.init(
+        this.metadataRepo,
+        this.startBestBlocks,
+        LastFinalizedVerifiedHeight,
+      );
+    } else {
+      if (startBestBlocks !== undefined) {
+        // Has previous indexed with bestBlocks, but discontinue to use best block in this run
+        if (LastFinalizedVerifiedHeight < this._startHeight) {
+          logger.info(
+            `Found un-finalized block from previous indexing but unverified, discontinued fetch from un-finalized in this run will require to rollback to last finalized block ${LastFinalizedVerifiedHeight} `,
+          );
+          await this.reindex(LastFinalizedVerifiedHeight);
+          this._startHeight = LastFinalizedVerifiedHeight;
+          logger.info(
+            `Successful rewind to block ${LastFinalizedVerifiedHeight} !`,
+          );
+        } else {
+          // if finalized block haven't been process yet, then remove best blocks from both metadata and memory
+          const transaction = await this.sequelize.transaction();
+          await this.storeService.resetBestBlocks(transaction);
+          await transaction.commit();
+          this.bestBlockService.resetBestBlocks();
+        }
       }
     }
   }
@@ -169,6 +212,8 @@ export class ProjectService {
       'genesisHash',
       'chainId',
       'processedBlockCount',
+      'bestBlocks',
+      'LastFinalizedVerifiedHeight',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -234,6 +279,12 @@ export class ProjectService {
         value: packageVersion,
       });
     }
+    if (!keyValue.bestBlocks) {
+      await metadataRepo.upsert({
+        key: 'bestBlocks',
+        value: '{}',
+      });
+    }
 
     return metadataRepo;
   }
@@ -243,6 +294,25 @@ export class ProjectService {
       key: 'blockOffset',
       value: height,
     });
+  }
+
+  //string should be jsonb object
+  async getMetadataBestBlocks(): Promise<BestBlocks | undefined> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'bestBlocks' },
+    });
+    if (res) {
+      return JSON.parse(res.value as string) as BestBlocks;
+    }
+    return undefined;
+  }
+
+  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'LastFinalizedVerifiedHeight' },
+    });
+
+    return res?.value as number | undefined;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -328,16 +398,18 @@ export class ProjectService {
       );
       return;
     }
-    logger.info(`Reindexing to block: ${targetBlockHeight}`);
+    // we don't need to consider metadata `LastFinalizedVerifiedHeight`,
+    // as when reindex always equal to LastFinalizedVerifiedHeight
     const transaction = await this.sequelize.transaction();
     try {
       await this.storeService.rewind(targetBlockHeight, transaction);
-
+      await this.storeService.resetBestBlocks(transaction);
       const blockOffset = await this.getMetadataBlockOffset();
       if (blockOffset) {
         await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
       await transaction.commit();
+      this.bestBlockService.resetBestBlocks();
     } catch (err) {
       logger.error(err, 'Reindexing failed');
       await transaction.rollback();

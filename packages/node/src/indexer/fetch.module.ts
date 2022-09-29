@@ -12,6 +12,7 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -68,6 +69,7 @@ import {
     PoiService,
     MmrService,
     ProjectService,
+    BestBlockService,
   ],
   exports: [StoreService, MmrService],
 })
