@@ -37,7 +37,14 @@ export function getSchemaPath(file: string) {
   if ((yamlFile as any).specVersion === '0.0.1') {
     return path.join(file, (yamlFile as any).schema);
   }
-  return path.join(file, (yamlFile as ProjectManifestV0_2_0).schema.file);
+  const project = yamlFile as ProjectManifestV0_2_0;
+  if (!project.schema) {
+    throw new Error(`Can't get schema in yaml file`);
+  }
+  if (!project.schema.file) {
+    throw new Error(`schemaPath expect to be schema.file`);
+  }
+  return path.join(file, project.schema.file);
 }
 
 // Only work for manifest specVersion >= 1.0.0
