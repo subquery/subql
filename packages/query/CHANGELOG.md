@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0]
+### Added
+- Added hot-schema reload, query-service no longer need to restart to see schema changes. (#1321)
 
 ## [1.5.0] - 2022-08-11
 ### Fixed

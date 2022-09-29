@@ -6,9 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2022-09-29
 ### Added
 - Subcommands for `force-clean` and `reindex`. (#1281)
 - `yargs` file has been moved back into `node` from `node-core`. (#1281)
+- update @polkadot/api to `9.4.2` (#1325)
 
 ## [1.9.2] - 2022-09-19
 ### Changed
