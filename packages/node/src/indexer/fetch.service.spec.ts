@@ -282,8 +282,8 @@ function createFetchService(
 ) {
   const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
-  const bestBlockService = new BestBlockService(apiService);
   const projectService = {} as unknown as ProjectService;
+  const bestBlockService = new BestBlockService(apiService);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
     subquery: '',
@@ -377,7 +377,7 @@ describe('FetchService', () => {
       '0xabcd',
     );
     (fetchService as any).latestBestHeight = 1020;
-    (fetchService as any).bestBlockService.registerBestBlock(1020, '0x1234');
+    (fetchService as any).bestBlockService.storeBestBlock(1020, '0x1234');
     const end = await (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
   });
@@ -411,7 +411,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -467,7 +471,8 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-
+    const projectService = {} as unknown as ProjectService;
+    const bestBlockService = new BestBlockService(apiService);
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -475,8 +480,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-    const bestBlockService = new BestBlockService(apiService);
-    const projectService = {} as unknown as ProjectService;
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -555,6 +558,8 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
+    const projectService = {} as unknown as ProjectService;
+    const bestBlockService = new BestBlockService(apiService);
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -563,8 +568,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-    const bestBlockService = new BestBlockService(apiService);
-    const projectService = {} as unknown as ProjectService;
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -637,6 +640,8 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
+    const projectService = {} as unknown as ProjectService;
+    const bestBlockService = new BestBlockService(apiService);
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -644,8 +649,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-    const bestBlockService = new BestBlockService(apiService);
-    const projectService = {} as unknown as ProjectService;
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -713,7 +716,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 

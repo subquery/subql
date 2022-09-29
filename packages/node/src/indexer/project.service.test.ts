@@ -60,6 +60,12 @@ const prepare = async (): Promise<ProjectService> => {
             undefined,
             subqueryRepo,
             undefined,
+            undefined,
+          );
+
+          return projectService;
+        },
+        inject: [Sequelize, SubqueryProject, 'Subquery'],
           ),
         inject: [Sequelize, SubqueryProject, 'Subquery', NodeConfig],
       },
