@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.6.2] - 2022-09-24
 ### Fixed
 - Fixed cli publish failed due to upload file logic unable to validate section is `null`. (#1316)
