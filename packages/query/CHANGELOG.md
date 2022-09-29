@@ -12,7 +12,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Changed
 - Change max connection to 10 ms and query timeout to 10000 ms. (#1322)
 ### Added
-- Added hot-schema reload, query-service no longer need to restart to see schema changes. (#1321)
+- Added hot-schema reload, query-service no longer needs to restart to see schema changes. (#1321)
 
 ## [1.5.0] - 2022-08-11
 ### Fixed
