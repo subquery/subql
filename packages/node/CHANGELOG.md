@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ## [1.10.0] - 2022-09-29
+### Changed
+- Enable historical feature by default (#1327)
 ### Added
 - Subcommands for `force-clean` and `reindex`. (#1281)
 - `yargs` file has been moved back into `node` from `node-core`. (#1281)
