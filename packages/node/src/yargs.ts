@@ -182,7 +182,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'disable-historical': {
       demandOption: false,
-      default: true,
+      default: false,
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
