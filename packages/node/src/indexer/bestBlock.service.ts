@@ -13,7 +13,7 @@ import { ApiService } from './api.service';
 const logger = getLogger('bestBlock');
 
 const METADATA_BESTBLOCKS_KEY = 'bestBlocks';
-const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'LastFinalizedVerifiedHeight';
+const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'lastFinalizedVerifiedHeight';
 
 @Injectable()
 export class BestBlockService implements OnApplicationShutdown {
@@ -24,9 +24,9 @@ export class BestBlockService implements OnApplicationShutdown {
 
   constructor(private apiService: ApiService) {}
 
-  init(metadataRepo, startBestBlocks, LastFinalizedVerifiedHeight) {
+  init(metadataRepo, startBestBlocks, lastFinalizedVerifiedHeight) {
     this.bestBlocks = startBestBlocks;
-    this.lastCheckedBlockHeight = LastFinalizedVerifiedHeight;
+    this.lastCheckedBlockHeight = lastFinalizedVerifiedHeight;
     this.metaDataRepo = metadataRepo;
   }
 
@@ -61,7 +61,7 @@ export class BestBlockService implements OnApplicationShutdown {
     blockNumber: number,
     hash: HexString,
     tx: Transaction,
-  ) {
+  ): Promise<void> {
     if (
       !this.bestBlocks[blockNumber] &&
       blockNumber > this.finalizedBlock.block.header.number.toNumber()
