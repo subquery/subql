@@ -10,7 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.2.0] - 2022-08-11
 ### Changed
-- Update `sequelize` to 6.23.0 (#1311)
+- Update `sequelize` to 6.23.0. (#1311)
 
 ## [1.1.0] - 2022-08-11
 ### Changed
