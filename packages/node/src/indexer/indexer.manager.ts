@@ -41,6 +41,7 @@ import {
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -69,6 +70,7 @@ export class IndexerManager {
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private bestBlockService: BestBlockService,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -80,9 +82,14 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
+  ): Promise<{
+    dynamicDsCreated: boolean;
+    operationHash: Uint8Array;
+    reindexBlockHeight: number;
+  }> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
+    let reindexBlockHeight = null;
     const blockHeight = block.block.header.number.toNumber();
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
@@ -100,6 +107,19 @@ export class IndexerManager {
       );
 
       let apiAt: ApiAt;
+      if (argv['best-block']) {
+        await this.bestBlockService.registerBestBlock(
+          block.block.header.number.toNumber(),
+          block.hash.toHex(),
+          tx,
+        );
+        if (await this.bestBlockService.validateBestBlocks()) {
+          await this.bestBlockService.deleteFinalizedBlock(tx);
+        } else {
+          reindexBlockHeight =
+            await this.bestBlockService.getLastCorrectBestBlock();
+        }
+      }
 
       await this.indexBlockData(
         blockContent,
@@ -175,6 +195,7 @@ export class IndexerManager {
     return {
       dynamicDsCreated,
       operationHash,
+      reindexBlockHeight,
     };
   }
 

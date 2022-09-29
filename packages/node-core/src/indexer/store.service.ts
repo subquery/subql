@@ -486,6 +486,10 @@ group by
     );
   }
 
+  async resetBestBlocks(transaction: Transaction): Promise<void> {
+    await this.setMetadata('bestBlocks', '{}', {transaction});
+  }
+
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
@@ -518,7 +522,6 @@ group by
         );
       }
     }
-
     await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
       transaction,
     });

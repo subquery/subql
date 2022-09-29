@@ -1,22 +1,33 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { SignedBlock } from '@polkadot/types/interfaces';
 import { HexString } from '@polkadot/util/types';
-import { getLogger } from '@subql/node-core';
+import { getLogger, MetadataRepo } from '@subql/node-core';
+import { Transaction } from 'sequelize';
 import { ApiService } from './api.service';
 
 const logger = getLogger('bestBlock');
+
+const METADATA_BESTBLOCKS_KEY = 'bestBlocks';
+const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'LastFinalizedVerifiedHeight';
 
 @Injectable()
 export class BestBlockService implements OnApplicationShutdown {
   private bestBlocks: Record<number, HexString>;
   private finalizedBlock: SignedBlock;
+  private metaDataRepo: MetadataRepo;
+  private lastCheckedBlockHeight: number;
 
-  constructor(private apiService: ApiService) {
-    this.bestBlocks = {};
+  constructor(private apiService: ApiService) {}
+
+  init(metadataRepo, startBestBlocks, LastFinalizedVerifiedHeight) {
+    this.bestBlocks = startBestBlocks;
+    this.lastCheckedBlockHeight = LastFinalizedVerifiedHeight;
+    this.metaDataRepo = metadataRepo;
   }
 
   get api(): ApiPromise {
@@ -24,11 +35,15 @@ export class BestBlockService implements OnApplicationShutdown {
   }
 
   onApplicationShutdown(): void {
-    this.bestBlocks = {};
+    this.resetBestBlocks();
   }
 
   bestBlock(number): HexString {
     return this.bestBlocks[number];
+  }
+
+  resetBestBlocks() {
+    this.bestBlocks = {};
   }
 
   registerFinalizedBlock(block: SignedBlock): void {
@@ -42,11 +57,62 @@ export class BestBlockService implements OnApplicationShutdown {
     this.finalizedBlock = block;
   }
 
-  registerBestBlock(blockNumber: number, hash: HexString) {
-    if (!this.bestBlocks[blockNumber]) {
-      this.bestBlocks[blockNumber] = hash;
+  async registerBestBlock(
+    blockNumber: number,
+    hash: HexString,
+    tx: Transaction,
+  ) {
+    if (
+      !this.bestBlocks[blockNumber] &&
+      blockNumber > this.finalizedBlock.block.header.number.toNumber()
+    ) {
+      this.storeBestBlock(blockNumber, hash);
     }
+    await this.saveBestBlocks(this.bestBlocks, tx);
   }
+
+  async deleteFinalizedBlock(tx) {
+    if (
+      this.lastCheckedBlockHeight !== undefined &&
+      this.lastCheckedBlockHeight <
+        this.finalizedBlock.block.header.number.toNumber()
+    ) {
+      this.removeFinalized(this.finalizedBlock.block.header.number.toNumber());
+      await this.saveLastFinalizedVerifiedHeight(
+        this.finalizedBlock.block.header.number.toNumber(),
+        tx,
+      );
+      await this.saveBestBlocks(this.bestBlocks, tx);
+    }
+    this.lastCheckedBlockHeight =
+      this.finalizedBlock.block.header.number.toNumber();
+  }
+
+  storeBestBlock(blockNumber: number, hash: HexString) {
+    this.bestBlocks[blockNumber] = hash;
+  }
+  private async saveBestBlocks(
+    bestBlocks: Record<number, HexString>,
+    tx: Transaction,
+  ): Promise<void> {
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert(
+      { key: METADATA_BESTBLOCKS_KEY, value: JSON.stringify(bestBlocks) },
+      { transaction: tx },
+    );
+  }
+
+  private async saveLastFinalizedVerifiedHeight(
+    height: number,
+    tx: Transaction,
+  ) {
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert(
+      { key: METADATA_LAST_FINALIZED_PROCESSED_KEY, value: height },
+      { transaction: tx },
+    );
+  }
+
   // remove any records less and equal than input finalized blockHeight
   removeFinalized(blockHeight: number): void {
     Object.entries(this.bestBlocks).map(([bestBlockHeight, hash]) => {
@@ -85,7 +151,6 @@ export class BestBlockService implements OnApplicationShutdown {
     if (lastVerifiableBlock) {
       if (lastVerifiableBlock.blockHeight === finalizedBlockNumber) {
         if (lastVerifiableBlock.hash !== this.finalizedBlock.hash.toHex()) {
-          delete this.bestBlocks[lastVerifiableBlock.blockHeight];
           return false;
         }
       } else {
@@ -95,30 +160,13 @@ export class BestBlockService implements OnApplicationShutdown {
         ).toHex();
         if (actualHash !== lastVerifiableBlock.hash) {
           logger.warn(
-            `Validate best blocks failed, best block ${lastVerifiableBlock.blockHeight} stored hash ${lastVerifiableBlock.hash}, actual hash ${actualHash} `,
+            `Block folk found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.hash}, actual hash is ${actualHash} `,
           );
-          delete this.bestBlocks[lastVerifiableBlock.blockHeight];
           return false;
         }
       }
     }
     return true;
-  }
-
-  getLastBestBlock(): number {
-    const keys = Object.keys(this.bestBlocks);
-    return Number(keys[keys.length - 1]);
-  }
-
-  async getBestBlock(): Promise<number | undefined> {
-    // checking finalized block with best blocks
-    if (await this.validateBestBlocks()) {
-      const bestBlock = this.getLastBestBlock();
-      this.removeFinalized(this.finalizedBlock.block.header.number.toNumber());
-      return bestBlock;
-    } else {
-      return undefined;
-    }
   }
 
   async getLastCorrectBestBlock(): Promise<number | undefined> {
@@ -137,6 +185,6 @@ export class BestBlockService implements OnApplicationShutdown {
         return Number(block);
       }
     }
-    return undefined;
+    return this.lastCheckedBlockHeight;
   }
 }

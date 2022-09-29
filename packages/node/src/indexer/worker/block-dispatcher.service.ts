@@ -181,14 +181,19 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
   //  Compare it with current indexing number, if last corrected is already indexed
-  //  rewind, also drop all queued blocks, drop current indexing transaction too
-  //  if best Rollback is greater than current index
-  //  and flush queue only
+  //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
+  //  if rollback is greater than current index flush queue only
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
+      logger.info(
+        `Found last verified block at height ${lastCorrectHeight}, rewinding...`,
+      );
       await this.projectService.reindex(lastCorrectHeight);
+      this.latestProcessedHeight = lastCorrectHeight;
+      logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
     }
     this.flushQueue(lastCorrectHeight);
+    logger.info(`Queued block flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
   }
 
   private setProcessedBlockCount(processedBlockCount: number) {
@@ -249,33 +254,36 @@ export class BlockDispatcherService
             });
 
             const runtimeVersion = await this.getRuntimeVersion(block.block);
-
-            const { dynamicDsCreated, operationHash } =
+            const { dynamicDsCreated, operationHash, reindexBlockHeight } =
               await this.indexerManager.indexBlock(block, runtimeVersion);
-
-            // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
-            this.setProcessedBlockCount(this._processedBlockCount + 1);
-            if (
-              this.nodeConfig.proofOfIndex &&
-              !isNullMerkelRoot(operationHash)
-            ) {
-              if (!this.projectService.blockOffset) {
-                // Which means during project init, it has not found offset and set value
-                await this.projectService.upsertMetadataBlockOffset(height - 1);
+            if (reindexBlockHeight !== null) {
+              await this.rewind(reindexBlockHeight);
+              this.latestProcessedHeight = reindexBlockHeight;
+            } else {
+              if (
+                this.nodeConfig.proofOfIndex &&
+                !isNullMerkelRoot(operationHash)
+              ) {
+                if (!this.projectService.blockOffset) {
+                  // Which means during project init, it has not found offset and set value
+                  await this.projectService.upsertMetadataBlockOffset(
+                    height - 1,
+                  );
+                }
+                void this.projectService.setBlockOffset(height - 1);
               }
-              void this.projectService.setBlockOffset(height - 1);
+              if (dynamicDsCreated) {
+                await this.onDynamicDsCreated(height);
+              }
+              assert(
+                !this.latestProcessedHeight ||
+                  height > this.latestProcessedHeight,
+                `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
+              );
+              // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+              this.setProcessedBlockCount(this._processedBlockCount + 1);
+              this.latestProcessedHeight = height;
             }
-
-            if (dynamicDsCreated) {
-              await this.onDynamicDsCreated(height);
-            }
-
-            assert(
-              !this.latestProcessedHeight ||
-                height > this.latestProcessedHeight,
-              `Block processed out of order. Height: ${height}. Latest: ${this.latestProcessedHeight}`,
-            );
-            this.latestProcessedHeight = height;
           } catch (e) {
             if (this.isShutdown) {
               return;
@@ -339,6 +347,7 @@ export class WorkerBlockDispatcherService
   private _latestBufferedHeight: number;
   private _processedBlockCount: number;
   private currentProcessingHeight: number;
+  private latestProcessedHeight: number;
 
   constructor(
     private nodeConfig: NodeConfig,
@@ -475,25 +484,29 @@ export class WorkerBlockDispatcherService
           timestamp: Date.now(),
         });
 
-        const { dynamicDsCreated, operationHash } = await worker.processBlock(
-          height,
-        );
-        // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
-        this.setProcessedBlockCount(this._processedBlockCount + 1);
+        const { dynamicDsCreated, operationHash, reindexBlockHeight } =
+          await worker.processBlock(height);
+        if (reindexBlockHeight !== null) {
+          await this.rewind(reindexBlockHeight);
+          this.latestProcessedHeight = reindexBlockHeight;
+        } else {
+          // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
+          this.setProcessedBlockCount(this._processedBlockCount + 1);
 
-        if (
-          this.nodeConfig.proofOfIndex &&
-          !isNullMerkelRoot(Buffer.from(operationHash, 'base64'))
-        ) {
-          if (!this.projectService.blockOffset) {
-            // Which means during project init, it has not found offset and set value
-            await this.projectService.upsertMetadataBlockOffset(height - 1);
+          if (
+            this.nodeConfig.proofOfIndex &&
+            !isNullMerkelRoot(Buffer.from(operationHash, 'base64'))
+          ) {
+            if (!this.projectService.blockOffset) {
+              // Which means during project init, it has not found offset and set value
+              await this.projectService.upsertMetadataBlockOffset(height - 1);
+            }
+            void this.projectService.setBlockOffset(height - 1);
           }
-          void this.projectService.setBlockOffset(height - 1);
-        }
 
-        if (dynamicDsCreated) {
-          await this.onDynamicDsCreated(height);
+          if (dynamicDsCreated) {
+            await this.onDynamicDsCreated(height);
+          }
         }
       } catch (e) {
         logger.error(
@@ -511,9 +524,15 @@ export class WorkerBlockDispatcherService
 
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
+      logger.info(
+        `Found last verified block at height ${lastCorrectHeight}, rewinding...`,
+      );
       await this.projectService.reindex(lastCorrectHeight);
+      this.latestProcessedHeight = lastCorrectHeight;
+      logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
     }
     this.flushQueue(lastCorrectHeight);
+    logger.info(`Queued block flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
   }
 
   @Interval(15000)

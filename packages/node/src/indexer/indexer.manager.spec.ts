@@ -16,6 +16,7 @@ import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -136,6 +137,7 @@ function createIndexerManager(
   const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const mmrService = new MmrService(nodeConfig, sequilize);
+  const bestBlockService = new BestBlockService(apiService);
   const sandboxService = new SandboxService(
     apiService,
     storeService,
@@ -153,6 +155,7 @@ function createIndexerManager(
     nodeConfig,
     dynamicDsService,
     eventEmitter,
+    bestBlockService,
   );
 
   return new IndexerManager(
@@ -165,6 +168,7 @@ function createIndexerManager(
     sandboxService,
     dsProcessorService,
     dynamicDsService,
+    bestBlockService,
     projectService,
   );
 }

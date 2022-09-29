@@ -113,7 +113,13 @@ async function createApp(
       },
       {
         provide: 'IBlockDispatcher',
-        useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
+        useFactory: (
+          apiService,
+          nodeConfig,
+          eventEmitter,
+          indexerManager,
+          bestBlockService,
+        ) =>
           new BlockDispatcherService(
             apiService,
             nodeConfig,
@@ -186,7 +192,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -218,7 +228,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -273,7 +287,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -310,7 +328,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -365,7 +387,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -426,7 +452,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -484,7 +514,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
