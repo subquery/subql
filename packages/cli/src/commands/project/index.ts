@@ -45,7 +45,7 @@ export default class Project extends Command {
       const handler = Project.optionMapping[userOptions];
       // removes arguments -> deployment and everything before it from the process.argv
       const stripped_argv: string[] = process.argv
-        .filter((v, idx) => idx > process.argv.indexOf('deployment') && !v.includes('--options'))
+        .filter((v, idx) => idx > process.argv.indexOf('project') && !v.includes('--options'))
         .reduce((acc, val) => acc.concat(val.split('=')), []);
 
       await handler.run(stripped_argv);
