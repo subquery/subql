@@ -24,7 +24,6 @@ export async function createProject(
   apiVersion: string,
   url: string
 ): Promise<createProjectType> {
-  const name = suffixFormat(project_name);
   try {
     const result = (
       await axios({
@@ -38,7 +37,7 @@ export async function createProject(
           apiVersion: `v${apiVersion}`,
           description: description,
           gitRepository: gitRepository,
-          key: `${organization}/${name}`,
+          key: `${organization}/${suffixFormat(project_name)}`,
           logoUrl: logoUrl,
           name: project_name,
           subtitle: subtitle,
