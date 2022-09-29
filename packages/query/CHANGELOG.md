@@ -8,6 +8,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.5.0] - 2022-08-11
 ### Fixed
 - Fix db selection in configuration when subscription is enabled (#1241)
