@@ -22,7 +22,7 @@ import {
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
-import {yargsOptions} from '../yargs';
+import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { BestBlockService } from './bestBlock.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -125,31 +125,35 @@ export class ProjectService {
 
     // bestBlocks
     const startBestBlocks = await this.getMetadataBestBlocks();
-    const LastFinalizedVerifiedHeight =
+    const lastFinalizedVerifiedHeight =
       await this.getLastFinalizedVerifiedHeight();
     if (argv['best-block']) {
       this._startBestBlocks = startBestBlocks ?? {};
       this.bestBlockService.init(
         this.metadataRepo,
         this.startBestBlocks,
-        LastFinalizedVerifiedHeight,
+        lastFinalizedVerifiedHeight,
       );
     } else {
-      if (startBestBlocks !== undefined) {
-        // Has previous indexed with bestBlocks, but discontinue to use best block in this run
-        if (LastFinalizedVerifiedHeight < this._startHeight) {
+      // Has previous indexed with bestBlocks, but discontinue to use best block in this run
+      if (
+        startBestBlocks !== undefined ||
+        lastFinalizedVerifiedHeight !== null
+      ) {
+        if (lastFinalizedVerifiedHeight < this._startHeight) {
           logger.info(
-            `Found un-finalized block from previous indexing but unverified, discontinued fetch from un-finalized in this run will require to rollback to last finalized block ${LastFinalizedVerifiedHeight} `,
+            `Found un-finalized block from previous indexing but unverified, discontinued fetch from un-finalized in this run will require to rollback to last finalized block ${lastFinalizedVerifiedHeight} `,
           );
-          await this.reindex(LastFinalizedVerifiedHeight);
-          this._startHeight = LastFinalizedVerifiedHeight;
+          await this.reindex(lastFinalizedVerifiedHeight);
+          this._startHeight = lastFinalizedVerifiedHeight;
           logger.info(
-            `Successful rewind to block ${LastFinalizedVerifiedHeight} !`,
+            `Successful rewind to block ${lastFinalizedVerifiedHeight} !`,
           );
         } else {
           // if finalized block haven't been process yet, then remove best blocks from both metadata and memory
           const transaction = await this.sequelize.transaction();
           await this.storeService.resetBestBlocks(transaction);
+          await this.storeService.resetLastFinalizedVerifiedHeight(transaction);
           await transaction.commit();
           this.bestBlockService.resetBestBlocks();
         }
@@ -211,7 +215,7 @@ export class ProjectService {
       'chainId',
       'processedBlockCount',
       'bestBlocks',
-      'LastFinalizedVerifiedHeight',
+      'lastFinalizedVerifiedHeight',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -314,7 +318,7 @@ export class ProjectService {
 
   async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
-      where: { key: 'LastFinalizedVerifiedHeight' },
+      where: { key: 'lastFinalizedVerifiedHeight' },
     });
 
     return res?.value as number | undefined;
@@ -410,12 +414,15 @@ export class ProjectService {
       );
       return;
     }
-    // we don't need to consider metadata `LastFinalizedVerifiedHeight`,
-    // as when reindex always equal to LastFinalizedVerifiedHeight
+    // we don't need to consider metadata `lastFinalizedVerifiedHeight`,
+    // as when reindex always equal to lastFinalizedVerifiedHeight
     const transaction = await this.sequelize.transaction();
     try {
-      await this.storeService.rewind(targetBlockHeight, transaction);
-      await this.storeService.resetBestBlocks(transaction);
+      await Promise.all([
+        this.storeService.rewind(targetBlockHeight, transaction),
+        this.storeService.resetBestBlocks(transaction),
+        this.storeService.resetLastFinalizedVerifiedHeight(transaction),
+      ]);
       const blockOffset = await this.getMetadataBlockOffset();
       if (blockOffset) {
         await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);

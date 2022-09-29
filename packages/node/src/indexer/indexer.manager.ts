@@ -50,6 +50,7 @@ import { ApiAt, BlockContent } from './types';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
+const { argv } = yargsOptions;
 
 @Injectable()
 export class IndexerManager {
