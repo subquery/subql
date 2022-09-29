@@ -10,7 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.4.1] - 2022-09-30
 ### Fixed
-- improve `getSchemaPath` error log (#1324)
+- Improve `getSchemaPath` error log. (#1324)
 
 ## [1.4.0] - 2022-08-17
 ### Changed
