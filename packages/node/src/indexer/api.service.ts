@@ -293,6 +293,7 @@ export class KeepAliveClient implements RpcClient {
     // Support OnFinality api keys
     if (searchParams.get('apikey')) {
       this.headers.apikey = searchParams.get('apikey');
+      this.url = this.url.slice(0, this.url.indexOf('?apikey'));
     }
 
     const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
