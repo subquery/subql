@@ -41,7 +41,7 @@ type BestBlocks = Record<number, HexString>;
 @Injectable()
 export class ProjectService {
   private _schema: string;
-  metadataRepo: MetadataRepo;
+  private metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
   private _startBestBlocks: BestBlocks;
@@ -137,7 +137,7 @@ export class ProjectService {
     } else {
       // Has previous indexed with bestBlocks, but discontinue to use best block in this run
       if (
-        startBestBlocks !== undefined ||
+        Object.entries(startBestBlocks).length !== 0 ||
         lastFinalizedVerifiedHeight !== null
       ) {
         if (lastFinalizedVerifiedHeight < this._startHeight) {
