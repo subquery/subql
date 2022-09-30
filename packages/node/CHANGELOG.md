@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.2] - 2022-09-30
+### Fixed
+- Fix unable use rpc with api key issue due to incorrect url passed to axios (#64)
+
 ## [1.10.1] - 2022-09-30
 ### Fixed
 - Fix unable initialize due to missing sequelize in `node-core` package (#59)
