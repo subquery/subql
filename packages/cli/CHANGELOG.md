@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.3] - 2022-09-29
+### Fixed
+- Fix Output URL for `project:create-project` command. (#1324)
+- Improve `codegen` command error logs. (#1324)
 
 ## [1.6.2] - 2022-09-24
 ### Fixed

@@ -9,8 +9,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 
 ## [Unreleased]
+
+## [0.1.2] - 2022-09-27
 ### Changes
 - Moved `yargs` file from `node-core` to `node`. (#1281)
+- Update `sequelize`. (#1311)
 
 ## [0.1.1] - 2022-08-26
 ### Fixed
