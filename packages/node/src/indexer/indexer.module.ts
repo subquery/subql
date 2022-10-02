@@ -11,6 +11,7 @@ import {
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { BestBlockService } from './bestBlock.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -44,6 +45,7 @@ import { WorkerService } from './worker/worker.service';
     MmrService,
     ProjectService,
     WorkerService,
+    BestBlockService,
   ],
   exports: [StoreService, MmrService],
 })

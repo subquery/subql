@@ -137,7 +137,8 @@ export class ProjectService {
     } else {
       // Has previous indexed with bestBlocks, but discontinue to use best block in this run
       if (
-        Object.entries(startBestBlocks).length !== 0 ||
+        (startBestBlocks !== undefined &&
+          Object.entries(startBestBlocks).length !== 0) ||
         lastFinalizedVerifiedHeight !== null
       ) {
         if (lastFinalizedVerifiedHeight < this._startHeight) {
