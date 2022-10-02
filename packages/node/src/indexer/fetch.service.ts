@@ -8,25 +8,25 @@ import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import {
-  isRuntimeDataSourceV0_2_0,
-  RuntimeDataSourceV0_0_1,
   isCustomDs,
-  isRuntimeDs,
+  isRuntimeDataSourceV0_2_0,
   isRuntimeDataSourceV0_3_0,
-  SubstrateCallFilter,
-  SubstrateEventFilter,
-  SubstrateHandlerKind,
-  SubstrateHandler,
-  SubstrateDataSource,
-  SubstrateRuntimeHandlerFilter,
+  isRuntimeDs,
+  RuntimeDataSourceV0_0_1,
   SubstrateBlockFilter,
+  SubstrateCallFilter,
+  SubstrateDataSource,
+  SubstrateEventFilter,
+  SubstrateHandler,
+  SubstrateHandlerKind,
+  SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import {
-  delay,
   checkMemoryUsage,
-  NodeConfig,
-  IndexerEvent,
+  delay,
   getLogger,
+  IndexerEvent,
+  NodeConfig,
   profiler,
 } from '@subql/node-core';
 import {
@@ -354,7 +354,25 @@ export class FetchService implements OnApplicationShutdown {
         moduloBlocks.push(i);
       }
     }
+    // console.log(moduloBlocks)
     return moduloBlocks;
+  }
+
+  runModuloBlocks(startBlockHeight: number): void {
+    const modulosBatchSize = Math.max(
+      Math.round(this.getModulos()[0] * this.nodeConfig.batchSize),
+      Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
+    );
+    console.log(`modulosBatchSize: ${modulosBatchSize}`);
+    const endHeight = this.nextEndBlockHeight(
+      startBlockHeight,
+      modulosBatchSize,
+    );
+    const moduloBlocks = this.getModuloBlocks(startBlockHeight, endHeight + 1);
+    console.log('modulo: ', moduloBlocks);
+    this.blockDispatcher.enqueueBlocks(
+      this.getModuloBlocks(startBlockHeight, endHeight + 1),
+    );
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -376,6 +394,7 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
+      // console.log('scaledBatchSize: ',scaledBatchSize)
 
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
@@ -435,14 +454,50 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-      // the original method: fill next batch size of blocks
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
-      this.blockDispatcher.enqueueBlocks(
-        range(startBlockHeight, endHeight + 1),
-      );
+
+      const ds = this.project.dataSources.map((ds) => {
+        const arr = [];
+        for (const handler of ds.mapping.handlers) {
+          if (handler.kind !== SubstrateHandlerKind.Block) {
+            arr.push(handler);
+          }
+        }
+        return arr;
+      });
+      //
+
+      console.log('handlers: ', ds.length);
+      // if !handler event and call
+      // starter project has reliance between handlers
+
+      // only run this if handler.kind === block and nothing else
+      if (this.getModulos().length > 0 && ds.length === 0) {
+        // for (const ds of this.project.dataSources) {
+        //   if (isCustomDs(ds)) {
+        //     continue;
+        //   }
+        //   for (const handler of ds.mapping.handlers) {
+        //     if (
+        //         handler.kind !== SubstrateHandlerKind.Call &&
+        //         handler.kind !== SubstrateHandlerKind.Event
+        //     ) {
+        this.runModuloBlocks(startBlockHeight);
+        //   }
+        // }
+        // }
+      } else {
+        const endHeight = this.nextEndBlockHeight(
+          startBlockHeight,
+          scaledBatchSize,
+        );
+
+        const blocks = range(startBlockHeight, endHeight + 1);
+        console.log('normal: ', blocks.length);
+        this.blockDispatcher.enqueueBlocks(
+          // [1,2,3,4]
+          range(startBlockHeight, endHeight + 1),
+        );
+      }
     }
   }
 
