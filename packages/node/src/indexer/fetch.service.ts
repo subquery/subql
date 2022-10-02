@@ -455,7 +455,8 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
 
-      const ds = this.project.dataSources.map((ds) => {
+      // TODO: make sure this check is working,
+      const handlerCheck = this.project.dataSources.map((ds) => {
         const arr = [];
         for (const handler of ds.mapping.handlers) {
           if (handler.kind !== SubstrateHandlerKind.Block) {
@@ -465,26 +466,15 @@ export class FetchService implements OnApplicationShutdown {
         return arr;
       });
       //
-
-      console.log('handlers: ', ds.length);
+      console.log('handlers: ', handlerCheck.length);
       // if !handler event and call
+
       // starter project has reliance between handlers
 
       // only run this if handler.kind === block and nothing else
+
       if (this.getModulos().length > 0 && ds.length === 0) {
-        // for (const ds of this.project.dataSources) {
-        //   if (isCustomDs(ds)) {
-        //     continue;
-        //   }
-        //   for (const handler of ds.mapping.handlers) {
-        //     if (
-        //         handler.kind !== SubstrateHandlerKind.Call &&
-        //         handler.kind !== SubstrateHandlerKind.Event
-        //     ) {
         this.runModuloBlocks(startBlockHeight);
-        //   }
-        // }
-        // }
       } else {
         const endHeight = this.nextEndBlockHeight(
           startBlockHeight,
