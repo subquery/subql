@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { SignedBlock } from '@polkadot/types/interfaces';
 import { HexString } from '@polkadot/util/types';
@@ -16,7 +16,7 @@ const METADATA_BESTBLOCKS_KEY = 'bestBlocks';
 const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'lastFinalizedVerifiedHeight';
 
 @Injectable()
-export class BestBlockService implements OnApplicationShutdown {
+export class BestBlockService {
   private bestBlocks: Record<number, HexString>;
   private finalizedBlock: SignedBlock;
   private metaDataRepo: MetadataRepo;
@@ -32,10 +32,6 @@ export class BestBlockService implements OnApplicationShutdown {
 
   get api(): ApiPromise {
     return this.apiService.getApi();
-  }
-
-  onApplicationShutdown(): void {
-    this.resetBestBlocks();
   }
 
   bestBlock(number): HexString {
