@@ -396,6 +396,12 @@ export class FetchService implements OnApplicationShutdown {
       );
       // console.log('scaledBatchSize: ',scaledBatchSize)
 
+      console.log(`free size: ${this.blockDispatcher.freeSize}`);
+      console.log(`scaledBatchSize: ${scaledBatchSize}`);
+
+      // this condition batch size is greater than freeSize (hinting the batch has yet been processed)
+      // OR
+      // when startBlock is greater than latestFinalizedHeight (the HTTPs/WS connection is not synced connected properly)
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
@@ -403,6 +409,8 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
+
+      // if the project has a dictionary config
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
@@ -429,6 +437,7 @@ export class FetchService implements OnApplicationShutdown {
             this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
             let { batchBlocks } = dictionary;
+
             batchBlocks = batchBlocks
               .concat(moduloBlocks)
               .sort((a, b) => a - b);
@@ -468,12 +477,10 @@ export class FetchService implements OnApplicationShutdown {
       //
       console.log('handlers: ', handlerCheck.length);
       // if !handler event and call
-
       // starter project has reliance between handlers
-
       // only run this if handler.kind === block and nothing else
 
-      if (this.getModulos().length > 0 && ds.length === 0) {
+      if (this.getModulos().length > 0 && handlerCheck.length === 0) {
         this.runModuloBlocks(startBlockHeight);
       } else {
         const endHeight = this.nextEndBlockHeight(
