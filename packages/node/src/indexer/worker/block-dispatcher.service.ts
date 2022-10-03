@@ -22,6 +22,7 @@ import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
+import { yargsOptions } from '../../yargs';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
@@ -36,6 +37,7 @@ import {
 } from './worker';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
+const { argv } = yargsOptions;
 
 function isNullMerkelRoot(operationHash: Uint8Array): boolean {
   return u8aEq(operationHash, NULL_MERKEL_ROOT);
@@ -362,6 +364,12 @@ export class WorkerBlockDispatcherService
     runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
+    if (argv['best-block']) {
+      throw new Error(
+        'Sorry, best block feature is not support with workers yet.',
+      );
+    }
+
     this.workers = await Promise.all(
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );

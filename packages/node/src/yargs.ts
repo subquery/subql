@@ -202,7 +202,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'best-block': {
       demandOption: false,
-      default: true,
+      default: false,
       describe: 'Enable to fetch and index best / unfinalized block',
       type: 'boolean',
     },
