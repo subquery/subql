@@ -102,7 +102,7 @@ async function replaceFileReferences<T>(
 }
 
 // { <path>//dist/index.js: CID }
-const fileMap = {} as Record<string, string>;
+const fileMap = new Map<string | fs.ReadStream, string>();
 
 export async function uploadFile(
   content: string | fs.ReadStream,
@@ -123,24 +123,27 @@ export async function uploadFile(
     // check if path is in the memory
     // if it is, use the path in the memory
     // if not then set path in memory, then can use this in the future
-
-    // if (){} // upload or just use CID
-    ipfsClusterCid = await UploadFileByCluster(
-      // content path
-
-      determineStringOrFsStream(content)
-        ? // if true
-          // fileMap[''] if found, then use, if not then use await fs
-          await fs.promises.readFile(content.path, 'utf8')
-        : content,
-      authToken
-    );
+    // upload or just use CID
+    if (fileMap.get(content)) {
+      ipfsClusterCid = fileMap.get(content);
+    } else {
+      ipfsClusterCid = await UploadFileByCluster(
+        // content path
+        determineStringOrFsStream(content)
+          ? // if true
+            // fileMap[''] if found, then use, if not then use await fs
+            await fs.promises.readFile(content.path, 'utf8')
+          : content,
+        authToken
+      );
+      fileMap.set(content, ipfsClusterCid);
+    }
   } catch (e) {
     throw new Error(`Publish project to default cluster failed, ${e}`);
   }
   // Validate IPFS cid
   if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
-    throw new Error(`Published and received IPFS cid not identical \n, 
+    throw new Error(`Published and received IPFS cid not identical \n,
     IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
   }
   return ipfsClusterCid;
