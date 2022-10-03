@@ -84,7 +84,6 @@ async function replaceFileReferences<T>(
       input = mapToObject(input) as T;
     }
     if (isFileReference(input)) {
-      // this is why there is a need to check if this is in the memory
       input.file = await uploadFile(fs.createReadStream(path.resolve(projectDir, input.file)), authToken, ipfs).then(
         (cid) => `ipfs://${cid}`
       );
@@ -101,7 +100,6 @@ async function replaceFileReferences<T>(
   return input;
 }
 
-// { <path>//dist/index.js: CID }
 const fileMap = new Map<string | fs.ReadStream, string>();
 
 export async function uploadFile(
@@ -110,7 +108,6 @@ export async function uploadFile(
   ipfs?: IPFSHTTPClient
 ): Promise<string> {
   let ipfsClientCid: string;
-  // if user provide ipfs, we will try to upload it to this gateway
   if (ipfs) {
     try {
       ipfsClientCid = (await ipfs.add(content, {pin: true, cidVersion: 0})).cid.toString();
@@ -120,20 +117,11 @@ export async function uploadFile(
   }
   let ipfsClusterCid: string;
   try {
-    // check if path is in the memory
-    // if it is, use the path in the memory
-    // if not then set path in memory, then can use this in the future
-    // upload or just use CID
     if (fileMap.get(content)) {
       ipfsClusterCid = fileMap.get(content);
     } else {
       ipfsClusterCid = await UploadFileByCluster(
-        // content path
-        determineStringOrFsStream(content)
-          ? // if true
-            // fileMap[''] if found, then use, if not then use await fs
-            await fs.promises.readFile(content.path, 'utf8')
-          : content,
+        determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
         authToken
       );
       fileMap.set(content, ipfsClusterCid);
