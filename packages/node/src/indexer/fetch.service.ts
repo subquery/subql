@@ -22,7 +22,6 @@ import {
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
-  getYargsOption,
   getLogger,
 } from '@subql/node-core';
 import {
@@ -31,6 +30,7 @@ import {
   SubqlCosmosEventHandler,
   SubqlCosmosMessageHandler,
   SubqlCosmosRuntimeHandler,
+  SubqlCosmosBlockFilter,
 } from '@subql/types-cosmos';
 
 import { MetaData } from '@subql/utils';
@@ -49,9 +49,8 @@ let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
-const INTERVAL_PERCENT = 0.9;
 
-const { argv } = getYargsOption();
+const INTERVAL_PERCENT = 0.9;
 
 export function eventFilterToQueryEntry(
   filter: SubqlCosmosEventFilter,
@@ -194,6 +193,13 @@ export class FetchService implements OnApplicationShutdown {
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
+          case SubqlCosmosHandlerKind.Block:
+            for (const filter of filterList as SubqlCosmosBlockFilter[]) {
+              if (filter.modulo === undefined) {
+                return [];
+              }
+            }
+            break;
           case SubqlCosmosHandlerKind.Message: {
             for (const filter of filterList as SubqlCosmosMessageFilter[]) {
               if (filter.type !== undefined) {
@@ -262,8 +268,8 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
-    if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(this.batchSizeScale);
+    if (this.nodeConfig['scale-batch-size']) {
+      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -437,7 +443,9 @@ export class FetchService implements OnApplicationShutdown {
 
       const chain = await this.api.getChainId();
       if (metaData.chain !== chain) {
-        logger.warn(`Dictionary is disabled since now`);
+        logger.error(
+          'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
+        );
         this.useDictionary = false;
         this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
           value: Number(this.useDictionary),

@@ -15,10 +15,13 @@ import {
   RuntimeDataSourceV0_3_0,
   CustomDatasourceV0_3_0,
 } from '@subql/common-cosmos';
+import { StoreService } from '@subql/node-core';
+import { getAllEntitiesRelations } from '@subql/utils';
 import * as protobuf from 'protobufjs';
 import tar from 'tar';
 import {
   SubqlProjectDs,
+  SubqueryProject,
   CosmosChainType,
   CosmosProjectNetConfig,
 } from '../configure/SubqueryProject';
@@ -201,4 +204,13 @@ export async function getProjectRoot(reader: Reader): Promise<string> {
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }
+}
+
+export async function initDbSchema(
+  project: SubqueryProject,
+  schema: string,
+  storeService: StoreService,
+): Promise<void> {
+  const modelsRelation = getAllEntitiesRelations(project.schema);
+  await storeService.init(modelsRelation, schema);
 }

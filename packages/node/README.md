@@ -13,7 +13,16 @@ $ npm i -g @subql/node-terra
 ## Running the app
 
 ```
-$> subql-node-terra
+$> subql-node-cosmos
+
+Commands:
+  run force-clean  Force cleans the database, dropping project schemas and
+                   tables (Once the command is executed, the application would
+                   exit upon completion)
+
+  run reindex      Reindex to specified block height (Once the command is
+                   executed, the application would exit upon completion).
+
 Options:
       --help                Show help                                  [boolean]
       --version             Show version number                        [boolean]
@@ -22,8 +31,6 @@ Options:
       --subquery-name       Name of the subquery project   [deprecated] [string]
   -c, --config              Specify configuration file                  [string]
       --local               Use local mode                [deprecated] [boolean]
-      --force-clean         Force clean the database, dropping project schemas
-                            and tables                                 [boolean]
       --db-schema           Db schema name of the project               [string]
       --unsafe              Allows usage of any built-in module within the
                             sandbox                                    [boolean]
@@ -60,7 +67,6 @@ Options:
   -p, --port                The port the service will bind to           [number]
       --disable-historical  Disable storing historical state entities
                                                        [boolean] [default: true]
-      --reindex             Reindex to specified block height           [number]
   -w, --workers             Number of worker threads to use for fetching and
                             processing blocks. Disabled by default.     [number]
 ```

@@ -10,19 +10,21 @@ import {
   IConfig,
   MinConfig,
   NodeConfig,
-  getYargsOption,
   getLogger,
   setLevel,
 } from '@subql/node-core';
 import { camelCase, last, omitBy, isNil } from 'lodash';
+import { yargsOptions } from '../yargs';
 import { SubqueryProject } from './SubqueryProject';
 
-const YargsNameMapping = {
+const logger = getLogger('configure');
+
+const YargsNameMapping: Record<string, string> = {
   local: 'localMode',
   'network-endpoint-param': 'networkEndpointParams',
 };
 
-type Args = ReturnType<typeof getYargsOption>['argv'];
+type Args = typeof yargsOptions.argv['argv'];
 
 function yargsToIConfig(yargs: Args): Partial<IConfig> {
   return Object.entries(yargs).reduce((acc, [key, value]) => {
@@ -45,7 +47,7 @@ function yargsToIConfig(yargs: Args): Partial<IConfig> {
     }
     acc[YargsNameMapping[key] ?? camelCase(key)] = value;
     return acc;
-  }, {});
+  }, {} as any);
 }
 
 function defaultSubqueryName(config: Partial<IConfig>): MinConfig {
@@ -87,7 +89,6 @@ export function validDbSchemaName(name: string): boolean {
 }
 
 function warnDeprecations() {
-  const yargsOptions = getYargsOption();
   const { argv } = yargsOptions;
   if (argv['subquery-name']) {
     logger.warn(
@@ -98,13 +99,55 @@ function warnDeprecations() {
     logger.warn('Note that argument --local has been deprecated');
   }
 }
-const logger = getLogger('configure');
 
 @Global()
 @Module({})
 export class ConfigureModule {
+  static registerWithConfig(config: NodeConfig): DynamicModule {
+    if (!validDbSchemaName(config.dbSchema)) {
+      process.exit(1);
+    }
+
+    if (config.debug) {
+      setLevel('debug');
+    }
+
+    const project = async () => {
+      const p = await SubqueryProject.create(
+        config.subquery,
+        omitBy<CosmosProjectNetworkConfig>(
+          {
+            endpoint: config.networkEndpoint,
+            dictionary: config.networkDictionary,
+          },
+          isNil,
+        ),
+        {
+          ipfs: config.ipfs,
+        },
+      ).catch((err) => {
+        logger.error(err, 'Create Subquery project from given path failed!');
+        process.exit(1);
+      });
+      return p;
+    };
+
+    return {
+      module: ConfigureModule,
+      providers: [
+        {
+          provide: NodeConfig,
+          useValue: config,
+        },
+        {
+          provide: SubqueryProject,
+          useFactory: project,
+        },
+      ],
+      exports: [NodeConfig, SubqueryProject],
+    };
+  }
   static register(): DynamicModule {
-    const yargsOptions = getYargsOption();
     const { argv } = yargsOptions;
     let config: NodeConfig;
     if (argv.config) {

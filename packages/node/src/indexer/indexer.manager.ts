@@ -21,7 +21,6 @@ import {
   PoiService,
   SubqueryRepo,
   NodeConfig,
-  getYargsOption,
   getLogger,
   profiler,
   profilerWrap,
@@ -30,6 +29,7 @@ import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
+import { yargsOptions } from '../yargs';
 import { ApiService, CosmosClient, CosmosSafeClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
@@ -43,7 +43,6 @@ import { BlockContent } from './types';
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
-const { argv } = getYargsOption();
 
 @Injectable()
 export class IndexerManager {
@@ -68,7 +67,7 @@ export class IndexerManager {
     this.api = this.apiService.getApi();
   }
 
-  @profiler(argv.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async indexBlock(
     blockContent: BlockContent,
   ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
@@ -276,7 +275,7 @@ export class IndexerManager {
         );
         for (const handler of filteredHandlers) {
           vm = vm ?? (await getVM(ds));
-          argv.profiler
+          this.nodeConfig.profiler
             ? await profilerWrap(
                 vm.securedExec.bind(vm),
                 'handlerPerformance',

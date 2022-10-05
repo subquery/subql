@@ -32,6 +32,9 @@ import { HttpClient, WebsocketClient } from './rpc-clients';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
+// https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
+const RETRY_DELAY = 2_500;
+
 const logger = getLogger('api');
 
 @Injectable()

@@ -13,12 +13,12 @@ import {
   IndexerEvent,
   Worker,
   delay,
-  getYargsOption,
   profilerWrap,
+  AutoQueue,
+  Queue,
 } from '@subql/node-core';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { AutoQueue, Queue } from '../../utils/autoQueue';
 import * as CosmosUtil from '../../utils/cosmos';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
@@ -117,9 +117,7 @@ export class BlockDispatcherService
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
-    const { argv } = getYargsOption();
-
-    if (argv.profiler) {
+    if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         CosmosUtil.fetchBlocksBatches,
         'CosmosUtil',

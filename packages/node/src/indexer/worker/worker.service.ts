@@ -3,8 +3,7 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger } from '@subql/node-core';
-import { AutoQueue } from '../../utils/autoQueue';
+import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
 import { fetchBlocksBatches } from '../../utils/cosmos';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
