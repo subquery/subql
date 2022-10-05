@@ -1,17 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import http from 'http';
-import https from 'https';
 import { TextDecoder } from 'util';
 import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { toHex } from '@cosmjs/encoding';
-import {
-  isJsonRpcErrorResponse,
-  JsonRpcRequest,
-  JsonRpcSuccessResponse,
-  parseJsonRpcResponse,
-} from '@cosmjs/json-rpc';
 import { Uint53 } from '@cosmjs/math';
 import { DecodeObject, GeneratedType, Registry } from '@cosmjs/proto-signing';
 import { Block, IndexedTx, defaultRegistryTypes } from '@cosmjs/stargate';
@@ -23,7 +15,6 @@ import {
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
 import { getLogger, NetworkMetadataPayload } from '@subql/node-core';
-import axios, { AxiosInstance } from 'axios';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -37,6 +28,7 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
+import { HttpClient, WebsocketClient } from './rpc-clients';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -45,6 +37,7 @@ const logger = getLogger('api');
 @Injectable()
 export class ApiService {
   private api: CosmosClient;
+  private tendermint: Tendermint34Client;
   networkMeta: NetworkMetadataPayload;
   dsProcessor: DsProcessorService;
   registry: Registry;
@@ -70,9 +63,16 @@ export class ApiService {
         },
       };
 
-      const keepAliveClient = new KeepAliveClient(endpoint);
-      const tendermint = await Tendermint34Client.create(keepAliveClient);
-      logger.info(`Connecting to ${network.endpoint}`);
+      const rpcClient =
+        network.endpoint.includes('ws://') ||
+        network.endpoint.includes('wss://')
+          ? new WebsocketClient(network.endpoint, (err) => {
+              logger.error(err, `Websocket connection failed`);
+              process.exit(1);
+            })
+          : new HttpClient(endpoint);
+
+      this.tendermint = await Tendermint34Client.create(rpcClient);
       this.registry = new Registry([...defaultRegistryTypes, ...wasmTypes]);
 
       const chaintypes = await this.getChainType(network);
@@ -80,7 +80,7 @@ export class ApiService {
         this.registry.register(typeurl, chaintypes[typeurl]);
       }
 
-      this.api = new CosmosClient(tendermint, this.registry);
+      this.api = new CosmosClient(this.tendermint, this.registry);
 
       this.networkMeta = {
         chain: network.chainId,
@@ -108,16 +108,9 @@ export class ApiService {
     return this.api;
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async getSafeApi(height: number): Promise<CosmosSafeClient> {
-    const { network } = this.project;
-    const endpoint: HttpEndpoint = {
-      url: network.endpoint,
-      headers: {
-        'User-Agent': `SubQuery-Node ${packageVersion}`,
-      },
-    };
-    const client = await CosmosSafeClient.safeConnect(endpoint, height);
-    return client;
+    return new CosmosSafeClient(this.tendermint, height);
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -197,17 +190,9 @@ export class CosmosClient extends CosmWasmClient {
   }
 }
 
+// TODO make this class not exported and expose interface instead
 export class CosmosSafeClient extends CosmWasmClient {
   height: number;
-
-  static async safeConnect(
-    endpoint: string | HttpEndpoint,
-    height: number,
-  ): Promise<CosmosSafeClient> {
-    const keepAliveClient = new KeepAliveClient(endpoint);
-    const tmClient = await Tendermint34Client.create(keepAliveClient);
-    return new CosmosSafeClient(tmClient, height);
-  }
 
   constructor(tmClient: Tendermint34Client | undefined, height: number) {
     super(tmClient);
@@ -251,73 +236,5 @@ export class CosmosSafeClient extends CosmWasmClient {
         gasWanted: tx.result.gasWanted,
       };
     });
-  }
-}
-
-export interface RpcClient {
-  readonly execute: (
-    request: JsonRpcRequest,
-  ) => Promise<JsonRpcSuccessResponse>;
-  readonly disconnect: () => void;
-}
-
-export function hasProtocol(url: string): boolean {
-  return url.search('://') !== -1;
-}
-
-export async function httpRequest(
-  connection: AxiosInstance,
-  request?: any,
-): Promise<any> {
-  const { data } = await connection.post('/', request);
-
-  return data;
-}
-
-export class KeepAliveClient implements RpcClient {
-  protected readonly url: string;
-  protected readonly headers: Record<string, string> | undefined;
-  connection: AxiosInstance;
-
-  constructor(endpoint: string | HttpEndpoint) {
-    if (typeof endpoint === 'string') {
-      // accept host.name:port and assume http protocol
-      this.url = hasProtocol(endpoint) ? endpoint : `http://${endpoint}`;
-    } else {
-      this.url = endpoint.url;
-      this.headers = endpoint.headers;
-    }
-
-    const { searchParams } = new URL(this.url);
-
-    // Support OnFinality api keys
-    if (searchParams.get('apikey')) {
-      this.headers.apikey = searchParams.get('apikey');
-      this.url = this.url.slice(0, this.url.indexOf('?apikey'));
-    }
-
-    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
-    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
-
-    this.connection = axios.create({
-      httpAgent,
-      httpsAgent,
-      baseURL: this.url,
-      headers: this.headers,
-    });
-  }
-
-  disconnect(): void {
-    // nothing to be done
-  }
-
-  async execute(request: JsonRpcRequest): Promise<JsonRpcSuccessResponse> {
-    const response = parseJsonRpcResponse(
-      await httpRequest(this.connection, request),
-    );
-    if (isJsonRpcErrorResponse(response)) {
-      throw new Error(JSON.stringify(response.error));
-    }
-    return response;
   }
 }

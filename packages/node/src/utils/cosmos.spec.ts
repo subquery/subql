@@ -24,7 +24,8 @@ import {
   MsgStoreCode,
   MsgUpdateAdmin,
 } from 'cosmjs-types/cosmwasm/wasm/v1/tx';
-import { CosmosClient, KeepAliveClient } from '../indexer/api.service';
+import { CosmosClient } from '../indexer/api.service';
+import { HttpClient } from '../indexer/rpc-clients';
 import { filterMessageData, wrapEvent } from './cosmos';
 import * as CosmosUtil from './cosmos';
 
@@ -86,7 +87,7 @@ describe('CosmosUtils', () => {
   let msg: CosmosMessage;
 
   beforeAll(async () => {
-    const client = new KeepAliveClient(ENDPOINT);
+    const client = new HttpClient(ENDPOINT);
     const tendermint = await Tendermint34Client.create(client);
     const wasmTypes: ReadonlyArray<[string, GeneratedType]> = [
       ['/cosmwasm.wasm.v1.MsgClearAdmin', MsgClearAdmin],
