@@ -10,6 +10,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.1.3] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+### Fixed
+- Benchmark info not being logged. (#1138)
+
 ## [0.1.2] - 2022-09-27
 ### Changes
 - Moved `yargs` file from `node-core` to `node`. (#1281)

@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+### Fixed
+- Benchmark info not being logged. (#1138)
+
 ## [1.10.0] - 2022-09-29
 ### Changed
 - Enable historical feature by default. (#1327)

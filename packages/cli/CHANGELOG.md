@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.4] - 2022-10-06
+- Update IPFS endpoints. (#1337)
+
 ## [1.6.3] - 2022-09-29
 ### Fixed
 - Fix Output URL for `project:create-project` command. (#1324)
