@@ -8,6 +8,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.3] - 2022-10-06
+### Updated
+- `@subql/common` and `@subql/node-core` dependencies updated.
+
+### Changed
+- Sync with latest changes on Substrate SDK:
+  - New `reindex` and `force-clean` subcommands.
+  - Enable historical feature by default.
+
 ## [1.10.2] - 2022-09-30
 ### Fixed
 - Fix unable use rpc with api key issue due to incorrect url passed to axios (#64)

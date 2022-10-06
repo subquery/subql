@@ -2838,7 +2838,23 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:1.4.1, @subql/common@npm:latest":
+"@subql/common@npm:1.4.2":
+  version: 1.4.2
+  resolution: "@subql/common@npm:1.4.2"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: 0.5.1
+    class-validator: ^0.13.2
+    fs-extra: ^10.1.0
+    ipfs-http-client: ^52.0.3
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: 466111a70fea068e9edf3b80f5f1f23614e334d2e0f50f6a81363a68e252cf012c54bf548aaba4eb498964ddb47845fdae0604bd4d5dfb87a52e6685a5030f96
+  languageName: node
+  linkType: hard
+
+"@subql/common@npm:latest":
   version: 1.4.1
   resolution: "@subql/common@npm:1.4.1"
   dependencies:
@@ -2855,14 +2871,14 @@ __metadata:
   linkType: hard
 
 "@subql/node-core@npm:latest":
-  version: 0.1.2
-  resolution: "@subql/node-core@npm:0.1.2"
+  version: 0.1.3
+  resolution: "@subql/node-core@npm:0.1.3"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@polkadot/api": 9.4.2
-    "@subql/common": 1.4.1
+    "@subql/common": 1.4.2
     "@subql/types": 1.5.0
     "@subql/utils": 1.2.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
@@ -2871,7 +2887,7 @@ __metadata:
     prom-client: ^14.0.1
     sequelize: 6.23.0
     yargs: ^16.2.0
-  checksum: dcb86e4ff87877d9938b92df3f55d522f901753453c3e97012864e7c6ebff947dd3e43aae511e27e4e286972a298951d03bc6b8568cecd7dc2936946829e425f
+  checksum: 013e1514f87ca015e09882532cea4af8a4577dbd7d6139c40af79c26724ee4b1bbbe07a6a19425b50f3b5890a40fda996bc620e4e880cf86a2e5632a912b0515
   languageName: node
   linkType: hard
 

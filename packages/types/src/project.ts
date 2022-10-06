@@ -93,7 +93,6 @@ export interface SubqlCosmosBlockHandler {
   handler: string;
   kind: SubqlCosmosHandlerKind.Block;
   filter?: SubqlCosmosBlockFilter;
-  modulo?: number;
 }
 
 export interface SubqlCosmosTransactionHandler {
