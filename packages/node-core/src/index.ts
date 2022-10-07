@@ -6,7 +6,6 @@ export * from './logger';
 export * from './profiler';
 export * from './events';
 export * from './configure';
-export * from './entities';
 export * from './db';
 export * from './meta';
 export * from './utils';

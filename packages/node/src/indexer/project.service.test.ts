@@ -3,7 +3,6 @@
 
 import { Test } from '@nestjs/testing';
 import {
-  SubqueryRepo,
   DbModule,
   NodeConfig,
   getExistingProjectSchema,
@@ -45,7 +44,6 @@ const prepare = async (): Promise<ProjectService> => {
         useFactory: (
           sequelize: Sequelize,
           project: SubqueryProject,
-          subqueryRepo: SubqueryRepo,
           nodeConfig: NodeConfig,
         ) =>
           new ProjectService(
@@ -58,7 +56,6 @@ const prepare = async (): Promise<ProjectService> => {
             undefined,
             nodeConfig,
             undefined,
-            subqueryRepo,
             undefined,
           ),
         inject: [Sequelize, SubqueryProject, 'Subquery', NodeConfig],
@@ -67,7 +64,6 @@ const prepare = async (): Promise<ProjectService> => {
     imports: [
       ConfigureModule.registerWithConfig(nodeConfig),
       DbModule.forRoot(),
-      DbModule.forFeature(['Subquery']),
     ],
   }).compile();
 
@@ -93,48 +89,45 @@ function prepareProject(
 
 describe('ProjectService Integration Tests', () => {
   let projectService: ProjectService;
-  let subqueryRepo: SubqueryRepo;
   let logger: any;
 
-  async function createSchema(name: string): Promise<void> {
-    await subqueryRepo.sequelize.createSchema(`"${name}"`, undefined);
-  }
+  // async function createSchema(name: string): Promise<void> {
+  //   await subqueryRepo.sequelize.createSchema(`"${name}"`, undefined);
+  // }
 
-  async function checkSchemaExist(schema: string): Promise<boolean> {
-    const schemas = await subqueryRepo.sequelize.showAllSchemas(undefined);
-    return (schemas as unknown as string[]).includes(schema);
-  }
+  // async function checkSchemaExist(schema: string): Promise<boolean> {
+  //   const schemas = await subqueryRepo.sequelize.showAllSchemas(undefined);
+  //   return (schemas as unknown as string[]).includes(schema);
+  // }
 
   beforeAll(async () => {
     projectService = await prepare();
-    subqueryRepo = (projectService as any).subqueryRepo;
+    // subqueryRepo = (projectService as any).subqueryRepo;
   });
 
-  beforeEach(async () => {
-    await subqueryRepo.destroy({ where: { name: TEST_PROJECT } });
-    await subqueryRepo.sequelize.dropSchema(`"${TEST_PROJECT}"`, undefined);
-  });
+  // beforeEach(async () => {
+  //   await subqueryRepo.destroy({ where: { name: TEST_PROJECT } });
+  //   await subqueryRepo.sequelize.dropSchema(`"${TEST_PROJECT}"`, undefined);
+  // });
 
   it("read existing project's schema from subqueries table", async () => {
     const schemaName = 'subql_99999';
-    await subqueryRepo.create(prepareProject(TEST_PROJECT, schemaName, 1));
+    // await subqueryRepo.create(prepareProject(TEST_PROJECT, schemaName, 1));
 
     const schema = getExistingProjectSchema(
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
-      (projectService as any).subqueryRepo,
     );
     await expect(schema).resolves.toBe(schemaName);
   });
 
   it("read existing project's schema from nodeConfig", async () => {
-    await createSchema(TEST_PROJECT);
-    await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
+    // await createSchema(TEST_PROJECT);
+    // await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
     const schema = getExistingProjectSchema(
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
-      (projectService as any).subqueryRepo,
     );
 
     await expect(schema).resolves.toBe(TEST_PROJECT);
@@ -144,7 +137,14 @@ describe('ProjectService Integration Tests', () => {
     await expect((projectService as any).createProjectSchema()).resolves.toBe(
       TEST_PROJECT,
     );
-    await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);
+
+    const schema = getExistingProjectSchema(
+      (projectService as any).nodeConfig,
+      (projectService as any).sequelize,
+    );
+
+    await expect(schema).resolves.toBe(TEST_PROJECT);
+    // await expect(checkSchemaExist(TEST_PROJECT)).resolves.toBe(true);
   });
 
   it("read existing project's schema when --local", async () => {
@@ -153,13 +153,12 @@ describe('ProjectService Integration Tests', () => {
       subqueryName: TEST_PROJECT,
       localMode: true,
     });
-    await createSchema(TEST_PROJECT);
-    await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
+    // await createSchema(TEST_PROJECT);
+    // await subqueryRepo.create(prepareProject(TEST_PROJECT, 'subql_99999', 1));
 
     const schema = getExistingProjectSchema(
       (projectService as any).nodeConfig,
       (projectService as any).sequelize,
-      (projectService as any).subqueryRepo,
     );
 
     await expect(schema).resolves.toBe('public');

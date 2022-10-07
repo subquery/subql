@@ -10,7 +10,6 @@ import {
   StoreService,
   PoiService,
   MmrService,
-  SubqueryFactory,
   NodeConfig,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
@@ -136,7 +135,6 @@ function createIndexerManager(
 
   const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
-  const subqueryRepo = SubqueryFactory(sequilize);
   const mmrService = new MmrService(nodeConfig, sequilize);
   const sandboxService = new SandboxService(
     apiService,
@@ -154,7 +152,6 @@ function createIndexerManager(
     storeService,
     nodeConfig,
     dynamicDsService,
-    subqueryRepo,
     eventEmitter,
   );
 
@@ -168,7 +165,6 @@ function createIndexerManager(
     sandboxService,
     dsProcessorService,
     dynamicDsService,
-    subqueryRepo,
     projectService,
   );
 }
