@@ -150,10 +150,10 @@ export function filterBlockTimestamp(
   filter: SubqlProjectBlockFilter,
 ): boolean {
   const unixTimestamp = block.timestamp.getTime();
-  const next = filter.cronSchedule.next;
-  if (unixTimestamp > next) {
+  if (unixTimestamp > filter.cronSchedule.next) {
     logger.info(`Block with timestamp ${unixTimestamp} is about to be indexed`);
-    logger.info(`Next block will be indexed at ${next}`);
+    logger.info(`Next block will be indexed at ${filter.cronSchedule.next}`);
+    filter.cronSchedule.schedule.prev();
     return true;
   } else {
     filter.cronSchedule.schedule.prev();
