@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.10.2] - 2022-10-10
 
 ## Removed
-- `Subqueries` database table. This is an internal change that should not have any user facing changes. (#1340)
+- `Subqueries` database table. This is an internal change that should not affect users. (#1340)
 
 ## [1.10.1] - 2022-10-06
 ### Changed
