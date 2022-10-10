@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   getLogger,
   MetadataFactory,
@@ -9,7 +9,6 @@ import {
   MmrService,
   NodeConfig,
   StoreService,
-  SubqueryRepo,
   getExistingProjectSchema,
   getMetaDataInfo,
 } from '@subql/node-core';
@@ -34,15 +33,10 @@ export class ReindexService {
     private readonly mmrService: MmrService,
     private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
   private async getExistingProjectSchema(): Promise<string> {
-    return getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-      this.subqueryRepo,
-    );
+    return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {

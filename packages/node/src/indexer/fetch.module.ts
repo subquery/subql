@@ -25,7 +25,6 @@ import {
 } from './worker/block-dispatcher.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
     ApiService,

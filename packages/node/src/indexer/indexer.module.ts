@@ -20,7 +20,6 @@ import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     IndexerManager,
     StoreService,
