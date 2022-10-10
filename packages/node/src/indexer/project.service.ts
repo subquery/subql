@@ -68,10 +68,10 @@ export class ProjectService {
   }
 
   async init(): Promise<void> {
+    // Used to load assets into DS-processor, has to be done in any thread
+    await this.dsProcessorService.validateProjectCustomDatasources();
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
-      await this.dsProcessorService.validateProjectCustomDatasources();
-
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       this.metadataRepo = await this.ensureMetadata();
