@@ -34,7 +34,11 @@ describe('substrate utils', () => {
   it('filters blocks based on timestamp', async () => {
     const cronString = '*/5 * * * *';
     const cron = new Cron();
-    cron.fromString(cronString);
+    try {
+      cron.fromString(cronString);
+    } catch (e) {
+      throw new Error(`invalid cron expression: ${cronString}`);
+    }
     const blocks = await fetchBlocks(api, 100000, 100100);
     const reference = blocks[0].block.timestamp;
     const schedule = cron.schedule(reference);
@@ -52,6 +56,18 @@ describe('substrate utils', () => {
     });
 
     expect(filteredBlocks).toHaveLength(2);
+  });
+
+  it('invalid timestamp throws error on cron creation', () => {
+    const cronString = 'invalid cron';
+    const cron = new Cron();
+    expect(() => {
+      try {
+        cron.fromString(cronString);
+      } catch (e) {
+        throw new Error(`invalid cron expression: ${cronString}`);
+      }
+    }).toThrow(Error);
   });
 
   it.skip('when failed to fetch, log block height and re-throw error', async () => {

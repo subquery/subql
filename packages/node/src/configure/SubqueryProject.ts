@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ReaderFactory,
@@ -19,6 +20,8 @@ import {
   FileType,
   ProjectManifestV1_0_0Impl,
   SubstrateBlockFilter,
+  isRuntimeDs,
+  SubstrateHandlerKind,
 } from '@subql/common-substrate';
 import { buildSchemaFromString } from '@subql/utils';
 import Cron from 'cron-converter';
@@ -28,6 +31,7 @@ import {
   getProjectRoot,
   updateDataSourcesV0_2_0,
 } from '../utils/project';
+import { getBlockByHeight, getTimestamp } from '../utils/substrate';
 
 export type SubqlProjectDs = SubstrateDataSource & {
   mapping: SubstrateDataSource['mapping'] & { entryScript: string };
@@ -236,4 +240,54 @@ async function loadProjectTemplates(
       name: projectManifest.templates[index].name,
     }));
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function generateTimestampReferenceForBlockFilters(
+  dataSources: SubqlProjectDs[],
+  api: ApiPromise,
+): Promise<SubqlProjectDs[]> {
+  const cron = new Cron();
+
+  dataSources = await Promise.all(
+    dataSources.map(async (ds) => {
+      if (isRuntimeDs(ds)) {
+        const startBlock = ds.startBlock ?? 1;
+        let block;
+        let timestampReference;
+
+        ds.mapping.handlers = await Promise.all(
+          ds.mapping.handlers.map(async (handler) => {
+            if (handler.kind === SubstrateHandlerKind.Block) {
+              if (handler.filter?.timestamp) {
+                if (!block) {
+                  block = await getBlockByHeight(api, startBlock);
+                  timestampReference = getTimestamp(block);
+                }
+                try {
+                  cron.fromString(handler.filter.timestamp);
+                } catch (e) {
+                  throw new Error(
+                    `Invalid Cron string: ${handler.filter.timestamp}`,
+                  );
+                }
+
+                const schedule = cron.schedule(timestampReference);
+                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
+                  schedule: schedule,
+                  get next() {
+                    return Date.parse(this.schedule.next().format());
+                  },
+                };
+              }
+            }
+            return handler;
+          }),
+        );
+      }
+      return ds;
+    }),
+  );
+
+  return dataSources;
 }

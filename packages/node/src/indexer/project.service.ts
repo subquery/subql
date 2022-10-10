@@ -427,47 +427,4 @@ export class ProjectService {
       throw err;
     }
   }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async generateTimestampReferenceForBlockFilters(): Promise<SubqlProjectDs[]> {
-    const cron = new Cron();
-
-    this.project.dataSources = await Promise.all(
-      this.project.dataSources.map(async (ds) => {
-        if (isRuntimeDs(ds)) {
-          const startBlock = ds.startBlock ?? 1;
-          let block;
-          let timestampReference;
-
-          ds.mapping.handlers = await Promise.all(
-            ds.mapping.handlers.map(async (handler) => {
-              if (handler.kind === SubstrateHandlerKind.Block) {
-                if (handler.filter?.timestamp) {
-                  if (!block) {
-                    block = await getBlockByHeight(
-                      this.apiService.getApi(),
-                      startBlock,
-                    );
-                    timestampReference = getTimestamp(block);
-                  }
-                  cron.fromString(handler.filter.timestamp);
-                  const schedule = cron.schedule(timestampReference);
-                  (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
-                    schedule: schedule,
-                    get next() {
-                      return Date.parse(this.schedule.next().format());
-                    },
-                  };
-                }
-              }
-              return handler;
-            }),
-          );
-        }
-        return ds;
-      }),
-    );
-
-    return this.project.dataSources;
-  }
 }
