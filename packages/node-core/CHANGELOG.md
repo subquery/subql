@@ -10,6 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.0.0] - 2022-10-10
+
+## Removed
+- `Subqueries` database table. (#1340)
+
 ## [0.1.3] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)
