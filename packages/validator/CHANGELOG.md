@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.1] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+
 ## [1.5.0] - 2022.08-26
 ### Changed
 - Use `@subql/node-core` package. (#1222)

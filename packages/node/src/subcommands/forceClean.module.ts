@@ -7,7 +7,6 @@ import { ConfigureModule } from '../configure/configure.module';
 import { ForceCleanService } from './forceClean.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [ForceCleanService],
   controllers: [],
 })

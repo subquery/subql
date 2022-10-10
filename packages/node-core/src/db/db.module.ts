@@ -4,7 +4,6 @@
 import {DynamicModule, Global} from '@nestjs/common';
 import {Sequelize, Options as SequelizeOption} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
-import * as entities from '../entities';
 import {getLogger} from '../logger';
 import {delay} from '../utils/promise';
 
@@ -44,9 +43,6 @@ const sequelizeFactory = (option: SequelizeOption, migrate: boolean) => async ()
   const sequelize = new Sequelize(option);
   const numRetries = 5;
   await establishConnection(sequelize, numRetries);
-  for (const factoryFn of Object.keys(entities).filter((k) => /Factory$/.exec(k))) {
-    entities[factoryFn as keyof typeof entities](sequelize);
-  }
   await sequelize.sync({alter: migrate});
   return sequelize;
 };

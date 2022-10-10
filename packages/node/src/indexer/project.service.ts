@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 import { isMainThread } from 'worker_threads';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   MetadataFactory,
   MetadataRepo,
-  SubqueryRepo,
   NodeConfig,
   IndexerEvent,
   StoreService,
@@ -49,7 +48,6 @@ export class ProjectService {
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -66,18 +64,14 @@ export class ProjectService {
   }
 
   private async getExistingProjectSchema(): Promise<string> {
-    return getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-      this.subqueryRepo,
-    );
+    return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
   async init(): Promise<void> {
+    // Used to load assets into DS-processor, has to be done in any thread
+    await this.dsProcessorService.validateProjectCustomDatasources();
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
-      await this.dsProcessorService.validateProjectCustomDatasources();
-
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       this.metadataRepo = await this.ensureMetadata();
@@ -142,10 +136,6 @@ export class ProjectService {
   private async ensureMetadata(): Promise<MetadataRepo> {
     const metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
-    const project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
-
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
       this.apiService.networkMeta,
@@ -196,14 +186,7 @@ export class ProjectService {
       ]);
     }
     if (!keyValue.genesisHash) {
-      if (project) {
-        await metadataRepo.upsert({
-          key: 'genesisHash',
-          value: project.networkGenesis,
-        });
-      } else {
-        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
-      }
+      await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
     } else {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
@@ -257,14 +240,7 @@ export class ProjectService {
     if (lastProcessedHeight !== null && lastProcessedHeight !== undefined) {
       startHeight = Number(lastProcessedHeight) + 1;
     } else {
-      const project = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (project !== null) {
-        startHeight = project.nextBlockHeight;
-      } else {
-        startHeight = this.getStartBlockFromDataSources();
-      }
+      startHeight = this.getStartBlockFromDataSources();
     }
 
     return startHeight;

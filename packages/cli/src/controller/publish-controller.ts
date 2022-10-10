@@ -120,7 +120,7 @@ export async function uploadFile(
     if (fileMap.has(content)) {
       ipfsClusterCid = fileMap.get(content);
     } else {
-      ipfsClusterCid = await UploadFileByCluster(
+      ipfsClusterCid = await uploadFileByCluster(
         determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
         authToken
       );
@@ -141,7 +141,7 @@ function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is f
   return !!(toBeDetermined as fs.ReadStream).path;
 }
 
-async function UploadFileByCluster(content: string, authToken: string): Promise<string> {
+async function uploadFileByCluster(content: string, authToken: string): Promise<string> {
   const bodyFormData = new FormData();
   bodyFormData.append('data', content);
   const result = (
@@ -158,7 +158,17 @@ async function UploadFileByCluster(content: string, authToken: string): Promise<
       maxContentLength: 50 * 1024 * 1024,
     })
   ).data as ClusterResponseData;
-  return result.cid?.['/'];
+
+  if (typeof result.cid === 'string') {
+    return result.cid;
+  }
+  const cid = result.cid?.['/'];
+
+  if (!cid) {
+    throw new Error('Failed to get CID from response');
+  }
+
+  return cid;
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
@@ -177,10 +187,10 @@ function isFileReference(value: any): value is FileReference {
 
 interface ClusterResponseData {
   name: string;
-  cid: cidSpec;
+  cid: CidSpec | string;
   size: number;
 }
 // cluster response cid stored as {'/': 'QmVq2bqunmkmEmMCY3x9U9kDcgoRBGRbuBm5j7XKZDvSYt'}
-interface cidSpec {
+interface CidSpec {
   '/': string;
 }
