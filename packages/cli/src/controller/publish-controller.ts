@@ -117,7 +117,7 @@ export async function uploadFile(
   }
   let ipfsClusterCid: string;
   try {
-    if (fileMap.get(content)) {
+    if (fileMap.has(content)) {
       ipfsClusterCid = fileMap.get(content);
     } else {
       ipfsClusterCid = await UploadFileByCluster(
