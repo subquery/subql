@@ -1,6 +1,21 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+// initlogger and yargs must be imported before all other imports
+// making sure logger is defined before its called
+// eslint-disable-next-line import/order
+import { initLogger } from '@subql/node-core/logger';
+// eslint-disable-next-line import/order
+import { yargsOptions } from '../../yargs';
+
+const { argv } = yargsOptions;
+
+initLogger(
+  argv.debug,
+  argv.outputFormat as 'json' | 'colored',
+  argv.logLevel as string | undefined,
+);
+
 import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';

@@ -6,6 +6,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2] - 2022-10-10
+
+## Removed
+- `Subqueries` database table. This is an internal change that should not affect users. (#1340)
+
+## [1.10.1] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+### Fixed
+- Benchmark info not being logged. (#1138)
+
+## [1.10.0] - 2022-09-29
+### Changed
+- Enable historical feature by default. (#1327)
+### Added
+- Subcommands for `force-clean` and `reindex`. (#1281)
+- `yargs` file has been moved back into `node` from `node-core`. (#1281)
+- Update @polkadot/api to `9.4.2`. (#1325)
+
 ## [1.9.2] - 2022-09-19
 ### Changed
 - In order to fix go-dictionary integration we changed dictionary query to use case-insensitive search for events/extrinsics name. (#1301)

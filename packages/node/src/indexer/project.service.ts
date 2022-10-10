@@ -2,36 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
 import { isMainThread } from 'worker_threads';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  isCustomDs,
-  isRuntimeDs,
-  SubstrateHandlerKind,
-} from '@subql/common-substrate';
 import {
   MetadataFactory,
   MetadataRepo,
-  SubqueryRepo,
   NodeConfig,
   IndexerEvent,
   StoreService,
   PoiService,
   MmrService,
-  getYargsOption,
   getLogger,
+  getExistingProjectSchema,
+  getMetaDataInfo,
 } from '@subql/node-core';
-import { getAllEntitiesRelations } from '@subql/utils';
-import Cron from 'cron-converter';
-import { QueryTypes, Sequelize } from 'sequelize';
-import {
-  SubqlProjectBlockFilter,
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
-import { getBlockByHeight, getTimestamp } from '../utils/substrate';
+import { Sequelize } from 'sequelize';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { initDbSchema } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -42,7 +30,6 @@ const { version: packageVersion } = require('../../package.json');
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('Project');
-const { argv } = getYargsOption();
 
 @Injectable()
 export class ProjectService {
@@ -61,7 +48,6 @@ export class ProjectService {
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -75,6 +61,10 @@ export class ProjectService {
 
   get startHeight(): number {
     return this._startHeight;
+  }
+
+  private async getExistingProjectSchema(): Promise<string> {
+    return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
   async init(): Promise<void> {
@@ -94,9 +84,6 @@ export class ProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
-      if (argv.reindex !== undefined) {
-        await this.reindex(argv.reindex);
-      }
     } else {
       this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
@@ -118,74 +105,11 @@ export class ProjectService {
     let schema = await this.getExistingProjectSchema();
     if (!schema) {
       schema = await this.createProjectSchema();
-    } else {
-      if (argv['force-clean']) {
-        try {
-          // drop existing project schema and metadata table
-          await this.sequelize.dropSchema(`"${schema}"`, {
-            logging: false,
-            benchmark: false,
-          });
-
-          // remove schema from subquery table (might not exist)
-          await this.sequelize.query(
-            ` DELETE
-              FROM public.subqueries
-              WHERE name = :name`,
-            {
-              replacements: { name: this.nodeConfig.subqueryName },
-              type: QueryTypes.DELETE,
-            },
-          );
-
-          logger.info('force cleaned schema and tables');
-
-          if (fs.existsSync(this.nodeConfig.mmrPath)) {
-            await fs.promises.unlink(this.nodeConfig.mmrPath);
-            logger.info('force cleaned file based mmr');
-          }
-        } catch (err) {
-          logger.error(err, 'failed to force clean');
-        }
-        schema = await this.createProjectSchema();
-      }
     }
-
     this.eventEmitter.emit(IndexerEvent.Ready, {
       value: true,
     });
 
-    return schema;
-  }
-
-  // Get existing project schema, undefined when doesn't exist
-  private async getExistingProjectSchema(): Promise<string> {
-    let schema = this.nodeConfig.localMode
-      ? DEFAULT_DB_SCHEMA
-      : this.nodeConfig.dbSchema;
-
-    // Note that sequelize.fetchAllSchemas does not include public schema, we cannot assume that public schema exists so we must make a raw query
-    const schemas = (await this.sequelize
-      .query(`SELECT schema_name FROM information_schema.schemata`, {
-        type: QueryTypes.SELECT,
-      })
-      .then((xs) => xs.map((x: any) => x.schema_name))
-      .catch((err) => {
-        logger.error(`Unable to fetch all schemas: ${err}`);
-        process.exit(1);
-      })) as [string];
-
-    if (!schemas.includes(schema)) {
-      // fallback to subqueries table
-      const subqueryModel = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (subqueryModel) {
-        schema = subqueryModel.dbSchema;
-      } else {
-        schema = undefined;
-      }
-    }
     return schema;
   }
 
@@ -206,17 +130,11 @@ export class ProjectService {
   }
 
   private async initDbSchema(): Promise<void> {
-    const graphqlSchema = this.project.schema;
-    const modelsRelations = getAllEntitiesRelations(graphqlSchema);
-    await this.storeService.init(modelsRelations, this.schema);
+    await initDbSchema(this.project, this.schema, this.storeService);
   }
 
   private async ensureMetadata(): Promise<MetadataRepo> {
     const metadataRepo = MetadataFactory(this.sequelize, this.schema);
-
-    const project = await this.subqueryRepo.findOne({
-      where: { name: this.nodeConfig.subqueryName },
-    });
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
@@ -268,14 +186,7 @@ export class ProjectService {
       ]);
     }
     if (!keyValue.genesisHash) {
-      if (project) {
-        await metadataRepo.upsert({
-          key: 'genesisHash',
-          value: project.networkGenesis,
-        });
-      } else {
-        await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
-      }
+      await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
     } else {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
@@ -316,19 +227,11 @@ export class ProjectService {
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'blockOffset' },
-    });
-
-    return res?.value as number | undefined;
+    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
   async getLastProcessedHeight(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'lastProcessedHeight' },
-    });
-
-    return res?.value as number | undefined;
+    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {
@@ -337,14 +240,7 @@ export class ProjectService {
     if (lastProcessedHeight !== null && lastProcessedHeight !== undefined) {
       startHeight = Number(lastProcessedHeight) + 1;
     } else {
-      const project = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (project !== null) {
-        startHeight = project.nextBlockHeight;
-      } else {
-        startHeight = this.getStartBlockFromDataSources();
-      }
+      startHeight = this.getStartBlockFromDataSources();
     }
 
     return startHeight;
@@ -397,34 +293,5 @@ export class ProjectService {
         ds.filter.specName ===
           this.apiService.getApi().runtimeVersion.specName.toString(),
     );
-  }
-
-  private async reindex(targetBlockHeight: number): Promise<void> {
-    const lastProcessedHeight = await this.getLastProcessedHeight();
-    if (!this.storeService.historical) {
-      logger.warn('Unable to reindex, historical state not enabled');
-      return;
-    }
-    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
-      logger.warn(
-        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
-      );
-      return;
-    }
-    logger.info(`Reindexing to block: ${targetBlockHeight}`);
-    const transaction = await this.sequelize.transaction();
-    try {
-      await this.storeService.rewind(argv.reindex, transaction);
-
-      const blockOffset = await this.getMetadataBlockOffset();
-      if (blockOffset) {
-        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
-      }
-      await transaction.commit();
-    } catch (err) {
-      logger.error(err, 'Reindexing failed');
-      await transaction.rollback();
-      throw err;
-    }
   }
 }

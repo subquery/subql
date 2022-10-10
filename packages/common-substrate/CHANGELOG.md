@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.1] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+
 ## [1.2.0] - 2022-07-27
 ### Changed
 - Apply latest runner version validation rule, now `dev` and `latest` are not supported.

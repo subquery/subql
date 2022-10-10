@@ -33,6 +33,12 @@ export interface IConfig {
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
   readonly workers?: number;
+  readonly profiler?: boolean;
+  readonly migrate: boolean;
+  readonly unsafe?: boolean;
+  readonly subscription: boolean;
+  readonly disableHistorical: boolean;
+  readonly reindex?: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -48,6 +54,10 @@ const DEFAULT_CONFIG = {
   timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
+  profiler: false,
+  migrate: false,
+  subscription: false,
+  disableHistorical: true,
 };
 
 export class NodeConfig implements IConfig {
@@ -152,6 +162,26 @@ export class NodeConfig implements IConfig {
 
   get workers(): number {
     return this._config.workers;
+  }
+
+  get profiler(): boolean {
+    return this._config.profiler;
+  }
+
+  get migrate(): boolean {
+    return this._config.migrate;
+  }
+
+  get unsafe(): boolean {
+    return this._config.unsafe;
+  }
+
+  get subscription(): boolean {
+    return this._config.subscription;
+  }
+
+  get disableHistorical(): boolean {
+    return this._config.disableHistorical;
   }
 
   merge(config: Partial<IConfig>): this {

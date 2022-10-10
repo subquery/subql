@@ -7,7 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
+
 ## [Unreleased]
+
+## [1.0.0] - 2022-10-10
+
+## Removed
+- `Subqueries` database table. (#1340)
+
+## [0.1.3] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+### Fixed
+- Benchmark info not being logged. (#1138)
+
+## [0.1.2] - 2022-09-27
+### Changes
+- Moved `yargs` file from `node-core` to `node`. (#1281)
+- Update `sequelize`. (#1311)
 
 ## [0.1.1] - 2022-08-26
 ### Fixed

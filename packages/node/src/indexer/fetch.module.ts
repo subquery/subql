@@ -2,13 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   BenchmarkService,
   MmrService,
   StoreService,
   PoiService,
-  getYargsOption,
   DbModule,
+  NodeConfig,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -23,19 +24,40 @@ import {
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
 
-const { argv } = getYargsOption();
-
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
     ApiService,
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      useClass: argv.workers
-        ? WorkerBlockDispatcherService
-        : BlockDispatcherService,
+      useFactory: (
+        nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
+        projectService: ProjectService,
+        apiService: ApiService,
+        indexerManager: IndexerManager,
+      ) =>
+        nodeConfig.workers !== undefined
+          ? new WorkerBlockDispatcherService(
+              nodeConfig,
+              eventEmitter,
+              projectService,
+            )
+          : new BlockDispatcherService(
+              apiService,
+              nodeConfig,
+              indexerManager,
+              eventEmitter,
+              projectService,
+            ),
+      inject: [
+        NodeConfig,
+        EventEmitter2,
+        ProjectService,
+        ApiService,
+        IndexerManager,
+      ],
     },
     FetchService,
     BenchmarkService,

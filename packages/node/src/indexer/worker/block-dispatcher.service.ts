@@ -14,7 +14,6 @@ import {
   IndexerEvent,
   Worker,
   delay,
-  getYargsOption,
   profilerWrap,
   AutoQueue,
   Queue,
@@ -129,9 +128,7 @@ export class BlockDispatcherService
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
-    const { argv } = getYargsOption();
-
-    if (argv.profiler) {
+    if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         SubstrateUtil.fetchBlocksBatches,
         'SubstrateUtil',

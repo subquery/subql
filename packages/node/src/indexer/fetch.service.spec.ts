@@ -277,8 +277,9 @@ function createFetchService(
   dictionaryService: DictionaryService,
   project: SubqueryProject,
   batchSize?: number,
+  config?: NodeConfig,
 ) {
-  const dsProcessorService = new DsProcessorService(project);
+  const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
@@ -311,6 +312,7 @@ describe('FetchService', () => {
   let apiService: ApiService;
   let project: SubqueryProject;
   let fetchService: FetchService;
+  let config: NodeConfig;
 
   beforeEach(() => {
     apiService = mockApiService();
@@ -446,7 +448,7 @@ describe('FetchService', () => {
     });
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
-    const dsProcessorService = new DsProcessorService(project);
+    const dsProcessorService = new DsProcessorService(project, config);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
     const nodeConfig = new NodeConfig({
@@ -530,7 +532,7 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService3();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
-    const dsProcessorService = new DsProcessorService(project);
+    const dsProcessorService = new DsProcessorService(project, config);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
     const nodeConfig = new NodeConfig({
@@ -607,7 +609,7 @@ describe('FetchService', () => {
     ];
     const dictionaryService = mockDictionaryService1();
     const schedulerRegistry = new SchedulerRegistry();
-    const dsProcessorService = new DsProcessorService(project);
+    const dsProcessorService = new DsProcessorService(project, config);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
     (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
     const eventEmitter = new EventEmitter2();
@@ -668,6 +670,7 @@ describe('FetchService', () => {
       new DictionaryService(project, nodeConfig),
       project,
       20,
+      nodeConfig,
     );
 
     const baseHandlerFilters = jest.spyOn(

@@ -2,22 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getHeapStatistics} from 'v8';
+import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
-import {getYargsOption} from '../yargs';
 
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
 
-const {argv} = getYargsOption();
 const logger = getLogger('memory');
 
-export function checkMemoryUsage(batchSizeScale: number): number {
+export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig): number {
   const memoryData = getHeapStatistics();
   const ratio = memoryData.used_heap_size / memoryData.heap_size_limit;
-  if (argv.profiler) {
+  if (nodeConfig.profiler) {
     logger.info(`Heap Statistics: ${JSON.stringify(memoryData)}`);
     logger.info(`Heap Usage: ${ratio}`);
   }
+
   let scale = batchSizeScale;
 
   if (ratio > HIGH_THRESHOLD) {

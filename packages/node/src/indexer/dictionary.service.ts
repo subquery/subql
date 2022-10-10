@@ -9,17 +9,12 @@ import {
   gql,
 } from '@apollo/client/core';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
-import {
-  getYargsOption,
-  NodeConfig,
-  timeout,
-  getLogger,
-  profiler,
-} from '@subql/node-core';
+import { NodeConfig, timeout, getLogger, profiler } from '@subql/node-core';
 import { DictionaryQueryCondition, DictionaryQueryEntry } from '@subql/types';
 import { buildQuery, GqlNode, GqlQuery, GqlVar, MetaData } from '@subql/utils';
 import fetch from 'node-fetch';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { yargsOptions } from '../yargs';
 
 export type SpecVersion = {
   id: string;
@@ -40,7 +35,6 @@ export type SpecVersionDictionary = {
 };
 
 const logger = getLogger('dictionary');
-const { argv } = getYargsOption();
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
   return {
@@ -151,7 +145,7 @@ export class DictionaryService implements OnApplicationShutdown {
    * @param conditions
    */
 
-  @profiler(argv.profiler)
+  @profiler(yargsOptions.argv.profiler)
   async getDictionary(
     startBlock: number,
     queryEndBlock: number,

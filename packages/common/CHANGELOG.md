@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.2] - 2022-10-06
+### Changed
+- Update IPFS endpoints. (#1337)
+
+## [1.4.1] - 2022-09-30
+### Fixed
+- Improve `getSchemaPath` error log. (#1324)
+
 ## [1.4.0] - 2022-08-17
 ### Changed
 - Support new templates mono-repo structure. (#1236)

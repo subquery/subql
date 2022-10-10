@@ -13,6 +13,7 @@ import {
 import {ApolloServer} from 'apollo-server-express';
 import ExpressPinoLogger from 'express-pino-logger';
 import {execute, GraphQLSchema, subscribe} from 'graphql';
+import {set} from 'lodash';
 import {Pool} from 'pg';
 import {makePluginHook} from 'postgraphile';
 import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
@@ -54,6 +55,22 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  async schemaListener(schema: GraphQLSchema): Promise<void> {
+    // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
+    try {
+      // @ts-ignore
+      if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
+        // @ts-ignore
+        const schemaDerivedData = await this.apolloServer.generateSchemaDerivedData(schema);
+        set(this.apolloServer, 'schema', schema);
+        set(this.apolloServer, 'state.schemaManager.schemaDerivedData', schemaDerivedData);
+        logger.info('Schema updated');
+      }
+    } catch (e) {
+      throw new Error(`Failed to hot reload Schema`);
+    }
+  }
+
   async onModuleDestroy(): Promise<void> {
     return this.apolloServer?.stop();
   }
@@ -66,6 +83,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (retries > 0) {
       try {
         const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
+        await builder.watchSchema(this.schemaListener.bind(this));
+
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
       } catch (e) {
@@ -101,7 +120,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         options.replaceAllPlugins.push(options.appendPlugins.pop());
       }
     }
-
     const schema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
 
     const apolloServerPlugins = [
