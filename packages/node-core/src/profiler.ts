@@ -14,8 +14,9 @@ const logger = getLogger('profiler');
 function printCost(start: Date, end: Date, target: string, method: string): void {
   logger.info(`${target}, ${method}, ${end.getTime() - start.getTime()} ms`);
 }
-export function profiler(enabled = true): any {
-  return (target: any, name: string, descriptor: PropertyDescriptor): void => {
+
+export function profiler(enabled = true): MethodDecorator {
+  return (target, name: string, descriptor: PropertyDescriptor): void => {
     if (enabled && !!descriptor && typeof descriptor.value === 'function') {
       const orig = descriptor.value;
       // tslint:disable no-function-expression no-invalid-this

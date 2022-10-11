@@ -10,3 +10,4 @@ export * from './store.service';
 export * from './poi.service';
 export * from './mmr.service';
 export * from './worker';
+export * from './dictionary.service';
