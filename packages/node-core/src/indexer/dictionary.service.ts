@@ -114,7 +114,6 @@ export class DictionaryService implements OnApplicationShutdown {
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
   ) {
-    console.log('XXXX dictionaryEndpoint', dictionaryEndpoint);
     this.client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
       link: new HttpLink({uri: dictionaryEndpoint, fetch}),
