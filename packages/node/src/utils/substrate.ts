@@ -151,8 +151,16 @@ export function filterBlockTimestamp(
 ): boolean {
   const unixTimestamp = block.timestamp.getTime();
   if (unixTimestamp > filter.cronSchedule.next) {
-    logger.info(`Block with timestamp ${unixTimestamp} is about to be indexed`);
-    logger.info(`Next block will be indexed at ${filter.cronSchedule.next}`);
+    logger.info(
+      `Block with timestamp ${new Date(
+        unixTimestamp,
+      ).toString()} is about to be indexed`,
+    );
+    logger.info(
+      `Next block will be indexed at ${new Date(
+        filter.cronSchedule.next,
+      ).toString()}`,
+    );
     filter.cronSchedule.schedule.prev();
     return true;
   } else {

@@ -57,7 +57,6 @@ const logger = getLogger('indexer');
 export class IndexerManager {
   private api: ApiPromise;
   private filteredDataSources: SubqlProjectDs[];
-  private modifiedDataSources: SubqlProjectDs[];
 
   constructor(
     private storeService: StoreService,
@@ -91,7 +90,7 @@ export class IndexerManager {
     let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
     try {
-      this.filteredDataSources = await this.filterDataSources(
+      this.filteredDataSources = this.filterDataSources(
         block.block.header.number.toNumber(),
       );
 
@@ -183,18 +182,10 @@ export class IndexerManager {
     logger.info('indexer manager started');
   }
 
-  private async filterDataSources(
-    nextProcessingHeight: number,
-  ): Promise<SubqlProjectDs[]> {
+  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
     let filteredDs: SubqlProjectDs[];
-    if (!this.modifiedDataSources) {
-      this.modifiedDataSources =
-        await generateTimestampReferenceForBlockFilters(
-          this.project.dataSources,
-          this.apiService.getApi(),
-        );
-    }
-    filteredDs = this.modifiedDataSources.filter(
+
+    filteredDs = this.projectService.dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
 

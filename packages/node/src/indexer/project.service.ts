@@ -18,7 +18,11 @@ import {
   getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  generateTimestampReferenceForBlockFilters,
+  SubqlProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -55,6 +59,10 @@ export class ProjectService {
     return this._schema;
   }
 
+  get dataSources(): SubqlProjectDs[] {
+    return this.project.dataSources;
+  }
+
   get blockOffset(): number {
     return this._blockOffset;
   }
@@ -69,6 +77,10 @@ export class ProjectService {
 
   async init(): Promise<void> {
     // Do extra work on main thread to setup stuff
+    this.project.dataSources = await generateTimestampReferenceForBlockFilters(
+      this.project.dataSources,
+      this.apiService.getApi(),
+    );
     if (isMainThread) {
       await this.dsProcessorService.validateProjectCustomDatasources();
 
