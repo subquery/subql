@@ -25,6 +25,7 @@ import {
   getLogger,
   profiler,
   profilerWrap,
+  IndexerSandbox,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
@@ -42,7 +43,7 @@ import {
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
-import { IndexerSandbox, SandboxService } from './sandbox.service';
+import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');

@@ -3,8 +3,8 @@
 
 import fs from 'fs';
 import * as path from 'path';
-import { NodeConfig } from '@subql/node-core';
-import { IndexerSandbox } from './sandbox.service';
+import {NodeConfig} from '../configure/NodeConfig';
+import {IndexerSandbox} from './sandbox';
 
 describe('sandbox for subql-node', () => {
   let vm: IndexerSandbox;
@@ -23,7 +23,7 @@ describe('sandbox for subql-node', () => {
         entry,
         script: fs.readFileSync(path.join(root, entry)).toString(),
       },
-      new NodeConfig({ subquery: '', subqueryName: '' }),
+      new NodeConfig({subquery: '', subqueryName: ''})
     );
     let sandboxFuncionEndAt: Date;
     vm.on('console.log', (line) => {
@@ -34,8 +34,6 @@ describe('sandbox for subql-node', () => {
     await vm.securedExec('testSandbox', []);
     const secureExecEndAt = new Date();
     expect(sandboxFuncionEndAt).toBeTruthy();
-    expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(
-      sandboxFuncionEndAt.getTime(),
-    );
+    expect(secureExecEndAt.getTime()).toBeGreaterThanOrEqual(sandboxFuncionEndAt.getTime());
   });
 });
