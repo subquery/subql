@@ -10,12 +10,12 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { IndexerEvent, NodeConfig } from '@subql/node-core';
+import { IndexerEvent, NodeConfig, Dictionary } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
-import { Dictionary, DictionaryService } from './dictionary.service';
+import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
