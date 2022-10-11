@@ -28,9 +28,27 @@ export type SpecVersionDictionary = {
 const logger = getLogger('dictionary');
 
 function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
+  let gqlType: string;
+  switch (typeof cond.value) {
+    case 'number':
+      gqlType = 'BigFloat!';
+      break;
+    case 'boolean':
+      gqlType = 'Boolean!';
+      break;
+    default:
+    case 'string':
+      gqlType = 'String!';
+      break;
+  }
+
+  if (cond.matcher === 'contains') {
+    gqlType = 'JSON';
+  }
+
   return {
     name,
-    gqlType: cond.matcher === 'contains' ? 'JSON' : 'String!',
+    gqlType,
     value: cond.value,
   };
 }
