@@ -91,6 +91,7 @@ async function replaceFileReferences<T>(
     const keys = Object.keys(input) as unknown as (keyof T)[];
     await Promise.all(
       keys.map(async (key) => {
+        // this is the loop
         input[key] = await replaceFileReferences(projectDir, input[key], authToken, ipfs);
       })
     );
@@ -99,13 +100,14 @@ async function replaceFileReferences<T>(
   return input;
 }
 
+const fileMap = new Map<string | fs.ReadStream, string>();
+
 export async function uploadFile(
   content: string | fs.ReadStream,
   authToken: string,
   ipfs?: IPFSHTTPClient
 ): Promise<string> {
   let ipfsClientCid: string;
-  // if user provide ipfs, we will try to upload it to this gateway
   if (ipfs) {
     try {
       ipfsClientCid = (await ipfs.add(content, {pin: true, cidVersion: 0})).cid.toString();
@@ -115,16 +117,21 @@ export async function uploadFile(
   }
   let ipfsClusterCid: string;
   try {
-    ipfsClusterCid = await uploadFileByCluster(
-      determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
-      authToken
-    );
+    if (fileMap.has(content)) {
+      ipfsClusterCid = fileMap.get(content);
+    } else {
+      ipfsClusterCid = await uploadFileByCluster(
+        determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
+        authToken
+      );
+      fileMap.set(content, ipfsClusterCid);
+    }
   } catch (e) {
     throw new Error(`Publish project to default cluster failed, ${e}`);
   }
   // Validate IPFS cid
   if (ipfsClientCid && ipfsClientCid !== ipfsClusterCid) {
-    throw new Error(`Published and received IPFS cid not identical \n, 
+    throw new Error(`Published and received IPFS cid not identical \n,
     IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
   }
   return ipfsClusterCid;
