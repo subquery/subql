@@ -16,6 +16,7 @@ import {
 } from '@subql/types-cosmos';
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
+import { ApiService } from './api.service';
 
 export interface DsPluginSandboxOption {
   root: string;
@@ -83,7 +84,11 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 }
 
 export class DsPluginSandbox extends Sandbox {
-  constructor(option: DsPluginSandboxOption, nodeConfig: NodeConfig) {
+  constructor(
+    option: DsPluginSandboxOption,
+    nodeConfig: NodeConfig,
+    apiService: ApiService,
+  ) {
     super(
       option,
       new VMScript(
@@ -93,6 +98,7 @@ export class DsPluginSandbox extends Sandbox {
       nodeConfig,
     );
     this.freeze(logger, 'logger');
+    this.freeze(apiService.registry, 'registry');
   }
 
   getDsPlugin<D extends string>(): SubqlCosmosDatasourceProcessor<
@@ -111,6 +117,7 @@ export class DsProcessorService {
   constructor(
     private project: SubqueryProject,
     private readonly nodeConfig: NodeConfig,
+    private readonly apiService: ApiService,
   ) {}
 
   async validateCustomDs(
@@ -152,6 +159,7 @@ export class DsProcessorService {
     if (!isCustomCosmosDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
+
     if (!this.processorCache[ds.processor.file]) {
       const sandbox = new DsPluginSandbox(
         {
@@ -161,6 +169,7 @@ export class DsProcessorService {
             null /* TODO get working with Readers, same as with sandbox */,
         },
         this.nodeConfig,
+        this.apiService,
       );
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();

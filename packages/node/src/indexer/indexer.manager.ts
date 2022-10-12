@@ -46,7 +46,6 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager {
-  private api: CosmosClient;
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
@@ -62,8 +61,6 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-
-    this.api = this.apiService.getApi();
   }
 
   @profiler(yargsOptions.argv.profiler)
@@ -181,7 +178,7 @@ export class IndexerManager {
       if (isCustomCosmosDs(ds)) {
         return this.dsProcessorService
           .getDsProcessor(ds)
-          .dsFilterProcessor(ds, this.api);
+          .dsFilterProcessor(ds, this.apiService.getApi());
       } else {
         return true;
       }
@@ -346,7 +343,7 @@ export class IndexerManager {
           return processor.filterProcessor({
             filter: handler.filter,
             input: data,
-            registry: this.api.registry,
+            registry: this.apiService.getApi().registry,
             ds,
           });
         } catch (e) {
@@ -373,7 +370,7 @@ export class IndexerManager {
       .transformer({
         input: data,
         ds,
-        api: this.api,
+        api: this.apiService.getApi(),
         filter: handler.filter,
         assets,
       })

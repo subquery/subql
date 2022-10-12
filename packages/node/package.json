@@ -52,7 +52,7 @@
     "sequelize": "6.23.0",
     "tar": "^6.1.11",
     "typescript": "^4.4.4",
-    "vm2": "3.9.9",
+    "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
