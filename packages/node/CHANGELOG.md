@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.5] - 2022-10-13
+### Fixed
+- Registry not being injected into datasource processor VM. (#73)
+
 ## [1.10.4] - 2022-10-11
 ### Changed
 - Sync with latest changes on Substrate SDK:
