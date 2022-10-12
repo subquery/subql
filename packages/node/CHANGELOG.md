@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.4] - 2022-10-11
+### Changed
+- Sync with latest changes on Substrate SDK:
+  - Remove deprecated subqueries table
+
 ## [1.10.3] - 2022-10-06
 ### Updated
 - `@subql/common` and `@subql/node-core` dependencies updated.
