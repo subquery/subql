@@ -4,7 +4,6 @@
 import {
   CosmosBlock,
   CosmosEvent,
-  Entity,
   CosmosTransaction,
   CosmosMessage,
 } from '@subql/types-cosmos';

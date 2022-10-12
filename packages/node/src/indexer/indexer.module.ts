@@ -2,12 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import {
-  DbModule,
-  StoreService,
-  PoiService,
-  MmrService,
-} from '@subql/node-core';
+import { StoreService, PoiService, MmrService } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -19,7 +14,6 @@ import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     IndexerManager,
     StoreService,

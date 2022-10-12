@@ -22,7 +22,6 @@ module.exports = {
   // An array of glob patterns indicating a set of files for which coverage information should be collected
   collectCoverageFrom: [
     'packages/common-cosmos/src/**/*.ts',
-    'packages/common/src/**/*.ts',
     'packages/node/src/**/*.ts',
     'packages/utils/src/**/*.ts',
   ],

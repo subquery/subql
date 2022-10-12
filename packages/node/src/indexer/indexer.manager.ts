@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -19,11 +19,11 @@ import {
   PoiBlock,
   StoreService,
   PoiService,
-  SubqueryRepo,
   NodeConfig,
   getLogger,
   profiler,
   profilerWrap,
+  IndexerSandbox,
 } from '@subql/node-core';
 import { CosmosEvent, CosmosMessage } from '@subql/types-cosmos';
 import { Sequelize } from 'sequelize';
@@ -37,7 +37,7 @@ import {
 } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
-import { IndexerSandbox, SandboxService } from './sandbox.service';
+import { SandboxService } from './sandbox.service';
 import { BlockContent } from './types';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -59,7 +59,6 @@ export class IndexerManager {
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');

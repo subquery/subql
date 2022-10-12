@@ -9,7 +9,6 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
-  DbModule,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -25,7 +24,6 @@ import {
 } from './worker/block-dispatcher.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
     ApiService,

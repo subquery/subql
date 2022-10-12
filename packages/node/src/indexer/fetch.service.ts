@@ -24,9 +24,10 @@ import {
   IndexerEvent,
   getLogger,
 } from '@subql/node-core';
+
+import { DictionaryQueryEntry, DictionaryQueryCondition } from '@subql/types';
+
 import {
-  DictionaryQueryEntry,
-  DictionaryQueryCondition,
   SubqlCosmosEventHandler,
   SubqlCosmosMessageHandler,
   SubqlCosmosRuntimeHandler,
@@ -49,7 +50,6 @@ let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
-
 const INTERVAL_PERCENT = 0.9;
 
 export function eventFilterToQueryEntry(
@@ -102,7 +102,7 @@ export function messageFilterToQueryEntry(
 
     conditions.push({
       field: 'data',
-      value: nested,
+      value: nested as any, // Cast to any for compat with node core
       matcher: 'contains',
     });
   }
@@ -174,7 +174,7 @@ export class FetchService implements OnApplicationShutdown {
             const queryEntry = processor.dictionaryQuery(
               (handler as CosmosCustomHandler).filter,
               ds,
-            );
+            ) as DictionaryQueryEntry;
             if (queryEntry) {
               queryEntries.push(queryEntry);
               continue;
@@ -367,6 +367,8 @@ export class FetchService implements OnApplicationShutdown {
             scaledBatchSize,
             this.dictionaryQueryEntries,
           );
+
+          // console.log('DICTIONARY', dictionary,)
 
           if (startBlockHeight !== getStartBlockHeight()) {
             logger.debug(

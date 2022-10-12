@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   getLogger,
   NodeConfig,
-  SubqueryRepo,
   getExistingProjectSchema,
 } from '@subql/node-core';
 import { QueryTypes, Sequelize } from 'sequelize';
@@ -18,14 +17,12 @@ export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
   async forceClean(): Promise<void> {
     const schema = await getExistingProjectSchema(
       this.nodeConfig,
       this.sequelize,
-      this.subqueryRepo,
     );
     if (!schema) {
       logger.error('Unable to locate schema');

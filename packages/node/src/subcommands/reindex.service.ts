@@ -9,12 +9,11 @@ import {
   MmrService,
   NodeConfig,
   StoreService,
-  SubqueryRepo,
   getExistingProjectSchema,
   getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
 
 import { ForceCleanService } from './forceClean.service';
@@ -34,15 +33,10 @@ export class ReindexService {
     private readonly mmrService: MmrService,
     private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
   ) {}
 
   private async getExistingProjectSchema(): Promise<string> {
-    return getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-      this.subqueryRepo,
-    );
+    return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {

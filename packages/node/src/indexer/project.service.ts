@@ -3,12 +3,11 @@
 
 import assert from 'assert';
 import { isMainThread } from 'worker_threads';
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   MetadataFactory,
   MetadataRepo,
-  SubqueryRepo,
   NodeConfig,
   IndexerEvent,
   StoreService,
@@ -49,7 +48,6 @@ export class ProjectService {
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
-    @Inject('Subquery') protected subqueryRepo: SubqueryRepo,
     private eventEmitter: EventEmitter2,
   ) {}
 
@@ -66,18 +64,14 @@ export class ProjectService {
   }
 
   private async getExistingProjectSchema(): Promise<string> {
-    return getExistingProjectSchema(
-      this.nodeConfig,
-      this.sequelize,
-      this.subqueryRepo,
-    );
+    return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
 
   async init(): Promise<void> {
+    // Used to load assets into DS-processor, has to be done in any thread
+    await this.dsProcessorService.validateProjectCustomDatasources();
     // Do extra work on main thread to setup stuff
     if (isMainThread) {
-      await this.dsProcessorService.validateProjectCustomDatasources();
-
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       this.metadataRepo = await this.ensureMetadata();
@@ -189,8 +183,14 @@ export class ProjectService {
         }),
       ]);
     }
+
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
+    }
+
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
     // If project was created before this feature, don't add the key. If it is project created after, add this key.
@@ -234,14 +234,7 @@ export class ProjectService {
     if (lastProcessedHeight !== null && lastProcessedHeight !== undefined) {
       startHeight = Number(lastProcessedHeight) + 1;
     } else {
-      const project = await this.subqueryRepo.findOne({
-        where: { name: this.nodeConfig.subqueryName },
-      });
-      if (project !== null) {
-        startHeight = project.nextBlockHeight;
-      } else {
-        startHeight = this.getStartBlockFromDataSources();
-      }
+      startHeight = this.getStartBlockFromDataSources();
     }
 
     return startHeight;

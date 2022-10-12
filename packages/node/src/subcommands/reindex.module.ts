@@ -8,7 +8,6 @@ import { ForceCleanService } from './forceClean.service';
 import { ReindexService } from './reindex.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [StoreService, ReindexService, MmrService, ForceCleanService],
   controllers: [],
 })

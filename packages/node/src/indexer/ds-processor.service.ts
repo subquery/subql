@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
 import { isCustomCosmosDs } from '@subql/common-cosmos';
-import { getLogger, NodeConfig } from '@subql/node-core';
+import { getLogger, NodeConfig, Sandbox } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
@@ -16,7 +16,6 @@ import {
 } from '@subql/types-cosmos';
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {
   root: string;
