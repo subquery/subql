@@ -9,6 +9,7 @@ import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
 import { ProjectService } from './indexer/project.service';
 import { yargsOptions } from './yargs';
+const pjson = require('../package.json');
 
 const { argv } = yargsOptions;
 
@@ -16,6 +17,7 @@ const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 
 export async function bootstrap() {
+  logger.info(`current node-verion : ${pjson.version}`);
   const debug = argv.debug;
 
   const validate = (x: any) => {
