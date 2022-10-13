@@ -17,7 +17,7 @@ const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 
 export async function bootstrap() {
-  logger.info(`current node-verion : ${pjson.version}`);
+  logger.info(`Current subql-node version is ${pjson.version}`);
   const debug = argv.debug;
 
   const validate = (x: any) => {
