@@ -203,11 +203,11 @@ export class IndexerManager {
       );
       if (await this.unfinalizedBlocksService.validateBestBlocks()) {
         await this.unfinalizedBlocksService.deleteFinalizedBlock(tx);
-        return null;
       } else {
         return this.unfinalizedBlocksService.getLastCorrectBestBlock();
       }
     }
+    return null;
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
