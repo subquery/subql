@@ -94,6 +94,12 @@ export function getYargsOption() {
       describe: 'Enable aggregate feature',
       type: 'boolean',
     },
+    'hot-schema': {
+      demandOption: false,
+      describe: 'Hot reload schema on schema-changes',
+      type: 'boolean',
+      default: false,
+    },
   });
 }
 
