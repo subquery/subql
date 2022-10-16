@@ -15,7 +15,6 @@ import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -23,6 +22,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 jest.mock('../utils/substrate', () =>
@@ -283,7 +283,7 @@ function createFetchService(
   const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   const projectService = {} as unknown as ProjectService;
-  const bestBlockService = new BestBlockService(apiService);
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
     subquery: '',
@@ -306,7 +306,7 @@ function createFetchService(
     dictionaryService,
     dsProcessorService,
     dynamicDsService,
-    bestBlockService,
+    unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
     projectService,
@@ -472,7 +472,7 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const bestBlockService = new BestBlockService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -488,7 +488,7 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
-      bestBlockService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
       projectService,
@@ -559,7 +559,7 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const bestBlockService = new BestBlockService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -576,7 +576,7 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
-      bestBlockService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
       projectService,
@@ -641,7 +641,7 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const bestBlockService = new BestBlockService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -657,7 +657,7 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
-      bestBlockService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
       projectService,

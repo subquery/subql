@@ -27,9 +27,13 @@ import {
 import { initDbSchema } from '../utils/project';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import {
+  METADATA_LAST_FINALIZED_PROCESSED_KEY,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -60,7 +64,7 @@ export class ProjectService {
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
-    private bestBlockService: BestBlockService,
+    private unfinalizedBlockService: UnfinalizedBlocksService,
   ) {}
 
   get schema(): string {
@@ -130,12 +134,12 @@ export class ProjectService {
     }
 
     // bestBlocks
-    const startBestBlocks = await this.getMetadataBestBlocks();
+    const startBestBlocks = await this.getMetadataUnfinalizedBlocks();
     const lastFinalizedVerifiedHeight =
       await this.getLastFinalizedVerifiedHeight();
-    if (argv['best-block']) {
+    if (this.nodeConfig.unfinalizedBlocks) {
       this._startBestBlocks = startBestBlocks ?? {};
-      this.bestBlockService.init(
+      this.unfinalizedBlockService.init(
         this.metadataRepo,
         this.startBestBlocks,
         lastFinalizedVerifiedHeight,
@@ -159,10 +163,13 @@ export class ProjectService {
         } else {
           // if finalized block haven't been process yet, then remove best blocks from both metadata and memory
           const transaction = await this.sequelize.transaction();
-          await this.storeService.resetBestBlocks(transaction);
-          await this.storeService.resetLastFinalizedVerifiedHeight(transaction);
+          await this.unfinalizedBlockService.resetUnfinalizedBlocks(
+            transaction,
+          );
+          await this.unfinalizedBlockService.resetLastFinalizedVerifiedHeight(
+            transaction,
+          );
           await transaction.commit();
-          this.bestBlockService.resetBestBlocks();
         }
       }
     }
@@ -302,9 +309,9 @@ export class ProjectService {
   }
 
   //string should be jsonb object
-  async getMetadataBestBlocks(): Promise<BestBlocks | undefined> {
+  async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
     const res = await this.metadataRepo.findOne({
-      where: { key: 'bestBlocks' },
+      where: { key: METADATA_UNFINALIZED_BLOCKS_KEY },
     });
     if (res) {
       return JSON.parse(res.value as string) as BestBlocks;
@@ -314,7 +321,7 @@ export class ProjectService {
 
   async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
     const res = await this.metadataRepo.findOne({
-      where: { key: 'lastFinalizedVerifiedHeight' },
+      where: { key: METADATA_LAST_FINALIZED_PROCESSED_KEY },
     });
 
     return res?.value as number | undefined;
@@ -409,15 +416,16 @@ export class ProjectService {
     try {
       await Promise.all([
         this.storeService.rewind(targetBlockHeight, transaction),
-        this.storeService.resetBestBlocks(transaction),
-        this.storeService.resetLastFinalizedVerifiedHeight(transaction),
+        this.unfinalizedBlockService.resetUnfinalizedBlocks(transaction),
+        this.unfinalizedBlockService.resetLastFinalizedVerifiedHeight(
+          transaction,
+        ),
       ]);
       const blockOffset = await this.getMetadataBlockOffset();
       if (blockOffset) {
         await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
       await transaction.commit();
-      this.bestBlockService.resetBestBlocks();
     } catch (err) {
       logger.error(err, 'Reindexing failed');
       await transaction.rollback();

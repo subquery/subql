@@ -16,12 +16,12 @@ import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
@@ -137,7 +137,7 @@ function createIndexerManager(
   const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const mmrService = new MmrService(nodeConfig, sequilize);
-  const bestBlockService = new BestBlockService(apiService);
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
   const sandboxService = new SandboxService(
     apiService,
     storeService,
@@ -155,7 +155,7 @@ function createIndexerManager(
     nodeConfig,
     dynamicDsService,
     eventEmitter,
-    bestBlockService,
+    unfinalizedBlocksService,
   );
 
   return new IndexerManager(
@@ -168,7 +168,7 @@ function createIndexerManager(
     sandboxService,
     dsProcessorService,
     dynamicDsService,
-    bestBlockService,
+    unfinalizedBlocksService,
     projectService,
   );
 }

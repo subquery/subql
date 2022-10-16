@@ -42,11 +42,11 @@ import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
@@ -110,7 +110,7 @@ export class FetchService implements OnApplicationShutdown {
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
-    private bestBlockService: BestBlockService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
     private projectService: ProjectService,
@@ -297,12 +297,12 @@ export class FetchService implements OnApplicationShutdown {
     try {
       const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
       const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      this.bestBlockService.registerFinalizedBlock(finalizedBlock);
+      this.unfinalizedBlocksService.registerFinalizedBlock(finalizedBlock);
       const currentFinalizedHeight =
         finalizedBlock.block.header.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
-        if (!argv['best-block']) {
+        if (!this.nodeConfig.unfinalizedBlocks) {
           this.eventEmitter.emit(IndexerEvent.BlockTarget, {
             height: this.latestFinalizedHeight,
           });
@@ -326,7 +326,7 @@ export class FetchService implements OnApplicationShutdown {
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
           height: this.latestBestHeight,
         });
-        if (argv['best-block']) {
+        if (this.nodeConfig.unfinalizedBlocks) {
           this.eventEmitter.emit(IndexerEvent.BlockTarget, {
             height: this.latestBestHeight,
           });
@@ -563,7 +563,10 @@ export class FetchService implements OnApplicationShutdown {
   ): number {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
     if (endBlockHeight > this.latestFinalizedHeight) {
-      if (this.projectService.isHistorical && argv['best-block']) {
+      if (
+        this.projectService.isHistorical &&
+        this.nodeConfig.unfinalizedBlocks
+      ) {
         if (endBlockHeight >= this.latestBestHeight) {
           endBlockHeight = this.latestBestHeight;
         }

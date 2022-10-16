@@ -113,13 +113,7 @@ async function createApp(
       },
       {
         provide: 'IBlockDispatcher',
-        useFactory: (
-          apiService,
-          nodeConfig,
-          eventEmitter,
-          indexerManager,
-          bestBlockService,
-        ) =>
+        useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
           new BlockDispatcherService(
             apiService,
             nodeConfig,
