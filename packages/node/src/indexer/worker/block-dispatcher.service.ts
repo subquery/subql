@@ -195,7 +195,7 @@ export class BlockDispatcherService
       logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
     }
     this.flushQueue(lastCorrectHeight);
-    logger.info(`Queued block flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
+    logger.info(`Queued blocks flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
   }
 
   private setProcessedBlockCount(processedBlockCount: number) {
@@ -364,7 +364,7 @@ export class WorkerBlockDispatcherService
     runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
-    if (argv['best-block']) {
+    if (this.nodeConfig.unfinalizedBlocks) {
       throw new Error(
         'Sorry, best block feature is not support with workers yet.',
       );
@@ -540,7 +540,7 @@ export class WorkerBlockDispatcherService
       logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
     }
     this.flushQueue(lastCorrectHeight);
-    logger.info(`Queued block flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
+    logger.info(`Queued blocks flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
   }
 
   @Interval(15000)

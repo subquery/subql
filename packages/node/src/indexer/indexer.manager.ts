@@ -32,16 +32,14 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { Sequelize } from 'sequelize';
+import { Sequelize, Transaction } from 'sequelize';
 import {
-  generateTimestampReferenceForBlockFilters,
   SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,
@@ -50,11 +48,11 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
 const logger = getLogger('indexer');
-const { argv } = yargsOptions;
 
 @Injectable()
 export class IndexerManager {
@@ -71,7 +69,7 @@ export class IndexerManager {
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
-    private bestBlockService: BestBlockService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -108,19 +106,7 @@ export class IndexerManager {
       );
 
       let apiAt: ApiAt;
-      if (argv['best-block']) {
-        await this.bestBlockService.registerBestBlock(
-          block.block.header.number.toNumber(),
-          block.hash.toHex(),
-          tx,
-        );
-        if (await this.bestBlockService.validateBestBlocks()) {
-          await this.bestBlockService.deleteFinalizedBlock(tx);
-        } else {
-          reindexBlockHeight =
-            await this.bestBlockService.getLastCorrectBestBlock();
-        }
-      }
+      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
 
       await this.indexBlockData(
         blockContent,
@@ -203,6 +189,25 @@ export class IndexerManager {
   async start(): Promise<void> {
     await this.projectService.init();
     logger.info('indexer manager started');
+  }
+
+  private async processUnfinalizedBlocks(
+    block: SubstrateBlock,
+    tx: Transaction,
+  ): Promise<number | null> {
+    if (this.nodeConfig.unfinalizedBlocks) {
+      await this.unfinalizedBlocksService.registerUnfinalizedBlock(
+        block.block.header.number.toNumber(),
+        block.hash.toHex(),
+        tx,
+      );
+      if (await this.unfinalizedBlocksService.validateBestBlocks()) {
+        await this.unfinalizedBlocksService.deleteFinalizedBlock(tx);
+        return null;
+      } else {
+        return this.unfinalizedBlocksService.getLastCorrectBestBlock();
+      }
+    }
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {

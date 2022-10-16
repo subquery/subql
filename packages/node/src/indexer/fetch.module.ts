@@ -8,11 +8,9 @@ import {
   MmrService,
   StoreService,
   PoiService,
-  DbModule,
   NodeConfig,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -20,6 +18,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
@@ -69,7 +68,7 @@ import {
     PoiService,
     MmrService,
     ProjectService,
-    BestBlockService,
+    UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService],
 })

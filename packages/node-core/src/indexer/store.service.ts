@@ -486,13 +486,13 @@ group by
     );
   }
 
-  async resetBestBlocks(transaction: Transaction): Promise<void> {
-    await this.setMetadata('bestBlocks', '{}', {transaction});
-  }
+  // async resetUnfinalizedBlocks(transaction: Transaction): Promise<void> {
+  //   await this.setMetadata(METADATA_UNFINALIZED_BLOCKS_KEY, '{}', {transaction});
+  // }
 
-  async resetLastFinalizedVerifiedHeight(transaction: Transaction): Promise<void> {
-    await this.setMetadata('lastFinalizedVerifiedHeight', null, {transaction});
-  }
+  // async resetLastFinalizedVerifiedHeight(transaction: Transaction): Promise<void> {
+  //   await this.setMetadata(METADATA_LAST_FINALIZED_PROCESSED_KEY, null, {transaction});
+  // }
 
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {

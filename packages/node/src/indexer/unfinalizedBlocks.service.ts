@@ -12,35 +12,40 @@ import { ApiService } from './api.service';
 
 const logger = getLogger('bestBlock');
 
-const METADATA_BESTBLOCKS_KEY = 'bestBlocks';
-const METADATA_LAST_FINALIZED_PROCESSED_KEY = 'lastFinalizedVerifiedHeight';
+export const METADATA_UNFINALIZED_BLOCKS_KEY = 'unfinalizedBlocks';
+export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
+  'lastFinalizedVerifiedHeight';
 
 @Injectable()
-export class BestBlockService {
-  private bestBlocks: Record<number, HexString>;
+export class UnfinalizedBlocksService {
+  private unfinalizedBlocks: Record<number, HexString>;
   private finalizedBlock: SignedBlock;
   private metaDataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
 
   constructor(private apiService: ApiService) {}
 
-  init(metadataRepo, startBestBlocks, lastFinalizedVerifiedHeight) {
-    this.bestBlocks = startBestBlocks;
+  init(
+    metadataRepo: MetadataRepo,
+    startUnfinalizedBlocks: Record<number, HexString>,
+    lastFinalizedVerifiedHeight: number,
+  ): void {
+    this.unfinalizedBlocks = startUnfinalizedBlocks;
     this.lastCheckedBlockHeight = lastFinalizedVerifiedHeight;
     this.metaDataRepo = metadataRepo;
   }
 
-  get api(): ApiPromise {
+  private get api(): ApiPromise {
     return this.apiService.getApi();
   }
 
-  bestBlock(number): HexString {
-    return this.bestBlocks[number];
+  unfinalizedBlock(number: number): HexString {
+    return this.unfinalizedBlocks[number];
   }
 
-  resetBestBlocks() {
-    this.bestBlocks = {};
-  }
+  // resetUnfinalizedBlocks(): void {
+  //   this.unfinalizedBlocks = {};
+  // }
 
   registerFinalizedBlock(block: SignedBlock): void {
     if (
@@ -53,21 +58,21 @@ export class BestBlockService {
     this.finalizedBlock = block;
   }
 
-  async registerBestBlock(
+  async registerUnfinalizedBlock(
     blockNumber: number,
     hash: HexString,
     tx: Transaction,
   ): Promise<void> {
     if (
-      !this.bestBlocks[blockNumber] &&
+      !this.unfinalizedBlocks[blockNumber] &&
       blockNumber > this.finalizedBlock.block.header.number.toNumber()
     ) {
-      this.storeBestBlock(blockNumber, hash);
+      this.storeUnfinalizedBlock(blockNumber, hash);
     }
-    await this.saveBestBlocks(this.bestBlocks, tx);
+    await this.saveUnfinalizedBlocks(this.unfinalizedBlocks, tx);
   }
 
-  async deleteFinalizedBlock(tx) {
+  async deleteFinalizedBlock(tx: Transaction): Promise<void> {
     if (
       this.lastCheckedBlockHeight !== undefined &&
       this.lastCheckedBlockHeight <
@@ -78,23 +83,24 @@ export class BestBlockService {
         this.finalizedBlock.block.header.number.toNumber(),
         tx,
       );
-      await this.saveBestBlocks(this.bestBlocks, tx);
+      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks, tx);
     }
     this.lastCheckedBlockHeight =
       this.finalizedBlock.block.header.number.toNumber();
   }
 
-  storeBestBlock(blockNumber: number, hash: HexString) {
-    this.bestBlocks[blockNumber] = hash;
+  storeUnfinalizedBlock(blockNumber: number, hash: HexString): void {
+    this.unfinalizedBlocks[blockNumber] = hash;
   }
-  private async saveBestBlocks(
-    bestBlocks: Record<number, HexString>,
+
+  private async saveUnfinalizedBlocks(
+    unfinalizedBlocks: Record<number, HexString>,
     tx: Transaction,
   ): Promise<void> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert(
-      { key: METADATA_BESTBLOCKS_KEY, value: JSON.stringify(bestBlocks) },
-      { transaction: tx },
+    return this.setMetadata(
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+      JSON.stringify(unfinalizedBlocks),
+      tx,
     );
   }
 
@@ -102,18 +108,14 @@ export class BestBlockService {
     height: number,
     tx: Transaction,
   ) {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert(
-      { key: METADATA_LAST_FINALIZED_PROCESSED_KEY, value: height },
-      { transaction: tx },
-    );
+    return this.setMetadata(METADATA_LAST_FINALIZED_PROCESSED_KEY, height, tx);
   }
 
   // remove any records less and equal than input finalized blockHeight
   removeFinalized(blockHeight: number): void {
-    Object.entries(this.bestBlocks).map(([bestBlockHeight, hash]) => {
+    Object.entries(this.unfinalizedBlocks).map(([bestBlockHeight, hash]) => {
       if (Number(bestBlockHeight) <= blockHeight) {
-        delete this.bestBlocks[bestBlockHeight];
+        delete this.unfinalizedBlocks[bestBlockHeight];
       }
     });
   }
@@ -123,8 +125,8 @@ export class BestBlockService {
     blockHeight: number,
   ): { blockHeight: number; hash: HexString } | undefined {
     // Have the block in the best block, can be verified
-    if (Object.keys(this.bestBlocks).length !== 0) {
-      const record = Object.entries(this.bestBlocks)
+    if (Object.keys(this.unfinalizedBlocks).length !== 0) {
+      const record = Object.entries(this.unfinalizedBlocks)
         .sort(([bestBlockA], [bestBlockB]) => {
           return Number(bestBlockB) - Number(bestBlockA);
         })
@@ -166,7 +168,7 @@ export class BestBlockService {
   }
 
   async getLastCorrectBestBlock(): Promise<number | undefined> {
-    const bestVerifiableBlocks = Object.entries(this.bestBlocks)
+    const bestVerifiableBlocks = Object.entries(this.unfinalizedBlocks)
       .sort(([bestBlockA], [bestBlockB]) => {
         return Number(bestBlockB) - Number(bestBlockA);
       })
@@ -182,5 +184,23 @@ export class BestBlockService {
       }
     }
     return this.lastCheckedBlockHeight;
+  }
+
+  async resetUnfinalizedBlocks(tx: Transaction): Promise<void> {
+    await this.setMetadata(METADATA_UNFINALIZED_BLOCKS_KEY, '{}', tx);
+    this.unfinalizedBlocks = {};
+  }
+
+  async resetLastFinalizedVerifiedHeight(tx: Transaction): Promise<void> {
+    return this.setMetadata(METADATA_LAST_FINALIZED_PROCESSED_KEY, null, tx);
+  }
+
+  private async setMetadata(
+    key: string,
+    value: string | number | boolean,
+    tx: Transaction,
+  ): Promise<void> {
+    assert(this.metaDataRepo, `Model _metadata does not exist`);
+    await this.metaDataRepo.upsert({ key, value }, { transaction: tx });
   }
 }

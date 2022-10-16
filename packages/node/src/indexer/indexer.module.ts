@@ -3,21 +3,16 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  DbModule,
-  StoreService,
-  PoiService,
-  MmrService,
-} from '@subql/node-core';
+import { StoreService, PoiService, MmrService } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { BestBlockService } from './bestBlock.service';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({
@@ -44,7 +39,7 @@ import { WorkerService } from './worker/worker.service';
     MmrService,
     ProjectService,
     WorkerService,
-    BestBlockService,
+    UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService],
 })
