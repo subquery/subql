@@ -83,9 +83,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (retries > 0) {
       try {
         const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
-        if (argv['hot-schema']) {
+        if (!argv['disable-hot-schema']) {
           await builder.watchSchema(this.schemaListener.bind(this));
         }
+        logger.info('Hot schema reload disabled');
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
