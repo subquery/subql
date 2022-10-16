@@ -25,7 +25,6 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
-import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -41,7 +40,6 @@ const { version: packageVersion } = require('../../package.json');
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('Project');
-const { argv } = yargsOptions;
 
 type BestBlocks = Record<number, HexString>;
 
@@ -51,7 +49,6 @@ export class ProjectService {
   private metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
-  private _startBestBlocks: BestBlocks;
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
@@ -81,10 +78,6 @@ export class ProjectService {
 
   get startHeight(): number {
     return this._startHeight;
-  }
-
-  get startBestBlocks(): BestBlocks {
-    return this._startBestBlocks;
   }
 
   get isHistorical(): boolean {
@@ -133,27 +126,30 @@ export class ProjectService {
       }
     }
 
-    // bestBlocks
-    const startBestBlocks = await this.getMetadataUnfinalizedBlocks();
+    await this.resumeUnfinalizedBlocks();
+  }
+
+  private async resumeUnfinalizedBlocks(): Promise<void> {
+    // unfinalized blocks
+    const startUnfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     const lastFinalizedVerifiedHeight =
       await this.getLastFinalizedVerifiedHeight();
     if (this.nodeConfig.unfinalizedBlocks) {
-      this._startBestBlocks = startBestBlocks ?? {};
       this.unfinalizedBlockService.init(
         this.metadataRepo,
-        this.startBestBlocks,
+        startUnfinalizedBlocks ?? {},
         lastFinalizedVerifiedHeight,
       );
     } else {
-      // Has previous indexed with bestBlocks, but discontinue to use best block in this run
+      // Has previous indexed with unfinalized blocks, but it is no longer enabled
       if (
-        (startBestBlocks !== undefined &&
-          Object.entries(startBestBlocks).length !== 0) ||
+        (startUnfinalizedBlocks !== undefined &&
+          Object.entries(startUnfinalizedBlocks).length !== 0) ||
         lastFinalizedVerifiedHeight !== null
       ) {
         if (lastFinalizedVerifiedHeight < this._startHeight) {
           logger.info(
-            `Found un-finalized block from previous indexing but unverified, discontinued fetch from un-finalized in this run will require to rollback to last finalized block ${lastFinalizedVerifiedHeight} `,
+            `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${lastFinalizedVerifiedHeight} `,
           );
           await this.reindex(lastFinalizedVerifiedHeight);
           this._startHeight = lastFinalizedVerifiedHeight;
@@ -161,7 +157,7 @@ export class ProjectService {
             `Successful rewind to block ${lastFinalizedVerifiedHeight} !`,
           );
         } else {
-          // if finalized block haven't been process yet, then remove best blocks from both metadata and memory
+          // if finalized block haven't been processed yet, then remove unfinalized blocks from both metadata and memory
           const transaction = await this.sequelize.transaction();
           await this.unfinalizedBlockService.resetUnfinalizedBlocks(
             transaction,

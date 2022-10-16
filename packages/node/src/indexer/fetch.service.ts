@@ -87,8 +87,6 @@ function callFilterToQueryEntry(
   };
 }
 
-const { argv } = yargsOptions;
-
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;

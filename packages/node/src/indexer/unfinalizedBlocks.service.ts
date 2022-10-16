@@ -43,10 +43,6 @@ export class UnfinalizedBlocksService {
     return this.unfinalizedBlocks[number];
   }
 
-  // resetUnfinalizedBlocks(): void {
-  //   this.unfinalizedBlocks = {};
-  // }
-
   registerFinalizedBlock(block: SignedBlock): void {
     if (
       this.finalizedBlock &&
