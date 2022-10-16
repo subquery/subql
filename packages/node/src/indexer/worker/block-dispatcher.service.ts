@@ -366,7 +366,7 @@ export class WorkerBlockDispatcherService
   ): Promise<void> {
     if (this.nodeConfig.unfinalizedBlocks) {
       throw new Error(
-        'Sorry, best block feature is not support with workers yet.',
+        'Sorry, best block feature is not supported with workers yet.',
       );
     }
 
