@@ -4,21 +4,19 @@
 import fs from 'fs';
 import path from 'path';
 import { Injectable } from '@nestjs/common';
-import { AnyTuple } from '@polkadot/types-codec/types';
 import {
+  EthereumHandlerKind,
   isCustomDs,
-  SubstrateCustomDataSource,
-  SubstrateDataSource,
-  SubstrateDatasourceProcessor,
-  SubstrateNetworkFilter,
-} from '@subql/common-substrate';
+  SubqlEthereumCustomDataSource,
+  SubqlEthereumDataSource,
+  SubqlDatasourceProcessor,
+} from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
-  SubstrateCustomDatasource,
-  SubstrateHandlerKind,
-} from '@subql/types';
+  SubqlCustomDatasource,
+} from '@subql/types-ethereum';
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -33,45 +31,42 @@ export interface DsPluginSandboxOption {
 const logger = getLogger('ds-sandbox');
 
 export function isSecondLayerHandlerProcessor_0_0_0<
-  K extends SubstrateHandlerKind,
+  K extends EthereumHandlerKind,
   F,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlCustomDatasource = SubqlEthereumCustomDataSource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
-): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): processor is SecondLayerHandlerProcessor_0_0_0<K, F, E, DS> {
   // Exisiting datasource processors had no concept of specVersion, therefore undefined is equivalent to 0.0.0
   return processor.specVersion === undefined;
 }
 
 export function isSecondLayerHandlerProcessor_1_0_0<
-  K extends SubstrateHandlerKind,
+  K extends EthereumHandlerKind,
   F,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlEthereumCustomDataSource = SubqlEthereumCustomDataSource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
-): processor is SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): processor is SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
   return processor.specVersion === '1.0.0';
 }
 
 export function asSecondLayerHandlerProcessor_1_0_0<
-  K extends SubstrateHandlerKind,
+  K extends EthereumHandlerKind,
   F,
   E,
-  IT extends AnyTuple = AnyTuple,
-  DS extends SubstrateCustomDatasource = SubstrateCustomDatasource,
+  DS extends SubqlEthereumCustomDataSource = SubqlEthereumCustomDataSource,
 >(
   processor:
-    | SecondLayerHandlerProcessor_0_0_0<K, F, E, IT, DS>
-    | SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS>,
-): SecondLayerHandlerProcessor_1_0_0<K, F, E, IT, DS> {
+    | SecondLayerHandlerProcessor_0_0_0<K, F, E, DS>
+    | SecondLayerHandlerProcessor_1_0_0<K, F, E, DS>,
+): SecondLayerHandlerProcessor_1_0_0<K, F, E, DS> {
   if (isSecondLayerHandlerProcessor_1_0_0(processor)) {
     return processor;
   }
@@ -104,10 +99,7 @@ export class DsPluginSandbox extends Sandbox {
     this.freeze(logger, 'logger');
   }
 
-  getDsPlugin<
-    D extends string,
-    T extends SubstrateNetworkFilter,
-  >(): SubstrateDatasourceProcessor<D, T> {
+  getDsPlugin<D extends string>(): SubqlDatasourceProcessor<D, unknown> {
     return this.run(this.script);
   }
 }
@@ -115,15 +107,12 @@ export class DsPluginSandbox extends Sandbox {
 @Injectable()
 export class DsProcessorService {
   private processorCache: {
-    [entry: string]: SubstrateDatasourceProcessor<
-      string,
-      SubstrateNetworkFilter
-    >;
+    [entry: string]: SubqlDatasourceProcessor<string, unknown>;
   } = {};
   constructor(private project: SubqueryProject) {}
 
   async validateCustomDs(
-    datasources: SubstrateCustomDataSource[],
+    datasources: SubqlEthereumCustomDataSource[],
   ): Promise<void> {
     for (const ds of datasources) {
       const processor = this.getDsProcessor(ds);
@@ -157,13 +146,15 @@ export class DsProcessorService {
 
   async validateProjectCustomDatasources(): Promise<void> {
     await this.validateCustomDs(
-      (this.project.dataSources as SubstrateDataSource[]).filter(isCustomDs),
+      (this.project.dataSources as SubqlEthereumDataSource[]).filter(
+        isCustomDs,
+      ),
     );
   }
 
-  getDsProcessor<D extends string, T extends SubstrateNetworkFilter>(
-    ds: SubstrateCustomDataSource<string, T>,
-  ): SubstrateDatasourceProcessor<D, T> {
+  getDsProcessor<D extends string>(
+    ds: SubqlEthereumCustomDataSource<string>,
+  ): SubqlDatasourceProcessor<D, unknown> {
     if (!isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);
     }
@@ -174,20 +165,20 @@ export class DsProcessorService {
         script: null /* TODO get working with Readers, same as with sandbox */,
       });
       try {
-        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D, T>();
+        this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();
       } catch (e) {
-        logger.error(e, `not supported ds @${ds.kind}`);
+        logger.error(`not supported ds @${ds.kind}`);
         throw e;
       }
     }
     return this.processorCache[
       ds.processor.file
-    ] as unknown as SubstrateDatasourceProcessor<D, T>;
+    ] as unknown as SubqlDatasourceProcessor<D, unknown>;
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async getAssets(
-    ds: SubstrateCustomDataSource,
+    ds: SubqlEthereumCustomDataSource,
   ): Promise<Record<string, string>> {
     if (!isCustomDs(ds)) {
       throw new Error(`data source is not a custom data source`);

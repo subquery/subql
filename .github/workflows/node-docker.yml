@@ -42,7 +42,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }}
+          tags: onfinality/subql-node-ethereum:v${{ steps.get-node-version.outputs.NODE_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Build and push
@@ -52,7 +52,7 @@ jobs:
           push: true
           platforms: arm64,amd64
           file: ./packages/node/Dockerfile
-          tags: onfinality/subql-node:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node:latest
+          tags: onfinality/subql-node-ethereum:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node-ethereum:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
       - name: Image digest

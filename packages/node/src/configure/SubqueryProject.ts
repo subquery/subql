@@ -10,15 +10,12 @@ import {
   validateSemver,
 } from '@subql/common';
 import {
-  SubstrateProjectNetworkConfig,
-  parseSubstrateProjectManifest,
-  ProjectManifestV0_2_0Impl,
-  ProjectManifestV0_2_1Impl,
-  ProjectManifestV0_3_0Impl,
-  SubstrateDataSource,
+  EthereumProjectNetworkConfig,
+  parseEthereumProjectManifest,
+  SubqlEthereumDataSource,
   FileType,
   ProjectManifestV1_0_0Impl,
-} from '@subql/common-substrate';
+} from '@subql/common-ethereum';
 import { buildSchemaFromString } from '@subql/utils';
 import { GraphQLSchema } from 'graphql';
 import {
@@ -27,8 +24,8 @@ import {
   updateDataSourcesV0_2_0,
 } from '../utils/project';
 
-export type SubqlProjectDs = SubstrateDataSource & {
-  mapping: SubstrateDataSource['mapping'] & { entryScript: string };
+export type SubqlProjectDs = SubqlEthereumDataSource & {
+  mapping: SubqlEthereumDataSource['mapping'] & { entryScript: string };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -42,7 +39,7 @@ const NOT_SUPPORT = (name: string) => () => {
 export class SubqueryProject {
   id: string;
   root: string;
-  network: Partial<SubstrateProjectNetworkConfig>;
+  network: Partial<EthereumProjectNetworkConfig>;
   dataSources: SubqlProjectDs[];
   schema: GraphQLSchema;
   templates: SubqlProjectDsTemplate[];
@@ -51,7 +48,7 @@ export class SubqueryProject {
 
   static async create(
     path: string,
-    networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+    networkOverrides?: Partial<EthereumProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
@@ -61,32 +58,17 @@ export class SubqueryProject {
     if (projectSchema === undefined) {
       throw new Error(`Get manifest from project path ${path} failed`);
     }
+    const manifest = parseEthereumProjectManifest(projectSchema);
 
-    const manifest = parseSubstrateProjectManifest(projectSchema);
-
-    if (manifest.isV0_0_1) {
-      NOT_SUPPORT('0.0.1');
-    } else if (manifest.isV0_2_0 || manifest.isV0_3_0) {
-      return loadProjectFromManifestBase(
-        manifest.asV0_2_0,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV0_2_1) {
-      return loadProjectFromManifest0_2_1(
-        manifest.asV0_2_1,
-        reader,
-        path,
-        networkOverrides,
-      );
-    } else if (manifest.isV1_0_0) {
+    if (manifest.isV1_0_0) {
       return loadProjectFromManifest1_0_0(
         manifest.asV1_0_0,
         reader,
         path,
         networkOverrides,
       );
+    } else {
+      NOT_SUPPORT(manifest.specVersion);
     }
   }
 }
@@ -108,17 +90,13 @@ function processChainId(network: any): SubqueryProjectNetwork {
   return network;
 }
 
-type SUPPORT_MANIFEST =
-  | ProjectManifestV0_2_0Impl
-  | ProjectManifestV0_2_1Impl
-  | ProjectManifestV0_3_0Impl
-  | ProjectManifestV1_0_0Impl;
+type SUPPORT_MANIFEST = ProjectManifestV1_0_0Impl;
 
 async function loadProjectFromManifestBase(
   projectManifest: SUPPORT_MANIFEST,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<EthereumProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const root = await getProjectRoot(reader);
 
@@ -163,33 +141,16 @@ async function loadProjectFromManifestBase(
   };
 }
 
-async function loadProjectFromManifest0_2_1(
-  projectManifest: ProjectManifestV0_2_1Impl,
-  reader: Reader,
-  path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
-): Promise<SubqueryProject> {
-  const project = await loadProjectFromManifestBase(
-    projectManifest,
-    reader,
-    path,
-    networkOverrides,
-  );
-  project.templates = await loadProjectTemplates(
-    projectManifest,
-    project.root,
-    reader,
-  );
-  return project;
-}
-
-const { version: packageVersion } = require('../../package.json');
+const {
+  name: packageName,
+  version: packageVersion,
+} = require('../../package.json');
 
 async function loadProjectFromManifest1_0_0(
   projectManifest: ProjectManifestV1_0_0Impl,
   reader: Reader,
   path: string,
-  networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  networkOverrides?: Partial<EthereumProjectNetworkConfig>,
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
     projectManifest,
@@ -197,34 +158,16 @@ async function loadProjectFromManifest1_0_0(
     path,
     networkOverrides,
   );
-  project.templates = await loadProjectTemplates(
-    projectManifest,
-    project.root,
-    reader,
-  );
   project.runner = projectManifest.runner;
+  if (packageName !== project.runner.node.name) {
+    throw new Error(
+      `Runner requires ${project.runner.node.name}, current node ${packageName}`,
+    );
+  }
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
     );
   }
   return project;
-}
-
-async function loadProjectTemplates(
-  projectManifest: ProjectManifestV0_2_1Impl | ProjectManifestV1_0_0Impl,
-  root: string,
-  reader: Reader,
-): Promise<SubqlProjectDsTemplate[]> {
-  if (projectManifest.templates && projectManifest.templates.length !== 0) {
-    const dsTemplates = await updateDataSourcesV0_2_0(
-      projectManifest.templates,
-      reader,
-      root,
-    );
-    return dsTemplates.map((ds, index) => ({
-      ...ds,
-      name: projectManifest.templates[index].name,
-    }));
-  }
 }

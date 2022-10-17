@@ -22,7 +22,7 @@ jobs:
   Bump-Prerelease-Publish:
     name: Bump-Prerelease-Publish
     needs: pre-ci
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql'"
+    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'subquery/subql-ethereum'"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -36,49 +36,19 @@ jobs:
           node-version: 16
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-types
+        id: changed-types-ethereum
         with:
           paths: packages/types
 
       - uses: marceloprado/has-changed-path@v1
-        id: changed-common
+        id: changed-common-ethereum
         with:
-          paths: packages/common
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-common-substrate
-        with:
-          paths: packages/common-substrate
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-cli
-        with:
-          paths: packages/cli
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-node-core
-        with:
-          paths: packages/node-core
+          paths: packages/common-ethereum
 
       - uses: marceloprado/has-changed-path@v1
         id: changed-node
         with:
           paths: packages/node
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-query
-        with:
-          paths: packages/query
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-utils
-        with:
-          paths: packages/utils
-
-      - uses: marceloprado/has-changed-path@v1
-        id: changed-validator
-        with:
-          paths: packages/validator
 
       - run: yarn
 
@@ -93,32 +63,18 @@ jobs:
           package-path: packages/utils
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump types & deploy
-        if: steps.changed-types.outputs.changed == 'true'
+      - name: Bump types ethereum & deploy
+        if: steps.changed-types-ethereum.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump common & deploy
-        if: steps.changed-common.outputs.changed == 'true'
+      - name: Bump common ethereum & deploy
+        if: steps.changed-common-ethereum.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
-          package-path: packages/common
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump common substrate & deploy
-        if: steps.changed-common-substrate.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/common-substrate
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump node-core & deploy
-        if: steps.changed-node-core.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/node-core
+          package-path: packages/common-ethereum
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy
@@ -126,27 +82,6 @@ jobs:
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/node
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump query & deploy
-        if: steps.changed-query.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/query
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump validator & deploy
-        if: steps.changed-validator.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/validator
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Bump cli & deploy
-        if: steps.changed-cli.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/cli
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Commit changes

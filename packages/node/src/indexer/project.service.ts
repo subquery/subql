@@ -7,6 +7,7 @@ import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  ApiService,
   MetadataFactory,
   MetadataRepo,
   SubqueryRepo,
@@ -20,8 +21,7 @@ import {
 } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from './api.service';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 
@@ -269,7 +269,8 @@ export class ProjectService {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
         // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
-        (this.project.network.chainId ?? genesisHash) === keyValue.genesisHash,
+        (this.project.network.genesisHash ?? genesisHash) ===
+          keyValue.genesisHash,
         'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
@@ -366,7 +367,7 @@ export class ProjectService {
   }
 
   private getStartBlockFromDataSources() {
-    const startBlocksList = this.getDataSourcesForSpecName().map(
+    const startBlocksList = this.project.dataSources.map(
       (item) => item.startBlock ?? 1,
     );
     if (startBlocksList.length === 0) {
@@ -377,15 +378,6 @@ export class ProjectService {
     } else {
       return Math.min(...startBlocksList);
     }
-  }
-
-  private getDataSourcesForSpecName(): SubqlProjectDs[] {
-    return this.project.dataSources.filter(
-      (ds) =>
-        !ds.filter?.specName ||
-        ds.filter.specName ===
-          this.apiService.getApi().runtimeVersion.specName.toString(),
-    );
   }
 
   private async reindex(targetBlockHeight: number): Promise<void> {

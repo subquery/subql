@@ -30,6 +30,7 @@ export class MetaService {
   private networkMeta: NetworkMetadataPayload;
   private apiConnected: boolean;
   private usingDictionary: boolean;
+  private injectedApiConnected: boolean;
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
   private processedBlockCount: number;
@@ -49,6 +50,7 @@ export class MetaService {
       polkadotSdkVersion,
       processedBlockCount: this.processedBlockCount,
       apiConnected: this.apiConnected,
+      injectedApiConnected: this.injectedApiConnected,
       usingDictionary: this.usingDictionary,
       ...this.networkMeta,
     };

@@ -3,9 +3,13 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
-import { getYargsOption, getLogger, NestLogger } from '@subql/node-core';
+import {
+  ApiService,
+  getYargsOption,
+  getLogger,
+  NestLogger,
+} from '@subql/node-core';
 import { AppModule } from './app.module';
-import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
 import { ProjectService } from './indexer/project.service';
 
