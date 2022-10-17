@@ -9,7 +9,7 @@ const { argv } = yargsOptions;
 // initLogger is imported from true path, to make sure getLogger (or other logger values that relies on logger) isn't initialised
 initLogger(
   argv.debug,
-  argv.outputFormat as 'json' | 'colored',
+  argv.outputFmt as 'json' | 'colored',
   argv.logLevel as string | undefined,
 );
 
