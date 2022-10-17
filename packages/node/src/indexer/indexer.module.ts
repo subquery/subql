@@ -4,7 +4,6 @@
 import { Module } from '@nestjs/common';
 import {
   ApiService,
-  DbModule,
   StoreService,
   PoiService,
   MmrService,
@@ -20,7 +19,6 @@ import { SandboxService } from './sandbox.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     IndexerManager,
     StoreService,

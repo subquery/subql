@@ -18,9 +18,11 @@ import {
   SubqlHandler,
   EthereumHandlerKind,
 } from '@subql/common-ethereum';
+import { StoreService } from '@subql/node-core';
+import { getAllEntitiesRelations } from '@subql/utils';
 import yaml from 'js-yaml';
 import tar from 'tar';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 
 export async function prepareProjectDir(projectPath: string): Promise<string> {
   const stats = fs.statSync(projectPath);
@@ -235,4 +237,13 @@ export async function getProjectRoot(reader: Reader): Promise<string> {
   if (reader instanceof IPFSReader || reader instanceof GithubReader) {
     return makeTempDir();
   }
+}
+
+export async function initDbSchema(
+  project: SubqueryProject,
+  schema: string,
+  storeService: StoreService,
+): Promise<void> {
+  const modelsRelation = getAllEntitiesRelations(project.schema);
+  await storeService.init(modelsRelation, schema);
 }

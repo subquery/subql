@@ -8,9 +8,8 @@ import {
   MmrService,
   StoreService,
   PoiService,
-  getYargsOption,
-  DbModule,
   ApiService,
+  NodeConfig,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApiService } from '../ethereum/api.service.ethereum';
@@ -25,10 +24,8 @@ import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
 } from './worker/block-dispatcher.service';
-const { argv } = getYargsOption();
 
 @Module({
-  imports: [DbModule.forFeature(['Subquery'])],
   providers: [
     StoreService,
     {
@@ -44,10 +41,33 @@ const { argv } = getYargsOption();
     IndexerManager,
     {
       provide: 'IBlockDispatcher',
-      inject: [SubqueryProject, EventEmitter2],
-      useClass: argv.workers
-        ? WorkerBlockDispatcherService
-        : BlockDispatcherService,
+      useFactory: (
+        nodeConfig: NodeConfig,
+        eventEmitter: EventEmitter2,
+        projectService: ProjectService,
+        apiService: ApiService,
+        indexerManager: IndexerManager,
+      ) =>
+        nodeConfig.workers !== undefined
+          ? new WorkerBlockDispatcherService(
+              nodeConfig,
+              eventEmitter,
+              projectService,
+            )
+          : new BlockDispatcherService(
+              apiService,
+              nodeConfig,
+              indexerManager,
+              eventEmitter,
+              projectService,
+            ),
+      inject: [
+        NodeConfig,
+        EventEmitter2,
+        ProjectService,
+        ApiService,
+        IndexerManager,
+      ],
     },
     FetchService,
     BenchmarkService,

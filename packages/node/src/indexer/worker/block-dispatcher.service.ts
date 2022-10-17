@@ -12,15 +12,15 @@ import {
   getLogger,
   NodeConfig,
   IndexerEvent,
+  AutoQueue,
+  Queue,
   Worker,
   delay,
-  getYargsOption,
   profilerWrap,
 } from '@subql/node-core';
 import { EthereumBlockWrapper } from '@subql/types-ethereum';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { AutoQueue, Queue } from '../../utils/autoQueue';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import {
@@ -117,12 +117,10 @@ export class BlockDispatcherService
     this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
-    const { argv } = getYargsOption();
-
     const fetchBlocks = this.apiService.api.fetchBlocks.bind(
       this.apiService.api,
     );
-    if (argv.profiler) {
+    if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         fetchBlocks,
         'EthereumUtil',

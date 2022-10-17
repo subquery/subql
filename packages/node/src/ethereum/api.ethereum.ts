@@ -1,14 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
-import url from 'url';
 import { Interface } from '@ethersproject/abi';
-import { hexDataSlice } from '@ethersproject/bytes';
-import { parse as parseTx } from '@ethersproject/transactions';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
 import {

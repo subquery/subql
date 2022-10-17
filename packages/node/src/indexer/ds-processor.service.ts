@@ -11,7 +11,7 @@ import {
   SubqlEthereumDataSource,
   SubqlDatasourceProcessor,
 } from '@subql/common-ethereum';
-import { getLogger } from '@subql/node-core';
+import { getLogger, NodeConfig, Sandbox } from '@subql/node-core';
 import {
   SecondLayerHandlerProcessor_0_0_0,
   SecondLayerHandlerProcessor_1_0_0,
@@ -20,7 +20,6 @@ import {
 
 import { VMScript } from 'vm2';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { Sandbox } from './sandbox.service';
 
 export interface DsPluginSandboxOption {
   root: string;
@@ -88,13 +87,14 @@ export function asSecondLayerHandlerProcessor_1_0_0<
 }
 
 export class DsPluginSandbox extends Sandbox {
-  constructor(option: DsPluginSandboxOption) {
+  constructor(option: DsPluginSandboxOption, nodeConfig: NodeConfig) {
     super(
       option,
       new VMScript(
         `module.exports = require('${option.entry}').default;`,
         path.join(option.root, 'ds_sandbox'),
       ),
+      nodeConfig,
     );
     this.freeze(logger, 'logger');
   }
@@ -109,7 +109,10 @@ export class DsProcessorService {
   private processorCache: {
     [entry: string]: SubqlDatasourceProcessor<string, unknown>;
   } = {};
-  constructor(private project: SubqueryProject) {}
+  constructor(
+    private project: SubqueryProject,
+    private readonly nodeConfig: NodeConfig,
+  ) {}
 
   async validateCustomDs(
     datasources: SubqlEthereumCustomDataSource[],
@@ -159,11 +162,15 @@ export class DsProcessorService {
       throw new Error(`data source is not a custom data source`);
     }
     if (!this.processorCache[ds.processor.file]) {
-      const sandbox = new DsPluginSandbox({
-        root: this.project.root,
-        entry: ds.processor.file,
-        script: null /* TODO get working with Readers, same as with sandbox */,
-      });
+      const sandbox = new DsPluginSandbox(
+        {
+          root: this.project.root,
+          entry: ds.processor.file,
+          script:
+            null /* TODO get working with Readers, same as with sandbox */,
+        },
+        this.nodeConfig,
+      );
       try {
         this.processorCache[ds.processor.file] = sandbox.getDsPlugin<D>();
       } catch (e) {

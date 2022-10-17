@@ -8,7 +8,6 @@ import {
   ReadyService,
   HealthController,
   HealthService,
-  MmrQueryController,
 } from '@subql/node-core';
 import {
   makeGaugeProvider,

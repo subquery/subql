@@ -182,6 +182,17 @@ export interface SubqlDatasourceProcessor<
   handlerProcessors: P;
 }
 
+// export interface DictionaryQueryCondition {
+//   field: string;
+//   value: string;
+//   matcher?: string; // defaults to "equalTo", use "contains" for JSON
+// }
+
+// export interface DictionaryQueryEntry {
+//   entity: string;
+//   conditions: DictionaryQueryCondition[];
+// }
+
 interface SecondLayerHandlerProcessorBase<
   K extends EthereumHandlerKind,
   F,

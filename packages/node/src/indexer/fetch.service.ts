@@ -11,11 +11,11 @@ import {
 } from '@subql/common-ethereum';
 import {
   ApiService,
+  Dictionary,
   delay,
   checkMemoryUsage,
   NodeConfig,
   IndexerEvent,
-  getYargsOption,
   getLogger,
 } from '@subql/node-core';
 import {
@@ -28,8 +28,7 @@ import { range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval } from '../ethereum/utils.ethereum';
 import { eventToTopic, functionToSighash } from '../utils/string';
-import { Dictionary, DictionaryService } from './dictionary.service';
-import { DsProcessorService } from './ds-processor.service';
+import { DictionaryService } from './dictionary.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
@@ -39,8 +38,6 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
-
-const { argv } = getYargsOption();
 
 function eventFilterToQueryEntry(
   filter: EthereumLogFilter,
@@ -217,8 +214,8 @@ export class FetchService implements OnApplicationShutdown {
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
-    if (argv['scale-batch-size']) {
-      const scale = checkMemoryUsage(this.batchSizeScale);
+    if (this.nodeConfig['scale-batch-size']) {
+      const scale = checkMemoryUsage(this.batchSizeScale, this.nodeConfig);
 
       if (this.batchSizeScale !== scale) {
         this.batchSizeScale = scale;
@@ -402,7 +399,9 @@ export class FetchService implements OnApplicationShutdown {
     startBlockHeight: number,
   ): boolean {
     if (metaData.genesisHash !== this.api.getGenesisHash()) {
-      logger.warn(`Dictionary is disabled since now`);
+      logger.error(
+        'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
+      );
       this.useDictionary = false;
       this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
         value: Number(this.useDictionary),

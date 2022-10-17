@@ -32,7 +32,7 @@ export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
   name: string;
 };
 
-const NOT_SUPPORT = (name: string) => () => {
+const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name}() is not supported`);
 };
 
