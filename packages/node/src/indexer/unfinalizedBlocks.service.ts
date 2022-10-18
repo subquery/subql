@@ -9,6 +9,7 @@ import { HexString } from '@polkadot/util/types';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { Transaction } from 'sequelize';
 import { ApiService } from './api.service';
+import { BestBlocks } from './types';
 
 const logger = getLogger('bestBlock');
 
@@ -18,7 +19,7 @@ export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
 
 @Injectable()
 export class UnfinalizedBlocksService {
-  private unfinalizedBlocks: Record<number, HexString> = {};
+  private unfinalizedBlocks: BestBlocks = {};
   private finalizedBlock: SignedBlock;
   private metaDataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
@@ -154,7 +155,7 @@ export class UnfinalizedBlocksService {
         ).toHex();
         if (actualHash !== lastVerifiableBlock.hash) {
           logger.warn(
-            `Block folk found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.hash}, actual hash is ${actualHash} `,
+            `Block fork found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.hash}, actual hash is ${actualHash} `,
           );
           return false;
         }
@@ -163,7 +164,7 @@ export class UnfinalizedBlocksService {
     return true;
   }
 
-  async getLastCorrectBestBlock(): Promise<number | undefined> {
+  async getLastCorrectFinalizedBlock(): Promise<number | undefined> {
     const bestVerifiableBlocks = Object.entries(this.unfinalizedBlocks)
       .sort(([bestBlockA], [bestBlockB]) => {
         return Number(bestBlockB) - Number(bestBlockA);
