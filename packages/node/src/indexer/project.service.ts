@@ -5,7 +5,6 @@ import assert from 'assert';
 import { isMainThread } from 'worker_threads';
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { HexString } from '@polkadot/util/types';
 import {
   MetadataFactory,
   MetadataRepo,
@@ -25,9 +24,11 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
+import { reindex } from '../utils/reindex';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { BestBlocks } from './types';
 import {
   METADATA_LAST_FINALIZED_PROCESSED_KEY,
   METADATA_UNFINALIZED_BLOCKS_KEY,
@@ -40,8 +41,6 @@ const { version: packageVersion } = require('../../package.json');
 const DEFAULT_DB_SCHEMA = 'public';
 
 const logger = getLogger('Project');
-
-type BestBlocks = Record<number, HexString>;
 
 @Injectable()
 export class ProjectService {
@@ -306,29 +305,27 @@ export class ProjectService {
 
   //string should be jsonb object
   async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: METADATA_UNFINALIZED_BLOCKS_KEY },
-    });
-    if (res) {
-      return JSON.parse(res.value as string) as BestBlocks;
+    const val = await getMetaDataInfo<string>(
+      this.metadataRepo,
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+    );
+    if (val) {
+      return JSON.parse(val) as BestBlocks;
     }
     return undefined;
   }
 
   async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: METADATA_LAST_FINALIZED_PROCESSED_KEY },
-    });
-
-    return res?.value as number | undefined;
+    return getMetaDataInfo(
+      this.metadataRepo,
+      METADATA_LAST_FINALIZED_PROCESSED_KEY,
+    );
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async getMetadataBlockOffset(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   async getLastProcessedHeight(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
@@ -396,36 +393,17 @@ export class ProjectService {
 
   async reindex(targetBlockHeight: number): Promise<void> {
     const lastProcessedHeight = await this.getLastProcessedHeight();
-    if (!this.storeService.historical) {
-      logger.warn('Unable to reindex, historical state not enabled');
-      return;
-    }
-    if (!lastProcessedHeight || lastProcessedHeight < targetBlockHeight) {
-      logger.warn(
-        `Skipping reindexing to block ${targetBlockHeight}: current indexing height ${lastProcessedHeight} is behind requested block`,
-      );
-      return;
-    }
-    // we don't need to consider metadata `lastFinalizedVerifiedHeight`,
-    // as when reindex always equal to lastFinalizedVerifiedHeight
-    const transaction = await this.sequelize.transaction();
-    try {
-      await Promise.all([
-        this.storeService.rewind(targetBlockHeight, transaction),
-        this.unfinalizedBlockService.resetUnfinalizedBlocks(transaction),
-        this.unfinalizedBlockService.resetLastFinalizedVerifiedHeight(
-          transaction,
-        ),
-      ]);
-      const blockOffset = await this.getMetadataBlockOffset();
-      if (blockOffset) {
-        await this.mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
-      }
-      await transaction.commit();
-    } catch (err) {
-      logger.error(err, 'Reindexing failed');
-      await transaction.rollback();
-      throw err;
-    }
+
+    return reindex(
+      await this.getStartHeight(),
+      await this.getMetadataBlockOffset(),
+      targetBlockHeight,
+      lastProcessedHeight,
+      this.storeService,
+      this.unfinalizedBlockService,
+      this.mmrService,
+      this.sequelize,
+      /* Not providing force clean service, it should never be needed */
+    );
   }
 }
