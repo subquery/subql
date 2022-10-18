@@ -18,7 +18,7 @@ export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
 
 @Injectable()
 export class UnfinalizedBlocksService {
-  private unfinalizedBlocks: Record<number, HexString>;
+  private unfinalizedBlocks: Record<number, HexString> = {};
   private finalizedBlock: SignedBlock;
   private metaDataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
@@ -138,7 +138,7 @@ export class UnfinalizedBlocksService {
   }
 
   // verify best blocks with finalized block
-  async validateBestBlocks(): Promise<boolean> {
+  async validateUnfinalizedBlocks(): Promise<boolean> {
     const finalizedBlockNumber =
       this.finalizedBlock.block.header.number.toNumber();
     const lastVerifiableBlock = this.getClosestRecord(finalizedBlockNumber);
