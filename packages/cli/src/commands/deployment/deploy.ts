@@ -34,17 +34,17 @@ export default class Deploy extends Command {
     dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: false}),
     //indexer set up flags
-    unsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    batchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
-    indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
-    historicalData: Flags.boolean({description: 'Enable Historical Data', required: false}),
-    workers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
+    indexer_unsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    indexer_batchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
+    indexer_subscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
+    indexer_historicalData: Flags.boolean({description: 'Enable Historical Data', required: false}),
+    indexer_workers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
     //query flags
-    queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
-    querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
-    queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
-    maxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
-    Aggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
+    query_unsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    query_subscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
+    query_timeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
+    query_maxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
+    query_aggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
 
     useDefaults: Flags.boolean({
       char: 'd',
@@ -81,18 +81,18 @@ export default class Deploy extends Command {
     }
 
     const queryAD = {
-      unsafe: flags.queryUnsafe,
-      subscription: flags.querySubscription,
-      queryTimeout: flags.queryTimeout,
-      maxConnection: flags.maxConnection,
-      Aggregate: flags.Aggregate,
+      unsafe: flags.query_unsafe,
+      subscription: flags.query_subscription,
+      queryTimeout: flags.query_timeout,
+      maxConnection: flags.query_maxConnection,
+      Aggregate: flags.query_aggregate,
     };
     const indexerAD = {
-      unsafe: flags.unsafe,
-      batchSize: flags.batchSize,
-      subscription: flags.indexerSubscription,
-      historicalData: flags.historicalData,
-      workers: flags.workers,
+      unsafe: flags.indexer_unsafe,
+      batchSize: flags.indexer_batchSize,
+      subscription: flags.indexer_subscription,
+      historicalData: flags.indexer_historicalData,
+      workers: flags.indexer_workers,
     };
 
     if (!dict) {

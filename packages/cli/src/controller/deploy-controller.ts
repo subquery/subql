@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {DeploymentDataType, ProjectDataType, ValidateDataType} from '../types';
+import {DeploymentDataType, indexerAD, ProjectDataType, queryAD, ValidateDataType} from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
 export async function deployToHostedService(
@@ -15,8 +15,8 @@ export async function deployToHostedService(
   endpoint: string,
   type: string,
   dictEndpoint: string,
-  query: object,
-  indexer: object,
+  query: queryAD,
+  indexer: indexerAD,
   url: string
 ): Promise<DeploymentDataType> {
   try {
