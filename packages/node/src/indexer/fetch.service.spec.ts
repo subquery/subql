@@ -372,12 +372,15 @@ describe('FetchService', () => {
       batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    (fetchService as any).bestBlockService.registerFinalizedBlock(
+    (fetchService as any).unfinalizedBlocksService.registerFinalizedBlock(
       1000,
       '0xabcd',
     );
     (fetchService as any).latestBestHeight = 1020;
-    (fetchService as any).bestBlockService.storeBestBlock(1020, '0x1234');
+    (fetchService as any).unfinalizedBlocksService.storeBestBlock(
+      1020,
+      '0x1234',
+    );
     const end = await (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
   });

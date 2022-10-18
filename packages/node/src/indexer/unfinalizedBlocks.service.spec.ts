@@ -107,12 +107,22 @@ describe('UnfinalizedBlocksService', () => {
     unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x120abc');
     // unfinalizedBlocksService.registerFinalizedBlock({block:{header:{toNumber: 110}}} as unknown as SignedBlock)
     unfinalizedBlocksService.removeFinalized(90);
-    expect((unfinalizedBlocksService as any).bestBlocks[100]).toBeDefined();
-    expect((unfinalizedBlocksService as any).bestBlocks[80]).toBeUndefined();
-    expect((unfinalizedBlocksService as any).bestBlocks[50]).toBeUndefined();
+    expect(
+      (unfinalizedBlocksService as any).unfinalizedBlocks[100],
+    ).toBeDefined();
+    expect(
+      (unfinalizedBlocksService as any).unfinalizedBlocks[80],
+    ).toBeUndefined();
+    expect(
+      (unfinalizedBlocksService as any).unfinalizedBlocks[50],
+    ).toBeUndefined();
     unfinalizedBlocksService.removeFinalized(150);
-    expect((unfinalizedBlocksService as any).bestBlocks[100]).toBeUndefined();
-    expect((unfinalizedBlocksService as any).bestBlocks[120]).toBeUndefined();
+    expect(
+      (unfinalizedBlocksService as any).unfinalizedBlocks[100],
+    ).toBeUndefined();
+    expect(
+      (unfinalizedBlocksService as any).unfinalizedBlocks[120],
+    ).toBeUndefined();
 
     // unfinalizedBlocksService.getClosestRecord()
   });
@@ -127,14 +137,14 @@ describe('UnfinalizedBlocksService', () => {
       hash: { toHex: () => '0x100abc' },
     } as unknown as SignedBlock);
     await expect(
-      unfinalizedBlocksService.validateBestBlocks(),
+      unfinalizedBlocksService.validateUnfinalizedBlocks(),
     ).resolves.toBeTruthy();
     unfinalizedBlocksService.registerFinalizedBlock({
       block: { header: { number: { toNumber: () => 120 } } },
       hash: { toHex: () => '0x120xyz' },
     } as unknown as SignedBlock);
     await expect(
-      unfinalizedBlocksService.validateBestBlocks(),
+      unfinalizedBlocksService.validateUnfinalizedBlocks(),
     ).resolves.toBeFalsy();
     // unfinalizedBlocksService.getClosestRecord()
   });
@@ -149,7 +159,7 @@ describe('UnfinalizedBlocksService', () => {
       hash: { toHex: () => '0x100abc' },
     } as unknown as SignedBlock);
     await expect(
-      unfinalizedBlocksService.validateBestBlocks(),
+      unfinalizedBlocksService.validateUnfinalizedBlocks(),
     ).resolves.toBeTruthy();
   });
 
@@ -162,7 +172,7 @@ describe('UnfinalizedBlocksService', () => {
     } as unknown as SignedBlock);
     // blockHash mocked value is `0x123456`
     await expect(
-      unfinalizedBlocksService.validateBestBlocks(),
+      unfinalizedBlocksService.validateUnfinalizedBlocks(),
     ).resolves.toBeFalsy();
     expect(unfinalizedBlocksService.unfinalizedBlock(120)).toBeUndefined();
   });
