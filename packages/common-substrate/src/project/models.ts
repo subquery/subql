@@ -42,6 +42,9 @@ export class BlockFilter implements SubstrateBlockFilter {
   @IsOptional()
   @IsInt()
   modulo?: number;
+  @IsOptional()
+  @IsString()
+  timestamp?: string;
 }
 
 export class EventFilter extends BlockFilter implements SubstrateEventFilter {

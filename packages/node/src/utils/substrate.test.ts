@@ -2,7 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { fetchBlocks } from './substrate';
+import Cron from 'cron-converter';
+import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
+import { fetchBlocks, filterBlock } from './substrate';
 
 const endpoint = 'wss://polkadot.api.onfinality.io/public-ws';
 
@@ -27,6 +29,45 @@ describe('substrate utils', () => {
       expect(block).toHaveProperty('extrinsics');
       expect(block).toHaveProperty('events');
     }
+  });
+
+  it('filters blocks based on timestamp', async () => {
+    const cronString = '*/5 * * * *';
+    const cron = new Cron();
+    try {
+      cron.fromString(cronString);
+    } catch (e) {
+      throw new Error(`invalid cron expression: ${cronString}`);
+    }
+    const blocks = await fetchBlocks(api, 100000, 100100);
+    const reference = blocks[0].block.timestamp;
+    const schedule = cron.schedule(reference);
+    const filter: SubqlProjectBlockFilter = {
+      timestamp: cronString,
+      cronSchedule: {
+        schedule: schedule,
+        get next() {
+          return Date.parse(this.schedule.next().format());
+        },
+      },
+    };
+    const filteredBlocks = blocks.filter((block) => {
+      return filterBlock(block.block, filter) !== undefined;
+    });
+
+    expect(filteredBlocks).toHaveLength(2);
+  });
+
+  it('invalid timestamp throws error on cron creation', () => {
+    const cronString = 'invalid cron';
+    const cron = new Cron();
+    expect(() => {
+      try {
+        cron.fromString(cronString);
+      } catch (e) {
+        throw new Error(`invalid cron expression: ${cronString}`);
+      }
+    }).toThrow(Error);
   });
 
   it.skip('when failed to fetch, log block height and re-throw error', async () => {

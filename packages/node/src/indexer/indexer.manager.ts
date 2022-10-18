@@ -33,7 +33,11 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  generateTimestampReferenceForBlockFilters,
+  SubqlProjectDs,
+  SubqueryProject,
+} from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -176,11 +180,13 @@ export class IndexerManager {
 
   async start(): Promise<void> {
     await this.projectService.init();
+    logger.info('indexer manager started');
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
     let filteredDs: SubqlProjectDs[];
-    filteredDs = this.project.dataSources.filter(
+
+    filteredDs = this.projectService.dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
 

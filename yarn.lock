@@ -3801,6 +3801,7 @@ __metadata:
     "@types/yargs": ^16.0.4
     "@willsoto/nestjs-prometheus": ^4.4.0
     app-module-path: ^2.2.0
+    cron-converter: ^1.0.2
     dayjs: ^1.10.7
     dotenv: ^15.0.1
     eventemitter2: ^6.4.5
@@ -4165,6 +4166,15 @@ __metadata:
   version: 2.8.12
   resolution: "@types/cors@npm:2.8.12"
   checksum: 8c45f112c7d1d2d831b4b266f2e6ed33a1887a35dcbfe2a18b28370751fababb7cd045e745ef84a523c33a25932678097bf79afaa367c6cb3fa0daa7a6438257
+  languageName: node
+  linkType: hard
+
+"@types/cron-converter@npm:^1":
+  version: 1.0.1
+  resolution: "@types/cron-converter@npm:1.0.1"
+  dependencies:
+    moment: ">=2.14.0"
+  checksum: 93a0a81d44a12d7cc748e124e459037349863ecf10c47316c7693e96367c735fe463afb2bd22f82c5bdb2679e67f247dfca71403d3e4df0bee2d24b63698004a
   languageName: node
   linkType: hard
 
@@ -7173,6 +7183,16 @@ __metadata:
   version: 1.1.1
   resolution: "create-require@npm:1.1.1"
   checksum: a9a1503d4390d8b59ad86f4607de7870b39cad43d929813599a23714831e81c520bddf61bcdd1f8e30f05fd3a2b71ae8538e946eb2786dc65c2bbc520f692eff
+  languageName: node
+  linkType: hard
+
+"cron-converter@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "cron-converter@npm:1.0.2"
+  dependencies:
+    moment-timezone: ~0.5
+    sprintf-js: ~1
+  checksum: 7bbd01f29a6fc5a8a8c8dabda3a6468b7040acd374beadbf103d6c86f9e85c961a0937cfa2a997e4bfcdcd6bd07cde658a3009b899130e69e6c9ceb5f0a82ac3
   languageName: node
   linkType: hard
 
@@ -12463,10 +12483,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"moment-timezone@npm:~0.5":
+  version: 0.5.37
+  resolution: "moment-timezone@npm:0.5.37"
+  dependencies:
+    moment: ">= 2.9.0"
+  checksum: b3fc24848a396ee3801331a4b5511591df0e22241e59f55200a475603f23a8429f01887294c7a0c005dae25b8e4bef20472fbc875ff20080f26fded066559f1a
+  languageName: node
+  linkType: hard
+
 "moment@npm:>= 2.9.0, moment@npm:^2.29.1":
   version: 2.29.3
   resolution: "moment@npm:2.29.3"
   checksum: 2e780e36d9a1823c08a1b6313cbb08bd01ecbb2a9062095820a34f42c878991ccba53abaa6abb103fd5c01e763724f295162a8c50b7e95b4f1c992ef0772d3f0
+  languageName: node
+  linkType: hard
+
+"moment@npm:>=2.14.0":
+  version: 2.29.4
+  resolution: "moment@npm:2.29.4"
+  checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e
   languageName: node
   linkType: hard
 
@@ -15331,6 +15367,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sprintf-js@npm:~1":
+  version: 1.1.2
+  resolution: "sprintf-js@npm:1.1.2"
+  checksum: d4bb46464632b335e5faed381bd331157e0af64915a98ede833452663bc672823db49d7531c32d58798e85236581fb7342fd0270531ffc8f914e186187bf1c90
+  languageName: node
+  linkType: hard
+
 "sprintf-js@npm:~1.0.2":
   version: 1.0.3
   resolution: "sprintf-js@npm:1.0.3"
@@ -15615,6 +15658,7 @@ __metadata:
     "@actions/core": ^1.6.0
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
+    "@types/cron-converter": ^1
     "@types/node": ^14.18.10
     "@typescript-eslint/eslint-plugin": ^5.10.2
     "@typescript-eslint/parser": ^5.10.2
