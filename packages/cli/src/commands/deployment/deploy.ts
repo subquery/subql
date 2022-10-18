@@ -9,13 +9,13 @@ import inquirer from 'inquirer';
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
 import {
   deployToHostedService,
-  ipfsCID_validate,
-  networkEndpoints,
   dictionaryEndpoints,
   imageVersions,
+  ipfsCID_validate,
+  networkEndpoints,
   processEndpoints,
-  redeploy,
   projectsInfo,
+  redeploy,
 } from '../../controller/deploy-controller';
 import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
@@ -33,6 +33,18 @@ export default class Deploy extends Command {
     queryVersion: Flags.string({description: 'Enter query-version', required: false}),
     dict: Flags.string({description: 'Enter dictionary', required: false}),
     endpoint: Flags.string({description: 'Enter endpoint', required: false}),
+    //indexer set up flags
+    unsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    batchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
+    indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
+    historicalData: Flags.boolean({description: 'Enable Historical Data', required: false}),
+    workers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
+    //query flags
+    queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
+    querySubscription: Flags.boolean({description: 'Enable Query subscription', required: false}),
+    queryTimeout: Flags.integer({description: 'Enter timeout from 1000ms to 60000ms', required: false}),
+    maxConnection: Flags.integer({description: 'Enter MaxConnection from 1 to 10', required: false}),
+    Aggregate: Flags.boolean({description: 'Enable Aggregate', required: false}),
 
     useDefaults: Flags.boolean({
       char: 'd',
@@ -67,6 +79,21 @@ export default class Deploy extends Command {
         throw new Error(chalk.red('Please use --endpoint flag when using a custom Endpoint'));
       }
     }
+
+    const queryAD = {
+      unsafe: flags.queryUnsafe,
+      subscription: flags.querySubscription,
+      queryTimeout: flags.queryTimeout,
+      maxConnection: flags.maxConnection,
+      Aggregate: flags.Aggregate,
+    };
+    const indexerAD = {
+      unsafe: flags.unsafe,
+      batchSize: flags.batchSize,
+      subscription: flags.indexerSubscription,
+      historicalData: flags.historicalData,
+      workers: flags.workers,
+    };
 
     if (!dict) {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
@@ -133,6 +160,8 @@ export default class Deploy extends Command {
         dict,
         indexerVersion,
         queryVersion,
+        queryAD,
+        indexerAD,
         ROOT_API_URL_PROD
       );
       this.log(`Project: ${projectName} has been re-deployed`);
@@ -148,10 +177,12 @@ export default class Deploy extends Command {
         endpoint,
         flags.type,
         dict,
+        queryAD,
+        indexerAD,
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
       this.log(`Project: ${deploymentOutput.projectKey}
-      \nStatus: ${chalk.blue(deploymentOutput.status)} 
+      \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}
       \nDeployment Type: ${deploymentOutput.type}
       \nIndexer version: ${deploymentOutput.indexerImage}
@@ -160,6 +191,8 @@ export default class Deploy extends Command {
       \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
       \nQuery URL: ${deploymentOutput.queryUrl}
       \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
+      \nAdvance Setting of Indexer: ${deploymentOutput.configuration.config.indexer}
+      \nAdvance Setting of Query: ${deploymentOutput.configuration.config.query}
       `);
     }
   }
