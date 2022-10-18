@@ -191,8 +191,8 @@ export default class Deploy extends Command {
       \nDictionary Endpoint: ${deploymentOutput.dictEndpoint}
       \nQuery URL: ${deploymentOutput.queryUrl}
       \nProject URL: ${BASE_PROJECT_URL}/project/${deploymentOutput.projectKey}
-      \nAdvance Setting of Indexer: ${deploymentOutput.configuration.config.indexer}
-      \nAdvance Setting of Query: ${deploymentOutput.configuration.config.query}
+      \nAdvanced Settings for Query: ${JSON.stringify(deploymentOutput.configuration.config.query)}
+      \nAdvanced Settings for Indexer: ${JSON.stringify(deploymentOutput.configuration.config.indexer)}
       `);
     }
   }
