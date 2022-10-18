@@ -9,15 +9,15 @@ import inquirer from 'inquirer';
 import {BASE_PROJECT_URL, DEFAULT_DEPLOYMENT_TYPE, ROOT_API_URL_PROD} from '../../constants';
 import {
   deployToHostedService,
-  ipfsCID_validate,
-  networkEndpoints,
   dictionaryEndpoints,
   imageVersions,
+  ipfsCID_validate,
+  networkEndpoints,
   processEndpoints,
-  redeploy,
   projectsInfo,
+  redeploy,
 } from '../../controller/deploy-controller';
-import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
+import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 export default class Deploy extends Command {
@@ -52,6 +52,8 @@ export default class Deploy extends Command {
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
     const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
+    queryVersion = addV(queryVersion);
+    indexerVersion = addV(indexerVersion);
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));
@@ -151,7 +153,7 @@ export default class Deploy extends Command {
         ROOT_API_URL_PROD
       ).catch((e) => this.error(e));
       this.log(`Project: ${deploymentOutput.projectKey}
-      \nStatus: ${chalk.blue(deploymentOutput.status)} 
+      \nStatus: ${chalk.blue(deploymentOutput.status)}
       \nDeploymentID: ${deploymentOutput.id}
       \nDeployment Type: ${deploymentOutput.type}
       \nIndexer version: ${deploymentOutput.indexerImage}
