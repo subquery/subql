@@ -188,7 +188,7 @@ describe('UnfinalizedBlocksService', () => {
       hash: { toHex: () => '0x10abcd' },
     } as unknown as SignedBlock);
     await expect(
-      unfinalizedBlocksService.getLastCorrectBestBlock(),
+      unfinalizedBlocksService.getLastCorrectFinalizedBlock(),
     ).resolves.toBe(40);
   });
 });

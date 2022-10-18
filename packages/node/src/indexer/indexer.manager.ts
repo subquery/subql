@@ -201,10 +201,10 @@ export class IndexerManager {
         block.hash.toHex(),
         tx,
       );
-      if (await this.unfinalizedBlocksService.validateBestBlocks()) {
+      if (await this.unfinalizedBlocksService.validateUnfinalizedBlocks()) {
         await this.unfinalizedBlocksService.deleteFinalizedBlock(tx);
       } else {
-        return this.unfinalizedBlocksService.getLastCorrectBestBlock();
+        return this.unfinalizedBlocksService.getLastCorrectFinalizedBlock();
       }
     }
     return null;
