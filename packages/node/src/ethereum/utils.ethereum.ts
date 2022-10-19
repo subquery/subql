@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getAddress } from '@ethersproject/address';
-import { BigNumber, BigNumberish } from '@ethersproject/bignumber';
+import { BigNumber } from '@ethersproject/bignumber';
 import { Zero } from '@ethersproject/constants';
 import {
   ApiWrapper,
@@ -12,7 +12,6 @@ import {
   EthereumResult,
   EthereumTransaction,
 } from '@subql/types-ethereum';
-import { ethers } from 'ethers';
 
 export function calcInterval(api: ApiWrapper): number {
   // TODO find a way to get this from the blockchain

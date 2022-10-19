@@ -41,9 +41,6 @@ export class ProjectNetworkV0_3_0 extends ProjectNetworkDeploymentV0_3_0 {
   @IsString()
   @IsOptional()
   dictionary?: string;
-  @IsString()
-  @IsOptional()
-  subnet?: string;
 }
 
 export class FileTypeV0_3_0 {

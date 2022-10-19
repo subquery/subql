@@ -5,6 +5,7 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
+import { Web3Provider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
 import {
@@ -15,7 +16,7 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-ethereum';
-import { ethers } from 'ethers';
+import { hexValue } from 'ethers/lib/utils';
 import { EthereumBlockWrapped } from './block.ethereum';
 import {
   formatBlock,
@@ -50,7 +51,7 @@ async function loadAssets(
 }
 
 export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
-  private client: ethers.providers.Web3Provider;
+  private client: Web3Provider;
   private genesisBlock: Record<string, any>;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
@@ -73,10 +74,12 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     if (protocolStr === 'https' || protocolStr === 'http') {
       const options = {
         keepAlive: true,
-        headers: {
-          name: 'User-Agent',
-          value: `Subquery-Node ${packageVersion}`,
-        },
+        headers: [
+          {
+            name: 'User-Agent',
+            value: `Subquery-Node ${packageVersion}`,
+          },
+        ],
         agent: {
           http: httpAgent,
           https: httpsAgent,
@@ -104,12 +107,12 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }
 
-    this.client = new ethers.providers.Web3Provider(provider);
+    this.client = new Web3Provider(provider);
   }
 
   async init(): Promise<void> {
     this.genesisBlock = await this.client.send('eth_getBlockByNumber', [
-      ethers.utils.hexValue(0),
+      hexValue(0),
       true,
     ]);
     logger.info(this.endpoint);
@@ -148,7 +151,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         try {
           // Fetch Block
           const block_promise = await this.client.send('eth_getBlockByNumber', [
-            ethers.utils.hexValue(num),
+            hexValue(num),
             true,
           ]);
 

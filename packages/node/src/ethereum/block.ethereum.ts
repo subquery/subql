@@ -11,7 +11,6 @@ import {
   EthereumBlockWrapper,
   EthereumTransaction,
 } from '@subql/types-ethereum';
-import { ethers } from 'ethers';
 import { flatten } from 'lodash';
 import {
   eventToTopic,
