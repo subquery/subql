@@ -17,7 +17,7 @@ import {
   projectsInfo,
   redeploy,
 } from '../../controller/deploy-controller';
-import {checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
+import {addV, checkToken, promptWithDefaultValues, valueOrPrompt} from '../../utils';
 
 const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
 export default class Deploy extends Command {
@@ -64,6 +64,8 @@ export default class Deploy extends Command {
     ipfsCID = await valueOrPrompt(ipfsCID, 'Enter IPFS CID', 'IPFS CID is required');
 
     const validator = await ipfsCID_validate(ipfsCID, authToken, ROOT_API_URL_PROD);
+    queryVersion = addV(queryVersion);
+    indexerVersion = addV(indexerVersion);
 
     if (!validator.valid) {
       throw new Error(chalk.bgRedBright('Invalid IPFS CID'));

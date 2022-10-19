@@ -21,6 +21,13 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
   }
 }
 
+export function addV(str: string | undefined) {
+  if (str && !str.includes('v')) {
+    return `v${str}`;
+  }
+  return str;
+}
+
 export async function promptWithDefaultValues(
   promptType: Inquirer | typeof ux,
   msg: string,
