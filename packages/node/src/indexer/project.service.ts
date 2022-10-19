@@ -395,7 +395,7 @@ export class ProjectService {
     const lastProcessedHeight = await this.getLastProcessedHeight();
 
     return reindex(
-      await this.getStartHeight(),
+      this.getStartBlockFromDataSources(),
       await this.getMetadataBlockOffset(),
       targetBlockHeight,
       lastProcessedHeight,

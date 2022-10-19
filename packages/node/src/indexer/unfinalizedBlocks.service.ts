@@ -40,6 +40,14 @@ export class UnfinalizedBlocksService {
     return this.apiService.getApi();
   }
 
+  private getSortedUnfinalizedBlocks(): [string, HexString][] {
+    return Object.entries(this.unfinalizedBlocks).sort(
+      ([bestBlockA], [bestBlockB]) => {
+        return Number(bestBlockB) - Number(bestBlockA);
+      },
+    );
+  }
+
   unfinalizedBlock(number: number): HexString {
     return this.unfinalizedBlocks[number];
   }
@@ -123,13 +131,9 @@ export class UnfinalizedBlocksService {
   ): { blockHeight: number; hash: HexString } | undefined {
     // Have the block in the best block, can be verified
     if (Object.keys(this.unfinalizedBlocks).length !== 0) {
-      const record = Object.entries(this.unfinalizedBlocks)
-        .sort(([bestBlockA], [bestBlockB]) => {
-          return Number(bestBlockB) - Number(bestBlockA);
-        })
-        .find(
-          ([bestBlockHeight, hash]) => Number(bestBlockHeight) <= blockHeight,
-        );
+      const record = this.getSortedUnfinalizedBlocks().find(
+        ([bestBlockHeight, hash]) => Number(bestBlockHeight) <= blockHeight,
+      );
       if (record) {
         const [bestBlockHeight, hash] = record;
         return { blockHeight: Number(bestBlockHeight), hash: hash };
@@ -165,21 +169,33 @@ export class UnfinalizedBlocksService {
   }
 
   async getLastCorrectFinalizedBlock(): Promise<number | undefined> {
-    const bestVerifiableBlocks = Object.entries(this.unfinalizedBlocks)
-      .sort(([bestBlockA], [bestBlockB]) => {
-        return Number(bestBlockB) - Number(bestBlockA);
-      })
+    const bestVerifiableBlocks = this.getSortedUnfinalizedBlocks()
       .filter(
         ([bestBlockHeight, hash]) =>
           Number(bestBlockHeight) <=
           this.finalizedBlock.block.header.number.toNumber(),
-      );
+      )
+      .reverse(); // We work backwards from finalized head
+
+    let checkingHeader = this.finalizedBlock.block.header;
+
+    // Work backwards through the blocks until we find a matching hash
     for (const [block, hash] of bestVerifiableBlocks) {
-      const actualHash = await this.api.rpc.chain.getBlockHash(block);
-      if (hash === actualHash.toHex()) {
+      // Should match for index 0
+      if (hash === this.finalizedBlock.block.header.hash.toHex()) {
         return Number(block);
       }
+      // Should match for index 1....n
+      if (hash === checkingHeader.parentHash.toHex()) {
+        return Number(block);
+      }
+
+      // Get the new parent
+      checkingHeader = await this.api.rpc.chain.getHeader(
+        this.finalizedBlock.block.header.parentHash,
+      );
     }
+
     return this.lastCheckedBlockHeight;
   }
 
