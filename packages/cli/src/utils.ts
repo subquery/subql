@@ -22,9 +22,8 @@ export async function valueOrPrompt<T>(value: T, msg: string, error: string): Pr
 }
 
 export function addV(str: string | undefined) {
-  if (!str?.includes('v')) {
-    const res = 'v';
-    return res.concat(str);
+  if (str && !str.includes('v')) {
+    return `v${str}`;
   }
   return str;
 }
