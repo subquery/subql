@@ -11,7 +11,7 @@ import { Transaction } from 'sequelize';
 import { ApiService } from './api.service';
 import { BestBlocks } from './types';
 
-const logger = getLogger('bestBlock');
+const logger = getLogger('UnfinalizedBlocks');
 
 export const METADATA_UNFINALIZED_BLOCKS_KEY = 'unfinalizedBlocks';
 export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
