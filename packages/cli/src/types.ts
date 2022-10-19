@@ -13,6 +13,21 @@ export interface ProjectSpecBase {
   endpoint: string;
 }
 
+export interface QueryAdvancedOpts {
+  unsafe?: boolean | undefined;
+  subscription?: boolean | undefined;
+  queryTimeout?: number | undefined;
+  maxConnection?: number | undefined;
+  Aggregate?: boolean | undefined;
+}
+export interface IndexerAdvancedOpts {
+  unsafe?: boolean | undefined;
+  batchSize?: number | undefined;
+  subscription?: boolean | undefined;
+  historicalData?: boolean | undefined;
+  workers?: number | undefined;
+}
+
 export type ProjectSpecV0_0_1 = ProjectSpecBase;
 
 export interface ProjectSpecV1_0_0 extends ProjectSpecBase {

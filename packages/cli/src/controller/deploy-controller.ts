@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import axios from 'axios';
-import {DeploymentDataType, ProjectDataType, ValidateDataType} from '../types';
+import {DeploymentDataType, IndexerAdvancedOpts, ProjectDataType, QueryAdvancedOpts, ValidateDataType} from '../types';
 import {buildProjectKey, errorHandle} from '../utils';
 
 export async function deployToHostedService(
@@ -15,6 +15,8 @@ export async function deployToHostedService(
   endpoint: string,
   type: string,
   dictEndpoint: string,
+  query: QueryAdvancedOpts,
+  indexer: IndexerAdvancedOpts,
   url: string
 ): Promise<DeploymentDataType> {
   try {
@@ -31,8 +33,8 @@ export async function deployToHostedService(
           dictEndpoint: dictEndpoint,
           endpoint: endpoint,
           advancedSettings: {
-            '@subql/node': {},
-            '@subql/query': {},
+            query: query,
+            indexer: indexer,
           },
           indexerImageVersion: indexerImageVersion,
           queryImageVersion: queryImageVersion,
@@ -149,6 +151,8 @@ export async function redeploy(
   dictEndpoint: string,
   indexerVersion: string,
   queryVersion: string,
+  query: QueryAdvancedOpts,
+  indexer: IndexerAdvancedOpts,
   url: string
 ): Promise<void> {
   try {
@@ -166,8 +170,8 @@ export async function redeploy(
         indexerImageVersion: indexerVersion,
         queryImageVersion: queryVersion,
         advancedSettings: {
-          indexer: {},
-          query: {},
+          query: query,
+          indexer: indexer,
         },
       },
     });
