@@ -163,7 +163,7 @@ describe('UnfinalizedBlocksService', () => {
     ).resolves.toBeTruthy();
   });
 
-  it('and invalid best block will be remove', async () => {
+  it('invalid best block will be removed', async () => {
     unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x100abc');
     unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x120abc');
     unfinalizedBlocksService.registerFinalizedBlock({

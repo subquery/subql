@@ -377,7 +377,7 @@ describe('FetchService', () => {
       '0xabcd',
     );
     (fetchService as any).latestBestHeight = 1020;
-    (fetchService as any).unfinalizedBlocksService.storeBestBlock(
+    (fetchService as any).unfinalizedBlocksService.storeUnfinalizedBlock(
       1020,
       '0x1234',
     );
