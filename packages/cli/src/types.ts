@@ -13,14 +13,14 @@ export interface ProjectSpecBase {
   endpoint: string;
 }
 
-export interface queryAD {
+export interface QueryAdvancedOpts {
   unsafe?: boolean | undefined;
   subscription?: boolean | undefined;
   queryTimeout?: number | undefined;
   maxConnection?: number | undefined;
   Aggregate?: boolean | undefined;
 }
-export interface indexerAD {
+export interface IndexerAdvancedOpts {
   unsafe?: boolean | undefined;
   batchSize?: number | undefined;
   subscription?: boolean | undefined;
