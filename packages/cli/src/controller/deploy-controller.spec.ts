@@ -64,6 +64,8 @@ async function deployTestProject(
     processEndpoints(endpoint, validator.chainId),
     projectSpec.type,
     processEndpoints(dictEndpoint, validator.chainId),
+    {},
+    {},
     url
   );
 }
@@ -188,6 +190,8 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
       processEndpoints(dict, validator.chainId),
       indexerV[0],
       queryV[0],
+      {},
+      {},
       ROOT_API_URL_DEV
     );
     const updatedInfo = await projectsInfo(testAuth, org, projectName, ROOT_API_URL_DEV, type);
