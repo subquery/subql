@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/1.6.5-0 linux-x64 node-v16.17.1
+@subql/cli/1.6.5-1 linux-x64 node-v16.17.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -66,7 +66,7 @@ OPTIONS
   --mode=(production|prod|development|dev)  [default: production]
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -82,7 +82,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/codegen.js)_
 
 ## `subql deployment`
 
@@ -93,21 +93,31 @@ USAGE
   $ subql deployment
 
 OPTIONS
-  -d, --useDefaults                Use default values for indexerVersion, queryVersion, dictionary, endpoint
-  --deploymentID=deploymentID      Enter deployment ID
-  --dict=dict                      Enter dictionary
-  --endpoint=endpoint              Enter endpoint
-  --indexerVersion=indexerVersion  Enter indexer-version
-  --ipfsCID=ipfsCID                Enter IPFS CID
+  -d, --useDefaults                        Use default values for indexerVersion, queryVersion, dictionary, endpoint
+  --deploymentID=deploymentID              Enter deployment ID
+  --dict=dict                              Enter dictionary
+  --endpoint=endpoint                      Enter endpoint
+  --indexerBatchSize=indexerBatchSize      Enter batchSize from 1 to 30
+  --indexerHistoricalData                  Enable Historical Data
+  --indexerSubscription                    Enable Indexer subscription
+  --indexerUnsafe                          Enable indexer unsafe
+  --indexerVersion=indexerVersion          Enter indexer-version
+  --indexerWorkers=indexerWorkers          Enter worker threads from 1 to 30
+  --ipfsCID=ipfsCID                        Enter IPFS CID
   --options=deploy|promote|delete
-  --org=org                        Enter organization name
-  --projectName=projectName        Enter project name
-  --project_name=project_name      Enter project name
-  --queryVersion=queryVersion      Enter query-version
-  --type=(stage|primary)           [default: primary]
+  --org=org                                Enter organization name
+  --projectName=projectName                Enter project name
+  --project_name=project_name              Enter project name
+  --queryAggregate                         Enable Aggregate
+  --queryMaxConnection=queryMaxConnection  Enter MaxConnection from 1 to 10
+  --querySubscription                      Enable Query subscription
+  --queryTimeout=queryTimeout              Enter timeout from 1000ms to 60000ms
+  --queryUnsafe                            Enable indexer unsafe
+  --queryVersion=queryVersion              Enter query-version
+  --type=(stage|primary)                   [default: primary]
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/index.js)_
 
 ## `subql deployment:delete`
 
@@ -123,7 +133,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/delete.js)_
 
 ## `subql deployment:deploy`
 
@@ -134,18 +144,28 @@ USAGE
   $ subql deployment:deploy
 
 OPTIONS
-  -d, --useDefaults                Use default values for indexerVersion, queryVersion, dictionary, endpoint
-  --dict=dict                      Enter dictionary
-  --endpoint=endpoint              Enter endpoint
-  --indexerVersion=indexerVersion  Enter indexer-version
-  --ipfsCID=ipfsCID                Enter IPFS CID
-  --org=org                        Enter organization name
-  --projectName=projectName        Enter project name
-  --queryVersion=queryVersion      Enter query-version
-  --type=(stage|primary)           [default: primary]
+  -d, --useDefaults                        Use default values for indexerVersion, queryVersion, dictionary, endpoint
+  --dict=dict                              Enter dictionary
+  --endpoint=endpoint                      Enter endpoint
+  --indexerBatchSize=indexerBatchSize      Enter batchSize from 1 to 30
+  --indexerHistoricalData                  Enable Historical Data
+  --indexerSubscription                    Enable Indexer subscription
+  --indexerUnsafe                          Enable indexer unsafe
+  --indexerVersion=indexerVersion          Enter indexer-version
+  --indexerWorkers=indexerWorkers          Enter worker threads from 1 to 30
+  --ipfsCID=ipfsCID                        Enter IPFS CID
+  --org=org                                Enter organization name
+  --projectName=projectName                Enter project name
+  --queryAggregate                         Enable Aggregate
+  --queryMaxConnection=queryMaxConnection  Enter MaxConnection from 1 to 10
+  --querySubscription                      Enable Query subscription
+  --queryTimeout=queryTimeout              Enter timeout from 1000ms to 60000ms
+  --queryUnsafe                            Enable indexer unsafe
+  --queryVersion=queryVersion              Enter query-version
+  --type=(stage|primary)                   [default: primary]
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/deploy.js)_
 
 ## `subql deployment:promote`
 
@@ -161,7 +181,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/deployment/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/promote.js)_
 
 ## `subql help [COMMAND]`
 
@@ -198,7 +218,7 @@ OPTIONS
   --npm                    Force using NPM instead of yarn, only works with `install-dependencies` flag
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/init.js)_
 
 ## `subql migrate`
 
@@ -214,7 +234,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/migrate.js)_
 
 ## `subql project`
 
@@ -235,7 +255,7 @@ OPTIONS
   --subtitle=subtitle        Enter subtitle
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -255,7 +275,7 @@ OPTIONS
   --subtitle=subtitle        Enter subtitle
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -270,7 +290,7 @@ OPTIONS
   --projectName=projectName  Enter project name
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -286,7 +306,7 @@ OPTIONS
   --ipfs=ipfs              IPFS gateway endpoint
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -308,6 +328,6 @@ OPTIONS
   --silent
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.6.5-0/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/validate.js)_
 
 <!-- commandsstop -->
