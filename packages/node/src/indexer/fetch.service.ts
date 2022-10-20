@@ -358,9 +358,36 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   runModuloBlocks(startBlockHeight: number, endHeight: number): void {
-    this.blockDispatcher.enqueueBlocks(
-      this.getModuloBlocks(startBlockHeight, endHeight + 1),
+    let scalingEndHeight = endHeight + 1;
+    let modulosBlocks = this.getModuloBlocks(
+      startBlockHeight,
+      scalingEndHeight,
     );
+
+    const largestModulo = Math.max(...this.getModulos());
+    if (largestModulo > this.nodeConfig.batchSize) {
+      scalingEndHeight =
+        Math.round(this.nodeConfig.batchSize * largestModulo) +
+        startBlockHeight;
+      modulosBlocks = this.getModuloBlocks(
+        startBlockHeight,
+        scalingEndHeight,
+      ).slice(0, this.nodeConfig.batchSize);
+    }
+    this.blockDispatcher.enqueueBlocks(modulosBlocks);
+  }
+
+  getDatasources(handlerType: SubstrateHandlerKind): number[] {
+    const checker = this.project.dataSources.map((ds) => {
+      const arr = [];
+      for (const handler of ds.mapping.handlers) {
+        if (handler.kind === handlerType) {
+          arr.push(handler.kind);
+        }
+      }
+      return arr;
+    });
+    return [].concat(...checker);
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -368,12 +395,19 @@ export class FetchService implements OnApplicationShutdown {
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
+    // let scaledEndHeight = 0;
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
         ? this.blockDispatcher.latestBufferedHeight + 1
         : initBlockHeight;
     };
+
+    // const largestModulo = Math.max(...this.getModulos())
+    //
+    // if (largestModulo > this.nodeConfig.batchSize) {
+    //   scaledEndHeight = largestModulo * this.nodeConfig.batchSize
+    // }
 
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
@@ -446,7 +480,10 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (this.getModulos().length > 0) {
+      if (
+        this.getModulos().length ===
+        this.getDatasources(SubstrateHandlerKind.Block).length
+      ) {
         this.runModuloBlocks(startBlockHeight, endHeight);
       } else {
         this.blockDispatcher.enqueueBlocks(
