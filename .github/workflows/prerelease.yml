@@ -56,13 +56,6 @@ jobs:
         run: yarn workspaces foreach run build
 
       #Add remove-stable-version
-      - name: Bump utils & deploy
-        if: steps.changed-utils.outputs.changed == 'true'
-        uses: ./.github/actions/create-prerelease
-        with:
-          package-path: packages/utils
-          npm-token: ${{ secrets.NPM_TOKEN }}
-
       - name: Bump types ethereum & deploy
         if: steps.changed-types-ethereum.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
