@@ -1,9 +1,15 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { SignedBlock } from '@polkadot/types/interfaces';
+import { MetadataRepo } from '@subql/node-core';
+import { SubstrateBlock } from '@subql/types';
 import { ApiService } from './api.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+
+/* Notes:
+ * Block hashes all have the format '0xabc' + block number
+ * If they are forked they will have an `f` at the end
+ */
 
 function mockApiService(): ApiService {
   const mockApi = {
@@ -45,11 +51,18 @@ function mockApiService(): ApiService {
             },
           };
         }),
-        getBlockHash: jest.fn(() => {
+        getBlockHash: (height: number) => {
           return {
-            toHex: jest.fn(() => '0x123456'),
+            toHex: () => `0xabc${height}f`,
           };
-        }),
+        },
+        getHeader: (hash: { toString: () => string }) => {
+          const num = Number(
+            hash.toString().replace('0xabc', '').replace('f', ''),
+          );
+          return mockBlock(num, hash.toString(), `0xabc${num - 1}f`).block
+            .header;
+        },
       },
     },
     on: jest.fn(),
@@ -70,6 +83,43 @@ function mockApiService(): ApiService {
   } as any;
 }
 
+function getMockMetadata(): MetadataRepo {
+  const data: Record<string, any> = {};
+  return {
+    upsert: ({ key, value }) => (data[key] = value),
+  } as any;
+}
+
+function mockBlock(
+  height: number,
+  hash: string,
+  parentHash?: string,
+): SubstrateBlock {
+  const hashType = {
+    toHex: () => hash,
+    toString: () => hash,
+  };
+
+  const parentHashType = parentHash
+    ? {
+        toHex: () => parentHash,
+        toString: () => parentHash,
+      }
+    : undefined;
+  return {
+    hash: hashType,
+    block: {
+      header: {
+        number: {
+          toNumber: () => height,
+        },
+        hash: hashType,
+        parentHash: parentHashType,
+      },
+    },
+  } as unknown as SubstrateBlock;
+}
+
 describe('UnfinalizedBlocksService', () => {
   let apiService: ApiService;
   let unfinalizedBlocksService: UnfinalizedBlocksService;
@@ -77,118 +127,210 @@ describe('UnfinalizedBlocksService', () => {
   beforeEach(() => {
     apiService = mockApiService();
     unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+
+    unfinalizedBlocksService.init(getMockMetadata(), {}, 0);
   });
 
   afterEach(() => {
     (unfinalizedBlocksService as unknown as any).unfinalizedBlocks = {};
   });
 
-  it('can get closest block for finalized', () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(50, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(80, '0x50abcd');
-    expect(unfinalizedBlocksService.getClosestRecord(110).blockHeight).toBe(
-      100,
+  it('can set finalized block', () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    expect((unfinalizedBlocksService as any).finalizedBlockNumber).toBe(110);
+  });
+
+  it('cant set a lower finalized block', () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(99, '0x1234'));
+
+    expect((unfinalizedBlocksService as any).finalizedBlockNumber).toBe(110);
+  });
+
+  it('keeps track of unfinalized blocks', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
     );
-    expect(unfinalizedBlocksService.getClosestRecord(40)).toBeUndefined();
-    expect(unfinalizedBlocksService.getClosestRecord(120).blockHeight).toBe(
-      120,
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
     );
-    expect(unfinalizedBlocksService.getClosestRecord(150).blockHeight).toBe(
-      120,
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({
+      111: '0xabc111',
+      112: '0xabc112',
+    });
+  });
+
+  it('doesnt keep track of finalized blocks', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(120, '0xabc120'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
     );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({});
   });
 
-  it('can remove bestBlock less equal than finalized', () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(50, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(80, '0x80abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x100abc');
-    unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x120abc');
-    // unfinalizedBlocksService.registerFinalizedBlock({block:{header:{toNumber: 110}}} as unknown as SignedBlock)
-    unfinalizedBlocksService.removeFinalized(90);
-    expect(
-      (unfinalizedBlocksService as any).unfinalizedBlocks[100],
-    ).toBeDefined();
-    expect(
-      (unfinalizedBlocksService as any).unfinalizedBlocks[80],
-    ).toBeUndefined();
-    expect(
-      (unfinalizedBlocksService as any).unfinalizedBlocks[50],
-    ).toBeUndefined();
-    unfinalizedBlocksService.removeFinalized(150);
-    expect(
-      (unfinalizedBlocksService as any).unfinalizedBlocks[100],
-    ).toBeUndefined();
-    expect(
-      (unfinalizedBlocksService as any).unfinalizedBlocks[120],
-    ).toBeUndefined();
+  it('can process unfinalized blocks', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
 
-    // unfinalizedBlocksService.getClosestRecord()
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlock(112, '0xabc112', '0xabc111'),
+    );
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({
+      113: '0xabc113',
+    });
   });
 
-  it('can validate best block if finalized block can be found in its record', async () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(50, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(80, '0x80abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x100abc');
-    unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x120abc');
-    unfinalizedBlocksService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 100 } } },
-      hash: { toHex: () => '0x100abc' },
-    } as unknown as SignedBlock);
-    await expect(
-      unfinalizedBlocksService.validateUnfinalizedBlocks(),
-    ).resolves.toBeTruthy();
-    unfinalizedBlocksService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 120 } } },
-      hash: { toHex: () => '0x120xyz' },
-    } as unknown as SignedBlock);
-    await expect(
-      unfinalizedBlocksService.validateUnfinalizedBlocks(),
-    ).resolves.toBeFalsy();
-    // unfinalizedBlocksService.getClosestRecord()
+  it('can handle a fork and rewind to the last finalized height', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlock(112, '0xabc112f', '0xabc111'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(111);
+
+    // After this the call stack is something like:
+    // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
+    await unfinalizedBlocksService.resetUnfinalizedBlocks(null);
+
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({});
   });
 
-  it('can validate best block if finalized block can NOT be found in its record', async () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(50, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(80, '0x80abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x100abc');
-    unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x123456');
-    unfinalizedBlocksService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 150 } } },
-      hash: { toHex: () => '0x100abc' },
-    } as unknown as SignedBlock);
-    await expect(
-      unfinalizedBlocksService.validateUnfinalizedBlocks(),
-    ).resolves.toBeTruthy();
+  it('can handle a fork when some unfinalized blocks are invalid', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(114, '0xabc114'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(115, '0xabc115'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(116, '0xabc116'),
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlock(113, '0xabc113f', '0xabc112'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(117, '0xabc117'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(112);
   });
 
-  it('invalid best block will be removed', async () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(100, '0x100abc');
-    unfinalizedBlocksService.storeUnfinalizedBlock(120, '0x120abc');
-    unfinalizedBlocksService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 150 } } },
-      hash: { toHex: () => '0x100abc' },
-    } as unknown as SignedBlock);
-    // blockHash mocked value is `0x123456`
-    await expect(
-      unfinalizedBlocksService.validateUnfinalizedBlocks(),
-    ).resolves.toBeFalsy();
-    expect(unfinalizedBlocksService.unfinalizedBlock(120)).toBeUndefined();
+  it('can handle a fork when all unfinalized blocks are invalid', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlock(111, '0xabc111f', '0xabc110'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(110);
   });
 
-  it('get last correct best block', async () => {
-    unfinalizedBlocksService.storeUnfinalizedBlock(30, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(40, '0x123456');
-    unfinalizedBlocksService.storeUnfinalizedBlock(50, '0x50abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(80, '0x80abcd');
-    unfinalizedBlocksService.storeUnfinalizedBlock(90, '0x80abcd');
-    unfinalizedBlocksService.registerFinalizedBlock({
-      block: { header: { number: { toNumber: () => 80 } } },
-      hash: { toHex: () => '0x10abcd' },
-    } as unknown as SignedBlock);
-    await expect(
-      unfinalizedBlocksService.getLastCorrectFinalizedBlock(),
-    ).resolves.toBe(40);
+  it('can handle a fork and when unfinalized blocks < finalized head', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlock(120, '0xabc120f', '0xabc119f'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(110);
   });
 });
