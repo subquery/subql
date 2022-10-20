@@ -403,12 +403,6 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
-    // const largestModulo = Math.max(...this.getModulos())
-    //
-    // if (largestModulo > this.nodeConfig.batchSize) {
-    //   scaledEndHeight = largestModulo * this.nodeConfig.batchSize
-    // }
-
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
