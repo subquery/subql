@@ -22,6 +22,7 @@ export async function createProject(
   gitRepository: string,
   description: string,
   apiVersion: string,
+  dedicateDB: string | undefined,
   url: string
 ): Promise<createProjectType> {
   try {
@@ -41,6 +42,7 @@ export async function createProject(
           logoUrl: logoUrl,
           name: project_name,
           subtitle: subtitle,
+          dedicateDBKey: dedicateDB,
         },
       })
     ).data;
