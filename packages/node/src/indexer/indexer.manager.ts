@@ -33,10 +33,7 @@ import {
   SubstrateExtrinsic,
 } from '@subql/types';
 import { Sequelize, Transaction } from 'sequelize';
-import {
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -196,16 +193,7 @@ export class IndexerManager {
     tx: Transaction,
   ): Promise<number | null> {
     if (this.nodeConfig.unfinalizedBlocks) {
-      await this.unfinalizedBlocksService.registerUnfinalizedBlock(
-        block.block.header.number.toNumber(),
-        block.hash.toHex(),
-        tx,
-      );
-      if (await this.unfinalizedBlocksService.validateUnfinalizedBlocks()) {
-        await this.unfinalizedBlocksService.deleteFinalizedBlock(tx);
-      } else {
-        return this.unfinalizedBlocksService.getLastCorrectFinalizedBlock();
-      }
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
     }
     return null;
   }
