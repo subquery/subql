@@ -363,19 +363,6 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  checkHandlers(handlerType: SubstrateHandlerKind): number[] {
-    const checker = this.project.dataSources.map((ds) => {
-      const arr = [];
-      for (const handler of ds.mapping.handlers) {
-        if (handler.kind !== handlerType) {
-          arr.push(handler);
-        }
-      }
-      return arr;
-    });
-    return [].concat(...checker);
-  }
-
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
 
@@ -459,11 +446,7 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (
-        this.getModulos().length > 0
-        // &&
-        // this.checkHandlers(SubstrateHandlerKind.Block).length === 0
-      ) {
+      if (this.getModulos().length > 0) {
         this.runModuloBlocks(startBlockHeight, endHeight);
       } else {
         this.blockDispatcher.enqueueBlocks(
