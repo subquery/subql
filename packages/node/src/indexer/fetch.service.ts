@@ -354,25 +354,26 @@ export class FetchService implements OnApplicationShutdown {
         moduloBlocks.push(i);
       }
     }
-    // console.log(moduloBlocks)
     return moduloBlocks;
   }
 
-  runModuloBlocks(startBlockHeight: number): void {
-    const modulosBatchSize = Math.max(
-      Math.round(this.getModulos()[0] * this.nodeConfig.batchSize),
-      Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
-    );
-    console.log(`modulosBatchSize: ${modulosBatchSize}`);
-    const endHeight = this.nextEndBlockHeight(
-      startBlockHeight,
-      modulosBatchSize,
-    );
-    const moduloBlocks = this.getModuloBlocks(startBlockHeight, endHeight + 1);
-    console.log('modulo: ', moduloBlocks);
+  runModuloBlocks(startBlockHeight: number, endHeight: number): void {
     this.blockDispatcher.enqueueBlocks(
       this.getModuloBlocks(startBlockHeight, endHeight + 1),
     );
+  }
+
+  checkHandlers(handlerType: SubstrateHandlerKind): number[] {
+    const checker = this.project.dataSources.map((ds) => {
+      const arr = [];
+      for (const handler of ds.mapping.handlers) {
+        if (handler.kind !== handlerType) {
+          arr.push(handler);
+        }
+      }
+      return arr;
+    });
+    return [].concat(...checker);
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -394,11 +395,6 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
-      // console.log('scaledBatchSize: ',scaledBatchSize)
-
-      console.log(`free size: ${this.blockDispatcher.freeSize}`);
-      console.log(`scaledBatchSize: ${scaledBatchSize}`);
-
       // this condition batch size is greater than freeSize (hinting the batch has yet been processed)
       // OR
       // when startBlock is greater than latestFinalizedHeight (the HTTPs/WS connection is not synced connected properly)
@@ -409,8 +405,6 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
-
-      // if the project has a dictionary config
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
@@ -463,35 +457,18 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
 
-      // TODO: make sure this check is working,
-      const handlerCheck = this.project.dataSources.map((ds) => {
-        const arr = [];
-        for (const handler of ds.mapping.handlers) {
-          if (handler.kind !== SubstrateHandlerKind.Block) {
-            arr.push(handler);
-          }
-        }
-        return arr;
-      });
-      //
-      console.log('handlers: ', handlerCheck.length);
-      // if !handler event and call
-      // starter project has reliance between handlers
-      // only run this if handler.kind === block and nothing else
-
-      if (this.getModulos().length > 0 && handlerCheck.length === 0) {
-        this.runModuloBlocks(startBlockHeight);
+      if (
+        this.getModulos().length > 0 &&
+        this.checkHandlers(SubstrateHandlerKind.Block).length === 0
+      ) {
+        this.runModuloBlocks(startBlockHeight, endHeight);
       } else {
-        const endHeight = this.nextEndBlockHeight(
-          startBlockHeight,
-          scaledBatchSize,
-        );
-
-        const blocks = range(startBlockHeight, endHeight + 1);
-        console.log('normal: ', blocks.length);
         this.blockDispatcher.enqueueBlocks(
-          // [1,2,3,4]
           range(startBlockHeight, endHeight + 1),
         );
       }
