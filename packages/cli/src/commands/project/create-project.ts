@@ -21,7 +21,7 @@ export default class Create_project extends Command {
     subtitle: Flags.string({description: 'Enter subtitle', default: '', required: false}),
     description: Flags.string({description: 'Enter description', default: '', required: false}),
     apiVersion: Flags.string({description: 'Enter api version', default: '2', required: false}),
-    dedicateDB: Flags.string({description: 'Enter dedicate DataBase', required: false}),
+    dedicatedDB: Flags.string({description: 'Enter dedicated DataBase', required: false}),
   };
 
   async run(): Promise<void> {
@@ -43,7 +43,7 @@ export default class Create_project extends Command {
       gitRepo,
       flags.description,
       flags.apiVersion,
-      flags.dedicateDB,
+      flags.dedicatedDB,
       ROOT_API_URL_PROD
     ).catch((e) => this.error(e));
 
