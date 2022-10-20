@@ -395,9 +395,6 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
-      // this condition batch size is greater than freeSize (hinting the batch has yet been processed)
-      // OR
-      // when startBlock is greater than latestFinalizedHeight (the HTTPs/WS connection is not synced connected properly)
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
@@ -463,8 +460,9 @@ export class FetchService implements OnApplicationShutdown {
       );
 
       if (
-        this.getModulos().length > 0 &&
-        this.checkHandlers(SubstrateHandlerKind.Block).length === 0
+        this.getModulos().length > 0
+        // &&
+        // this.checkHandlers(SubstrateHandlerKind.Block).length === 0
       ) {
         this.runModuloBlocks(startBlockHeight, endHeight);
       } else {
