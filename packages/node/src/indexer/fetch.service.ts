@@ -370,7 +370,9 @@ export class FetchService implements OnApplicationShutdown {
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = this.project.dataSources.map((ds) => ds.mapping.handlers);
+    const handlers = [].concat(
+      ...this.project.dataSources.map((ds) => ds.mapping.handlers),
+    );
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
