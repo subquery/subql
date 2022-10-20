@@ -357,37 +357,12 @@ export class FetchService implements OnApplicationShutdown {
     return moduloBlocks;
   }
 
-  runModuloBlocks(startBlockHeight: number, endHeight: number): void {
-    let scalingEndHeight = endHeight + 1;
-    let modulosBlocks = this.getModuloBlocks(
+  getEnqueuedModuloBlocks(startBlockHeight: number): number[] {
+    return this.getModuloBlocks(
       startBlockHeight,
-      scalingEndHeight,
-    );
-
-    const largestModulo = Math.max(...this.getModulos());
-    if (largestModulo > this.nodeConfig.batchSize) {
-      scalingEndHeight =
-        Math.round(this.nodeConfig.batchSize * largestModulo) +
-        startBlockHeight;
-      modulosBlocks = this.getModuloBlocks(
+      this.nodeConfig.batchSize * Math.max(...this.getModulos()) +
         startBlockHeight,
-        scalingEndHeight,
-      ).slice(0, this.nodeConfig.batchSize);
-    }
-    this.blockDispatcher.enqueueBlocks(modulosBlocks);
-  }
-
-  getDatasources(handlerType: SubstrateHandlerKind): number[] {
-    const checker = this.project.dataSources.map((ds) => {
-      const arr = [];
-      for (const handler of ds.mapping.handlers) {
-        if (handler.kind === handlerType) {
-          arr.push(handler.kind);
-        }
-      }
-      return arr;
-    });
-    return [].concat(...checker);
+    ).slice(0, this.nodeConfig.batchSize);
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
@@ -395,7 +370,7 @@ export class FetchService implements OnApplicationShutdown {
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    // let scaledEndHeight = 0;
+    const handlers = this.project.dataSources.map((ds) => ds.mapping.handlers);
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -474,11 +449,10 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (
-        this.getModulos().length ===
-        this.getDatasources(SubstrateHandlerKind.Block).length
-      ) {
-        this.runModuloBlocks(startBlockHeight, endHeight);
+      if (this.getModulos().length === handlers.length) {
+        this.blockDispatcher.enqueueBlocks(
+          this.getEnqueuedModuloBlocks(startBlockHeight),
+        );
       } else {
         this.blockDispatcher.enqueueBlocks(
           range(startBlockHeight, endHeight + 1),
