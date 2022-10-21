@@ -96,7 +96,7 @@ export class UnfinalizedBlocksService {
         continue;
       }
       // if the distance between finalizedHeader.number.toNumber() and blockToBeVerified.number is very big, we might still chose getHeader
-      if (finalizedHeader.number.toNumber() - blockToBeVerified.number > 200) {
+      if (this.finalizedBlockNumber - blockToBeVerified.number > 200) {
         // blockToBeVerified is 20min ago
         const hash = await this.api.rpc.chain.getBlockHash(
           blockToBeVerified.number,
@@ -105,22 +105,23 @@ export class UnfinalizedBlocksService {
           blockToBeVerified.forked = true;
           finalizedHeader = await this.api.rpc.chain.getHeader(hash);
         }
-      }
-      for (
-        let j = finalizedHeader.number.toNumber();
-        j >= blockToBeVerified.number;
-        j--
-      ) {
-        if (finalizedHeader.number.toNumber() === blockToBeVerified.number) {
-          blockToBeVerified.forked =
-            blockToBeVerified.hash !== finalizedHeader.hash.toHex();
-          if (!blockToBeVerified.forked) {
-            findNoFork = true;
+      } else {
+        for (
+          let j = finalizedHeader.number.toNumber();
+          j >= blockToBeVerified.number;
+          j--
+        ) {
+          if (finalizedHeader.number.toNumber() === blockToBeVerified.number) {
+            blockToBeVerified.forked =
+              blockToBeVerified.hash !== finalizedHeader.hash.toHex();
+            if (!blockToBeVerified.forked) {
+              findNoFork = true;
+            }
+          } else {
+            finalizedHeader = await this.api.rpc.chain.getHeader(
+              finalizedHeader.parentHash,
+            );
           }
-        } else {
-          finalizedHeader = await this.api.rpc.chain.getHeader(
-            finalizedHeader.parentHash,
-          );
         }
       }
     }
