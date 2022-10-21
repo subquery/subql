@@ -293,11 +293,14 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      this.unfinalizedBlocksService.registerFinalizedBlock(finalizedBlock);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const finalizedHeadHash = await this.api.rpc.chain.getFinalizedHead();
+      const finalizedHeader = await this.api.rpc.chain.getHeader(
+        finalizedHeadHash,
+      );
+      await this.unfinalizedBlocksService.registerFinalizedBlock(
+        finalizedHeader,
+      );
+      const currentFinalizedHeight = finalizedHeader.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
         if (!this.nodeConfig.unfinalizedBlocks) {

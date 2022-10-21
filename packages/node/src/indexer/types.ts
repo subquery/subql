@@ -17,5 +17,10 @@ export interface BlockContent {
 }
 
 export type BestBlocks = Record<number, HexString>;
+export type BestBlock = {
+  number: number;
+  hash: HexString;
+  forked: boolean | null;
+};
 
 export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };

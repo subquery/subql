@@ -4,13 +4,13 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
-import { SignedBlock } from '@polkadot/types/interfaces';
+import { Header, SignedBlock } from '@polkadot/types/interfaces';
 import { HexString } from '@polkadot/util/types';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { Transaction } from 'sequelize';
 import { ApiService } from './api.service';
-import { BestBlocks } from './types';
+import { BestBlock, BestBlocks } from './types';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -20,8 +20,8 @@ export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
 
 @Injectable()
 export class UnfinalizedBlocksService {
-  private unfinalizedBlocks: BestBlocks = {};
-  private finalizedBlock: SignedBlock;
+  private unfinalizedBlocks: BestBlock[] = []; // ordered by blockheight asc
+  private finalizedHeader: Header;
   private metaDataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
 
@@ -42,7 +42,7 @@ export class UnfinalizedBlocksService {
   }
 
   private get finalizedBlockNumber(): number {
-    return this.finalizedBlock.block.header.number.toNumber();
+    return this.finalizedHeader.number.toNumber();
   }
 
   private getSortedUnfinalizedBlocks(): [string, HexString][] {
@@ -62,25 +62,57 @@ export class UnfinalizedBlocksService {
       block.hash.toHex(),
       tx,
     );
-    if (!(await this.hasForked())) {
+    if (!this.hasForked()) {
       // Remove blocks that are now confirmed finalized
       await this.deleteFinalizedBlock(tx);
+      return null;
     } else {
       // Get the last unfinalized block that is now finalized
       return this.getLastCorrectFinalizedBlock();
     }
-
-    return null;
   }
 
-  registerFinalizedBlock(block: SignedBlock): void {
+  async registerFinalizedBlock(header: Header): Promise<void> {
     if (
-      this.finalizedBlock &&
-      this.finalizedBlockNumber >= block.block.header.number.toNumber()
+      this.finalizedHeader &&
+      this.finalizedBlockNumber >= header.number.toNumber()
     ) {
       return;
     }
-    this.finalizedBlock = block;
+    this.finalizedHeader = header;
+    // find fork
+    await this.markForkedBlocks();
+    // end
+  }
+
+  private async markForkedBlocks(): Promise<void> {
+    const blocksToBeVerified = this.getClosestRecord(this.finalizedBlockNumber);
+    let finalizedHeader = this.finalizedHeader;
+    let findNoFork = false;
+    for (let i = blocksToBeVerified.length - 1; i >= 0; i--) {
+      const blockToBeVerified = blocksToBeVerified[i];
+      if (findNoFork) {
+        blockToBeVerified.forked = false;
+        continue;
+      }
+      for (
+        let j = finalizedHeader.number.toNumber();
+        j >= blockToBeVerified.number;
+        j--
+      ) {
+        if (finalizedHeader.number.toNumber() === blockToBeVerified.number) {
+          blockToBeVerified.forked =
+            blockToBeVerified.hash !== finalizedHeader.hash.toHex();
+          if (!blockToBeVerified.forked) {
+            findNoFork = true;
+          }
+        } else {
+          finalizedHeader = await this.api.rpc.chain.getHeader(
+            finalizedHeader.parentHash,
+          );
+        }
+      }
+    }
   }
 
   private async registerUnfinalizedBlock(
@@ -94,6 +126,7 @@ export class UnfinalizedBlocksService {
     }
   }
 
+  // delete all blocks that are marked forked:false
   private async deleteFinalizedBlock(tx: Transaction): Promise<void> {
     if (
       this.lastCheckedBlockHeight !== undefined &&
@@ -116,9 +149,7 @@ export class UnfinalizedBlocksService {
   }
 
   // find closest record from block heights
-  private getClosestRecord(
-    blockHeight: number,
-  ): { blockHeight: number; hash: HexString } | undefined {
+  private getClosestRecord(blockHeight: number): BestBlock[] {
     // Have the block in the best block, can be verified
     const record = this.getSortedUnfinalizedBlocks().find(
       ([bestBlockHeight, hash]) => Number(bestBlockHeight) <= blockHeight,
@@ -131,54 +162,16 @@ export class UnfinalizedBlocksService {
   }
 
   // check unfinalized blocks for a fork
-  private async hasForked(): Promise<boolean> {
-    const lastVerifiableBlock = this.getClosestRecord(
-      this.finalizedBlockNumber,
-    );
-
-    // No unfinalized blocks
-    if (!lastVerifiableBlock) {
-      return false;
-    }
-
-    // Unfinalized blocks beyond finalized block
-    if (lastVerifiableBlock.blockHeight === this.finalizedBlockNumber) {
-      return lastVerifiableBlock.hash !== this.finalizedBlock.hash.toHex();
-    } else {
-      // Unfinalized blocks below finalized block
-      const actualHash = (
-        await this.api.rpc.chain.getBlockHash(lastVerifiableBlock.blockHeight)
-      ).toHex();
-      if (actualHash !== lastVerifiableBlock.hash) {
-        logger.warn(
-          `Block fork found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.hash}, actual hash is ${actualHash} `,
-        );
-        return true;
-      }
-    }
+  private hasForked(): boolean {
+    return this.unfinalizedBlocks.findIndex((b) => b.forked) > -1;
   }
 
-  private async getLastCorrectFinalizedBlock(): Promise<number | undefined> {
-    const bestVerifiableBlocks = this.getSortedUnfinalizedBlocks().filter(
-      ([bestBlockHeight, hash]) =>
-        Number(bestBlockHeight) <= this.finalizedBlockNumber,
+  private getLastCorrectFinalizedBlock(): number | undefined {
+    const verifiedNonForks = this.unfinalizedBlocks.filter(
+      (b) => b.forked === false,
     );
-
-    let checkingHeader = this.finalizedBlock.block.header;
-
-    // Work backwards through the blocks until we find a matching hash
-    for (const [block, hash] of bestVerifiableBlocks.reverse()) {
-      if (
-        hash === checkingHeader.hash.toHex() ||
-        hash === checkingHeader.parentHash.toHex()
-      ) {
-        return Number(block);
-      }
-
-      // Get the new parent
-      checkingHeader = await this.api.rpc.chain.getHeader(
-        this.finalizedBlock.block.header.parentHash,
-      );
+    if (verifiedNonForks.length > 0) {
+      return verifiedNonForks[verifiedNonForks.length - 1].number;
     }
 
     return this.lastCheckedBlockHeight;
