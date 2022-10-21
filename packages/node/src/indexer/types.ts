@@ -16,11 +16,10 @@ export interface BlockContent {
   events: SubstrateEvent[];
 }
 
-export type BestBlocks = Record<number, HexString>;
 export type BestBlock = {
   number: number;
   hash: HexString;
-  forked: boolean | null;
+  forked: boolean | undefined;
 };
 
 export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };

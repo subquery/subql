@@ -10,7 +10,7 @@ import { getLogger, MetadataRepo } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { Transaction } from 'sequelize';
 import { ApiService } from './api.service';
-import { BestBlock, BestBlocks } from './types';
+import { BestBlock } from './types';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -95,6 +95,17 @@ export class UnfinalizedBlocksService {
         blockToBeVerified.forked = false;
         continue;
       }
+      // if the distance between finalizedHeader.number.toNumber() and blockToBeVerified.number is very big, we might still chose getHeader
+      if (finalizedHeader.number.toNumber() - blockToBeVerified.number > 200) {
+        // blockToBeVerified is 20min ago
+        const hash = await this.api.rpc.chain.getBlockHash(
+          blockToBeVerified.number,
+        );
+        if (hash.toHex() !== blockToBeVerified.hash) {
+          blockToBeVerified.forked = true;
+          finalizedHeader = await this.api.rpc.chain.getHeader(hash);
+        }
+      }
       for (
         let j = finalizedHeader.number.toNumber();
         j >= blockToBeVerified.number;
@@ -148,22 +159,39 @@ export class UnfinalizedBlocksService {
     });
   }
 
+  // return the continues marked blocks from index0 of this.unfinalizedBlocks
+  // e.g [no,no,unknown,no,yes] will return [no,no]
+  private getMarkedBlocks(): BestBlock[] {
+    // Have the block in the best block, can be verified
+    const firstUnknown = this.unfinalizedBlocks.findIndex(
+      (b) => b.forked === undefined,
+    );
+    if (firstUnknown === 0) {
+      return [];
+    } else if (firstUnknown < 0) {
+      return this.unfinalizedBlocks;
+    } else {
+      // (firstUnknown > 0)
+      return this.unfinalizedBlocks.slice(0, firstUnknown);
+    }
+  }
+
   // find closest record from block heights
+  // TODO: return range of blocks between earlist unmarked block and the block closest to ${blockHeight}
   private getClosestRecord(blockHeight: number): BestBlock[] {
     // Have the block in the best block, can be verified
-    const record = this.getSortedUnfinalizedBlocks().find(
-      ([bestBlockHeight, hash]) => Number(bestBlockHeight) <= blockHeight,
-    );
-    if (record) {
-      const [bestBlockHeight, hash] = record;
-      return { blockHeight: Number(bestBlockHeight), hash };
+    const markedBlocks = this.getMarkedBlocks();
+    const idx = markedBlocks.findIndex((b) => b.number > blockHeight);
+    if (idx <= 0) {
+      return undefined;
+    } else {
+      return markedBlocks.slice(0, idx);
     }
-    return undefined;
   }
 
   // check unfinalized blocks for a fork
   private hasForked(): boolean {
-    return this.unfinalizedBlocks.findIndex((b) => b.forked) > -1;
+    return this.getMarkedBlocks().findIndex((b) => b.forked) > -1;
   }
 
   private getLastCorrectFinalizedBlock(): number | undefined {
