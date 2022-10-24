@@ -8,6 +8,7 @@ import { getLogger, MetadataRepo } from '@subql/node-core';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
+import _ from 'lodash';
 
 const logger = getLogger('dynamic-ds');
 
@@ -94,17 +95,16 @@ export class DynamicDsService {
 
     assert(this.metaDataRepo, `Model _metadata does not exist`);
     await this.metaDataRepo.upsert(
-      { key: METADATA_KEY, value: JSON.stringify([...existing, dsParams]) },
-      { transaction: tx },
+      { key: METADATA_KEY, value: JSON.stringify([...existing, dsParams]) }
     );
   }
 
   private async getDatasource(
     params: DatasourceParams,
   ): Promise<SubqlProjectDs> {
-    const template = this.project.templates.find(
+    const template = _.cloneDeep(this.project.templates.find(
       (t) => t.name === params.templateName,
-    );
+    ));
 
     if (!template) {
       throw new Error(
