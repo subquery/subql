@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Header } from '@polkadot/types/interfaces';
 import { MetadataRepo } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { ApiService } from './api.service';
@@ -120,6 +121,14 @@ function mockBlock(
   } as unknown as SubstrateBlock;
 }
 
+function mockBlockHeader(
+  height: number,
+  hash: string,
+  parentHash?: string,
+): Header {
+  return mockBlock(height, hash, parentHash).block.header;
+}
+
 describe('UnfinalizedBlocksService', () => {
   let apiService: ApiService;
   let unfinalizedBlocksService: UnfinalizedBlocksService;
@@ -136,21 +145,29 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can set finalized block', () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     expect((unfinalizedBlocksService as any).finalizedBlockNumber).toBe(110);
   });
 
   it('cant set a lower finalized block', () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(99, '0x1234'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(99, '0x1234'),
+    );
 
     expect((unfinalizedBlocksService as any).finalizedBlockNumber).toBe(110);
   });
 
   it('keeps track of unfinalized blocks', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -168,7 +185,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('doesnt keep track of finalized blocks', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(120, '0xabc120'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(120, '0xabc120'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -183,7 +202,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can process unfinalized blocks', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -195,7 +216,7 @@ describe('UnfinalizedBlocksService', () => {
     );
 
     unfinalizedBlocksService.registerFinalizedBlock(
-      mockBlock(112, '0xabc112', '0xabc111'),
+      mockBlockHeader(112, '0xabc112', '0xabc111'),
     );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
@@ -209,7 +230,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can handle a fork and rewind to the last finalized height', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -222,7 +245,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // Forked block
     unfinalizedBlocksService.registerFinalizedBlock(
-      mockBlock(112, '0xabc112f', '0xabc111'),
+      mockBlockHeader(112, '0xabc112f', '0xabc111'),
     );
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
@@ -241,7 +264,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can handle a fork when some unfinalized blocks are invalid', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -270,7 +295,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // Forked block
     unfinalizedBlocksService.registerFinalizedBlock(
-      mockBlock(113, '0xabc113f', '0xabc112'),
+      mockBlockHeader(113, '0xabc113f', '0xabc112'),
     );
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
@@ -283,7 +308,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can handle a fork when all unfinalized blocks are invalid', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -296,7 +323,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // Forked block
     unfinalizedBlocksService.registerFinalizedBlock(
-      mockBlock(111, '0xabc111f', '0xabc110'),
+      mockBlockHeader(111, '0xabc111f', '0xabc110'),
     );
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
@@ -309,7 +336,9 @@ describe('UnfinalizedBlocksService', () => {
   });
 
   it('can handle a fork and when unfinalized blocks < finalized head', async () => {
-    unfinalizedBlocksService.registerFinalizedBlock(mockBlock(110, '0xabcd'));
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
@@ -322,7 +351,35 @@ describe('UnfinalizedBlocksService', () => {
 
     // Forked block
     unfinalizedBlocksService.registerFinalizedBlock(
-      mockBlock(120, '0xabc120f', '0xabc119f'),
+      mockBlockHeader(120, '0xabc120f', '0xabc119f'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(110);
+  });
+
+  it('can handle a fork and when unfinalized blocks < finalized head with a large difference', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
+
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(111, '0xabc111'),
+      null,
+    );
+    await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(112, '0xabc112'),
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(1200, '0xabc1200f', '0xabc1199f'),
     );
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(

@@ -4,7 +4,7 @@
 import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
-import { SignedBlock } from '@polkadot/types/interfaces';
+import { Header } from '@polkadot/types/interfaces';
 import { HexString } from '@polkadot/util/types';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
@@ -21,7 +21,7 @@ export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
 @Injectable()
 export class UnfinalizedBlocksService {
   private unfinalizedBlocks: BestBlocks = {};
-  private finalizedBlock: SignedBlock;
+  private finalizedHeader: Header;
   private metaDataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
 
@@ -42,7 +42,7 @@ export class UnfinalizedBlocksService {
   }
 
   private get finalizedBlockNumber(): number {
-    return this.finalizedBlock.block.header.number.toNumber();
+    return this.finalizedHeader.number.toNumber();
   }
 
   private getSortedUnfinalizedBlocks(): [string, HexString][] {
@@ -73,14 +73,14 @@ export class UnfinalizedBlocksService {
     return null;
   }
 
-  registerFinalizedBlock(block: SignedBlock): void {
+  registerFinalizedBlock(header: Header): void {
     if (
-      this.finalizedBlock &&
-      this.finalizedBlockNumber >= block.block.header.number.toNumber()
+      this.finalizedHeader &&
+      this.finalizedBlockNumber >= header.number.toNumber()
     ) {
       return;
     }
-    this.finalizedBlock = block;
+    this.finalizedHeader = header;
   }
 
   private async registerUnfinalizedBlock(
@@ -143,15 +143,32 @@ export class UnfinalizedBlocksService {
 
     // Unfinalized blocks beyond finalized block
     if (lastVerifiableBlock.blockHeight === this.finalizedBlockNumber) {
-      return lastVerifiableBlock.hash !== this.finalizedBlock.hash.toHex();
+      return lastVerifiableBlock.hash !== this.finalizedHeader.hash.toHex();
     } else {
       // Unfinalized blocks below finalized block
-      const actualHash = (
-        await this.api.rpc.chain.getBlockHash(lastVerifiableBlock.blockHeight)
-      ).toHex();
-      if (actualHash !== lastVerifiableBlock.hash) {
+      let header = this.finalizedHeader;
+      /*
+       * Iterate back through parent hashes until we get the header with the matching height
+       * We use headers here rather than getBlockHash because of potential caching issues on the rpc
+       * If we're off by a large number of blocks we can optimise by getting the block hash directly
+       */
+      if (header.number.toNumber() - lastVerifiableBlock.blockHeight > 200) {
+        const hash = await this.api.rpc.chain.getBlockHash(
+          lastVerifiableBlock.blockHeight,
+        );
+        header = await this.api.rpc.chain.getHeader(hash);
+      } else {
+        while (lastVerifiableBlock.blockHeight !== header.number.toNumber()) {
+          header = await this.api.rpc.chain.getHeader(header.parentHash);
+        }
+      }
+      if (header.hash.toHex() !== lastVerifiableBlock.hash) {
         logger.warn(
-          `Block fork found, enqueued un-finalized block at ${lastVerifiableBlock.blockHeight} with hash ${lastVerifiableBlock.hash}, actual hash is ${actualHash} `,
+          `Block fork found, enqueued un-finalized block at ${
+            lastVerifiableBlock.blockHeight
+          } with hash ${
+            lastVerifiableBlock.hash
+          }, actual hash is ${header.hash.toHex()} `,
         );
         return true;
       }
@@ -164,7 +181,7 @@ export class UnfinalizedBlocksService {
         Number(bestBlockHeight) <= this.finalizedBlockNumber,
     );
 
-    let checkingHeader = this.finalizedBlock.block.header;
+    let checkingHeader = this.finalizedHeader;
 
     // Work backwards through the blocks until we find a matching hash
     for (const [block, hash] of bestVerifiableBlocks.reverse()) {
@@ -177,7 +194,7 @@ export class UnfinalizedBlocksService {
 
       // Get the new parent
       checkingHeader = await this.api.rpc.chain.getHeader(
-        this.finalizedBlock.block.header.parentHash,
+        this.finalizedHeader.parentHash,
       );
     }
 
