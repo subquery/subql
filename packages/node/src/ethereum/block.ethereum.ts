@@ -63,6 +63,7 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
   static filterBlocksProcessor(
     block: EthereumBlock,
     filter: EthereumBlockFilter,
+    address?: string,
   ): boolean {
     if (filter?.modulo && block.number % filter.modulo !== 0) {
       return false;

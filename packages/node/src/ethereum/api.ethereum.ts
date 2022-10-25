@@ -16,7 +16,7 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-ethereum';
-import { hexValue } from 'ethers/lib/utils';
+import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { EthereumBlockWrapped } from './block.ethereum';
 import {
   formatBlock,
@@ -225,6 +225,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   ): Promise<EthereumLog<T> | EthereumLog> {
     try {
       if (!ds?.options?.abi) {
+        logger.warn('No ABI provided for datasource');
         return log;
       }
       const iface = this.buildInterface(ds.options.abi, await loadAssets(ds));
@@ -235,6 +236,29 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     } catch (e) {
       logger.warn(`Failed to parse log data: ${e.message}`);
       return log;
+    }
+  }
+
+  async parseTransaction<T extends EthereumResult = EthereumResult>(
+    transaction: EthereumTransaction,
+    ds: RuntimeDataSourceV0_2_0,
+  ): Promise<EthereumTransaction<T> | EthereumTransaction> {
+    try {
+      if (!ds?.options?.abi) {
+        logger.warn('No ABI provided for datasource');
+        return transaction;
+      }
+      const assets = await loadAssets(ds);
+      const iface = this.buildInterface(ds.options.abi, assets);
+      const func = iface.getFunction(hexDataSlice(transaction.input, 0, 4));
+      const args = iface.decodeFunctionData(func, transaction.input) as T;
+      return {
+        ...transaction,
+        args,
+      };
+    } catch (e) {
+      logger.warn(`Failed to parse transaction data: ${e.message}`);
+      return transaction;
     }
   }
 }

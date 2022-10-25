@@ -35,6 +35,7 @@ import {
 } from '@subql/types-ethereum';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { EthereumApi } from '../ethereum';
 import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
 import { yargsOptions } from '../yargs';
 import {
@@ -51,7 +52,7 @@ const logger = getLogger('indexer');
 
 @Injectable()
 export class IndexerManager {
-  private api: ApiWrapper;
+  private api: EthereumApi;
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
@@ -252,8 +253,14 @@ export class IndexerManager {
     if (isRuntimeDs(ds)) {
       const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
         (h) =>
-          h.kind === kind && FilterTypeMap[kind](data as any, h.filter as any),
+          h.kind === kind &&
+          FilterTypeMap[kind](data as any, h.filter as any, ds.options.address),
       );
+
+      if (!handlers.length) {
+        return;
+      }
+      const parsedData = await DataAbiParser[kind](this.api)(data, ds);
 
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
@@ -262,8 +269,8 @@ export class IndexerManager {
               vm.securedExec.bind(vm),
               'handlerPerformance',
               handler.handler,
-            )(handler.handler, [data])
-          : await vm.securedExec(handler.handler, [data]);
+            )(handler.handler, [parsedData])
+          : await vm.securedExec(handler.handler, [parsedData]);
       }
     } else if (isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(
@@ -293,9 +300,15 @@ export class IndexerManager {
         },
       );
 
+      if (!handlers.length) {
+        return;
+      }
+
+      const parsedData = await DataAbiParser[kind](this.api)(data, ds);
+
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
-        await this.transformAndExecuteCustomDs(ds, vm, handler, data);
+        await this.transformAndExecuteCustomDs(ds, vm, handler, parsedData);
       }
     }
   }
@@ -389,4 +402,11 @@ const FilterTypeMap = {
   [EthereumHandlerKind.Block]: EthereumBlockWrapped.filterBlocksProcessor,
   [EthereumHandlerKind.Event]: EthereumBlockWrapped.filterLogsProcessor,
   [EthereumHandlerKind.Call]: EthereumBlockWrapped.filterTransactionsProcessor,
+};
+
+const DataAbiParser = {
+  [EthereumHandlerKind.Block]: () => (data: EthereumBlock) => data,
+  [EthereumHandlerKind.Event]: (api: EthereumApi) => api.parseLog.bind(api),
+  [EthereumHandlerKind.Call]: (api: EthereumApi) =>
+    api.parseTransaction.bind(api),
 };
