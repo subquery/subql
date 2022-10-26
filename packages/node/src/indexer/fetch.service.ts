@@ -143,20 +143,20 @@ export class FetchService implements OnApplicationShutdown {
 
     // const dataSources: SubqlProjectDs[] = []
 
-    const filterDs: SubqlProjectDs[] = this.project.dataSources.map((ds) => {
-      if (lastProcessedHeight > ds.startBlock) {
-        return ds;
-      }
-    });
-
-    const dataSources = filterDs.filter(
-      (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
-    );
+    const dataSources = this.project.dataSources
+      .map((ds) => {
+        if (lastProcessedHeight > ds.startBlock) {
+          return ds;
+        }
+      })
+      .filter(
+        (ds) =>
+          isRuntimeDataSourceV0_3_0(ds) ||
+          isRuntimeDataSourceV0_2_0(ds) ||
+          !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
+          (ds as RuntimeDataSourceV0_0_1).filter.specName ===
+            this.api.runtimeVersion.specName.toString(),
+      );
 
     for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       const plugin = isCustomDs(ds)
@@ -230,8 +230,11 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
+  updateDictionaryQueryEntries(startBlockHeight: number): void {
+    this.dictionaryQueryEntries =
+      this.getDictionaryQueryEntries(startBlockHeight);
+  }
   updateDictionary(): void {
-    this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
     this.useDictionary =
       !!this.dictionaryQueryEntries?.length &&
       !!this.project.network.dictionary;
@@ -260,6 +263,7 @@ export class FetchService implements OnApplicationShutdown {
 
     await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
+    this.updateDictionaryQueryEntries(startHeight);
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
