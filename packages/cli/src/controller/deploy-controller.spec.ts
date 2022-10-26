@@ -89,6 +89,7 @@ describeIf(!!testAuth, 'CLI deploy, delete, promote', () => {
         repository,
         description,
         apiVersion,
+        undefined,
         ROOT_API_URL_DEV
       );
     } catch (e) {

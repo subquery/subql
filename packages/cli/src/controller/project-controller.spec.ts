@@ -34,6 +34,7 @@ describe('CLI create project and delete project', () => {
       repository,
       description,
       apiVersion,
+      undefined,
       ROOT_API_URL_DEV
     );
     await delay(10);
