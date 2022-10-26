@@ -60,6 +60,7 @@ function sanitizeArgField(input: string): string {
 
 type Filter = {or: any[]};
 
+// this should be the dictionary query?
 function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): [GqlVar[], Filter] {
   const gqlVars: GqlVar[] = [];
   const filter: Filter = {or: []};
@@ -79,6 +80,7 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
         }),
       };
     } else if (i.length === 1) {
+      // recursive
       const v = extractVar(`${entity}_${outerIdx}_0`, i[0]);
       gqlVars.push(v);
       filter.or[outerIdx] = {
@@ -91,6 +93,7 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
   return [gqlVars, filter];
 }
 
+// building a graphql query for the dictionary api
 function buildDictQueryFragment(
   entity: string,
   startBlock: number,
@@ -99,6 +102,13 @@ function buildDictQueryFragment(
   batchSize: number
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
+  // TODO:
+  // should I run a loop to get all startBlocks?
+  // should be a check with lastProcessedBlock if last processed block is
+  // Two parts for it
+  // When creating dictionaryQueries only want active filters/handlers
+  // filter out any handlers that have a future startBlock
+  // knowing when to change the query, when a second datasource starts later
   const node: GqlNode = {
     entity,
     project: [
@@ -127,11 +137,13 @@ export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
+  // this is init dictionary service
   constructor(
     readonly dictionaryEndpoint: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
   ) {
+    // creating an apollo-client to request dictionary (i assume)
     this.client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
       link: new HttpLink({uri: dictionaryEndpoint, fetch}),
@@ -207,6 +219,14 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): GqlQuery {
     // 1. group condition by entity
+
+    // Mapping all the filters implemented on project.yaml
+    // e.g.
+    // {
+    // evmLogs: [{}]
+    // evmTransactions: [{}]
+    // }
+
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
       acc[c.entity] = acc[c.entity] || [];
       acc[c.entity].push(c.conditions);
@@ -221,7 +241,10 @@ export class DictionaryService implements OnApplicationShutdown {
         project: this.metadataKeys,
       },
     ];
+    // e.g.
+    // entity: "evmLogs"
     for (const entity of Object.keys(mapped)) {
+      // building the query for each of the filters set
       const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize);
       nodes.push(node);
       vars.push(...pVars);

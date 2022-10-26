@@ -133,10 +133,23 @@ export class FetchService implements OnApplicationShutdown {
       await this.dynamicDsService.getDynamicDatasources();
   }
 
-  getDictionaryQueryEntries(): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(
+    lastProcessedHeight: number,
+  ): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
-    const dataSources = this.project.dataSources.filter(
+    // this is specVersion check
+    // dataSources contains startBlock
+
+    // const dataSources: SubqlProjectDs[] = []
+
+    const filterDs: SubqlProjectDs[] = this.project.dataSources.map((ds) => {
+      if (lastProcessedHeight > ds.startBlock) {
+        return ds;
+      }
+    });
+
+    const dataSources = filterDs.filter(
       (ds) =>
         isRuntimeDataSourceV0_3_0(ds) ||
         isRuntimeDataSourceV0_2_0(ds) ||
@@ -172,6 +185,7 @@ export class FetchService implements OnApplicationShutdown {
         } else {
           filterList = [handler.filter];
         }
+        // if (
         filterList = filterList.filter((f) => f);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
@@ -368,6 +382,8 @@ export class FetchService implements OnApplicationShutdown {
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
+
+    // check initBlockHeight
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
