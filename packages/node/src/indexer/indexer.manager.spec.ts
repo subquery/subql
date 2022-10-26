@@ -137,7 +137,11 @@ function createIndexerManager(
   const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const mmrService = new MmrService(nodeConfig, sequilize);
-  const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(
+    apiService,
+    nodeConfig,
+    sequilize,
+  );
   const sandboxService = new SandboxService(
     apiService,
     storeService,

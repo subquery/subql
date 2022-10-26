@@ -6,11 +6,16 @@ import { Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { Header } from '@polkadot/types/interfaces';
 import { HexString } from '@polkadot/util/types';
-import { getLogger, MetadataRepo } from '@subql/node-core';
+import {
+  getLogger,
+  getMetaDataInfo,
+  MetadataRepo,
+  NodeConfig,
+} from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
-import { Transaction } from 'sequelize';
+import { last } from 'lodash';
+import { Sequelize, Transaction } from 'sequelize';
 import { ApiService } from './api.service';
-import { BestBlocks } from './types';
 
 const logger = getLogger('UnfinalizedBlocks');
 
@@ -18,23 +23,54 @@ export const METADATA_UNFINALIZED_BLOCKS_KEY = 'unfinalizedBlocks';
 export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
   'lastFinalizedVerifiedHeight';
 
+type UnfinalizedBlocks = [blockHeight: number, blockHash: HexString][];
+
 @Injectable()
 export class UnfinalizedBlocksService {
-  private unfinalizedBlocks: BestBlocks = {};
+  private unfinalizedBlocks: UnfinalizedBlocks;
   private finalizedHeader: Header;
-  private metaDataRepo: MetadataRepo;
+  private metadataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly nodeConfig: NodeConfig,
+    private readonly sequelize: Sequelize,
+  ) {}
 
-  init(
+  async init(
     metadataRepo: MetadataRepo,
-    startUnfinalizedBlocks: Record<number, HexString>,
-    lastFinalizedVerifiedHeight: number,
-  ): void {
-    this.unfinalizedBlocks = startUnfinalizedBlocks;
-    this.lastCheckedBlockHeight = lastFinalizedVerifiedHeight;
-    this.metaDataRepo = metadataRepo;
+    reindex: (targetHeight: number) => Promise<void>,
+  ): Promise<number | undefined> {
+    this.metadataRepo = metadataRepo;
+
+    // unfinalized blocks
+    this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
+    this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
+    this.finalizedHeader = await this.api.rpc.chain.getHeader(
+      await this.api.rpc.chain.getFinalizedHead(),
+    );
+
+    if (!this.nodeConfig.unfinalizedBlocks && this.unfinalizedBlocks.length) {
+      logger.info('Processing unfinalized blocks');
+      // Validate any previously unfinalized blocks
+
+      const tx = await this.sequelize.transaction();
+      const rewindHeight = await this.processUnfinalizedBlocks(null, tx);
+
+      if (rewindHeight !== null) {
+        logger.info(
+          `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight} `,
+        );
+        await reindex(rewindHeight);
+        logger.info(`Successful rewind to block ${rewindHeight} !`);
+        return rewindHeight;
+      } else {
+        await this.resetUnfinalizedBlocks(tx);
+        await this.resetLastFinalizedVerifiedHeight(tx);
+      }
+      await tx.commit();
+    }
   }
 
   private get api(): ApiPromise {
@@ -45,23 +81,18 @@ export class UnfinalizedBlocksService {
     return this.finalizedHeader.number.toNumber();
   }
 
-  private getSortedUnfinalizedBlocks(): [string, HexString][] {
-    return Object.entries(this.unfinalizedBlocks).sort(
-      ([bestBlockA], [bestBlockB]) => {
-        return Number(bestBlockB) - Number(bestBlockA);
-      },
-    );
-  }
-
   async processUnfinalizedBlocks(
-    block: SubstrateBlock,
+    block: SubstrateBlock | undefined,
     tx: Transaction,
   ): Promise<number | null> {
-    await this.registerUnfinalizedBlock(
-      block.block.header.number.toNumber(),
-      block.hash.toHex(),
-      tx,
-    );
+    if (block) {
+      await this.registerUnfinalizedBlock(
+        block.block.header.number.toNumber(),
+        block.hash.toHex(),
+        tx,
+      );
+    }
+
     if (!(await this.hasForked())) {
       // Remove blocks that are now confirmed finalized
       await this.deleteFinalizedBlock(tx);
@@ -88,10 +119,19 @@ export class UnfinalizedBlocksService {
     hash: HexString,
     tx: Transaction,
   ): Promise<void> {
-    if (blockNumber > this.finalizedBlockNumber) {
-      this.unfinalizedBlocks[blockNumber] = hash;
-      await this.saveUnfinalizedBlocks(this.unfinalizedBlocks, tx);
+    if (blockNumber <= this.finalizedBlockNumber) return;
+
+    // Ensure order
+    if (
+      this.unfinalizedBlocks.length &&
+      last(this.unfinalizedBlocks)[0] + 1 !== blockNumber
+    ) {
+      logger.error('Unfinalized block is not sequential');
+      process.exit(1);
     }
+
+    this.unfinalizedBlocks.push([blockNumber, hash]);
+    await this.saveUnfinalizedBlocks(this.unfinalizedBlocks, tx);
   }
 
   private async deleteFinalizedBlock(tx: Transaction): Promise<void> {
@@ -108,11 +148,16 @@ export class UnfinalizedBlocksService {
 
   // remove any records less and equal than input finalized blockHeight
   private removeFinalized(blockHeight: number): void {
-    Object.entries(this.unfinalizedBlocks).map(([bestBlockHeight, hash]) => {
-      if (Number(bestBlockHeight) <= blockHeight) {
-        delete this.unfinalizedBlocks[bestBlockHeight];
-      }
-    });
+    const index = this.unfinalizedBlocks.findIndex(
+      ([height]) => height === blockHeight,
+    );
+
+    if (index !== -1) {
+      this.unfinalizedBlocks = this.unfinalizedBlocks.slice(
+        index + 1, // We don't want to include the blockHeight hence the + 1
+        this.unfinalizedBlocks.length,
+      );
+    }
   }
 
   // find closest record from block heights
@@ -120,9 +165,9 @@ export class UnfinalizedBlocksService {
     blockHeight: number,
   ): { blockHeight: number; hash: HexString } | undefined {
     // Have the block in the best block, can be verified
-    const record = this.getSortedUnfinalizedBlocks().find(
-      ([bestBlockHeight, hash]) => Number(bestBlockHeight) <= blockHeight,
-    );
+    const record = [...this.unfinalizedBlocks] // Copy so we can reverse
+      .reverse() // Reverse the list to find the largest block
+      .find(([bestBlockHeight]) => Number(bestBlockHeight) <= blockHeight);
     if (record) {
       const [bestBlockHeight, hash] = record;
       return { blockHeight: Number(bestBlockHeight), hash };
@@ -162,6 +207,7 @@ export class UnfinalizedBlocksService {
           header = await this.api.rpc.chain.getHeader(header.parentHash);
         }
       }
+
       if (header.hash.toHex() !== lastVerifiableBlock.hash) {
         logger.warn(
           `Block fork found, enqueued un-finalized block at ${
@@ -173,10 +219,12 @@ export class UnfinalizedBlocksService {
         return true;
       }
     }
+
+    return false;
   }
 
   private async getLastCorrectFinalizedBlock(): Promise<number | undefined> {
-    const bestVerifiableBlocks = this.getSortedUnfinalizedBlocks().filter(
+    const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
       ([bestBlockHeight, hash]) =>
         Number(bestBlockHeight) <= this.finalizedBlockNumber,
     );
@@ -202,7 +250,7 @@ export class UnfinalizedBlocksService {
   }
 
   private async saveUnfinalizedBlocks(
-    unfinalizedBlocks: BestBlocks,
+    unfinalizedBlocks: UnfinalizedBlocks,
     tx: Transaction,
   ): Promise<void> {
     return this.setMetadata(
@@ -220,8 +268,8 @@ export class UnfinalizedBlocksService {
   }
 
   async resetUnfinalizedBlocks(tx: Transaction): Promise<void> {
-    await this.setMetadata(METADATA_UNFINALIZED_BLOCKS_KEY, '{}', tx);
-    this.unfinalizedBlocks = {};
+    await this.setMetadata(METADATA_UNFINALIZED_BLOCKS_KEY, '[]', tx);
+    this.unfinalizedBlocks = [];
   }
 
   async resetLastFinalizedVerifiedHeight(tx: Transaction): Promise<void> {
@@ -233,7 +281,26 @@ export class UnfinalizedBlocksService {
     value: string | number | boolean,
     tx: Transaction,
   ): Promise<void> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert({ key, value }, { transaction: tx });
+    assert(this.metadataRepo, `Model _metadata does not exist`);
+    await this.metadataRepo.upsert({ key, value }, { transaction: tx });
+  }
+
+  //string should be jsonb object
+  async getMetadataUnfinalizedBlocks(): Promise<UnfinalizedBlocks> {
+    const val = await getMetaDataInfo<string>(
+      this.metadataRepo,
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+    );
+    if (val) {
+      return JSON.parse(val) as UnfinalizedBlocks;
+    }
+    return [];
+  }
+
+  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
+    return getMetaDataInfo(
+      this.metadataRepo,
+      METADATA_LAST_FINALIZED_PROCESSED_KEY,
+    );
   }
 }

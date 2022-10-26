@@ -53,13 +53,8 @@ export class ReindexService {
 
     this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
 
-    const startUnfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
-    const lastFinalizedVerifiedHeight =
-      await this.getLastFinalizedVerifiedHeight();
-    this.unfinalizedBlocksService.init(
-      this.metadataRepo,
-      startUnfinalizedBlocks ?? {},
-      lastFinalizedVerifiedHeight,
+    this.unfinalizedBlocksService.init(this.metadataRepo, () =>
+      Promise.resolve(),
     );
   }
 
@@ -73,25 +68,6 @@ export class ReindexService {
 
   private async getMetadataBlockOffset(): Promise<number | undefined> {
     return getMetaDataInfo(this.metadataRepo, 'blockOffset');
-  }
-
-  //string should be jsonb object
-  async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
-    const val = await getMetaDataInfo<string>(
-      this.metadataRepo,
-      METADATA_UNFINALIZED_BLOCKS_KEY,
-    );
-    if (val) {
-      return JSON.parse(val) as BestBlocks;
-    }
-    return undefined;
-  }
-
-  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(
-      this.metadataRepo,
-      METADATA_LAST_FINALIZED_PROCESSED_KEY,
-    );
   }
 
   private async getMetadataSpecName(): Promise<string | undefined> {
@@ -138,7 +114,7 @@ export class ReindexService {
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,
-      this.unfinalizedBlocksService, // TODO
+      this.unfinalizedBlocksService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,

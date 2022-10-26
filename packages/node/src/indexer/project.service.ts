@@ -125,48 +125,13 @@ export class ProjectService {
       }
     }
 
-    await this.resumeUnfinalizedBlocks();
-  }
+    const reindexedTo = await this.unfinalizedBlockService.init(
+      this.metadataRepo,
+      this.reindex,
+    );
 
-  private async resumeUnfinalizedBlocks(): Promise<void> {
-    // unfinalized blocks
-    const startUnfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
-    const lastFinalizedVerifiedHeight =
-      await this.getLastFinalizedVerifiedHeight();
-    if (this.nodeConfig.unfinalizedBlocks) {
-      this.unfinalizedBlockService.init(
-        this.metadataRepo,
-        startUnfinalizedBlocks ?? {},
-        lastFinalizedVerifiedHeight,
-      );
-    } else {
-      // Has previous indexed with unfinalized blocks, but it is no longer enabled
-      if (
-        (startUnfinalizedBlocks !== undefined &&
-          Object.entries(startUnfinalizedBlocks).length !== 0) ||
-        lastFinalizedVerifiedHeight !== null
-      ) {
-        if (lastFinalizedVerifiedHeight < this._startHeight) {
-          logger.info(
-            `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${lastFinalizedVerifiedHeight} `,
-          );
-          await this.reindex(lastFinalizedVerifiedHeight);
-          this._startHeight = lastFinalizedVerifiedHeight;
-          logger.info(
-            `Successful rewind to block ${lastFinalizedVerifiedHeight} !`,
-          );
-        } else {
-          // if finalized block haven't been processed yet, then remove unfinalized blocks from both metadata and memory
-          const transaction = await this.sequelize.transaction();
-          await this.unfinalizedBlockService.resetUnfinalizedBlocks(
-            transaction,
-          );
-          await this.unfinalizedBlockService.resetLastFinalizedVerifiedHeight(
-            transaction,
-          );
-          await transaction.commit();
-        }
-      }
+    if (reindexedTo !== undefined) {
+      this._startHeight = reindexedTo;
     }
   }
 

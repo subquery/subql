@@ -283,13 +283,17 @@ function createFetchService(
   const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   const projectService = {} as unknown as ProjectService;
-  const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
     subquery: '',
     subqueryName: '',
     batchSize,
   });
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(
+    apiService,
+    nodeConfig,
+    null,
+  );
   const eventEmitter = new EventEmitter2();
 
   return new FetchService(
@@ -475,7 +479,11 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -562,7 +570,11 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -644,7 +656,11 @@ describe('FetchService', () => {
       batchSize,
     });
     const projectService = {} as unknown as ProjectService;
-    const unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,

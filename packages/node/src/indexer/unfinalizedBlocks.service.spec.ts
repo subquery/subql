@@ -5,7 +5,11 @@ import { Header } from '@polkadot/types/interfaces';
 import { MetadataRepo } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { ApiService } from './api.service';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
+import {
+  METADATA_LAST_FINALIZED_PROCESSED_KEY,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 /* Notes:
  * Block hashes all have the format '0xabc' + block number
@@ -38,7 +42,7 @@ function mockApiService(): ApiService {
         }),
       },
       chain: {
-        getFinalizedHead: jest.fn(() => `0x112344`),
+        getFinalizedHead: jest.fn(() => `0xabc91f`),
         getBlock: jest.fn(() => {
           return {
             block: {
@@ -88,6 +92,7 @@ function getMockMetadata(): MetadataRepo {
   const data: Record<string, any> = {};
   return {
     upsert: ({ key, value }) => (data[key] = value),
+    findOne: ({ where: { key } }) => ({ value: data[key] }),
   } as any;
 }
 
@@ -135,9 +140,13 @@ describe('UnfinalizedBlocksService', () => {
 
   beforeEach(() => {
     apiService = mockApiService();
-    unfinalizedBlocksService = new UnfinalizedBlocksService(apiService);
+    unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      { unfinalizedBlocks: true } as any,
+      null,
+    );
 
-    unfinalizedBlocksService.init(getMockMetadata(), {}, 0);
+    unfinalizedBlocksService.init(getMockMetadata(), () => Promise.resolve());
   });
 
   afterEach(() => {
@@ -178,10 +187,10 @@ describe('UnfinalizedBlocksService', () => {
       null,
     );
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({
-      111: '0xabc111',
-      112: '0xabc112',
-    });
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
+      [111, '0xabc111'],
+      [112, '0xabc112'],
+    ]);
   });
 
   it('doesnt keep track of finalized blocks', async () => {
@@ -198,7 +207,7 @@ describe('UnfinalizedBlocksService', () => {
       null,
     );
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({});
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
   });
 
   it('can process unfinalized blocks', async () => {
@@ -224,9 +233,9 @@ describe('UnfinalizedBlocksService', () => {
       null,
     );
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({
-      113: '0xabc113',
-    });
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
+      [113, '0xabc113'],
+    ]);
   });
 
   it('can handle a fork and rewind to the last finalized height', async () => {
@@ -260,7 +269,7 @@ describe('UnfinalizedBlocksService', () => {
     // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
     await unfinalizedBlocksService.resetUnfinalizedBlocks(null);
 
-    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual({});
+    expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
   });
 
   it('can handle a fork when some unfinalized blocks are invalid', async () => {
@@ -389,5 +398,38 @@ describe('UnfinalizedBlocksService', () => {
 
     // Last valid block
     expect(res).toBe(110);
+  });
+
+  it('can rewind any unfinalized blocks when restarted and unfinalized blocks is disabled', async () => {
+    const metadata = getMockMetadata();
+
+    metadata.upsert({
+      key: METADATA_UNFINALIZED_BLOCKS_KEY,
+      value: JSON.stringify([
+        [90, '0xabcd'],
+        [91, '0xabc91'],
+        [92, '0xabc92'],
+      ]),
+    });
+
+    metadata.upsert({
+      key: METADATA_LAST_FINALIZED_PROCESSED_KEY,
+      value: 90,
+    });
+
+    const unfinalizedBlocksService2 = new UnfinalizedBlocksService(
+      apiService,
+      { unfinalizedBlocks: false } as any,
+      {
+        transaction: () => Promise.resolve({ commit: () => undefined }),
+      } as any,
+    );
+
+    const reindex = jest.fn().mockReturnValue(Promise.resolve());
+
+    await unfinalizedBlocksService2.init(metadata, reindex);
+
+    expect(reindex).toBeCalledWith(90);
+    expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);
   });
 });
