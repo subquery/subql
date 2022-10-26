@@ -5,10 +5,10 @@ import assert from 'assert';
 import { Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { getLogger, MetadataRepo } from '@subql/node-core';
+import { cloneDeep } from 'lodash';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
-import { cloneDeep } from 'lodash';
 
 const logger = getLogger('dynamic-ds');
 
