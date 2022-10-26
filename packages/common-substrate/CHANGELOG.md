@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-10-27
+
+### Added
+- Timestamp filter to block handlers (#1310)
+
 ## [1.2.1] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)

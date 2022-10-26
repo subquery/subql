@@ -10,6 +10,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.1.0] - 2022-10-27
+
+### Changed
+- Update to `@polkadot/api@9.4.2`/ (#1356)
+- Backport dictionary service features from Algorand. (#1346)
+
 ## [1.0.1] - 2022-10-11
 ### Added
 - Common code from sandbox and dictionary. (#1345)

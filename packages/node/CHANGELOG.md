@@ -6,6 +6,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2022-10-27
+
+## Fixed
+- Issues with Dynamic Datasources being created in the same block. (#1363)
+- Fixed log format flag not being applied. (#1351)
+
+## Changed
+- Optimise modulo filter when only using block filters. (#1358)
+- Update to `@polkadot/api@9.4.2`/ (#1356)
+
+## Added
+- Timestamp block filter. (#1310)
+- Log the node version on startup. (#1348)
+
 ## [1.10.2] - 2022-10-10
 
 ## Removed

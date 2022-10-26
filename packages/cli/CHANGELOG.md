@@ -8,6 +8,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-10-27
+
+### Added
+- `--dedicatedDB` option to project deployement. (#1355)
+- Flags for advanced settings. (#1352)
+
+### Fixed
+- Specifying query and node versions with or without a `v`. (#1354)
+
 ## [1.6.4] - 2022-10-06
 - Update IPFS endpoints. (#1337)
 

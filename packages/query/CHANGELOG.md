@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.1] - 2022-10-27
+
+### Changed
+- Disable hot schema reload by default. It can be enabled with `--disable-hot-schema=false`. (#1349)
+
 ## [1.6.0]
 ### Changed
 - Change max connection to 10 ms and query timeout to 10000 ms. (#1322)
