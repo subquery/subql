@@ -101,8 +101,10 @@ export default class Deploy extends Command {
       const validateDictEndpoint = processEndpoints(await dictionaryEndpoints(ROOT_API_URL_PROD), validator.chainId);
       if (!flags.useDefaults && !validateDictEndpoint) {
         dict = await promptWithDefaultValues(cli, 'Enter dictionary', validateDictEndpoint, null, false);
-      } else {
+      } else if (validateDictEndpoint) {
         dict = validateDictEndpoint;
+      } else {
+        dict = null;
       }
     }
 
