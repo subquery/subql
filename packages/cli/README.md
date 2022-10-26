@@ -23,7 +23,7 @@ $ npm install -g @subql/cli
 $ subql COMMAND
 running command...
 $ subql (-v|--version|version)
-@subql/cli/1.6.5-1 linux-x64 node-v16.17.1
+@subql/cli/1.6.5-2 linux-x64 node-v16.17.1
 $ subql --help [COMMAND]
 USAGE
   $ subql COMMAND
@@ -66,7 +66,7 @@ OPTIONS
   --mode=(production|prod|development|dev)  [default: production]
 ```
 
-_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/build.js)_
+_See code: [lib/commands/build.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/build.js)_
 
 ## `subql codegen`
 
@@ -82,7 +82,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/codegen.js)_
+_See code: [lib/commands/codegen.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/codegen.js)_
 
 ## `subql deployment`
 
@@ -117,7 +117,7 @@ OPTIONS
   --type=(stage|primary)                   [default: primary]
 ```
 
-_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/index.js)_
+_See code: [lib/commands/deployment/index.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/deployment/index.js)_
 
 ## `subql deployment:delete`
 
@@ -133,7 +133,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/delete.js)_
+_See code: [lib/commands/deployment/delete.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/deployment/delete.js)_
 
 ## `subql deployment:deploy`
 
@@ -165,7 +165,7 @@ OPTIONS
   --type=(stage|primary)                   [default: primary]
 ```
 
-_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/deploy.js)_
+_See code: [lib/commands/deployment/deploy.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/deployment/deploy.js)_
 
 ## `subql deployment:promote`
 
@@ -181,7 +181,7 @@ OPTIONS
   --project_name=project_name  Enter project name
 ```
 
-_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/deployment/promote.js)_
+_See code: [lib/commands/deployment/promote.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/deployment/promote.js)_
 
 ## `subql help [COMMAND]`
 
@@ -218,7 +218,7 @@ OPTIONS
   --npm                    Force using NPM instead of yarn, only works with `install-dependencies` flag
 ```
 
-_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/init.js)_
+_See code: [lib/commands/init.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/init.js)_
 
 ## `subql migrate`
 
@@ -234,7 +234,7 @@ OPTIONS
   --file=file
 ```
 
-_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/migrate.js)_
+_See code: [lib/commands/migrate.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/migrate.js)_
 
 ## `subql project`
 
@@ -246,6 +246,7 @@ USAGE
 
 OPTIONS
   --apiVersion=apiVersion    [default: 2] Enter api version
+  --dedicatedDB=dedicatedDB  Enter dedicated DataBase
   --description=description  Enter description
   --gitRepo=gitRepo          Enter git repository
   --logoURL=logoURL          Enter logo URL
@@ -255,7 +256,7 @@ OPTIONS
   --subtitle=subtitle        Enter subtitle
 ```
 
-_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/index.js)_
+_See code: [lib/commands/project/index.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/project/index.js)_
 
 ## `subql project:create-project`
 
@@ -267,6 +268,7 @@ USAGE
 
 OPTIONS
   --apiVersion=apiVersion    [default: 2] Enter api version
+  --dedicatedDB=dedicatedDB  Enter dedicated DataBase
   --description=description  Enter description
   --gitRepo=gitRepo          Enter git repository
   --logoURL=logoURL          Enter logo URL
@@ -275,7 +277,7 @@ OPTIONS
   --subtitle=subtitle        Enter subtitle
 ```
 
-_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/create-project.js)_
+_See code: [lib/commands/project/create-project.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/project/create-project.js)_
 
 ## `subql project:delete-project`
 
@@ -290,7 +292,7 @@ OPTIONS
   --projectName=projectName  Enter project name
 ```
 
-_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/project/delete-project.js)_
+_See code: [lib/commands/project/delete-project.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/project/delete-project.js)_
 
 ## `subql publish`
 
@@ -306,7 +308,7 @@ OPTIONS
   --ipfs=ipfs              IPFS gateway endpoint
 ```
 
-_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/publish.js)_
+_See code: [lib/commands/publish.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/publish.js)_
 
 ## `subql validate`
 
@@ -328,6 +330,6 @@ OPTIONS
   --silent
 ```
 
-_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.6.5-1/lib/commands/validate.js)_
+_See code: [lib/commands/validate.js](https://github.com/packages/cli/blob/v1.6.5-2/lib/commands/validate.js)_
 
 <!-- commandsstop -->
