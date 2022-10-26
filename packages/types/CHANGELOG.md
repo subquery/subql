@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-10-27
+### Added
+- Timestamp filter to block handlers (#1310)
+
 ## [1.5.1] - 2022-10-11
 ### Added
 - Matcher to dictionary query condition. (#1345)
