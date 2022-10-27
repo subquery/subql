@@ -28,3 +28,13 @@ export interface EthereumProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
   subnet?: string;
 }
+
+export enum FlareHandlerKind {
+  Block = 'flare/BlockHandler',
+  Call = 'flare/TransactionHandler',
+  Event = 'flare/LogHandler',
+}
+
+export enum FlareDatasourceKind {
+  Runtime = 'flare/Runtime',
+}

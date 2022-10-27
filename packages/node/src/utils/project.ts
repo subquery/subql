@@ -17,6 +17,7 @@ import {
   SubqlCustomHandler,
   SubqlHandler,
   EthereumHandlerKind,
+  EthereumDatasourceKind,
 } from '@subql/common-ethereum';
 import { StoreService } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
@@ -81,6 +82,31 @@ export async function updateDataSourcesV0_2_0(
   // force convert to updated ds
   return Promise.all(
     _dataSources.map(async (dataSource) => {
+      if (dataSource.kind === 'flare/Runtime') {
+        dataSource.kind = EthereumDatasourceKind.Runtime;
+      }
+      dataSource.mapping.handlers = dataSource.mapping.handlers.map(
+        (handler) => {
+          switch (handler.kind) {
+            case 'flare/BlockHandler': {
+              handler.kind = EthereumHandlerKind.Block;
+              break;
+            }
+            case 'flare/TransactionHandler': {
+              handler.kind = EthereumHandlerKind.Call;
+              break;
+            }
+            case 'flare/LogHandler': {
+              handler.kind = EthereumHandlerKind.Event;
+              break;
+            }
+            default:
+          }
+
+          return handler;
+        },
+      );
+
       const entryScript = await loadDataSourceScript(
         reader,
         dataSource.mapping.file,
