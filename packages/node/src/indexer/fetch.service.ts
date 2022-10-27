@@ -198,12 +198,15 @@ export class FetchService implements OnApplicationShutdown {
           this.api.runtimeVersion.specName.toString(),
     );
 
-    for (const ds of dataSources) {
+    for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       this.mappedDictionaryQueryEntries.set(
         ds.startBlock,
         this.getDictionaryQueryEntries(ds.startBlock),
       );
     }
+
+    const val = this.mappedDictionaryQueryEntries;
+    console.log(val);
   }
 
   private async getScopedDictionaryEntries(
@@ -213,11 +216,17 @@ export class FetchService implements OnApplicationShutdown {
   ) {
     const dictionaryQueryEntries: DictionaryQueryEntry[] = [];
 
-    this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
-      if (key >= startBlockHeight) {
-        dictionaryQueryEntries.push(...value);
-      }
-    });
+    // this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
+    //   if (key >= startBlockHeight) {
+    //     dictionaryQueryEntries.push(...value);
+    //   }
+    // });
+
+    if (this.mappedDictionaryQueryEntries.has(queryEndBlock)) {
+      dictionaryQueryEntries.push(
+        ...this.mappedDictionaryQueryEntries.get(queryEndBlock),
+      );
+    }
 
     this.dictionaryQueryEntries = dictionaryQueryEntries;
 
@@ -229,19 +238,24 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  getDictionaryQueryEntries(startHeight: number): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter(
       (ds) =>
-        (startHeight >= ds.startBlock && isRuntimeDataSourceV0_3_0(ds)) ||
+        isRuntimeDataSourceV0_3_0(ds) ||
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
         (ds as RuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
+    // console.log(dataSources)
 
-    for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
+    const filteredDs = dataSources
+      .concat(this.templateDynamicDatasouces)
+      .filter((ds) => ds.startBlock === startBlock);
+
+    for (const ds of filteredDs.concat(this.templateDynamicDatasouces)) {
       const plugin = isCustomDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
@@ -304,13 +318,14 @@ export class FetchService implements OnApplicationShutdown {
       }
     }
 
-    return uniqBy(
+    const result = uniqBy(
       queryEntries,
       (item) =>
         `${item.entity}|${JSON.stringify(
           sortBy(item.conditions, (c) => c.field),
         )}`,
     );
+    return result;
   }
 
   updateDictionary(): void {
