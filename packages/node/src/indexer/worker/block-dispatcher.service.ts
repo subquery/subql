@@ -192,7 +192,7 @@ export class BlockDispatcherService
       );
       await this.projectService.reindex(lastCorrectHeight);
       this.latestProcessedHeight = lastCorrectHeight;
-      logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
+      logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
     }
     this.flushQueue(lastCorrectHeight);
     logger.info(`Queued blocks flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight
@@ -537,7 +537,7 @@ export class WorkerBlockDispatcherService
       );
       await this.projectService.reindex(lastCorrectHeight);
       this.latestProcessedHeight = lastCorrectHeight;
-      logger.info(`Successful rewind to block ${lastCorrectHeight} !`);
+      logger.info(`Successful rewind to block ${lastCorrectHeight}!`);
     }
     this.flushQueue(lastCorrectHeight);
     logger.info(`Queued blocks flushed!`); //Also last buffered height reset, next fetching should start after lastCorrectHeight

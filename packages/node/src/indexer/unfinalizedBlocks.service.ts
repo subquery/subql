@@ -63,7 +63,7 @@ export class UnfinalizedBlocksService {
           `Found un-finalized blocks from previous indexing but unverified, rolling back to last finalized block ${rewindHeight} `,
         );
         await reindex(rewindHeight);
-        logger.info(`Successful rewind to block ${rewindHeight} !`);
+        logger.info(`Successful rewind to block ${rewindHeight}!`);
         return rewindHeight;
       } else {
         await this.resetUnfinalizedBlocks(tx);
@@ -214,7 +214,7 @@ export class UnfinalizedBlocksService {
             lastVerifiableBlock.blockHeight
           } with hash ${
             lastVerifiableBlock.hash
-          }, actual hash is ${header.hash.toHex()} `,
+          }, actual hash is ${header.hash.toHex()}`,
         );
         return true;
       }
