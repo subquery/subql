@@ -185,7 +185,57 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
+separate filtering
+
+1. move all new logic into new file
+  - can write tests
+    - checking the input and out are correct
+      - generate the correct map
+      - select the right items from the map
+      -
+2. generalise it with node-core
+
    */
+
+  private getBaseHandlerKindList(
+    baseHandlerKind: SubstrateHandlerKind,
+    filterList: SubstrateRuntimeHandlerFilter[],
+  ): DictionaryQueryEntry[] {
+    const queryEntries: DictionaryQueryEntry[] = [];
+
+    switch (baseHandlerKind) {
+      case SubstrateHandlerKind.Block:
+        for (const filter of filterList as SubstrateBlockFilter[]) {
+          if (filter.modulo === undefined) {
+            return [];
+          }
+        }
+        break;
+      case SubstrateHandlerKind.Call: {
+        for (const filter of filterList as SubstrateCallFilter[]) {
+          if (filter.module !== undefined && filter.method !== undefined) {
+            queryEntries.push(callFilterToQueryEntry(filter));
+          } else {
+            return [];
+          }
+        }
+        break;
+      }
+      case SubstrateHandlerKind.Event: {
+        for (const filter of filterList as SubstrateEventFilter[]) {
+          if (filter.module !== undefined && filter.method !== undefined) {
+            queryEntries.push(eventFilterToQueryEntry(filter));
+          } else {
+            return [];
+          }
+        }
+        break;
+      }
+      default:
+    }
+
+    return queryEntries;
+  }
 
   private buildDictionaryEntryMap(): void {
     this.mappedDictionaryQueryEntries = new Map();
@@ -197,6 +247,13 @@ export class FetchService implements OnApplicationShutdown {
         (ds as RuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
+    /*
+        {
+      1000: dictionaryQueryEntries(1000),
+      2000: dictionaryQueryEntries(2000),
+      3000: dictionaryQueryEntries(3000)
+    }
+     */
 
     for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
       this.mappedDictionaryQueryEntries.set(
@@ -253,9 +310,14 @@ export class FetchService implements OnApplicationShutdown {
 
     const filteredDs = dataSources
       .concat(this.templateDynamicDatasouces)
-      .filter((ds) => ds.startBlock === startBlock);
+      .filter((ds) => {
+        console.log(`Filtering ds: ${ds.startBlock}`);
+        return ds.startBlock <= startBlock;
+      });
 
-    for (const ds of filteredDs.concat(this.templateDynamicDatasouces)) {
+    console.log(`filteredDs`, filteredDs);
+    // for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
+    for (const ds of filteredDs) {
       const plugin = isCustomDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
         : undefined;
@@ -325,6 +387,8 @@ export class FetchService implements OnApplicationShutdown {
           sortBy(item.conditions, (c) => c.field),
         )}`,
     );
+
+    console.log('result: ', result);
     return result;
   }
 
