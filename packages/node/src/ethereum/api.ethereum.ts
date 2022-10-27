@@ -5,6 +5,7 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
+import { Block } from '@ethersproject/abstract-provider';
 import { Web3Provider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
@@ -143,6 +144,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   async getFinalizedBlockHeight(): Promise<number> {
     // Doesn't seem to be a difference between finalized and latest
     return this.client.getBlockNumber();
+  }
+
+  async getBlockByHeight(height: number): Promise<Block> {
+    return this.client.getBlock(height);
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {

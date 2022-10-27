@@ -26,7 +26,6 @@ import {
   IndexerSandbox,
 } from '@subql/node-core';
 import {
-  ApiWrapper,
   EthereumTransaction,
   EthereumLog,
   SubqlRuntimeHandler,
@@ -171,20 +170,17 @@ export class IndexerManager {
 
   async start(): Promise<void> {
     await this.projectService.init();
+    logger.info('indexer manager started');
   }
 
-  private filterDataSources(processedHeight: number): SubqlProjectDs[] {
-    let filteredDs = this.project.dataSources;
+  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
+    const filteredDs = this.projectService.dataSources.filter(
+      (ds) => ds.startBlock <= nextProcessingHeight,
+    );
+
     if (filteredDs.length === 0) {
       logger.error(
-        `Did not find any dataSource match with network specName ${this.api.getSpecName()}`,
-      );
-      process.exit(1);
-    }
-    filteredDs = filteredDs.filter((ds) => ds.startBlock <= processedHeight);
-    if (filteredDs.length === 0) {
-      logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${processedHeight}
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${nextProcessingHeight}
          or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
