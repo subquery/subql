@@ -222,7 +222,6 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      // building the query for each of the filters set
       const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize);
       nodes.push(node);
       vars.push(...pVars);
