@@ -6,23 +6,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.11.0] - 2022-10-27
+## [1.12.0] - 2022-10-28
+
+### Added
+- Support for unfinalized blocks. This can be enabled with `--unfinalized-blocks` and requires historical indexing to be enabled. (#1308)
 
 ## Fixed
+- Incomplete dynamic datasources in the same block. (#1370)
+
+## [1.11.0] - 2022-10-27
+
+### Fixed
 - Issues with Dynamic Datasources being created in the same block. (#1363)
 - Fixed log format flag not being applied. (#1351)
 
-## Changed
+### Changed
 - Optimise modulo filter when only using block filters. (#1358)
 - Update to `@polkadot/api@9.4.2`/ (#1356)
 
-## Added
+### Added
 - Timestamp block filter. (#1310)
 - Log the node version on startup. (#1348)
 
 ## [1.10.2] - 2022-10-10
 
-## Removed
+### Removed
 - `Subqueries` database table. This is an internal change that should not affect users. (#1340)
 
 ## [1.10.1] - 2022-10-06
