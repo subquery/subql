@@ -31,9 +31,12 @@ export async function getExistingProjectSchema(
   return schema;
 }
 
-export async function getMetaDataInfo(metadataRepo: MetadataRepo, key: string): Promise<number | undefined> {
+export async function getMetaDataInfo<T extends string | number | boolean = number>(
+  metadataRepo: MetadataRepo,
+  key: string
+): Promise<T | undefined> {
   const res = await metadataRepo.findOne({
     where: {key: key},
   });
-  return res?.value as number | undefined;
+  return res?.value as T | undefined;
 }

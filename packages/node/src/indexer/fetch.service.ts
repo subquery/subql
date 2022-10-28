@@ -8,25 +8,25 @@ import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import {
-  isCustomDs,
   isRuntimeDataSourceV0_2_0,
-  isRuntimeDataSourceV0_3_0,
-  isRuntimeDs,
   RuntimeDataSourceV0_0_1,
-  SubstrateBlockFilter,
+  isCustomDs,
+  isRuntimeDs,
+  isRuntimeDataSourceV0_3_0,
   SubstrateCallFilter,
-  SubstrateDataSource,
   SubstrateEventFilter,
-  SubstrateHandler,
   SubstrateHandlerKind,
+  SubstrateHandler,
+  SubstrateDataSource,
   SubstrateRuntimeHandlerFilter,
+  SubstrateBlockFilter,
 } from '@subql/common-substrate';
 import {
-  checkMemoryUsage,
   delay,
-  getLogger,
-  IndexerEvent,
+  checkMemoryUsage,
   NodeConfig,
+  IndexerEvent,
+  getLogger,
   profiler,
 } from '@subql/node-core';
 import {
@@ -45,6 +45,8 @@ import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
@@ -106,8 +108,10 @@ export class FetchService implements OnApplicationShutdown {
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+    private projectService: ProjectService,
   ) {
     this.batchSizeScale = 1;
   }
@@ -289,15 +293,17 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const finalizedHash = await this.api.rpc.chain.getFinalizedHead();
+      const finalizedHeader = await this.api.rpc.chain.getHeader(finalizedHash);
+      this.unfinalizedBlocksService.registerFinalizedBlock(finalizedHeader);
+      const currentFinalizedHeight = finalizedHeader.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
-        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-          height: this.latestFinalizedHeight,
-        });
+        if (!this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestFinalizedHeight,
+          });
+        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when getting finalized block`);
@@ -317,6 +323,11 @@ export class FetchService implements OnApplicationShutdown {
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
           height: this.latestBestHeight,
         });
+        if (this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestBestHeight,
+          });
+        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when get best block`);
@@ -357,22 +368,11 @@ export class FetchService implements OnApplicationShutdown {
     return moduloBlocks;
   }
 
-  getEnqueuedModuloBlocks(startBlockHeight: number): number[] {
-    return this.getModuloBlocks(
-      startBlockHeight,
-      this.nodeConfig.batchSize * Math.max(...this.getModulos()) +
-        startBlockHeight,
-    ).slice(0, this.nodeConfig.batchSize);
-  }
-
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
-    const handlers = [].concat(
-      ...this.project.dataSources.map((ds) => ds.mapping.handlers),
-    );
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -387,9 +387,14 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
+
+      const latestHeight = this.nodeConfig.unfinalizedBlocks
+        ? this.latestBestHeight
+        : this.latestFinalizedHeight;
+
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
-        startBlockHeight > this.latestFinalizedHeight
+        startBlockHeight > latestHeight
       ) {
         await delay(1);
         continue;
@@ -420,7 +425,6 @@ export class FetchService implements OnApplicationShutdown {
             this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
             let { batchBlocks } = dictionary;
-
             batchBlocks = batchBlocks
               .concat(moduloBlocks)
               .sort((a, b) => a - b);
@@ -446,20 +450,14 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+      // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(
         startBlockHeight,
         scaledBatchSize,
       );
-
-      if (this.getModulos().length === handlers.length) {
-        this.blockDispatcher.enqueueBlocks(
-          this.getEnqueuedModuloBlocks(startBlockHeight),
-        );
-      } else {
-        this.blockDispatcher.enqueueBlocks(
-          range(startBlockHeight, endHeight + 1),
-        );
-      }
+      this.blockDispatcher.enqueueBlocks(
+        range(startBlockHeight, endHeight + 1),
+      );
     }
   }
 
@@ -565,16 +563,26 @@ export class FetchService implements OnApplicationShutdown {
     scaledBatchSize: number,
   ): number {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
-
     if (endBlockHeight > this.latestFinalizedHeight) {
-      endBlockHeight = this.latestFinalizedHeight;
+      if (this.nodeConfig.unfinalizedBlocks) {
+        if (endBlockHeight >= this.latestBestHeight) {
+          endBlockHeight = this.latestBestHeight;
+        }
+      } else {
+        endBlockHeight = this.latestFinalizedHeight;
+      }
     }
     return endBlockHeight;
   }
 
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
-    this.dynamicDsService.deleteTempDsRecords(blockHeight);
+    this.updateDictionary();
+    this.blockDispatcher.flushQueue(blockHeight);
+  }
+
+  async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }

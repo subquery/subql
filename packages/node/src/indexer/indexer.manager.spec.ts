@@ -21,6 +21,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
@@ -136,6 +137,11 @@ function createIndexerManager(
   const poiService = new PoiService(nodeConfig, sequilize);
   const storeService = new StoreService(sequilize, nodeConfig);
   const mmrService = new MmrService(nodeConfig, sequilize);
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(
+    apiService,
+    nodeConfig,
+    sequilize,
+  );
   const sandboxService = new SandboxService(
     apiService,
     storeService,
@@ -153,6 +159,7 @@ function createIndexerManager(
     nodeConfig,
     dynamicDsService,
     eventEmitter,
+    unfinalizedBlocksService,
   );
 
   return new IndexerManager(
@@ -165,6 +172,7 @@ function createIndexerManager(
     sandboxService,
     dsProcessorService,
     dynamicDsService,
+    unfinalizedBlocksService,
     projectService,
   );
 }

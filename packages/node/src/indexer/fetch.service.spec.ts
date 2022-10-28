@@ -22,6 +22,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 jest.mock('../utils/substrate', () =>
@@ -281,12 +282,18 @@ function createFetchService(
 ) {
   const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
+  const projectService = {} as unknown as ProjectService;
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
     subquery: '',
     subqueryName: '',
     batchSize,
   });
+  const unfinalizedBlocksService = new UnfinalizedBlocksService(
+    apiService,
+    nodeConfig,
+    null,
+  );
   const eventEmitter = new EventEmitter2();
 
   return new FetchService(
@@ -303,8 +310,10 @@ function createFetchService(
     dictionaryService,
     dsProcessorService,
     dynamicDsService,
+    unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
+    projectService,
   );
 }
 
@@ -355,7 +364,7 @@ describe('FetchService', () => {
     await fetchService.init(1);
   });
 
-  it('load batchSize of blocks with original method', () => {
+  it('load batchSize of blocks with original method', async () => {
     const batchSize = 50;
     const dictionaryService = new DictionaryService(project, nodeConfig);
 
@@ -367,7 +376,16 @@ describe('FetchService', () => {
       batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    const end = (fetchService as any).nextEndBlockHeight(100, batchSize);
+    (fetchService as any).unfinalizedBlocksService.registerFinalizedBlock(
+      1000,
+      '0xabcd',
+    );
+    (fetchService as any).latestBestHeight = 1020;
+    (fetchService as any).unfinalizedBlocksService.storeUnfinalizedBlock(
+      1020,
+      '0x1234',
+    );
+    const end = await (fetchService as any).nextEndBlockHeight(100, batchSize);
     expect(end).toEqual(100 + batchSize - 1);
   });
 
@@ -400,7 +418,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -456,7 +478,12 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-
+    const projectService = {} as unknown as ProjectService;
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -472,8 +499,10 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      projectService,
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -540,6 +569,12 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
+    const projectService = {} as unknown as ProjectService;
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
 
     const blockDispatcher = new BlockDispatcherService(
       apiService,
@@ -556,8 +591,10 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      projectService,
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -618,6 +655,12 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
+    const projectService = {} as unknown as ProjectService;
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -633,8 +676,10 @@ describe('FetchService', () => {
       dictionaryService,
       dsProcessorService,
       dynamicDsService,
+      unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      projectService,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
@@ -690,7 +735,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 

@@ -518,7 +518,6 @@ group by
         );
       }
     }
-
     await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
       transaction,
     });

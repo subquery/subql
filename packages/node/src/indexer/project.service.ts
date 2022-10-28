@@ -24,9 +24,16 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
+import { reindex } from '../utils/reindex';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { BestBlocks } from './types';
+import {
+  METADATA_LAST_FINALIZED_PROCESSED_KEY,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -53,6 +60,7 @@ export class ProjectService {
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
+    private unfinalizedBlockService: UnfinalizedBlocksService,
   ) {}
 
   get schema(): string {
@@ -71,6 +79,11 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  get isHistorical(): boolean {
+    return this.storeService.historical;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async getExistingProjectSchema(): Promise<string> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
@@ -110,6 +123,22 @@ export class ProjectService {
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init(this.schema);
       }
+    }
+
+    if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
+      logger.error(
+        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
+      );
+      process.exit(1);
+    }
+
+    const reindexedTo = await this.unfinalizedBlockService.init(
+      this.metadataRepo,
+      this.reindex,
+    );
+
+    if (reindexedTo !== undefined) {
+      this._startHeight = reindexedTo;
     }
   }
 
@@ -162,6 +191,8 @@ export class ProjectService {
       'genesisHash',
       'chainId',
       'processedBlockCount',
+      'bestBlocks',
+      'lastFinalizedVerifiedHeight',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -227,6 +258,12 @@ export class ProjectService {
         value: packageVersion,
       });
     }
+    if (!keyValue.bestBlocks) {
+      await metadataRepo.upsert({
+        key: 'bestBlocks',
+        value: '{}',
+      });
+    }
 
     return metadataRepo;
   }
@@ -236,6 +273,25 @@ export class ProjectService {
       key: 'blockOffset',
       value: height,
     });
+  }
+
+  //string should be jsonb object
+  async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
+    const val = await getMetaDataInfo<string>(
+      this.metadataRepo,
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+    );
+    if (val) {
+      return JSON.parse(val) as BestBlocks;
+    }
+    return undefined;
+  }
+
+  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
+    return getMetaDataInfo(
+      this.metadataRepo,
+      METADATA_LAST_FINALIZED_PROCESSED_KEY,
+    );
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {
@@ -304,6 +360,22 @@ export class ProjectService {
         !ds.filter?.specName ||
         ds.filter.specName ===
           this.apiService.getApi().runtimeVersion.specName.toString(),
+    );
+  }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    return reindex(
+      this.getStartBlockFromDataSources(),
+      await this.getMetadataBlockOffset(),
+      targetBlockHeight,
+      lastProcessedHeight,
+      this.storeService,
+      this.unfinalizedBlockService,
+      this.mmrService,
+      this.sequelize,
+      /* Not providing force clean service, it should never be needed */
     );
   }
 }

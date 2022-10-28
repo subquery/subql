@@ -39,6 +39,7 @@ export interface IConfig {
   readonly subscription: boolean;
   readonly disableHistorical: boolean;
   readonly reindex?: number;
+  readonly unfinalizedBlocks?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -58,6 +59,7 @@ const DEFAULT_CONFIG = {
   migrate: false,
   subscription: false,
   disableHistorical: true,
+  unfinalizedBlocks: false,
 };
 
 export class NodeConfig implements IConfig {
@@ -182,6 +184,10 @@ export class NodeConfig implements IConfig {
 
   get disableHistorical(): boolean {
     return this._config.disableHistorical;
+  }
+
+  get unfinalizedBlocks(): boolean {
+    return this._config.unfinalizedBlocks;
   }
 
   merge(config: Partial<IConfig>): this {

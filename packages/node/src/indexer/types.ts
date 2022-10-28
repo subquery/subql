@@ -3,6 +3,7 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { ApiDecoration } from '@polkadot/api/types';
+import { HexString } from '@polkadot/util/types';
 import {
   SubstrateBlock,
   SubstrateEvent,
@@ -14,5 +15,7 @@ export interface BlockContent {
   extrinsics: SubstrateExtrinsic[];
   events: SubstrateEvent[];
 }
+
+export type BestBlocks = Record<number, HexString>;
 
 export type ApiAt = ApiDecoration<'promise'> & { rpc: ApiPromise['rpc'] };

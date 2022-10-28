@@ -32,12 +32,8 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { Sequelize } from 'sequelize';
-import {
-  generateTimestampReferenceForBlockFilters,
-  SubqlProjectDs,
-  SubqueryProject,
-} from '../configure/SubqueryProject';
+import { Sequelize, Transaction } from 'sequelize';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -49,6 +45,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -69,6 +66,7 @@ export class IndexerManager {
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
@@ -80,9 +78,14 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
+  ): Promise<{
+    dynamicDsCreated: boolean;
+    operationHash: Uint8Array;
+    reindexBlockHeight: number;
+  }> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
+    let reindexBlockHeight = null;
     const blockHeight = block.block.header.number.toNumber();
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
@@ -100,6 +103,7 @@ export class IndexerManager {
       );
 
       let apiAt: ApiAt;
+      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
 
       await this.indexBlockData(
         blockContent,
@@ -175,12 +179,23 @@ export class IndexerManager {
     return {
       dynamicDsCreated,
       operationHash,
+      reindexBlockHeight,
     };
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
     logger.info('indexer manager started');
+  }
+
+  private async processUnfinalizedBlocks(
+    block: SubstrateBlock,
+    tx: Transaction,
+  ): Promise<number | null> {
+    if (this.nodeConfig.unfinalizedBlocks) {
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
+    }
+    return null;
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
