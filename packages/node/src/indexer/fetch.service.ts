@@ -24,6 +24,7 @@ import {
 import {
   checkMemoryUsage,
   delay,
+  Dictionary,
   getLogger,
   IndexerEvent,
   NodeConfig,
@@ -37,6 +38,11 @@ import {
 import { MetaData } from '@subql/utils';
 import { range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import {
+  buildDictionaryEntryMap,
+  scopedDictionaryEntries,
+  setDictionaryQueryEntries,
+} from '../utils/dictionaryEntry';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
@@ -131,61 +137,7 @@ export class FetchService implements OnApplicationShutdown {
     this.templateDynamicDatasouces =
       await this.dynamicDsService.getDynamicDatasources();
   }
-
-  // a function that caches the dictionaryEntries
-  // run this everyStartHeight of every ds
-  // map of that
-  // whenever update dictionary would be call, i would need to rebuild this map
-  // block scope
-
-  // everytime updateDictionary is called, this will be rebuilt
-
   /*
-  On init, updateDictionary would be called
-  updateDictionary() {
-    this.buildDictionaryQueryEntries()
-  }
-
-  buildDictionaryQueryEntries() {
-    this.mappedDictionaryQueryEntries = new Map()
-    const dataSources = this.project.dataSources
-      .filter(
-        (ds) =>
-          isRuntimeDataSourceV0_3_0(ds) ||
-          isRuntimeDataSourceV0_2_0(ds) ||
-          !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-          (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-            this.api.runtimeVersion.specName.toString())
-    for ( const ds of dataSources) {
-       this.mappedDictionaryQueryEntries.set(ds.startBlock, this.getDictionaryQueryEntries(ds.startBlock));
-    }
-
-    // should output something like this
-    {
-      1000: dictionaryQueryEntries(1000),
-      2000: dictionaryQueryEntries(2000),
-      3000: dictionaryQueryEntries(3000)
-    }
-  }
-
-  getScopedDictionaryEntries(startBlockHeight: number, queryEndBlock: number, scaledBatchSize: number): void {
-    const output = this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
-        if (key >= startBlockHeight) {
-            return value
-        }
-    })
-
-    // might need to concat output
-
-    return this.dictionaryService.getDictionary(
-        startBlockHeight,
-        queryEndBlock,
-        scaledBatchSize,
-        dictionaryQueryEntries,
-    );
-  }
-
-separate filtering
 
 1. move all new logic into new file
   - can write tests
@@ -197,101 +149,26 @@ separate filtering
 
    */
 
-  private getBaseHandlerKindList(
-    baseHandlerKind: SubstrateHandlerKind,
-    filterList: SubstrateRuntimeHandlerFilter[],
-  ): DictionaryQueryEntry[] {
-    const queryEntries: DictionaryQueryEntry[] = [];
-
-    switch (baseHandlerKind) {
-      case SubstrateHandlerKind.Block:
-        for (const filter of filterList as SubstrateBlockFilter[]) {
-          if (filter.modulo === undefined) {
-            return [];
-          }
-        }
-        break;
-      case SubstrateHandlerKind.Call: {
-        for (const filter of filterList as SubstrateCallFilter[]) {
-          if (filter.module !== undefined && filter.method !== undefined) {
-            queryEntries.push(callFilterToQueryEntry(filter));
-          } else {
-            return [];
-          }
-        }
-        break;
-      }
-      case SubstrateHandlerKind.Event: {
-        for (const filter of filterList as SubstrateEventFilter[]) {
-          if (filter.module !== undefined && filter.method !== undefined) {
-            queryEntries.push(eventFilterToQueryEntry(filter));
-          } else {
-            return [];
-          }
-        }
-        break;
-      }
-      default:
-    }
-
-    return queryEntries;
-  }
-
-  private buildDictionaryEntryMap(): void {
-    this.mappedDictionaryQueryEntries = new Map();
-    const dataSources = this.project.dataSources.filter(
-      (ds) =>
-        isRuntimeDataSourceV0_3_0(ds) ||
-        isRuntimeDataSourceV0_2_0(ds) ||
-        !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-        (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+  private buildDictionaryEntriesMap(): void {
+    this.mappedDictionaryQueryEntries = buildDictionaryEntryMap(
+      this.project.dataSources,
+      this.templateDynamicDatasouces,
+      this.api.runtimeVersion.specName,
+      this.getDictionaryQueryEntries.bind(this),
     );
-    /*
-        {
-      1000: dictionaryQueryEntries(1000),
-      2000: dictionaryQueryEntries(2000),
-      3000: dictionaryQueryEntries(3000)
-    }
-     */
-
-    for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
-      this.mappedDictionaryQueryEntries.set(
-        ds.startBlock,
-        this.getDictionaryQueryEntries(ds.startBlock),
-      );
-    }
-
-    const val = this.mappedDictionaryQueryEntries;
-    console.log(val);
   }
 
   private async getScopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number,
-  ) {
-    const dictionaryQueryEntries: DictionaryQueryEntry[] = [];
-
-    // this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
-    //   if (key >= startBlockHeight) {
-    //     dictionaryQueryEntries.push(...value);
-    //   }
-    // });
-
-    if (this.mappedDictionaryQueryEntries.has(queryEndBlock)) {
-      dictionaryQueryEntries.push(
-        ...this.mappedDictionaryQueryEntries.get(queryEndBlock),
-      );
-    }
-
-    this.dictionaryQueryEntries = dictionaryQueryEntries;
-
-    return this.dictionaryService.getDictionary(
+  ): Promise<Dictionary> {
+    return scopedDictionaryEntries(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      dictionaryQueryEntries,
+      this.mappedDictionaryQueryEntries,
+      this.dictionaryService.getDictionary.bind(this.dictionaryService),
     );
   }
 
@@ -306,8 +183,8 @@ separate filtering
         (ds as RuntimeDataSourceV0_0_1).filter.specName ===
           this.api.runtimeVersion.specName.toString(),
     );
-    // console.log(dataSources)
 
+    // Only run the ds that is equal or less than startBlock
     const filteredDs = dataSources
       .concat(this.templateDynamicDatasouces)
       .filter((ds) => {
@@ -315,8 +192,7 @@ separate filtering
         return ds.startBlock <= startBlock;
       });
 
-    console.log(`filteredDs`, filteredDs);
-    // for (const ds of dataSources.concat(this.templateDynamicDatasouces)) {
+    // console.log(`filteredDs`, filteredDs);
     for (const ds of filteredDs) {
       const plugin = isCustomDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
@@ -344,8 +220,8 @@ separate filtering
         } else {
           filterList = [handler.filter];
         }
-        // if (
-        filterList = filterList.filter((f) => f);
+        // Filter out any undefined
+        filterList = filterList.filter(Boolean);
         if (!filterList.length) return [];
         switch (baseHandlerKind) {
           case SubstrateHandlerKind.Block:
@@ -393,12 +269,19 @@ separate filtering
   }
 
   updateDictionary(): void {
-    this.buildDictionaryEntryMap();
-    // TODO: resolve this
-    // this.dictionaryQueryEntries = this.getDictionaryQueryEntries();
+    this.buildDictionaryEntriesMap();
+
+    console.log('Built');
+    let checkDictionaryQueryEntries: boolean;
+    this.mappedDictionaryQueryEntries.forEach((value) => {
+      if (value.length > 0) {
+        checkDictionaryQueryEntries = true;
+      }
+    });
+    // this.dictionaryQueryEntries = setDictionaryQueryEntries()
     this.useDictionary =
-      !!this.dictionaryQueryEntries?.length &&
-      !!this.project.network.dictionary;
+      // !!this.dictionaryQueryEntries?.length
+      checkDictionaryQueryEntries && !!this.project.network.dictionary;
   }
 
   async init(startHeight: number): Promise<void> {
@@ -544,20 +427,6 @@ separate filtering
     ).slice(0, this.nodeConfig.batchSize);
   }
 
-  // if queryEndBlock is beyond, then
-  // private getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize) {
-  //
-  //   // update dictionary
-  //   const dictionaryQueryEntries = newWayOfGettingThings();
-  //
-  //
-  //   // call this.getScopedDictionaryEntries(
-  //   //        startBlockHeight,
-  //   //        queryEndBlock,
-  //   //        scaledBatchSize
-  //   //        );
-  // }
-
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     await this.prefetchMeta(initBlockHeight);
 
@@ -594,17 +463,6 @@ separate filtering
           queryEndBlock,
         );
         try {
-          // wrap this in a function
-          //
-          // instead of this
-          // const dictionary = await this.dictionaryService.getDictionary(
-          //   startBlockHeight,
-          //   queryEndBlock,
-          //   scaledBatchSize,
-          //   this.dictionaryQueryEntries,
-          // );
-
-          // call this
           const dictionary = await this.getScopedDictionaryEntries(
             startBlockHeight,
             queryEndBlock,
