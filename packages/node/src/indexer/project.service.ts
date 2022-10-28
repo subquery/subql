@@ -125,6 +125,13 @@ export class ProjectService {
       }
     }
 
+    if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
+      logger.error(
+        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
+      );
+      process.exit(1);
+    }
+
     const reindexedTo = await this.unfinalizedBlockService.init(
       this.metadataRepo,
       this.reindex,

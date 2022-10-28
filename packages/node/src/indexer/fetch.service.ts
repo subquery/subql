@@ -388,9 +388,13 @@ export class FetchService implements OnApplicationShutdown {
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
 
+      const latestHeight = this.nodeConfig.unfinalizedBlocks
+        ? this.latestBestHeight
+        : this.latestFinalizedHeight;
+
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
-        startBlockHeight > this.latestFinalizedHeight
+        startBlockHeight > latestHeight
       ) {
         await delay(1);
         continue;
@@ -560,10 +564,7 @@ export class FetchService implements OnApplicationShutdown {
   ): number {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
     if (endBlockHeight > this.latestFinalizedHeight) {
-      if (
-        this.projectService.isHistorical &&
-        this.nodeConfig.unfinalizedBlocks
-      ) {
+      if (this.nodeConfig.unfinalizedBlocks) {
         if (endBlockHeight >= this.latestBestHeight) {
           endBlockHeight = this.latestBestHeight;
         }
