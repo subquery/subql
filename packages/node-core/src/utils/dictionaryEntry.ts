@@ -1,38 +1,22 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Text } from '@polkadot/types-codec';
-import {
-  isRuntimeDataSourceV0_2_0,
-  isRuntimeDataSourceV0_3_0,
-  RuntimeDataSourceV0_0_1,
-} from '@subql/common-substrate';
-import { Dictionary } from '@subql/node-core';
-import { DictionaryQueryEntry } from '@subql/types';
-import { SubqlProjectDs } from '../configure/SubqueryProject';
+import {Text} from '@polkadot/types-codec';
+import {DictionaryQueryEntry} from '@subql/types';
+import {Dictionary} from '../indexer/dictionary.service';
+// import { SubqlProjectDs } from '../../../node/src/configure/SubqueryProject';
 
 export function buildDictionaryEntryMap(
-  dataSources: SubqlProjectDs[],
-  templateDynamicDatasouces: SubqlProjectDs[],
+  // unsure how to make this more generic
+  dataSources: any[],
+  templateDynamicDatasouces: any[],
   runtimeVersionSpecName: Text,
-  getDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[],
+  getDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
 ): Map<number, DictionaryQueryEntry[]> {
   const mappedDictionaryQueryEntries = new Map();
 
-  const sanitizedDs = dataSources.filter(
-    (ds) =>
-      isRuntimeDataSourceV0_3_0(ds) ||
-      isRuntimeDataSourceV0_2_0(ds) ||
-      !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
-      (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-        runtimeVersionSpecName.toString(),
-  );
-
-  for (const ds of sanitizedDs.concat(templateDynamicDatasouces)) {
-    mappedDictionaryQueryEntries.set(
-      ds.startBlock,
-      getDictionaryQueryEntries(ds.startBlock),
-    );
+  for (const ds of dataSources.concat(templateDynamicDatasouces)) {
+    mappedDictionaryQueryEntries.set(ds.startBlock, getDictionaryQueryEntries(ds.startBlock));
   }
   return mappedDictionaryQueryEntries;
 }
@@ -47,29 +31,24 @@ export async function scopedDictionaryEntries(
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    conditions: DictionaryQueryEntry[],
-  ) => Promise<Dictionary>,
+    conditions: DictionaryQueryEntry[]
+  ) => Promise<Dictionary>
 ): Promise<Dictionary> {
   const dictionaryQueryEntries = setDictionaryQueryEntries(
     startBlockHeight,
     queryEndBlock,
     endBlockHeight,
-    mappedDictionaryQueryEntries,
+    mappedDictionaryQueryEntries
   );
 
-  return getDictionary(
-    startBlockHeight,
-    queryEndBlock,
-    scaledBatchSize,
-    dictionaryQueryEntries,
-  );
+  return getDictionary(startBlockHeight, queryEndBlock, scaledBatchSize, dictionaryQueryEntries);
 }
 
 export function setDictionaryQueryEntries(
   startBlock: number,
   queryEndBlock: number,
   endBlockHeight: number,
-  mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>,
+  mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>
 ): DictionaryQueryEntry[] {
   let dictionaryQueryEntries: DictionaryQueryEntry[];
 

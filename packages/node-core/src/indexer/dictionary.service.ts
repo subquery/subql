@@ -60,7 +60,6 @@ function sanitizeArgField(input: string): string {
 
 type Filter = {or: any[]};
 
-// this should be the dictionary query?
 function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): [GqlVar[], Filter] {
   const gqlVars: GqlVar[] = [];
   const filter: Filter = {or: []};
@@ -80,7 +79,6 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
         }),
       };
     } else if (i.length === 1) {
-      // recursive
       const v = extractVar(`${entity}_${outerIdx}_0`, i[0]);
       gqlVars.push(v);
       filter.or[outerIdx] = {
@@ -93,7 +91,6 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
   return [gqlVars, filter];
 }
 
-// building a graphql query for the dictionary api
 function buildDictQueryFragment(
   entity: string,
   startBlock: number,
@@ -131,13 +128,11 @@ export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
 
-  // this is init dictionary service
   constructor(
     readonly dictionaryEndpoint: string,
     protected readonly nodeConfig: NodeConfig,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
   ) {
-    // creating an apollo-client to request dictionary (i assume)
     this.client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
       link: new HttpLink({uri: dictionaryEndpoint, fetch}),
@@ -212,15 +207,6 @@ export class DictionaryService implements OnApplicationShutdown {
     batchSize: number,
     conditions: DictionaryQueryEntry[]
   ): GqlQuery {
-    // 1. group condition by entity
-
-    // Mapping all the filters implemented on project.yaml
-    // e.g.
-    // {
-    // evmLogs: [{}]
-    // evmTransactions: [{}]
-    // }
-
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
       acc[c.entity] = acc[c.entity] || [];
       acc[c.entity].push(c.conditions);
@@ -235,8 +221,6 @@ export class DictionaryService implements OnApplicationShutdown {
         project: this.metadataKeys,
       },
     ];
-    // e.g.
-    // entity: "evmLogs"
     for (const entity of Object.keys(mapped)) {
       // building the query for each of the filters set
       const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize);

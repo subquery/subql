@@ -29,6 +29,8 @@ import {
   IndexerEvent,
   NodeConfig,
   profiler,
+  buildDictionaryEntryMap,
+  scopedDictionaryEntries,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
@@ -38,11 +40,6 @@ import {
 import { MetaData } from '@subql/utils';
 import { range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import {
-  buildDictionaryEntryMap,
-  scopedDictionaryEntries,
-  setDictionaryQueryEntries,
-} from '../utils/dictionaryEntry';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
@@ -137,17 +134,6 @@ export class FetchService implements OnApplicationShutdown {
     this.templateDynamicDatasouces =
       await this.dynamicDsService.getDynamicDatasources();
   }
-  /*
-
-1. move all new logic into new file
-  - can write tests
-    - checking the input and out are correct
-      - generate the correct map
-      - select the right items from the map
-      -
-2. generalise it with node-core
-
-   */
 
   private buildDictionaryEntriesMap(): void {
     this.mappedDictionaryQueryEntries = buildDictionaryEntryMap(
@@ -189,12 +175,8 @@ export class FetchService implements OnApplicationShutdown {
     // Only run the ds that is equal or less than startBlock
     const filteredDs = dataSources
       .concat(this.templateDynamicDatasouces)
-      .filter((ds) => {
-        console.log(`Filtering ds: ${ds.startBlock}`);
-        return ds.startBlock <= startBlock;
-      });
+      .filter((ds) => ds.startBlock <= startBlock);
 
-    // console.log(`filteredDs`, filteredDs);
     for (const ds of filteredDs) {
       const plugin = isCustomDs(ds)
         ? this.dsProcessorService.getDsProcessor(ds)
@@ -258,31 +240,24 @@ export class FetchService implements OnApplicationShutdown {
       }
     }
 
-    const result = uniqBy(
+    return uniqBy(
       queryEntries,
       (item) =>
         `${item.entity}|${JSON.stringify(
           sortBy(item.conditions, (c) => c.field),
         )}`,
     );
-
-    console.log('result: ', result);
-    return result;
   }
 
   updateDictionary(): void {
     this.buildDictionaryEntriesMap();
-
-    console.log('Built');
     let checkDictionaryQueryEntries: boolean;
     this.mappedDictionaryQueryEntries.forEach((value) => {
-      if (value.length > 0) {
+      if (value?.length) {
         checkDictionaryQueryEntries = true;
       }
     });
-    // this.dictionaryQueryEntries = setDictionaryQueryEntries()
     this.useDictionary =
-      // !!this.dictionaryQueryEntries?.length
       checkDictionaryQueryEntries && !!this.project.network.dictionary;
   }
 
