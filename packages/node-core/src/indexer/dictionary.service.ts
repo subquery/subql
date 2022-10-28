@@ -102,13 +102,7 @@ function buildDictQueryFragment(
   batchSize: number
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
-  // TODO:
-  // should I run a loop to get all startBlocks?
-  // should be a check with lastProcessedBlock if last processed block is
-  // Two parts for it
-  // When creating dictionaryQueries only want active filters/handlers
-  // filter out any handlers that have a future startBlock
-  // knowing when to change the query, when a second datasource starts later
+
   const node: GqlNode = {
     entity,
     project: [

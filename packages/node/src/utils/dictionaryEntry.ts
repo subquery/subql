@@ -39,6 +39,7 @@ export function buildDictionaryEntryMap(
 
 export async function scopedDictionaryEntries(
   startBlockHeight: number,
+  endBlockHeight: number,
   queryEndBlock: number,
   scaledBatchSize: number,
   mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>,
@@ -52,6 +53,7 @@ export async function scopedDictionaryEntries(
   const dictionaryQueryEntries = setDictionaryQueryEntries(
     startBlockHeight,
     queryEndBlock,
+    endBlockHeight,
     mappedDictionaryQueryEntries,
   );
   console.log('Current dictQuery: ', dictionaryQueryEntries);
@@ -67,6 +69,7 @@ export async function scopedDictionaryEntries(
 export function setDictionaryQueryEntries(
   startBlock: number,
   queryEndBlock: number,
+  endBlockHeight: number,
   mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>,
 ): DictionaryQueryEntry[] {
   let dictionaryQueryEntries: DictionaryQueryEntry[] = [];
@@ -84,7 +87,7 @@ export function setDictionaryQueryEntries(
 
     if endBlock is greater or equal to key then implement key_2 query
      */
-    if (startBlock >= key) {
+    if (endBlockHeight >= key) {
       // if(value.length > 0) {
       //   console.log('using dictQuery:',  value)
       dictionaryQueryEntries = value;
@@ -95,5 +98,6 @@ export function setDictionaryQueryEntries(
 
   console.log('output dictQuery: ', dictionaryQueryEntries);
   console.log(`current dictKey: ${currKey} at startBlock: ${startBlock}`);
+  console.log('endBlock: ', endBlockHeight);
   return dictionaryQueryEntries;
 }

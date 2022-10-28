@@ -160,11 +160,13 @@ export class FetchService implements OnApplicationShutdown {
 
   private async getScopedDictionaryEntries(
     startBlockHeight: number,
+    endBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number,
   ): Promise<Dictionary> {
     return scopedDictionaryEntries(
       startBlockHeight,
+      endBlockHeight,
       queryEndBlock,
       scaledBatchSize,
       this.mappedDictionaryQueryEntries,
@@ -456,7 +458,14 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
+
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
+
       if (this.useDictionary) {
+        // DICTIONARY_MAX_QUERY_SIZE = 10000
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
           startBlockHeight,
@@ -465,6 +474,7 @@ export class FetchService implements OnApplicationShutdown {
         try {
           const dictionary = await this.getScopedDictionaryEntries(
             startBlockHeight,
+            endHeight,
             queryEndBlock,
             scaledBatchSize,
           );
@@ -507,11 +517,6 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
-
       if (this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
           this.getEnqueuedModuloBlocks(startBlockHeight),
