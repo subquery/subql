@@ -465,7 +465,6 @@ export class FetchService implements OnApplicationShutdown {
       );
 
       if (this.useDictionary) {
-        // DICTIONARY_MAX_QUERY_SIZE = 10000
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
           startBlockHeight,

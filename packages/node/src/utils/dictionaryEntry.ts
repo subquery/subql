@@ -56,7 +56,6 @@ export async function scopedDictionaryEntries(
     endBlockHeight,
     mappedDictionaryQueryEntries,
   );
-  console.log('Current dictQuery: ', dictionaryQueryEntries);
 
   return getDictionary(
     startBlockHeight,
@@ -72,32 +71,17 @@ export function setDictionaryQueryEntries(
   endBlockHeight: number,
   mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>,
 ): DictionaryQueryEntry[] {
-  let dictionaryQueryEntries: DictionaryQueryEntry[] = [];
-
-  let currKey: number;
+  let dictionaryQueryEntries: DictionaryQueryEntry[];
 
   mappedDictionaryQueryEntries.forEach((value, key, map) => {
-    /*
-    the logic for this wrong
-
-    e.g. keys 1,100,200
-    startBlock when using key_1 could be 99 and its endBlock could be 150
-    hence, skipping key_2 filters for those 50 blocks
-    should be using endBlock instead
-
-    if endBlock is greater or equal to key then implement key_2 query
-     */
     if (endBlockHeight >= key) {
-      // if(value.length > 0) {
-      //   console.log('using dictQuery:',  value)
       dictionaryQueryEntries = value;
-      currKey = key;
-      // }
     }
   });
 
-  console.log('output dictQuery: ', dictionaryQueryEntries);
-  console.log(`current dictKey: ${currKey} at startBlock: ${startBlock}`);
-  console.log('endBlock: ', endBlockHeight);
+  if (dictionaryQueryEntries === undefined) {
+    throw Error('Could not set dictionaryQueryEntries');
+  }
+
   return dictionaryQueryEntries;
 }
