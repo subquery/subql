@@ -427,14 +427,6 @@ describe('FetchService', () => {
     await fetchService.init(1);
     await pendingCondition;
 
-    // const loopPromise = fetchService.startLoop(1);
-    // // eslint-disable-next-line @typescript-eslint/require-await
-    // fetchService.register(async (content) => {
-    //   if (content.block.block.header.number.toNumber() === 10) {
-    //     fetchService.onApplicationShutdown();
-    //   }
-    // });
-    // await loopPromise;
     fetchService.onApplicationShutdown();
   }, 500000);
 
