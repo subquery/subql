@@ -8,4 +8,3 @@ export * from './sync-helper';
 export * from './batch-size';
 export * from './autoQueue';
 export * from './project';
-export * from './dictionaryEntry';

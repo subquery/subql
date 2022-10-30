@@ -92,11 +92,12 @@ export class FetchService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private isShutdown = false;
   private parentSpecVersion: number;
-  private useDictionary: boolean;
+  // private useDictionary: boolean;
   private batchSizeScale: number;
   private specVersionMap: SpecVersion[];
   private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
+  private dictionaryGenesisMatches = true;
 
   constructor(
     private apiService: ApiService,
@@ -134,7 +135,7 @@ export class FetchService implements OnApplicationShutdown {
   private buildDictionaryEntriesMap(): void {
     this.dictionaryService.buildDictionaryEntryMap(
       this.project.dataSources.concat(this.templateDynamicDatasouces),
-      this.getDictionaryQueryEntries.bind(this),
+      this.buildDictionaryQueryEntries.bind(this),
     );
   }
 
@@ -152,7 +153,7 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  getDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
+  buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
     const dataSources = this.project.dataSources.filter(
@@ -241,18 +242,18 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
-  // todo:
-  // update this check
   updateDictionary(): void {
     this.buildDictionaryEntriesMap();
-    let checkDictionaryQueryEntries: boolean;
-    // this.mappedDictionaryQueryEntries.forEach((value) => {
-    //   if (value?.length) {
-    //     checkDictionaryQueryEntries = true;
-    //   }
-    // });
-    this.useDictionary =
-      checkDictionaryQueryEntries && !!this.project.network.dictionary;
+  }
+
+  private get useDictionary(): boolean {
+    return (
+      !!this.project.network.dictionary &&
+      this.dictionaryGenesisMatches &&
+      !!this.dictionaryService.getDictionaryQueryEntries(
+        this.blockDispatcher.latestBufferedHeight + 1 ?? 0,
+      ).length
+    );
   }
 
   async init(startHeight: number): Promise<void> {
@@ -624,7 +625,7 @@ export class FetchService implements OnApplicationShutdown {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
         );
-        this.useDictionary = false;
+        this.dictionaryGenesisMatches = false;
         this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
           value: Number(this.useDictionary),
         });

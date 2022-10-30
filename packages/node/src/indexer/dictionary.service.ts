@@ -131,12 +131,12 @@ export class DictionaryService
     this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
-  private setDictionaryQueryEntries(
-    endBlockHeight: number,
-  ): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(endBlockHeight: number): DictionaryQueryEntry[] {
+    // use Find instead
+
     let dictionaryQueryEntries: DictionaryQueryEntry[];
 
-    this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
+    this.mappedDictionaryQueryEntries.forEach((value, key) => {
       if (endBlockHeight >= key) {
         dictionaryQueryEntries = value;
       }
@@ -159,7 +159,7 @@ export class DictionaryService
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.setDictionaryQueryEntries(endBlockHeight),
+      this.getDictionaryQueryEntries(endBlockHeight),
     );
   }
 }
