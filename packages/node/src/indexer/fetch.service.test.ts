@@ -12,7 +12,7 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { NodeConfig } from '@subql/node-core';
+import { buildDictionaryEntryMap, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -46,6 +46,61 @@ function testSubqueryProject(): SubqueryProject {
         name: 'runtime',
         kind: SubstrateDatasourceKind.Runtime,
         startBlock: 1,
+        mapping: {
+          entryScript: '',
+          handlers: [
+            { handler: 'handleTest', kind: SubstrateHandlerKind.Event },
+          ],
+          file: '',
+        },
+      },
+    ],
+    id: 'test',
+    root: './',
+    schema: new GraphQLSchema({}),
+    templates: [],
+  };
+}
+
+function testMultiDSSubqueryProject(): SubqueryProject {
+  return {
+    network: {
+      endpoint: WS_ENDPOINT,
+    },
+    chainTypes: {
+      types: {
+        TestType: 'u32',
+      },
+    },
+    dataSources: [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 100,
+        mapping: {
+          entryScript: '',
+          handlers: [
+            { handler: 'handleTest', kind: SubstrateHandlerKind.Event },
+          ],
+          file: '',
+        },
+      },
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 200,
+        mapping: {
+          entryScript: '',
+          handlers: [
+            { handler: 'handleTest', kind: SubstrateHandlerKind.Call },
+          ],
+          file: '',
+        },
+      },
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 300,
         mapping: {
           entryScript: '',
           handlers: [
@@ -744,4 +799,35 @@ describe('FetchService', () => {
     // Should be called 91151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
+
+  // Test if the built map is correct, the values of the arrays to be accumlative
+  it('buildDictionaryQueryEntries', () => {
+    const project = testMultiDSSubqueryProject();
+    const templateDynamicDatasouces = [];
+    const startHeight = project.dataSources[0].startBlock;
+    const mappedQueryEntries = buildDictionaryEntryMap(
+      project.dataSources,
+      templateDynamicDatasouces,
+      (fetchService as any).getDictionaryQueryEntries,
+    );
+
+    // expect(mappedQueryEntries).toBe()
+    //
+  });
+
+  //test if getDictionary is using the correct mapped_value at certain heights
+  /*
+  e.g.
+
+  mapping_keys =  100,200,300
+  startBlock = 170
+  endBlock is 201
+
+  this should be using the dictQuery for mapping_keys 200
+   */
+
+  /*
+ useDictionary should be disabled, if there is a blockHandler in future dataSource
+ However, it should remain true prior to the block
+  */
 });

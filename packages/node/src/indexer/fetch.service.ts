@@ -29,8 +29,7 @@ import {
   IndexerEvent,
   NodeConfig,
   profiler,
-  buildDictionaryEntryMap,
-  scopedDictionaryEntries,
+  DictionaryQueryEntriesService,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
@@ -112,6 +111,7 @@ export class FetchService implements OnApplicationShutdown {
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+    private dictionaryQueryEntriesService: DictionaryQueryEntriesService,
   ) {
     this.batchSizeScale = 1;
   }
@@ -136,12 +136,11 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private buildDictionaryEntriesMap(): void {
-    this.mappedDictionaryQueryEntries = buildDictionaryEntryMap(
-      this.project.dataSources,
-      this.templateDynamicDatasouces,
-      this.api.runtimeVersion.specName,
-      this.getDictionaryQueryEntries.bind(this),
-    );
+    this.mappedDictionaryQueryEntries =
+      this.dictionaryQueryEntriesService.buildDictionaryEntryMap(
+        this.project.dataSources.concat(this.templateDynamicDatasouces),
+        this.getDictionaryQueryEntries.bind(this),
+      );
   }
 
   private async getScopedDictionaryEntries(
@@ -150,13 +149,12 @@ export class FetchService implements OnApplicationShutdown {
     queryEndBlock: number,
     scaledBatchSize: number,
   ): Promise<Dictionary> {
-    return scopedDictionaryEntries(
+    return this.dictionaryQueryEntriesService.scopedDictionaryEntries(
       startBlockHeight,
       endBlockHeight,
       queryEndBlock,
       scaledBatchSize,
       this.mappedDictionaryQueryEntries,
-      this.dictionaryService.getDictionary.bind(this.dictionaryService),
     );
   }
 
