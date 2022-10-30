@@ -88,7 +88,7 @@ export class UnfinalizedBlocksService {
     if (block) {
       await this.registerUnfinalizedBlock(
         block.block.header.number.toNumber(),
-        block.hash.toHex(),
+        block.block.header.hash.toHex(),
         tx,
       );
     }
@@ -148,16 +148,9 @@ export class UnfinalizedBlocksService {
 
   // remove any records less and equal than input finalized blockHeight
   private removeFinalized(blockHeight: number): void {
-    const index = this.unfinalizedBlocks.findIndex(
-      ([height]) => height === blockHeight,
+    this.unfinalizedBlocks = this.unfinalizedBlocks.filter(
+      ([height]) => height > blockHeight,
     );
-
-    if (index !== -1) {
-      this.unfinalizedBlocks = this.unfinalizedBlocks.slice(
-        index + 1, // We don't want to include the blockHeight hence the + 1
-        this.unfinalizedBlocks.length,
-      );
-    }
   }
 
   // find closest record from block heights
@@ -188,7 +181,16 @@ export class UnfinalizedBlocksService {
 
     // Unfinalized blocks beyond finalized block
     if (lastVerifiableBlock.blockHeight === this.finalizedBlockNumber) {
-      return lastVerifiableBlock.hash !== this.finalizedHeader.hash.toHex();
+      if (lastVerifiableBlock.hash !== this.finalizedHeader.hash.toHex()) {
+        logger.warn(
+          `Block fork found, enqueued un-finalized block at ${
+            lastVerifiableBlock.blockHeight
+          } with hash ${
+            lastVerifiableBlock.hash
+          }, actual hash is ${this.finalizedHeader.hash.toHex()}`,
+        );
+        return true;
+      }
     } else {
       // Unfinalized blocks below finalized block
       let header = this.finalizedHeader;
