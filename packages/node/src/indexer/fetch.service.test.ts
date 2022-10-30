@@ -12,7 +12,7 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { buildDictionaryEntryMap, NodeConfig } from '@subql/node-core';
+import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -805,11 +805,13 @@ describe('FetchService', () => {
     const project = testMultiDSSubqueryProject();
     const templateDynamicDatasouces = [];
     const startHeight = project.dataSources[0].startBlock;
-    const mappedQueryEntries = buildDictionaryEntryMap(
+    /*
+       const mappedQueryEntries = buildDictionaryEntryMap(
       project.dataSources,
       templateDynamicDatasouces,
       (fetchService as any).getDictionaryQueryEntries,
     );
+     */
 
     // expect(mappedQueryEntries).toBe()
     //
