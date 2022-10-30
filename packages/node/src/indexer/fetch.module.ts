@@ -10,7 +10,6 @@ import {
   PoiService,
   DbModule,
   NodeConfig,
-  DictionaryQueryEntriesService,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -69,7 +68,6 @@ import {
     PoiService,
     MmrService,
     ProjectService,
-    DictionaryQueryEntriesService,
   ],
   exports: [StoreService, MmrService],
 })

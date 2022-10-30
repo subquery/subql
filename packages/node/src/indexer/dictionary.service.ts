@@ -8,7 +8,9 @@ import {
   timeout,
   getLogger,
   DictionaryService as CoreDictionaryService,
+  Dictionary,
 } from '@subql/node-core';
+import { DictionaryQueryEntry } from '@subql/types';
 import { buildQuery, GqlNode, GqlQuery, MetaData } from '@subql/utils';
 import { SubqueryProject } from '../configure/SubqueryProject';
 
@@ -30,6 +32,8 @@ export class DictionaryService
   extends CoreDictionaryService
   implements OnApplicationShutdown
 {
+  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
+
   constructor(protected project: SubqueryProject, nodeConfig: NodeConfig) {
     super(project.network.dictionary, nodeConfig);
   }
@@ -110,5 +114,52 @@ export class DictionaryService
       },
     ];
     return buildQuery([], nodes);
+  }
+
+  buildDictionaryEntryMap(
+    dataSources: any[],
+    getDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[],
+  ): void {
+    const mappedDictionaryQueryEntries = new Map();
+
+    for (const ds of dataSources) {
+      mappedDictionaryQueryEntries.set(
+        ds.startBlock,
+        getDictionaryQueryEntries(ds.startBlock),
+      );
+    }
+    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
+  }
+
+  private setDictionaryQueryEntries(
+    endBlockHeight: number,
+  ): DictionaryQueryEntry[] {
+    let dictionaryQueryEntries: DictionaryQueryEntry[];
+
+    this.mappedDictionaryQueryEntries.forEach((value, key, map) => {
+      if (endBlockHeight >= key) {
+        dictionaryQueryEntries = value;
+      }
+    });
+
+    if (dictionaryQueryEntries === undefined) {
+      throw Error('Could not set dictionaryQueryEntries');
+    }
+
+    return dictionaryQueryEntries;
+  }
+
+  async scopedDictionaryEntries(
+    startBlockHeight: number,
+    endBlockHeight: number,
+    queryEndBlock: number,
+    scaledBatchSize: number,
+  ): Promise<Dictionary> {
+    return this.getDictionary(
+      startBlockHeight,
+      queryEndBlock,
+      scaledBatchSize,
+      this.setDictionaryQueryEntries(endBlockHeight),
+    );
   }
 }

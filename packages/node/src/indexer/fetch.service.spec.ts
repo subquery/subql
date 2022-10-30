@@ -10,12 +10,7 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import {
-  IndexerEvent,
-  NodeConfig,
-  Dictionary,
-  DictionaryQueryEntriesService,
-} from '@subql/node-core';
+import { IndexerEvent, NodeConfig, Dictionary } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
@@ -317,7 +312,6 @@ function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
-    new DictionaryQueryEntriesService(dictionaryService),
   );
 }
 
@@ -486,9 +480,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-    const dictionaryQueryEntriesService = new DictionaryQueryEntriesService(
-      dictionaryService,
-    );
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -500,7 +491,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      dictionaryQueryEntriesService,
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -581,9 +571,6 @@ describe('FetchService', () => {
       mockProjectService(),
     );
 
-    const dictionaryQueryEntriesService = new DictionaryQueryEntriesService(
-      dictionaryService,
-    );
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -595,7 +582,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      dictionaryQueryEntriesService,
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -668,9 +654,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-    const dictionaryQueryEntriesService = new DictionaryQueryEntriesService(
-      dictionaryService,
-    );
     fetchService = new FetchService(
       apiService,
       nodeConfig,
@@ -682,7 +665,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      dictionaryQueryEntriesService,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

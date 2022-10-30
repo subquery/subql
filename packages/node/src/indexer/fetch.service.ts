@@ -29,7 +29,6 @@ import {
   IndexerEvent,
   NodeConfig,
   profiler,
-  DictionaryQueryEntriesService,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
@@ -94,12 +93,10 @@ export class FetchService implements OnApplicationShutdown {
   private isShutdown = false;
   private parentSpecVersion: number;
   private useDictionary: boolean;
-  private dictionaryQueryEntries?: DictionaryQueryEntry[];
   private batchSizeScale: number;
   private specVersionMap: SpecVersion[];
   private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
-  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
 
   constructor(
     private apiService: ApiService,
@@ -111,7 +108,6 @@ export class FetchService implements OnApplicationShutdown {
     private dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
-    private dictionaryQueryEntriesService: DictionaryQueryEntriesService,
   ) {
     this.batchSizeScale = 1;
   }
@@ -136,11 +132,10 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   private buildDictionaryEntriesMap(): void {
-    this.mappedDictionaryQueryEntries =
-      this.dictionaryQueryEntriesService.buildDictionaryEntryMap(
-        this.project.dataSources.concat(this.templateDynamicDatasouces),
-        this.getDictionaryQueryEntries.bind(this),
-      );
+    this.dictionaryService.buildDictionaryEntryMap(
+      this.project.dataSources.concat(this.templateDynamicDatasouces),
+      this.getDictionaryQueryEntries.bind(this),
+    );
   }
 
   private async getScopedDictionaryEntries(
@@ -149,12 +144,11 @@ export class FetchService implements OnApplicationShutdown {
     queryEndBlock: number,
     scaledBatchSize: number,
   ): Promise<Dictionary> {
-    return this.dictionaryQueryEntriesService.scopedDictionaryEntries(
+    return this.dictionaryService.scopedDictionaryEntries(
       startBlockHeight,
       endBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.mappedDictionaryQueryEntries,
     );
   }
 
@@ -247,14 +241,16 @@ export class FetchService implements OnApplicationShutdown {
     );
   }
 
+  // todo:
+  // update this check
   updateDictionary(): void {
     this.buildDictionaryEntriesMap();
     let checkDictionaryQueryEntries: boolean;
-    this.mappedDictionaryQueryEntries.forEach((value) => {
-      if (value?.length) {
-        checkDictionaryQueryEntries = true;
-      }
-    });
+    // this.mappedDictionaryQueryEntries.forEach((value) => {
+    //   if (value?.length) {
+    //     checkDictionaryQueryEntries = true;
+    //   }
+    // });
     this.useDictionary =
       checkDictionaryQueryEntries && !!this.project.network.dictionary;
   }
