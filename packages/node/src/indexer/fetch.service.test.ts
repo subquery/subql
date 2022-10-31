@@ -62,61 +62,6 @@ function testSubqueryProject(): SubqueryProject {
   };
 }
 
-function testMultiDSSubqueryProject(): SubqueryProject {
-  return {
-    network: {
-      endpoint: WS_ENDPOINT,
-    },
-    chainTypes: {
-      types: {
-        TestType: 'u32',
-      },
-    },
-    dataSources: [
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 100,
-        mapping: {
-          entryScript: '',
-          handlers: [
-            { handler: 'handleTest', kind: SubstrateHandlerKind.Event },
-          ],
-          file: '',
-        },
-      },
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 200,
-        mapping: {
-          entryScript: '',
-          handlers: [
-            { handler: 'handleTest', kind: SubstrateHandlerKind.Call },
-          ],
-          file: '',
-        },
-      },
-      {
-        name: 'runtime',
-        kind: SubstrateDatasourceKind.Runtime,
-        startBlock: 300,
-        mapping: {
-          entryScript: '',
-          handlers: [
-            { handler: 'handleTest', kind: SubstrateHandlerKind.Event },
-          ],
-          file: '',
-        },
-      },
-    ],
-    id: 'test',
-    root: './',
-    schema: new GraphQLSchema({}),
-    templates: [],
-  };
-}
-
 function mockIndexerManager(): IndexerManager & {
   register: (handler: IndexerManager['indexBlock']) => void;
 } {
@@ -802,9 +747,9 @@ describe('FetchService', () => {
 
   // Test if the built map is correct, the values of the arrays to be accumlative
   it('buildDictionaryQueryEntries', () => {
-    const project = testMultiDSSubqueryProject();
-    const templateDynamicDatasouces = [];
-    const startHeight = project.dataSources[0].startBlock;
+    // const project = testMultiDSSubqueryProject();
+    // const templateDynamicDatasouces = [];
+    // const startHeight = project.dataSources[0].startBlock;
     /*
        const mappedQueryEntries = buildDictionaryEntryMap(
       project.dataSources,
@@ -812,7 +757,6 @@ describe('FetchService', () => {
       (fetchService as any).getDictionaryQueryEntries,
     );
      */
-
     // expect(mappedQueryEntries).toBe()
     //
   });

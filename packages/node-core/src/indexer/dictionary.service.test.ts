@@ -2,9 +2,71 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NodeConfig} from '@subql/node-core';
-import {DictionaryQueryEntry} from '@subql/types';
+import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {range} from 'lodash';
 import {DictionaryService} from './dictionary.service';
+
+const mockDS = [
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 100,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Event,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 500,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Call,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+            success: true,
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 1000,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Call,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+            success: true,
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+];
 
 const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
 
@@ -150,8 +212,19 @@ describe('DictionaryService', () => {
    */
   it('able to build queryEntryMap', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
-    // length of map 2 should be greater than map 1
-    // need a mockDS
-    // const dictionaryQueryEntryMap = dictionaryService.buildDictionaryEntryMap()
+    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
+    const map = (dictionaryService as any).mappedDictionaryQueryEntries;
+    expect([...map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
+    expect(map.size).toEqual(mockDS.length);
+  });
+
+  // If endBlock logic
+  // for getDictionaryQueryEntries
+  // when endBlock given, it should output the correct value
+  it('able to getDicitonaryQueryEntries', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    // const map:  Map<number, DictionaryQueryEntry[]>
+
+    const _map = new Map();
   });
 });

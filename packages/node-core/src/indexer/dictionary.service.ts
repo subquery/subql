@@ -233,13 +233,15 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery(vars, nodes);
   }
   buildDictionaryEntryMap(
+    // dataSources: { startBlock: number }[],
+    // TODO: change type later
     dataSources: any[],
-    getDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
+    buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
     const mappedDictionaryQueryEntries = new Map();
 
     for (const ds of dataSources) {
-      mappedDictionaryQueryEntries.set(ds.startBlock, getDictionaryQueryEntries(ds.startBlock));
+      mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
     this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
