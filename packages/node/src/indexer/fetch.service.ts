@@ -251,7 +251,8 @@ export class FetchService implements OnApplicationShutdown {
       !!this.project.network.dictionary &&
       this.dictionaryGenesisMatches &&
       !!this.dictionaryService.getDictionaryQueryEntries(
-        this.blockDispatcher.latestBufferedHeight + 1 ?? 0,
+        this.blockDispatcher.latestBufferedHeight ??
+          Math.min(...this.project.dataSources.map((ds) => ds.startBlock)),
       ).length
     );
   }

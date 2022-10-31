@@ -132,8 +132,6 @@ export class DictionaryService
   }
 
   getDictionaryQueryEntries(endBlockHeight: number): DictionaryQueryEntry[] {
-    // use Find instead
-
     let dictionaryQueryEntries: DictionaryQueryEntry[];
 
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
@@ -143,7 +141,7 @@ export class DictionaryService
     });
 
     if (dictionaryQueryEntries === undefined) {
-      throw Error('Could not set dictionaryQueryEntries');
+      throw Error('Could not get dictionaryQueryEntries');
     }
 
     return dictionaryQueryEntries;
