@@ -70,7 +70,7 @@ const mockDS = [
 
 const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
 
-const HAPPY_PATH_CONDITIONS = () => [
+const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
   {
     entity: 'events',
     conditions: [
@@ -214,7 +214,7 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
 
     // jest should mock this following function below
-    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS());
+    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
     const map = (dictionaryService as any).mappedDictionaryQueryEntries;
     expect([...map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
     expect(map.size).toEqual(mockDS.length);
@@ -227,13 +227,21 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
     const endBlock_1 = 150;
     const endBlock_2 = 250;
-    const _map = new Map();
-    _map.set(100, [{entity: 'evmLogs', conditions: ['hello']}]);
-    _map.set(200, [
-      {entity: 'evmLogs', conditions: ['hello']},
-      {entity: 'evmTransactions', conditions: ['world']},
-    ]);
 
+    /*
+    Conditions to test:
+      - EndBlock is less than first dictionaryQuery startHeight
+      - EndBlock is greater than first DictionaryQuery startHeight
+      - EndBlock is < second but > first
+      - EndBlock is > first > second
+
+     */
+
+    const _map = new Map();
+    _map.set(100, [HAPPY_PATH_CONDITIONS[0]]);
+    _map.set(200, [HAPPY_PATH_CONDITIONS[0], HAPPY_PATH_CONDITIONS[1]]);
+
+    (dictionaryService as any).mappedDictionaryQueryEntries = _map;
     /*
     Map(2) {
   753000 => [ { entity: 'evmLogs', conditions: [Array] } ],
@@ -250,8 +258,7 @@ describe('DictionaryService', () => {
     const selectedQueryEntry_1 = dictionaryService.getDictionaryQueryEntries(endBlock_1);
     const selectedQueryEntry_2 = dictionaryService.getDictionaryQueryEntries(endBlock_2);
 
-    console.log(selectedQueryEntry_1);
-    // expect(selectedQueryEntry_1.length).toEqual(_map['100'].length)
-    // expect(selectedQueryEntry_2.length).toEqual(2)
+    expect(selectedQueryEntry_1).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+    expect(selectedQueryEntry_2).toEqual([HAPPY_PATH_CONDITIONS[0], HAPPY_PATH_CONDITIONS[1]]);
   });
 });
