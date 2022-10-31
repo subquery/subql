@@ -92,7 +92,6 @@ export class FetchService implements OnApplicationShutdown {
   private latestFinalizedHeight: number;
   private isShutdown = false;
   private parentSpecVersion: number;
-  // private useDictionary: boolean;
   private batchSizeScale: number;
   private specVersionMap: SpecVersion[];
   private currentRuntimeVersion: RuntimeVersion;

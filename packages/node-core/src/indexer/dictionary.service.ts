@@ -127,6 +127,7 @@ function buildDictQueryFragment(
 export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
+  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
 
   constructor(
     readonly dictionaryEndpoint: string,
@@ -167,6 +168,9 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
+
+    console.log('query: ', query);
+    console.log(variables);
 
     try {
       const resp = await timeout(
@@ -227,5 +231,46 @@ export class DictionaryService implements OnApplicationShutdown {
       vars.push(...pVars);
     }
     return buildQuery(vars, nodes);
+  }
+  buildDictionaryEntryMap(
+    dataSources: any[],
+    getDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
+  ): void {
+    const mappedDictionaryQueryEntries = new Map();
+
+    for (const ds of dataSources) {
+      mappedDictionaryQueryEntries.set(ds.startBlock, getDictionaryQueryEntries(ds.startBlock));
+    }
+    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
+  }
+
+  getDictionaryQueryEntries(endBlockHeight: number): DictionaryQueryEntry[] {
+    let dictionaryQueryEntries: DictionaryQueryEntry[];
+
+    this.mappedDictionaryQueryEntries.forEach((value, key) => {
+      if (endBlockHeight >= key) {
+        dictionaryQueryEntries = value;
+      }
+    });
+
+    if (dictionaryQueryEntries === undefined) {
+      throw Error('Could not get dictionaryQueryEntries');
+    }
+
+    return dictionaryQueryEntries;
+  }
+
+  async scopedDictionaryEntries(
+    startBlockHeight: number,
+    endBlockHeight: number,
+    queryEndBlock: number,
+    scaledBatchSize: number
+  ): Promise<Dictionary> {
+    return this.getDictionary(
+      startBlockHeight,
+      queryEndBlock,
+      scaledBatchSize,
+      this.getDictionaryQueryEntries(endBlockHeight)
+    );
   }
 }

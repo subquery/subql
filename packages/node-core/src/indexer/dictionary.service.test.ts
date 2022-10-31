@@ -143,4 +143,15 @@ describe('DictionaryService', () => {
     ]);
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
+
+  /*
+  this should test if the map is able to generate in the correct way, given a project.yaml with multiple ds
+  map should generate given single ds in project.yaml
+   */
+  it('able to build queryEntryMap', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    // length of map 2 should be greater than map 1
+    // need a mockDS
+    // const dictionaryQueryEntryMap = dictionaryService.buildDictionaryEntryMap()
+  });
 });
