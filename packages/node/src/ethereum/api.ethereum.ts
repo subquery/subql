@@ -6,7 +6,7 @@ import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import { Block } from '@ethersproject/abstract-provider';
-import { Web3Provider } from '@ethersproject/providers';
+import { JsonRpcProvider, WebSocketProvider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
 import {
@@ -17,15 +17,13 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-ethereum';
-import { hexDataSlice, hexValue } from 'ethers/lib/utils';
+import { ConnectionInfo, hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { EthereumBlockWrapped } from './block.ethereum';
 import {
   formatBlock,
   formatReceipt,
   formatTransaction,
 } from './utils.ethereum';
-const Web3HttpProvider = require('web3-providers-http');
-const Web3WsProvider = require('web3-providers-ws');
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -52,7 +50,7 @@ async function loadAssets(
 }
 
 export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
-  private client: Web3Provider;
+  private client: JsonRpcProvider;
   private genesisBlock: Record<string, any>;
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
@@ -61,64 +59,31 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     const { hostname, pathname, port, protocol, searchParams } = new URL(
       endpoint,
     );
-    const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 10 });
-    const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 10 });
 
     const protocolStr = protocol.replace(':', '');
-    const portNum = port
-      ? parseInt(port, 10)
-      : protocolStr === 'https'
-      ? undefined
-      : 80;
 
-    let provider;
     if (protocolStr === 'https' || protocolStr === 'http') {
-      const options = {
-        keepAlive: true,
-        headers: [
-          {
-            name: 'User-Agent',
-            value: `Subquery-Node ${packageVersion}`,
-          },
-        ],
-        agent: {
-          http: httpAgent,
-          https: httpsAgent,
-        },
-      };
-      if ((searchParams as any).apiKey) {
-        (options.headers as any).apiKey = searchParams.get('apiKey');
-      }
-      provider = new Web3HttpProvider(this.endpoint, options);
-    } else if (protocolStr === 'ws' || protocolStr === 'wss') {
-      const options = {
+      const connection: ConnectionInfo = {
+        url: this.endpoint,
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },
-        clientConfig: {
-          keepAlive: true,
-        },
       };
       if ((searchParams as any).apiKey) {
-        (options.headers as any).apiKey = searchParams.get('apiKey');
+        (connection.headers as any).apiKey = searchParams.get('apiKey');
       }
-
-      provider = new Web3WsProvider(endpoint, options);
+      this.client = new JsonRpcProvider(connection);
+    } else if (protocolStr === 'ws' || protocolStr === 'wss') {
+      this.client = new WebSocketProvider(this.endpoint);
     } else {
       throw new Error(`Unsupported protocol: ${protocol}`);
     }
-
-    this.client = new Web3Provider(provider);
   }
 
   async init(): Promise<void> {
-    this.genesisBlock = await this.client.send('eth_getBlockByNumber', [
-      hexValue(0),
-      true,
-    ]);
-    logger.info(this.endpoint);
+    this.genesisBlock = await this.client.getBlock(0);
 
-    this.chainId = await this.client.send('net_version', []);
+    this.chainId = (await this.client.getNetwork()).chainId;
   }
 
   async getLastHeight(): Promise<number> {
@@ -161,6 +126,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
           ]);
 
           const block = formatBlock(block_promise);
+
           //const block = this.client.formatter.blockWithTransactions(rawBlock);
           block.stateRoot = this.client.formatter.hash(block.stateRoot);
           // Get transaction receipts
@@ -168,10 +134,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
             block.transactions.map(async (tx) => {
               //logger.info(JSON.stringify(tx))
               const transaction = formatTransaction(tx);
-              const receipt = await this.client.send(
-                'eth_getTransactionReceipt',
-                [tx.hash],
-              );
+              const receipt = await this.client.getTransactionReceipt(tx.hash);
 
               transaction.receipt = formatReceipt(receipt, block);
               return transaction;
