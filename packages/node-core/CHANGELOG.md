@@ -10,6 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.2.0] - 2022-10-28
+
+### Added
+- Support for unfinalized blocks. (#1308)
+
 ## [1.1.0] - 2022-10-27
 
 ### Changed
