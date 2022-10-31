@@ -45,7 +45,6 @@ import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
@@ -111,7 +110,6 @@ export class FetchService implements OnApplicationShutdown {
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
-    private projectService: ProjectService,
   ) {
     this.batchSizeScale = 1;
   }

@@ -258,7 +258,10 @@ export class BlockDispatcherService
             const runtimeVersion = await this.getRuntimeVersion(block.block);
             const { dynamicDsCreated, operationHash, reindexBlockHeight } =
               await this.indexerManager.indexBlock(block, runtimeVersion);
-            if (reindexBlockHeight !== null) {
+            if (
+              reindexBlockHeight !== null &&
+              reindexBlockHeight !== undefined
+            ) {
               await this.rewind(reindexBlockHeight);
               this.latestProcessedHeight = reindexBlockHeight;
             } else {

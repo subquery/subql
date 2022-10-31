@@ -282,7 +282,6 @@ function createFetchService(
 ) {
   const dsProcessorService = new DsProcessorService(project, config);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
-  const projectService = {} as unknown as ProjectService;
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
     subquery: '',
@@ -313,7 +312,6 @@ function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
-    projectService,
   );
 }
 
@@ -429,14 +427,6 @@ describe('FetchService', () => {
     await fetchService.init(1);
     await pendingCondition;
 
-    // const loopPromise = fetchService.startLoop(1);
-    // // eslint-disable-next-line @typescript-eslint/require-await
-    // fetchService.register(async (content) => {
-    //   if (content.block.block.header.number.toNumber() === 10) {
-    //     fetchService.onApplicationShutdown();
-    //   }
-    // });
-    // await loopPromise;
     fetchService.onApplicationShutdown();
   }, 500000);
 
@@ -478,7 +468,6 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const projectService = {} as unknown as ProjectService;
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
@@ -502,7 +491,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      projectService,
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -569,7 +557,6 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const projectService = {} as unknown as ProjectService;
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
@@ -594,7 +581,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      projectService,
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -655,7 +641,6 @@ describe('FetchService', () => {
       subqueryName: '',
       batchSize,
     });
-    const projectService = {} as unknown as ProjectService;
     const unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       nodeConfig,
@@ -679,7 +664,6 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      projectService,
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
