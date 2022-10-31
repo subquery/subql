@@ -70,7 +70,7 @@ const mockDS = [
 
 const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
 
-const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
+const HAPPY_PATH_CONDITIONS = () => [
   {
     entity: 'events',
     conditions: [
@@ -212,7 +212,9 @@ describe('DictionaryService', () => {
    */
   it('able to build queryEntryMap', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
-    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
+
+    // jest should mock this following function below
+    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS());
     const map = (dictionaryService as any).mappedDictionaryQueryEntries;
     expect([...map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
     expect(map.size).toEqual(mockDS.length);
@@ -223,8 +225,33 @@ describe('DictionaryService', () => {
   // when endBlock given, it should output the correct value
   it('able to getDicitonaryQueryEntries', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
-    // const map:  Map<number, DictionaryQueryEntry[]>
-
+    const endBlock_1 = 150;
+    const endBlock_2 = 250;
     const _map = new Map();
+    _map.set(100, [{entity: 'evmLogs', conditions: ['hello']}]);
+    _map.set(200, [
+      {entity: 'evmLogs', conditions: ['hello']},
+      {entity: 'evmTransactions', conditions: ['world']},
+    ]);
+
+    /*
+    Map(2) {
+  753000 => [ { entity: 'evmLogs', conditions: [Array] } ],
+  754000 => [
+    { entity: 'evmLogs', conditions: [Array] },
+    { entity: 'evmTransactions', conditions: [Array] }
+  ]
+
+     */
+    // const _map = {
+    //   100:[HAPPY_PATH_CONDITIONS()[0]],
+    //   200:[HAPPY_PATH_CONDITIONS()[0], HAPPY_PATH_CONDITIONS()[0]]
+    // }
+    const selectedQueryEntry_1 = dictionaryService.getDictionaryQueryEntries(endBlock_1);
+    const selectedQueryEntry_2 = dictionaryService.getDictionaryQueryEntries(endBlock_2);
+
+    console.log(selectedQueryEntry_1);
+    // expect(selectedQueryEntry_1.length).toEqual(_map['100'].length)
+    // expect(selectedQueryEntry_2.length).toEqual(2)
   });
 });
