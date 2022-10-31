@@ -14,6 +14,7 @@ import {
 } from '@subql/common-substrate';
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
+import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -24,6 +25,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
@@ -112,6 +114,10 @@ async function createApp(
         useFactory: () => nodeConfig,
       },
       {
+        provide: Sequelize,
+        useFactory: jest.fn(),
+      },
+      {
         provide: 'IBlockDispatcher',
         useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
           new BlockDispatcherService(
@@ -143,6 +149,7 @@ async function createApp(
         useFactory: () => new DictionaryService(project, nodeConfig),
       },
       SchedulerRegistry,
+      UnfinalizedBlocksService,
       FetchService,
     ],
     imports: [EventEmitterModule.forRoot()],
