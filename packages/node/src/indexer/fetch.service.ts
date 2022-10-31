@@ -12,11 +12,11 @@ import {
 import {
   ApiService,
   Dictionary,
-  delay,
   checkMemoryUsage,
-  NodeConfig,
-  IndexerEvent,
+  delay,
   getLogger,
+  IndexerEvent,
+  NodeConfig,
 } from '@subql/node-core';
 import {
   DictionaryQueryEntry,
@@ -295,9 +295,20 @@ export class FetchService implements OnApplicationShutdown {
     return moduloBlocks;
   }
 
+  getEnqueuedModuloBlocks(startBlockHeight: number): number[] {
+    return this.getModuloBlocks(
+      startBlockHeight,
+      this.nodeConfig.batchSize * Math.max(...this.getModulos()) +
+        startBlockHeight,
+    ).slice(0, this.nodeConfig.batchSize);
+  }
+
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
     let startBlockHeight: number;
     let scaledBatchSize: number;
+    const handlers = [].concat(
+      ...this.project.dataSources.map((ds) => ds.mapping.handlers),
+    );
 
     const getStartBlockHeight = (): number => {
       return this.blockDispatcher.latestBufferedHeight
@@ -312,7 +323,6 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
-
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
         startBlockHeight > this.latestFinalizedHeight
@@ -346,6 +356,7 @@ export class FetchService implements OnApplicationShutdown {
             this.dictionaryValidation(dictionary, startBlockHeight)
           ) {
             let { batchBlocks } = dictionary;
+
             batchBlocks = batchBlocks
               .concat(moduloBlocks)
               .sort((a, b) => a - b);
@@ -371,14 +382,20 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-      // the original method: fill next batch size of blocks
       const endHeight = this.nextEndBlockHeight(
         startBlockHeight,
         scaledBatchSize,
       );
-      this.blockDispatcher.enqueueBlocks(
-        range(startBlockHeight, endHeight + 1),
-      );
+
+      if (this.getModulos().length === handlers.length) {
+        this.blockDispatcher.enqueueBlocks(
+          this.getEnqueuedModuloBlocks(startBlockHeight),
+        );
+      } else {
+        this.blockDispatcher.enqueueBlocks(
+          range(startBlockHeight, endHeight + 1),
+        );
+      }
     }
   }
 
@@ -421,6 +438,7 @@ export class FetchService implements OnApplicationShutdown {
 
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
+    this.dynamicDsService.deleteTempDsRecords(blockHeight);
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }

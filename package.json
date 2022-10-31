@@ -8,6 +8,7 @@
     "@actions/core": "^1.6.0",
     "@babel/preset-env": "^7.16.11",
     "@octokit/request": "^5.6.3",
+    "@types/cron-converter": "^1",
     "@types/node": "^14.18.10",
     "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.2",
@@ -32,8 +33,8 @@
     "typescript": "^4.4.4"
   },
   "resolutions": {
-    "@polkadot/api": "9.4.2",
-    "@polkadot/util": "10.1.9",
+    "@polkadot/api": "9.5.2",
+    "@polkadot/util": "10.1.11",
     "@terra-money/terra.js": "^3.0.11",
     "node-fetch": "2.6.7"
   },

@@ -40,6 +40,9 @@ export class BlockFilter implements EthereumBlockFilter {
   @IsOptional()
   @IsInt()
   modulo?: number;
+  @IsOptional()
+  @IsString()
+  timestamp?: string;
 }
 
 export class LogFilter implements EthereumLogFilter {

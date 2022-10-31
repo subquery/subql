@@ -5,6 +5,7 @@ import {BlockWrapper} from '../interfaces';
 
 export interface EthereumBlockFilter {
   modulo?: number;
+  timestamp?: string;
 }
 
 export interface EthereumTransactionFilter {
