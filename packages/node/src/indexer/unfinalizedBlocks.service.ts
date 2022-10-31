@@ -23,6 +23,8 @@ export const METADATA_UNFINALIZED_BLOCKS_KEY = 'unfinalizedBlocks';
 export const METADATA_LAST_FINALIZED_PROCESSED_KEY =
   'lastFinalizedVerifiedHeight';
 
+const UNFINALIZED_THRESHOLD = 200;
+
 type UnfinalizedBlocks = [blockHeight: number, blockHash: HexString][];
 
 @Injectable()
@@ -93,12 +95,13 @@ export class UnfinalizedBlocksService {
       );
     }
 
-    if (!(await this.hasForked())) {
+    const forkedHeader = await this.hasForked();
+    if (!forkedHeader) {
       // Remove blocks that are now confirmed finalized
       await this.deleteFinalizedBlock(tx);
     } else {
       // Get the last unfinalized block that is now finalized
-      return this.getLastCorrectFinalizedBlock();
+      return this.getLastCorrectFinalizedBlock(forkedHeader);
     }
 
     return null;
@@ -168,15 +171,15 @@ export class UnfinalizedBlocksService {
     return undefined;
   }
 
-  // check unfinalized blocks for a fork
-  private async hasForked(): Promise<boolean> {
+  // check unfinalized blocks for a fork, returns the header where a fork happened
+  private async hasForked(): Promise<Header | undefined> {
     const lastVerifiableBlock = this.getClosestRecord(
       this.finalizedBlockNumber,
     );
 
     // No unfinalized blocks
     if (!lastVerifiableBlock) {
-      return false;
+      return;
     }
 
     // Unfinalized blocks beyond finalized block
@@ -189,7 +192,7 @@ export class UnfinalizedBlocksService {
             lastVerifiableBlock.hash
           }, actual hash is ${this.finalizedHeader.hash.toHex()}`,
         );
-        return true;
+        return this.finalizedHeader;
       }
     } else {
       // Unfinalized blocks below finalized block
@@ -199,7 +202,10 @@ export class UnfinalizedBlocksService {
        * We use headers here rather than getBlockHash because of potential caching issues on the rpc
        * If we're off by a large number of blocks we can optimise by getting the block hash directly
        */
-      if (header.number.toNumber() - lastVerifiableBlock.blockHeight > 200) {
+      if (
+        header.number.toNumber() - lastVerifiableBlock.blockHeight >
+        UNFINALIZED_THRESHOLD
+      ) {
         const hash = await this.api.rpc.chain.getBlockHash(
           lastVerifiableBlock.blockHeight,
         );
@@ -218,20 +224,22 @@ export class UnfinalizedBlocksService {
             lastVerifiableBlock.hash
           }, actual hash is ${header.hash.toHex()}`,
         );
-        return true;
+        return header;
       }
     }
 
-    return false;
+    return;
   }
 
-  private async getLastCorrectFinalizedBlock(): Promise<number | undefined> {
+  private async getLastCorrectFinalizedBlock(
+    forkedHeader: Header,
+  ): Promise<number | undefined> {
     const bestVerifiableBlocks = this.unfinalizedBlocks.filter(
-      ([bestBlockHeight, hash]) =>
+      ([bestBlockHeight]) =>
         Number(bestBlockHeight) <= this.finalizedBlockNumber,
     );
 
-    let checkingHeader = this.finalizedHeader;
+    let checkingHeader = forkedHeader;
 
     // Work backwards through the blocks until we find a matching hash
     for (const [block, hash] of bestVerifiableBlocks.reverse()) {
@@ -244,7 +252,7 @@ export class UnfinalizedBlocksService {
 
       // Get the new parent
       checkingHeader = await this.api.rpc.chain.getHeader(
-        this.finalizedHeader.parentHash,
+        checkingHeader.parentHash,
       );
     }
 

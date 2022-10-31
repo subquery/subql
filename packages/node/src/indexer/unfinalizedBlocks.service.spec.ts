@@ -372,6 +372,38 @@ describe('UnfinalizedBlocksService', () => {
     expect(res).toBe(110);
   });
 
+  it('can handle a fork and when unfinalized blocks < finalized head 2', async () => {
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(110, '0xabcd'),
+    );
+
+    (unfinalizedBlocksService as any).lastCheckedBlockHeight = 110;
+
+    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
+      111,
+      '0xabc111',
+      null,
+    );
+    await (unfinalizedBlocksService as any).registerUnfinalizedBlock(
+      112,
+      '0xabc112',
+      null,
+    );
+
+    // Forked block
+    unfinalizedBlocksService.registerFinalizedBlock(
+      mockBlockHeader(120, '0xabc120f', '0xabc119f'),
+    );
+
+    const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
+      mockBlock(113, '0xabc113'),
+      null,
+    );
+
+    // Last valid block
+    expect(res).toBe(110);
+  });
+
   it('can handle a fork and when unfinalized blocks < finalized head with a large difference', async () => {
     unfinalizedBlocksService.registerFinalizedBlock(
       mockBlockHeader(110, '0xabcd'),
