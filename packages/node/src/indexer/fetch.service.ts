@@ -319,11 +319,6 @@ export class FetchService implements OnApplicationShutdown {
             height: this.latestFinalizedHeight,
           });
         }
-        if (this.nodeConfig.unfinalizedBlocks) {
-          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-            height: this.latestBestHeight,
-          });
-        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when getting finalized block`);
@@ -341,6 +336,11 @@ export class FetchService implements OnApplicationShutdown {
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
+          height: this.latestBestHeight,
+        });
+      }
+      if (this.nodeConfig.unfinalizedBlocks) {
+        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
           height: this.latestBestHeight,
         });
       }
@@ -611,6 +611,11 @@ export class FetchService implements OnApplicationShutdown {
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
     this.dynamicDsService.deleteTempDsRecords(blockHeight);
+    this.updateDictionary();
+    this.blockDispatcher.flushQueue(blockHeight);
+  }
+  async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
