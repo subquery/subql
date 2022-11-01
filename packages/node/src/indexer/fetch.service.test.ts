@@ -14,6 +14,7 @@ import {
 } from '@subql/common-substrate';
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
+import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -186,7 +187,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -218,7 +223,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -273,7 +282,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -310,7 +323,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -365,7 +382,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -426,7 +447,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 
@@ -484,7 +509,11 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return { dynamicDsCreated: false, operationHash: null };
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
       });
     });
 

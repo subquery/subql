@@ -46,6 +46,7 @@ import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
@@ -106,6 +107,7 @@ export class FetchService implements OnApplicationShutdown {
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
   ) {
@@ -306,15 +308,22 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHead = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedBlock = await this.api.rpc.chain.getBlock(finalizedHead);
-      const currentFinalizedHeight =
-        finalizedBlock.block.header.number.toNumber();
+      const finalizedHash = await this.api.rpc.chain.getFinalizedHead();
+      const finalizedHeader = await this.api.rpc.chain.getHeader(finalizedHash);
+      this.unfinalizedBlocksService.registerFinalizedBlock(finalizedHeader);
+      const currentFinalizedHeight = finalizedHeader.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
-        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-          height: this.latestFinalizedHeight,
-        });
+        if (!this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestFinalizedHeight,
+          });
+        }
+        if (this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestBestHeight,
+          });
+        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when getting finalized block`);
@@ -403,9 +412,13 @@ export class FetchService implements OnApplicationShutdown {
         Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
         Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
       );
+      const latestHeight = this.nodeConfig.unfinalizedBlocks
+        ? this.latestBestHeight
+        : this.latestFinalizedHeight;
+
       if (
         this.blockDispatcher.freeSize < scaledBatchSize ||
-        startBlockHeight > this.latestFinalizedHeight
+        startBlockHeight > latestHeight
       ) {
         await delay(1);
         continue;
@@ -584,7 +597,13 @@ export class FetchService implements OnApplicationShutdown {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
 
     if (endBlockHeight > this.latestFinalizedHeight) {
-      endBlockHeight = this.latestFinalizedHeight;
+      if (this.nodeConfig.unfinalizedBlocks) {
+        if (endBlockHeight >= this.latestBestHeight) {
+          endBlockHeight = this.latestBestHeight;
+        }
+      } else {
+        endBlockHeight = this.latestFinalizedHeight;
+      }
     }
     return endBlockHeight;
   }
