@@ -80,9 +80,7 @@ export async function createTestProject(projectSpec: ProjectSpecBase): Promise<s
   await prepare(projectPath, projectSpec);
 
   // Install dependencies
-  // node-fetch and subql/types are tempt solutions for resolving dependency issues
-  // @subql/types can be removed once v1.4.1 is released
-  childProcess.execSync(`npm i --save-dev @subql/types@1.4.1-1 && npm i`, {cwd: projectDir});
+  childProcess.execSync(`npm i`, {cwd: projectDir});
 
   await Codegen.run(['-l', projectDir]);
   await Build.run(['-f', projectDir]);
@@ -109,6 +107,7 @@ describe('Cli publish', () => {
   it(`upload file to ipfs`, async () => {
     // only enable when test locally
     const ipfs = create({url: ipfsEndpoint});
+
     //test string
     const cid = await uploadFile('Test for upload string to ipfs', testAuth);
     console.log(`upload file cid: ${cid}`);

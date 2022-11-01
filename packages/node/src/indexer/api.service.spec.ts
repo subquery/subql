@@ -73,7 +73,10 @@ describe('ApiService', () => {
     const project = testSubqueryProject();
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
-    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint);
+    const { version } = require('../../package.json');
+    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint, 2500, {
+      'User-Agent': `SubQuery-Node ${version}`,
+    });
     expect(ApiPromise.create).toHaveBeenCalledWith({
       provider: expect.anything(),
       throwOnConnect: expect.anything(),
