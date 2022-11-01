@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.0] - 2022-11-02
+### Changed
+- Sync with latest changes on Substrate SDK (#76):
+  - Fix issue with `--output-fmt` arg.
+  - Add `timestamp` filter to block handlers.
+  - Fixed issues creating dynamic datasources in the same block.
+
 ## [1.10.5] - 2022-10-13
 ### Fixed
 - Registry not being injected into datasource processor VM. (#73)

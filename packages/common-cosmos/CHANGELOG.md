@@ -8,6 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.2.0] - 2022-11-02
+### Added
+- `timestamp` filter to block handler. (#76)
 
 ## [0.1.1] - 2022-10-06
 ### Updated
