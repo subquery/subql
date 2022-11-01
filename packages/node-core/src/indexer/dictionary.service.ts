@@ -169,9 +169,6 @@ export class DictionaryService implements OnApplicationShutdown {
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
 
-    console.log('query: ', query);
-    console.log(variables);
-
     try {
       const resp = await timeout(
         this.client.query({
@@ -243,13 +240,13 @@ export class DictionaryService implements OnApplicationShutdown {
     for (const ds of dataSources) {
       mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
-    console.log(mappedDictionaryQueryEntries);
-    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
+    // sort map from lowest ds.startBlock to highest
+    this.mappedDictionaryQueryEntries = new Map([...mappedDictionaryQueryEntries.entries()].sort());
+    console.log('Set dictionaryQuery Map', this.mappedDictionaryQueryEntries);
   }
 
   getDictionaryQueryEntries(endBlockHeight: number): DictionaryQueryEntry[] {
     let dictionaryQueryEntries: DictionaryQueryEntry[];
-
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
       if (endBlockHeight >= key) {
         dictionaryQueryEntries = value;
@@ -257,7 +254,7 @@ export class DictionaryService implements OnApplicationShutdown {
     });
 
     if (dictionaryQueryEntries === undefined) {
-      throw Error('Could not get dictionaryQueryEntries');
+      return [];
     }
 
     return dictionaryQueryEntries;

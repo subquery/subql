@@ -206,59 +206,51 @@ describe('DictionaryService', () => {
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
 
-  /*
-  this should test if the map is able to generate in the correct way, given a project.yaml with multiple ds
-  map should generate given single ds in project.yaml
-   */
   it('able to build queryEntryMap', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
 
-    // jest should mock this following function below
     dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
-    const map = (dictionaryService as any).mappedDictionaryQueryEntries;
-    expect([...map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
-    expect(map.size).toEqual(mockDS.length);
+    const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
+    expect(_map.keys).toStrictEqual(mockDS.map((ds) => ds.startBlock));
+    expect(_map.size).toEqual(mockDS.length);
   });
 
-  // If endBlock logic
-  // for getDictionaryQueryEntries
-  // when endBlock given, it should output the correct value
   it('able to getDicitonaryQueryEntries', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
-    const endBlock_1 = 150;
-    const endBlock_2 = 250;
-
-    /*
-    Conditions to test:
-      - EndBlock is less than first dictionaryQuery startHeight
-      - EndBlock is greater than first DictionaryQuery startHeight
-      - EndBlock is < second but > first
-      - EndBlock is > first > second
-
-     */
-
     const _map = new Map();
-    _map.set(100, [HAPPY_PATH_CONDITIONS[0]]);
-    _map.set(200, [HAPPY_PATH_CONDITIONS[0], HAPPY_PATH_CONDITIONS[1]]);
 
+    for (let i = 0; i < mockDS.length; i++) {
+      _map.set(
+        [mockDS[i].startBlock],
+        HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
+      );
+    }
     (dictionaryService as any).mappedDictionaryQueryEntries = _map;
-    /*
-    Map(2) {
-  753000 => [ { entity: 'evmLogs', conditions: [Array] } ],
-  754000 => [
-    { entity: 'evmLogs', conditions: [Array] },
-    { entity: 'evmTransactions', conditions: [Array] }
-  ]
 
-     */
-    // const _map = {
-    //   100:[HAPPY_PATH_CONDITIONS()[0]],
-    //   200:[HAPPY_PATH_CONDITIONS()[0], HAPPY_PATH_CONDITIONS()[0]]
-    // }
+    const endBlock_1 = 150;
+    const endBlock_2 = 500;
+    const endBlock_3 = 5000;
+    const endBlock_4 = 50;
+
     const selectedQueryEntry_1 = dictionaryService.getDictionaryQueryEntries(endBlock_1);
     const selectedQueryEntry_2 = dictionaryService.getDictionaryQueryEntries(endBlock_2);
+    const selectedQueryEntry_3 = dictionaryService.getDictionaryQueryEntries(endBlock_3);
+    const selectedQueryEntry_4 = dictionaryService.getDictionaryQueryEntries(endBlock_4);
 
+    // endBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
     expect(selectedQueryEntry_1).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+
+    // endBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
     expect(selectedQueryEntry_2).toEqual([HAPPY_PATH_CONDITIONS[0], HAPPY_PATH_CONDITIONS[1]]);
+
+    // endBlock > all dictionaryQuery
+    expect(selectedQueryEntry_3).toEqual([
+      HAPPY_PATH_CONDITIONS[0],
+      HAPPY_PATH_CONDITIONS[1],
+      HAPPY_PATH_CONDITIONS[2],
+    ]);
+
+    // endBlock < min dictionaryQuery
+    expect(selectedQueryEntry_4).toEqual([]);
   });
 });
