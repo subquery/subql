@@ -338,11 +338,12 @@ export class FetchService implements OnApplicationShutdown {
         this.eventEmitter.emit(IndexerEvent.BlockBest, {
           height: this.latestBestHeight,
         });
-      }
-      if (this.nodeConfig.unfinalizedBlocks) {
-        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-          height: this.latestBestHeight,
-        });
+
+        if (this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestBestHeight,
+          });
+        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when get best block`);
@@ -424,11 +425,6 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
-
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
@@ -481,6 +477,12 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
+
       if (this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
           this.getEnqueuedModuloBlocks(startBlockHeight),
@@ -610,7 +612,6 @@ export class FetchService implements OnApplicationShutdown {
 
   async resetForNewDs(blockHeight: number): Promise<void> {
     await this.syncDynamicDatascourcesFromMeta();
-    this.dynamicDsService.deleteTempDsRecords(blockHeight);
     this.updateDictionary();
     this.blockDispatcher.flushQueue(blockHeight);
   }
