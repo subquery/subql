@@ -241,14 +241,15 @@ export class DictionaryService implements OnApplicationShutdown {
       mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
     // sort map from lowest ds.startBlock to highest
-    this.mappedDictionaryQueryEntries = new Map([...mappedDictionaryQueryEntries.entries()].sort());
-    console.log('Set dictionaryQuery Map', this.mappedDictionaryQueryEntries);
+    this.mappedDictionaryQueryEntries = new Map(
+      [...mappedDictionaryQueryEntries.entries()].sort((a, b) => a[0] - b[0])
+    );
   }
 
-  getDictionaryQueryEntries(endBlockHeight: number): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
     let dictionaryQueryEntries: DictionaryQueryEntry[];
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
-      if (endBlockHeight >= key) {
+      if (queryEndBlock >= key) {
         dictionaryQueryEntries = value;
       }
     });
@@ -256,13 +257,11 @@ export class DictionaryService implements OnApplicationShutdown {
     if (dictionaryQueryEntries === undefined) {
       return [];
     }
-
     return dictionaryQueryEntries;
   }
 
   async scopedDictionaryEntries(
     startBlockHeight: number,
-    endBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
   ): Promise<Dictionary> {
@@ -270,7 +269,7 @@ export class DictionaryService implements OnApplicationShutdown {
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(endBlockHeight)
+      this.getDictionaryQueryEntries(queryEndBlock)
     );
   }
 }

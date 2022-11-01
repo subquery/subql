@@ -14,8 +14,7 @@ import {
 } from '@subql/common-substrate';
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
-import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -25,7 +24,6 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
-import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
@@ -114,10 +112,6 @@ async function createApp(
         useFactory: () => nodeConfig,
       },
       {
-        provide: Sequelize,
-        useFactory: jest.fn(),
-      },
-      {
         provide: 'IBlockDispatcher',
         useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
           new BlockDispatcherService(
@@ -149,7 +143,6 @@ async function createApp(
         useFactory: () => new DictionaryService(project, nodeConfig),
       },
       SchedulerRegistry,
-      UnfinalizedBlocksService,
       FetchService,
     ],
     imports: [EventEmitterModule.forRoot()],
@@ -193,11 +186,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -229,11 +218,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -288,11 +273,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -329,11 +310,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -388,11 +365,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -453,11 +426,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -515,11 +484,7 @@ describe('FetchService', () => {
           resolve(undefined);
         }
 
-        return {
-          dynamicDsCreated: false,
-          operationHash: null,
-          reindexBlockHeight: null,
-        };
+        return { dynamicDsCreated: false, operationHash: null };
       });
     });
 
@@ -744,22 +709,6 @@ describe('FetchService', () => {
     // Should be called 91151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
-
-  // Test if the built map is correct, the values of the arrays to be accumlative
-  it('buildDictionaryQueryEntries', () => {
-    // const project = testMultiDSSubqueryProject();
-    // const templateDynamicDatasouces = [];
-    // const startHeight = project.dataSources[0].startBlock;
-    /*
-       const mappedQueryEntries = buildDictionaryEntryMap(
-      project.dataSources,
-      templateDynamicDatasouces,
-      (fetchService as any).getDictionaryQueryEntries,
-    );
-     */
-    // expect(mappedQueryEntries).toBe()
-    //
-  });
 
   //test if getDictionary is using the correct mapped_value at certain heights
   /*

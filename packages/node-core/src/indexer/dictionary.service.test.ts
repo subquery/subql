@@ -211,46 +211,54 @@ describe('DictionaryService', () => {
 
     dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
     const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
-    expect(_map.keys).toStrictEqual(mockDS.map((ds) => ds.startBlock));
+
+    expect([..._map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
     expect(_map.size).toEqual(mockDS.length);
   });
 
   it('able to getDicitonaryQueryEntries', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
-    const _map = new Map();
+    const dictionaryQueryMap = new Map();
 
     for (let i = 0; i < mockDS.length; i++) {
-      _map.set(
+      dictionaryQueryMap.set(
         [mockDS[i].startBlock],
         HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
       );
     }
-    (dictionaryService as any).mappedDictionaryQueryEntries = _map;
-
-    const endBlock_1 = 150;
-    const endBlock_2 = 500;
-    const endBlock_3 = 5000;
-    const endBlock_4 = 50;
-
-    const selectedQueryEntry_1 = dictionaryService.getDictionaryQueryEntries(endBlock_1);
-    const selectedQueryEntry_2 = dictionaryService.getDictionaryQueryEntries(endBlock_2);
-    const selectedQueryEntry_3 = dictionaryService.getDictionaryQueryEntries(endBlock_3);
-    const selectedQueryEntry_4 = dictionaryService.getDictionaryQueryEntries(endBlock_4);
+    (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
+    let queryEndBlock = 150;
 
     // endBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-    expect(selectedQueryEntry_1).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+
+    queryEndBlock = 500;
 
     // endBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-    expect(selectedQueryEntry_2).toEqual([HAPPY_PATH_CONDITIONS[0], HAPPY_PATH_CONDITIONS[1]]);
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+      HAPPY_PATH_CONDITIONS[0],
+      HAPPY_PATH_CONDITIONS[1],
+    ]);
 
+    queryEndBlock = 5000;
     // endBlock > all dictionaryQuery
-    expect(selectedQueryEntry_3).toEqual([
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
       HAPPY_PATH_CONDITIONS[2],
     ]);
 
+    queryEndBlock = 50;
     // endBlock < min dictionaryQuery
-    expect(selectedQueryEntry_4).toEqual([]);
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
+  });
+
+  it('sort map', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
+    dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
+    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).not.toStrictEqual(
+      unorderedDs.map((ds) => ds.startBlock)
+    );
   });
 });

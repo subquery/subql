@@ -131,27 +131,6 @@ export class FetchService implements OnApplicationShutdown {
       await this.dynamicDsService.getDynamicDatasources();
   }
 
-  private buildDictionaryEntriesMap(): void {
-    this.dictionaryService.buildDictionaryEntryMap(
-      this.project.dataSources.concat(this.templateDynamicDatasouces),
-      this.buildDictionaryQueryEntries.bind(this),
-    );
-  }
-
-  private async getScopedDictionaryEntries(
-    startBlockHeight: number,
-    endBlockHeight: number,
-    queryEndBlock: number,
-    scaledBatchSize: number,
-  ): Promise<Dictionary> {
-    return this.dictionaryService.scopedDictionaryEntries(
-      startBlockHeight,
-      endBlockHeight,
-      queryEndBlock,
-      scaledBatchSize,
-    );
-  }
-
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
 
@@ -242,7 +221,10 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   updateDictionary(): void {
-    this.buildDictionaryEntriesMap();
+    this.dictionaryService.buildDictionaryEntryMap(
+      this.project.dataSources.concat(this.templateDynamicDatasouces),
+      this.buildDictionaryQueryEntries.bind(this),
+    );
   }
 
   private get useDictionary(): boolean {
@@ -441,12 +423,12 @@ export class FetchService implements OnApplicationShutdown {
           queryEndBlock,
         );
         try {
-          const dictionary = await this.getScopedDictionaryEntries(
-            startBlockHeight,
-            endHeight,
-            queryEndBlock,
-            scaledBatchSize,
-          );
+          const dictionary =
+            await this.dictionaryService.scopedDictionaryEntries(
+              startBlockHeight,
+              queryEndBlock,
+              scaledBatchSize,
+            );
 
           if (startBlockHeight !== getStartBlockHeight()) {
             logger.debug(
