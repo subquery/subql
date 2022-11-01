@@ -105,45 +105,33 @@ describe('Cli publish', () => {
   });
 
   it(`upload file to ipfs`, async () => {
-    try {
-      // only enable when test locally
-      const ipfs = create({url: ipfsEndpoint});
+    // only enable when test locally
+    const ipfs = create({url: ipfsEndpoint});
 
-      //test string
-      const cid = await uploadFile('Test for upload string to ipfs', testAuth);
-      console.log(`upload file cid: ${cid}`);
-      // test fs stream (project)
-      projectDir = await createTestProject(projectSpecV0_2_0);
-      const fsStream = fs.createReadStream(path.resolve(projectDir, 'project.yaml'));
-      const cid2 = await uploadFile(fsStream, testAuth);
-      console.log(`upload file cid: ${cid2}`);
-    } catch (e) {
-      console.warn(`Failed due to: ${e}`);
-    }
+    //test string
+    const cid = await uploadFile('Test for upload string to ipfs', testAuth);
+    console.log(`upload file cid: ${cid}`);
+    // test fs stream (project)
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    const fsStream = fs.createReadStream(path.resolve(projectDir, 'project.yaml'));
+    const cid2 = await uploadFile(fsStream, testAuth);
+    console.log(`upload file cid: ${cid2}`);
   });
 
   it('should upload appropriate project to IPFS', async () => {
-    try {
-      projectDir = await createTestProject(projectSpecV0_2_0);
-      const cid = await uploadToIpfs(projectDir, testAuth);
-      expect(cid).toBeDefined();
-    } catch (e) {
-      console.warn(`Error: ${e}`);
-    }
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    const cid = await uploadToIpfs(projectDir, testAuth);
+    expect(cid).toBeDefined();
     // validation no longer required, as it is deployment object been published
     // await expect(Validate.run(['-l', cid, '--ipfs', ipfsEndpoint])).resolves.toBe(undefined);
   });
 
   it('upload project from a manifest', async () => {
-    try {
-      projectDir = await createTestProject(projectSpecV0_2_0);
-      const manifestPath = path.resolve(projectDir, 'project.yaml');
-      const testManifestPath = path.resolve(projectDir, 'test.yaml');
-      fs.renameSync(manifestPath, testManifestPath);
-      await Publish.run(['-f', testManifestPath]);
-    } catch (e) {
-      console.warn(`Failed due to ${e}`);
-    }
+    projectDir = await createTestProject(projectSpecV0_2_0);
+    const manifestPath = path.resolve(projectDir, 'project.yaml');
+    const testManifestPath = path.resolve(projectDir, 'test.yaml');
+    fs.renameSync(manifestPath, testManifestPath);
+    await Publish.run(['-f', testManifestPath]);
   });
 
   it('should not allow uploading a v0.0.1 spec version project', async () => {
