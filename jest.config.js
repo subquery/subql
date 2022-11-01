@@ -23,7 +23,6 @@ module.exports = {
   collectCoverageFrom: [
     'packages/common-cosmos/src/**/*.ts',
     'packages/node/src/**/*.ts',
-    'packages/utils/src/**/*.ts',
   ],
 
   // The directory where Jest should output its coverage files

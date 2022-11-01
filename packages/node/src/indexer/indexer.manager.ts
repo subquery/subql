@@ -64,9 +64,11 @@ export class IndexerManager {
   }
 
   @profiler(yargsOptions.argv.profiler)
-  async indexBlock(
-    blockContent: BlockContent,
-  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
+  async indexBlock(blockContent: BlockContent): Promise<{
+    dynamicDsCreated: boolean;
+    operationHash: Uint8Array;
+    reindexBlockHeight: null;
+  }> {
     const { block } = blockContent;
     const blockHeight = block.block.header.height;
     let dynamicDsCreated = false;
@@ -76,14 +78,15 @@ export class IndexerManager {
 
     let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
+
+    let safeApi: CosmosSafeClient;
+
     try {
       this.filteredDataSources = this.filterDataSources(blockHeight);
 
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
-
-      let safeApi: CosmosSafeClient;
 
       await this.indexBlockData(
         blockContent,
@@ -156,16 +159,19 @@ export class IndexerManager {
     return {
       dynamicDsCreated,
       operationHash,
+      reindexBlockHeight: null,
     };
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
+    logger.info('indexer manager started');
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
     let filteredDs: SubqlProjectDs[];
-    filteredDs = this.project.dataSources.filter(
+
+    filteredDs = this.projectService.dataSources.filter(
       (ds) => ds.startBlock <= nextProcessingHeight,
     );
 

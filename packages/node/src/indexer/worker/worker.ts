@@ -12,7 +12,7 @@ const { argv } = yargsOptions;
 
 initLogger(
   argv.debug,
-  argv.outputFormat as 'json' | 'colored',
+  argv.outputFmt as 'json' | 'colored',
   argv.logLevel as string | undefined,
 );
 

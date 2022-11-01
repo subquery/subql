@@ -67,6 +67,7 @@ export interface CosmosNetwork {
 
 export interface SubqlCosmosBlockFilter {
   modulo?: number;
+  timestamp?: string;
 }
 
 export interface SubqlCosmosTxFilter {

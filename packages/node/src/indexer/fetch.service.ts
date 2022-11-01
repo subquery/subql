@@ -286,9 +286,11 @@ export class FetchService implements OnApplicationShutdown {
       const currentFinalizedHeight = await this.api.getHeight();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
-        this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-          height: this.latestFinalizedHeight,
-        });
+        if (!this.nodeConfig.unfinalizedBlocks) {
+          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+            height: this.latestFinalizedHeight,
+          });
+        }
       }
     } catch (e) {
       logger.error(e, `Having a problem when getting finalized block`);
@@ -368,8 +370,6 @@ export class FetchService implements OnApplicationShutdown {
             this.dictionaryQueryEntries,
           );
 
-          // console.log('DICTIONARY', dictionary,)
-
           if (startBlockHeight !== getStartBlockHeight()) {
             logger.debug(
               `Queue was reset for new DS, discarding dictionary query result`,
@@ -423,7 +423,6 @@ export class FetchService implements OnApplicationShutdown {
     scaledBatchSize: number,
   ): number {
     let endBlockHeight = startBlockHeight + scaledBatchSize - 1;
-
     if (endBlockHeight > this.latestFinalizedHeight) {
       endBlockHeight = this.latestFinalizedHeight;
     }
@@ -468,6 +467,12 @@ export class FetchService implements OnApplicationShutdown {
       return true;
     }
     return false;
+  }
+
+  async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
+    await this.syncDynamicDatascourcesFromMeta();
+    this.updateDictionary();
+    this.blockDispatcher.flushQueue(blockHeight);
   }
 
   private getBaseHandlerKind(

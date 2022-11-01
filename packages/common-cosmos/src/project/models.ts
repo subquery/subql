@@ -42,6 +42,9 @@ export class CosmosBlockFilter implements SubqlCosmosBlockFilter {
   @IsOptional()
   @IsInt()
   modulo?: number;
+  @IsOptional()
+  @IsString()
+  timestamp?: string;
 }
 
 export class CosmosTxFilter implements SubqlCosmosTxFilter {

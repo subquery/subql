@@ -15,13 +15,4 @@ export interface BlockContent {
   events: CosmosEvent[];
 }
 
-// export enum OperationType {
-//   Set = 'Set',
-//   Remove = 'Remove',
-// }
-
-// export type OperationEntity = {
-//   operation: OperationType;
-//   entityType: string;
-//   data: Entity | string;
-// };
+export type BestBlocks = Record<number, string>;

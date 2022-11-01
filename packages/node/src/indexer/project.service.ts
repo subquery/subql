@@ -18,11 +18,17 @@ import {
   getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import {
+  SubqueryProject,
+  generateTimestampReferenceForBlockFilters,
+  SubqlProjectDs,
+} from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
+import { reindex } from '../utils/reindex';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { BestBlocks } from './types';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -55,6 +61,10 @@ export class ProjectService {
     return this._schema;
   }
 
+  get dataSources(): SubqlProjectDs[] {
+    return this.project.dataSources;
+  }
+
   get blockOffset(): number {
     return this._blockOffset;
   }
@@ -63,6 +73,11 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  get isHistorical(): boolean {
+    return this.storeService.historical;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async getExistingProjectSchema(): Promise<string> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
@@ -71,6 +86,11 @@ export class ProjectService {
     // Used to load assets into DS-processor, has to be done in any thread
     await this.dsProcessorService.validateProjectCustomDatasources();
     // Do extra work on main thread to setup stuff
+
+    this.project.dataSources = await generateTimestampReferenceForBlockFilters(
+      this.project.dataSources,
+      this.apiService.getApi(),
+    );
     if (isMainThread) {
       this._schema = await this.ensureProject();
       await this.initDbSchema();
@@ -203,6 +223,11 @@ export class ProjectService {
       await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
+    }
+
     if (keyValue.indexerNodeVersion !== packageVersion) {
       await metadataRepo.upsert({
         key: 'indexerNodeVersion',
@@ -278,5 +303,20 @@ export class ProjectService {
     } else {
       return Math.min(...startBlocksList);
     }
+  }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    return reindex(
+      this.getStartBlockFromDataSources(),
+      await this.getMetadataBlockOffset(),
+      targetBlockHeight,
+      lastProcessedHeight,
+      this.storeService,
+      this.mmrService,
+      this.sequelize,
+      /* Not providing force clean service, it should never be needed */
+    );
   }
 }

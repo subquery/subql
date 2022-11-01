@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Block } from '@cosmjs/stargate';
+import { ApiPromise } from '@polkadot/api';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ReaderFactory,
@@ -15,11 +17,15 @@ import {
   ProjectManifestV0_3_0Impl,
   SubqlCosmosDataSource,
   ProjectManifestV1_0_0Impl,
+  isRuntimeCosmosDs,
+  CosmosBlockFilter,
 } from '@subql/common-cosmos';
-import { CustomModule } from '@subql/types-cosmos';
+import { CustomModule, SubqlCosmosHandlerKind } from '@subql/types-cosmos';
 import { buildSchemaFromString } from '@subql/utils';
+import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import * as protobuf from 'protobufjs';
+import { CosmosClient } from '../indexer/api.service';
 import {
   getProjectRoot,
   updateDataSourcesV0_3_0,
@@ -37,6 +43,13 @@ export type SubqlProjectDs = SubqlCosmosDataSource & {
 
 export type CosmosProjectNetConfig = CosmosProjectNetworkConfig & {
   chainTypes: Map<string, CosmosChainType> & { protoRoot: protobuf.Root };
+};
+
+export type SubqlProjectBlockFilter = CosmosBlockFilter & {
+  cronSchedule?: {
+    schedule: Cron.Seeker;
+    next: number;
+  };
 };
 
 export type SubqlProjectDsTemplate = Omit<SubqlProjectDs, 'startBlock'> & {
@@ -192,4 +205,55 @@ async function loadProjectTemplates(
   }
 
   return [];
+}
+
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function generateTimestampReferenceForBlockFilters(
+  dataSources: SubqlProjectDs[],
+  api: CosmosClient,
+): Promise<SubqlProjectDs[]> {
+  const cron = new Cron();
+
+  dataSources = await Promise.all(
+    dataSources.map(async (ds) => {
+      if (isRuntimeCosmosDs(ds)) {
+        const startBlock = ds.startBlock ?? 1;
+        let block: Block;
+        let timestampReference: Date;
+
+        ds.mapping.handlers = await Promise.all(
+          ds.mapping.handlers.map(async (handler) => {
+            if (handler.kind === SubqlCosmosHandlerKind.Block) {
+              if (handler.filter?.timestamp) {
+                if (!block) {
+                  block = await api.blockInfo(startBlock);
+
+                  timestampReference = new Date(block.header.time);
+                }
+                try {
+                  cron.fromString(handler.filter.timestamp);
+                } catch (e) {
+                  throw new Error(
+                    `Invalid Cron string: ${handler.filter.timestamp}`,
+                  );
+                }
+
+                const schedule = cron.schedule(timestampReference);
+                (handler.filter as SubqlProjectBlockFilter).cronSchedule = {
+                  schedule: schedule,
+                  get next() {
+                    return Date.parse(this.schedule.next().format());
+                  },
+                };
+              }
+            }
+            return handler;
+          }),
+        );
+      }
+      return ds;
+    }),
+  );
+
+  return dataSources;
 }
