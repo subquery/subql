@@ -13,7 +13,7 @@ import {<% props.importEnums.forEach(function(e){ %>
 <% }); %>} from '../enums'
 <% } %>
 
-type <%= props.className %>Props = Omit<<%=props.className %>, NonNullable<FunctionPropertyNames<<%=props.className %>>>>;
+export type <%= props.className %>Props = Omit<<%=props.className %>, NonNullable<FunctionPropertyNames<<%=props.className %>>>>;
 
 export class <%= props.className %> implements Entity {
 
@@ -39,7 +39,7 @@ export class <%= props.className %> implements Entity {
         assert((id !== null && id !== undefined), "Cannot get <%=props.className %> entity without an ID");
         const record = await store.get('<%=props.entityName %>', id.toString());
         if (record){
-            return <%=props.className %>.create(record as <%= props.className %>Props);
+            return this.create(record as <%= props.className %>Props);
         }else{
             return;
         }
@@ -63,7 +63,7 @@ export class <%= props.className %> implements Entity {
 
     static create(record: <%= props.className %>Props): <%=props.className %> {
         assert(typeof record.id === 'string', "id must be provided");
-        let entity = new <%=props.className %>(record.id);
+        let entity = new this(record.id);
         Object.assign(entity,record);
         return entity;
     }
