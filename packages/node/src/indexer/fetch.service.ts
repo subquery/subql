@@ -146,9 +146,11 @@ export class FetchService implements OnApplicationShutdown {
     );
 
     // Only run the ds that is equal or less than startBlock
+    // sort array from lowest ds.startBlock to highest
     const filteredDs = dataSources
       .concat(this.templateDynamicDatasouces)
-      .filter((ds) => ds.startBlock <= startBlock);
+      .filter((ds) => ds.startBlock <= startBlock)
+      .sort((a, b) => a.startBlock - b.startBlock);
 
     for (const ds of filteredDs) {
       const plugin = isCustomDs(ds)
@@ -424,6 +426,10 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
 
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
@@ -431,12 +437,14 @@ export class FetchService implements OnApplicationShutdown {
           startBlockHeight,
           queryEndBlock,
         );
+
         try {
           const dictionary =
             await this.dictionaryService.scopedDictionaryEntries(
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
+              endHeight,
             );
 
           if (startBlockHeight !== getStartBlockHeight()) {
@@ -477,11 +485,6 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
 
       if (this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(

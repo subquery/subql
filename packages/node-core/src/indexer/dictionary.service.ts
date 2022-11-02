@@ -230,8 +230,7 @@ export class DictionaryService implements OnApplicationShutdown {
     return buildQuery(vars, nodes);
   }
   buildDictionaryEntryMap(
-    // dataSources: { startBlock: number }[],
-    // TODO: change type later
+    // TODO: generic type
     dataSources: any[],
     buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
@@ -240,16 +239,13 @@ export class DictionaryService implements OnApplicationShutdown {
     for (const ds of dataSources) {
       mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
-    // sort map from lowest ds.startBlock to highest
-    this.mappedDictionaryQueryEntries = new Map(
-      [...mappedDictionaryQueryEntries.entries()].sort((a, b) => a[0] - b[0])
-    );
+    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
-  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(endHeight: number): DictionaryQueryEntry[] {
     let dictionaryQueryEntries: DictionaryQueryEntry[];
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
-      if (queryEndBlock >= key) {
+      if (endHeight >= key) {
         dictionaryQueryEntries = value;
       }
     });
@@ -263,13 +259,14 @@ export class DictionaryService implements OnApplicationShutdown {
   async scopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
-    scaledBatchSize: number
+    scaledBatchSize: number,
+    endBlock: number
   ): Promise<Dictionary> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(queryEndBlock)
+      this.getDictionaryQueryEntries(endBlock)
     );
   }
 }

@@ -227,30 +227,30 @@ describe('DictionaryService', () => {
       );
     }
     (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
-    let queryEndBlock = 150;
+    let endBlock = 150;
 
     // endBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
 
-    queryEndBlock = 500;
+    endBlock = 500;
 
     // endBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
     ]);
 
-    queryEndBlock = 5000;
+    endBlock = 5000;
     // endBlock > all dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
       HAPPY_PATH_CONDITIONS[2],
     ]);
 
-    queryEndBlock = 50;
+    endBlock = 50;
     // endBlock < min dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
+    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([]);
   });
 
   it('sort map', () => {
