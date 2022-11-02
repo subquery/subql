@@ -50,13 +50,13 @@ export class <%= props.className %> implements Entity {
       <% if (field.unique) {%>
       const record = await store.getOneByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
       if (record){
-          return <%=props.className %>.create(record as <%= props.className %>Props);
+          return this.create(record as <%= props.className %>Props);
       }else{
           return;
       }
       <% } else { %>
       const records = await store.getByField('<%=props.entityName %>', '<%=field.name %>', <%=field.name %>);
-      return records.map(record => <%=props.className %>.create(record as <%= props.className %>Props));
+      return records.map(record => this.create(record as <%= props.className %>Props));
       <% }%>
     }
 <% }); %>
