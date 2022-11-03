@@ -5,6 +5,7 @@ import {getProjectNetwork, NETWORK_FAMILY, Reader, ReaderFactory, ReaderOptions}
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
+import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 
@@ -75,6 +76,9 @@ export class Validator {
         break;
       case NETWORK_FAMILY.algorand:
         schema = parseAlgorandProjectManifest(rawSchema);
+        break;
+      case NETWORK_FAMILY.ethereum:
+        schema = parseEthereumProjectManifest(rawSchema);
         break;
       default:
         console.error(`Load project failed, please check the manifest file.`);

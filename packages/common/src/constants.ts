@@ -23,6 +23,7 @@ export enum NETWORK_FAMILY {
   terra = 'Terra',
   cosmos = 'Cosmos',
   algorand = 'Algorand',
+  ethereum = 'Ethereum',
 }
 
 export const runnerMapping = {

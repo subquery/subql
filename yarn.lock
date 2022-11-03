@@ -3608,6 +3608,7 @@ __metadata:
     "@subql/common-algorand": latest
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
+    "@subql/common-ethereum": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@subql/utils": "workspace:*"
@@ -3690,6 +3691,28 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
   checksum: cfb0e55d2520619958ff6dc63cad7c5afab3254a00a76975216a615d78933805078dbcf0ee10c3cbb05bb83509e6fef7c9b280e0ff0b37802c0e0d7f5420cb8c
+  languageName: node
+  linkType: hard
+
+"@subql/common-ethereum@npm:latest":
+  version: 0.1.0
+  resolution: "@subql/common-ethereum@npm:0.1.0"
+  dependencies:
+    "@polkadot/util": ^8
+    "@subql/common": latest
+    "@subql/types-ethereum": 0.1.0
+    bn.js: 4.11.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    flatted: ^3.2.2
+    graphql: ^15.7.2
+    graphql-tag: ^2.12.5
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
+    vm2: ^3.9.9
+  checksum: 2f58471ba3d097d48e13304381c5e416dd48bc5f5a766b524ad2ed61d7945accc532947a1f48e07c887e3e4202ea8773b1aab45ca427682482c407badf4bb788
   languageName: node
   linkType: hard
 
@@ -3907,6 +3930,17 @@ __metadata:
     "@cosmjs/proto-signing": ^0.28.9
     "@cosmjs/stargate": ^0.28.9
   checksum: 74f74e49edc3016552f318cd644407a409c06eb40ccdb54dc4778e865da34d00859c2b4667b4dd0d14ca47a8878bd4eb2e5f2710b3511b29931b2c8e4f051cbe
+  languageName: node
+  linkType: hard
+
+"@subql/types-ethereum@npm:0.1.0":
+  version: 0.1.0
+  resolution: "@subql/types-ethereum@npm:0.1.0"
+  dependencies:
+    "@ethersproject/abstract-provider": ^5.6.1
+  peerDependencies:
+    "@polkadot/api": ^9
+  checksum: 665004b9adfc66a6463dd879a3d6e9aaabde13a7ee3013df6a3cd64caa806ba136a44db39c607dce57fd5aa8df61de2d7a9837917e0294ac35f0f958fab03d94
   languageName: node
   linkType: hard
 
