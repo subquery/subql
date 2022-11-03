@@ -25,6 +25,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 const WS_ENDPOINT = 'wss://polkadot.api.onfinality.io/public-ws';
@@ -113,6 +114,10 @@ async function createApp(
         useFactory: () => nodeConfig,
       },
       {
+        provide: Sequelize,
+        useFactory: jest.fn(),
+      },
+      {
         provide: 'IBlockDispatcher',
         useFactory: (apiService, nodeConfig, eventEmitter, indexerManager) =>
           new BlockDispatcherService(
@@ -144,6 +149,7 @@ async function createApp(
         useFactory: () => new DictionaryService(project, nodeConfig),
       },
       SchedulerRegistry,
+      UnfinalizedBlocksService,
       FetchService,
     ],
     imports: [EventEmitterModule.forRoot()],
