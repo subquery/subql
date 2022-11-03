@@ -229,9 +229,8 @@ export class DictionaryService implements OnApplicationShutdown {
     }
     return buildQuery(vars, nodes);
   }
-  buildDictionaryEntryMap(
-    // TODO: generic type
-    dataSources: any[],
+  buildDictionaryEntryMap<DS extends {startBlock?: number}>(
+    dataSources: Array<DS>,
     buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
   ): void {
     const mappedDictionaryQueryEntries = new Map();

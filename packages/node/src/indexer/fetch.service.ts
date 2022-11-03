@@ -225,7 +225,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   updateDictionary(): void {
-    this.dictionaryService.buildDictionaryEntryMap(
+    this.dictionaryService.buildDictionaryEntryMap<SubqlProjectDs>(
       this.project.dataSources.concat(this.templateDynamicDatasouces),
       this.buildDictionaryQueryEntries.bind(this),
     );
