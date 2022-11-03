@@ -5,6 +5,7 @@ import {Reader} from '@subql/common';
 import {AlgorandProjectManifestVersioned} from '@subql/common-algorand';
 import {SubstrateProjectManifestVersioned as AvalancheProjectManifestVersioned} from '@subql/common-avalanche';
 import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
+import {EthereumProjectManifestVersioned} from '@subql/common-ethereum';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {TerraProjectManifestVersioned} from '@subql/common-terra';
 import {IPackageJson} from 'package-json-type';
@@ -17,7 +18,8 @@ export interface ContextData {
     | TerraProjectManifestVersioned
     | CosmosProjectManifestVersioned
     | AvalancheProjectManifestVersioned
-    | AlgorandProjectManifestVersioned;
+    | AlgorandProjectManifestVersioned
+    | EthereumProjectManifestVersioned;
 }
 
 export interface Context {

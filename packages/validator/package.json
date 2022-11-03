@@ -21,6 +21,7 @@
     "@subql/common-cosmos": "latest",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
+    "@subql/common-ethereum": "latest",
     "axios": "^0.24.0",
     "js-yaml": "^4.1.0",
     "package-json-type": "^1.0.3"

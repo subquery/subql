@@ -16,6 +16,7 @@
     "@subql/common-algorand": "latest",
     "@subql/common-avalanche": "latest",
     "@subql/common-cosmos": "latest",
+    "@subql/common-ethereum": "latest",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
     "@subql/utils": "workspace:*",
