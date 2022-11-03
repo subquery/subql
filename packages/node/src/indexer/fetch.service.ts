@@ -426,10 +426,6 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
 
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
@@ -444,7 +440,6 @@ export class FetchService implements OnApplicationShutdown {
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
-              endHeight,
             );
 
           if (startBlockHeight !== getStartBlockHeight()) {
@@ -485,6 +480,11 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
 
       if (this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(

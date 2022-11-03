@@ -221,7 +221,7 @@ describe('DictionaryService', () => {
     const dictionaryQueryMap = new Map();
 
     // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
-    // Hence testing, when provided a endBlockHeight, the correct DictionaryQueryEntries[] is returned
+    // Hence testing, when provided a queryEndBlock, the correct DictionaryQueryEntries[] is returned
     for (let i = 0; i < mockDS.length; i++) {
       dictionaryQueryMap.set(
         [mockDS[i].startBlock],
@@ -229,30 +229,30 @@ describe('DictionaryService', () => {
       );
     }
     (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
-    let endBlock = 150;
+    let queryEndBlock = 150;
 
-    // endBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+    // queryEndBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
 
-    endBlock = 500;
+    queryEndBlock = 500;
 
-    // endBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([
+    // queryEndBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
     ]);
 
-    endBlock = 5000;
-    // endBlock > all dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([
+    queryEndBlock = 5000;
+    // queryEndBlock > all dictionaryQuery
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
       HAPPY_PATH_CONDITIONS[2],
     ]);
 
-    endBlock = 50;
-    // endBlock < min dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(endBlock)).toEqual([]);
+    queryEndBlock = 50;
+    // queryEndBlock < min dictionaryQuery
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
   });
 
   it('sort map', () => {

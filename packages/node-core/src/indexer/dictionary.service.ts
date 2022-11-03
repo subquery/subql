@@ -242,10 +242,10 @@ export class DictionaryService implements OnApplicationShutdown {
     this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
-  getDictionaryQueryEntries(endHeight: number): DictionaryQueryEntry[] {
+  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
     let dictionaryQueryEntries: DictionaryQueryEntry[];
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
-      if (endHeight >= key) {
+      if (queryEndBlock >= key) {
         dictionaryQueryEntries = value;
       }
     });
@@ -259,14 +259,13 @@ export class DictionaryService implements OnApplicationShutdown {
   async scopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
-    scaledBatchSize: number,
-    endBlock: number
+    scaledBatchSize: number
   ): Promise<Dictionary> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(endBlock)
+      this.getDictionaryQueryEntries(queryEndBlock)
     );
   }
 }
