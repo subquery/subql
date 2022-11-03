@@ -2,9 +2,71 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NodeConfig} from '@subql/node-core';
-import {DictionaryQueryEntry} from '@subql/types';
+import {DictionaryQueryEntry, SubstrateDatasourceKind, SubstrateHandlerKind} from '@subql/types';
 import {range} from 'lodash';
 import {DictionaryService} from './dictionary.service';
+
+const mockDS = [
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 100,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Event,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 500,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Call,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+            success: true,
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+  {
+    name: 'runtime',
+    kind: SubstrateDatasourceKind.Runtime,
+    startBlock: 1000,
+    mapping: {
+      entryScript: '',
+      handlers: [
+        {
+          handler: 'handleTest',
+          kind: SubstrateHandlerKind.Call,
+          filter: {
+            module: 'balances',
+            method: 'Deposit',
+            success: true,
+          },
+        },
+      ],
+      file: '',
+    },
+  },
+];
 
 const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
 
@@ -143,4 +205,62 @@ describe('DictionaryService', () => {
     ]);
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
+
+  it('able to build queryEntryMap', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+
+    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
+    const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
+
+    expect([..._map.keys()]).toStrictEqual(mockDS.map((ds) => ds.startBlock));
+    expect(_map.size).toEqual(mockDS.length);
+  });
+
+  it('able to getDicitonaryQueryEntries', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryQueryMap = new Map();
+
+    // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
+    // Hence testing, when provided a queryEndBlock, the correct DictionaryQueryEntries[] is returned
+    for (let i = 0; i < mockDS.length; i++) {
+      dictionaryQueryMap.set(
+        [mockDS[i].startBlock],
+        HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
+      );
+    }
+    (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
+    let queryEndBlock = 150;
+
+    // queryEndBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
+
+    queryEndBlock = 500;
+
+    // queryEndBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+      HAPPY_PATH_CONDITIONS[0],
+      HAPPY_PATH_CONDITIONS[1],
+    ]);
+
+    queryEndBlock = 5000;
+    // queryEndBlock > all dictionaryQuery
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+      HAPPY_PATH_CONDITIONS[0],
+      HAPPY_PATH_CONDITIONS[1],
+      HAPPY_PATH_CONDITIONS[2],
+    ]);
+
+    queryEndBlock = 50;
+    // queryEndBlock < min dictionaryQuery
+    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
+  });
+
+  it('sort map', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
+    dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
+    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).not.toStrictEqual(
+      unorderedDs.map((ds) => ds.startBlock)
+    );
+  });
 });

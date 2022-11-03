@@ -99,6 +99,7 @@ function buildDictQueryFragment(
   batchSize: number
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
+
   const node: GqlNode = {
     entity,
     project: [
@@ -126,6 +127,7 @@ function buildDictQueryFragment(
 export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
+  private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
 
   constructor(
     readonly dictionaryEndpoint: string,
@@ -206,7 +208,6 @@ export class DictionaryService implements OnApplicationShutdown {
     batchSize: number,
     conditions: DictionaryQueryEntry[]
   ): GqlQuery {
-    // 1. group condition by entity
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
       acc[c.entity] = acc[c.entity] || [];
       acc[c.entity].push(c.conditions);
@@ -227,5 +228,43 @@ export class DictionaryService implements OnApplicationShutdown {
       vars.push(...pVars);
     }
     return buildQuery(vars, nodes);
+  }
+  buildDictionaryEntryMap<DS extends {startBlock?: number}>(
+    dataSources: Array<DS>,
+    buildDictionaryQueryEntries: (startBlock: number) => DictionaryQueryEntry[]
+  ): void {
+    const mappedDictionaryQueryEntries = new Map();
+
+    for (const ds of dataSources) {
+      mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
+    }
+    this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
+  }
+
+  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
+    let dictionaryQueryEntries: DictionaryQueryEntry[];
+    this.mappedDictionaryQueryEntries.forEach((value, key) => {
+      if (queryEndBlock >= key) {
+        dictionaryQueryEntries = value;
+      }
+    });
+
+    if (dictionaryQueryEntries === undefined) {
+      return [];
+    }
+    return dictionaryQueryEntries;
+  }
+
+  async scopedDictionaryEntries(
+    startBlockHeight: number,
+    queryEndBlock: number,
+    scaledBatchSize: number
+  ): Promise<Dictionary> {
+    return this.getDictionary(
+      startBlockHeight,
+      queryEndBlock,
+      scaledBatchSize,
+      this.getDictionaryQueryEntries(queryEndBlock)
+    );
   }
 }
