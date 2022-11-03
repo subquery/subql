@@ -3992,6 +3992,7 @@ __metadata:
     "@subql/common": "workspace:*"
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
+    "@subql/common-ethereum": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5
