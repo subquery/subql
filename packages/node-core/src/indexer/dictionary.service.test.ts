@@ -220,6 +220,8 @@ describe('DictionaryService', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
     const dictionaryQueryMap = new Map();
 
+    // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
+    // Hence testing, when provided a endBlockHeight, the correct DictionaryQueryEntries[] is returned
     for (let i = 0; i < mockDS.length; i++) {
       dictionaryQueryMap.set(
         [mockDS[i].startBlock],

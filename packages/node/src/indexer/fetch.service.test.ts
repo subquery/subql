@@ -15,7 +15,7 @@ import {
 import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiService } from './api.service';
 import { DictionaryService } from './dictionary.service';
@@ -738,20 +738,4 @@ describe('FetchService', () => {
     // Should be called 91151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
-
-  //test if getDictionary is using the correct mapped_value at certain heights
-  /*
-  e.g.
-
-  mapping_keys =  100,200,300
-  startBlock = 170
-  endBlock is 201
-
-  this should be using the dictQuery for mapping_keys 200
-   */
-
-  /*
- useDictionary should be disabled, if there is a blockHandler in future dataSource
- However, it should remain true prior to the block
-  */
 });

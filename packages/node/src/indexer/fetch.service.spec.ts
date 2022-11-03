@@ -570,7 +570,6 @@ describe('FetchService', () => {
       eventEmitter,
       mockProjectService(),
     );
-
     fetchService = new FetchService(
       apiService,
       nodeConfig,
