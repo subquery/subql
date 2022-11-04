@@ -3,7 +3,11 @@
 
 import * as fs from 'fs';
 import path from 'path';
+import {promisify} from 'util';
 import {makeTempDir} from '@subql/common';
+import rimraf from 'rimraf';
+import {parseDocument, Document} from 'yaml';
+import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 import {
   cloneProjectGit,
   cloneProjectTemplate,
@@ -12,6 +16,32 @@ import {
   readDefaults,
   Template,
 } from './init-controller';
+
+async function testYAML(projectPath: string, project: ProjectSpecBase): Promise<{old: Document; new: Document}> {
+  const yamlPath = path.join(`${projectPath}`, `project.yaml`);
+  const manifest = await fs.promises.readFile(yamlPath, 'utf8');
+  const data = parseDocument(manifest);
+
+  const clonedData = data.clone();
+  clonedData.set('description', project.description ?? data.get('description'));
+  clonedData.set('repository', project.repository ?? '');
+
+  // network type should be collection
+  const network: any = clonedData.get('network');
+  network.set('endpoint', 'http://def not real endpoint');
+  clonedData.set('version', 'not real version');
+  clonedData.set('name', 'not real name');
+
+  if (isProjectSpecV1_0_0(project)) {
+    network.set('chainId', 'random chainId');
+  } else if (isProjectSpecV0_2_0(project)) {
+    network.set('genesisHash', 'random genesisHash');
+  }
+  return {
+    old: data,
+    new: clonedData,
+  };
+}
 
 // async
 const fileExists = async (file: string): Promise<boolean> => {
@@ -31,6 +61,7 @@ const projectSpec = {
   specVersion: '1.0.0',
   author: 'jay',
   description: 'this is test for init controller',
+  chainId: '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
   version: '',
   license: '',
 };
@@ -62,6 +93,17 @@ describe('Cli can create project', () => {
     const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
     await prepare(projectPath, projectSpec);
     await expect(fileExists(path.join(tempPath, `${projectSpec.name}/.git`))).rejects.toThrow();
+  });
+  it('YAML contains comments', async () => {
+    const tempPath = await makeTempDir();
+    const templates = await fetchTemplates();
+    const projectPath = await cloneProjectTemplate(tempPath, projectSpec.name, templates[0]);
+    const output = await testYAML(projectPath, projectSpec);
+    expect(output.new.toJS().network.chainId).toBe('random chainId');
+    expect(output.new).not.toEqual(output.old);
+    expect(output.new.toString()).toContain('# The genesis hash of the network (hash of block 0)');
+
+    await promisify(rimraf)(tempPath);
   });
 
   it('prepare correctly applies project details', async () => {
