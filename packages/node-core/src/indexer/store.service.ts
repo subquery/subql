@@ -254,7 +254,8 @@ export class StoreService {
     if (this.config.proofOfIndex) {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
-    this.metaDataRepo = MetadataFactory(this.sequelize, schema);
+    const { chainId } = this.project.network;
+    this.metaDataRepo = await MetadataFactory(this.sequelize, schema, chainId);
 
     // this will allow alter current entity, including fields
     // TODO, add rules for changes, eg only allow add nullable field

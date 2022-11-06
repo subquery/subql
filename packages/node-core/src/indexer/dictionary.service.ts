@@ -165,9 +165,16 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
+    metadataTableName: string,
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
-    const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
+    const {query, variables} = this.dictionaryQuery(
+      startBlock,
+      queryEndBlock,
+      batchSize,
+      metadataTableName,
+      conditions
+    );
 
     try {
       const resp = await timeout(
@@ -180,7 +187,7 @@ export class DictionaryService implements OnApplicationShutdown {
       const blockHeightSet = new Set<number>();
       const entityEndBlock: {[entity: string]: number} = {};
       for (const entity of Object.keys(resp.data)) {
-        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
+        if (entity !== metadataTableName && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
             entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
@@ -206,6 +213,7 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
+    metadataTableName: string,
     conditions: DictionaryQueryEntry[]
   ): GqlQuery {
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
@@ -218,7 +226,7 @@ export class DictionaryService implements OnApplicationShutdown {
     const vars: GqlVar[] = [];
     const nodes: GqlNode[] = [
       {
-        entity: '_metadata',
+        entity: metadataTableName,
         project: this.metadataKeys,
       },
     ];

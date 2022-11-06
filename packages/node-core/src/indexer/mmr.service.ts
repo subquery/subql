@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Inject, Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {u8aToHex, u8aEq} from '@polkadot/util';
 import {DEFAULT_WORD_SIZE, DEFAULT_LEAF, MMR_AWAIT_TIME} from '@subql/common';
 import {MMR, FileBasedDb} from '@subql/x-merkle-mountain-range';
@@ -13,13 +13,13 @@ import {MmrPayload, MmrProof} from '../events';
 import {getLogger} from '../logger';
 import {delay} from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import {ISubqueryProject, IProjectNetworkConfig} from './types';
 
 const logger = getLogger('mmr');
 
 const DEFAULT_FETCH_RANGE = 100;
 
-const keccak256Hash = (...nodeValues: Uint8Array[]) =>
-  Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
+const keccak256Hash = (...nodeValues: Uint8Array[]) => Buffer.from(keccak256(Buffer.concat(nodeValues)), 'hex');
 
 @Injectable()
 export class MmrService implements OnApplicationShutdown {
@@ -28,6 +28,7 @@ export class MmrService implements OnApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private fileBasedMmr: MMR;
   private poiRepo: PoiRepo;
+  @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
   // This is the next block height that suppose to calculate its mmr value
   private nextMmrBlockHeight: number;
   private blockOffset: number;
@@ -38,13 +39,11 @@ export class MmrService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  async syncFileBaseFromPoi(
-    schema: string,
-    blockOffset: number,
-  ): Promise<void> {
+  async syncFileBaseFromPoi(schema: string, blockOffset: number): Promise<void> {
+    const {chainId} = this.subqueryProject.network;
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.metadataRepo = MetadataFactory(this.sequelize, schema);
+    this.metadataRepo = await MetadataFactory(this.sequelize, schema, chainId);
     this.poiRepo = PoiFactory(this.sequelize, schema);
     this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.blockOffset = blockOffset;
@@ -118,8 +117,8 @@ export class MmrService implements OnApplicationShutdown {
     if (!u8aEq(poiWithMmr.mmrRoot, mmrValue)) {
       throw new Error(
         `Poi block height ${poiWithMmr.id}, Poi mmr ${u8aToHex(
-          poiWithMmr.mmrRoot,
-        )} not the same as filebased mmr: ${u8aToHex(mmrValue)}`,
+          poiWithMmr.mmrRoot
+        )} not the same as filebased mmr: ${u8aToHex(mmrValue)}`
       );
     } else {
       logger.info(
@@ -128,10 +127,7 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  private async updatePoiMmrRoot(
-    id: number,
-    mmrValue: Uint8Array,
-  ): Promise<void> {
+  private async updatePoiMmrRoot(id: number, mmrValue: Uint8Array): Promise<void> {
     const poiBlock = await this.poiRepo.findByPk(id);
     if (poiBlock.mmrRoot === null) {
       poiBlock.mmrRoot = mmrValue;
@@ -141,9 +137,7 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  private async getPoiBlocksByRange(
-    startHeight: number,
-  ): Promise<ProofOfIndex[]> {
+  private async getPoiBlocksByRange(startHeight: number): Promise<ProofOfIndex[]> {
     const poiBlocks = await this.poiRepo.findAll({
       limit: DEFAULT_FETCH_RANGE,
       where: {id: {[Op.gte]: startHeight}},
@@ -234,9 +228,7 @@ export class MmrService implements OnApplicationShutdown {
     this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     const leafIndex = blockHeight - blockOffset - 1;
     if (leafIndex < 0) {
-      throw new Error(
-        `Target block height must greater equal to ${blockOffset + 1} `,
-      );
+      throw new Error(`Target block height must greater equal to ${blockOffset + 1} `);
     }
     await this.fileBasedMmr.delete(leafIndex);
   }

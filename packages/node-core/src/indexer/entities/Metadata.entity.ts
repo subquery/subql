@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {BuildOptions, DataTypes, Model, Sequelize} from 'sequelize';
+import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from 'sequelize';
 
 export interface Metadata {
   key: string;
@@ -14,9 +14,29 @@ export type MetadataRepo = typeof Model & {
   new (values?: unknown, options?: BuildOptions): MetadataModel;
 };
 
-export function MetadataFactory(sequelize: Sequelize, schema: string): MetadataRepo {
+async function checkSchemaMetadata(sequelize: Sequelize, dbSchema: string, chainId: string): Promise<boolean> {
+  try {
+    const r = await sequelize.query<Metadata>(`select * from "${dbSchema}"._metadata WHERE key = 'genesisHash'`, {
+      type: QueryTypes.SELECT,
+    });
+    return r[0]?.value === chainId;
+  } catch (e) {
+    return false;
+  }
+}
+
+export async function MetadataFactory(sequelize: Sequelize, schema: string, chainId: string): Promise<MetadataRepo> {
+  let tableName = '_metadata';
+
+  const oldMetadataName = await checkSchemaMetadata(sequelize, schema, chainId);
+
+  if (!oldMetadataName) {
+    const id = chainId.substring(0, 10);
+    tableName = `${tableName}_${id}`;
+  }
+
   return <MetadataRepo>sequelize.define(
-    `_metadata`,
+    tableName,
     {
       key: {
         type: DataTypes.STRING,

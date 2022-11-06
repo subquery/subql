@@ -51,7 +51,8 @@ export class ReindexService {
     }
     await this.initDbSchema();
 
-    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+    const { chainId } = this.project.network;
+    this.metadataRepo = await MetadataFactory(this.sequelize, this.schema, chainId);
 
     this.unfinalizedBlocksService.init(this.metadataRepo, () =>
       Promise.resolve(),

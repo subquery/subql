@@ -281,6 +281,7 @@ function createFetchService(
   config?: NodeConfig,
 ) {
   const dsProcessorService = new DsProcessorService(project, config);
+  const projectService = mockProjectService();
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
   (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
   const nodeConfig = new NodeConfig({
@@ -304,9 +305,10 @@ function createFetchService(
       nodeConfig,
       indexerManager,
       eventEmitter,
-      mockProjectService(),
+      projectService,
     ),
     dictionaryService,
+    projectService,
     dsProcessorService,
     dynamicDsService,
     unfinalizedBlocksService,
@@ -458,6 +460,7 @@ describe('FetchService', () => {
     const dictionaryService = mockDictionaryService((mock) => {
       mockDictionaryRet._metadata.lastProcessedHeight++;
     });
+    const projectService = mockProjectService();
     const eventEmitter = new EventEmitter2();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -478,7 +481,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      mockProjectService(),
+      projectService,
     );
     fetchService = new FetchService(
       apiService,
@@ -486,6 +489,7 @@ describe('FetchService', () => {
       project,
       blockDispatcher,
       dictionaryService,
+      projectService,
       dsProcessorService,
       dynamicDsService,
       unfinalizedBlocksService,
@@ -547,6 +551,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService3();
+    const projectService = mockProjectService();
     const schedulerRegistry = new SchedulerRegistry();
     const eventEmitter = new EventEmitter2();
     const dsProcessorService = new DsProcessorService(project, config);
@@ -568,7 +573,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      mockProjectService(),
+      projectService,
     );
     fetchService = new FetchService(
       apiService,
@@ -576,6 +581,7 @@ describe('FetchService', () => {
       project,
       blockDispatcher,
       dictionaryService,
+      projectService,
       dsProcessorService,
       dynamicDsService,
       unfinalizedBlocksService,
@@ -631,6 +637,7 @@ describe('FetchService', () => {
       },
     ];
     const dictionaryService = mockDictionaryService1();
+    const projectService = mockProjectService();
     const schedulerRegistry = new SchedulerRegistry();
     const dsProcessorService = new DsProcessorService(project, config);
     const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -651,7 +658,7 @@ describe('FetchService', () => {
       nodeConfig,
       mockIndexerManager(),
       eventEmitter,
-      mockProjectService(),
+      projectService,
     );
     fetchService = new FetchService(
       apiService,
@@ -659,6 +666,7 @@ describe('FetchService', () => {
       project,
       blockDispatcher,
       dictionaryService,
+      projectService,
       dsProcessorService,
       dynamicDsService,
       unfinalizedBlocksService,
