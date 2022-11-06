@@ -59,7 +59,7 @@ export class ReindexService {
       return inputHeight;
     }
     const [firstBestBlock] = bestBlocks[0];
-    return firstBestBlock;
+    return Math.min(inputHeight, firstBestBlock);
   }
 
   private async getExistingProjectSchema(): Promise<string> {
