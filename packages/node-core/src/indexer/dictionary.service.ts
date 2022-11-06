@@ -267,14 +267,14 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number,
-    tableName: string
+    metadataTableName: string
   ): Promise<Dictionary> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
+      metadataTableName,
       this.getDictionaryQueryEntries(queryEndBlock),
-      tableName
     );
   }
 }

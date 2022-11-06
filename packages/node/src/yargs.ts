@@ -134,12 +134,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
     },
-    migrate: {
-      demandOption: false,
-      describe: 'Migrate db schema (for management tables only)',
-      type: 'boolean',
-      default: false,
-    },
     'timestamp-field': {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',

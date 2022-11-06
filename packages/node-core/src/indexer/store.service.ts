@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
 import {Entity, Store} from '@subql/types';
@@ -47,7 +47,7 @@ import {
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
-import {OperationType} from './types';
+import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -74,6 +74,7 @@ export class StoreService {
   private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
+  @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
   private blockHeight: number;
   historical: boolean;
 
@@ -100,7 +101,7 @@ export class StoreService {
 
   async incrementBlockCount(tx: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
+      `UPDATE "${this.schema}".${this.metaDataRepo.tableName} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
       {transaction: tx}
     );
   }
@@ -254,7 +255,8 @@ export class StoreService {
     if (this.config.proofOfIndex) {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
-    const { chainId } = this.project.network;
+
+    const {chainId} = this.subqueryProject.network;
     this.metaDataRepo = await MetadataFactory(this.sequelize, schema, chainId);
 
     // this will allow alter current entity, including fields
@@ -269,20 +271,33 @@ export class StoreService {
 
   async getHistoricalStateEnabled(): Promise<boolean> {
     let enabled = true;
+    let numOfMetadataTables = 0;
+
+    // Get table names
     try {
-      // Throws if _metadata doesn't exist (first startup)
-      const result = await this.sequelize.query<{value: boolean}>(
-        `SELECT value FROM "${this.schema}"."_metadata" WHERE key = 'historicalStateEnabled'`,
-        {type: QueryTypes.SELECT}
+      const tableRes = await this.sequelize.query(
+        `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}'`
       );
-      if (result.length > 0) {
-        enabled = result[0].value;
-      } else {
-        enabled = false;
-      }
+      numOfMetadataTables = tableRes.filter(
+        (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]{10}$/.test(value)
+      ).length;
+
+      // Throws if _metadata doesn't exist (first startup)
+      const res = await this.metaDataRepo.findOne({
+        where: {
+          key: 'historicalStateEnabled',
+        },
+      });
+      const storedState = res?.value as boolean | undefined;
+      enabled = storedState ?? false;
     } catch (e) {
       enabled = !this.config.disableHistorical;
     }
+
+    if (numOfMetadataTables > 1 && enabled) {
+      throw new Error('Cannot multi-chain index when historical state is enabled');
+    }
+
     logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
     return enabled;
   }

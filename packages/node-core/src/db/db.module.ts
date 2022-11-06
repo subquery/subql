@@ -39,11 +39,11 @@ async function establishConnection(sequelize: Sequelize, numRetries: number): Pr
   }
 }
 
-const sequelizeFactory = (option: SequelizeOption, migrate: boolean) => async () => {
+const sequelizeFactory = (option: SequelizeOption) => async () => {
   const sequelize = new Sequelize(option);
   const numRetries = 5;
   await establishConnection(sequelize, numRetries);
-  await sequelize.sync({alter: migrate});
+  await sequelize.sync();
   return sequelize;
 };
 
@@ -52,18 +52,15 @@ export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
 
-    const factory = sequelizeFactory(
-      {
-        ...option,
-        dialect: 'postgres',
-        logging: nodeConfig.debug
-          ? (sql: string, timing?: number) => {
-              logger.debug(sql);
-            }
-          : false,
-      },
-      nodeConfig.migrate
-    )();
+    const factory = sequelizeFactory({
+      ...option,
+      dialect: 'postgres',
+      logging: nodeConfig.debug
+        ? (sql: string, timing?: number) => {
+            logger.debug(sql);
+          }
+        : false,
+    })();
 
     return {
       module: DbModule,
@@ -85,18 +82,15 @@ export class DbModule {
         {
           provide: Sequelize,
           useFactory: (nodeConfig: NodeConfig) =>
-            sequelizeFactory(
-              {
-                ...option,
-                dialect: 'postgres',
-                logging: nodeConfig.debug
-                  ? (sql: string, timing?: number) => {
-                      logger.debug(sql);
-                    }
-                  : false,
-              },
-              nodeConfig.migrate
-            )(),
+            sequelizeFactory({
+              ...option,
+              dialect: 'postgres',
+              logging: nodeConfig.debug
+                ? (sql: string, timing?: number) => {
+                    logger.debug(sql);
+                  }
+                : false,
+            })(),
           inject: [NodeConfig],
         },
       ],
