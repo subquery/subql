@@ -37,6 +37,20 @@ export class DynamicDsService {
 
   private _datasources: SubqlProjectDs[];
 
+  async resetDynamicDatasource(targetHeight: number, tx: Transaction) {
+    const dynamicDs = await this.getDynamicDatasourceParams();
+    if (dynamicDs.length !== 0) {
+      const filteredDs = dynamicDs.filter(
+        (ds) => ds.startBlock <= targetHeight,
+      );
+      const dsRecords = JSON.stringify(filteredDs);
+      await this.metaDataRepo.upsert(
+        { key: METADATA_KEY, value: dsRecords },
+        { transaction: tx },
+      );
+    }
+  }
+
   async createDynamicDatasource(
     params: DatasourceParams,
     tx: Transaction,

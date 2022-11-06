@@ -191,7 +191,6 @@ export class ProjectService {
       'genesisHash',
       'chainId',
       'processedBlockCount',
-      'bestBlocks',
       'lastFinalizedVerifiedHeight',
     ] as const;
 
@@ -258,13 +257,6 @@ export class ProjectService {
         value: packageVersion,
       });
     }
-    if (!keyValue.bestBlocks) {
-      await metadataRepo.upsert({
-        key: 'bestBlocks',
-        value: '{}',
-      });
-    }
-
     return metadataRepo;
   }
 
@@ -373,6 +365,7 @@ export class ProjectService {
       lastProcessedHeight,
       this.storeService,
       this.unfinalizedBlockService,
+      this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       /* Not providing force clean service, it should never be needed */

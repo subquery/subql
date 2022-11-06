@@ -3,6 +3,7 @@
 
 import { getLogger, MmrService, StoreService } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
+import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { ForceCleanService } from '../subcommands/forceClean.service';
 
@@ -15,6 +16,7 @@ export async function reindex(
   lastProcessedHeight: number,
   storeService: StoreService,
   unfinalizedBlockService: UnfinalizedBlocksService,
+  dynamicDsService: DynamicDsService,
   mmrService: MmrService,
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,
@@ -48,6 +50,7 @@ export async function reindex(
         storeService.rewind(targetBlockHeight, transaction),
         unfinalizedBlockService.resetUnfinalizedBlocks(transaction),
         unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
       ]);
 
       if (blockOffset) {

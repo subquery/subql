@@ -14,6 +14,7 @@ import {
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { initDbSchema } from '../utils/project';
 import { reindex } from '../utils/reindex';
@@ -35,6 +36,7 @@ export class ReindexService {
     private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
     private readonly unfinalizedBlocksService: UnfinalizedBlocksService,
+    private readonly dynamicDsService: DynamicDsService,
   ) {}
 
   async init(): Promise<void> {
@@ -46,6 +48,7 @@ export class ReindexService {
     }
     await this.initDbSchema();
     this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+    this.dynamicDsService.init(this.metadataRepo);
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight): Promise<number> {
@@ -119,6 +122,7 @@ export class ReindexService {
       lastProcessedHeight,
       this.storeService,
       this.unfinalizedBlocksService,
+      this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,
