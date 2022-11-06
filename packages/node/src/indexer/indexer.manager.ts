@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
@@ -61,7 +61,7 @@ export class IndexerManager {
     private apiService: ApiService,
     private poiService: PoiService,
     private sequelize: Sequelize,
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,

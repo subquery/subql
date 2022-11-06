@@ -46,6 +46,7 @@ import { ApiService } from './api.service';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
@@ -102,9 +103,10 @@ export class FetchService implements OnApplicationShutdown {
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
+    private projectService: ProjectService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
@@ -435,11 +437,14 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
+          const tableName = this.projectService.metadataName;
+
           const dictionary =
             await this.dictionaryService.scopedDictionaryEntries(
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
+              tableName
             );
 
           if (startBlockHeight !== getStartBlockHeight()) {

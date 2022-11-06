@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
@@ -38,7 +38,7 @@ export class ApiService implements OnApplicationShutdown {
   networkMeta: NetworkMetadataPayload;
 
   constructor(
-    protected project: SubqueryProject,
+    @Inject('ISubqueryProject') protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
   ) {}
 

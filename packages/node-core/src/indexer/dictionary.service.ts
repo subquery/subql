@@ -258,13 +258,15 @@ export class DictionaryService implements OnApplicationShutdown {
   async scopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
-    scaledBatchSize: number
+    scaledBatchSize: number,
+    tableName: string
   ): Promise<Dictionary> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(queryEndBlock)
+      this.getDictionaryQueryEntries(queryEndBlock),
+      tableName
     );
   }
 }

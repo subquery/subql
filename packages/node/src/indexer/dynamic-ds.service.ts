@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { cloneDeep, isEqual, unionWith } from 'lodash';
@@ -28,7 +28,7 @@ export class DynamicDsService {
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
   ) {}
 
   init(metaDataRepo: MetadataRepo): void {
