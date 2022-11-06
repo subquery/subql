@@ -55,11 +55,12 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaData> {
+async function fetchFromTable(pgClient: any, schemaName: string, chainId: string | undefined): Promise<MetaData> {
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  const {rows} = await pgClient.query(`select key, value from "${schemaName}"._metadata WHERE key = ANY ($1)`, [keys]);
+  const tableName = `_metadata${chainId ? `_${chainId.substring(0, 10)}` : ''}`;
+  const {rows} = await pgClient.query(`select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`, [keys]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
     array[curr.key] = curr.value;
@@ -98,7 +99,8 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
   let metadataTableExists = false;
 
   const tableSearch = build.pgIntrospectionResultsByKind.attribute.find(
-    (attr: {class: {name: string}}) => attr.class.name === '_metadata'
+    (attr: {class: {name: string}}) =>
+      /^_metadata$/.test(attr.class.name) || /^_metadata_[a-zA-Z0-9-]{10}$/.test(attr.class.name)
   );
 
   if (tableSearch !== undefined) {
@@ -130,14 +132,14 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         dynamicDatasources: String
       }
       extend type Query {
-        _metadata: _Metadata
+        _metadata(chainId: String): _Metadata
       }
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, _args, context, _info): Promise<MetaData> => {
+        _metadata: async (_parentObject, args, context, _info): Promise<MetaData> => {
           if (metadataTableExists) {
-            const metadata = await fetchFromTable(context.pgClient, schemaName);
+            const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId);
 
             if (Object.keys(metadata).length > 0) {
               return metadata;
