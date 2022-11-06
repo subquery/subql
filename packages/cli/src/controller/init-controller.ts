@@ -9,9 +9,9 @@ import {makeTempDir, ProjectManifestV0_2_0, ProjectManifestV1_0_0} from '@subql/
 import {ProjectManifestV0_0_1} from '@subql/common-substrate';
 import axios from 'axios';
 import {copySync} from 'fs-extra';
-import yaml from 'js-yaml';
 import rimraf from 'rimraf';
 import git from 'simple-git';
+import {parseDocument} from 'yaml';
 import {isProjectSpecV0_2_0, isProjectSpecV1_0_0, ProjectSpecBase} from '../types';
 const TEMPLATES_REMOTE = 'https://raw.githubusercontent.com/subquery/templates/main/templates.json';
 
@@ -80,7 +80,10 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
 
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const currentProject = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0 | ProjectManifestV1_0_0;
+  const currentProject = parseDocument(manifest).toJS() as
+    | ProjectManifestV0_0_1
+    | ProjectManifestV0_2_0
+    | ProjectManifestV1_0_0;
   return [
     currentProject.specVersion,
     currentProject.repository,
@@ -127,24 +130,23 @@ async function prepareManifest(projectPath: string, project: ProjectSpecBase): P
   //load and write manifest(project.yaml)
   const yamlPath = path.join(`${projectPath}`, `project.yaml`);
   const manifest = await fs.promises.readFile(yamlPath, 'utf8');
-  const data = yaml.load(manifest) as ProjectManifestV0_0_1 | ProjectManifestV0_2_0 | ProjectManifestV1_0_0;
-  data.description = project.description ?? data.description;
-  data.repository = project.repository ?? '';
+  const data = parseDocument(manifest);
+  const clonedData = data.clone();
 
-  data.network.endpoint = project.endpoint;
+  clonedData.set('description', project.description ?? data.get('description'));
+  clonedData.set('repository', project.repository ?? '');
 
+  const network: any = clonedData.get('network');
+  network.set('endpoint', project.endpoint);
+  clonedData.set('version', project.version);
+  clonedData.set('name', project.name);
   if (isProjectSpecV1_0_0(project)) {
-    (data as ProjectManifestV1_0_0).version = project.version;
-    (data as ProjectManifestV1_0_0).name = project.name;
-    (data as ProjectManifestV1_0_0).network.chainId = project.chainId;
+    network.set('chainId', project.chainId);
   } else if (isProjectSpecV0_2_0(project)) {
-    (data as ProjectManifestV0_2_0).version = project.version;
-    (data as ProjectManifestV0_2_0).name = project.name;
-    (data as ProjectManifestV0_2_0).network.genesisHash = project.genesisHash;
+    network.set('genesisHash', project.genesisHash);
   }
 
-  const newYaml = yaml.dump(data);
-  await fs.promises.writeFile(yamlPath, newYaml, 'utf8');
+  await fs.promises.writeFile(yamlPath, clonedData.toString(), 'utf8');
 }
 
 export function installDependencies(projectPath: string, useNpm?: boolean): void {
