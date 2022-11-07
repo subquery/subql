@@ -3,7 +3,7 @@
 
 import { validDbSchemaName } from './configure.module';
 
-describe('Configure', () => {
+describe.skip('Configure', () => {
   it('validDbSchemaName - works', () => {
     expect(validDbSchemaName('subquery_1')).toBeTruthy();
   });
