@@ -10,7 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [1.3.0] - 2022-10-28
+## [1.3.1] - 2022-11-08
+### Fixed
+- Remove sequelize alter table (#1387)
+
+## [1.3.0] - 2022-11-07
 ### Fixed
 - Improve dictionary query by filter with data sources start block. (#1371)
 
