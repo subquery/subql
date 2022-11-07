@@ -5,7 +5,7 @@ import path from 'path';
 
 import { SubqueryProject } from './SubqueryProject';
 
-describe('SubqueryProject', () => {
+describe.skip('SubqueryProject', () => {
   describe('convert manifest to project object', () => {
     let projectDirV0_2_0: string;
     let projectDirV0_3_0: string;
