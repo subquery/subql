@@ -47,9 +47,12 @@ export class ReindexService {
       throw new Error('Schema does not exist.');
     }
     await this.initDbSchema();
-    
-    const { chainId } = this.project.network;
-    this.metadataRepo = await MetadataFactory(this.sequelize, this.schema, chainId);
+
+    this.metadataRepo = await MetadataFactory(
+      this.sequelize,
+      this.schema,
+      this.project.network.chainId,
+    );
     this.dynamicDsService.init(this.metadataRepo);
   }
 

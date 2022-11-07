@@ -114,11 +114,10 @@ export class ProjectService {
 
       this._startHeight = await this.getStartHeight();
     } else {
-      const { chainId } = this.project.network;
       this.metadataRepo = await MetadataFactory(
         this.sequelize,
         this.schema,
-        chainId,
+        this.project.network.chainId,
       );
 
       this.dynamicDsService.init(this.metadataRepo);
@@ -184,11 +183,10 @@ export class ProjectService {
   }
 
   private async ensureMetadata(): Promise<MetadataRepo> {
-    const { chainId } = this.project.network;
     const metadataRepo = await MetadataFactory(
       this.sequelize,
       this.schema,
-      chainId,
+      this.project.network.chainId,
     );
 
     this.eventEmitter.emit(
