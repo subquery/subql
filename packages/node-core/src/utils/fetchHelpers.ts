@@ -8,28 +8,28 @@ const logger = getLogger('fetch');
 
 const RETRY_COUNT = 5;
 
-// TODO: generic type for the response
-export async function retryOnFail(
-  errorMessage: string,
-  args: any, // should be height for cosmos and a bunch of other shit for avalanche
-  request: (...args) => Promise<any>,
-  statusCodes: number[],
+export async function retryOnFail<T>(
+  request: () => Promise<T>,
+  shouldRetry: (error: any) => boolean,
   retries = RETRY_COUNT
-): Promise<any> {
+): Promise<T> {
   try {
-    return await request(args);
+    return await request();
   } catch (e) {
-    if (!statusCodes.find((target) => target === e.response.status)) throw e;
-
+    // if not axios error, throw
+    if (!shouldRetry(e)) throw e;
     if (retries > 0) {
-      logger.warn(`${errorMessage}`);
       --retries;
-
       await delay(10);
-      return request(args);
+      return retryOnFail(args);
     } else {
       logger.error(e, `Retries failed after ${RETRY_COUNT}`);
       throw e;
     }
   }
+}
+
+// When dealing with Axios errors use shouldRetry
+async function shouldRetry<T>(request: () => Promise<T>, statusCodes: number[]): Promise<T> {
+  return retryOnFail(request, (e) => statusCodes.find((t) => t === e?.response?.target));
 }
