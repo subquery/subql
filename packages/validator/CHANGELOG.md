@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-10-07
+### Added
+- Added ethereum to Validator. (#1338)
+
 ## [1.5.1] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)

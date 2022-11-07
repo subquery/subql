@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-10-28
+### Fixed
+- Improve dictionary query by filter with data sources start block. (#1371)
+
 ## [1.2.0] - 2022-10-28
 
 ### Added

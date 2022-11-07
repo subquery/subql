@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.13.0] - 2022-11-07
+### Changed
+- Update polkadot to 9.7.1 (#1384)
+### Fixed
+- Fix logic with reindex and unfinalized height, also reset dynamic ds (#1382)
+- Improve dictionary query (#1371)
+
 ## [1.12.0] - 2022-10-28
 
 ### Added
