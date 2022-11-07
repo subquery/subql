@@ -15,7 +15,14 @@ export async function reindexInit(targetHeight: number): Promise<void> {
     const reindexService = app.get(ReindexService);
 
     await reindexService.init();
-    await reindexService.reindex(targetHeight);
+    const actualReindexHeight =
+      await reindexService.getTargetHeightWithUnfinalizedBlocks(targetHeight);
+    if (actualReindexHeight !== targetHeight) {
+      logger.info(
+        `Found index target height ${targetHeight} beyond indexed unfinalized block ${actualReindexHeight}, will index to ${actualReindexHeight}`,
+      );
+    }
+    await reindexService.reindex(actualReindexHeight);
   } catch (e) {
     logger.error(e, 'Reindex failed to execute');
     process.exit(1);
