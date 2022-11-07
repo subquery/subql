@@ -270,36 +270,51 @@ export class StoreService {
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
-    let enabled = true;
-    let numOfMetadataTables = 0;
+    const {disableHistorical} = this.config;
+    const multiChainHistoricalError =
+      'Cannot multi-chain index when historical state is enabled, try using --disable-historical';
 
-    // Get table names
     try {
-      const tableRes = await this.sequelize.query(
-        `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}'`
+      const tableRes = await this.sequelize.query<Array<string>>(
+        `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}'`,
+        {type: QueryTypes.SELECT}
       );
-      numOfMetadataTables = tableRes.filter(
+
+      const metadataTableNames = flatten(tableRes).filter(
         (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]{10}$/.test(value)
-      ).length;
+      );
 
-      // Throws if _metadata doesn't exist (first startup)
-      const res = await this.metaDataRepo.findOne({
-        where: {
-          key: 'historicalStateEnabled',
-        },
-      });
-      const storedState = res?.value as boolean | undefined;
-      enabled = storedState ?? false;
+      if (metadataTableNames.length > 1 && !disableHistorical) {
+        throw new Error(multiChainHistoricalError);
+      }
+
+      if (metadataTableNames.length === 1) {
+        const res = await this.sequelize.query<{key: string; value: boolean | string}>(
+          `SELECT key, value FROM "${this.schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled' OR key = 'genesisHash')`,
+          {type: QueryTypes.SELECT}
+        );
+
+        const store = res.reduce(function (total, current) {
+          total[current.key] = current.value;
+          return total;
+        }, {} as {[key: string]: string | boolean});
+
+        if (!store.historicalStateEnabled && !disableHistorical) {
+          logger.warn('Metadata entry already has historical state set to false, disabling..');
+          return false;
+        }
+
+        if (store.historicalStateEnabled && store.genesisHash !== this.subqueryProject.network.chainId) {
+          throw new Error(multiChainHistoricalError);
+        }
+
+        const storedState = res[0]?.value as boolean | undefined;
+        return storedState ?? false;
+      }
+      throw new Error('Metadata table does not exist');
     } catch (e) {
-      enabled = !this.config.disableHistorical;
+      return !disableHistorical;
     }
-
-    if (numOfMetadataTables > 1 && enabled) {
-      throw new Error('Cannot multi-chain index when historical state is enabled');
-    }
-
-    logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
-    return enabled;
   }
 
   addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
