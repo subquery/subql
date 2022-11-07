@@ -14,12 +14,8 @@ import {
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { BestBlocks } from '../indexer/types';
-import {
-  METADATA_LAST_FINALIZED_PROCESSED_KEY,
-  METADATA_UNFINALIZED_BLOCKS_KEY,
-  UnfinalizedBlocksService,
-} from '../indexer/unfinalizedBlocks.service';
+import { DynamicDsService } from '../indexer/dynamic-ds.service';
+import { UnfinalizedBlocksService } from '../indexer/unfinalizedBlocks.service';
 import { initDbSchema } from '../utils/project';
 import { reindex } from '../utils/reindex';
 
@@ -40,6 +36,7 @@ export class ReindexService {
     private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
     private readonly unfinalizedBlocksService: UnfinalizedBlocksService,
+    private readonly dynamicDsService: DynamicDsService,
   ) {}
 
   async init(): Promise<void> {
@@ -50,13 +47,24 @@ export class ReindexService {
       throw new Error('Schema does not exist.');
     }
     await this.initDbSchema();
-
+    
     const { chainId } = this.project.network;
     this.metadataRepo = await MetadataFactory(this.sequelize, this.schema, chainId);
+    this.dynamicDsService.init(this.metadataRepo);
+  }
 
-    this.unfinalizedBlocksService.init(this.metadataRepo, () =>
-      Promise.resolve(),
+  async getTargetHeightWithUnfinalizedBlocks(inputHeight): Promise<number> {
+    (this.unfinalizedBlocksService as any).metadataRepo = this.metadataRepo;
+    const unfinalizedBlocks =
+      await this.unfinalizedBlocksService.getMetadataUnfinalizedBlocks();
+    const bestBlocks = unfinalizedBlocks.filter(
+      ([bestBlockHeight]) => Number(bestBlockHeight) <= inputHeight,
     );
+    if (bestBlocks.length === 0) {
+      return inputHeight;
+    }
+    const [firstBestBlock] = bestBlocks[0];
+    return Math.min(inputHeight, firstBestBlock);
   }
 
   private async getExistingProjectSchema(): Promise<string> {
@@ -116,6 +124,7 @@ export class ReindexService {
       lastProcessedHeight,
       this.storeService,
       this.unfinalizedBlocksService,
+      this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,
