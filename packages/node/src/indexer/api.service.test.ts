@@ -371,23 +371,45 @@ describe('ApiService', () => {
     );
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
   });
-  //
-  // /* This test can be reenabled once https://github.com/polkadot-js/api/pull/4540 has been released and the api is updated */
-  // it.skip('can correctly call rpc methods that use block number', async () => {
-  //   const apiService = await prepareApiService(
-  //     'wss://moonbeam-alpha.api.onfinality.io/public-ws',
-  //   );
-  //   const api = apiService.getApi();
-  //
-  //   const blockNumber = 1545235;
-  //   const blockhash = await api.rpc.chain.getBlockHash(blockNumber);
-  //   const patchedApi = await apiService.getPatchedApi(blockhash, blockNumber);
-  //
-  //   /* Block number should be ignored and `blockNumber` above used */
-  //   const balance = await patchedApi.rpc.eth.getBalance(
-  //     '0x59ce189fd40611162017deb88d826C3485f41e0D',
-  //     1645023,
-  //   );
-  //   expect(balance.toString()).toEqual('878428609000000000');
-  // });
+
+  /* This test can be reenabled once https://github.com/polkadot-js/api/pull/4540 has been released and the api is updated */
+  it('can correctly call rpc methods that use block number', async () => {
+    const apiService = await prepareApiService(
+      'wss://moonbeam-alpha.api.onfinality.io/public-ws',
+    );
+    const api = apiService.getApi();
+
+    const blockNumber = 1545235;
+    const blockhash = await api.rpc.chain.getBlockHash(blockNumber);
+    const block = await api.rpc.chain.getBlock(blockhash);
+    const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
+    const runtimeVersion = { specVersion: 1103 } as unknown as RuntimeVersion;
+
+    const patchedApi = await apiService.getPatchedApi(
+      mockBlock,
+      runtimeVersion,
+    );
+    /* If Block number not provided should be ignored and `blockNumber` above used */
+    const balance = await patchedApi.rpc.eth.getBalance(
+      '0x59ce189fd40611162017deb88d826C3485f41e0D',
+    );
+    expect(balance.toString()).toEqual('878428609000000000');
+
+    /* If Block number provided, but less than `blockNumber`, should use new Block number */
+    const balance2 = await patchedApi.rpc.eth.getBalance(
+      '0x59ce189fd40611162017deb88d826C3485f41e0D',
+      1345235,
+    );
+    expect(balance2.toString()).toEqual('4935166494000000000');
+
+    /* If Block number provided, but beyond than `blockNumber`, should throw error */
+    await expect(
+      patchedApi.rpc.eth.getBalance(
+        '0x59ce189fd40611162017deb88d826C3485f41e0D',
+        1645235,
+      ),
+    ).rejects.toThrow(
+      'input block 1645235 ahead of current block 1545235 is not supported',
+    );
+  });
 });
