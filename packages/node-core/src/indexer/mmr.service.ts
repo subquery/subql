@@ -40,10 +40,9 @@ export class MmrService implements OnApplicationShutdown {
   }
 
   async syncFileBaseFromPoi(schema: string, blockOffset: number): Promise<void> {
-    const {chainId} = this.subqueryProject.network;
     if (this.isSyncing) return;
     this.isSyncing = true;
-    this.metadataRepo = await MetadataFactory(this.sequelize, schema, chainId);
+    this.metadataRepo = await MetadataFactory(this.sequelize, schema, this.subqueryProject.network.chainId);
     this.poiRepo = PoiFactory(this.sequelize, schema);
     this.fileBasedMmr = await this.ensureFileBasedMmr(this.nodeConfig.mmrPath);
     this.blockOffset = blockOffset;
