@@ -437,14 +437,12 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
-          const tableName = this.projectService.metadataName;
-
           const dictionary =
             await this.dictionaryService.scopedDictionaryEntries(
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
-              tableName
+              this.projectService.metadataName,
             );
 
           if (startBlockHeight !== getStartBlockHeight()) {
