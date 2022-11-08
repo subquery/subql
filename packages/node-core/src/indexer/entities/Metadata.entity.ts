@@ -3,9 +3,31 @@
 
 import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from 'sequelize';
 
+export interface MetadataKeys {
+  chain: string;
+  genesisHash: string;
+  historicalStateEnabled: boolean;
+  indexerNodeVersion: string;
+  lastProcessedHeight: number;
+  lastProcessedTimestamp: string;
+  processedBlockCount: number;
+  blockOffset: number;
+  runnerNode: string;
+  runnerNodeVersion: string;
+  runnerQuery: string;
+  runnerQueryVersion: string;
+  specName: string;
+  lastPoiHeight: number;
+  lastFinalizedVerifiedHeight: number;
+  indexerHealthy: boolean;
+  targetHeight: number;
+  dynamicDatasources: string;
+  unfinalizedBlocks: string;
+}
+
 export interface Metadata {
-  key: string;
-  value: number | string | boolean;
+  key: keyof MetadataKeys;
+  value: MetadataKeys[keyof MetadataKeys];
 }
 
 export interface MetadataModel extends Model<Metadata>, Metadata {}

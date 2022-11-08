@@ -300,11 +300,11 @@ export class ProjectService {
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'block_offset');
+    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
   }
 
   async getLastProcessedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'last_processed_height');
+    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {
