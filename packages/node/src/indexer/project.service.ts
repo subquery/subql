@@ -134,7 +134,7 @@ export class ProjectService {
 
     const reindexedTo = await this.unfinalizedBlockService.init(
       this.metadataRepo,
-      this.reindex,
+      this.reindex.bind(this),
     );
 
     if (reindexedTo !== undefined) {
