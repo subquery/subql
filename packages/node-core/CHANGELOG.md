@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.2] - 2022-11-08
+### Fixed
+- Fix missing sequelize sync (#1389)
+
 ## [1.3.1] - 2022-11-08
 ### Fixed
 - Remove sequelize alter table (#1387)
