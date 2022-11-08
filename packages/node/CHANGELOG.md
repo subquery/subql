@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.1] - 2022-11-08
+### Updated
+- Sync with latest changes with @subql/node-core, remove sequelize alter table
+  
 ## [1.11.0] - 2022-11-02
 ### Changed
 - Sync with latest changes on Substrate SDK (#76):
