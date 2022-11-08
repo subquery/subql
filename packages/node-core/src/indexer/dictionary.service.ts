@@ -165,15 +165,15 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    metadataTableName: string,
-    conditions: DictionaryQueryEntry[]
+    conditions: DictionaryQueryEntry[],
+    metadataTableName = '_metadata'
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(
       startBlock,
       queryEndBlock,
       batchSize,
-      metadataTableName,
-      conditions
+      conditions,
+      metadataTableName
     );
 
     try {
@@ -213,8 +213,8 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    metadataTableName: string,
-    conditions: DictionaryQueryEntry[]
+    conditions: DictionaryQueryEntry[],
+    metadataTableName: string
   ): GqlQuery {
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
       acc[c.entity] = acc[c.entity] || [];
@@ -273,8 +273,8 @@ export class DictionaryService implements OnApplicationShutdown {
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      metadataTableName,
       this.getDictionaryQueryEntries(queryEndBlock),
+      metadataTableName
     );
   }
 }

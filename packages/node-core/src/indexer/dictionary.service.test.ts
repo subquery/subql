@@ -115,13 +115,7 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const dic = await dictionaryService.getDictionary(
-      startBlock,
-      endBlock,
-      batchSize,
-      '_metadata',
-      HAPPY_PATH_CONDITIONS
-    );
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
 
     expect(dic.batchBlocks.length).toBeGreaterThan(1);
   }, 500000);
@@ -134,13 +128,7 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const dic = await dictionaryService.getDictionary(
-      startBlock,
-      endBlock,
-      batchSize,
-      '_metadata',
-      HAPPY_PATH_CONDITIONS
-    );
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
     expect(dic).toBeUndefined();
   }, 500000);
 
@@ -149,13 +137,7 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 400000000;
     const endBlock = 400010000;
-    const dic = await dictionaryService.getDictionary(
-      startBlock,
-      endBlock,
-      batchSize,
-      '_metadata',
-      HAPPY_PATH_CONDITIONS
-    );
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, HAPPY_PATH_CONDITIONS);
     expect(dic._metadata).toBeDefined();
   }, 500000);
 
@@ -165,7 +147,7 @@ describe('DictionaryService', () => {
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
-    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, '_metadata', [
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, [
       {
         entity: 'extrinsics',
         conditions: [
@@ -182,7 +164,7 @@ describe('DictionaryService', () => {
     const batchSize = 50;
     const startBlock = 333300;
     const endBlock = 340000;
-    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, '_metadata', [
+    const dic = await dictionaryService.getDictionary(startBlock, endBlock, batchSize, [
       {
         //last event at block 333524
         entity: 'events',

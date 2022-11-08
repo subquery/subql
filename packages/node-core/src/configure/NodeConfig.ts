@@ -57,6 +57,7 @@ const DEFAULT_CONFIG = {
   profiler: false,
   subscription: false,
   disableHistorical: false,
+  unfinalizedBlocks: false,
 };
 
 export class NodeConfig implements IConfig {
