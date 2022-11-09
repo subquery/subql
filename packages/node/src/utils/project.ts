@@ -18,7 +18,7 @@ import {
   SubqlHandler,
   EthereumHandlerKind,
 } from '@subql/common-ethereum';
-import { StoreService } from '@subql/node-core';
+import { retryOnFail, StoreService } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import yaml from 'js-yaml';
 import tar from 'tar';
@@ -246,4 +246,13 @@ export async function initDbSchema(
 ): Promise<void> {
   const modelsRelation = getAllEntitiesRelations(project.schema);
   await storeService.init(modelsRelation, schema);
+}
+
+const handledErrors = ['timeout'];
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function retryOnFailEth<T>(
+  request: () => Promise<T>,
+  errors = handledErrors,
+): Promise<T> {
+  return retryOnFail(request, (e) => !!errors.find((t) => t === e?.reason));
 }

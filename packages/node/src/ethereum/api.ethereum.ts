@@ -8,7 +8,7 @@ import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { JsonRpcProvider, WebSocketProvider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
-import { delay, getLogger, retryOnFailAxios } from '@subql/node-core';
+import { getLogger } from '@subql/node-core';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -18,6 +18,7 @@ import {
   EthereumLog,
 } from '@subql/types-ethereum';
 import { ConnectionInfo, hexDataSlice, hexValue } from 'ethers/lib/utils';
+import { retryOnFailEth } from '../utils/project';
 import { EthereumBlockWrapped } from './block.ethereum';
 import {
   formatBlock,
@@ -117,12 +118,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
   async getBlockPromise(num: number): Promise<any> {
     try {
-      const result = await retryOnFailAxios(
-        this.client.send.bind(this, 'eth_getBlockByNumber', [
-          hexValue(num),
-          true,
-        ]),
-        [429],
+      const result = await retryOnFailEth(() =>
+        this.client.send('eth_getBlockByNumber', [hexValue(num), true]),
       );
       return result;
     } catch (e) {
@@ -135,9 +132,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     transactionHash: string | Promise<string>,
   ): Promise<TransactionReceipt> {
     try {
-      return await retryOnFailAxios(
-        this.client.getTransactionReceipt.bind(this, transactionHash),
-        [429],
+      return await retryOnFailEth(
+        this.client.getTransactionReceipt.bind(this.client, transactionHash),
       );
     } catch (e) {
       logger.error(`Failed to fetch TransactionReceipt ${transactionHash}`);
