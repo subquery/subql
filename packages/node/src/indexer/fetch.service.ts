@@ -486,7 +486,7 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (this.getModulos().length === handlers.length) {
+      if (handlers.length && this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
           this.getEnqueuedModuloBlocks(startBlockHeight),
         );
