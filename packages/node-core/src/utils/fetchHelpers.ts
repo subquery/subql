@@ -7,6 +7,7 @@ import {delay} from './promise';
 const logger = getLogger('fetch');
 
 const RETRY_COUNT = 5;
+const RETRY_DELAY = 2;
 
 export async function retryOnFail<T>(
   request: () => Promise<T>,
@@ -16,12 +17,10 @@ export async function retryOnFail<T>(
   try {
     return await request();
   } catch (e) {
-    // if not axios error, throw
     if (!shouldRetry(e)) throw e;
-    if (retries > 0) {
-      --retries;
-      await delay(10);
-      return retryOnFail(args);
+    if (retries > 1) {
+      await delay(RETRY_DELAY);
+      return retryOnFail(request, shouldRetry, --retries);
     } else {
       logger.error(e, `Retries failed after ${RETRY_COUNT}`);
       throw e;
@@ -30,6 +29,6 @@ export async function retryOnFail<T>(
 }
 
 // When dealing with Axios errors use shouldRetry
-async function shouldRetry<T>(request: () => Promise<T>, statusCodes: number[]): Promise<T> {
-  return retryOnFail(request, (e) => statusCodes.find((t) => t === e?.response?.target));
+export async function retryOnFailAxios<T>(request: () => Promise<T>, statusCodes: number[]): Promise<T> {
+  return retryOnFail(request, (e) => !!statusCodes.find((t) => t === e?.response?.status));
 }
