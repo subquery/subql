@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.3] - 2022-11-09
+### Added
+- Added retry method for handle fetch errors (#1386)
+
 ## [1.3.2] - 2022-11-08
 ### Fixed
 - Fix missing sequelize sync (#1389)
