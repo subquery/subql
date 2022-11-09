@@ -5,10 +5,10 @@ import fs from 'fs';
 import http from 'http';
 import https from 'https';
 import { Interface } from '@ethersproject/abi';
-import { Block } from '@ethersproject/abstract-provider';
+import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { JsonRpcProvider, WebSocketProvider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
-import { getLogger } from '@subql/node-core';
+import { delay, getLogger, retryOnFailAxios } from '@subql/node-core';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -115,32 +115,63 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     return this.client.getBlock(height);
   }
 
+  async getBlockPromise(num: number): Promise<any> {
+    try {
+      const result = await retryOnFailAxios(
+        this.client.send.bind(this, 'eth_getBlockByNumber', [
+          hexValue(num),
+          true,
+        ]),
+        [429],
+      );
+      return result;
+    } catch (e) {
+      logger.error(`Failed to fetch block_promise ${num}`);
+      throw e;
+    }
+  }
+
+  async getTransactionReceipt(
+    transactionHash: string | Promise<string>,
+  ): Promise<TransactionReceipt> {
+    try {
+      return await retryOnFailAxios(
+        this.client.getTransactionReceipt.bind(this, transactionHash),
+        [429],
+      );
+    } catch (e) {
+      logger.error(`Failed to fetch TransactionReceipt ${transactionHash}`);
+      throw e;
+    }
+  }
+  async fetchBlock(num: number): Promise<EthereumBlockWrapper> {
+    try {
+      const block_promise = await this.getBlockPromise(num);
+
+      const block = formatBlock(block_promise);
+      block.stateRoot = this.client.formatter.hash(block.stateRoot);
+
+      const transactions = await Promise.all(
+        block.transactions.map(async (tx) => {
+          const transaction = formatTransaction(tx);
+          const receipt = await this.getTransactionReceipt(tx.hash);
+          transaction.receipt = formatReceipt(receipt, block);
+          return transaction;
+        }),
+      );
+      return new EthereumBlockWrapped(block, transactions);
+    } catch (e) {
+      logger.error('Failed to fetch block');
+      throw e;
+    }
+  }
+
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
     return Promise.all(
       bufferBlocks.map(async (num) => {
         try {
           // Fetch Block
-          const block_promise = await this.client.send('eth_getBlockByNumber', [
-            hexValue(num),
-            true,
-          ]);
-
-          const block = formatBlock(block_promise);
-
-          //const block = this.client.formatter.blockWithTransactions(rawBlock);
-          block.stateRoot = this.client.formatter.hash(block.stateRoot);
-          // Get transaction receipts
-          const transactions = await Promise.all(
-            block.transactions.map(async (tx) => {
-              //logger.info(JSON.stringify(tx))
-              const transaction = formatTransaction(tx);
-              const receipt = await this.client.getTransactionReceipt(tx.hash);
-
-              transaction.receipt = formatReceipt(receipt, block);
-              return transaction;
-            }),
-          );
-          return new EthereumBlockWrapped(block, transactions);
+          return this.fetchBlock(num);
         } catch (e) {
           // Wrap error from an axios error to fix issue with error being undefined
           const error = new Error(e.message);

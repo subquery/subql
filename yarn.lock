@@ -2945,6 +2945,44 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/common@npm:1.4.3":
+  version: 1.4.3
+  resolution: "@subql/common@npm:1.4.3"
+  dependencies:
+    axios: ^0.27.2
+    class-transformer: 0.5.1
+    class-validator: ^0.13.2
+    fs-extra: ^10.1.0
+    ipfs-http-client: ^52.0.3
+    js-yaml: ^4.1.0
+    reflect-metadata: ^0.1.13
+    semver: ^7.3.5
+  checksum: af423cf92462f055dce7fcdc367a2a650931c35cbd3f884326e9b2bcb790d04e489c88246460d9eb09ea9023452e692e91be94b9bf8cc4c33cda685677f0a28e
+  languageName: node
+  linkType: hard
+
+"@subql/node-core@npm:1.3.3-1":
+  version: 1.3.3-1
+  resolution: "@subql/node-core@npm:1.3.3-1"
+  dependencies:
+    "@nestjs/common": ^8.2.6
+    "@nestjs/event-emitter": ^1.3.0
+    "@nestjs/schedule": ^1.0.2
+    "@polkadot/api": 9.7.1
+    "@subql/common": 1.4.3
+    "@subql/types": 1.6.0
+    "@subql/utils": 1.2.0
+    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
+    "@willsoto/nestjs-prometheus": ^4.4.0
+    lodash: ^4.17.21
+    prom-client: ^14.0.1
+    sequelize: 6.23.0
+    vm2: ^3.9.9
+    yargs: ^16.2.0
+  checksum: f36eb7e10a1dc0ca161e218b655a155f5315c1a05d073cc52a51f3fe9965e111ab3acbf6019162bd46586cdde023561227eb8993f8c3c4a3452280cd9e8924db
+  languageName: node
+  linkType: hard
+
 "@subql/node-core@npm:^0.1.1":
   version: 0.1.3
   resolution: "@subql/node-core@npm:0.1.3"
@@ -2966,28 +3004,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:latest":
-  version: 1.0.1
-  resolution: "@subql/node-core@npm:1.0.1"
-  dependencies:
-    "@nestjs/common": ^8.2.6
-    "@nestjs/event-emitter": ^1.3.0
-    "@nestjs/schedule": ^1.0.2
-    "@polkadot/api": 9.4.2
-    "@subql/common": 1.4.2
-    "@subql/types": 1.5.1
-    "@subql/utils": 1.2.0
-    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
-    "@willsoto/nestjs-prometheus": ^4.4.0
-    lodash: ^4.17.21
-    prom-client: ^14.0.1
-    sequelize: 6.23.0
-    vm2: ^3.9.9
-    yargs: ^16.2.0
-  checksum: ced4aa062ab22d32a48277a26fa29d39cd2ff72be1136ed81392c0d48f774ed7cf0810b5ef91fbaf2e4d963346f99a35be0d44bf87ae5fb2a3d6fc2bcd535348
-  languageName: node
-  linkType: hard
-
 "@subql/node-ethereum@workspace:packages/node":
   version: 0.0.0-use.local
   resolution: "@subql/node-ethereum@workspace:packages/node"
@@ -3002,7 +3018,7 @@ __metadata:
     "@nestjs/testing": ^8.2.6
     "@subql/common": latest
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": latest
+    "@subql/node-core": 1.3.3-1
     "@subql/types-ethereum": "workspace:*"
     "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
@@ -3064,12 +3080,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types@npm:1.5.1":
-  version: 1.5.1
-  resolution: "@subql/types@npm:1.5.1"
+"@subql/types@npm:1.6.0":
+  version: 1.6.0
+  resolution: "@subql/types@npm:1.6.0"
   peerDependencies:
     "@polkadot/api": ^9
-  checksum: a8ec219deb95764733eab92a764043b2113d93630901016852854fd079aac562eebb17d3632304b7f09f1e8fa81abf9b82d37a4f10f95337256224eb72f797a0
+  checksum: 8a4ef3a3e5c2acaea4f73bb8e08417e3e865e4d4b6848c227fd9d020ea51664cbe1ee27fcf25b8f951dfad3b0e26476ce606c51bf178d444235bb47f99ca71f1
   languageName: node
   linkType: hard
 
