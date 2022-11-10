@@ -117,49 +117,35 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async getBlockPromise(num: number): Promise<any> {
-    try {
-      const result = await retryOnFailEth(() =>
-        this.client.send('eth_getBlockByNumber', [hexValue(num), true]),
-      );
-      return result;
-    } catch (e) {
-      logger.error(`Failed to fetch block_promise ${num}`);
-      throw e;
-    }
+    const result = await retryOnFailEth(() =>
+      this.client.send('eth_getBlockByNumber', [hexValue(num), true]),
+    );
+    return result;
   }
 
   async getTransactionReceipt(
     transactionHash: string | Promise<string>,
   ): Promise<TransactionReceipt> {
-    try {
-      return await retryOnFailEth(
-        this.client.getTransactionReceipt.bind(this.client, transactionHash),
-      );
-    } catch (e) {
-      logger.error(`Failed to fetch TransactionReceipt ${transactionHash}`);
-      throw e;
-    }
+    const result = await retryOnFailEth<TransactionReceipt>(
+      this.client.getTransactionReceipt.bind(this.client, transactionHash),
+    );
+    return result;
   }
   async fetchBlock(num: number): Promise<EthereumBlockWrapper> {
-    try {
-      const block_promise = await this.getBlockPromise(num);
+    const block_promise = await this.getBlockPromise(num);
 
-      const block = formatBlock(block_promise);
-      block.stateRoot = this.client.formatter.hash(block.stateRoot);
+    const block = formatBlock(block_promise);
+    block.stateRoot = this.client.formatter.hash(block.stateRoot);
 
-      const transactions = await Promise.all(
-        block.transactions.map(async (tx) => {
-          const transaction = formatTransaction(tx);
-          const receipt = await this.getTransactionReceipt(tx.hash);
-          transaction.receipt = formatReceipt(receipt, block);
-          return transaction;
-        }),
-      );
-      return new EthereumBlockWrapped(block, transactions);
-    } catch (e) {
-      logger.error('Failed to fetch block');
-      throw e;
-    }
+    const transactions = await Promise.all(
+      block.transactions.map(async (tx) => {
+        const transaction = formatTransaction(tx);
+        const receipt = await this.getTransactionReceipt(tx.hash);
+        transaction.receipt = formatReceipt(receipt, block);
+        return transaction;
+      }),
+    );
+    return new EthereumBlockWrapped(block, transactions);
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
