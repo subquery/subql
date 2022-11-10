@@ -2840,9 +2840,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@subql/common@npm:1.4.2"
+"@subql/common@npm:1.4.3":
+  version: 1.4.3
+  resolution: "@subql/common@npm:1.4.3"
   dependencies:
     axios: ^0.27.2
     class-transformer: 0.5.1
@@ -2852,7 +2852,7 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 466111a70fea068e9edf3b80f5f1f23614e334d2e0f50f6a81363a68e252cf012c54bf548aaba4eb498964ddb47845fdae0604bd4d5dfb87a52e6685a5030f96
+  checksum: af423cf92462f055dce7fcdc367a2a650931c35cbd3f884326e9b2bcb790d04e489c88246460d9eb09ea9023452e692e91be94b9bf8cc4c33cda685677f0a28e
   languageName: node
   linkType: hard
 
@@ -2872,15 +2872,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:latest":
-  version: 1.2.0
-  resolution: "@subql/node-core@npm:1.2.0"
+"@subql/node-core@npm:1.3.3":
+  version: 1.3.3
+  resolution: "@subql/node-core@npm:1.3.3"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
-    "@polkadot/api": 9.5.2
-    "@subql/common": 1.4.2
+    "@polkadot/api": 9.7.1
+    "@subql/common": 1.4.3
     "@subql/types": 1.6.0
     "@subql/utils": 1.2.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
@@ -2890,7 +2890,7 @@ __metadata:
     sequelize: 6.23.0
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: c7da6eab5451d358b1d486abe20165f7d92ad9659bfe1503b3548d477f0d434516d3f43eb2c15956ed590e5147d71b7aa9585675aa0dcd6a872bc7d5823b8010
+  checksum: ceca0574732c236c69223488047c2d16825f9d47e1d173947bf90b36471efd1a2b670aa7200e8955f573d8cc6f1f4319c8e0cd52b83e6f3e91622c74c3cf11ce
   languageName: node
   linkType: hard
 
@@ -2912,7 +2912,7 @@ __metadata:
     "@polkadot/api": 9.5.2
     "@subql/common": latest
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": latest
+    "@subql/node-core": 1.3.3
     "@subql/types-cosmos": "workspace:*"
     "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2

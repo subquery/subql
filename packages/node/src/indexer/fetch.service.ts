@@ -293,7 +293,7 @@ export class FetchService implements OnApplicationShutdown {
         }
       }
     } catch (e) {
-      logger.error(e, `Having a problem when getting finalized block`);
+      logger.warn(e, `Having a problem when getting finalized block`);
     }
   }
 

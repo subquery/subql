@@ -14,7 +14,11 @@ import {
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
 import { Injectable } from '@nestjs/common';
-import { getLogger, NetworkMetadataPayload } from '@subql/node-core';
+import {
+  getLogger,
+  NetworkMetadataPayload,
+  retryOnFailAxios,
+} from '@subql/node-core';
 import {
   MsgClearAdmin,
   MsgExecuteContract,
@@ -33,6 +37,7 @@ import { HttpClient, WebsocketClient } from './rpc-clients';
 const { version: packageVersion } = require('../../package.json');
 
 const logger = getLogger('api');
+const RETRY_STATUS_CODES = [429, 502];
 
 @Injectable()
 export class ApiService {
@@ -157,17 +162,28 @@ export class CosmosClient extends CosmWasmClient {
   }
   */
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async blockInfo(height?: number): Promise<Block> {
-    return this.getBlock(height);
+    return retryOnFailAxios<Block>(
+      this.getBlock.bind(this, height),
+      RETRY_STATUS_CODES,
+    );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async txInfoByHeight(height: number): Promise<readonly IndexedTx[]> {
-    return this.searchTx({ height: height });
+    return retryOnFailAxios<IndexedTx[]>(
+      this.searchTx.bind(this, height),
+      RETRY_STATUS_CODES,
+    );
   }
 
+  // eslint-disable-next-line @typescript-eslint/require-await
   async blockResults(height: number): Promise<BlockResultsResponse> {
-    const blockRes = await this.tendermintClient.blockResults(height);
-    return blockRes;
+    return retryOnFailAxios<BlockResultsResponse>(
+      this.tendermintClient.blockResults.bind(this.tendermintClient, height),
+      RETRY_STATUS_CODES,
+    );
   }
 
   decodeMsg<T = unknown>(msg: DecodeObject): T {
