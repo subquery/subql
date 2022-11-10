@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.2] - 2022-11-10
+### Added
+- Retry request when encountering timeout/rate limit behaviours. (#78)
+
 ## [1.11.1] - 2022-11-08
 ### Updated
 - Sync with latest changes with @subql/node-core, remove sequelize alter table
