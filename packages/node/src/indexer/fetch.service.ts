@@ -238,7 +238,7 @@ export class FetchService implements OnApplicationShutdown {
         });
       }
     } catch (e) {
-      logger.error(e, `Having a problem when get finalized block`);
+      logger.warn(e, `Having a problem when get finalized block`);
     }
   }
 
@@ -257,7 +257,7 @@ export class FetchService implements OnApplicationShutdown {
         });
       }
     } catch (e) {
-      logger.error(e, `Having a problem when get best block`);
+      logger.warn(e, `Having a problem when get best block`);
     }
   }
 
