@@ -52,6 +52,7 @@ import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
+import {PgDistinctPlugin} from './PgDistinctPlugin';
 
 /* eslint-enable */
 
@@ -109,6 +110,7 @@ const plugins = [
   PgAggregationPlugin,
   PgBlockHeightPlugin,
   PgRowByVirtualIdPlugin,
+  PgDistinctPlugin,
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
