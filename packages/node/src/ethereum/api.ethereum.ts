@@ -151,7 +151,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       bufferBlocks.map(async (num) => {
         try {
           // Fetch Block
-          return this.fetchBlock(num);
+          return await this.fetchBlock(num);
         } catch (e) {
           // Wrap error from an axios error to fix issue with error being undefined
           const error = new Error(e.message);
