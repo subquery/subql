@@ -117,19 +117,17 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async getBlockPromise(num: number): Promise<any> {
-    const result = await retryOnFailEth(() =>
+    return retryOnFailEth(() =>
       this.client.send('eth_getBlockByNumber', [hexValue(num), true]),
     );
-    return result;
   }
 
   async getTransactionReceipt(
     transactionHash: string | Promise<string>,
   ): Promise<TransactionReceipt> {
-    const result = await retryOnFailEth<TransactionReceipt>(
+    return retryOnFailEth<TransactionReceipt>(
       this.client.getTransactionReceipt.bind(this.client, transactionHash),
     );
-    return result;
   }
   async fetchBlock(num: number): Promise<EthereumBlockWrapper> {
     const block_promise = await this.getBlockPromise(num);
