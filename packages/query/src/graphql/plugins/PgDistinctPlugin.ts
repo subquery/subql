@@ -1,7 +1,7 @@
 // Copyright 2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {PgClass, QueryBuilder, SQL} from '@subql/x-graphile-build-pg';
+import {PgClass, QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Build, Plugin} from 'graphile-build';
 import type {GraphQLEnumType} from 'graphql';
 import * as PgSql from 'pg-sql2';
