@@ -1,8 +1,8 @@
 // Copyright 2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Plugin} from 'graphile-build';
-import {QueryBuilder} from 'graphile-build-pg';
 import {GraphQLString} from 'graphql';
 
 export const PgBlockHeightPlugin: Plugin = (builder) => {

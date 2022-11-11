@@ -1,10 +1,11 @@
 // Copyright 2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {PgClass, QueryBuilder} from '@subql/x-graphile-build-pg';
 import {Build, Plugin} from 'graphile-build';
-import {PgClass, QueryBuilder} from 'graphile-build-pg';
 import type {GraphQLEnumType} from 'graphql';
 import * as PgSql from 'pg-sql2';
+import {SQLNode} from 'pg-sql2';
 
 type Extend = <T1, T2>(base: T1, extra: T2, hint?: string) => T1 & T2;
 
@@ -82,8 +83,8 @@ export const PgDistinctPlugin: Plugin = (builder) => {
 
               return;
             }
-
-            const id = sql.fragment`${queryBuilder.getTableAlias()}.${sql.identifier(fieldName)}`;
+            //export declare type SQL = SQLNode | SQLQuery;
+            const id = sql.fragment`${queryBuilder.getTableAlias() as unknown as SQLNode}.${sql.identifier(fieldName)}`;
 
             // Dependent on https://github.com/graphile/graphile-engine/pull/805
             (queryBuilder as any).distinctOn(id);

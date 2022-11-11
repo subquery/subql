@@ -5,6 +5,7 @@ import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {delay} from '@subql/common';
+import {getPostGraphileBuilder, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
 import {
   ApolloServerPluginCacheControl,
   ApolloServerPluginLandingPageDisabled,
@@ -16,7 +17,6 @@ import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
 import {Pool} from 'pg';
 import {makePluginHook} from 'postgraphile';
-import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
 import {getLogger, PinoConfig} from '../utils/logger';
