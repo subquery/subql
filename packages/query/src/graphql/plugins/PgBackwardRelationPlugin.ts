@@ -6,7 +6,7 @@
 
 import debugFactory from 'debug';
 
-const debug = debugFactory('graphile-build-pg');
+const debug = debugFactory('@subql/x-graphile-build-pg');
 
 const OMIT = 0;
 const DEPRECATED = 1;

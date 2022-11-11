@@ -66,6 +66,8 @@ export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolCl
       const [a, b, c] = args;
       const variables: string[] = [];
       // If we understand it (and it uses the promises API)
+
+      console.log(args);
       if (
         (typeof a === 'string' && (!c || typeof c === 'function') && (!b || Array.isArray(b))) ||
         (typeof a === 'object' && !b && !c)
