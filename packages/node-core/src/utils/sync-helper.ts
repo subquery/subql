@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { blake2AsHex } from '@polkadot/util-crypto';
+import {blake2AsHex} from '@polkadot/util-crypto';
 import {Utils} from 'sequelize';
 
 export interface SmartTags {
@@ -143,4 +143,34 @@ CREATE TRIGGER "${triggerName}"
 export function makeTriggerName(schema: string, tableName: string): string {
   // max name length is 63 bytes in Postgres
   return blake2AsHex(`${schema}_${tableName}_notify_trigger`).substr(2, 10);
+}
+
+// Subscribe to a value on the metadata table
+
+export function createSchemaTrigger(schema: string): string {
+  return `
+  CREATE OR REPLACE TRIGGER "${schema}_metadata_schema_trigger"
+    AFTER UPDATE
+    ON "${schema}."_metadata"
+    FOR EACH ROW
+    WHEN ( new.key = 'schemaMigrationCount')
+    EXECUTE FUNCTION "${schema}".schema_notification();`;
+}
+
+export function createSchemaTriggerFunction(triggerName: string): string {
+  return `
+  CREATE OR REPLACE FUNCTION "schema-trigger".schema_notification()
+    RETURNS trigger AS $$
+  DECLARE
+    payload jsonb;
+  BEGIN
+    payload = jsonb_build_object(
+    'things',TG_TABLE_SCHEMA
+    );
+    PERFORM pg_notify(
+            CONCAT(TG_TABLE_SCHEMA, '.', TG_TABLE_NAME, '.', ${triggerName}),
+            payload::text);
+    RETURN NULL;
+  END;
+  $$ LANGUAGE plpgsql;`;
 }

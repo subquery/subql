@@ -86,7 +86,18 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         if (!argv['disable-hot-schema']) {
           await builder.watchSchema(this.schemaListener.bind(this));
         }
-        logger.info('Hot schema reload disabled');
+        logger.info(`Hot schema reload ${argv['disable-hot-schema'] ? 'disabled' : 'enabled'}`);
+
+        if (argv['schema-listener']) {
+          logger.info('schema-listener doing the listening');
+          const pgClient = await this.pgPool.connect();
+          const triggerName = `${dbSchema}._metadata.${dbSchema}._metadata_schema_trigger`;
+          // await pgClient.query(`LISTEN ${triggerName}`)
+          await pgClient.query(`LISTEN hello_trigger`);
+          pgClient.on('notification', (msg) => {
+            console.log('payload: ', msg.payload);
+          });
+        }
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
@@ -107,6 +118,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
+
+    console.log(dbSchema);
 
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,

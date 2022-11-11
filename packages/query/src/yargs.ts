@@ -100,6 +100,12 @@ export function getYargsOption() {
       type: 'boolean',
       default: true,
     },
+    'schema-listener': {
+      demandOption: false,
+      describe: '???',
+      type: 'boolean',
+      default: false,
+    },
   });
 }
 

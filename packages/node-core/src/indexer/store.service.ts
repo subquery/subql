@@ -44,6 +44,8 @@ import {
   modelsTypeToModelAttributes,
   camelCaseObjectKey,
   makeTriggerName,
+  createSchemaTriggerFunction,
+  createSchemaTrigger,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -155,6 +157,7 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
+
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
@@ -185,6 +188,12 @@ export class StoreService {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
+      // createSchemaTriggerFunction
+      extraQueries.push(createSchemaTriggerFunction('placeholder'));
+
+      // createSchemaTrigger
+      extraQueries.push(createSchemaTrigger(schema));
+
       if (this.config.subscription) {
         const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
