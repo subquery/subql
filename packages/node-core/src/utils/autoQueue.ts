@@ -3,7 +3,15 @@
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 
-export class Queue<T> {
+export interface IQueue {
+  size: number;
+  capacity: number;
+  freeSpace: number | undefined;
+
+  flush(): void;
+}
+
+export class Queue<T> implements IQueue {
   private items: T[] = [];
   private _capacity?: number;
 
@@ -73,7 +81,7 @@ type Action<T> = {
   reject: (reason: any) => void;
 };
 
-export class AutoQueue<T> {
+export class AutoQueue<T> implements IQueue {
   private pendingPromise = false;
   private queue: Queue<Action<T>>;
   private _abort = false;
