@@ -339,13 +339,6 @@ export class ProjectService {
     return res?.value as number | undefined;
   }
 
-  async getSchemaMigrationCount(): Promise<number> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'schemaMigrationCount' },
-    });
-    return res?.value as number | undefined;
-  }
-
   private getStartBlockFromDataSources() {
     const startBlocksList = this.getDataSourcesForSpecName().map(
       (item) => item.startBlock ?? 1,

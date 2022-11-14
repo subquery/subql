@@ -13,10 +13,6 @@ export enum IndexerEvent {
   UsingDictionary = 'using_dictionary',
   SkipDictionary = 'skip_dictionary',
   Ready = 'ready',
-  SchemaMigration = 'schema_migration_count',
-}
-export interface SchemaMigrationPayload {
-  count: number;
 }
 
 export interface ProcessBlockPayload {

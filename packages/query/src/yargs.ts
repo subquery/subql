@@ -98,12 +98,6 @@ export function getYargsOption() {
       demandOption: false,
       describe: 'Hot reload schema on schema-changes',
       type: 'boolean',
-      default: true,
-    },
-    'schema-listener': {
-      demandOption: false,
-      describe: '???',
-      type: 'boolean',
       default: false,
     },
   });

@@ -13,7 +13,6 @@ import {
   ProcessedBlockCountPayload,
   TargetBlockPayload,
   StoreService,
-  SchemaMigrationPayload,
 } from '@subql/node-core';
 
 const UPDATE_HEIGHT_INTERVAL = 60000;
@@ -34,7 +33,6 @@ export class MetaService {
   private lastProcessedHeight: number;
   private lastProcessedTimestamp: number;
   private processedBlockCount: number;
-  private schemaMigrationCount: number;
 
   constructor(private storeService: StoreService) {}
 
@@ -52,7 +50,6 @@ export class MetaService {
       processedBlockCount: this.processedBlockCount,
       apiConnected: this.apiConnected,
       usingDictionary: this.usingDictionary,
-      schemaMigration: this.schemaMigrationCount,
       ...this.networkMeta,
     };
   }
@@ -97,12 +94,5 @@ export class MetaService {
   @OnEvent(IndexerEvent.UsingDictionary)
   handleUsingDictionary({ value }: EventPayload<number>): void {
     this.usingDictionary = !!value;
-  }
-
-  @OnEvent(IndexerEvent.SchemaMigration)
-  handleSchemaMigrationCount(
-    schemaMigrationPayload: SchemaMigrationPayload,
-  ): void {
-    this.schemaMigrationCount = schemaMigrationPayload.count;
   }
 }
