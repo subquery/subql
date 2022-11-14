@@ -57,9 +57,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
   async schemaListener(dbSchema: string, options: PostGraphileCoreOptions): Promise<void> {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
-    const schema = await this.buildSchema(dbSchema, options);
-
     try {
+      const schema = await this.buildSchema(dbSchema, options);
       // @ts-ignore
       if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
         // @ts-ignore
@@ -69,7 +68,8 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         logger.info('Schema updated');
       }
     } catch (e) {
-      throw new Error(`Failed to hot reload Schema`);
+      logger.error(e, `Failed to hot reload Schema`);
+      process.exit(1);
     }
   }
 
