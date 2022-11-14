@@ -44,6 +44,8 @@ import {
   modelsTypeToModelAttributes,
   camelCaseObjectKey,
   makeTriggerName,
+  createSchemaTriggerFunction,
+  createSchemaTrigger,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -98,10 +100,10 @@ export class StoreService {
     }
   }
 
-  async incrementBlockCount(tx: Transaction): Promise<void> {
+  async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
-      {transaction: tx}
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      tx && {transaction: tx}
     );
   }
 
@@ -155,6 +157,7 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
+
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
@@ -185,6 +188,11 @@ export class StoreService {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
+
+      /* These SQL queries are to allow hot-schema reload on query service */
+      extraQueries.push(createSchemaTriggerFunction(schema));
+      extraQueries.push(createSchemaTrigger(schema));
+
       if (this.config.subscription) {
         const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
@@ -259,6 +267,8 @@ export class StoreService {
     await this.sequelize.sync();
 
     await this.setMetadata('historicalStateEnabled', this.historical);
+    await this.incrementJsonbCount('schemaMigrationCount');
+
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
