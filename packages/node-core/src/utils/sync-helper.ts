@@ -145,8 +145,6 @@ export function makeTriggerName(schema: string, tableName: string): string {
   return blake2AsHex(`${schema}_${tableName}_notify_trigger`).substr(2, 10);
 }
 
-// Subscribe to a value on the metadata table
-
 export function createSchemaTrigger(schema: string): string {
   return `
   CREATE OR REPLACE TRIGGER "${schema}_metadata_schema_trigger"

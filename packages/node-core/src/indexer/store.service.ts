@@ -190,9 +190,7 @@ export class StoreService {
       }
 
       /* These SQL queries are to allow hot-schema reload on query service */
-      // createSchemaTriggerFunction
       extraQueries.push(createSchemaTriggerFunction(schema));
-      // // createSchemaTrigger
       extraQueries.push(createSchemaTrigger(schema));
 
       if (this.config.subscription) {
