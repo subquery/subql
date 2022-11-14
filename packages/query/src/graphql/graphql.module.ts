@@ -55,8 +55,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async schemaListener(schema: GraphQLSchema): Promise<void> {
+  async schemaListener(dbSchema: string, options: PostGraphileCoreOptions): Promise<void> {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
+    const schema = await this.buildSchema(dbSchema, options);
 
     try {
       // @ts-ignore
@@ -75,11 +76,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy(): Promise<void> {
     return this.apolloServer?.stop();
   }
-
   private async buildSchema(
     dbSchema: string,
     options: PostGraphileCoreOptions,
-    retries: number
+    retries = SCHEMA_RETRY_NUMBER
   ): Promise<GraphQLSchema> {
     if (retries > 0) {
       try {
@@ -125,14 +125,11 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       const pgClient = await this.pgPool.connect();
       await pgClient.query(`LISTEN "${dbSchema}._metadata.hot_schema"`);
 
-      // eslint-disable-next-line @typescript-eslint/no-misused-promises
-      pgClient.on('notification', async (msg) => {
-        console.log(msg);
-        const newSchema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
-        await this.schemaListener(newSchema);
+      pgClient.on('notification', () => {
+        void this.schemaListener(dbSchema, options);
       });
     }
-    const schema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
+    const schema = await this.buildSchema(dbSchema, options);
 
     const apolloServerPlugins = [
       ApolloServerPluginCacheControl({
