@@ -10,6 +10,22 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.3] - 2022-11-09
+### Added
+- Added retry method for handle fetch errors (#1386)
+
+## [1.3.2] - 2022-11-08
+### Fixed
+- Fix missing sequelize sync (#1389)
+
+## [1.3.1] - 2022-11-08
+### Fixed
+- Remove sequelize alter table (#1387)
+
+## [1.3.0] - 2022-11-07
+### Fixed
+- Improve dictionary query by filter with data sources start block. (#1371)
+
 ## [1.2.0] - 2022-10-28
 
 ### Added

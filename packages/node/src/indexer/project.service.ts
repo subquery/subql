@@ -143,7 +143,7 @@ export class ProjectService {
 
     const reindexedTo = await this.unfinalizedBlockService.init(
       this.metadataRepo,
-      this.reindex,
+      this.reindex.bind(this),
     );
 
     if (reindexedTo !== undefined) {
@@ -206,6 +206,7 @@ export class ProjectService {
       'chainId',
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
+      'schemaMigrationCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -272,6 +273,10 @@ export class ProjectService {
         value: packageVersion,
       });
     }
+    if (!keyValue.schemaMigrationCount) {
+      await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
+    }
+
     return metadataRepo;
   }
 
@@ -317,7 +322,6 @@ export class ProjectService {
     } else {
       startHeight = this.getStartBlockFromDataSources();
     }
-
     return startHeight;
   }
 

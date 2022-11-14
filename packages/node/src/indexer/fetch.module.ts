@@ -11,6 +11,10 @@ import {
   NodeConfig,
 } from '@subql/node-core';
 import { ApiService } from './api.service';
+import {
+  BlockDispatcherService,
+  WorkerBlockDispatcherService,
+} from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -19,10 +23,6 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-import {
-  BlockDispatcherService,
-  WorkerBlockDispatcherService,
-} from './worker/block-dispatcher.service';
 
 @Module({
   providers: [

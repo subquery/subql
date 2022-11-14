@@ -4,7 +4,7 @@
 // overwrite the official plugin: https://github.com/graphile/graphile-engine/blob/v4/packages/graphile-build-pg/src/plugins/PgConnectionArgFirstLastBeforeAfter.js
 // to support max record rewrite, which to prevent the db performance issue.
 
-import {QueryBuilder} from 'graphile-build-pg';
+import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {argv} from '../../yargs';
 
 const MAX_ENTITY_COUNT = 100;

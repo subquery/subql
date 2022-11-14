@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.0] - 2022-10-27
+### Fixed
+- Fix CLI init project manifest missing comments issue (#1380)
+
 ## [1.7.0] - 2022-10-27
 
 ### Added

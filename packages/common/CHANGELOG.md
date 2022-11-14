@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.3] - 2022-10-07
+### Added
+- Add `ethereum` to network family constants. (#1378)
+
 ## [1.4.2] - 2022-10-06
 ### Changed
 - Update IPFS endpoints. (#1337)

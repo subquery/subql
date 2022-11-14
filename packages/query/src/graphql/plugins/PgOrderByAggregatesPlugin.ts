@@ -7,8 +7,8 @@
  */
 
 import {AggregateSpec} from '@graphile/pg-aggregates/dist/interfaces';
+import type {SQL, QueryBuilder, PgClass, PgEntity} from '@subql/x-graphile-build-pg';
 import type {Plugin} from 'graphile-build';
-import type {SQL, QueryBuilder, PgClass, PgEntity} from 'graphile-build-pg';
 
 type OrderBySpecIdentity = string | SQL | ((options: {queryBuilder: QueryBuilder}) => SQL);
 

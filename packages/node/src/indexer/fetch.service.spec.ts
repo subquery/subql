@@ -10,11 +10,17 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { IndexerEvent, NodeConfig, Dictionary } from '@subql/node-core';
+import {
+  IndexerEvent,
+  NodeConfig,
+  Dictionary,
+  MetadataRepo,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
+import { BlockDispatcherService } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -23,7 +29,6 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-import { BlockDispatcherService } from './worker/block-dispatcher.service';
 
 jest.mock('../utils/substrate', () =>
   jest.createMockFromModule('../utils/substrate'),
@@ -104,6 +109,12 @@ function mockApiService(): ApiService {
                 },
               },
             },
+          };
+        }),
+        getHeader: jest.fn(() => {
+          return {
+            number: { toNumber: () => 112344 },
+            hash: { toHex: () => `0x112344` },
           };
         }),
         getBlockHash: jest.fn(() => `0x123456`),
@@ -189,6 +200,8 @@ function mockDictionaryService(
     getDictionary: mockDictionary,
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
     getSpecVersionsRaw: jest.fn(() => mockDictionaryRet),
+    buildDictionaryEntryMap: jest.fn(),
+    getDictionaryQueryEntries: jest.fn(() => []),
   } as any;
 }
 
@@ -197,12 +210,16 @@ function mockDictionaryService1(): DictionaryService {
     getDictionary: jest.fn(() => mockDictionaryBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
     getSpecVersionsRaw: jest.fn(() => mockDictionaryBatches),
+    buildDictionaryEntryMap: jest.fn(),
+    getDictionaryQueryEntries: jest.fn(() => []),
   } as any;
 }
 
 function mockDictionaryService2(): DictionaryService {
   return {
     getDictionary: jest.fn(() => undefined),
+    buildDictionaryEntryMap: jest.fn(),
+    getDictionaryQueryEntries: jest.fn(() => []),
   } as any;
 }
 
@@ -211,6 +228,8 @@ function mockDictionaryService3(): DictionaryService {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
     getSpecVersionsRaw: jest.fn(() => mockDictionaryNoBatches),
+    buildDictionaryEntryMap: jest.fn(),
+    getDictionaryQueryEntries: jest.fn(() => []),
   } as any;
 }
 
@@ -272,14 +291,14 @@ function mockProjectService(): ProjectService {
   } as any;
 }
 
-function createFetchService(
+async function createFetchService(
   apiService = mockApiService(),
   indexerManager: IndexerManager,
   dictionaryService: DictionaryService,
   project: SubqueryProject,
   batchSize?: number,
   config?: NodeConfig,
-) {
+): Promise<FetchService> {
   const dsProcessorService = new DsProcessorService(project, config);
   const projectService = mockProjectService();
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
@@ -293,6 +312,9 @@ function createFetchService(
     apiService,
     nodeConfig,
     null,
+  );
+  await unfinalizedBlocksService.init(getMockMetadata(), () =>
+    Promise.resolve(),
   );
   const eventEmitter = new EventEmitter2();
 
@@ -315,6 +337,14 @@ function createFetchService(
     eventEmitter,
     new SchedulerRegistry(),
   );
+}
+
+function getMockMetadata(): MetadataRepo {
+  const data: Record<string, any> = {};
+  return {
+    upsert: ({ key, value }) => (data[key] = value),
+    findOne: ({ where: { key } }) => ({ value: data[key] }),
+  } as any;
 }
 
 describe('FetchService', () => {
@@ -340,22 +370,24 @@ describe('FetchService', () => {
   });
 
   it('get finalized head when reconnect', async () => {
-    fetchService = createFetchService(
+    fetchService = await createFetchService(
       apiService,
       mockIndexerManager(),
       new DictionaryService(project, nodeConfig),
       project,
     );
-    await fetchService.init(1);
+    const pendingInit = fetchService.init(1);
     expect(
       apiService.getApi().rpc.chain.getFinalizedHead,
     ).toHaveBeenCalledTimes(1);
-    expect(apiService.getApi().rpc.chain.getBlock).toHaveBeenCalledTimes(1);
+    expect(apiService.getApi().rpc.chain.getHeader).toHaveBeenCalledTimes(1);
+    await pendingInit;
+    fetchService.onApplicationShutdown();
   });
 
   // This doesn't test anything
   it.skip('log errors when failed to get finalized block', async () => {
-    fetchService = createFetchService(
+    fetchService = await createFetchService(
       mockRejectedApiService(),
       mockIndexerManager(),
       new DictionaryService(project, nodeConfig),
@@ -368,7 +400,7 @@ describe('FetchService', () => {
     const batchSize = 50;
     const dictionaryService = new DictionaryService(project, nodeConfig);
 
-    fetchService = createFetchService(
+    fetchService = await createFetchService(
       apiService,
       mockIndexerManager(),
       dictionaryService,
@@ -376,12 +408,12 @@ describe('FetchService', () => {
       batchSize,
     );
     (fetchService as any).latestFinalizedHeight = 1000;
-    (fetchService as any).unfinalizedBlocksService.registerFinalizedBlock(
-      1000,
-      '0xabcd',
-    );
+    (fetchService as any).unfinalizedBlocksService.registerFinalizedBlock({
+      number: { toNumber: () => 1000 },
+      hash: { toHex: () => '0xabcd' },
+    });
     (fetchService as any).latestBestHeight = 1020;
-    (fetchService as any).unfinalizedBlocksService.storeUnfinalizedBlock(
+    (fetchService as any).unfinalizedBlocksService.registerUnfinalizedBlock(
       1020,
       '0x1234',
     );
@@ -400,7 +432,7 @@ describe('FetchService', () => {
 
     const indexerManager = mockIndexerManager();
 
-    fetchService = createFetchService(
+    fetchService = await createFetchService(
       apiService,
       indexerManager,
       dictionaryService,
@@ -476,6 +508,10 @@ describe('FetchService', () => {
       nodeConfig,
       null,
     );
+
+    await unfinalizedBlocksService.init(getMockMetadata(), () =>
+      Promise.resolve(),
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -519,7 +555,7 @@ describe('FetchService', () => {
       });
     });
 
-    expect(dictionaryValidationSpy).toHaveBeenCalledTimes(2);
+    expect(dictionaryValidationSpy).toHaveBeenCalledTimes(1);
     expect(nextEndBlockHeightSpy).toHaveBeenCalledTimes(1);
     //we expect after use the original method, next loop will still use dictionary by default
     expect((fetchService as any).useDictionary).toBeTruthy();
@@ -566,6 +602,9 @@ describe('FetchService', () => {
       apiService,
       nodeConfig,
       null,
+    );
+    await unfinalizedBlocksService.init(getMockMetadata(), () =>
+      Promise.resolve(),
     );
 
     const blockDispatcher = new BlockDispatcherService(
@@ -653,6 +692,9 @@ describe('FetchService', () => {
       nodeConfig,
       null,
     );
+    await unfinalizedBlocksService.init(getMockMetadata(), () =>
+      Promise.resolve(),
+    );
     const blockDispatcher = new BlockDispatcherService(
       apiService,
       nodeConfig,
@@ -701,7 +743,7 @@ describe('FetchService', () => {
 
     const indexerManager = mockIndexerManager();
 
-    fetchService = createFetchService(
+    fetchService = await createFetchService(
       apiService,
       indexerManager,
       new DictionaryService(project, nodeConfig),

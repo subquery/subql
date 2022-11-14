@@ -1,7 +1,7 @@
 // Copyright 2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {PgIntrospectionResultsByKind} from 'graphile-build-pg';
+import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
 
 const filter = (event, args) => {

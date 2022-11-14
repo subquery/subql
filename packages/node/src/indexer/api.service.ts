@@ -185,7 +185,9 @@ export class ApiService implements OnApplicationShutdown {
     apiAt.rpc = Object.entries(api.rpc).reduce((acc, [module, rpcMethods]) => {
       acc[module] = Object.entries(rpcMethods).reduce(
         (accInner, [name, rpcPromiseResult]) => {
-          accInner[name] = this.redecorateRpcFunction(rpcPromiseResult);
+          accInner[name] = this.redecorateRpcFunction(
+            rpcPromiseResult as RpcMethodResult<any, AnyFunction>,
+          );
           return accInner;
         },
         {},

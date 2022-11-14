@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {PgEntity, PgEntityKind} from 'graphile-build-pg';
+import {PgEntity, PgEntityKind} from '@subql/x-graphile-build-pg';
 import {makePgSmartTagsPlugin} from 'graphile-utils';
 
 export const smartTagsPlugin = makePgSmartTagsPlugin([

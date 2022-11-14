@@ -43,12 +43,12 @@ import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
+import { IBlockDispatcher } from './blockDispatcher';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
-import { IBlockDispatcher } from './worker/block-dispatcher.service';
 
 const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000; //ms
@@ -488,7 +488,7 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (this.getModulos().length === handlers.length) {
+      if (handlers.length && this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
           this.getEnqueuedModuloBlocks(startBlockHeight),
         );
