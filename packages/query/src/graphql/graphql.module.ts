@@ -57,6 +57,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
   async schemaListener(schema: GraphQLSchema): Promise<void> {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
+
     try {
       // @ts-ignore
       if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
@@ -83,21 +84,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (retries > 0) {
       try {
         const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
-        if (!argv['disable-hot-schema']) {
-          await builder.watchSchema(this.schemaListener.bind(this));
-        }
-        logger.info(`Hot schema reload ${argv['disable-hot-schema'] ? 'disabled' : 'enabled'}`);
-
-        if (argv['schema-listener']) {
-          logger.info('schema-listener doing the listening');
-          const pgClient = await this.pgPool.connect();
-          const triggerName = `${dbSchema}._metadata.${dbSchema}._metadata_schema_trigger`;
-          // await pgClient.query(`LISTEN ${triggerName}`)
-          await pgClient.query(`LISTEN hello_trigger`);
-          pgClient.on('notification', (msg) => {
-            console.log('payload: ', msg.payload);
-          });
-        }
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
@@ -119,8 +105,6 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
 
-    console.log(dbSchema);
-
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,
       subscriptions: true,
@@ -135,6 +119,18 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       while (options.appendPlugins.length) {
         options.replaceAllPlugins.push(options.appendPlugins.pop());
       }
+    }
+
+    if (!argv['disable-hot-schema']) {
+      const pgClient = await this.pgPool.connect();
+      await pgClient.query(`LISTEN "${dbSchema}._metadata.hot_schema"`);
+
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      pgClient.on('notification', async (msg) => {
+        console.log(msg);
+        const newSchema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
+        await this.schemaListener(newSchema);
+      });
     }
     const schema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
 

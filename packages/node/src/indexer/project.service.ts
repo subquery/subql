@@ -140,6 +140,9 @@ export class ProjectService {
     if (reindexedTo !== undefined) {
       this._startHeight = reindexedTo;
     }
+
+    // On project reload trigger hot reload on query service
+    await this.storeService.incrementBlockCount('schemaMigrationCount');
   }
 
   private async ensureProject(): Promise<string> {
@@ -192,6 +195,7 @@ export class ProjectService {
       'chainId',
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
+      'schemaMigrationCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -257,6 +261,10 @@ export class ProjectService {
         value: packageVersion,
       });
     }
+    if (!keyValue.schemaMigrationCount) {
+      await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
+    }
+
     return metadataRepo;
   }
 
@@ -302,7 +310,6 @@ export class ProjectService {
     } else {
       startHeight = this.getStartBlockFromDataSources();
     }
-
     return startHeight;
   }
 
@@ -329,6 +336,13 @@ export class ProjectService {
       where: { key: 'processedBlockCount' },
     });
 
+    return res?.value as number | undefined;
+  }
+
+  async getSchemaMigrationCount(): Promise<number> {
+    const res = await this.metadataRepo.findOne({
+      where: { key: 'schemaMigrationCount' },
+    });
     return res?.value as number | undefined;
   }
 

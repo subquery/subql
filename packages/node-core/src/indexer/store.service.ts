@@ -100,10 +100,10 @@ export class StoreService {
     }
   }
 
-  async incrementBlockCount(tx: Transaction): Promise<void> {
+  async incrementBlockCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
-      {transaction: tx}
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      tx && {transaction: tx}
     );
   }
 
@@ -188,10 +188,11 @@ export class StoreService {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
-      // createSchemaTriggerFunction
-      extraQueries.push(createSchemaTriggerFunction('placeholder'));
 
-      // createSchemaTrigger
+      /* These SQL queries are to allow hot-schema reload on query service */
+      // createSchemaTriggerFunction
+      extraQueries.push(createSchemaTriggerFunction(schema));
+      // // createSchemaTrigger
       extraQueries.push(createSchemaTrigger(schema));
 
       if (this.config.subscription) {
