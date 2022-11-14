@@ -125,8 +125,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       const pgClient = await this.pgPool.connect();
       await pgClient.query(`LISTEN "${dbSchema}._metadata.hot_schema"`);
 
-      pgClient.on('notification', () => {
-        void this.schemaListener(dbSchema, options);
+      pgClient.on('notification', (msg) => {
+        if (msg.payload === 'schema_updated') {
+          void this.schemaListener(dbSchema, options);
+        }
       });
     }
     const schema = await this.buildSchema(dbSchema, options);
