@@ -180,18 +180,19 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Disable storing historical state entities',
       type: 'boolean',
     },
+    'multi-chain': {
+      demandOption: false,
+      default: false,
+      describe:
+        'Enables indexing multiple subquery projects into the same database schema',
+      type: 'boolean',
+    },
     workers: {
       alias: 'w',
       demandOption: false,
       describe:
         'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
-    },
-    'multi-chain': {
-      describe:
-        'Enables indexing multiple subquery projects into the same database schema',
-      type: 'boolean',
-      default: false,
     },
     'query-limit': {
       demandOption: false,

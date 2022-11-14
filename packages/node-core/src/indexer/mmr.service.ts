@@ -45,7 +45,7 @@ export class MmrService implements OnApplicationShutdown {
     this.metadataRepo = await MetadataFactory(
       this.sequelize,
       schema,
-      this.nodeConfig.multichain,
+      this.nodeConfig.multiChain,
       this.subqueryProject.network.chainId
     );
     this.poiRepo = PoiFactory(this.sequelize, schema);

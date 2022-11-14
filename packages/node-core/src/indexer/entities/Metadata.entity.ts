@@ -58,9 +58,13 @@ export async function MetadataFactory(
   if (multichain) {
     const oldMetadataName = await checkSchemaMetadata(sequelize, schema, chainId);
 
-    if (!oldMetadataName) {
-      tableName = `${tableName}_${chainId}`;
+    if (oldMetadataName) {
+      throw new Error(
+        'Found metadata entry with matching chain but wrong table name, must match _metadata_[chainId] syntax for multi-chain indexing.'
+      );
     }
+
+    tableName = `${tableName}_${chainId}`;
   }
 
   return <MetadataRepo>sequelize.define(

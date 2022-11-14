@@ -260,7 +260,7 @@ export class StoreService {
     this.metaDataRepo = await MetadataFactory(
       this.sequelize,
       schema,
-      this.config.multichain,
+      this.config.multiChain,
       this.subqueryProject.network.chainId
     );
 
@@ -275,10 +275,10 @@ export class StoreService {
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
-    const {multichain} = this.config;
+    const {multiChain} = this.config;
     let {disableHistorical} = this.config;
 
-    if (multichain && !disableHistorical) {
+    if (multiChain && !disableHistorical) {
       logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
       disableHistorical = true;
     }
@@ -293,7 +293,7 @@ export class StoreService {
         (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]+$/.test(value)
       );
 
-      if (metadataTableNames.length > 1 && !multichain) {
+      if (metadataTableNames.length > 1 && !multiChain) {
         logger.error(
           'There are multiple projects in the database schema, if you are trying to multi-chain index use --multichain'
         );
@@ -311,7 +311,7 @@ export class StoreService {
           return total;
         }, {} as {[key: string]: string | boolean});
 
-        if (store.historicalStateEnabled && multichain) {
+        if (store.historicalStateEnabled && multiChain) {
           logger.error(
             'Historical metadata entry found, to multi-chain index clear postgres schema and re-index project using --multichain'
           );
