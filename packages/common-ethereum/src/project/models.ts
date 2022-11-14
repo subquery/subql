@@ -5,14 +5,14 @@ import {RegisteredTypes, RegistryTypes, OverrideModuleType, OverrideBundleType} 
 
 import {BaseMapping} from '@subql/common';
 import {
-  EthereumLogFilter,
   EthereumHandlerKind,
+  EthereumDatasourceKind,
+  EthereumLogFilter,
   SubqlCustomHandler,
   SubqlMapping,
   SubqlHandler,
   SubqlRuntimeHandler,
   SubqlRuntimeDatasource,
-  EthereumDatasourceKind,
   SubqlCustomDatasource,
   FileReference,
   CustomDataSourceAsset,
@@ -35,6 +35,7 @@ import {
   IsObject,
   ValidateNested,
 } from 'class-validator';
+import {SubqlEthereumDatasourceKind, SubqlEthereumHandlerKind} from './types';
 
 export class BlockFilter implements EthereumBlockFilter {
   @IsOptional()
@@ -89,7 +90,7 @@ export class BlockHandler implements SubqlBlockHandler {
   @IsOptional()
   @Type(() => BlockFilter)
   filter?: BlockFilter;
-  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Block]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareBlock, SubqlEthereumHandlerKind.EthBlock]})
   kind: EthereumHandlerKind.Block;
   @IsString()
   handler: string;
@@ -100,7 +101,7 @@ export class CallHandler implements SubqlCallHandler {
   @IsOptional()
   @Type(() => TransactionFilter)
   filter?: TransactionFilter;
-  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Call]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareCall, SubqlEthereumHandlerKind.EthCall]})
   kind: EthereumHandlerKind.Call;
   @IsString()
   handler: string;
@@ -111,7 +112,7 @@ export class EventHandler implements SubqlEventHandler {
   @IsOptional()
   @Type(() => LogFilter)
   filter?: LogFilter;
-  @IsEnum(EthereumHandlerKind, {groups: [EthereumHandlerKind.Event]})
+  @IsEnum(SubqlEthereumHandlerKind, {groups: [SubqlEthereumHandlerKind.FlareEvent, SubqlEthereumHandlerKind.EthEvent]})
   kind: EthereumHandlerKind.Event;
   @IsString()
   handler: string;
@@ -132,11 +133,17 @@ export class EthereumMapping implements SubqlMapping {
     const handlers: SubqlHandler[] = params.value;
     return handlers.map((handler) => {
       switch (handler.kind) {
-        case EthereumHandlerKind.Event:
+        case SubqlEthereumHandlerKind.FlareEvent:
           return plainToClass(EventHandler, handler);
-        case EthereumHandlerKind.Call:
+        case SubqlEthereumHandlerKind.FlareCall:
           return plainToClass(CallHandler, handler);
-        case EthereumHandlerKind.Block:
+        case SubqlEthereumHandlerKind.FlareBlock:
+          return plainToClass(BlockHandler, handler);
+        case SubqlEthereumHandlerKind.EthEvent:
+          return plainToClass(EventHandler, handler);
+        case SubqlEthereumHandlerKind.EthCall:
+          return plainToClass(CallHandler, handler);
+        case SubqlEthereumHandlerKind.EthBlock:
           return plainToClass(BlockHandler, handler);
         default:
           throw new Error(`handler ${(handler as any).kind} not supported`);
@@ -160,7 +167,9 @@ export class CustomMapping implements SubqlMapping<SubqlCustomHandler> {
 }
 
 export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> implements SubqlRuntimeDatasource<M> {
-  @IsEnum(EthereumDatasourceKind, {groups: [EthereumDatasourceKind.Runtime]})
+  @IsEnum(SubqlEthereumDatasourceKind, {
+    groups: [SubqlEthereumDatasourceKind.FlareRuntime, SubqlEthereumDatasourceKind.EthRuntime],
+  })
   kind: EthereumDatasourceKind.Runtime;
   @Type(() => EthereumMapping)
   @ValidateNested()

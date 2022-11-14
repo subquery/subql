@@ -28,3 +28,17 @@ export interface EthereumProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
   subnet?: string;
 }
+
+export enum SubqlEthereumHandlerKind {
+  FlareBlock = 'flare/BlockHandler',
+  FlareCall = 'flare/TransactionHandler',
+  FlareEvent = 'flare/LogHandler',
+  EthBlock = 'ethereum/BlockHandler',
+  EthCall = 'ethereum/TransactionHandler',
+  EthEvent = 'ethereum/LogHandler',
+}
+
+export enum SubqlEthereumDatasourceKind {
+  FlareRuntime = 'flare/Runtime',
+  EthRuntime = 'ethereum/Runtime',
+}

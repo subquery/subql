@@ -1,4 +1,4 @@
-name: "Prerelease"
+name: "Flare-Prerelease"
 on:
   push:
     branches:
@@ -19,9 +19,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
 
-
-  Bump-Prerelease-Publish:
-    name: Bump-Prerelease-Publish
+  Bump-Prerelease-Flare-Publish:
+    name: Bump-Prerelease-Flare-Publish
     needs: pre-ci
     if: "!startsWith(github.event.head_commit.message, '[SKIP CI]') && !startsWith(github.event.head_commit.message, '[release]') && github.repository == 'DeveloperInProgress/subql-ethereum'"
     runs-on: ubuntu-latest
@@ -51,24 +50,50 @@ jobs:
         with:
           paths: packages/node
 
+      #Changes packages names
+      - name: Change common ethereum to flare
+        uses: jaywcjlove/github-action-package@main
+        with:
+          path: packages/common-ethereum/package.json
+          rename: '@subql/common-flare'
+
+      - name: Change types ethereum to flare
+        uses: jaywcjlove/github-action-package@main
+        with:
+          path: packages/types/package.json
+          rename: '@subql/types-flare'
+
+      - name: Change node ethereum to flare
+        uses: jaywcjlove/github-action-package@main
+        with:
+          path: packages/node/package.json
+          rename: '@subql/node-flare'
+        
+      #update imports
+      
+      - run: chmod +x ./.github/workflows/scripts/update_flare_imports.sh
+
+      - name: Update imports to flare
+        run: ./.github/workflows/scripts/update_flare_imports.sh
+        
       - run: yarn
 
       - name: build
         run: yarn workspaces foreach run build
 
       #Add remove-stable-version
-      - name: Bump types ethereum & deploy
-        if: steps.changed-types-ethereum.outputs.changed == 'true'
+      - name: Bump types flare & deploy
+        if: steps.changed-types-flare.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
           package-path: packages/types
           npm-token: ${{ secrets.NPM_TOKEN }}
 
-      - name: Bump common ethereum & deploy
-        if: steps.changed-common-ethereum.outputs.changed == 'true'
+      - name: Bump common flare & deploy
+        if: steps.changed-common-flare.outputs.changed == 'true'
         uses: ./.github/actions/create-prerelease
         with:
-          package-path: packages/common-ethereum
+          package-path: packages/common-flare
           npm-token: ${{ secrets.NPM_TOKEN }}
 
       - name: Bump node & deploy
@@ -77,10 +102,3 @@ jobs:
         with:
           package-path: packages/node
           npm-token: ${{ secrets.NPM_TOKEN }}
-
-      - name: Commit changes
-        uses: EndBug/add-and-commit@v5
-        with:
-          message: '[SKIP CI] Prerelease'
-        env:
-          GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}

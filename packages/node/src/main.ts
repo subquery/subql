@@ -6,6 +6,10 @@ import { yargsOptions } from './yargs';
 
 const { argv } = yargsOptions;
 
+(BigInt.prototype as any).toJSON = function () {
+  return this.toString();
+};
+
 // initLogger is imported from true path, to make sure getLogger (or other logger values that relies on logger) isn't initialised
 initLogger(
   argv.debug,
