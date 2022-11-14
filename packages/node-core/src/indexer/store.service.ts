@@ -84,6 +84,7 @@ export class StoreService {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
+    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
     try {
       await this.syncSchema(this.schema);
@@ -256,7 +257,12 @@ export class StoreService {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
 
-    this.metaDataRepo = await MetadataFactory(this.sequelize, schema, this.subqueryProject.network.chainId);
+    this.metaDataRepo = await MetadataFactory(
+      this.sequelize,
+      schema,
+      this.config.multichain,
+      this.subqueryProject.network.chainId
+    );
 
     // this will allow alter current entity, including fields
     // TODO, add rules for changes, eg only allow add nullable field
@@ -269,9 +275,13 @@ export class StoreService {
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
-    const {disableHistorical} = this.config;
-    const multiChainHistoricalError =
-      'Cannot multi-chain index when historical state is enabled, try using --disable-historical';
+    const {multichain} = this.config;
+    let {disableHistorical} = this.config;
+
+    if (multichain && !disableHistorical) {
+      logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
+      disableHistorical = true;
+    }
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
@@ -280,11 +290,14 @@ export class StoreService {
       );
 
       const metadataTableNames = flatten(tableRes).filter(
-        (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]{10}$/.test(value)
+        (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]+$/.test(value)
       );
 
-      if (metadataTableNames.length > 1 && !disableHistorical) {
-        throw new Error(multiChainHistoricalError);
+      if (metadataTableNames.length > 1 && !multichain) {
+        logger.error(
+          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multichain'
+        );
+        process.exit(1);
       }
 
       if (metadataTableNames.length === 1) {
@@ -298,20 +311,19 @@ export class StoreService {
           return total;
         }, {} as {[key: string]: string | boolean});
 
-        if (!store.historicalStateEnabled && !disableHistorical) {
-          logger.warn('Metadata entry already has historical state set to false, disabling..');
-          return false;
+        if (store.historicalStateEnabled && multichain) {
+          logger.error(
+            'Historical metadata entry found, to multi-chain index clear postgres schema and re-index project using --multichain'
+          );
+          process.exit(1);
         }
 
-        if (store.historicalStateEnabled && store.genesisHash !== this.subqueryProject.network.chainId) {
-          throw new Error(multiChainHistoricalError);
-        }
-
-        const storedState = res[0]?.value as boolean | undefined;
+        const storedState = store.historicalStateEnabled as boolean;
         return storedState ?? false;
       }
       throw new Error('Metadata table does not exist');
     } catch (e) {
+      // Will trigger on first startup as metadata table doesn't exist
       return !disableHistorical;
     }
   }
