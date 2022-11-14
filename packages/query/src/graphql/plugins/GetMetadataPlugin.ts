@@ -5,6 +5,7 @@ import {URL} from 'url';
 import {MetaData} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
+import {Build} from 'postgraphile-core';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
@@ -55,11 +56,12 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient: any, schemaName: string, chainId: string | undefined): Promise<MetaData> {
+async function fetchFromTable(pgClient, schemaName: string, chainId: string | undefined): Promise<MetaData> {
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  const tableName = `_metadata${chainId ? `_${chainId.substring(0, 10)}` : ''}`;
+  // 63 chars is the max postgres database table name length
+  const tableName = `_metadata${chainId ? `_${chainId.substring(0, 63)}` : ''}`;
   const {rows} = await pgClient.query(`select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`, [keys]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
@@ -94,18 +96,14 @@ async function fetchFromTable(pgClient: any, schemaName: string, chainId: string
   return metadata;
 }
 
+function metadataTableSearch(build: Build, id: string | undefined): boolean {
+  return build.pgIntrospectionResultsByKind.attribute.find((attr: {class: {name: string}}) =>
+    id ? /^_metadata_[a-zA-Z0-9-]+$/.test(attr.class.name) : /^_metadata$/.test(attr.class.name)
+  );
+}
+
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
   const [schemaName] = options.pgSchemas;
-  let metadataTableExists = false;
-
-  const tableSearch = build.pgIntrospectionResultsByKind.attribute.find(
-    (attr: {class: {name: string}}) =>
-      /^_metadata$/.test(attr.class.name) || /^_metadata_[a-zA-Z0-9-]{10}$/.test(attr.class.name)
-  );
-
-  if (tableSearch !== undefined) {
-    metadataTableExists = true;
-  }
 
   if (argv(`indexer`)) {
     setAsyncInterval(fetchFromApi, 10000);
@@ -138,7 +136,9 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
     resolvers: {
       Query: {
         _metadata: async (_parentObject, args, context, _info): Promise<MetaData> => {
-          if (metadataTableExists) {
+          const tableExists = metadataTableSearch(build, args.chainId);
+
+          if (tableExists) {
             const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId);
 
             if (Object.keys(metadata).length > 0) {

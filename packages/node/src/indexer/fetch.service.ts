@@ -442,7 +442,6 @@ export class FetchService implements OnApplicationShutdown {
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
-              this.projectService.metadataName,
             );
 
           if (startBlockHeight !== getStartBlockHeight()) {

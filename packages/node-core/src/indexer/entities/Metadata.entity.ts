@@ -36,25 +36,31 @@ export type MetadataRepo = typeof Model & {
   new (values?: unknown, options?: BuildOptions): MetadataModel;
 };
 
-async function checkSchemaMetadata(sequelize: Sequelize, dbSchema: string, chainId: string): Promise<boolean> {
+async function checkSchemaMetadata(sequelize: Sequelize, schema: string, chainId: string): Promise<boolean> {
   try {
-    const r = await sequelize.query<Metadata>(`select * from "${dbSchema}"._metadata WHERE key = 'genesisHash'`, {
+    const res = await sequelize.query<Metadata>(`SELECT * FROM "${schema}"._metadata WHERE key = 'genesisHash'`, {
       type: QueryTypes.SELECT,
     });
-    return r[0]?.value === chainId;
+    return res[0]?.value === chainId;
   } catch (e) {
     return false;
   }
 }
 
-export async function MetadataFactory(sequelize: Sequelize, schema: string, chainId: string): Promise<MetadataRepo> {
+export async function MetadataFactory(
+  sequelize: Sequelize,
+  schema: string,
+  multichain: boolean,
+  chainId: string
+): Promise<MetadataRepo> {
   let tableName = '_metadata';
 
-  const oldMetadataName = await checkSchemaMetadata(sequelize, schema, chainId);
+  if (multichain) {
+    const oldMetadataName = await checkSchemaMetadata(sequelize, schema, chainId);
 
-  if (!oldMetadataName) {
-    const id = chainId.substring(0, 10);
-    tableName = `${tableName}_${id}`;
+    if (!oldMetadataName) {
+      tableName = `${tableName}_${chainId}`;
+    }
   }
 
   return <MetadataRepo>sequelize.define(
