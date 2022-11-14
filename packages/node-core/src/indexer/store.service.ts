@@ -100,7 +100,7 @@ export class StoreService {
     }
   }
 
-  async incrementBlockCount(key: string, tx?: Transaction): Promise<void> {
+  async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
       `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
       tx && {transaction: tx}
@@ -267,6 +267,8 @@ export class StoreService {
     await this.sequelize.sync();
 
     await this.setMetadata('historicalStateEnabled', this.historical);
+    await this.incrementJsonbCount('schemaMigrationCount');
+
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }

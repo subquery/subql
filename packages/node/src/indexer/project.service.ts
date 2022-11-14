@@ -140,9 +140,6 @@ export class ProjectService {
     if (reindexedTo !== undefined) {
       this._startHeight = reindexedTo;
     }
-
-    // On project reload trigger hot reload on query service
-    await this.storeService.incrementBlockCount('schemaMigrationCount');
   }
 
   private async ensureProject(): Promise<string> {
