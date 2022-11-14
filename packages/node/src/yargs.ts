@@ -187,6 +187,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'Number of worker threads to use for fetching and processing blocks. Disabled by default.',
       type: 'number',
     },
+    'multi-chain': {
+      describe:
+        'Enables indexing multiple subquery projects into the same database schema',
+      type: 'boolean',
+      default: false,
+    },
     'query-limit': {
       demandOption: false,
       describe:

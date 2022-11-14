@@ -165,16 +165,9 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    conditions: DictionaryQueryEntry[],
-    metadataTableName = '_metadata'
+    conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
-    const {query, variables} = this.dictionaryQuery(
-      startBlock,
-      queryEndBlock,
-      batchSize,
-      conditions,
-      metadataTableName
-    );
+    const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
 
     try {
       const resp = await timeout(
@@ -187,7 +180,7 @@ export class DictionaryService implements OnApplicationShutdown {
       const blockHeightSet = new Set<number>();
       const entityEndBlock: {[entity: string]: number} = {};
       for (const entity of Object.keys(resp.data)) {
-        if (entity !== metadataTableName && resp.data[entity].nodes.length >= 0) {
+        if (entity !== '_metadata' && resp.data[entity].nodes.length >= 0) {
           for (const node of resp.data[entity].nodes) {
             blockHeightSet.add(Number(node.blockHeight));
             entityEndBlock[entity] = Number(node.blockHeight); //last added event blockHeight
@@ -213,8 +206,7 @@ export class DictionaryService implements OnApplicationShutdown {
     startBlock: number,
     queryEndBlock: number,
     batchSize: number,
-    conditions: DictionaryQueryEntry[],
-    metadataTableName: string
+    conditions: DictionaryQueryEntry[]
   ): GqlQuery {
     const mapped = conditions.reduce<Record<string, DictionaryQueryCondition[][]>>((acc, c) => {
       acc[c.entity] = acc[c.entity] || [];
@@ -226,7 +218,7 @@ export class DictionaryService implements OnApplicationShutdown {
     const vars: GqlVar[] = [];
     const nodes: GqlNode[] = [
       {
-        entity: metadataTableName,
+        entity: '_metadata',
         project: this.metadataKeys,
       },
     ];
@@ -266,15 +258,13 @@ export class DictionaryService implements OnApplicationShutdown {
   async scopedDictionaryEntries(
     startBlockHeight: number,
     queryEndBlock: number,
-    scaledBatchSize: number,
-    metadataTableName: string
+    scaledBatchSize: number
   ): Promise<Dictionary> {
     return this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(queryEndBlock),
-      metadataTableName
+      this.getDictionaryQueryEntries(queryEndBlock)
     );
   }
 }

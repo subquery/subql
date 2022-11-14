@@ -67,6 +67,8 @@ Options:
                                                        [boolean] [default: true]
   -w, --workers             Number of worker threads to use for fetching and
                             processing blocks. Disabled by default.     [number]
+      --multi-chain         Enables indexing multiple subquery projects into the
+                            same database schema      [boolean] [default: false]
 ```
 
 ## License

@@ -33,6 +33,7 @@ export interface IConfig {
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
   readonly workers?: number;
+  readonly multichain?: boolean;
   readonly profiler?: boolean;
   readonly unsafe?: boolean;
   readonly subscription: boolean;
@@ -54,6 +55,7 @@ const DEFAULT_CONFIG = {
   timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
+  multichain: false,
   profiler: false,
   subscription: false,
   disableHistorical: false,
@@ -107,6 +109,10 @@ export class NodeConfig implements IConfig {
 
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
+  }
+
+  get multichain(): boolean {
+    return this._config.multichain;
   }
 
   get timeout(): number {

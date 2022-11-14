@@ -51,6 +51,7 @@ export class ReindexService {
     this.metadataRepo = await MetadataFactory(
       this.sequelize,
       this.schema,
+      this.nodeConfig.multichain,
       this.project.network.chainId,
     );
     this.dynamicDsService.init(this.metadataRepo);

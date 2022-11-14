@@ -117,6 +117,7 @@ export class ProjectService {
       this.metadataRepo = await MetadataFactory(
         this.sequelize,
         this.schema,
+        this.nodeConfig.multichain,
         this.project.network.chainId,
       );
 
@@ -186,6 +187,7 @@ export class ProjectService {
     const metadataRepo = await MetadataFactory(
       this.sequelize,
       this.schema,
+      this.nodeConfig.multichain,
       this.project.network.chainId,
     );
 
