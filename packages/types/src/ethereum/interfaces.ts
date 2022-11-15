@@ -79,7 +79,7 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   args?: T;
 };
 
-export type FlareTransaction = EthereumTransaction;
+export type FlareTransaction<T extends FlareResult = FlareResult> = EthereumTransaction<T>;
 
 export type EthereumReceipt = {
   blockHash: string;
@@ -114,7 +114,7 @@ export type EthereumLog<T extends EthereumResult = EthereumResult> = {
   block: EthereumBlock;
 };
 
-export type FlareLog = EthereumLog;
+export type FlareLog<T extends FlareResult = FlareResult> = EthereumLog<T>;
 
 export type EthereumBlockWrapper = BlockWrapper<
   EthereumBlock,
