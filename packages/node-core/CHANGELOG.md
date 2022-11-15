@@ -10,6 +10,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.0] - 2022-11-15
+### Added
+- Support for hot schema reload. (#1401)
+- Support for distinct query plugin. (#1274)
+
 ## [1.3.3] - 2022-11-09
 ### Added
 - Added retry method for handle fetch errors (#1386)
