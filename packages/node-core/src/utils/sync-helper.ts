@@ -122,7 +122,7 @@ END;
 $$ LANGUAGE plpgsql;`;
 
 export function dropNotifyTrigger(schema: string, table: string): string {
-  const triggerName = makeTriggerName(schema, table);
+  const triggerName = makeTriggerName(schema, table, 'notify');
   return `DROP TRIGGER IF EXISTS "${triggerName}"
     ON "${schema}"."${table}";`;
 }
@@ -132,7 +132,7 @@ export function getNotifyTriggers(): string {
           WHERE trigger_name = :triggerName`;
 }
 export function createNotifyTrigger(schema: string, table: string): string {
-  const triggerName = makeTriggerName(schema, table);
+  const triggerName = makeTriggerName(schema, table, 'notify');
   return `
 CREATE TRIGGER "${triggerName}"
     AFTER INSERT OR UPDATE OR DELETE
@@ -140,14 +140,15 @@ CREATE TRIGGER "${triggerName}"
     FOR EACH ROW EXECUTE FUNCTION send_notification();`;
 }
 
-export function makeTriggerName(schema: string, tableName: string): string {
+export function makeTriggerName(schema: string, tableName: string, triggerType: string): string {
   // max name length is 63 bytes in Postgres
-  return blake2AsHex(`${schema}_${tableName}_notify_trigger`).substr(2, 10);
+  return blake2AsHex(`${schema}_${tableName}_${triggerType}_trigger`).substr(2, 10);
 }
 
 export function createSchemaTrigger(schema: string): string {
+  const triggerName = makeTriggerName(schema, '_metadata', 'schema');
   return `
-  CREATE OR REPLACE TRIGGER "${schema}_metadata_schema_trigger"
+  CREATE TRIGGER "${triggerName}"
     AFTER UPDATE
     ON "${schema}"."_metadata"
     FOR EACH ROW

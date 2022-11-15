@@ -191,10 +191,19 @@ export class StoreService {
 
       /* These SQL queries are to allow hot-schema reload on query service */
       extraQueries.push(createSchemaTriggerFunction(schema));
-      extraQueries.push(createSchemaTrigger(schema));
+      const schemaTriggerName = makeTriggerName(schema, '_metadata', 'schema');
+
+      const schemaNotifyTrigger = await this.sequelize.query(getNotifyTriggers(), {
+        replacements: {triggerName: `${schemaTriggerName}`},
+        type: QueryTypes.SELECT,
+      });
+
+      if (schemaNotifyTrigger.length === 0) {
+        extraQueries.push(createSchemaTrigger(schema));
+      }
 
       if (this.config.subscription) {
-        const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
+        const triggerName = makeTriggerName(schema, sequelizeModel.tableName, 'notify');
         const triggers = await this.sequelize.query(getNotifyTriggers(), {
           replacements: {triggerName},
           type: QueryTypes.SELECT,
