@@ -8,6 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-11-15
+
+### Added
+- Added distinct query plugin. (#1401)
+### Fixed 
+- Fix permission restrictions when using hot-schema reload. (#1398)
+- Fix query distinct dependencies. (#1274)
+
 ## [1.6.1] - 2022-10-27
 
 ### Changed
