@@ -12,3 +12,4 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [0.1.0] - 2022-10-31
 
 Initial release
+
