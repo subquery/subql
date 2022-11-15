@@ -263,7 +263,7 @@ export class FetchService implements OnApplicationShutdown {
     await this.syncDynamicDatascourcesFromMeta();
 
     this.updateDictionary();
-    //update current dictionary entries
+    // update current dictionary entries
     this.dictionaryService.updateDictionaryQueryEntries(startHeight);
 
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
@@ -436,27 +436,19 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
+          // latestBufferedHeight could not exist when project init,
+          // we can ignore it here, as dictionary entries already update with fetch init.
           if (this.blockDispatcher?.latestBufferedHeight) {
-            logger.info(
-              `this.blockDispatcher?.latestBufferedHeight ${this.blockDispatcher.latestBufferedHeight}`,
-            );
-
             this.dictionaryService.updateDictionaryQueryEntries(
               this.blockDispatcher.latestBufferedHeight,
             );
-          } else {
-            logger.warn(
-              `this.blockDispatcher?.latestBufferedHeight not defined`,
-            );
           }
-
           const dictionary =
             await this.dictionaryService.queryDictionaryEntriesDynamic(
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
             );
-
           if (startBlockHeight !== getStartBlockHeight()) {
             logger.debug(
               `Queue was reset for new DS, discarding dictionary query result`,

@@ -183,7 +183,6 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
-    // console.log(query)
     try {
       const resp = await timeout(
         this.client.query({
@@ -310,14 +309,11 @@ export class DictionaryService implements OnApplicationShutdown {
       if (resultLength !== 0) {
         endBlock = attemptingResult.batchBlocks[resultLength - 1];
       } else {
-        console.log(
-          `....!!! **** Jumped to query endBlock ${queryEndBlock}, current dictionary index ${this.currentDictionaryEntryIndex}`
-        );
         endBlock = queryEndBlock;
       }
 
       if (this.updateDictionaryQueryEntries(endBlock)) {
-        logger.warn(`Dictionary been updated........`);
+        logger.info(`Dictionary entries been updated.`);
         return this.queryDictionaryEntriesDynamic(startBlockHeight, queryEndBlock, scaledBatchSize);
       }
       return attemptingResult;
