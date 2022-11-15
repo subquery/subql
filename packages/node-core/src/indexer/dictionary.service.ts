@@ -6,6 +6,7 @@ import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
+import {isEqual} from 'lodash';
 import fetch from 'node-fetch';
 // import { yargsOptions } from '../yargs';
 
@@ -99,7 +100,7 @@ function buildDictQueryFragment(
   queryEndBlock: number,
   conditions: DictionaryQueryCondition[][],
   batchSize: number,
-  useDistinct: boolean,
+  useDistinct: boolean
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
 
@@ -136,6 +137,7 @@ export class DictionaryService implements OnApplicationShutdown {
   protected client: ApolloClient<NormalizedCacheObject>;
   private isShutdown = false;
   private mappedDictionaryQueryEntries: Map<number, DictionaryQueryEntry[]>;
+  private currentDictionaryEntryIndex: number;
   private useDistinct = true;
 
   constructor(
@@ -161,6 +163,10 @@ export class DictionaryService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
+  getCurrentDictionaryEntries() {
+    return this.mappedDictionaryQueryEntries.get(this.currentDictionaryEntryIndex);
+  }
+
   /**
    *
    * @param startBlock
@@ -177,7 +183,7 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
-
+    // console.log(query)
     try {
       const resp = await timeout(
         this.client.query({
@@ -198,6 +204,11 @@ export class DictionaryService implements OnApplicationShutdown {
       }
       const _metadata = resp.data._metadata;
       const endBlock = Math.min(...Object.values(entityEndBlock).map((height) => (isNaN(height) ? Infinity : height)));
+
+      // This filter with endBlock, will ensure next query for DS is not lost
+      // Example, Ds1 return 7,8,9, Ds2 return 15,16,17
+      // Batch blocks will only be 7,8,9
+      // next query start is 10, not 17. So between 10-17 for Ds1 will not missing.
       const batchBlocks = Array.from(blockHeightSet)
         .filter((block) => block <= endBlock)
         .sort((n1, n2) => n1 - n2);
@@ -211,12 +222,7 @@ export class DictionaryService implements OnApplicationShutdown {
         this.useDistinct = false;
         logger.warn(`Dictionary doesn't support distinct query.`);
         // Rerun the qeury now with distinct disabled
-        return this.getDictionary(
-          startBlock,
-          queryEndBlock,
-          batchSize,
-          conditions,
-        );
+        return this.getDictionary(startBlock, queryEndBlock, batchSize, conditions);
       }
       logger.warn(err, `failed to fetch dictionary result`);
       return undefined;
@@ -244,7 +250,14 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
+      const [pVars, node] = buildDictQueryFragment(
+        entity,
+        startBlock,
+        queryEndBlock,
+        mapped[entity],
+        batchSize,
+        this.useDistinct
+      );
       nodes.push(node);
       vars.push(...pVars);
     }
@@ -256,36 +269,58 @@ export class DictionaryService implements OnApplicationShutdown {
   ): void {
     const mappedDictionaryQueryEntries = new Map();
 
-    for (const ds of dataSources) {
+    for (const ds of dataSources.sort((a, b) => a.startBlock - b.startBlock)) {
       mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
     this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;
   }
 
-  getDictionaryQueryEntries(queryEndBlock: number): DictionaryQueryEntry[] {
-    let dictionaryQueryEntries: DictionaryQueryEntry[];
+  // update local selected dictionary entries with endBlock height, return true if it updated/changed
+  updateDictionaryQueryEntries(endBlock: number): boolean {
+    let toMapIndex;
     this.mappedDictionaryQueryEntries.forEach((value, key) => {
-      if (queryEndBlock >= key) {
-        dictionaryQueryEntries = value;
+      if (endBlock >= key) {
+        toMapIndex = Number(key);
       }
     });
-
-    if (dictionaryQueryEntries === undefined) {
-      return [];
-    }
-    return dictionaryQueryEntries;
+    const updated = !isEqual(this.currentDictionaryEntryIndex, toMapIndex);
+    this.currentDictionaryEntryIndex = toMapIndex;
+    return updated;
   }
 
-  async scopedDictionaryEntries(
+  async queryDictionaryEntriesDynamic(
     startBlockHeight: number,
     queryEndBlock: number,
     scaledBatchSize: number
   ): Promise<Dictionary> {
-    return this.getDictionary(
+    const attemptingResult = await this.getDictionary(
       startBlockHeight,
       queryEndBlock,
       scaledBatchSize,
-      this.getDictionaryQueryEntries(queryEndBlock)
+      // If current dictionaries is not defined, use empty array
+      this.getCurrentDictionaryEntries() ?? []
     );
+
+    if (attemptingResult) {
+      let endBlock: number;
+      // if Dictionary query entries been changed/updated，re-query again with updated entries
+      // sometimes attemptingResult could return empty batchBlocks
+      // this means from startBlockHeight to queryEndBlock there is not result, so we safely set endBlock to queryEndBlock
+      const resultLength = attemptingResult.batchBlocks.length;
+      if (resultLength !== 0) {
+        endBlock = attemptingResult.batchBlocks[resultLength - 1];
+      } else {
+        console.log(
+          `....!!! **** Jumped to query endBlock ${queryEndBlock}, current dictionary index ${this.currentDictionaryEntryIndex}`
+        );
+        endBlock = queryEndBlock;
+      }
+
+      if (this.updateDictionaryQueryEntries(endBlock)) {
+        logger.warn(`Dictionary been updated........`);
+        return this.queryDictionaryEntriesDynamic(startBlockHeight, queryEndBlock, scaledBatchSize);
+      }
+      return attemptingResult;
+    }
   }
 }

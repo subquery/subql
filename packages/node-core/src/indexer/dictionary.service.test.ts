@@ -216,7 +216,23 @@ describe('DictionaryService', () => {
     expect(_map.size).toEqual(mockDS.length);
   });
 
-  it('able to getDicitonaryQueryEntries', () => {
+  it('detect query entry changes with endBlock changes', () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+
+    dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
+
+    // change at 100 -> 500 -> 1000
+    // init
+    dictionaryService.updateDictionaryQueryEntries(100);
+    // should remain unchanged
+    expect(dictionaryService.updateDictionaryQueryEntries(150)).toBeFalsy();
+    // should changed
+    expect(dictionaryService.updateDictionaryQueryEntries(500)).toBeTruthy();
+    // should remain unchanged
+    expect(dictionaryService.updateDictionaryQueryEntries(501)).toBeFalsy();
+  });
+
+  it('able to update Dictionary entries with returned block batches', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
     const dictionaryQueryMap = new Map();
 
@@ -224,43 +240,70 @@ describe('DictionaryService', () => {
     // Hence testing, when provided a queryEndBlock, the correct DictionaryQueryEntries[] is returned
     for (let i = 0; i < mockDS.length; i++) {
       dictionaryQueryMap.set(
-        [mockDS[i].startBlock],
+        mockDS[i].startBlock,
         HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
       );
     }
     (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
-    let queryEndBlock = 150;
 
     // queryEndBlock > dictionaryQuery_0 && < dictionaryQuery_1. Output: dictionaryQuery_0
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([HAPPY_PATH_CONDITIONS[0]]);
-
-    queryEndBlock = 500;
+    dictionaryService.updateDictionaryQueryEntries(150);
+    expect(dictionaryService.getCurrentDictionaryEntries()).toEqual([HAPPY_PATH_CONDITIONS[0]]);
 
     // queryEndBlock > dictionaryQuery_0 && == dictionaryQuery_1. Output: dictionaryQuery_1
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    dictionaryService.updateDictionaryQueryEntries(500);
+    expect(dictionaryService.getCurrentDictionaryEntries()).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
     ]);
 
-    queryEndBlock = 5000;
     // queryEndBlock > all dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([
+    dictionaryService.updateDictionaryQueryEntries(5000);
+    expect(dictionaryService.getCurrentDictionaryEntries()).toEqual([
       HAPPY_PATH_CONDITIONS[0],
       HAPPY_PATH_CONDITIONS[1],
       HAPPY_PATH_CONDITIONS[2],
     ]);
 
-    queryEndBlock = 50;
     // queryEndBlock < min dictionaryQuery
-    expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
+    dictionaryService.updateDictionaryQueryEntries(50);
+    expect(dictionaryService.getCurrentDictionaryEntries()).toBeUndefined();
   });
 
   it('sort map', () => {
     const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
     const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
     dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
-    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).not.toStrictEqual(
+    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toEqual(
       unorderedDs.map((ds) => ds.startBlock)
     );
+  });
+
+  it('adjust dictionary entries with attempting query result', async () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryQueryMap = new Map();
+
+    // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
+    // Hence testing, when provided a queryEndBlock, the correct DictionaryQueryEntries[] is returned
+    for (let i = 0; i < mockDS.length; i++) {
+      dictionaryQueryMap.set(
+        mockDS[i].startBlock,
+        HAPPY_PATH_CONDITIONS.filter((dictionaryQuery, index) => i >= index)
+      );
+    }
+    (dictionaryService as any).mappedDictionaryQueryEntries = dictionaryQueryMap;
+
+    dictionaryService.updateDictionaryQueryEntries(150);
+
+    const queryDictionaryEntriesDynamicSpy = jest.spyOn(dictionaryService as any, `queryDictionaryEntriesDynamic`);
+
+    await dictionaryService.queryDictionaryEntriesDynamic(150, 100100, 30);
+    // queries endBlocks is 6421
+    expect((dictionaryService as any).currentDictionaryEntryIndex).toEqual(1000);
+    expect(queryDictionaryEntriesDynamicSpy).toBeCalledTimes(2);
+    await dictionaryService.queryDictionaryEntriesDynamic(6422, 106422, 30);
+    // use the same dictionary entry, call time only increase by 1
+    expect((dictionaryService as any).currentDictionaryEntryIndex).toEqual(1000);
+    expect(queryDictionaryEntriesDynamicSpy).toBeCalledTimes(3);
   });
 });

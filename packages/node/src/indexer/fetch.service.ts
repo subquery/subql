@@ -235,10 +235,7 @@ export class FetchService implements OnApplicationShutdown {
     return (
       !!this.project.network.dictionary &&
       this.dictionaryGenesisMatches &&
-      !!this.dictionaryService.getDictionaryQueryEntries(
-        this.blockDispatcher.latestBufferedHeight ??
-          Math.min(...this.project.dataSources.map((ds) => ds.startBlock)),
-      ).length
+      !!this.dictionaryService.getCurrentDictionaryEntries().length
     );
   }
 
@@ -264,7 +261,11 @@ export class FetchService implements OnApplicationShutdown {
     }
 
     await this.syncDynamicDatascourcesFromMeta();
+
     this.updateDictionary();
+    //update current dictionary entries
+    this.dictionaryService.updateDictionaryQueryEntries(startHeight);
+
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
@@ -435,8 +436,22 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
+          if (this.blockDispatcher?.latestBufferedHeight) {
+            logger.info(
+              `this.blockDispatcher?.latestBufferedHeight ${this.blockDispatcher.latestBufferedHeight}`,
+            );
+
+            this.dictionaryService.updateDictionaryQueryEntries(
+              this.blockDispatcher.latestBufferedHeight,
+            );
+          } else {
+            logger.warn(
+              `this.blockDispatcher?.latestBufferedHeight not defined`,
+            );
+          }
+
           const dictionary =
-            await this.dictionaryService.scopedDictionaryEntries(
+            await this.dictionaryService.queryDictionaryEntriesDynamic(
               startBlockHeight,
               queryEndBlock,
               scaledBatchSize,
