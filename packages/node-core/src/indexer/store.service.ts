@@ -34,7 +34,7 @@ import {
   createUniqueIndexQuery,
   dropNotifyTrigger,
   getFkConstraint,
-  getNotifyTriggers,
+  getTriggers,
   SmartTags,
   smartTags,
   getVirtualFkTag,
@@ -67,6 +67,8 @@ interface NotifyTriggerPayload {
   triggerName: string;
   eventManipulation: string;
 }
+
+type SchemaTriggerPayload = string;
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -163,6 +165,17 @@ export class StoreService {
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
+
+    /* These SQL queries are to allow hot-schema reload on query service */
+    extraQueries.push(createSchemaTriggerFunction(schema));
+    const schemaTriggerName = makeTriggerName(schema, '_metadata', 'schema');
+
+    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
+
+    if (schemaTriggers.length === 0) {
+      extraQueries.push(createSchemaTrigger(schema));
+    }
+
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({fields, unique, using}) => ({
@@ -191,21 +204,15 @@ export class StoreService {
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
 
-      /* These SQL queries are to allow hot-schema reload on query service */
-      extraQueries.push(createSchemaTriggerFunction(schema));
-      extraQueries.push(createSchemaTrigger(schema));
-
       if (this.config.subscription) {
-        const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
-        const triggers = await this.sequelize.query(getNotifyTriggers(), {
-          replacements: {triggerName},
-          type: QueryTypes.SELECT,
-        });
+        const triggerName = makeTriggerName(schema, sequelizeModel.tableName, 'notify');
+        const notifyTriggers = await getTriggers(this.sequelize, triggerName);
+
         // Triggers not been found
-        if (triggers.length === 0) {
+        if (notifyTriggers.length === 0) {
           extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
         } else {
-          this.validateNotifyTriggers(triggerName, triggers as NotifyTriggerPayload[]);
+          this.validateNotifyTriggers(triggerName, notifyTriggers as NotifyTriggerPayload[]);
         }
       } else {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
