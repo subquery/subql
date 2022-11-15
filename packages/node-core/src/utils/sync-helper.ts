@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {blake2AsHex} from '@polkadot/util-crypto';
-import {Utils} from 'sequelize';
+import {QueryTypes, Sequelize, Utils} from 'sequelize';
 
 export interface SmartTags {
   foreignKey?: string;
@@ -127,9 +127,15 @@ export function dropNotifyTrigger(schema: string, table: string): string {
     ON "${schema}"."${table}";`;
 }
 
-export function getNotifyTriggers(): string {
-  return `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
-          WHERE trigger_name = :triggerName`;
+export async function getTriggers(sequelize: Sequelize, triggerName: string): Promise<any[]> {
+  return sequelize.query(
+    `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
+          WHERE trigger_name = :triggerName`,
+    {
+      replacements: {triggerName},
+      type: QueryTypes.SELECT,
+    }
+  );
 }
 export function createNotifyTrigger(schema: string, table: string): string {
   const triggerName = makeTriggerName(schema, table, 'notify');
