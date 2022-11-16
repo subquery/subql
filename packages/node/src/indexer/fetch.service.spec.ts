@@ -52,7 +52,7 @@ describe('Dictionary Queries', () => {
       );
 
       expect(query).toEqual({
-        query: `query($messages_0_0:String!){_metadata {lastProcessedHeight chain }  messages (filter:{or:[{type:{equalTo:$messages_0_0}}],blockHeight:{greaterThanOrEqualTo:"3093822",lessThan:"4000000"}},orderBy:BLOCK_HEIGHT_ASC,first:5){nodes {blockHeight }  } }`,
+        query: `query($messages_0_0:String!){_metadata {lastProcessedHeight chain }  messages (filter:{or:[{type:{equalTo:$messages_0_0}}],blockHeight:{greaterThanOrEqualTo:"3093822",lessThan:"4000000"}},orderBy:BLOCK_HEIGHT_ASC,first:5,distinct:[BLOCK_HEIGHT]){nodes {blockHeight }  } }`,
         variables: { messages_0_0: '/cosmwasm.wasm.v1.MsgExecuteContract' },
       });
     });
@@ -77,7 +77,7 @@ describe('Dictionary Queries', () => {
       );
 
       expect(query).toEqual({
-        query: `query($messages_0_0:String!,$messages_0_1:JSON){_metadata {lastProcessedHeight chain }  messages (filter:{or:[{and:[{type:{equalTo:$messages_0_0}},{data:{contains:$messages_0_1}}]}],blockHeight:{greaterThanOrEqualTo:"3093822",lessThan:"4000000"}},orderBy:BLOCK_HEIGHT_ASC,first:5){nodes {blockHeight }  } }`,
+        query: `query($messages_0_0:String!,$messages_0_1:JSON){_metadata {lastProcessedHeight chain }  messages (filter:{or:[{and:[{type:{equalTo:$messages_0_0}},{data:{contains:$messages_0_1}}]}],blockHeight:{greaterThanOrEqualTo:"3093822",lessThan:"4000000"}},orderBy:BLOCK_HEIGHT_ASC,first:5,distinct:[BLOCK_HEIGHT]){nodes {blockHeight }  } }`,
         variables: {
           messages_0_0: '/cosmwasm.wasm.v1.MsgExecuteContract',
           messages_0_1: {
