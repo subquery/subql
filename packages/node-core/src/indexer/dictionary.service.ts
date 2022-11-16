@@ -2,13 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {ApolloClient, HttpLink, from, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
+import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
 import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
-import axios from 'axios';
 import fetch from 'node-fetch';
 // import { yargsOptions } from '../yargs';
 
@@ -149,7 +148,7 @@ export class DictionaryService implements OnApplicationShutdown {
   ) {}
 
   async init(): Promise<void> {
-    let link;
+    let link: ApolloLink;
 
     if (this.nodeConfig.authDictionary) {
       assert(this.dictionaryEndpoint, 'dictionary endpoint must be included in manifest to use --authDictionary');
@@ -164,7 +163,7 @@ export class DictionaryService implements OnApplicationShutdown {
 
     this.client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
-      link: from([link]),
+      link,
       defaultOptions: {
         watchQuery: {
           fetchPolicy: 'no-cache',
