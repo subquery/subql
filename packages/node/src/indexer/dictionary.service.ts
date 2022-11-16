@@ -31,7 +31,7 @@ export class DictionaryService
   implements OnApplicationShutdown
 {
   constructor(protected project: SubqueryProject, nodeConfig: NodeConfig) {
-    super(project.network.dictionary, nodeConfig, project.network.chainId);
+    super(project.network.dictionary, project.network.chainId, nodeConfig);
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {

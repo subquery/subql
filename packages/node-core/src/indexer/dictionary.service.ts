@@ -142,8 +142,8 @@ export class DictionaryService implements OnApplicationShutdown {
 
   constructor(
     readonly dictionaryEndpoint: string,
+    readonly chainId: string,
     protected readonly nodeConfig: NodeConfig,
-    readonly chainId?: string,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
   ) {}
 
@@ -152,11 +152,8 @@ export class DictionaryService implements OnApplicationShutdown {
 
     //TODO: need to use flag here
     //TODO: add retry logic
-    //TODO: replace with dictionary endpoint and chainId
-    const res = await axios.get(
-      'http://3.27.14.20:3030/metadata/0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
-      {headers}
-    );
+
+    const res = await axios.get(`${this.dictionaryEndpoint}/metadata/${this.chainId}`, {headers});
     const networkConfig: {indexer: string; uri: string; deploymentId: string} = res.data;
 
     let link;
