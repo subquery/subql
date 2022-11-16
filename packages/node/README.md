@@ -59,6 +59,7 @@ Options:
                                                       [boolean] [default: false]
   -d, --network-dictionary  Specify the dictionary api for this network [string]
       --dictionary-timeout  Max timeout for dictionary query            [number]
+      --auth-dictionary     Use authenticated endpoint for dictionary  [boolean]
   -m, --mmr-path            Local path of the merkle mountain range (.mmr) file
                                                                         [string]
       --proof-of-index      Enable/disable proof of index

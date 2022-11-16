@@ -152,6 +152,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'auth-dictionary': {
+      demandOption: false,
+      describe: 'Use auth center as endpoint for dictionary',
+      type: 'boolean',
+      default: false,
+    },
     'dictionary-timeout': {
       demandOption: false,
       describe: 'Max timeout for dictionary query',

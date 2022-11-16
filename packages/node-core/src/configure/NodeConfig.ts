@@ -32,6 +32,7 @@ export interface IConfig {
   readonly mmrPath?: string;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
+  readonly authDictionary: boolean;
   readonly workers?: number;
   readonly profiler?: boolean;
   readonly migrate: boolean;
@@ -55,6 +56,7 @@ const DEFAULT_CONFIG = {
   timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
+  authDictionary: false,
   profiler: false,
   migrate: false,
   subscription: false,
@@ -149,6 +151,10 @@ export class NodeConfig implements IConfig {
 
   get dictionaryTimeout(): number {
     return this._config.dictionaryTimeout;
+  }
+
+  get authDictionary(): boolean {
+    return this._config.authDictionary;
   }
 
   get mmrPath(): string {

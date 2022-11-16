@@ -18,7 +18,7 @@
     "subql-node": "./bin/run"
   },
   "dependencies": {
-    "@apollo/client": "3.5.8",
+    "@apollo/client": "^3.7.0",
     "@nestjs/common": "^8.2.6",
     "@nestjs/core": "^8.2.6",
     "@nestjs/event-emitter": "^1.3.0",
