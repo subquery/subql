@@ -12,6 +12,7 @@ export type FetchBlockResponse = { parentHash: string } | undefined;
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
   operationHash: string; // Base64 encoded u8a array
+  reindexBlockHeight: number;
 };
 
 export type WorkerStatusResponse = {

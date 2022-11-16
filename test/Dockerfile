@@ -1,4 +1,4 @@
-FROM node:lts-gallium
+FROM node:lts-bullseye
 WORKDIR /workdir
 
 COPY . .

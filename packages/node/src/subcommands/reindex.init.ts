@@ -13,6 +13,8 @@ export async function reindexInit(targetHeight: number): Promise<void> {
 
     await app.init();
     const reindexService = app.get(ReindexService);
+
+    await reindexService.init();
     await reindexService.reindex(targetHeight);
   } catch (e) {
     logger.error(e, 'Reindex failed to execute');
