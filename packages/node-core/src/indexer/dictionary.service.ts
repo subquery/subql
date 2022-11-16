@@ -1,11 +1,13 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {ApolloClient, HttpLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
+import {ApolloClient, HttpLink, from, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {AuthLink} from '@subql/apollo-links';
 import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
+import axios from 'axios';
 import fetch from 'node-fetch';
 // import { yargsOptions } from '../yargs';
 
@@ -99,7 +101,7 @@ function buildDictQueryFragment(
   queryEndBlock: number,
   conditions: DictionaryQueryCondition[][],
   batchSize: number,
-  useDistinct: boolean,
+  useDistinct: boolean
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
 
@@ -141,11 +143,40 @@ export class DictionaryService implements OnApplicationShutdown {
   constructor(
     readonly dictionaryEndpoint: string,
     protected readonly nodeConfig: NodeConfig,
+    readonly chainId?: string,
     protected readonly metadataKeys = ['lastProcessedHeight', 'genesisHash'] // Cosmos uses chain instead of genesisHash
-  ) {
+  ) {}
+
+  async init(): Promise<void> {
+    const headers = {'Content-Type': 'application/json'};
+
+    //TODO: need to use flag here
+    //TODO: add retry logic
+    //TODO: replace with dictionary endpoint and chainId
+    const res = await axios.get(
+      'http://3.27.14.20:3030/metadata/0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',
+      {headers}
+    );
+    const networkConfig: {indexer: string; uri: string; deploymentId: string} = res.data;
+
+    let link;
+
+    if (this.nodeConfig.authDictionary) {
+      const httpLink = new HttpLink({uri: networkConfig.uri, fetch});
+      const authLink = new AuthLink({
+        authUrl: 'http://3.27.14.20:3030/token',
+        chainId: parseInt(this.chainId),
+        indexer: networkConfig.indexer,
+        deploymentId: networkConfig.deploymentId,
+      });
+      link = from([authLink, httpLink]);
+    } else {
+      link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
+    }
+
     this.client = new ApolloClient({
       cache: new InMemoryCache({resultCaching: true}),
-      link: new HttpLink({uri: dictionaryEndpoint, fetch}),
+      link: from([link]),
       defaultOptions: {
         watchQuery: {
           fetchPolicy: 'no-cache',
@@ -211,12 +242,7 @@ export class DictionaryService implements OnApplicationShutdown {
         this.useDistinct = false;
         logger.warn(`Dictionary doesn't support distinct query.`);
         // Rerun the qeury now with distinct disabled
-        return this.getDictionary(
-          startBlock,
-          queryEndBlock,
-          batchSize,
-          conditions,
-        );
+        return this.getDictionary(startBlock, queryEndBlock, batchSize, conditions);
       }
       logger.warn(err, `failed to fetch dictionary result`);
       return undefined;
@@ -244,7 +270,14 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
+      const [pVars, node] = buildDictQueryFragment(
+        entity,
+        startBlock,
+        queryEndBlock,
+        mapped[entity],
+        batchSize,
+        this.useDistinct
+      );
       nodes.push(node);
       vars.push(...pVars);
     }
