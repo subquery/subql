@@ -168,6 +168,7 @@ export class ProjectService {
       'chain',
       'chainId',
       'processedBlockCount',
+      'schemaMigrationCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -233,6 +234,9 @@ export class ProjectService {
         key: 'indexerNodeVersion',
         value: packageVersion,
       });
+    }
+    if (!keyValue.schemaMigrationCount) {
+      await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
     }
 
     return metadataRepo;

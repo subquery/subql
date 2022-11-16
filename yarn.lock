@@ -2872,9 +2872,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:1.3.3":
-  version: 1.3.3
-  resolution: "@subql/node-core@npm:1.3.3"
+"@subql/node-core@npm:1.4.2-0":
+  version: 1.4.2-0
+  resolution: "@subql/node-core@npm:1.4.2-0"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
@@ -2890,7 +2890,7 @@ __metadata:
     sequelize: 6.23.0
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: ceca0574732c236c69223488047c2d16825f9d47e1d173947bf90b36471efd1a2b670aa7200e8955f573d8cc6f1f4319c8e0cd52b83e6f3e91622c74c3cf11ce
+  checksum: d5723394b07313fdf8496e6bd2a986992b0b370ba108f83ab7274a4e48243cddb28526e02af4d9d99b2ac5a12f381fb8bb0cd30b88ab2f2ef417c12b668bc0b5
   languageName: node
   linkType: hard
 
@@ -2912,7 +2912,7 @@ __metadata:
     "@polkadot/api": 9.5.2
     "@subql/common": latest
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": 1.3.3
+    "@subql/node-core": 1.4.2-0
     "@subql/types-cosmos": "workspace:*"
     "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2

@@ -54,7 +54,6 @@ async function initWorker(): Promise<void> {
 
     workerService = app.get(WorkerService);
   } catch (e) {
-    console.log('Failed to start worker', e);
     logger.error(e, 'Failed to start worker');
     throw e;
   }

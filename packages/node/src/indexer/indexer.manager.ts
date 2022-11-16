@@ -126,7 +126,7 @@ export class IndexerManager {
         { transaction: tx },
       );
       // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      await this.storeService.incrementBlockCount(tx);
+      await this.storeService.incrementJsonbCount('processedBlockCount', tx);
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
