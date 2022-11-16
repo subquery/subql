@@ -1,9 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import assert from 'assert';
 import {ApolloClient, HttpLink, from, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
-import {AuthLink} from '@subql/apollo-links';
+import {authHttpLink} from '@subql/apollo-links';
 import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
@@ -148,25 +149,15 @@ export class DictionaryService implements OnApplicationShutdown {
   ) {}
 
   async init(): Promise<void> {
-    const headers = {'Content-Type': 'application/json'};
-
-    //TODO: need to use flag here
-    //TODO: add retry logic
-
-    const res = await axios.get(`${this.dictionaryEndpoint}/metadata/${this.chainId}`, {headers});
-    const networkConfig: {indexer: string; uri: string; deploymentId: string} = res.data;
-
     let link;
 
     if (this.nodeConfig.authDictionary) {
-      const httpLink = new HttpLink({uri: networkConfig.uri, fetch});
-      const authLink = new AuthLink({
-        authUrl: 'http://3.27.14.20:3030/token',
-        chainId: parseInt(this.chainId),
-        indexer: networkConfig.indexer,
-        deploymentId: networkConfig.deploymentId,
+      assert(this.dictionaryEndpoint, 'dictionary endpoint must be included in manifest to use --authDictionary');
+      link = await authHttpLink({
+        authUrl: this.dictionaryEndpoint,
+        chainId: this.chainId,
+        httpOptions: {fetch},
       });
-      link = from([authLink, httpLink]);
     } else {
       link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }
