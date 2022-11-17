@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {URL} from 'url';
-import {MetaData} from '@subql/utils';
+import {MetaData, METADATA_REGEX, MULTI_METADATA_REGEX} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {Build} from 'postgraphile-core';
@@ -98,7 +98,7 @@ async function fetchFromTable(pgClient, schemaName: string, chainId: string | un
 
 function metadataTableSearch(build: Build, id: string | undefined): boolean {
   return build.pgIntrospectionResultsByKind.attribute.find((attr: {class: {name: string}}) =>
-    id ? /^_metadata_[a-zA-Z0-9-]+$/.test(attr.class.name) : /^_metadata$/.test(attr.class.name)
+    id ? MULTI_METADATA_REGEX.test(attr.class.name) : METADATA_REGEX.test(attr.class.name)
   );
 }
 

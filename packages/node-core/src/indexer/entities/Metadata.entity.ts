@@ -23,6 +23,7 @@ export interface MetadataKeys {
   targetHeight: number;
   dynamicDatasources: string;
   unfinalizedBlocks: string;
+  schemaMigrationCount: number;
 }
 
 export interface Metadata {

@@ -151,12 +151,12 @@ export function makeTriggerName(schema: string, tableName: string, triggerType: 
   return blake2AsHex(`${schema}_${tableName}_${triggerType}_trigger`).substr(2, 10);
 }
 
-export function createSchemaTrigger(schema: string): string {
-  const triggerName = makeTriggerName(schema, '_metadata', 'schema');
+export function createSchemaTrigger(schema: string, metadataTableName: string): string {
+  const triggerName = makeTriggerName(schema, metadataTableName, 'schema');
   return `
   CREATE TRIGGER "${triggerName}"
     AFTER UPDATE
-    ON "${schema}"."_metadata"
+    ON "${schema}"."${metadataTableName}"
     FOR EACH ROW
     WHEN ( new.key = 'schemaMigrationCount')
     EXECUTE FUNCTION "${schema}".schema_notification();`;

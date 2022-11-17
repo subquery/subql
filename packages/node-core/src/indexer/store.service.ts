@@ -7,7 +7,13 @@ import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
 import {Entity, Store} from '@subql/types';
-import {GraphQLModelsRelationsEnums, GraphQLRelationsType, IndexType} from '@subql/utils';
+import {
+  GraphQLModelsRelationsEnums,
+  GraphQLRelationsType,
+  IndexType,
+  METADATA_REGEX,
+  MULTI_METADATA_REGEX,
+} from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
   CreationAttributes,
@@ -166,16 +172,6 @@ export class StoreService {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
 
-    /* These SQL queries are to allow hot-schema reload on query service */
-    extraQueries.push(createSchemaTriggerFunction(schema));
-    const schemaTriggerName = makeTriggerName(schema, '_metadata', 'schema');
-
-    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
-
-    if (schemaTriggers.length === 0) {
-      extraQueries.push(createSchemaTrigger(schema));
-    }
-
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({fields, unique, using}) => ({
@@ -279,6 +275,16 @@ export class StoreService {
       this.subqueryProject.network.chainId
     );
 
+    /* These SQL queries are to allow hot-schema reload on query service */
+    extraQueries.push(createSchemaTriggerFunction(schema));
+    const schemaTriggerName = makeTriggerName(schema, this.metaDataRepo.tableName, 'schema');
+
+    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
+
+    if (schemaTriggers.length === 0) {
+      extraQueries.push(createSchemaTrigger(schema, this.metaDataRepo.tableName));
+    }
+
     await this.sequelize.sync();
 
     await this.setMetadata('historicalStateEnabled', this.historical);
@@ -290,13 +296,7 @@ export class StoreService {
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
-    const {multiChain} = this.config;
-    let {disableHistorical} = this.config;
-
-    if (multiChain && !disableHistorical) {
-      logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
-      disableHistorical = true;
-    }
+    const {disableHistorical, multiChain} = this.config;
 
     try {
       const tableRes = await this.sequelize.query<Array<string>>(
@@ -305,7 +305,7 @@ export class StoreService {
       );
 
       const metadataTableNames = flatten(tableRes).filter(
-        (value: string) => /^_metadata$/.test(value) || /^_metadata_[a-zA-Z0-9-]+$/.test(value)
+        (value: string) => METADATA_REGEX.test(value) || MULTI_METADATA_REGEX.test(value)
       );
 
       if (metadataTableNames.length > 1 && !multiChain) {
@@ -338,6 +338,11 @@ export class StoreService {
       }
       throw new Error('Metadata table does not exist');
     } catch (e) {
+      if (multiChain && !disableHistorical) {
+        logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
+        return false;
+      }
+
       // Will trigger on first startup as metadata table doesn't exist
       return !disableHistorical;
     }
