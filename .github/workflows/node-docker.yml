@@ -84,12 +84,6 @@ jobs:
         run: |
           sh .github/workflows/scripts/nodeVersion.sh
 
-      #change container names
-      # - run: chmod +x ./.github/workflows/scripts/change_node_docker_name.sh
-
-      - name: Update container name to flare
-        run: ./.github/workflows/scripts/change_node_docker_name.sh
-
       - name: Debug dockerfile
         run: cat ./packages/node/Dockerfile
 
@@ -99,7 +93,7 @@ jobs:
         with:
           push: true
           platforms: arm64,amd64
-          file: ./packages/node/Dockerfile
+          file: ./packages/node/Dockerfile-flare
           tags: onfinality/subql-node-flare:v${{ steps.get-node-version.outputs.NODE_VERSION }}
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
@@ -109,7 +103,7 @@ jobs:
         with:
           push: true
           platforms: arm64,amd64
-          file: ./packages/node/Dockerfile
+          file: ./packages/node/Dockerfile-flare
           tags: onfinality/subql-node-flare:v${{ steps.get-node-version.outputs.NODE_VERSION }},onfinality/subql-node-flare:latest
           build-args: RELEASE_VERSION=${{ steps.get-node-version.outputs.NODE_VERSION }}
 
