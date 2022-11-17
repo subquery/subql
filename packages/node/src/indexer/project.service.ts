@@ -25,6 +25,7 @@ import {
   SubqueryProject,
 } from '../configure/SubqueryProject';
 import { initDbSchema } from '../utils/project';
+import { reindex } from '../utils/reindex';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 
@@ -71,6 +72,11 @@ export class ProjectService {
     return this._startHeight;
   }
 
+  get isHistorical(): boolean {
+    return this.storeService.historical;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   private async getExistingProjectSchema(): Promise<string> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
@@ -110,6 +116,13 @@ export class ProjectService {
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init(this.schema);
       }
+    }
+
+    if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
+      logger.error(
+        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
+      );
+      process.exit(1);
     }
   }
 
@@ -162,6 +175,8 @@ export class ProjectService {
       'genesisHash',
       'chainId',
       'processedBlockCount',
+      'lastFinalizedVerifiedHeight',
+      'schemaMigrationCount',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -228,6 +243,9 @@ export class ProjectService {
         value: packageVersion,
       });
     }
+    if (!keyValue.schemaMigrationCount) {
+      await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
+    }
 
     return metadataRepo;
   }
@@ -255,7 +273,6 @@ export class ProjectService {
     } else {
       startHeight = this.getStartBlockFromDataSources();
     }
-
     return startHeight;
   }
 
@@ -298,4 +315,21 @@ export class ProjectService {
       return Math.min(...startBlocksList);
     }
   }
+
+  async reindex(targetBlockHeight: number): Promise<void> {
+    const lastProcessedHeight = await this.getLastProcessedHeight();
+
+    return reindex(
+      this.getStartBlockFromDataSources(),
+      await this.getMetadataBlockOffset(),
+      targetBlockHeight,
+      lastProcessedHeight,
+      this.storeService,
+      this.dynamicDsService,
+      this.mmrService,
+      this.sequelize,
+      /* Not providing force clean service, it should never be needed */
+    );
+  }
+  n;
 }

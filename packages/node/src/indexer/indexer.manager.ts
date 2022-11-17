@@ -72,9 +72,11 @@ export class IndexerManager {
   }
 
   @profiler(yargsOptions.argv.profiler)
-  async indexBlock(
-    blockContent: EthereumBlockWrapper,
-  ): Promise<{ dynamicDsCreated: boolean; operationHash: Uint8Array }> {
+  async indexBlock(blockContent: EthereumBlockWrapper): Promise<{
+    dynamicDsCreated: boolean;
+    operationHash: Uint8Array;
+    reindexBlockHeight: null;
+  }> {
     const { blockHeight } = blockContent;
     let dynamicDsCreated = false;
     const tx = await this.sequelize.transaction();
@@ -132,7 +134,7 @@ export class IndexerManager {
         { transaction: tx },
       );
       // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      await this.storeService.incrementBlockCount(tx);
+      await this.storeService.incrementJsonbCount('processedBlockCount', tx);
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
@@ -165,6 +167,7 @@ export class IndexerManager {
     return {
       dynamicDsCreated,
       operationHash,
+      reindexBlockHeight: null,
     };
   }
 
