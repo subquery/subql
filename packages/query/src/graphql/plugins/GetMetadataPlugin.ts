@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {URL} from 'url';
-import {MetaData, METADATA_REGEX, MULTI_METADATA_REGEX} from '@subql/utils';
+import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
 import {Build} from 'postgraphile-core';
@@ -60,8 +60,7 @@ async function fetchFromTable(pgClient, schemaName: string, chainId: string | un
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  // 63 chars is the max postgres database table name length
-  const tableName = `_metadata${chainId ? `_${chainId.substring(0, 63)}` : ''}`;
+  const tableName = getMetadataTableName(chainId);
   const {rows} = await pgClient.query(`select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`, [keys]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
