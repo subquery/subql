@@ -90,6 +90,9 @@ jobs:
       - name: Update container name to flare
         run: ./.github/workflows/scripts/change_node_docker_name.sh
 
+      - name: Debug dockerfile
+        run: cat ./packages/node/Dockerfile
+
       - name: Build and push flare
         if: github.event.inputs.isLatest == 'false'
         uses: docker/build-push-action@v2
