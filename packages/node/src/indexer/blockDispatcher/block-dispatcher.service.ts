@@ -12,16 +12,14 @@ import {
   profilerWrap,
   AutoQueue,
   Queue,
+  profiler,
 } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
-
-type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -37,7 +35,7 @@ export class BlockDispatcherService
 
   private fetching = false;
   private isShutdown = false;
-  private getRuntimeVersion: GetRuntimeVersion;
+  // private getRuntimeVersion: GetRuntimeVersion;
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
 
   constructor(
@@ -66,10 +64,8 @@ export class BlockDispatcherService
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
@@ -136,9 +132,16 @@ export class BlockDispatcherService
           }], total ${blockNums.length} blocks`,
         );
 
+        const specChanged = await this.runtimeService.specChanged(
+          blockNums[blockNums.length - 1],
+        );
+
+        // If specVersion not changed, a known overallSpecVer will be pass in
+        // Otherwise use api to fetch runtimes
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,
+          specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
 
         if (bufferedHeight > this._latestBufferedHeight) {
@@ -148,10 +151,12 @@ export class BlockDispatcherService
         const blockTasks = blocks.map((block) => async () => {
           const height = block.block.block.header.number.toNumber();
           try {
-            const runtimeVersion = await this.getRuntimeVersion(block.block);
+            const runtimeVersion = await this.runtimeService.getRuntimeVersion(
+              block.block,
+            );
 
             this.preProcessBlock(height);
-
+            // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
               runtimeVersion,

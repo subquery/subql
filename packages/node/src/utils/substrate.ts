@@ -249,38 +249,6 @@ export async function prefetchMetadata(
  * @param endHeight
  * @param overallSpecVer exists if all blocks in the range have same parant specVersion
  */
-//Deprecated
-export async function fetchBlocks(
-  api: ApiPromise,
-  startHeight: number,
-  endHeight: number,
-  overallSpecVer?: number,
-): Promise<BlockContent[]> {
-  const blocks = await fetchBlocksRange(api, startHeight, endHeight);
-  const blockHashs = blocks.map((b) => b.block.header.hash);
-  const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
-  const [blockEvents, runtimeVersions] = await Promise.all([
-    fetchEventsRange(api, blockHashs),
-    overallSpecVer
-      ? undefined
-      : fetchRuntimeVersionRange(api, parentBlockHashs),
-  ]);
-  return blocks.map((block, idx) => {
-    const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
-
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
-  });
-}
 
 export async function getBlockByHeight(
   api: ApiPromise,
@@ -354,6 +322,8 @@ export async function fetchBlocksBatches(
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
+  // If overallSpecVersion passed, we don't need to use api to get runtimeVersions
+  // Just pass overallSpecVersion
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
     overallSpecVer
