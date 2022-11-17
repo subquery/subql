@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 replace_paths() {
     file="${1}"
     sed -i "s/@subql\/common-ethereum/@subql\/common-flare/g" ${file}
@@ -11,5 +13,7 @@ for file in $(find ./packages -name '*.ts' -or -name 'package.json');
 do
     if [ -f "${file}" ]; then
         replace_paths $file
+    else
+        echo "WARNING: ${file} not found"
     fi
 done
