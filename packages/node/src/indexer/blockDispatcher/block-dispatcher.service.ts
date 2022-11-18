@@ -14,6 +14,7 @@ import {
   Queue,
 } from '@subql/node-core';
 import { last } from 'lodash';
+import { EthereumApiService } from '../../ethereum';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
@@ -32,7 +33,7 @@ export class BlockDispatcherService
 
   private fetching = false;
   private isShutdown = false;
-  private fetchBlocksBatches: ApiService['api']['fetchBlocks'];
+  private fetchBlocksBatches: EthereumApiService['api']['fetchBlocks'];
 
   constructor(
     private apiService: ApiService,
@@ -140,7 +141,7 @@ export class BlockDispatcherService
           continue;
         }
         const blockTasks = blocks.map((block) => async () => {
-          const height = block.block.block.header.number.toNumber();
+          const height = block.blockHeight;
           try {
             this.preProcessBlock(height);
 
