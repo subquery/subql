@@ -4,7 +4,6 @@
 import {URL} from 'url';
 import {MetaData} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
-import {forEach} from 'lodash';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
