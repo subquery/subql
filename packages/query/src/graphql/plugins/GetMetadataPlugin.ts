@@ -60,8 +60,24 @@ async function fetchFromTable(pgClient, schemaName: string, chainId: string | un
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  const tableName = getMetadataTableName(chainId);
-  const {rows} = await pgClient.query(`select * from "${schemaName}".${tableName} WHERE key = ANY ($1)`, [keys]);
+  let metadataTableName: string;
+
+  if (!chainId) {
+    // return first metadata entry you find.
+    const {rows} = await pgClient.query(
+      `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`
+    );
+    const {table_name} = rows.find(
+      (obj: {table_name: string}) => METADATA_REGEX.test(obj.table_name) || MULTI_METADATA_REGEX.test(obj.table_name)
+    );
+    metadataTableName = table_name;
+  } else {
+    metadataTableName = getMetadataTableName(chainId);
+  }
+
+  const {rows} = await pgClient.query(`select * from "${schemaName}".${metadataTableName} WHERE key = ANY ($1)`, [
+    keys,
+  ]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
     array[curr.key] = curr.value;
@@ -95,9 +111,10 @@ async function fetchFromTable(pgClient, schemaName: string, chainId: string | un
   return metadata;
 }
 
-function metadataTableSearch(build: Build, id: string | undefined): boolean {
-  return build.pgIntrospectionResultsByKind.attribute.find((attr: {class: {name: string}}) =>
-    id ? MULTI_METADATA_REGEX.test(attr.class.name) : METADATA_REGEX.test(attr.class.name)
+function metadataTableSearch(build: Build): boolean {
+  return build.pgIntrospectionResultsByKind.attribute.find(
+    (attr: {class: {name: string}}) =>
+      MULTI_METADATA_REGEX.test(attr.class.name) || METADATA_REGEX.test(attr.class.name)
   );
 }
 
@@ -135,8 +152,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
     resolvers: {
       Query: {
         _metadata: async (_parentObject, args, context, _info): Promise<MetaData> => {
-          const tableExists = metadataTableSearch(build, args.chainId);
-
+          const tableExists = metadataTableSearch(build);
           if (tableExists) {
             const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId);
 
