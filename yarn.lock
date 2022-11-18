@@ -3618,6 +3618,7 @@ __metadata:
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
+    "@subql/common-flare": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@subql/utils": "workspace:*"
@@ -3723,6 +3724,28 @@ __metadata:
     sequelize: ^6.6.2
     vm2: ^3.9.9
   checksum: 2f58471ba3d097d48e13304381c5e416dd48bc5f5a766b524ad2ed61d7945accc532947a1f48e07c887e3e4202ea8773b1aab45ca427682482c407badf4bb788
+  languageName: node
+  linkType: hard
+
+"@subql/common-flare@npm:latest":
+  version: 0.2.1
+  resolution: "@subql/common-flare@npm:0.2.1"
+  dependencies:
+    "@polkadot/util": ^8
+    "@subql/common": latest
+    "@subql/types-flare": 0.2.1
+    bn.js: 4.11.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    flatted: ^3.2.2
+    graphql: ^15.7.2
+    graphql-tag: ^2.12.5
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
+    vm2: ^3.9.9
+  checksum: 4ec26b325c2aa99fec40277cea3c9200d4c9c6c70c305472dad956d67dca6e5ea83956f740ec3f515b5802159bb023d668b3b2048fb56bc3388ce3aa6b35960c
   languageName: node
   linkType: hard
 
@@ -3954,6 +3977,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-flare@npm:0.2.1":
+  version: 0.2.1
+  resolution: "@subql/types-flare@npm:0.2.1"
+  dependencies:
+    "@ethersproject/abstract-provider": ^5.6.1
+  peerDependencies:
+    "@polkadot/api": ^9
+  checksum: c33577cd12b8027b0e49eccb1f9651181416d55621b047772af85564bbd3f8e4cee0ab2a1c9eb872e2f8878052f755e4ec7867d7fde48466e10c4fb8eb166143
+  languageName: node
+  linkType: hard
+
 "@subql/types-terra@npm:0.4.0":
   version: 0.4.0
   resolution: "@subql/types-terra@npm:0.4.0"
@@ -4003,6 +4037,7 @@ __metadata:
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
+    "@subql/common-flare": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5

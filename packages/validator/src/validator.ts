@@ -6,6 +6,7 @@ import {parseAlgorandProjectManifest} from '@subql/common-algorand';
 import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
+import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 
@@ -79,6 +80,9 @@ export class Validator {
         break;
       case NETWORK_FAMILY.ethereum:
         schema = parseEthereumProjectManifest(rawSchema);
+        break;
+      case NETWORK_FAMILY.flare:
+        schema = parseFlareProjectManifest(rawSchema);
         break;
       default:
         console.error(`Load project failed, please check the manifest file.`);
