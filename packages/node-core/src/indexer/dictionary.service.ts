@@ -72,10 +72,8 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
           const v = extractVar(`${entity}_${outerIdx}_${innerIdx}`, j);
           gqlVars.push(v);
           return {
-            // Use case insensitive here due to go-dictionary generate name is in lower cases
-            // Origin dictionary still using camelCase
             [sanitizeArgField(j.field)]: {
-              [j.matcher || 'equalToInsensitive']: `$${v.name}`,
+              [j.matcher || 'equalTo']: `$${v.name}`,
             },
           };
         }),
@@ -85,7 +83,7 @@ function extractVars(entity: string, conditions: DictionaryQueryCondition[][]): 
       gqlVars.push(v);
       filter.or[outerIdx] = {
         [sanitizeArgField(i[0].field)]: {
-          [i[0].matcher || 'equalToInsensitive']: `$${v.name}`,
+          [i[0].matcher || 'equalTo']: `$${v.name}`,
         },
       };
     }
@@ -99,7 +97,7 @@ function buildDictQueryFragment(
   queryEndBlock: number,
   conditions: DictionaryQueryCondition[][],
   batchSize: number,
-  useDistinct: boolean,
+  useDistinct: boolean
 ): [GqlVar[], GqlNode] {
   const [gqlVars, filter] = extractVars(entity, conditions);
 
@@ -211,12 +209,7 @@ export class DictionaryService implements OnApplicationShutdown {
         this.useDistinct = false;
         logger.warn(`Dictionary doesn't support distinct query.`);
         // Rerun the qeury now with distinct disabled
-        return this.getDictionary(
-          startBlock,
-          queryEndBlock,
-          batchSize,
-          conditions,
-        );
+        return this.getDictionary(startBlock, queryEndBlock, batchSize, conditions);
       }
       logger.warn(err, `failed to fetch dictionary result`);
       return undefined;
@@ -244,7 +237,14 @@ export class DictionaryService implements OnApplicationShutdown {
       },
     ];
     for (const entity of Object.keys(mapped)) {
-      const [pVars, node] = buildDictQueryFragment(entity, startBlock, queryEndBlock, mapped[entity], batchSize, this.useDistinct);
+      const [pVars, node] = buildDictQueryFragment(
+        entity,
+        startBlock,
+        queryEndBlock,
+        mapped[entity],
+        batchSize,
+        this.useDistinct
+      );
       nodes.push(node);
       vars.push(...pVars);
     }
