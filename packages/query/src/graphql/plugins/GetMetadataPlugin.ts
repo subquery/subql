@@ -4,6 +4,7 @@
 import {URL} from 'url';
 import {MetaData} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
+import {forEach} from 'lodash';
 import fetch, {Response} from 'node-fetch';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
@@ -55,7 +56,7 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaData> {
+async function fetchFromTable(pgClient: any, schemaName: string, useRowEst: boolean): Promise<MetaData> {
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
@@ -74,22 +75,22 @@ async function fetchFromTable(pgClient: any, schemaName: string): Promise<MetaDa
 
   metadata.queryNodeVersion = packageVersion;
 
-  const tableEstimates = await pgClient
-    .query(
-      `select relname as table , reltuples::bigint as estimate from pg_class
+  if (useRowEst) {
+    const tableEstimates = await pgClient
+      .query(
+        `select relname as table , reltuples::bigint as estimate from pg_class
       where relnamespace in
             (select oid from pg_namespace where nspname = $1)
       and relname in
           (select table_name from information_schema.tables
            where table_schema = $1)`,
-      [schemaName]
-    )
-    .catch((e) => {
-      throw new Error(`Unable to estimate table row count: ${e}`);
-    });
-
-  metadata.rowCountEstimate = tableEstimates.rows;
-
+        [schemaName]
+      )
+      .catch((e) => {
+        throw new Error(`Unable to estimate table row count: ${e}`);
+      });
+    metadata.rowCountEstimate = tableEstimates.rows;
+  }
   return metadata;
 }
 
@@ -137,13 +138,18 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
       Query: {
         _metadata: async (_parentObject, _args, context, _info): Promise<MetaData> => {
           if (metadataTableExists) {
-            const metadata = await fetchFromTable(context.pgClient, schemaName);
-
+            let rowCountFound = false;
+            if (_info.fieldName === '_metadata') {
+              for (const node of _info.fieldNodes) {
+                const queryFields = node.selectionSet.selections;
+                rowCountFound = queryFields.findIndex((field) => (field as any).name.value === 'rowCountEstimate') > -1;
+              }
+            }
+            const metadata = await fetchFromTable(context.pgClient, schemaName, rowCountFound);
             if (Object.keys(metadata).length > 0) {
               return metadata;
             }
           }
-
           if (argv(`indexer`)) {
             return metaCache;
           }
