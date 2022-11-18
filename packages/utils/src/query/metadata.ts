@@ -9,7 +9,7 @@ export const MULTI_METADATA_REGEX = /^_metadata_[a-zA-Z0-9-]+$/;
 
 export function getMetadataTableName(chainId: string | undefined): string {
   if (chainId) {
-    const hash = blake2AsHex(chainId);
+    const hash = blake2AsHex(chainId, 64);
     return `_metadata_${hash}`.substring(0, 63); // 63 chars is the max postgres database table name length
   } else {
     return '_metadata';
