@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {getMetadataTableName} from '@subql/utils';
 import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from 'sequelize';
 
 export interface MetadataKeys {
@@ -57,15 +58,15 @@ export async function MetadataFactory(
   let tableName = '_metadata';
 
   if (multichain) {
-    const oldMetadataName = await checkSchemaMetadata(sequelize, schema, chainId);
+    const singularMetadata = await checkSchemaMetadata(sequelize, schema, chainId);
 
-    if (oldMetadataName) {
+    if (singularMetadata) {
       throw new Error(
-        'Found metadata entry with matching chain but wrong table name, must match _metadata_[chainId] syntax for multi-chain indexing.'
+        '"_metadata" entry found, for multichain project metadata must match _metadata_[chainId] syntax, please clear schema and reindex with --multichain.'
       );
     }
 
-    tableName = `${tableName}_${chainId}`;
+    tableName = getMetadataTableName(chainId);
   }
 
   return <MetadataRepo>sequelize.define(
