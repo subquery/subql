@@ -33,7 +33,8 @@ export class EthereumBlockWrapped implements EthereumBlockWrapper {
       log.block = this.block;
       return log;
     });
-    this.block.logs = this._logs.map((log) => {
+    this._block.transactions = this._txs;
+    this._block.logs = this._logs.map((log) => {
       const logCopy = { ...log };
       logCopy.block = undefined;
       return logCopy;

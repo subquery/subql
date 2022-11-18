@@ -253,7 +253,11 @@ export class IndexerManager {
       const handlers = (ds.mapping.handlers as SubqlRuntimeHandler[]).filter(
         (h) =>
           h.kind === kind &&
-          FilterTypeMap[kind](data as any, h.filter as any, ds.options.address),
+          FilterTypeMap[kind](
+            data as any,
+            h.filter as any,
+            ds.options?.address,
+          ),
       );
 
       if (!handlers.length) {
