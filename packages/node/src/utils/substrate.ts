@@ -303,6 +303,7 @@ export async function fetchRuntimeVersionRange(
   api: ApiPromise,
   hashs: BlockHash[],
 ): Promise<RuntimeVersion[]> {
+  console.log(`~~~ [substrate] get runtime with ranges`);
   return Promise.all(
     hashs.map((hash) =>
       api.rpc.state.getRuntimeVersion(hash).catch((e) => {
@@ -324,17 +325,20 @@ export async function fetchBlocksBatches(
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   // If overallSpecVersion passed, we don't need to use api to get runtimeVersions
   // Just pass overallSpecVersion
+  // If specVersion changed, we also not guarantee in this batch contains multiple runtimes,
+  // therefore we better to fetch runtime over all blocks
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    overallSpecVer
+    overallSpecVer !== undefined // note, we need to be careful if spec version is 0
       ? undefined
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
+    const parentSpecVersion =
+      overallSpecVer !== undefined
+        ? overallSpecVer
+        : runtimeVersions[idx].specVersion.toNumber();
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);

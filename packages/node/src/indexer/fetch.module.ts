@@ -21,6 +21,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -69,6 +70,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     MmrService,
     ProjectService,
     UnfinalizedBlocksService,
+    RuntimeService,
   ],
   exports: [StoreService, MmrService],
 })

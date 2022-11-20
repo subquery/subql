@@ -33,9 +33,7 @@ import { MetaData } from '@subql/utils';
 import { range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
-import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { IBlockDispatcher } from './blockDispatcher';
 import { DictionaryService, SpecVersion } from './dictionary.service';
@@ -267,15 +265,32 @@ export class FetchService implements OnApplicationShutdown {
 
     const validChecker = this.dictionaryValidation(rawSpecVersions);
 
-    if (this.useDictionary && validChecker) {
+    this.runtimeService.init(
+      this.getUseDictionary.bind(this),
+      this.getLatestFinalizedHeight.bind(this),
+      this.api,
+    );
+
+    if (validChecker) {
       this.runtimeService.setSpecVersionMap(rawSpecVersions);
     } else {
       this.runtimeService.setSpecVersionMap(undefined);
     }
 
-    await this.blockDispatcher.init(this.resetForNewDs.bind(this));
+    await this.blockDispatcher.init(
+      this.resetForNewDs.bind(this),
+      this.runtimeService,
+    );
 
     void this.startLoop(startHeight);
+  }
+
+  getUseDictionary(): boolean {
+    return this.useDictionary;
+  }
+
+  getLatestFinalizedHeight(): number {
+    return this.latestFinalizedHeight;
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)

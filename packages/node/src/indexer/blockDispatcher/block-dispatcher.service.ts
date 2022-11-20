@@ -19,6 +19,7 @@ import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
+import { RuntimeService } from '../runtimeService';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
@@ -65,10 +66,12 @@ export class BlockDispatcherService
   // eslint-disable-next-line @typescript-eslint/require-await
   async init(
     onDynamicDsCreated: (height: number) => Promise<void>,
+    runtimeService?: RuntimeService,
   ): Promise<void> {
     this.onDynamicDsCreated = onDynamicDsCreated;
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
+    this.runtimeService = runtimeService;
   }
 
   onApplicationShutdown(): void {
@@ -138,6 +141,10 @@ export class BlockDispatcherService
 
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
+
+        console.log(
+          `specChanged ${specChanged}, this.runtimeService.parentSpecVersion ${this.runtimeService.parentSpecVersion}`,
+        );
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,

@@ -3,10 +3,8 @@
 
 import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtimeService';
 
@@ -21,7 +19,10 @@ export type ProcessBlockResponse = {
 };
 
 export interface IBlockDispatcher {
-  init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
+  init(
+    onDynamicDsCreated: (height: number) => Promise<void>,
+    runtimeService?: RuntimeService,
+  ): Promise<void>;
 
   enqueueBlocks(heights: number[]): void;
 

@@ -15,6 +15,8 @@ import {
   SpecVersionDictionary,
 } from './dictionary.service';
 const SPEC_VERSION_BLOCK_GAP = 100;
+type GetUseDictionary = () => boolean;
+type GetLatestFinalizedHeight = () => number;
 
 export class RuntimeService implements OnApplicationShutdown {
   // private specVersionChanged: SpecVersionChanged;
@@ -22,14 +24,20 @@ export class RuntimeService implements OnApplicationShutdown {
   protected specVersionMap: SpecVersion[];
   protected currentRuntimeVersion: RuntimeVersion;
   private isShutdown = false;
+  private useDictionary: boolean;
+  private latestFinalizedHeight: number;
+  private api: ApiPromise;
 
-  constructor(
-    private apiService: ApiService,
-    private dictionaryService: DictionaryService,
-  ) {}
+  constructor(private dictionaryService: DictionaryService) {}
 
-  get api(): ApiPromise {
-    return this.apiService.getApi();
+  init(
+    getUseDictionary: GetUseDictionary,
+    getLatestFinalizedHeight: GetLatestFinalizedHeight,
+    api: ApiPromise,
+  ): void {
+    this.useDictionary = getUseDictionary();
+    this.latestFinalizedHeight = getLatestFinalizedHeight();
+    this.api = api;
   }
 
   onApplicationShutdown(): void {
@@ -41,6 +49,8 @@ export class RuntimeService implements OnApplicationShutdown {
       this.specVersionMap = [];
     }
     this.specVersionMap = this.parseSpecVersions(raw);
+    console.log(`this.specVersionMap`);
+    console.log(this.specVersionMap);
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
@@ -109,6 +119,11 @@ export class RuntimeService implements OnApplicationShutdown {
     );
     return spec ? Number(spec.id) : undefined;
   }
+  //
+  syncRuntimeWithFetch(useDictionary: boolean, latestFinalizedHeight: number) {
+    this.useDictionary = useDictionary;
+    this.latestFinalizedHeight = latestFinalizedHeight;
+  }
 
   async getSpecVersion(blockHeight: number): Promise<number> {
     let currentSpecVersion: number;
@@ -143,6 +158,7 @@ export class RuntimeService implements OnApplicationShutdown {
       parentBlockHash,
     );
     const specVersion = runtimeVersion.specVersion.toNumber();
+    console.log(`~~~ [runtimeService] get runtime and specVersion from api`);
     return specVersion;
   }
 
@@ -162,9 +178,12 @@ export class RuntimeService implements OnApplicationShutdown {
   async specChanged(height: number): Promise<boolean> {
     const specVersion = await this.getSpecVersion(height);
     if (this.parentSpecVersion !== specVersion) {
+      const parentSpecVersionCopy = this.parentSpecVersion;
       await this.prefetchMeta(height);
       this.parentSpecVersion = specVersion;
-      return true;
+      // When runtime init parentSpecVersion is undefined, count as unchanged,
+      // so it will not use fetchRuntimeVersionRange
+      return parentSpecVersionCopy === undefined ? false : true;
     }
     return false;
   }

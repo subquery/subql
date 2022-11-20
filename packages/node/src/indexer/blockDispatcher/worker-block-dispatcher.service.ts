@@ -31,8 +31,6 @@ import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
-type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
-
 type IIndexerWorker = {
   processBlock: ProcessBlock;
   fetchBlock: FetchBlock;
@@ -76,7 +74,6 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
-  private getRuntimeVersion: GetRuntimeVersion;
 
   private taskCounter = 0;
   private isShutdown = false;
@@ -97,7 +94,6 @@ export class WorkerBlockDispatcherService
   }
 
   async init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void> {
     if (this.nodeConfig.unfinalizedBlocks) {
@@ -110,7 +106,6 @@ export class WorkerBlockDispatcherService
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );
 
-    this.getRuntimeVersion = runtimeVersionGetter;
     this.onDynamicDsCreated = onDynamicDsCreated;
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
@@ -194,7 +189,7 @@ export class WorkerBlockDispatcherService
         }
 
         if (result) {
-          const runtimeVersion = await this.getRuntimeVersion({
+          const runtimeVersion = await this.runtimeService.getRuntimeVersion({
             specVersion: result.specVersion,
             block: {
               header: {

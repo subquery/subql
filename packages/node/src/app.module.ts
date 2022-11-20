@@ -7,6 +7,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { DbModule } from '@subql/node-core';
 import { ConfigureModule } from './configure/configure.module';
 import { FetchModule } from './indexer/fetch.module';
+import { RuntimeService } from './indexer/runtimeService';
 import { MetaModule } from './meta/meta.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { MetaModule } from './meta/meta.module';
     ScheduleModule.forRoot(),
     FetchModule,
     MetaModule,
+    RuntimeService,
   ],
   controllers: [],
 })

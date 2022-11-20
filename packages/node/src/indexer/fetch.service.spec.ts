@@ -27,6 +27,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -334,6 +335,7 @@ async function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
+    new RuntimeService(dictionaryService),
   );
 }
 
@@ -437,7 +439,8 @@ describe('FetchService', () => {
       project,
       batchSize,
     );
-    fetchService.prefetchMeta = jest.fn();
+
+    (fetchService as any).runtimeService.prefetchMeta = jest.fn();
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -527,6 +530,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(dictionaryService),
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -620,14 +624,17 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(dictionaryService),
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    fetchService.prefetchMeta = jest.fn();
+
     (fetchService as any).latestFinalizedHeight = 16000;
+    const runtimeService = (fetchService as any).runtimeService;
+    runtimeService.prefetchMeta = jest.fn();
     blockDispatcher.latestBufferedHeight = undefined;
     // (fetchService as any).latestProcessedHeight = undefined;
     // const loopPromise = fetchService.startLoop(1000);
@@ -706,6 +713,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(dictionaryService),
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

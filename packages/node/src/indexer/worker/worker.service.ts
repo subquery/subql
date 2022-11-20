@@ -8,6 +8,7 @@ import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
+import { RuntimeService } from '../runtimeService';
 import { BlockContent } from '../types';
 
 export type FetchBlockResponse =
@@ -41,6 +42,7 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     nodeConfig: NodeConfig,
+    private runtimeService?: RuntimeService,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }
