@@ -154,7 +154,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'sponsored-dictionary': {
       demandOption: false,
-      describe: 'Use auth center as endpoint for dictionary',
+      describe: 'Use subquery network sponsored dictionary',
       type: 'boolean',
       default: false,
     },
