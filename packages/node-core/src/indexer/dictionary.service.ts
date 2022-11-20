@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
@@ -150,13 +149,17 @@ export class DictionaryService implements OnApplicationShutdown {
   async init(): Promise<void> {
     let link: ApolloLink;
 
-    if (this.nodeConfig.authDictionary) {
-      assert(this.dictionaryEndpoint, 'dictionary endpoint must be included in manifest to use --authDictionary');
-      link = await authHttpLink({
-        authUrl: this.dictionaryEndpoint,
-        chainId: this.chainId,
-        httpOptions: {fetch},
-      });
+    if (this.nodeConfig.sponsoredDictionary) {
+      try {
+        link = await authHttpLink({
+          authUrl: this.nodeConfig.sponsoredDictionary,
+          chainId: this.chainId,
+          httpOptions: {fetch},
+        });
+      } catch (e) {
+        logger.error(e.message);
+        process.exit(1);
+      }
     } else {
       link = new HttpLink({uri: this.dictionaryEndpoint, fetch});
     }

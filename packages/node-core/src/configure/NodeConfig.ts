@@ -23,6 +23,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
   readonly networkDictionary?: string;
+  readonly sponsoredDictionary?: string;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -32,7 +33,6 @@ export interface IConfig {
   readonly mmrPath?: string;
   readonly ipfs?: string;
   readonly dictionaryTimeout: number;
-  readonly authDictionary: boolean;
   readonly workers?: number;
   readonly profiler?: boolean;
   readonly migrate: boolean;
@@ -56,7 +56,6 @@ const DEFAULT_CONFIG = {
   timestampField: true,
   proofOfIndex: false,
   dictionaryTimeout: 30,
-  authDictionary: false,
   profiler: false,
   migrate: false,
   subscription: false,
@@ -113,6 +112,10 @@ export class NodeConfig implements IConfig {
     return this._config.networkDictionary;
   }
 
+  get sponsoredDictionary(): string {
+    return this._config.sponsoredDictionary;
+  }
+
   get timeout(): number {
     return this._config.timeout;
   }
@@ -151,10 +154,6 @@ export class NodeConfig implements IConfig {
 
   get dictionaryTimeout(): number {
     return this._config.dictionaryTimeout;
-  }
-
-  get authDictionary(): boolean {
-    return this._config.authDictionary;
   }
 
   get mmrPath(): string {

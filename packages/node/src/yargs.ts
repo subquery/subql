@@ -152,7 +152,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
-    'auth-dictionary': {
+    'sponsored-dictionary': {
       demandOption: false,
       describe: 'Use auth center as endpoint for dictionary',
       type: 'boolean',
