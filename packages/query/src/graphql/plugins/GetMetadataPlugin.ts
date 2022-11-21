@@ -56,7 +56,12 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient, schemaName: string, chainId: string | undefined): Promise<MetaData> {
+async function fetchFromTable(
+  pgClient,
+  schemaName: string,
+  chainId: string | undefined,
+  useRowEst: boolean
+): Promise<MetaData> {
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
@@ -92,21 +97,22 @@ async function fetchFromTable(pgClient, schemaName: string, chainId: string | un
 
   metadata.queryNodeVersion = packageVersion;
 
-  const tableEstimates = await pgClient
-    .query(
-      `select relname as table , reltuples::bigint as estimate from pg_class
+  if (useRowEst) {
+    const tableEstimates = await pgClient
+      .query(
+        `select relname as table , reltuples::bigint as estimate from pg_class
       where relnamespace in
             (select oid from pg_namespace where nspname = $1)
       and relname in
           (select table_name from information_schema.tables
            where table_schema = $1)`,
-      [schemaName]
-    )
-    .catch((e) => {
-      throw new Error(`Unable to estimate table row count: ${e}`);
-    });
-
-  metadata.rowCountEstimate = tableEstimates.rows;
+        [schemaName]
+      )
+      .catch((e) => {
+        throw new Error(`Unable to estimate table row count: ${e}`);
+      });
+    metadata.rowCountEstimate = tableEstimates.rows;
+  }
 
   return metadata;
 }
@@ -151,16 +157,21 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, args, context, _info): Promise<MetaData> => {
+        _metadata: async (_parentObject, args, context, info): Promise<MetaData> => {
           const tableExists = metadataTableSearch(build);
           if (tableExists) {
-            const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId);
-
+            let rowCountFound = false;
+            if (info.fieldName === '_metadata') {
+              for (const node of info.fieldNodes) {
+                const queryFields = node.selectionSet.selections;
+                rowCountFound = queryFields.findIndex((field) => (field as any).name.value === 'rowCountEstimate') > -1;
+              }
+            }
+            const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId, rowCountFound);
             if (Object.keys(metadata).length > 0) {
               return metadata;
             }
           }
-
           if (argv(`indexer`)) {
             return metaCache;
           }

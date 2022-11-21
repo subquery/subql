@@ -133,7 +133,7 @@ export class Worker<T extends AsyncMethods> {
     return this.worker.terminate();
   }
 
-  private async execute<T>(fnName: keyof T, ...args: any[]): Promise<T> {
+  private async execute<T>(fnName: keyof T, args: any[]): Promise<T> {
     const id = this.getReqId();
 
     return new Promise<T>((resolve, reject) => {
