@@ -102,7 +102,7 @@ async function createApp(
   const nestModule = await Test.createTestingModule({
     providers: [
       {
-        provide: SubqueryProject,
+        provide: 'ISubqueryProject',
         useFactory: () => project,
       },
       {

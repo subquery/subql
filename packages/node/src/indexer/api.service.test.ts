@@ -53,7 +53,7 @@ describe('ApiService', () => {
     const module = await Test.createTestingModule({
       providers: [
         {
-          provide: SubqueryProject,
+          provide: 'ISubqueryProject',
           useFactory: () => testSubqueryProject(endpoint),
         },
         ApiService,
