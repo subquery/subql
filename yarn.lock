@@ -9950,7 +9950,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphile-build-pg@npm:4.12.2, graphile-build-pg@npm:^4.12.2":
+"graphile-build-pg@npm:4.12.2":
   version: 4.12.2
   resolution: "graphile-build-pg@npm:4.12.2"
   dependencies:
@@ -9965,6 +9965,24 @@ __metadata:
   peerDependencies:
     pg: ">=6.1.0 <9"
   checksum: 45531c07fdda22e24c7b20be5754ae057a703f24bbb2f5d192665666f0f99a0f28bb8ef54498d0d753ddfd5f562c4e3bbd56c21904c6c5c87fb57551d18a9378
+  languageName: node
+  linkType: hard
+
+"graphile-build-pg@npm:4.12.3, graphile-build-pg@npm:^4.12.2":
+  version: 4.12.3
+  resolution: "graphile-build-pg@npm:4.12.3"
+  dependencies:
+    "@graphile/lru": 4.11.0
+    chalk: ^2.4.2
+    debug: ^4.1.1
+    graphile-build: 4.12.3
+    jsonwebtoken: ^8.5.1
+    lodash: ">=4 <5"
+    lru-cache: ">=4 <5"
+    pg-sql2: 4.12.3
+  peerDependencies:
+    pg: ">=6.1.0 <9"
+  checksum: 8090e1cbc07050895a3985cd78952c2c879069997527ef4807a150c08f9822316e4ae9454da4cd26c979870453bb3941474d7243e45a78bc7ff6a4a067fbd49c
   languageName: node
   linkType: hard
 
@@ -9984,6 +10002,25 @@ __metadata:
   peerDependencies:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
   checksum: ebd2c91a71c6826011599f1cd4f57b0d312e47e3c3b26d46deb01127d03821e2528a1fb4d3fa7570d03121f8be2cff1e9617479a47d339797d22d47a23d10c83
+  languageName: node
+  linkType: hard
+
+"graphile-build@npm:4.12.3":
+  version: 4.12.3
+  resolution: "graphile-build@npm:4.12.3"
+  dependencies:
+    "@graphile/lru": 4.11.0
+    chalk: ^2.4.2
+    debug: ^4.1.1
+    graphql-parse-resolve-info: 4.12.3
+    iterall: ^1.2.2
+    lodash: ">=4 <5"
+    lru-cache: ^5.0.0
+    pluralize: ^7.0.0
+    semver: ^6.0.0
+  peerDependencies:
+    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
+  checksum: ceea109a75cf928c5dd5bc7164117d33e6540106bdb4049d4d53b98430c90b11162b365a93ff7e6770cc630ecbd041af3fe807cea9710c9921c1fcc9f7fd322e
   languageName: node
   linkType: hard
 
@@ -10010,6 +10047,18 @@ __metadata:
   peerDependencies:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
   checksum: d15554985407b34150a36f8526d3ce63cd97a1fa898eadd74ba5e6d099984d13929de64924332832613d59fba7946222b0a07a127e93ad58bdb82f3548cc497b
+  languageName: node
+  linkType: hard
+
+"graphql-parse-resolve-info@npm:4.12.3":
+  version: 4.12.3
+  resolution: "graphql-parse-resolve-info@npm:4.12.3"
+  dependencies:
+    debug: ^4.1.1
+    tslib: ^2.0.1
+  peerDependencies:
+    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
+  checksum: 01b0517487631d5b1c50f75fbb194d6e2fe731042eaf62ff1ba5b32f71964bc204dbf365fec9dfb1b387ad008786158f2469a868e8591a59b75cb96a645d1bdb
   languageName: node
   linkType: hard
 
@@ -14272,6 +14321,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"pg-sql2@npm:4.12.3":
+  version: 4.12.3
+  resolution: "pg-sql2@npm:4.12.3"
+  dependencies:
+    "@graphile/lru": 4.11.0
+    "@types/pg": ">=6 <9"
+    debug: ">=3 <5"
+    tslib: ^2.0.1
+  peerDependencies:
+    pg: ">=6.1.0 <9"
+  checksum: 3b7644b38138b24d204153e053f4ee798c30a75b8bec89bcdad835eb32aa0f0e3f6cbed84f2d934e08f3fb8e8589a7e3f5a78a0a468d3d8678cababe77b1f299
+  languageName: node
+  linkType: hard
+
 "pg-types@npm:^2.1.0, pg-types@npm:^2.2.0":
   version: 2.2.0
   resolution: "pg-types@npm:2.2.0"
@@ -14423,7 +14486,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"postgraphile-core@npm:4.12.2, postgraphile-core@npm:^4.12.2":
+"postgraphile-core@npm:4.12.2":
   version: 4.12.2
   resolution: "postgraphile-core@npm:4.12.2"
   dependencies:
@@ -14434,6 +14497,20 @@ __metadata:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
     pg: ">=6.1.0 <9"
   checksum: 086168f2c1954c033dc78f765fa0e46d2fcfa0720823a26690cf118d7c81a1cc9c67ade609ca4001bf8c4e0df4cea84c99f879fc6aa81021549f6848f77a1228
+  languageName: node
+  linkType: hard
+
+"postgraphile-core@npm:^4.12.2":
+  version: 4.12.3
+  resolution: "postgraphile-core@npm:4.12.3"
+  dependencies:
+    graphile-build: 4.12.3
+    graphile-build-pg: 4.12.3
+    tslib: ^2.0.1
+  peerDependencies:
+    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
+    pg: ">=6.1.0 <9"
+  checksum: 8c35a4df24845898750a0e150ce61d4d5c311f0cdae230929bcce5afbb4ac18e4a3592f72134d9fa1f0a055efb34743c22041ecf0dac2d690607447383d596c8
   languageName: node
   linkType: hard
 
@@ -18226,11 +18303,11 @@ __metadata:
   linkType: hard
 
 "zen-observable-ts@npm:^1.2.0":
-  version: 1.2.5
-  resolution: "zen-observable-ts@npm:1.2.5"
+  version: 1.2.3
+  resolution: "zen-observable-ts@npm:1.2.3"
   dependencies:
     zen-observable: 0.8.15
-  checksum: 3b707b7a0239a9bc40f73ba71b27733a689a957c1f364fabb9fa9cbd7d04b7c2faf0d517bf17004e3ed3f4330ac613e84c0d32313e450ddaa046f3350af44541
+  checksum: 0548b555c67671f1240fb416755d2c27abf095b74a9e25c1abf23b2e15de40e6b076c678a162021358fe62914864eb9f0a57cd65e203d66c4988a08b220e6172
   languageName: node
   linkType: hard
 
