@@ -22,7 +22,7 @@ export class EthereumApiService extends ApiService {
         process.exit(1);
       }
 
-      this.api = new EthereumApi(network.endpoint);
+      this.api = new EthereumApi(network.endpoint, network.headers);
 
       await this.api.init();
       this.networkMeta = {

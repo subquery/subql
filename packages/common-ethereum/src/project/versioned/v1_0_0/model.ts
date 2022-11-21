@@ -88,6 +88,8 @@ export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
   @IsString()
   @IsOptional()
   dictionary?: string;
+  @IsOptional()
+  headers?: Record<string, string>;
 }
 
 export class DeploymentV1_0_0 {

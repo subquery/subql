@@ -56,7 +56,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
 
-  constructor(private endpoint: string) {
+  constructor(
+    private endpoint: string,
+    private headers?: Record<string, string>,
+  ) {
     const { hostname, pathname, port, protocol, searchParams } = new URL(
       endpoint,
     );
@@ -67,6 +70,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       const connection: ConnectionInfo = {
         url: this.endpoint,
         headers: {
+          ...this.headers,
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },
       };
