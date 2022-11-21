@@ -142,7 +142,7 @@ async function createApp(
 
           return dynamicDsService;
         },
-        inject: [DsProcessorService, SubqueryProject],
+        inject: [DsProcessorService, 'ISubqueryProject'],
       },
       {
         provide: DictionaryService,
