@@ -152,6 +152,7 @@ async function createApp(
       SchedulerRegistry,
       UnfinalizedBlocksService,
       FetchService,
+      RuntimeService,
     ],
     imports: [EventEmitterModule.forRoot()],
   }).compile();

@@ -42,7 +42,6 @@ export class WorkerService {
     private apiService: ApiService,
     private indexerManager: IndexerManager,
     nodeConfig: NodeConfig,
-    private runtimeService?: RuntimeService,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }

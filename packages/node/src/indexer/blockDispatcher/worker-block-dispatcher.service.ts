@@ -18,6 +18,7 @@ import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
+import { RuntimeService } from '../runtimeService';
 import {
   FetchBlock,
   ProcessBlock,
@@ -95,6 +96,7 @@ export class WorkerBlockDispatcherService
 
   async init(
     onDynamicDsCreated: (height: number) => Promise<void>,
+    runtimeService?: RuntimeService,
   ): Promise<void> {
     if (this.nodeConfig.unfinalizedBlocks) {
       throw new Error(
@@ -110,6 +112,7 @@ export class WorkerBlockDispatcherService
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
+    this.runtimeService = runtimeService;
   }
 
   async onApplicationShutdown(): Promise<void> {

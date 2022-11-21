@@ -324,7 +324,7 @@ export async function fetchBlocksBatches(
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
   // If overallSpecVersion passed, we don't need to use api to get runtimeVersions
-  // Just pass overallSpecVersion
+  // wrap block with specVersion
   // If specVersion changed, we also not guarantee in this batch contains multiple runtimes,
   // therefore we better to fetch runtime over all blocks
   const [blockEvents, runtimeVersions] = await Promise.all([
