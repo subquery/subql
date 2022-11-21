@@ -17,6 +17,7 @@ import {
 const SPEC_VERSION_BLOCK_GAP = 100;
 type GetUseDictionary = () => boolean;
 type GetLatestFinalizedHeight = () => number;
+type GetSpecVersions = () => Promise<SpecVersion[]>;
 
 export class RuntimeService implements OnApplicationShutdown {
   // private specVersionChanged: SpecVersionChanged;
@@ -27,17 +28,18 @@ export class RuntimeService implements OnApplicationShutdown {
   private useDictionary: boolean;
   private latestFinalizedHeight: number;
   private api: ApiPromise;
-
-  constructor(private dictionaryService: DictionaryService) {}
+  private getSpecVersions: GetSpecVersions;
 
   init(
     getUseDictionary: GetUseDictionary,
     getLatestFinalizedHeight: GetLatestFinalizedHeight,
     api: ApiPromise,
+    getSpecVersions: GetSpecVersions,
   ): void {
     this.useDictionary = getUseDictionary();
     this.latestFinalizedHeight = getLatestFinalizedHeight();
     this.api = api;
+    this.getSpecVersions = getSpecVersions;
   }
 
   onApplicationShutdown(): void {
@@ -138,7 +140,7 @@ export class RuntimeService implements OnApplicationShutdown {
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersions()
+          ? await this.getSpecVersions()
           : undefined;
         if (response !== undefined) {
           this.specVersionMap = response;
@@ -176,8 +178,8 @@ export class RuntimeService implements OnApplicationShutdown {
     const specVersion = await this.getSpecVersion(height);
     if (this.parentSpecVersion !== specVersion) {
       const parentSpecVersionCopy = this.parentSpecVersion;
-      await this.prefetchMeta(height);
       this.parentSpecVersion = specVersion;
+      await this.prefetchMeta(height);
       // When runtime init parentSpecVersion is undefined, count as unchanged,
       // so it will not use fetchRuntimeVersionRange
       return parentSpecVersionCopy === undefined ? false : true;

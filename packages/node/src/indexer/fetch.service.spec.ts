@@ -15,7 +15,6 @@ import {
   NodeConfig,
   Dictionary,
   MetadataRepo,
-  SpecVersionDictionary,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -372,7 +371,7 @@ async function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
-    new RuntimeService(dictionaryService),
+    new RuntimeService(),
   );
 }
 
@@ -568,7 +567,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(dictionaryService),
+      new RuntimeService(),
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -663,7 +662,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(dictionaryService),
+      new RuntimeService(),
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -752,7 +751,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(dictionaryService),
+      new RuntimeService(),
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

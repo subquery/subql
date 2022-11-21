@@ -533,7 +533,7 @@ describe('FetchService', () => {
     expect(dictionaryValidationSpy).toBeCalledTimes(1);
     expect(nextEndBlockHeightSpy).toBeCalled();
     expect(dictionaryValidationSpy).toReturnWith(false);
-    expect((fetchService as any).specVersionMap.length).toBe(0);
+    expect((fetchService as any).runtimeService.specVersionMap.length).toBe(0);
   }, 500000);
 
   it('use dictionary and specVersionMap to get block specVersion', async () => {
@@ -647,7 +647,10 @@ describe('FetchService', () => {
     runtimeService = (fetchService as any).runtimeService;
 
     const dictionaryService = (fetchService as any).dictionaryService;
-    const getSpecVersionSpy = jest.spyOn(dictionaryService, 'getSpecVersions');
+    const getSpecVersionRawSpy = jest.spyOn(
+      dictionaryService,
+      'getSpecVersionsRaw',
+    );
 
     await fetchService.init(1);
     fetchService.onApplicationShutdown();
@@ -655,7 +658,7 @@ describe('FetchService', () => {
     await runtimeService.getSpecVersion(8638105);
     await runtimeService.getSpecVersion(8638200);
 
-    expect(getSpecVersionSpy).toBeCalledTimes(1);
+    expect(getSpecVersionRawSpy).toBeCalledTimes(1);
   }, 500000);
 
   it('update specVersionMap once when specVersion map is out', async () => {
@@ -686,18 +689,20 @@ describe('FetchService', () => {
     app = await createApp(project, indexerManager);
     fetchService = app.get(FetchService);
     (fetchService as any).templateDynamicDatasouces = [];
-    runtimeService = (fetchService as any).runtimeService;
-    fetchService.updateDictionary();
+    runtimeService = app.get(RuntimeService);
 
+    // runtimeService = (fetchService as any).runtimeService;
+    fetchService.updateDictionary();
+    await fetchService.init(1);
     fetchService.onApplicationShutdown();
 
     (fetchService as any).latestFinalizedHeight = 10437859;
     //mock specVersion map
-    (fetchService as any).specVersionMap = [
+    (runtimeService as any).specVersionMap = [
       { id: '9180', start: 9738718, end: 10156856 },
     ];
     const spec = await runtimeService.getSpecVersion(10337859);
-    const specVersionMap = (fetchService as any).specVersionMap;
+    const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
     const latestSpecVersion =
       await fetchService.api.rpc.state.getRuntimeVersion();
@@ -751,7 +756,7 @@ describe('FetchService', () => {
     const getPrefechMetaSpy = jest.spyOn(SubstrateUtil, 'prefetchMetadata');
     (fetchService as any).parentSpecVersion = 9140;
     await runtimeService.prefetchMeta(9738720); // in 9180
-    // Should be called 91151,9170,9180
+    // Should be called 9151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
 });

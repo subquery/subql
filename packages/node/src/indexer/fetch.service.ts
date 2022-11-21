@@ -269,6 +269,7 @@ export class FetchService implements OnApplicationShutdown {
       this.getUseDictionary.bind(this),
       this.getLatestFinalizedHeight.bind(this),
       this.api,
+      this.getSpecVersions.bind(this),
     );
 
     if (validChecker) {
@@ -291,6 +292,10 @@ export class FetchService implements OnApplicationShutdown {
 
   getLatestFinalizedHeight(): number {
     return this.latestFinalizedHeight;
+  }
+
+  async getSpecVersions(): Promise<SpecVersion[]> {
+    return this.dictionaryService.getSpecVersions();
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -394,6 +399,8 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
+    // setup parentSpecVersion
+    await this.runtimeService.specChanged(initBlockHeight);
     await this.runtimeService.prefetchMeta(initBlockHeight);
 
     let startBlockHeight: number;

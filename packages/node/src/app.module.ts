@@ -18,7 +18,6 @@ import { MetaModule } from './meta/meta.module';
     ScheduleModule.forRoot(),
     FetchModule,
     MetaModule,
-    RuntimeService,
   ],
   controllers: [],
 })
