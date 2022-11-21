@@ -139,10 +139,6 @@ export class BlockDispatcherService
 
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
-
-        console.log(
-          `specChanged ${specChanged}, this.runtimeService.parentSpecVersion ${this.runtimeService.parentSpecVersion}`,
-        );
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,

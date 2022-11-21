@@ -303,7 +303,6 @@ export async function fetchRuntimeVersionRange(
   api: ApiPromise,
   hashs: BlockHash[],
 ): Promise<RuntimeVersion[]> {
-  console.log(`~~~ [substrate] get runtime with ranges`);
   return Promise.all(
     hashs.map((hash) =>
       api.rpc.state.getRuntimeVersion(hash).catch((e) => {

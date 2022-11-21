@@ -49,8 +49,6 @@ export class RuntimeService implements OnApplicationShutdown {
       this.specVersionMap = [];
     }
     this.specVersionMap = this.parseSpecVersions(raw);
-    console.log(`this.specVersionMap`);
-    console.log(this.specVersionMap);
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
@@ -158,7 +156,6 @@ export class RuntimeService implements OnApplicationShutdown {
       parentBlockHash,
     );
     const specVersion = runtimeVersion.specVersion.toNumber();
-    console.log(`~~~ [runtimeService] get runtime and specVersion from api`);
     return specVersion;
   }
 
