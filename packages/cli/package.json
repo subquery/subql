@@ -17,6 +17,7 @@
     "@subql/common-avalanche": "latest",
     "@subql/common-cosmos": "latest",
     "@subql/common-ethereum": "latest",
+    "@subql/common-flare": "latest",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
     "@subql/utils": "workspace:*",
