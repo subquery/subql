@@ -80,7 +80,7 @@ export class WorkerService {
   setCurrentRuntimeVersion(runtimeHex: string): void {
     const runtimeVersion = this.apiService
       .getApi()
-      .registry.createType('RuntimeVersion', runtimeHex[0]);
+      .registry.createType('RuntimeVersion', runtimeHex);
 
     this.currentRuntimeVersion = runtimeVersion;
   }

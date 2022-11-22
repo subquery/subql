@@ -3905,6 +3905,7 @@ __metadata:
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
+    "@subql/common-flare": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@subql/utils": "workspace:*"
@@ -4010,6 +4011,28 @@ __metadata:
     sequelize: ^6.6.2
     vm2: ^3.9.9
   checksum: 2f58471ba3d097d48e13304381c5e416dd48bc5f5a766b524ad2ed61d7945accc532947a1f48e07c887e3e4202ea8773b1aab45ca427682482c407badf4bb788
+  languageName: node
+  linkType: hard
+
+"@subql/common-flare@npm:latest":
+  version: 0.2.1
+  resolution: "@subql/common-flare@npm:0.2.1"
+  dependencies:
+    "@polkadot/util": ^8
+    "@subql/common": latest
+    "@subql/types-flare": 0.2.1
+    bn.js: 4.11.6
+    class-transformer: 0.4.0
+    class-validator: ^0.13.2
+    flatted: ^3.2.2
+    graphql: ^15.7.2
+    graphql-tag: ^2.12.5
+    js-yaml: ^4.1.0
+    pino: ^6.13.3
+    reflect-metadata: ^0.1.13
+    sequelize: ^6.6.2
+    vm2: ^3.9.9
+  checksum: 4ec26b325c2aa99fec40277cea3c9200d4c9c6c70c305472dad956d67dca6e5ea83956f740ec3f515b5802159bb023d668b3b2048fb56bc3388ce3aa6b35960c
   languageName: node
   linkType: hard
 
@@ -4170,6 +4193,8 @@ __metadata:
     "@nestjs/testing": ^8.2.6
     "@subql/common": "workspace:*"
     "@subql/utils": "workspace:*"
+    "@subql/x-graphile-build-pg": ^4.12.3-0.1.0
+    "@subql/x-postgraphile-core": ^4.12.3-0.1.0
     "@types/express": ^4.17.13
     "@types/express-pino-logger": ^4.0.3
     "@types/jest": ^27.4.0
@@ -4179,7 +4204,6 @@ __metadata:
     apollo-server-express: ^3.6.2
     express-pino-logger: ^6.0.0
     graphile-build: ^4.12.2
-    graphile-build-pg: ^4.12.2
     graphile-utils: ^4.12.2
     graphql: ^15.8.0
     graphql-query-complexity: ^0.11.0
@@ -4187,7 +4211,6 @@ __metadata:
     nodemon: ^2.0.15
     pg: ^8.7.1
     postgraphile: ^4.12.9
-    postgraphile-core: ^4.12.2
     postgraphile-plugin-connection-filter: ^2.2.2
     reflect-metadata: ^0.1.13
     rimraf: ^3.0.2
@@ -4242,6 +4265,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@subql/types-flare@npm:0.2.1":
+  version: 0.2.1
+  resolution: "@subql/types-flare@npm:0.2.1"
+  dependencies:
+    "@ethersproject/abstract-provider": ^5.6.1
+  peerDependencies:
+    "@polkadot/api": ^9
+  checksum: c33577cd12b8027b0e49eccb1f9651181416d55621b047772af85564bbd3f8e4cee0ab2a1c9eb872e2f8878052f755e4ec7867d7fde48466e10c4fb8eb166143
+  languageName: node
+  linkType: hard
+
 "@subql/types-terra@npm:0.4.0":
   version: 0.4.0
   resolution: "@subql/types-terra@npm:0.4.0"
@@ -4291,6 +4325,7 @@ __metadata:
     "@subql/common-avalanche": latest
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
+    "@subql/common-flare": latest
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5
@@ -4299,6 +4334,24 @@ __metadata:
     package-json-type: ^1.0.3
   languageName: unknown
   linkType: soft
+
+"@subql/x-graphile-build-pg@npm:4.12.3-0.1.0, @subql/x-graphile-build-pg@npm:^4.12.3-0.1.0":
+  version: 4.12.3-0.1.0
+  resolution: "@subql/x-graphile-build-pg@npm:4.12.3-0.1.0"
+  dependencies:
+    "@graphile/lru": 4.11.0
+    chalk: ^2.4.2
+    debug: ^4.1.1
+    graphile-build: 4.12.3
+    jsonwebtoken: ^8.5.1
+    lodash: ">=4 <5"
+    lru-cache: ">=4 <5"
+    pg-sql2: 4.12.3
+  peerDependencies:
+    pg: ">=6.1.0 <9"
+  checksum: a2f6632b3fbb0e3930932069fca1dc0c8f390df8c20472b1b20f13fb588d801077ed46c19188de90db99ae0349a62244c4d974e8303006c50fda59ca7aa98fc1
+  languageName: node
+  linkType: hard
 
 "@subql/x-merkle-mountain-range@npm:2.0.0-0.1.2, @subql/x-merkle-mountain-range@npm:^2.0.0-0.1.2":
   version: 2.0.0-0.1.2
@@ -4312,6 +4365,20 @@ __metadata:
     semaphore-async-await: ^1.5.1
     sha.js: ^2.4.11
   checksum: 732eaa8441be71806dd197be6c5811f43bb14a3bc615c7d1be44a638b43ea53a5229d10edff12cf0ceec4ee9ca05938ce3a973dcdf31ce57e12cc30258342429
+  languageName: node
+  linkType: hard
+
+"@subql/x-postgraphile-core@npm:^4.12.3-0.1.0":
+  version: 4.12.3-0.1.0
+  resolution: "@subql/x-postgraphile-core@npm:4.12.3-0.1.0"
+  dependencies:
+    "@subql/x-graphile-build-pg": 4.12.3-0.1.0
+    graphile-build: 4.12.3
+    tslib: ^2.0.1
+  peerDependencies:
+    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
+    pg: ">=6.1.0 <9"
+  checksum: 70fb38ad502931e732c7fea3ef10e3bbf770f3d8efb8e393a11b2250803644ac6dd2ed19870135b5459c19fea64fe7db3ab53173854d26af5d4f3b7d4068da42
   languageName: node
   linkType: hard
 

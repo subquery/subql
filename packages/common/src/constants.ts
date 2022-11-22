@@ -24,6 +24,7 @@ export enum NETWORK_FAMILY {
   cosmos = 'Cosmos',
   algorand = 'Algorand',
   ethereum = 'Ethereum',
+  flare = 'Flare',
 }
 
 export const runnerMapping = {
@@ -33,4 +34,6 @@ export const runnerMapping = {
   '@subql/node-terra': NETWORK_FAMILY.terra,
   '@subql/node-cosmos': NETWORK_FAMILY.cosmos,
   '@subql/node-algorand': NETWORK_FAMILY.algorand,
+  '@subql/node-ethereum': NETWORK_FAMILY.ethereum,
+  '@subql/node-flare': NETWORK_FAMILY.flare,
 };

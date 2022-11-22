@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {getPostGraphileBuilder} from '@subql/x-postgraphile-core';
 import {ApolloServer, gql} from 'apollo-server-express';
 import {Pool} from 'pg';
-import {getPostGraphileBuilder} from 'postgraphile-core';
 import {Config} from '../configure';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';

@@ -34,7 +34,7 @@ import {
   createUniqueIndexQuery,
   dropNotifyTrigger,
   getFkConstraint,
-  getNotifyTriggers,
+  getTriggers,
   SmartTags,
   smartTags,
   getVirtualFkTag,
@@ -44,6 +44,8 @@ import {
   modelsTypeToModelAttributes,
   camelCaseObjectKey,
   makeTriggerName,
+  createSchemaTriggerFunction,
+  createSchemaTrigger,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -65,6 +67,8 @@ interface NotifyTriggerPayload {
   triggerName: string;
   eventManipulation: string;
 }
+
+type SchemaTriggerPayload = string;
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -98,10 +102,10 @@ export class StoreService {
     }
   }
 
-  async incrementBlockCount(tx: Transaction): Promise<void> {
+  async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='processedBlockCount'`,
-      {transaction: tx}
+      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      tx && {transaction: tx}
     );
   }
 
@@ -155,9 +159,21 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
+
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
+
+    /* These SQL queries are to allow hot-schema reload on query service */
+    extraQueries.push(createSchemaTriggerFunction(schema));
+    const schemaTriggerName = makeTriggerName(schema, '_metadata', 'schema');
+
+    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
+
+    if (schemaTriggers.length === 0) {
+      extraQueries.push(createSchemaTrigger(schema));
+    }
+
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({fields, unique, using}) => ({
@@ -185,17 +201,16 @@ export class StoreService {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
+
       if (this.config.subscription) {
-        const triggerName = makeTriggerName(schema, sequelizeModel.tableName);
-        const triggers = await this.sequelize.query(getNotifyTriggers(), {
-          replacements: {triggerName},
-          type: QueryTypes.SELECT,
-        });
+        const triggerName = makeTriggerName(schema, sequelizeModel.tableName, 'notify');
+        const notifyTriggers = await getTriggers(this.sequelize, triggerName);
+
         // Triggers not been found
-        if (triggers.length === 0) {
+        if (notifyTriggers.length === 0) {
           extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
         } else {
-          this.validateNotifyTriggers(triggerName, triggers as NotifyTriggerPayload[]);
+          this.validateNotifyTriggers(triggerName, notifyTriggers as NotifyTriggerPayload[]);
         }
       } else {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
@@ -259,6 +274,8 @@ export class StoreService {
     await this.sequelize.sync();
 
     await this.setMetadata('historicalStateEnabled', this.historical);
+    await this.incrementJsonbCount('schemaMigrationCount');
+
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }

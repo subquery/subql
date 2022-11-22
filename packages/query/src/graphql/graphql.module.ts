@@ -5,6 +5,7 @@ import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {delay} from '@subql/common';
+import {getPostGraphileBuilder, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
 import {
   ApolloServerPluginCacheControl,
   ApolloServerPluginLandingPageDisabled,
@@ -16,9 +17,9 @@ import {execute, GraphQLSchema, subscribe} from 'graphql';
 import {set} from 'lodash';
 import {Pool} from 'pg';
 import {makePluginHook} from 'postgraphile';
-import {getPostGraphileBuilder, PostGraphileCoreOptions} from 'postgraphile-core';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
+import {queryExplainPlugin} from '../configure/x-postgraphile/debugClient';
 import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
@@ -55,9 +56,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  async schemaListener(schema: GraphQLSchema): Promise<void> {
+  async schemaListener(dbSchema: string, options: PostGraphileCoreOptions): Promise<void> {
     // In order to apply hotSchema Reload without using apollo Gateway, must access the private method, hence the need to use set()
     try {
+      const schema = await this.buildSchema(dbSchema, options);
       // @ts-ignore
       if (schema && !!this.apolloServer?.generateSchemaDerivedData) {
         // @ts-ignore
@@ -67,26 +69,22 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         logger.info('Schema updated');
       }
     } catch (e) {
-      throw new Error(`Failed to hot reload Schema`);
+      logger.error(e, `Failed to hot reload Schema`);
+      process.exit(1);
     }
   }
 
   async onModuleDestroy(): Promise<void> {
     return this.apolloServer?.stop();
   }
-
   private async buildSchema(
     dbSchema: string,
     options: PostGraphileCoreOptions,
-    retries: number
+    retries = SCHEMA_RETRY_NUMBER
   ): Promise<GraphQLSchema> {
     if (retries > 0) {
       try {
         const builder = await getPostGraphileBuilder(this.pgPool, [dbSchema], options);
-        if (!argv['disable-hot-schema']) {
-          await builder.watchSchema(this.schemaListener.bind(this));
-        }
-        logger.info('Hot schema reload disabled');
 
         const graphqlSchema = builder.buildSchema();
         return graphqlSchema;
@@ -123,7 +121,18 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         options.replaceAllPlugins.push(options.appendPlugins.pop());
       }
     }
-    const schema = await this.buildSchema(dbSchema, options, SCHEMA_RETRY_NUMBER);
+
+    if (!argv['disable-hot-schema']) {
+      const pgClient = await this.pgPool.connect();
+      await pgClient.query(`LISTEN "${dbSchema}._metadata.hot_schema"`);
+
+      pgClient.on('notification', (msg) => {
+        if (msg.payload === 'schema_updated') {
+          void this.schemaListener(dbSchema, options);
+        }
+      });
+    }
+    const schema = await this.buildSchema(dbSchema, options);
 
     const apolloServerPlugins = [
       ApolloServerPluginCacheControl({
@@ -135,6 +144,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
     ];
+
+    if (argv['query-explain']) {
+      apolloServerPlugins.push(queryExplainPlugin(getLogger('explain')));
+    }
 
     const server = new ApolloServer({
       schema,
