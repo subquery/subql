@@ -10,8 +10,6 @@ import { RuntimeService } from '../runtimeService';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
-// type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
-
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
   operationHash: Uint8Array;

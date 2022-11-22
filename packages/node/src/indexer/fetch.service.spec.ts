@@ -371,7 +371,7 @@ async function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
-    new RuntimeService(),
+    new RuntimeService(apiService, dictionaryService),
   );
 }
 
@@ -567,7 +567,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(),
+      new RuntimeService(apiService, dictionaryService),
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -662,7 +662,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(),
+      new RuntimeService(apiService, dictionaryService),
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -751,7 +751,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
-      new RuntimeService(),
+      new RuntimeService(apiService, dictionaryService),
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

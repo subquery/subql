@@ -317,7 +317,6 @@ export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray: number[],
   overallSpecVer?: number,
-  // specVersionMap?: number[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);

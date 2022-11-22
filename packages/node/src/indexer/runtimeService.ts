@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { OnApplicationShutdown } from '@nestjs/common';
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { profiler } from '@subql/node-core';
@@ -17,29 +17,31 @@ import {
 const SPEC_VERSION_BLOCK_GAP = 100;
 type GetUseDictionary = () => boolean;
 type GetLatestFinalizedHeight = () => number;
-type GetSpecVersions = () => Promise<SpecVersion[]>;
 
+@Injectable()
 export class RuntimeService implements OnApplicationShutdown {
-  // private specVersionChanged: SpecVersionChanged;
   parentSpecVersion: number;
   protected specVersionMap: SpecVersion[];
   protected currentRuntimeVersion: RuntimeVersion;
   private isShutdown = false;
   private useDictionary: boolean;
   private latestFinalizedHeight: number;
-  private api: ApiPromise;
-  private getSpecVersions: GetSpecVersions;
+
+  constructor(
+    private readonly apiService: ApiService,
+    private readonly dictionaryService: DictionaryService,
+  ) {}
 
   init(
     getUseDictionary: GetUseDictionary,
     getLatestFinalizedHeight: GetLatestFinalizedHeight,
-    api: ApiPromise,
-    getSpecVersions: GetSpecVersions,
   ): void {
     this.useDictionary = getUseDictionary();
     this.latestFinalizedHeight = getLatestFinalizedHeight();
-    this.api = api;
-    this.getSpecVersions = getSpecVersions;
+  }
+
+  get api(): ApiPromise {
+    return this.apiService.getApi();
   }
 
   onApplicationShutdown(): void {
@@ -140,7 +142,7 @@ export class RuntimeService implements OnApplicationShutdown {
       // Assume dictionary is synced
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
         const response = this.useDictionary
-          ? await this.getSpecVersions()
+          ? await this.dictionaryService.getSpecVersions()
           : undefined;
         if (response !== undefined) {
           this.specVersionMap = response;

@@ -268,8 +268,6 @@ export class FetchService implements OnApplicationShutdown {
     this.runtimeService.init(
       this.getUseDictionary.bind(this),
       this.getLatestFinalizedHeight.bind(this),
-      this.api,
-      this.getSpecVersions.bind(this),
     );
 
     if (validChecker) {
@@ -292,10 +290,6 @@ export class FetchService implements OnApplicationShutdown {
 
   getLatestFinalizedHeight(): number {
     return this.latestFinalizedHeight;
-  }
-
-  async getSpecVersions(): Promise<SpecVersion[]> {
-    return this.dictionaryService.getSpecVersions();
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
