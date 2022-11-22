@@ -10035,24 +10035,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphile-build-pg@npm:4.12.3, graphile-build-pg@npm:^4.12.2":
-  version: 4.12.3
-  resolution: "graphile-build-pg@npm:4.12.3"
-  dependencies:
-    "@graphile/lru": 4.11.0
-    chalk: ^2.4.2
-    debug: ^4.1.1
-    graphile-build: 4.12.3
-    jsonwebtoken: ^8.5.1
-    lodash: ">=4 <5"
-    lru-cache: ">=4 <5"
-    pg-sql2: 4.12.3
-  peerDependencies:
-    pg: ">=6.1.0 <9"
-  checksum: 8090e1cbc07050895a3985cd78952c2c879069997527ef4807a150c08f9822316e4ae9454da4cd26c979870453bb3941474d7243e45a78bc7ff6a4a067fbd49c
-  languageName: node
-  linkType: hard
-
 "graphile-build@npm:4.12.2, graphile-build@npm:^4.12.2":
   version: 4.12.2
   resolution: "graphile-build@npm:4.12.2"
@@ -14564,20 +14546,6 @@ __metadata:
     graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
     pg: ">=6.1.0 <9"
   checksum: 086168f2c1954c033dc78f765fa0e46d2fcfa0720823a26690cf118d7c81a1cc9c67ade609ca4001bf8c4e0df4cea84c99f879fc6aa81021549f6848f77a1228
-  languageName: node
-  linkType: hard
-
-"postgraphile-core@npm:^4.12.2":
-  version: 4.12.3
-  resolution: "postgraphile-core@npm:4.12.3"
-  dependencies:
-    graphile-build: 4.12.3
-    graphile-build-pg: 4.12.3
-    tslib: ^2.0.1
-  peerDependencies:
-    graphql: ">=0.9 <0.14 || ^14.0.2 || ^15.4.0"
-    pg: ">=6.1.0 <9"
-  checksum: 8c35a4df24845898750a0e150ce61d4d5c311f0cdae230929bcce5afbb4ac18e4a3592f72134d9fa1f0a055efb34743c22041ecf0dac2d690607447383d596c8
   languageName: node
   linkType: hard
 
