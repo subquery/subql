@@ -24,29 +24,22 @@ import {
 import {
   checkMemoryUsage,
   delay,
-  Dictionary,
   getLogger,
   IndexerEvent,
   NodeConfig,
-  profiler,
 } from '@subql/node-core';
-import {
-  DictionaryQueryEntry,
-  SubstrateBlock,
-  SubstrateCustomHandler,
-} from '@subql/types';
+import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
 import { range, sortBy, uniqBy } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
-import * as SubstrateUtil from '../utils/substrate';
 import { calcInterval } from '../utils/substrate';
-import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
 import { IBlockDispatcher } from './blockDispatcher';
 import { DictionaryService, SpecVersion } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { RuntimeService } from './runtimeService';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('fetch');
@@ -54,7 +47,6 @@ let BLOCK_TIME_VARIANCE = 5000; //ms
 const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
-const SPEC_VERSION_BLOCK_GAP = 100;
 const INTERVAL_PERCENT = 0.9;
 
 function eventFilterToQueryEntry(
@@ -92,10 +84,7 @@ export class FetchService implements OnApplicationShutdown {
   private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private isShutdown = false;
-  private parentSpecVersion: number;
   private batchSizeScale: number;
-  private specVersionMap: SpecVersion[];
-  private currentRuntimeVersion: RuntimeVersion;
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
 
@@ -110,6 +99,7 @@ export class FetchService implements OnApplicationShutdown {
     private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+    private runtimeService: RuntimeService,
   ) {
     this.batchSizeScale = 1;
   }
@@ -271,26 +261,35 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    const validChecker = this.dictionaryValidation(
-      await this.dictionaryService.getSpecVersionsRaw(),
+    const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
+
+    const validChecker = this.dictionaryValidation(rawSpecVersions);
+
+    this.runtimeService.init(
+      this.getUseDictionary.bind(this),
+      this.getLatestFinalizedHeight.bind(this),
     );
 
-    if (this.useDictionary && validChecker) {
-      const specVersionResponse =
-        await this.dictionaryService.getSpecVersions();
-      if (specVersionResponse !== undefined) {
-        this.specVersionMap = specVersionResponse;
-      }
+    if (validChecker) {
+      this.runtimeService.setSpecVersionMap(rawSpecVersions);
     } else {
-      this.specVersionMap = [];
+      this.runtimeService.setSpecVersionMap(undefined);
     }
 
     await this.blockDispatcher.init(
-      this.getRuntimeVersion.bind(this),
       this.resetForNewDs.bind(this),
+      this.runtimeService,
     );
 
     void this.startLoop(startHeight);
+  }
+
+  getUseDictionary(): boolean {
+    return this.useDictionary;
+  }
+
+  getLatestFinalizedHeight(): number {
+    return this.latestFinalizedHeight;
   }
 
   @Interval(CHECK_MEMORY_INTERVAL)
@@ -394,7 +393,9 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async fillNextBlockBuffer(initBlockHeight: number): Promise<void> {
-    await this.prefetchMeta(initBlockHeight);
+    // setup parentSpecVersion
+    await this.runtimeService.specChanged(initBlockHeight);
+    await this.runtimeService.prefetchMeta(initBlockHeight);
 
     let startBlockHeight: number;
     let scaledBatchSize: number;
@@ -495,103 +496,6 @@ export class FetchService implements OnApplicationShutdown {
           range(startBlockHeight, endHeight + 1),
         );
       }
-    }
-  }
-
-  async getSpecFromApi(height: number): Promise<number> {
-    const parentBlockHash = await this.api.rpc.chain.getBlockHash(
-      Math.max(height - 1, 0),
-    );
-    const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
-      parentBlockHash,
-    );
-    const specVersion = runtimeVersion.specVersion.toNumber();
-    return specVersion;
-  }
-
-  getSpecFromMap(
-    blockHeight: number,
-    specVersions: SpecVersion[],
-  ): number | undefined {
-    //return undefined if can not find inside range
-    const spec = specVersions.find(
-      (spec) => blockHeight >= spec.start && blockHeight <= spec.end,
-    );
-    return spec ? Number(spec.id) : undefined;
-  }
-
-  async getSpecVersion(blockHeight: number): Promise<number> {
-    let currentSpecVersion: number;
-    // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
-    // therefore instead of check .useDictionary, we check it length before use it.
-    if (this.specVersionMap && this.specVersionMap.length !== 0) {
-      currentSpecVersion = this.getSpecFromMap(
-        blockHeight,
-        this.specVersionMap,
-      );
-    }
-    if (currentSpecVersion === undefined) {
-      currentSpecVersion = await this.getSpecFromApi(blockHeight);
-      // Assume dictionary is synced
-      if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
-        const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersions()
-          : undefined;
-        if (response !== undefined) {
-          this.specVersionMap = response;
-        }
-      }
-    }
-    return currentSpecVersion;
-  }
-
-  async getRuntimeVersion(block: SubstrateBlock): Promise<RuntimeVersion> {
-    if (
-      !this.currentRuntimeVersion ||
-      this.currentRuntimeVersion.specVersion.toNumber() !== block.specVersion
-    ) {
-      this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
-        block.block.header.parentHash,
-      );
-    }
-    return this.currentRuntimeVersion;
-  }
-
-  @profiler(yargsOptions.argv.profiler)
-  async specChanged(height: number): Promise<boolean> {
-    const specVersion = await this.getSpecVersion(height);
-    if (this.parentSpecVersion !== specVersion) {
-      await this.prefetchMeta(height);
-      this.parentSpecVersion = specVersion;
-      return true;
-    }
-    return false;
-  }
-
-  @profiler(yargsOptions.argv.profiler)
-  async prefetchMeta(height: number): Promise<void> {
-    const blockHash = await this.api.rpc.chain.getBlockHash(height);
-    if (
-      this.parentSpecVersion &&
-      this.specVersionMap &&
-      this.specVersionMap.length !== 0
-    ) {
-      const parentSpecVersion = this.specVersionMap.find(
-        (spec) => Number(spec.id) === this.parentSpecVersion,
-      );
-      for (const specVersion of this.specVersionMap) {
-        if (
-          specVersion.start > parentSpecVersion.end &&
-          specVersion.start <= height
-        ) {
-          const blockHash = await this.api.rpc.chain.getBlockHash(
-            specVersion.start,
-          );
-          await SubstrateUtil.prefetchMetadata(this.api, blockHash);
-        }
-      }
-    } else {
-      await SubstrateUtil.prefetchMetadata(this.api, blockHash);
     }
   }
 

@@ -27,6 +27,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -187,6 +188,38 @@ const mockDictionaryBatches: Dictionary = {
   batchBlocks: [14000, 14200, 14300, 14500, 14600, 14700, 14800, 14900],
 };
 
+const mockDictionarySpecVersions = {
+  _metadata: {
+    lastProcessedHeight: 15000,
+    lastProcessedTimestamp: 123124151,
+    targetHeight: 16000,
+    chain: 'Polkadot',
+    specName: 'polkadot',
+    genesisHash: '0x12345',
+    indexerHealthy: true,
+    indexerNodeVersion: '0.16.1',
+    queryNodeVersion: '0.6.0',
+    rowCountEstimate: [{ table: '', estimate: 0 }],
+  },
+  specVersions: {
+    nodes: [
+      { id: '0', blockHeight: 1 },
+      { id: '1', blockHeight: 29232 },
+      { id: '5', blockHeight: 188837 },
+      { id: '6', blockHeight: 199406 },
+      { id: '7', blockHeight: 214265 },
+      { id: '8', blockHeight: 244359 },
+      { id: '9', blockHeight: 303080 },
+      { id: '10', blockHeight: 314202 },
+      { id: '11', blockHeight: 342401 },
+      { id: '12', blockHeight: 443964 },
+      { id: '13', blockHeight: 528471 },
+      { id: '14', blockHeight: 687752 },
+      { id: '15', blockHeight: 746086 },
+    ],
+  },
+};
+
 function mockDictionaryService(
   cb?: (mock: jest.Mock) => void,
 ): DictionaryService {
@@ -199,9 +232,10 @@ function mockDictionaryService(
   return {
     getDictionary: mockDictionary,
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersionsRaw: jest.fn(() => mockDictionaryRet),
+    getSpecVersionsRaw: jest.fn(() => mockDictionarySpecVersions),
     buildDictionaryEntryMap: jest.fn(),
-    getDictionaryQueryEntries: jest.fn(() => []),
+    getDictionaryQueryEntries: jest.fn(() => [{}, {}, {}]),
+    scopedDictionaryEntries: jest.fn(() => mockDictionaryNoBatches),
   } as any;
 }
 
@@ -209,9 +243,10 @@ function mockDictionaryService1(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersionsRaw: jest.fn(() => mockDictionaryBatches),
+    getSpecVersionsRaw: jest.fn(() => mockDictionarySpecVersions),
     buildDictionaryEntryMap: jest.fn(),
-    getDictionaryQueryEntries: jest.fn(() => []),
+    getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
+    scopedDictionaryEntries: jest.fn(() => mockDictionaryBatches),
   } as any;
 }
 
@@ -219,6 +254,7 @@ function mockDictionaryService2(): DictionaryService {
   return {
     getDictionary: jest.fn(() => undefined),
     buildDictionaryEntryMap: jest.fn(),
+    getSpecVersions: jest.fn(() => mockDictionarySpecVersions),
     getDictionaryQueryEntries: jest.fn(() => []),
   } as any;
 }
@@ -227,9 +263,10 @@ function mockDictionaryService3(): DictionaryService {
   return {
     getDictionary: jest.fn(() => mockDictionaryNoBatches),
     getSpecVersions: jest.fn(() => [{ id: '1', start: 1, end: 29231 }]),
-    getSpecVersionsRaw: jest.fn(() => mockDictionaryNoBatches),
+    getSpecVersionsRaw: jest.fn(() => mockDictionarySpecVersions),
     buildDictionaryEntryMap: jest.fn(),
-    getDictionaryQueryEntries: jest.fn(() => []),
+    scopedDictionaryEntries: jest.fn(() => mockDictionaryNoBatches),
+    getDictionaryQueryEntries: jest.fn(() => [{}, {}]),
   } as any;
 }
 
@@ -334,6 +371,7 @@ async function createFetchService(
     unfinalizedBlocksService,
     eventEmitter,
     new SchedulerRegistry(),
+    new RuntimeService(apiService, dictionaryService),
   );
 }
 
@@ -437,7 +475,8 @@ describe('FetchService', () => {
       project,
       batchSize,
     );
-    fetchService.prefetchMeta = jest.fn();
+
+    (fetchService as any).runtimeService.prefetchMeta = jest.fn();
 
     const pendingCondition = new Promise((resolve) => {
       // eslint-disable-next-line @typescript-eslint/require-await
@@ -462,7 +501,8 @@ describe('FetchService', () => {
     fetchService.onApplicationShutdown();
   }, 500000);
 
-  it("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight", async () => {
+  // skip this test, we are using dictionaryValidation method with startHeight, rather than use local useDictionary
+  it.skip("skip use dictionary once if dictionary 's lastProcessedHeight < startBlockHeight", async () => {
     const batchSize = 20;
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/dictionary-polkadot';
@@ -527,6 +567,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(apiService, dictionaryService),
     );
 
     const nextEndBlockHeightSpy = jest.spyOn(
@@ -538,6 +579,7 @@ describe('FetchService', () => {
       `dictionaryValidation`,
     );
     await fetchService.init(1000);
+
     (fetchService as any).latestFinalizedHeight = 1005;
     blockDispatcher.latestBufferedHeight = undefined;
     // (fetchService as any).latestProcessedHeight = undefined;
@@ -620,14 +662,17 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(apiService, dictionaryService),
     );
     await fetchService.init(1000);
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,
       `nextEndBlockHeight`,
     );
-    fetchService.prefetchMeta = jest.fn();
+
     (fetchService as any).latestFinalizedHeight = 16000;
+    const runtimeService = (fetchService as any).runtimeService;
+    runtimeService.prefetchMeta = jest.fn();
     blockDispatcher.latestBufferedHeight = undefined;
     // (fetchService as any).latestProcessedHeight = undefined;
     // const loopPromise = fetchService.startLoop(1000);
@@ -706,6 +751,7 @@ describe('FetchService', () => {
       unfinalizedBlocksService,
       eventEmitter,
       schedulerRegistry,
+      new RuntimeService(apiService, dictionaryService),
     );
     const nextEndBlockHeightSpy = jest.spyOn(
       fetchService as any,

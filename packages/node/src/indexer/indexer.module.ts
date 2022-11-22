@@ -10,6 +10,7 @@ import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
@@ -38,6 +39,7 @@ import { WorkerService } from './worker/worker.service';
     ProjectService,
     WorkerService,
     UnfinalizedBlocksService,
+    RuntimeService,
   ],
   exports: [StoreService, MmrService],
 })
