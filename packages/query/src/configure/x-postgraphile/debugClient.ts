@@ -3,6 +3,7 @@
 
 // overwrite the method plugin: https://github.com/graphile/postgraphile/blob/263ba7477bc2133eebdf89d29acd0460e58501ec/src/postgraphile/withPostGraphileContext.ts#L473
 // Allow log SQL queries without resolve result
+import {ApolloServerPlugin} from 'apollo-server-plugin-base';
 import {PoolClient} from 'pg';
 import Pino from 'pino';
 
@@ -25,6 +26,29 @@ type ExplainResult = Omit<RawExplainResult, 'result'> & {
   plan: string;
 };
 
+// print original Graphql Query
+export function queryExplainPlugin(logger: Pino.Logger): ApolloServerPlugin {
+  return {
+    requestDidStart: () => {
+      let op;
+
+      return {
+        didResolveOperation({request}) {
+          if (request.operationName === null) {
+            op = request.query;
+          }
+        },
+        willSendResponse(context) {
+          if (op) {
+            logger.info(` \n GraphQL: ${op}`);
+          }
+        },
+      };
+    },
+  } as unknown as ApolloServerPlugin;
+}
+
+// print SQL query
 export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolClient {
   // If Postgres debugging is enabled, enhance our query function by adding
   // a debug statement.

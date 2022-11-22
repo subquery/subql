@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import path from 'path';
+import {IPFS_REGEX} from '@subql/common';
 import {parseChainTypes, SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import yaml from 'js-yaml';
 import {Context} from '../context';
@@ -22,6 +23,7 @@ export default class RequireValidChainTypes implements Rule {
       if (!schemaV0_2_0.network.chaintypes?.file) return true;
 
       //TODO, skip validate if chaintype is js format for now
+      if (schemaV0_2_0.network.chaintypes?.file.match(IPFS_REGEX)) return true;
       const {ext} = path.parse(schemaV0_2_0.network.chaintypes.file);
       if (ext === '.js' || ext === '.cjs') return true;
 

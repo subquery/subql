@@ -19,6 +19,7 @@ import {Pool} from 'pg';
 import {makePluginHook} from 'postgraphile';
 import {SubscriptionServer} from 'subscriptions-transport-ws';
 import {Config} from '../configure';
+import {queryExplainPlugin} from '../configure/x-postgraphile/debugClient';
 import {getLogger, PinoConfig} from '../utils/logger';
 import {getYargsOption} from '../yargs';
 import {plugins} from './plugins';
@@ -143,6 +144,10 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
     ];
+
+    if (argv['query-explain']) {
+      apolloServerPlugins.push(queryExplainPlugin(getLogger('explain')));
+    }
 
     const server = new ApolloServer({
       schema,
