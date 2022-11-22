@@ -15,7 +15,6 @@ import {
   ChainTypes,
   CustomDatasourceV0_2_0,
   isCustomDs,
-  // loadChainTypesFromJs,
   parseChainTypes,
   RuntimeDataSourceV0_0_1,
   RuntimeDataSourceV0_2_0,

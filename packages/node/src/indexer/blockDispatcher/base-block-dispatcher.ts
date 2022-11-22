@@ -3,15 +3,12 @@
 
 import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import { ProjectService } from '../project.service';
+import { RuntimeService } from '../runtimeService';
 
 const logger = getLogger('BaseBlockDispatcherService');
-
-type GetRuntimeVersion = (block: SubstrateBlock) => Promise<RuntimeVersion>;
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
@@ -21,8 +18,8 @@ export type ProcessBlockResponse = {
 
 export interface IBlockDispatcher {
   init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
+    runtimeService?: RuntimeService,
   ): Promise<void>;
 
   enqueueBlocks(heights: number[]): void;
@@ -56,11 +53,11 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
     protected eventEmitter: EventEmitter2,
     protected projectService: ProjectService,
     protected queue: Q,
+    protected runtimeService?: RuntimeService,
   ) {}
 
   abstract enqueueBlocks(heights: number[]): void;
   abstract init(
-    runtimeVersionGetter: GetRuntimeVersion,
     onDynamicDsCreated: (height: number) => Promise<void>,
   ): Promise<void>;
 

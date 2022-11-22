@@ -249,38 +249,6 @@ export async function prefetchMetadata(
  * @param endHeight
  * @param overallSpecVer exists if all blocks in the range have same parant specVersion
  */
-//Deprecated
-export async function fetchBlocks(
-  api: ApiPromise,
-  startHeight: number,
-  endHeight: number,
-  overallSpecVer?: number,
-): Promise<BlockContent[]> {
-  const blocks = await fetchBlocksRange(api, startHeight, endHeight);
-  const blockHashs = blocks.map((b) => b.block.header.hash);
-  const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
-  const [blockEvents, runtimeVersions] = await Promise.all([
-    fetchEventsRange(api, blockHashs),
-    overallSpecVer
-      ? undefined
-      : fetchRuntimeVersionRange(api, parentBlockHashs),
-  ]);
-  return blocks.map((block, idx) => {
-    const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
-
-    const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
-    const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
-    const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);
-    return {
-      block: wrappedBlock,
-      extrinsics: wrappedExtrinsics,
-      events: wrappedEvents,
-    };
-  });
-}
 
 export async function getBlockByHeight(
   api: ApiPromise,
@@ -349,22 +317,26 @@ export async function fetchBlocksBatches(
   api: ApiPromise,
   blockArray: number[],
   overallSpecVer?: number,
-  // specVersionMap?: number[],
 ): Promise<BlockContent[]> {
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);
+  // If overallSpecVersion passed, we don't need to use api to get runtimeVersions
+  // wrap block with specVersion
+  // If specVersion changed, we also not guarantee in this batch contains multiple runtimes,
+  // therefore we better to fetch runtime over all blocks
   const [blockEvents, runtimeVersions] = await Promise.all([
     fetchEventsRange(api, blockHashs),
-    overallSpecVer
+    overallSpecVer !== undefined // note, we need to be careful if spec version is 0
       ? undefined
       : fetchRuntimeVersionRange(api, parentBlockHashs),
   ]);
   return blocks.map((block, idx) => {
     const events = blockEvents[idx];
-    const parentSpecVersion = overallSpecVer
-      ? overallSpecVer
-      : runtimeVersions[idx].specVersion.toNumber();
+    const parentSpecVersion =
+      overallSpecVer !== undefined
+        ? overallSpecVer
+        : runtimeVersions[idx].specVersion.toNumber();
     const wrappedBlock = wrapBlock(block, events.toArray(), parentSpecVersion);
     const wrappedExtrinsics = wrapExtrinsics(wrappedBlock, events);
     const wrappedEvents = wrapEvents(wrappedExtrinsics, events, wrappedBlock);

@@ -6,11 +6,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StoreService, PoiService, MmrService } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
@@ -31,7 +31,6 @@ import { WorkerService } from './worker/worker.service';
       },
       inject: ['ISubqueryProject', EventEmitter2],
     },
-    DictionaryService,
     SandboxService,
     DsProcessorService,
     DynamicDsService,
@@ -40,6 +39,7 @@ import { WorkerService } from './worker/worker.service';
     ProjectService,
     WorkerService,
     UnfinalizedBlocksService,
+    RuntimeService,
   ],
   exports: [StoreService, MmrService],
 })

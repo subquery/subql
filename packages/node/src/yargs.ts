@@ -146,6 +146,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify the dictionary api for this network',
       type: 'string',
     },
+    'sponsored-dictionary': {
+      demandOption: false,
+      describe: 'Use subquery network sponsored dictionary',
+      type: 'boolean',
+      default: false,
+    },
     'dictionary-timeout': {
       demandOption: false,
       describe: 'Max timeout for dictionary query',

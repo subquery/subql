@@ -10,6 +10,8 @@ import {
   PoiService,
   NodeConfig,
 } from '@subql/node-core';
+
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import {
   BlockDispatcherService,
@@ -21,6 +23,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -61,7 +64,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     FetchService,
     BenchmarkService,
-    DictionaryService,
+    {
+      provide: DictionaryService,
+      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
+        const dictionaryService = new DictionaryService(project, nodeConfig);
+        await dictionaryService.init();
+        return dictionaryService;
+      },
+      inject: [SubqueryProject, NodeConfig],
+    },
     SandboxService,
     DsProcessorService,
     DynamicDsService,
@@ -69,6 +80,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     MmrService,
     ProjectService,
     UnfinalizedBlocksService,
+    RuntimeService,
   ],
   exports: [StoreService, MmrService],
 })
