@@ -29,21 +29,10 @@ type ExplainResult = Omit<RawExplainResult, 'result'> & {
 // print original Graphql Query
 export function queryExplainPlugin(logger: Pino.Logger): ApolloServerPlugin {
   return {
-    requestDidStart: () => {
-      let op;
-
-      return {
-        didResolveOperation({request}) {
-          if (request.operationName === null) {
-            op = request.query;
-          }
-        },
-        willSendResponse(context) {
-          if (op) {
-            logger.info(` \n GraphQL: ${op}`);
-          }
-        },
-      };
+    requestDidStart: ({request}) => {
+      if (request.operationName === null && request.query !== undefined) {
+        logger.info(` \n GraphQL query: ${request.query}`);
+      }
     },
   } as unknown as ApolloServerPlugin;
 }
@@ -113,13 +102,13 @@ export function debugPgClient(pgClient: PoolClient, logger: Pino.Logger): PoolCl
         }
         pgClient._explainResults.forEach(({query, values}: {query: string; values?: any[]}) => {
           let res: string;
-          res = `\n Query: ${query} `;
+          res = `\n SQL query: ${query} `;
           if (values && values.length !== 0) {
             res = res.concat(` \n Values: ${JSON.stringify(values)}`);
           }
           logger.info(res);
         });
-
+        pgClient._explainResults = [];
         return pgClient[$$pgClientOrigQuery].apply(this, args);
       } else {
         // We don't understand it (e.g. `pgPool.query`), just let it happen.
