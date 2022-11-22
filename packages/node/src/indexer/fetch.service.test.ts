@@ -12,7 +12,12 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { NodeConfig, PoiService } from '@subql/node-core';
+import {
+  MmrService,
+  NodeConfig,
+  PoiService,
+  StoreService,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -95,12 +100,6 @@ const nodeConfig = new NodeConfig({
   batchSize: 5,
 });
 
-function mockPoiService(): PoiService {
-  return {
-    nodeConfig,
-  } as any;
-}
-
 async function createApp(
   project = testSubqueryProject(),
   indexerManager: IndexerManager,
@@ -121,7 +120,15 @@ async function createApp(
       },
       {
         provide: PoiService,
-        useFactory: () => mockPoiService(),
+        useFactory: jest.fn(),
+      },
+      {
+        provide: MmrService,
+        useFactory: jest.fn(),
+      },
+      {
+        provide: StoreService,
+        useFactory: jest.fn(),
       },
       {
         provide: Sequelize,
