@@ -34,7 +34,7 @@ export class DictionaryService
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     nodeConfig: NodeConfig,
   ) {
-    super(project.network.dictionary, nodeConfig);
+    super(project.network.dictionary, project.network.chainId, nodeConfig);
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
