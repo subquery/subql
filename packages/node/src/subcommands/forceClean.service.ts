@@ -7,8 +7,11 @@ import {
   getLogger,
   NodeConfig,
   getExistingProjectSchema,
+  enumNameToHash,
 } from '@subql/node-core';
+import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
+import { SubqueryProject } from '../configure/SubqueryProject';
 
 const logger = getLogger('Force-clean');
 
@@ -17,6 +20,7 @@ export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
+    private readonly project: SubqueryProject,
   ) {}
 
   async forceClean(): Promise<void> {
@@ -28,6 +32,7 @@ export class ForceCleanService {
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
     }
+    const modelsRelation = getAllEntitiesRelations(this.project.schema);
 
     try {
       // drop existing project schema and metadata table
@@ -35,6 +40,16 @@ export class ForceCleanService {
         logging: false,
         benchmark: false,
       });
+
+      // drop all related enums
+      await Promise.all(
+        modelsRelation.enums.map(async (e) => {
+          const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
+          await this.sequelize.query(`
+            DROP TYPE "${enumTypeName}";
+          `);
+        }),
+      );
 
       // remove schema from subquery table (might not exist)
       await this.sequelize.query(

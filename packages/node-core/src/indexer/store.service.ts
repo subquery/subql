@@ -52,6 +52,7 @@ import {
   makeTriggerName,
   createSchemaTriggerFunction,
   createSchemaTrigger,
+  enumNameToHash,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -130,7 +131,7 @@ export class StoreService {
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `${schema}_enum_${this.enumNameToHash(e.name)}`;
+      const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
@@ -436,10 +437,6 @@ export class StoreService {
         throw new Error(`Found unexpected trigger ${t.triggerName} with manipulation ${t.eventManipulation}`);
       }
     });
-  }
-
-  enumNameToHash(enumName: string): string {
-    return blake2AsHex(enumName).substr(2, 10);
   }
 
   setTransaction(tx: Transaction): void {
