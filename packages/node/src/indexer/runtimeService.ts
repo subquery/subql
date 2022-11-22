@@ -121,11 +121,6 @@ export class RuntimeService implements OnApplicationShutdown {
     );
     return spec ? Number(spec.id) : undefined;
   }
-  //
-  syncRuntimeWithFetch(useDictionary: boolean, latestFinalizedHeight: number) {
-    this.useDictionary = useDictionary;
-    this.latestFinalizedHeight = latestFinalizedHeight;
-  }
 
   async getSpecVersion(blockHeight: number): Promise<number> {
     let currentSpecVersion: number;
