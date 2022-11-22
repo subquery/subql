@@ -3,7 +3,7 @@
 
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
-import {MetadataRepo} from '../indexer/entities/Metadata.entity';
+import {Metadata, MetadataRepo} from '../indexer/entities/Metadata.entity';
 import {getLogger} from '../logger';
 
 const logger = getLogger('Project-Utils');
@@ -31,9 +31,9 @@ export async function getExistingProjectSchema(
   return schema;
 }
 
-export async function getMetaDataInfo<T extends string | number | boolean = number>(
+export async function getMetaDataInfo<T extends Metadata['value'] = number>(
   metadataRepo: MetadataRepo,
-  key: string
+  key: Metadata['key']
 ): Promise<T | undefined> {
   const res = await metadataRepo.findOne({
     where: {key: key},

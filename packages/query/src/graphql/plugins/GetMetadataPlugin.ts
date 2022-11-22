@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {URL} from 'url';
-import {MetaData} from '@subql/utils';
+import {getMetadataTableName, MetaData, METADATA_REGEX, MULTI_METADATA_REGEX} from '@subql/utils';
 import {makeExtendSchemaPlugin, gql} from 'graphile-utils';
 import fetch, {Response} from 'node-fetch';
+import {Build} from 'postgraphile-core';
 import {setAsyncInterval} from '../../utils/asyncInterval';
 import {argv} from '../../yargs';
 
@@ -55,11 +56,33 @@ async function fetchFromApi(): Promise<void> {
   }
 }
 
-async function fetchFromTable(pgClient: any, schemaName: string, useRowEst: boolean): Promise<MetaData> {
+async function fetchFromTable(
+  pgClient,
+  schemaName: string,
+  chainId: string | undefined,
+  useRowEst: boolean
+): Promise<MetaData> {
   const metadata = {} as MetaData;
   const keys = Object.keys(METADATA_TYPES);
 
-  const {rows} = await pgClient.query(`select key, value from "${schemaName}"._metadata WHERE key = ANY ($1)`, [keys]);
+  let metadataTableName: string;
+
+  if (!chainId) {
+    // return first metadata entry you find.
+    const {rows} = await pgClient.query(
+      `SELECT table_name FROM information_schema.tables where table_schema='${schemaName}'`
+    );
+    const {table_name} = rows.find(
+      (obj: {table_name: string}) => METADATA_REGEX.test(obj.table_name) || MULTI_METADATA_REGEX.test(obj.table_name)
+    );
+    metadataTableName = table_name;
+  } else {
+    metadataTableName = getMetadataTableName(chainId);
+  }
+
+  const {rows} = await pgClient.query(`select * from "${schemaName}".${metadataTableName} WHERE key = ANY ($1)`, [
+    keys,
+  ]);
 
   const dbKeyValue = rows.reduce((array: MetaEntry[], curr: MetaEntry) => {
     array[curr.key] = curr.value;
@@ -90,20 +113,19 @@ async function fetchFromTable(pgClient: any, schemaName: string, useRowEst: bool
       });
     metadata.rowCountEstimate = tableEstimates.rows;
   }
+
   return metadata;
+}
+
+function metadataTableSearch(build: Build): boolean {
+  return build.pgIntrospectionResultsByKind.attribute.find(
+    (attr: {class: {name: string}}) =>
+      MULTI_METADATA_REGEX.test(attr.class.name) || METADATA_REGEX.test(attr.class.name)
+  );
 }
 
 export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
   const [schemaName] = options.pgSchemas;
-  let metadataTableExists = false;
-
-  const tableSearch = build.pgIntrospectionResultsByKind.attribute.find(
-    (attr: {class: {name: string}}) => attr.class.name === '_metadata'
-  );
-
-  if (tableSearch !== undefined) {
-    metadataTableExists = true;
-  }
 
   if (argv(`indexer`)) {
     setAsyncInterval(fetchFromApi, 10000);
@@ -130,21 +152,22 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         dynamicDatasources: String
       }
       extend type Query {
-        _metadata: _Metadata
+        _metadata(chainId: String): _Metadata
       }
     `,
     resolvers: {
       Query: {
-        _metadata: async (_parentObject, _args, context, _info): Promise<MetaData> => {
-          if (metadataTableExists) {
+        _metadata: async (_parentObject, args, context, info): Promise<MetaData> => {
+          const tableExists = metadataTableSearch(build);
+          if (tableExists) {
             let rowCountFound = false;
-            if (_info.fieldName === '_metadata') {
-              for (const node of _info.fieldNodes) {
+            if (info.fieldName === '_metadata') {
+              for (const node of info.fieldNodes) {
                 const queryFields = node.selectionSet.selections;
                 rowCountFound = queryFields.findIndex((field) => (field as any).name.value === 'rowCountEstimate') > -1;
               }
             }
-            const metadata = await fetchFromTable(context.pgClient, schemaName, rowCountFound);
+            const metadata = await fetchFromTable(context.pgClient, schemaName, args.chainId, rowCountFound);
             if (Object.keys(metadata).length > 0) {
               return metadata;
             }

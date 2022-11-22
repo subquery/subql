@@ -279,7 +279,7 @@ export class DictionaryService implements OnApplicationShutdown {
   ): void {
     const mappedDictionaryQueryEntries = new Map();
 
-    for (const ds of dataSources) {
+    for (const ds of dataSources.sort((a, b) => a.startBlock - b.startBlock)) {
       mappedDictionaryQueryEntries.set(ds.startBlock, buildDictionaryQueryEntries(ds.startBlock));
     }
     this.mappedDictionaryQueryEntries = mappedDictionaryQueryEntries;

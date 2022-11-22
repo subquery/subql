@@ -3,11 +3,17 @@
 
 import assert from 'assert';
 import {isMainThread} from 'worker_threads';
-import {Injectable} from '@nestjs/common';
+import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {blake2AsHex} from '@polkadot/util-crypto';
 import {Entity, Store} from '@subql/types';
-import {GraphQLModelsRelationsEnums, GraphQLRelationsType, IndexType} from '@subql/utils';
+import {
+  GraphQLModelsRelationsEnums,
+  GraphQLRelationsType,
+  IndexType,
+  METADATA_REGEX,
+  MULTI_METADATA_REGEX,
+} from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
   CreationAttributes,
@@ -49,7 +55,7 @@ import {
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
-import {OperationType} from './types';
+import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
@@ -78,6 +84,7 @@ export class StoreService {
   private poiRepo: PoiRepo;
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
+  @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
   private blockHeight: number;
   historical: boolean;
 
@@ -87,6 +94,7 @@ export class StoreService {
     this.schema = schema;
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
+    logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
 
     try {
       await this.syncSchema(this.schema);
@@ -104,7 +112,7 @@ export class StoreService {
 
   async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}"._metadata SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      `UPDATE "${this.schema}".${this.metaDataRepo.tableName} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
       tx && {transaction: tx}
     );
   }
@@ -162,16 +170,6 @@ export class StoreService {
 
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
-    }
-
-    /* These SQL queries are to allow hot-schema reload on query service */
-    extraQueries.push(createSchemaTriggerFunction(schema));
-    const schemaTriggerName = makeTriggerName(schema, '_metadata', 'schema');
-
-    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
-
-    if (schemaTriggers.length === 0) {
-      extraQueries.push(createSchemaTrigger(schema));
     }
 
     for (const model of this.modelsRelations.models) {
@@ -269,7 +267,23 @@ export class StoreService {
     if (this.config.proofOfIndex) {
       this.poiRepo = PoiFactory(this.sequelize, schema);
     }
-    this.metaDataRepo = MetadataFactory(this.sequelize, schema);
+
+    this.metaDataRepo = await MetadataFactory(
+      this.sequelize,
+      schema,
+      this.config.multiChain,
+      this.subqueryProject.network.chainId
+    );
+
+    /* These SQL queries are to allow hot-schema reload on query service */
+    extraQueries.push(createSchemaTriggerFunction(schema));
+    const schemaTriggerName = makeTriggerName(schema, this.metaDataRepo.tableName, 'schema');
+
+    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
+
+    if (schemaTriggers.length === 0) {
+      extraQueries.push(createSchemaTrigger(schema, this.metaDataRepo.tableName));
+    }
 
     await this.sequelize.sync();
 
@@ -282,23 +296,56 @@ export class StoreService {
   }
 
   async getHistoricalStateEnabled(): Promise<boolean> {
-    let enabled = true;
+    const {disableHistorical, multiChain} = this.config;
+
     try {
-      // Throws if _metadata doesn't exist (first startup)
-      const result = await this.sequelize.query<{value: boolean}>(
-        `SELECT value FROM "${this.schema}"."_metadata" WHERE key = 'historicalStateEnabled'`,
+      const tableRes = await this.sequelize.query<Array<string>>(
+        `SELECT table_name FROM information_schema.tables where table_schema='${this.schema}'`,
         {type: QueryTypes.SELECT}
       );
-      if (result.length > 0) {
-        enabled = result[0].value;
-      } else {
-        enabled = false;
+
+      const metadataTableNames = flatten(tableRes).filter(
+        (value: string) => METADATA_REGEX.test(value) || MULTI_METADATA_REGEX.test(value)
+      );
+
+      if (metadataTableNames.length > 1 && !multiChain) {
+        logger.error(
+          'There are multiple projects in the database schema, if you are trying to multi-chain index use --multichain'
+        );
+        process.exit(1);
       }
+
+      if (metadataTableNames.length === 1) {
+        const res = await this.sequelize.query<{key: string; value: boolean | string}>(
+          `SELECT key, value FROM "${this.schema}"."${metadataTableNames[0]}" WHERE (key = 'historicalStateEnabled' OR key = 'genesisHash')`,
+          {type: QueryTypes.SELECT}
+        );
+
+        const store = res.reduce(function (total, current) {
+          total[current.key] = current.value;
+          return total;
+        }, {} as {[key: string]: string | boolean});
+
+        if (store.historicalStateEnabled && multiChain) {
+          logger.error(
+            'Historical metadata entry found, to multi-chain index clear postgres schema and re-index project using --multichain'
+          );
+          process.exit(1);
+        }
+
+        const storedState = store.historicalStateEnabled as boolean;
+        return storedState ?? false;
+      }
+      throw new Error('Metadata table does not exist');
     } catch (e) {
-      enabled = !this.config.disableHistorical;
+      if (multiChain && !disableHistorical) {
+        logger.info('Historical state is not compatible with multi chain indexing, disabling historical..');
+        return false;
+      }
+
+      // Will trigger on first startup as metadata table doesn't exist
+      return !disableHistorical;
     }
-    logger.info(`Historical state is ${enabled ? 'enabled' : 'disabled'}`);
-    return enabled;
   }
 
   addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
@@ -411,7 +458,7 @@ export class StoreService {
     await Promise.all(metadata.map(({key, value}) => this.setMetadata(key, value, options)));
   }
 
-  async setMetadata(key: string, value: string | number | boolean, options?: UpsertOptions<Metadata>): Promise<void> {
+  async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
     assert(this.metaDataRepo, `Model _metadata does not exist`);
     await this.metaDataRepo.upsert({key, value}, options);
   }

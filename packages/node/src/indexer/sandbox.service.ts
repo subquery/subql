@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   isDatasourceV0_2_0,
   SubstrateDataSource,
@@ -20,7 +20,7 @@ export class SandboxService {
     private readonly apiService: ApiService,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
   ) {}
 
   getDsProcessor(ds: SubqlProjectDs, api: ApiAt): IndexerSandbox {

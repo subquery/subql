@@ -91,7 +91,7 @@ export class FetchService implements OnApplicationShutdown {
   constructor(
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,

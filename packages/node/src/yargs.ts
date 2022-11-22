@@ -134,12 +134,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
     },
-    migrate: {
-      demandOption: false,
-      describe: 'Migrate db schema (for management tables only)',
-      type: 'boolean',
-      default: false,
-    },
     'timestamp-field': {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
@@ -190,6 +184,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       default: false,
       describe: 'Disable storing historical state entities',
+      type: 'boolean',
+    },
+    'multi-chain': {
+      demandOption: false,
+      default: false,
+      describe:
+        'Enables indexing multiple subquery projects into the same database schema',
       type: 'boolean',
     },
     workers: {

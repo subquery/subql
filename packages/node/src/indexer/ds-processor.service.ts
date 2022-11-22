@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { AnyTuple } from '@polkadot/types-codec/types';
 import {
   isCustomDs,
@@ -121,7 +121,7 @@ export class DsProcessorService {
     >;
   } = {};
   constructor(
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly nodeConfig: NodeConfig,
   ) {}
 

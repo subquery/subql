@@ -35,10 +35,10 @@ export interface IConfig {
   readonly dictionaryTimeout: number;
   readonly workers?: number;
   readonly profiler?: boolean;
-  readonly migrate: boolean;
   readonly unsafe?: boolean;
   readonly subscription: boolean;
   readonly disableHistorical: boolean;
+  readonly multiChain: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
 }
@@ -57,9 +57,9 @@ const DEFAULT_CONFIG = {
   proofOfIndex: false,
   dictionaryTimeout: 30,
   profiler: false,
-  migrate: false,
   subscription: false,
-  disableHistorical: true,
+  disableHistorical: false,
+  multiChain: false,
   unfinalizedBlocks: false,
 };
 
@@ -175,10 +175,6 @@ export class NodeConfig implements IConfig {
     return this._config.profiler;
   }
 
-  get migrate(): boolean {
-    return this._config.migrate;
-  }
-
   get unsafe(): boolean {
     return this._config.unsafe;
   }
@@ -189,6 +185,10 @@ export class NodeConfig implements IConfig {
 
   get disableHistorical(): boolean {
     return this._config.disableHistorical;
+  }
+
+  get multiChain(): boolean {
+    return this._config.multiChain;
   }
 
   get unfinalizedBlocks(): boolean {

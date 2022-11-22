@@ -12,7 +12,12 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import { NodeConfig } from '@subql/node-core';
+import {
+  MmrService,
+  NodeConfig,
+  PoiService,
+  StoreService,
+} from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -103,7 +108,7 @@ async function createApp(
   const nestModule = await Test.createTestingModule({
     providers: [
       {
-        provide: SubqueryProject,
+        provide: 'ISubqueryProject',
         useFactory: () => project,
       },
       {
@@ -113,6 +118,18 @@ async function createApp(
       {
         provide: NodeConfig,
         useFactory: () => nodeConfig,
+      },
+      {
+        provide: PoiService,
+        useFactory: jest.fn(),
+      },
+      {
+        provide: MmrService,
+        useFactory: jest.fn(),
+      },
+      {
+        provide: StoreService,
+        useFactory: jest.fn(),
       },
       {
         provide: Sequelize,
@@ -143,8 +160,9 @@ async function createApp(
 
           return dynamicDsService;
         },
-        inject: [DsProcessorService, SubqueryProject],
+        inject: [DsProcessorService, 'ISubqueryProject'],
       },
+      ProjectService,
       {
         provide: DictionaryService,
         useFactory: async () => {

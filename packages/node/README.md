@@ -53,8 +53,6 @@ Options:
                             used
           [string] [choices: "fatal", "error", "warn", "info", "debug", "trace",
                                                                        "silent"]
-      --migrate             Migrate db schema (for management tables only)
-                                                      [boolean] [default: false]
       --timestamp-field     Enable/disable created_at and updated_at in schema
                                                       [boolean] [default: false]
   -d, --network-dictionary  Specify the dictionary api for this network [string]
@@ -70,6 +68,8 @@ Options:
                                                        [boolean] [default: true]
   -w, --workers             Number of worker threads to use for fetching and
                             processing blocks. Disabled by default.     [number]
+      --multi-chain         Enables indexing multiple subquery projects into the
+                            same database schema      [boolean] [default: false]
 ```
 
 ## License

@@ -273,7 +273,7 @@ describe('DictionaryService', () => {
 
     const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
     dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
-    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).not.toStrictEqual(
+    expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).toStrictEqual(
       unorderedDs.map((ds) => ds.startBlock)
     );
   });
