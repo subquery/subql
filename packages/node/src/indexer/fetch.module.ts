@@ -10,6 +10,8 @@ import {
   PoiService,
   NodeConfig,
 } from '@subql/node-core';
+
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import {
   BlockDispatcherService,
@@ -61,7 +63,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     FetchService,
     BenchmarkService,
-    DictionaryService,
+    {
+      provide: DictionaryService,
+      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
+        const dictionaryService = new DictionaryService(project, nodeConfig);
+        await dictionaryService.init();
+        return dictionaryService;
+      },
+      inject: [SubqueryProject, NodeConfig],
+    },
     SandboxService,
     DsProcessorService,
     DynamicDsService,

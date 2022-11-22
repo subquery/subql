@@ -69,6 +69,7 @@ const mockDS = [
 ];
 
 const DICTIONARY_ENDPOINT = `https://api.subquery.network/sq/subquery/polkadot-dictionary`;
+const DICTIONARY_CHAINID = `0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3`;
 
 const HAPPY_PATH_CONDITIONS: DictionaryQueryEntry[] = [
   {
@@ -110,7 +111,8 @@ const nodeConfig = new NodeConfig({
 
 describe('DictionaryService', () => {
   it('return dictionary query result', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
 
     const batchSize = 30;
     const startBlock = 1;
@@ -123,8 +125,11 @@ describe('DictionaryService', () => {
   it('return undefined when dictionary api failed', async () => {
     const dictionaryService = new DictionaryService(
       'https://api.subquery.network/sq/subquery/dictionary-not-exist',
+      '0x21121',
       nodeConfig
     );
+    await dictionaryService.init();
+
     const batchSize = 30;
     const startBlock = 1;
     const endBlock = 10001;
@@ -133,7 +138,9 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('should return meta even startblock height greater than dictionary last processed height', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
+
     const batchSize = 30;
     const startBlock = 400000000;
     const endBlock = 400010000;
@@ -142,7 +149,8 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('test query the correct range', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
 
     const batchSize = 30;
     const startBlock = 1;
@@ -160,7 +168,9 @@ describe('DictionaryService', () => {
   }, 500000);
 
   it('use minimum value of event/extrinsic returned block as batch end block', async () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
+
     const batchSize = 50;
     const startBlock = 333300;
     const endBlock = 340000;
@@ -206,8 +216,9 @@ describe('DictionaryService', () => {
     expect(dic.batchBlocks[dic.batchBlocks.length - 1]).toBe(333524);
   }, 500000);
 
-  it('able to build queryEntryMap', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+  it('able to build queryEntryMap', async () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
 
     dictionaryService.buildDictionaryEntryMap(mockDS, () => HAPPY_PATH_CONDITIONS);
     const _map = (dictionaryService as any).mappedDictionaryQueryEntries;
@@ -216,8 +227,9 @@ describe('DictionaryService', () => {
     expect(_map.size).toEqual(mockDS.length);
   });
 
-  it('able to getDicitonaryQueryEntries', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+  it('able to getDicitonaryQueryEntries', async () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
     const dictionaryQueryMap = new Map();
 
     // Mocks a Map object that where key == dataSource.startBlock and mocked DictionaryQueryEntries[] values
@@ -255,8 +267,10 @@ describe('DictionaryService', () => {
     expect(dictionaryService.getDictionaryQueryEntries(queryEndBlock)).toEqual([]);
   });
 
-  it('sort map', () => {
-    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, nodeConfig);
+  it('sort map', async () => {
+    const dictionaryService = new DictionaryService(DICTIONARY_ENDPOINT, DICTIONARY_CHAINID, nodeConfig);
+    await dictionaryService.init();
+
     const unorderedDs = [mockDS[2], mockDS[0], mockDS[1]];
     dictionaryService.buildDictionaryEntryMap(unorderedDs, (startBlock) => startBlock as any);
     expect([...(dictionaryService as any).mappedDictionaryQueryEntries.keys()]).not.toStrictEqual(
