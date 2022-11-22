@@ -146,7 +146,10 @@ async function createApp(
       },
       {
         provide: DictionaryService,
-        useFactory: () => new DictionaryService(project, nodeConfig),
+        useFactory: async () => {
+          const dictionaryService = new DictionaryService(project, nodeConfig);
+          await dictionaryService.init();
+        },
       },
       SchedulerRegistry,
       UnfinalizedBlocksService,
