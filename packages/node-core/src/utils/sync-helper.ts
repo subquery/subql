@@ -174,3 +174,7 @@ export function createSchemaTriggerFunction(schema: string): string {
   END;
   $$ LANGUAGE plpgsql;`;
 }
+
+export function enumNameToHash(enumName: string): string {
+  return blake2AsHex(enumName).substr(2, 10);
+}
