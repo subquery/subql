@@ -12,7 +12,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.5.0] - 2022-11-23
 ### Added
-- dictionary auth link integration (#1411)
+- Dictionary auth link integration (#1411)
 - Support multi-chain indexing (#1375)
 ### Changed
 - Move enum name generation method to node-core (#1427)
