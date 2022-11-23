@@ -71,7 +71,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         await dictionaryService.init();
         return dictionaryService;
       },
-      inject: [SubqueryProject, NodeConfig],
+      inject: ['ISubqueryProject', NodeConfig],
     },
     SandboxService,
     DsProcessorService,
