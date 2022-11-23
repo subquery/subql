@@ -30,7 +30,7 @@ type ExplainResult = Omit<RawExplainResult, 'result'> & {
 export function queryExplainPlugin(logger: Pino.Logger): ApolloServerPlugin {
   return {
     requestDidStart: ({request}) => {
-      if (request.operationName === null && request.query !== undefined) {
+      if (request.operationName !== 'IntrospectionQuery' && request.query !== undefined) {
         logger.info(` \n GraphQL query: ${request.query}`);
       }
     },
