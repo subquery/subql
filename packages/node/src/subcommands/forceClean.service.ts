@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   NodeConfig,
@@ -20,7 +20,7 @@ export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') protected project: SubqueryProject,
   ) {}
 
   async forceClean(): Promise<void> {
