@@ -12,7 +12,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Fixed
 - Fix row estimate in _metadata, only execute SQL when `rowEstimate` included in graphql query field (#1417)
 ### Changed
-- query explain include graphql query (#1426)
+- Query explain include graphql query (#1426)
 - Support for multi-chain indexing (#1375)
 
 ## [1.7.0] - 2022-11-15
