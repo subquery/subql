@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {MULTI_METADATA_REGEX, METADATA_REGEX} from '@subql/utils/query';
+import {MULTI_METADATA_REGEX, METADATA_REGEX} from '@subql/utils';
 import {PgEntity, PgEntityKind} from '@subql/x-graphile-build-pg';
 import {makePgSmartTagsPlugin} from 'graphile-utils';
 
