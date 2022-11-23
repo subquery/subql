@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.0] - 2022-11-23
+### Changed
+- Support for multi-chain indexing (#1375)
+
 ## [1.2.0] - 2022-08-11
 ### Changed
 - Update `sequelize` to 6.23.0. (#1311)
