@@ -10,6 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.7.0] - 2022-11-15
 
+
 ### Added
 - Added distinct query plugin. (#1401)
 ### Fixed 
