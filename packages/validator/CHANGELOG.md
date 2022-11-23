@@ -13,7 +13,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Added
 - Add support to validator for flare (#1416)
 ### Fixed
-- missing validator missing ipfs chainTypes (#1419)
+- Validator missing ipfs chainTypes (#1419)
 
 ## [1.6.0] - 2022-10-07
 ### Added
