@@ -133,8 +133,6 @@ jobs:
           rename: '@subql/node-flare'
         
       #update imports
-      
-      - run: chmod +x ./.github/workflows/scripts/update_flare_imports.sh
 
       - name: Update imports to flare
         run: ./.github/workflows/scripts/update_flare_imports.sh

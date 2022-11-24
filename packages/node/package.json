@@ -15,7 +15,7 @@
   "homepage": "https://github.com/subquery/subql",
   "repository": "github:subquery/subql",
   "bin": {
-    "subql-node-flare": "./bin/run"
+    "subql-node-ethereum": "./bin/run"
   },
   "dependencies": {
     "@apollo/client": "3.5.8",
