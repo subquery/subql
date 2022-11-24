@@ -63,11 +63,13 @@ export class SubqueryProject {
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
   runner?: RunnerSpecs;
+  bypassBlocks?: number[];
 
   static async create(
     path: string,
     networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
     readerOptions?: ReaderOptions,
+    bypassBlocks?: number[],
   ): Promise<SubqueryProject> {
     // We have to use reader here, because path can be remote or local
     // and the `loadProjectManifest(projectPath)` only support local mode
@@ -101,6 +103,7 @@ export class SubqueryProject {
         reader,
         path,
         networkOverrides,
+        bypassBlocks && bypassBlocks,
       );
     }
   }
@@ -205,6 +208,7 @@ async function loadProjectFromManifest1_0_0(
   reader: Reader,
   path: string,
   networkOverrides?: Partial<SubstrateProjectNetworkConfig>,
+  bypassBlocks?: number[],
 ): Promise<SubqueryProject> {
   const project = await loadProjectFromManifestBase(
     projectManifest,
@@ -218,6 +222,7 @@ async function loadProjectFromManifest1_0_0(
     reader,
   );
   project.runner = projectManifest.runner;
+  project.bypassBlocks = bypassBlocks && bypassBlocks;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,

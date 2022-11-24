@@ -22,6 +22,7 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import {
+  bypassBlocksValidator,
   checkMemoryUsage,
   delay,
   getLogger,
@@ -87,6 +88,7 @@ export class FetchService implements OnApplicationShutdown {
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
+  private bypassBlocks: number[];
 
   constructor(
     private apiService: ApiService,
@@ -239,6 +241,9 @@ export class FetchService implements OnApplicationShutdown {
         .toNumber();
 
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
+
+      // set init bypassBlocks
+      this.bypassBlocks = this.project.bypassBlocks;
 
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
@@ -397,6 +402,9 @@ export class FetchService implements OnApplicationShutdown {
     await this.runtimeService.specChanged(initBlockHeight);
     await this.runtimeService.prefetchMeta(initBlockHeight);
 
+    // get bypassBlocks
+    const bypassBlocks = this.project.bypassBlocks;
+
     let startBlockHeight: number;
     let scaledBatchSize: number;
     const handlers = [].concat(
@@ -492,11 +500,41 @@ export class FetchService implements OnApplicationShutdown {
           this.getEnqueuedModuloBlocks(startBlockHeight),
         );
       } else {
-        this.blockDispatcher.enqueueBlocks(
-          range(startBlockHeight, endHeight + 1),
-        );
+        const blockBatch = this.filteredBlockBatch(startBlockHeight, endHeight);
+        this.blockDispatcher.enqueueBlocks(blockBatch);
       }
     }
+  }
+  private filteredBlockBatch(
+    startBlockHeight: number,
+    endHeight: number,
+  ): number[] {
+    const localBypassBlock = this.bypassBlocks;
+    const minBypass = Math.min(...this.project.bypassBlocks);
+
+    if (this.bypassBlocks && endHeight > minBypass) {
+      const blockBatch = bypassBlocksValidator(
+        localBypassBlock,
+        range(startBlockHeight, endHeight + 1),
+      );
+      this.bypassBlocks = localBypassBlock.map((block) => {
+        if (endHeight > block) {
+          logger.info(`Bypassed block: ${block}`);
+          return block;
+        }
+      });
+      return blockBatch;
+    } else {
+      return range(startBlockHeight, endHeight + 1);
+    }
+    // if endBlock of current batch is greater than min of bypassBlocks,
+    // endBlock = 10
+    // bypassMin = 9
+    // use bypass check
+    // return parsedBlockBatch
+    // remove all bypassBlocks < endBlock
+    // if bypassMin = 11
+    // dont need to go through bypass check
   }
 
   private nextEndBlockHeight(

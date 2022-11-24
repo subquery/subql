@@ -119,6 +119,9 @@ export class DeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
 }
 
@@ -155,6 +158,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
     },
     keepDiscriminatorProperty: true,
   })
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
   @IsObject()
   @ValidateNested()

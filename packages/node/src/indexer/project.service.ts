@@ -207,6 +207,7 @@ export class ProjectService {
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
+      'bypassBlocks',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -277,6 +278,9 @@ export class ProjectService {
       await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
     }
 
+    if (!keyValue.bypassBlocks) {
+      await metadataRepo.upsert({ key: 'bypassBlocks', value: [] });
+    }
     return metadataRepo;
   }
 
@@ -285,6 +289,10 @@ export class ProjectService {
       key: 'blockOffset',
       value: height,
     });
+  }
+
+  async getBypassBlocks(): Promise<number[] | undefined> {
+    return getMetaDataInfo(this.metadataRepo, 'bypassBlocks');
   }
 
   //string should be jsonb object
