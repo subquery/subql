@@ -63,16 +63,17 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
     const protocolStr = protocol.replace(':', '');
 
+    logger.info(this.endpoint.split('?')[0]);
     if (protocolStr === 'https' || protocolStr === 'http') {
       const connection: ConnectionInfo = {
-        url: this.endpoint,
+        url: this.endpoint.split('?')[0],
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },
       };
-      if ((searchParams as any).apiKey) {
-        (connection.headers as any).apiKey = searchParams.get('apiKey');
-      }
+      searchParams.forEach((value, name, searchParams) => {
+        (connection.headers as any)[name] = value;
+      });
       this.client = new JsonRpcProvider(connection);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       this.client = new WebSocketProvider(this.endpoint);

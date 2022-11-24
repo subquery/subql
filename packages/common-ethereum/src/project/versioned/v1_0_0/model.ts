@@ -13,6 +13,7 @@ import {plainToClass, Transform, TransformFnParams, Type} from 'class-transforme
 import {
   Equals,
   IsArray,
+  IsIn,
   IsNotEmpty,
   IsObject,
   IsOptional,
@@ -33,6 +34,7 @@ import {
 import {EthereumProjectManifestV1_0_0} from './types';
 
 const Ethereum_NODE_NAME = `@subql/node-ethereum`;
+const Flare_NODE_NAME = `@subql/node-flare`;
 
 export class RuntimeDatasourceTemplateImpl
   extends EthereumRuntimeDataSourceV0_3_0Impl
@@ -51,7 +53,9 @@ export class CustomDatasourceTemplateImpl
 }
 
 export class EthereumRunnerNodeImpl implements NodeSpec {
-  @Equals(Ethereum_NODE_NAME, {message: `Runner Substrate node name incorrect, suppose be '${Ethereum_NODE_NAME}'`})
+  @IsIn([Ethereum_NODE_NAME, Flare_NODE_NAME], {
+    message: `Runner Substrate node name incorrect, suppose be '${Ethereum_NODE_NAME}'`,
+  })
   name: string;
   @IsString()
   @Validate(SemverVersionValidator)

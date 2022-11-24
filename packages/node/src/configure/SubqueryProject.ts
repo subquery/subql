@@ -176,11 +176,6 @@ async function loadProjectFromManifest1_0_0(
     networkOverrides,
   );
   project.runner = projectManifest.runner;
-  if (packageName !== project.runner.node.name) {
-    throw new Error(
-      `Runner requires ${project.runner.node.name}, current node ${packageName}`,
-    );
-  }
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,
