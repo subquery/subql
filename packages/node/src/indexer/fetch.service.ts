@@ -102,6 +102,7 @@ export class FetchService implements OnApplicationShutdown {
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
+  private evmChainId: string;
 
   constructor(
     private apiService: ApiService,
@@ -216,10 +217,16 @@ export class FetchService implements OnApplicationShutdown {
       );
     }
     await this.syncDynamicDatascourcesFromMeta();
+
     this.updateDictionary();
     this.eventEmitter.emit(IndexerEvent.UsingDictionary, {
       value: Number(this.useDictionary),
     });
+
+    if (this.project.network.dictionary) {
+      this.evmChainId = await this.dictionaryService.getEvmChainId();
+    }
+
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
@@ -452,7 +459,10 @@ export class FetchService implements OnApplicationShutdown {
     { _metadata: metaData }: Dictionary,
     startBlockHeight: number,
   ): boolean {
-    if (metaData.genesisHash !== this.api.getGenesisHash()) {
+    if (
+      metaData.genesisHash !== this.api.getGenesisHash() &&
+      this.evmChainId !== this.api.getChainId().toString()
+    ) {
       logger.error(
         'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
       );
