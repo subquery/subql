@@ -24,7 +24,7 @@
     "pino": "^6.13.3",
     "rotating-file-stream": "^3.0.2",
     "semver": "^7.3.7",
-    "sequelize": "6.23.0",
+    "sequelize": "6.28.0",
     "tar": "^6.1.11"
   },
   "devDependencies": {

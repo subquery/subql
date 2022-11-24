@@ -38,7 +38,7 @@
     "@nestjs/platform-express": "^8.2.6",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
-    "@subql/x-graphile-build-pg": "4.13.0-0.2.1",
+    "@subql/x-graphile-build-pg": "4.13.0-0.2.2",
     "@subql/x-postgraphile-core": "4.13.0-0.2.0",
     "apollo-server-express": "^3.6.2",
     "express-pino-logger": "^6.0.0",
