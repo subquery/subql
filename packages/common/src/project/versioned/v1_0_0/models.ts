@@ -12,4 +12,5 @@ export class RunnerQueryBaseModel implements QuerySpec {
   @Validate(SemverVersionValidator)
   // @Matches(RUNNER_REGEX)
   version: string;
+  bypassBlocks: number[];
 }

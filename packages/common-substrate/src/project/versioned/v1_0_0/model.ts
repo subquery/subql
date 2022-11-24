@@ -80,6 +80,9 @@ export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
 }
 
 export class DeploymentV1_0_0 {
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
@@ -119,9 +122,6 @@ export class DeploymentV1_0_0 {
     },
     keepDiscriminatorProperty: true,
   })
-  @IsOptional()
-  @IsArray()
-  bypassBlocks?: number[];
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
 }
 

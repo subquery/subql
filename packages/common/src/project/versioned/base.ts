@@ -14,9 +14,6 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   repository: string;
   @IsString()
   specVersion: string;
-  @IsOptional()
-  @IsArray()
-  bypassBlocks?: number[];
 
   abstract readonly deployment: D;
 

@@ -402,9 +402,6 @@ export class FetchService implements OnApplicationShutdown {
     await this.runtimeService.specChanged(initBlockHeight);
     await this.runtimeService.prefetchMeta(initBlockHeight);
 
-    // get bypassBlocks
-    const bypassBlocks = this.project.bypassBlocks;
-
     let startBlockHeight: number;
     let scaledBatchSize: number;
     const handlers = [].concat(

@@ -39,6 +39,7 @@ export interface ProjectManifest {
     customTypes?: RegistryTypes;
   };
 
+  bypassBlocks?: number[];
   dataSources: SubstrateDatasource[];
 }
 

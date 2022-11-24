@@ -12,7 +12,8 @@ description: >-
   This project can be used as a starting point for developing your SubQuery
   project
 repository: 'https://github.com/subquery/subql-starter'
-bypassBlocks: [1, 2, 10, 3, 19]
+#bypassBlocks: [1, 2, 10, 3, 19]
+bypassBlocks: [1, 2, 4, 5]
 schema:
   file: ./schema.graphql
 network:

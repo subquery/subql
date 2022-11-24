@@ -72,8 +72,7 @@ describe('project.yaml', () => {
   });
 
   it('bypass blocks', () => {
-    const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml'));
-    console.log(deployment);
+    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml'))).not.toThrow();
   });
 
   it('can validate a v1.0.0 project.yaml with unsupported runner node', () => {
