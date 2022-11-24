@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-11-24
+
+### Added
+- Support for dictionaries on with `evmChainId` (#17)
+- Convert query params to headers for api key support (##16)
+
+### Fixed
+- Binary name
+
 ## [0.2.3] - 2022-11-22
 
 ### Fixed
