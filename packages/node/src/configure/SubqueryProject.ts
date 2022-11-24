@@ -103,7 +103,7 @@ export class SubqueryProject {
         reader,
         path,
         networkOverrides,
-        bypassBlocks && bypassBlocks,
+        bypassBlocks,
       );
     }
   }

@@ -129,4 +129,8 @@ export class SubstrateProjectManifestVersioned implements ISubstrateProjectManif
   get repository(): string {
     return this._impl.repository;
   }
+
+  get bypassBlocks(): number[] {
+    return this._impl.bypassBlocks;
+  }
 }

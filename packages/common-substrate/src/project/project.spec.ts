@@ -71,6 +71,11 @@ describe('project.yaml', () => {
     validateSync(deployment.runner, {whitelist: true, forbidNonWhitelisted: true});
   });
 
+  it('bypass blocks', () => {
+    const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml'));
+    console.log(deployment);
+  });
+
   it('can validate a v1.0.0 project.yaml with unsupported runner node', () => {
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0_bad_runner.yaml'))).toThrow();
   });

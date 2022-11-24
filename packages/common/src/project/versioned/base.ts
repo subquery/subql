@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {classToPlain} from 'class-transformer';
-import {Allow, IsString, validateSync} from 'class-validator';
+import {Allow, IsArray, IsOptional, IsString, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 
 export abstract class ProjectManifestBaseImpl<D extends object> {
@@ -14,11 +14,20 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   repository: string;
   @IsString()
   specVersion: string;
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
 
   abstract readonly deployment: D;
 
   toDeployment(): string {
     // classToPlain fixes Map type with assets fields
+    console.log(
+      yaml.dump(classToPlain(this.deployment), {
+        sortKeys: true,
+        condenseFlow: true,
+      })
+    );
     return yaml.dump(classToPlain(this.deployment), {
       sortKeys: true,
       condenseFlow: true,
@@ -26,7 +35,11 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   }
 
   validate(): void {
-    const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
+    const errors = validateSync(this.deployment, {
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      enableDebugMessages: true,
+    });
     if (errors?.length) {
       // TODO: print error details
       const errorMsgs = errors.map((e) => e.toString()).join('\n');
