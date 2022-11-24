@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.0] - 2022-11-23
+## Added
+- Dictionary auth link integration (#1411)
+- Support multi chain indexing (#1375)
+## Changed
+- Move runtime logic to its own service, fix missing speChanged logic with getRuntime (#1421)
+## Fixed
+- Fix force-clean missing remove relate enums (#1427)
+
 ## [1.14.1] - 2022-11-16
 - Patch release with @subql/node-core fix (#1404)
 

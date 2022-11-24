@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.9.0] - 2022-11-23
+### Added
+- Add support to cli/validator for flare (#1416)
+
 ## [1.8.0] - 2022-10-27
 ### Fixed
 - Fix CLI init project manifest missing comments issue (#1380)

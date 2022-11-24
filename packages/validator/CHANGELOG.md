@@ -9,6 +9,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-11-23
+### Added
+- Add support to validator for flare (#1416)
+### Fixed
+- Validator missing ipfs chainTypes (#1419)
+
 ## [1.6.0] - 2022-10-07
 ### Added
 - Added ethereum to Validator. (#1338)

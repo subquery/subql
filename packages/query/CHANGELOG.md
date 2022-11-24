@@ -8,9 +8,14 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.0] - 2022-11-23
+### Fixed
+- Fix row estimate in _metadata, only execute SQL when `rowEstimate` included in graphql query field (#1417)
+### Changed
+- Query explain include graphql query (#1426)
+- Support for multi-chain indexing (#1375)
+
 ## [1.7.0] - 2022-11-15
-
-
 ### Added
 - Added distinct query plugin. (#1401)
 ### Fixed 

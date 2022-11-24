@@ -10,6 +10,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-11-23
+### Added
+- Dictionary auth link integration (#1411)
+- Support multi-chain indexing (#1375)
+### Changed
+- Move enum name generation method to node-core (#1427)
+
 ## [1.4.1] - 2022-11-15
 ### Fixed
 - Hot fix for hot schema reload (#1404)
