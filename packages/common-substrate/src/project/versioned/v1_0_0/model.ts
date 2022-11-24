@@ -80,9 +80,6 @@ export class ProjectNetworkV1_0_0 extends ProjectNetworkDeploymentV1_0_0 {
 }
 
 export class DeploymentV1_0_0 {
-  @IsOptional()
-  @IsArray()
-  bypassBlocks?: number[];
   @Transform((params) => {
     if (params.value.genesisHash && !params.value.chainId) {
       params.value.chainId = params.value.genesisHash;
@@ -123,6 +120,9 @@ export class DeploymentV1_0_0 {
     keepDiscriminatorProperty: true,
   })
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
 }
 
 export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
@@ -158,14 +158,15 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
     },
     keepDiscriminatorProperty: true,
   })
-  @IsOptional()
-  @IsArray()
-  bypassBlocks?: number[];
   templates?: (RuntimeDatasourceTemplate | CustomDatasourceTemplate)[];
   @IsObject()
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: number[];
+
   protected _deployment: D;
 
   get deployment(): D {

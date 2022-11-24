@@ -6,10 +6,23 @@ import {bypassBlocksValidator} from './project';
 
 describe('bypass logic', () => {
   it('filter out bypassBlocks', () => {
+    // batchBlocks contain partial bypassBlocks
     const currentBatchBlocks = range(1, 10);
-    const bypassBlocks = [2, 3, 9, 5];
-    const result = bypassBlocksValidator(bypassBlocks, currentBatchBlocks);
+    let bypassBlocks = [2, 3, 9, 5, 11, 100];
+    let [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(bypassBlocks, currentBatchBlocks);
+    expect(processedBatchBlocks).toEqual([1, 4, 6, 7, 8]);
+    expect(processedBypassBlocks).toEqual([11, 100]);
 
-    expect(result).toEqual([1, 4, 6, 7, 8]);
+    // batchBlocks contain all bypassBlocks
+    bypassBlocks = range(1, 10);
+    [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(bypassBlocks, currentBatchBlocks);
+    expect(processedBatchBlocks).toEqual([]);
+    expect(processedBypassBlocks).toEqual([]);
+
+    // bypassBlocks size greater than batchSize
+    bypassBlocks = range(1, 15);
+    [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(bypassBlocks, currentBatchBlocks);
+    expect(processedBatchBlocks).toEqual([]);
+    expect(processedBypassBlocks).toEqual([10, 11, 12, 13, 14]);
   });
 });

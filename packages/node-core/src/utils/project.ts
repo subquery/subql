@@ -41,6 +41,8 @@ export async function getMetaDataInfo<T extends Metadata['value'] = number>(
   return res?.value as T | undefined;
 }
 
-export function bypassBlocksValidator(bypassBlocks: number[], currentBlockBatch: number[]): number[] {
-  return currentBlockBatch.filter((block) => !bypassBlocks.includes(block));
+export function bypassBlocksValidator(bypassBlocks: number[], currentBlockBatch: number[]): number[][] {
+  const processedBatchBlocks = currentBlockBatch.filter((block) => !bypassBlocks.includes(block));
+  const processedBypassBlocks = bypassBlocks.filter((block) => !currentBlockBatch.includes(block));
+  return [processedBypassBlocks, processedBatchBlocks];
 }

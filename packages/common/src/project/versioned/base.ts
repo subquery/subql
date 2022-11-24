@@ -19,12 +19,6 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
 
   toDeployment(): string {
     // classToPlain fixes Map type with assets fields
-    console.log(
-      yaml.dump(classToPlain(this.deployment), {
-        sortKeys: true,
-        condenseFlow: true,
-      })
-    );
     return yaml.dump(classToPlain(this.deployment), {
       sortKeys: true,
       condenseFlow: true,
@@ -35,7 +29,6 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
     const errors = validateSync(this.deployment, {
       whitelist: true,
       forbidNonWhitelisted: true,
-      enableDebugMessages: true,
     });
     if (errors?.length) {
       // TODO: print error details

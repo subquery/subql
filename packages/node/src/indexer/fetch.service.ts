@@ -243,7 +243,10 @@ export class FetchService implements OnApplicationShutdown {
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
       // set init bypassBlocks
-      this.bypassBlocks = this.project.bypassBlocks;
+      this.bypassBlocks =
+        startHeight > Math.max(...this.project.bypassBlocks)
+          ? []
+          : this.project.bypassBlocks;
 
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
@@ -494,44 +497,41 @@ export class FetchService implements OnApplicationShutdown {
 
       if (handlers.length && this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
-          this.getEnqueuedModuloBlocks(startBlockHeight),
+          this.filteredBlockBatch(
+            this.getEnqueuedModuloBlocks(startBlockHeight),
+            endHeight,
+          ),
         );
       } else {
-        const blockBatch = this.filteredBlockBatch(startBlockHeight, endHeight);
-        this.blockDispatcher.enqueueBlocks(blockBatch);
+        this.blockDispatcher.enqueueBlocks(
+          this.filteredBlockBatch(
+            range(startBlockHeight, endHeight + 1),
+            endHeight,
+          ),
+        );
       }
     }
   }
   private filteredBlockBatch(
-    startBlockHeight: number,
+    batchBlocks: number[],
     endHeight: number,
   ): number[] {
-    const localBypassBlock = this.bypassBlocks;
-    const minBypass = Math.min(...this.project.bypassBlocks);
+    const minBypass = Math.min(...this.bypassBlocks);
+    const bypassingBlocks = batchBlocks.filter((blk) =>
+      this.bypassBlocks.includes(blk),
+    );
 
-    if (this.bypassBlocks && endHeight > minBypass) {
-      const blockBatch = bypassBlocksValidator(
-        localBypassBlock,
-        range(startBlockHeight, endHeight + 1),
-      );
-      this.bypassBlocks = localBypassBlock.map((block) => {
-        if (endHeight > block) {
-          logger.info(`Bypassed block: ${block}`);
-          return block;
-        }
-      });
-      return blockBatch;
-    } else {
-      return range(startBlockHeight, endHeight + 1);
+    if (!this.bypassBlocks?.length && endHeight < minBypass) return batchBlocks;
+
+    const [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(
+      this.bypassBlocks,
+      batchBlocks,
+    );
+    if (bypassingBlocks.length) {
+      logger.info(`Bypassed blocks: ${bypassingBlocks}`);
     }
-    // if endBlock of current batch is greater than min of bypassBlocks,
-    // endBlock = 10
-    // bypassMin = 9
-    // use bypass check
-    // return parsedBlockBatch
-    // remove all bypassBlocks < endBlock
-    // if bypassMin = 11
-    // dont need to go through bypass check
+    this.bypassBlocks = processedBypassBlocks;
+    return processedBatchBlocks;
   }
 
   private nextEndBlockHeight(

@@ -79,7 +79,6 @@ export class BlockDispatcherService
 
   enqueueBlocks(heights: number[]): void {
     if (!heights.length) return;
-
     logger.info(
       `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
         heights.length
