@@ -3052,7 +3052,7 @@ __metadata:
     web3-providers-ws: ^1.8.0
     yargs: ^16.2.0
   bin:
-    subql-node-flare: ./bin/run
+    subql-node-ethereum: ./bin/run
   languageName: unknown
   linkType: soft
 
