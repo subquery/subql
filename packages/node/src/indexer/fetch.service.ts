@@ -530,7 +530,6 @@ export class FetchService implements OnApplicationShutdown {
       logger.info(`Bypassed blocks: ${bypassingBlocks}`);
     }
     this.bypassBlocks = processedBypassBlocks;
-    console.log(processedBatchBlocks);
     return processedBatchBlocks;
   }
 
