@@ -1,6 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {IsArray, IsOptional} from 'class-validator';
+
 export interface IProjectManifest<D> {
   specVersion: string;
   description: string;
@@ -13,6 +15,7 @@ export interface IProjectManifest<D> {
 export interface ProjectNetworkConfig {
   endpoint: string;
   dictionary?: string;
+  bypassBlocks?: number[];
   //genesisHash?: string;
 }
 

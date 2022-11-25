@@ -63,7 +63,6 @@ export class SubqueryProject {
   templates: SubqlProjectDsTemplate[];
   chainTypes?: RegisteredTypes;
   runner?: RunnerSpecs;
-  bypassBlocks?: number[];
 
   static async create(
     path: string,
@@ -219,7 +218,6 @@ async function loadProjectFromManifest1_0_0(
     reader,
   );
   project.runner = projectManifest.runner;
-  project.bypassBlocks = projectManifest.bypassBlocks;
   if (!validateSemver(packageVersion, project.runner.node.version)) {
     throw new Error(
       `Runner require node version ${project.runner.node.version}, current node ${packageVersion}`,

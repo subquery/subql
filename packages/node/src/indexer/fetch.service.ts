@@ -244,9 +244,9 @@ export class FetchService implements OnApplicationShutdown {
 
       // set init bypassBlocks
       this.bypassBlocks =
-        startHeight > Math.max(...this.project.bypassBlocks)
+        startHeight > Math.max(...this.project.network.bypassBlocks)
           ? []
-          : this.project.bypassBlocks;
+          : this.project.network.bypassBlocks;
 
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
@@ -435,6 +435,10 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
 
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
@@ -479,7 +483,9 @@ export class FetchService implements OnApplicationShutdown {
                 this.blockDispatcher.freeSize,
               );
               batchBlocks = batchBlocks.slice(0, maxBlockSize);
-              this.blockDispatcher.enqueueBlocks(batchBlocks);
+              this.blockDispatcher.enqueueBlocks(
+                this.filteredBlockBatch(batchBlocks, endHeight),
+              );
             }
             continue; // skip nextBlockRange() way
           }
@@ -489,11 +495,6 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
-
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
 
       if (handlers.length && this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
