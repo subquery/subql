@@ -88,7 +88,7 @@ export class FetchService implements OnApplicationShutdown {
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
-  private bypassBlocks: number[];
+  private bypassBlocks: number[] = [];
 
   constructor(
     private apiService: ApiService,
@@ -243,10 +243,12 @@ export class FetchService implements OnApplicationShutdown {
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
       // set init bypassBlocks
-      this.bypassBlocks =
-        startHeight > Math.max(...this.project.network.bypassBlocks)
-          ? []
-          : this.project.network.bypassBlocks;
+      if (this.project.network?.bypassBlocks !== undefined) {
+        this.bypassBlocks =
+          startHeight > Math.max(...this.project.network.bypassBlocks)
+            ? []
+            : this.project.network.bypassBlocks;
+      }
 
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
@@ -435,10 +437,6 @@ export class FetchService implements OnApplicationShutdown {
         await delay(1);
         continue;
       }
-      const endHeight = this.nextEndBlockHeight(
-        startBlockHeight,
-        scaledBatchSize,
-      );
 
       if (this.useDictionary) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
@@ -484,7 +482,7 @@ export class FetchService implements OnApplicationShutdown {
               );
               batchBlocks = batchBlocks.slice(0, maxBlockSize);
               this.blockDispatcher.enqueueBlocks(
-                this.filteredBlockBatch(batchBlocks, endHeight),
+                this.filteredBlockBatch(batchBlocks),
               );
             }
             continue; // skip nextBlockRange() way
@@ -495,34 +493,34 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+      const endHeight = this.nextEndBlockHeight(
+        startBlockHeight,
+        scaledBatchSize,
+      );
 
       if (handlers.length && this.getModulos().length === handlers.length) {
         this.blockDispatcher.enqueueBlocks(
           this.filteredBlockBatch(
             this.getEnqueuedModuloBlocks(startBlockHeight),
-            endHeight,
           ),
         );
       } else {
         this.blockDispatcher.enqueueBlocks(
-          this.filteredBlockBatch(
-            range(startBlockHeight, endHeight + 1),
-            endHeight,
-          ),
+          this.filteredBlockBatch(range(startBlockHeight, endHeight + 1)),
         );
       }
     }
   }
-  private filteredBlockBatch(
-    batchBlocks: number[],
-    endHeight: number,
-  ): number[] {
+  private filteredBlockBatch(batchBlocks: number[]): number[] {
     const minBypass = Math.min(...this.bypassBlocks);
+    const maxBatchBlock = Math.max(...batchBlocks);
     const bypassingBlocks = batchBlocks.filter((blk) =>
       this.bypassBlocks.includes(blk),
     );
 
-    if (!this.bypassBlocks?.length && endHeight < minBypass) return batchBlocks;
+    if (!this.bypassBlocks?.length && maxBatchBlock < minBypass) {
+      return batchBlocks;
+    }
 
     const [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(
       this.bypassBlocks,
@@ -532,6 +530,7 @@ export class FetchService implements OnApplicationShutdown {
       logger.info(`Bypassed blocks: ${bypassingBlocks}`);
     }
     this.bypassBlocks = processedBypassBlocks;
+    console.log(processedBatchBlocks);
     return processedBatchBlocks;
   }
 
