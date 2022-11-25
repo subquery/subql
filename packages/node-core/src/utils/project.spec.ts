@@ -24,5 +24,11 @@ describe('bypass logic', () => {
     [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(bypassBlocks, currentBatchBlocks);
     expect(processedBatchBlocks).toEqual([]);
     expect(processedBypassBlocks).toEqual([10, 11, 12, 13, 14]);
+
+    const dictionaryBatchBlocks = [7, 9, 892, 100];
+    bypassBlocks = [9, 1, 10, 12];
+    [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(bypassBlocks, dictionaryBatchBlocks);
+    expect(processedBatchBlocks).toEqual([7, 892, 100]);
+    expect(processedBypassBlocks).toEqual([1, 10, 12]);
   });
 });
