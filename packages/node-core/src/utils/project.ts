@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {isNumber, range} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {Metadata, MetadataRepo} from '../indexer/entities/Metadata.entity';
@@ -41,8 +42,24 @@ export async function getMetaDataInfo<T extends Metadata['value'] = number>(
   return res?.value as T | undefined;
 }
 
-export function bypassBlocksValidator(bypassBlocks: number[], currentBlockBatch: number[]): number[][] {
-  const processedBatchBlocks = currentBlockBatch.filter((block) => !bypassBlocks.includes(block));
-  const processedBypassBlocks = bypassBlocks.filter((block) => !currentBlockBatch.includes(block));
-  return [processedBypassBlocks, processedBatchBlocks];
+interface bypassBlockValidatorType {
+  processedBypassBlocks: number[];
+  processedBatchBlocks: number[];
+}
+
+export function bypassBlocksValidator(
+  bypassBlocks: (number | string)[],
+  currentBlockBatch: number[]
+): bypassBlockValidatorType {
+  const _processedBypassBlocks: number[] = [].concat(
+    ...bypassBlocks.map((bypassEntry) => {
+      if (isNumber(bypassEntry)) return bypassEntry;
+      const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim()));
+      return range(splitRange[0], splitRange[1]);
+    })
+  );
+
+  const processedBatchBlocks = currentBlockBatch.filter((block) => !_processedBypassBlocks.includes(block));
+  const processedBypassBlocks = _processedBypassBlocks.filter((block) => !currentBlockBatch.includes(block));
+  return {processedBypassBlocks, processedBatchBlocks};
 }
