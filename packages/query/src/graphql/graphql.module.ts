@@ -140,7 +140,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
         calculateHttpHeaders: true,
       }),
       this.config.get('playground')
-        ? ApolloServerPluginLandingPageGraphQLPlayground()
+        ? ApolloServerPluginLandingPageGraphQLPlayground({
+            settings: argv['playground-settings'] ? JSON.parse(argv['playground-settings']) : undefined,
+          })
         : ApolloServerPluginLandingPageDisabled(),
       queryComplexityPlugin({schema, maxComplexity: argv['query-complexity']}),
     ];
