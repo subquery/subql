@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {blake2AsHex} from '@polkadot/util-crypto';
+import {hashName} from '@subql/utils';
 import {QueryTypes, Sequelize, Utils} from 'sequelize';
 
 export interface SmartTags {
@@ -122,7 +123,7 @@ END;
 $$ LANGUAGE plpgsql;`;
 
 export function dropNotifyTrigger(schema: string, table: string): string {
-  const triggerName = makeTriggerName(schema, table, 'notify');
+  const triggerName = hashName(schema, 'notify_trigger', table);
   return `DROP TRIGGER IF EXISTS "${triggerName}"
     ON "${schema}"."${table}";`;
 }
@@ -138,7 +139,7 @@ export async function getTriggers(sequelize: Sequelize, triggerName: string): Pr
   );
 }
 export function createNotifyTrigger(schema: string, table: string): string {
-  const triggerName = makeTriggerName(schema, table, 'notify');
+  const triggerName = hashName(schema, 'notify_trigger', table);
   return `
 CREATE TRIGGER "${triggerName}"
     AFTER INSERT OR UPDATE OR DELETE
@@ -146,29 +147,26 @@ CREATE TRIGGER "${triggerName}"
     FOR EACH ROW EXECUTE FUNCTION send_notification();`;
 }
 
-export function makeTriggerName(schema: string, tableName: string, triggerType: string): string {
-  // max name length is 63 bytes in Postgres
-  return blake2AsHex(`${schema}_${tableName}_${triggerType}_trigger`).substr(2, 10);
-}
-
 export function createSchemaTrigger(schema: string, metadataTableName: string): string {
-  const triggerName = makeTriggerName(schema, metadataTableName, 'schema');
+  const triggerName = hashName(schema, 'schema_trigger', metadataTableName);
+  const functionName = hashName(schema, 'schema_function', metadataTableName);
   return `
   CREATE TRIGGER "${triggerName}"
     AFTER UPDATE
     ON "${schema}"."${metadataTableName}"
     FOR EACH ROW
     WHEN ( new.key = 'schemaMigrationCount')
-    EXECUTE FUNCTION "${schema}".schema_notification();`;
+    EXECUTE FUNCTION "${functionName}"();`;
 }
 
 export function createSchemaTriggerFunction(schema: string): string {
+  const functionName = hashName(schema, 'schema_function', '_metadata');
   return `
-  CREATE OR REPLACE FUNCTION "${schema}".schema_notification()
+  CREATE OR REPLACE FUNCTION "${functionName}"()
     RETURNS trigger AS $$
   BEGIN
     PERFORM pg_notify(
-            CONCAT(TG_TABLE_SCHEMA,'.',TG_TABLE_NAME,'.','hot_schema'),
+            '${hashName(schema, 'schema_channel', '_metadata')}',
             'schema_updated');
     RETURN NULL;
   END;

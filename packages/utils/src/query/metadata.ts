@@ -11,3 +11,7 @@ export function getMetadataTableName(chainId: string): string {
   const hash = blake2AsHex(chainId, 64);
   return `_metadata_${hash}`.substring(0, 63); // 63 chars is the max postgres database table name length
 }
+
+export function hashName(schema: string, type: string, tableName: string): string {
+  return blake2AsHex(`${schema}_${tableName}_${type}`).substr(2, 10);
+}
