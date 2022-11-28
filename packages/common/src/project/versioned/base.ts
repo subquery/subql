@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {classToPlain} from 'class-transformer';
-import {Allow, IsArray, IsOptional, IsString, validateSync} from 'class-validator';
+import {Allow, IsString, validateSync} from 'class-validator';
 import yaml from 'js-yaml';
 
 export abstract class ProjectManifestBaseImpl<D extends object> {

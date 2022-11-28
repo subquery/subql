@@ -254,13 +254,6 @@ export class ProjectService {
         'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
-    if (this.project.network.bypassBlocks) {
-      await metadataRepo.upsert({
-        key: 'bypassBlocks',
-        value: this.project.network.bypassBlocks,
-      });
-    }
-
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
     }

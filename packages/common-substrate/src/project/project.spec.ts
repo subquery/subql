@@ -4,7 +4,6 @@
 import path from 'path';
 import {RunnerQueryBaseModel, SemverVersionValidator} from '@subql/common';
 import {validateSync} from 'class-validator';
-import {valid, validRange, prerelease, clean, coerce} from 'semver';
 import {DeploymentV1_0_0, SubstrateRunnerNodeImpl, SubstrateRunnerSpecsImpl} from '../project/versioned/v1_0_0';
 import {loadSubstrateProjectManifest} from './load';
 
@@ -71,8 +70,19 @@ describe('project.yaml', () => {
     validateSync(deployment.runner, {whitelist: true, forbidNonWhitelisted: true});
   });
 
-  it('bypass blocks', () => {
+  it('can validate bypass blocks', () => {
+    // const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml')).asV1_0_0.deployment;
+    // expect(deployment.network.chainId).not.toBeNull();
+    // console.log(deployment.network.chainId);
+    const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml')).asV1_0_0.deployment;
+    const range_deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass_range.yaml')).asV1_0_0
+      .deployment;
+
+    expect(deployment.network.bypassBlocks).not.toBeNull();
+    expect(range_deployment.network.bypassBlocks).not.toBeNull();
+
     expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml'))).not.toThrow();
+    expect(() => loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass_range.yaml'))).not.toThrow();
   });
 
   it('can validate a v1.0.0 project.yaml with unsupported runner node', () => {

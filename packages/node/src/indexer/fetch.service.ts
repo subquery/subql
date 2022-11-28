@@ -22,16 +22,17 @@ import {
   SubstrateRuntimeHandlerFilter,
 } from '@subql/common-substrate';
 import {
-  bypassBlocksValidator,
+  cleanedBatchBlocks,
   checkMemoryUsage,
   delay,
   getLogger,
   IndexerEvent,
   NodeConfig,
+  transformBypassBlocks,
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
-import { range, sortBy, uniqBy } from 'lodash';
+import { filter, intersection, range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
@@ -235,6 +236,15 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(startHeight: number): Promise<void> {
+    // Declare bypassBlock in class
+    if (this.project.network?.bypassBlocks !== undefined) {
+      this.bypassBlocks =
+        startHeight >
+        Math.max(...transformBypassBlocks(this.project.network.bypassBlocks))
+          ? []
+          : transformBypassBlocks(this.project.network.bypassBlocks);
+    }
+
     if (this.api) {
       const CHAIN_INTERVAL = calcInterval(this.api)
         .muln(INTERVAL_PERCENT)
@@ -243,12 +253,6 @@ export class FetchService implements OnApplicationShutdown {
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
       // set init bypassBlocks
-      if (this.project.network?.bypassBlocks !== undefined) {
-        this.bypassBlocks =
-          startHeight > Math.max(...this.project.network.bypassBlocks)
-            ? []
-            : this.project.network.bypassBlocks;
-      }
 
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
@@ -480,9 +484,10 @@ export class FetchService implements OnApplicationShutdown {
                 batchBlocks.length,
                 this.blockDispatcher.freeSize,
               );
-              batchBlocks = batchBlocks.slice(0, maxBlockSize);
+              const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
+              console.log('dict ', this.filteredBlockBatch(batchBlocks));
               this.blockDispatcher.enqueueBlocks(
-                this.filteredBlockBatch(batchBlocks),
+                this.filteredBlockBatch(enqueuingBlocks),
               );
             }
             continue; // skip nextBlockRange() way
@@ -505,32 +510,73 @@ export class FetchService implements OnApplicationShutdown {
           ),
         );
       } else {
-        this.blockDispatcher.enqueueBlocks(
-          this.filteredBlockBatch(range(startBlockHeight, endHeight + 1)),
+        const blockBatch = this.filteredBlockBatch(
+          range(startBlockHeight, endHeight + 1),
         );
+
+        // if (!blockBatch.length) continue
+        console.log('fetch enqueued ', blockBatch);
+        this.blockDispatcher.enqueueBlocks(blockBatch);
       }
     }
   }
-  private filteredBlockBatch(batchBlocks: number[]): number[] {
-    const minBypass = Math.min(...this.bypassBlocks);
-    const maxBatchBlock = Math.max(...batchBlocks);
-    const bypassingBlocks = batchBlocks.filter((blk) =>
-      this.bypassBlocks.includes(blk),
-    );
+  private filteredBlockBatch(currentBatchBlocks: number[]): number[] {
+    // [1,2,3] 3
+    // [4, 5, 6] 4
+    // max currentBatch < min bypassBlock
+    // not using bypass
+    if (!this.bypassBlocks || !currentBatchBlocks) return currentBatchBlocks;
 
-    if (!this.bypassBlocks?.length && maxBatchBlock < minBypass) {
-      return batchBlocks;
-    }
+    console.log('current ', currentBatchBlocks);
+    console.log('bypass ', this.bypassBlocks);
+    // if (Math.max(...currentBatchBlocks) <  Math.min(...this.bypassBlocks)) {
+    //   console.log('not reached')
+    //   return currentBatchBlocks;
+    // }
 
-    const [processedBypassBlocks, processedBatchBlocks] = bypassBlocksValidator(
+    // new Batch
+    const cleanedBatch = cleanedBatchBlocks(
       this.bypassBlocks,
-      batchBlocks,
+      currentBatchBlocks,
     );
-    if (bypassingBlocks.length) {
-      logger.info(`Bypassed blocks: ${bypassingBlocks}`);
-    }
-    this.bypassBlocks = processedBypassBlocks;
-    return processedBatchBlocks;
+
+    // remove all commons with bypass and current
+    // should be removed blocks
+    const pollutedBlocks = this.bypassBlocks.filter(
+      (b) => b < Math.max(...currentBatchBlocks) - 1,
+    );
+    console.log('polluted ', pollutedBlocks);
+    // a cloned array, as this.bypassBlocks is used for intersection comparing
+    const filteredBypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
+    console.log('filtered bypass ', filteredBypassBlocks);
+
+    this.bypassBlocks = filteredBypassBlocks;
+    // remove all that is less than the max of
+    // e.g. batch [1,2,3,4,5]
+    // to check if there is common, if common return the value
+    // const bypassingBlocks = batchBlocks.filter((blk) =>
+    //     // should be in session
+    //     this.bypassBlocks.includes(blk),
+    // );
+
+    // const {processedBatchBlocks, processedBypassBlocks} = cleanedBatchBlocks(
+    //   this.bypassBlocks,
+    //   batchBlocks,
+    // );
+
+    // this should be the total bypass left
+    // console.log('output bypass: ', processedBypassBlocks)
+
+    // if (bypassingBlocks.length) {
+    //   // should print the bypassed this session (current batch)
+    //   logger.info(`Bypassed blocks: ${bypassingBlocks}`);
+    // }
+
+    // this.bypassBlocks = processedBypassBlocks;
+    // console.log('new bypass', processedBypassBlocks)
+    // console.log('new batch ', processedBatchBlocks)
+    // return processedBatchBlocks;
+    return cleanedBatch;
   }
 
   private nextEndBlockHeight(
