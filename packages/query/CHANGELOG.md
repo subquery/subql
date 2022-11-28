@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
-### Chnaged
+### Added
 - Add `--playground-settings` options for passing the settings to the pleyground (#1436)
 
 ## [1.8.0] - 2022-11-23
