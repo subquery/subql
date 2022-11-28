@@ -19,6 +19,11 @@ export function getYargsOption() {
       describe: 'Enable graphql playground',
       type: 'boolean',
     },
+    'playground-settings': {
+      demandOption: false,
+      describe: 'Pass the settings to the graphql playground (JSON format)',
+      type: 'string',
+    },
     'output-fmt': {
       demandOption: false,
       describe: 'Print log as json or plain text',
