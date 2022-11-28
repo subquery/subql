@@ -32,7 +32,15 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
-import { filter, intersection, range, sortBy, uniqBy, without } from 'lodash';
+import {
+  filter,
+  intersection,
+  last,
+  range,
+  sortBy,
+  uniqBy,
+  without,
+} from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
@@ -516,7 +524,7 @@ export class FetchService implements OnApplicationShutdown {
 
         // if (!blockBatch.length) continue
         console.log('fetch enqueued ', blockBatch);
-        this.blockDispatcher.enqueueBlocks(blockBatch);
+        this.blockDispatcher.enqueueBlocks(blockBatch, last(blockBatch));
       }
     }
   }
@@ -542,6 +550,7 @@ export class FetchService implements OnApplicationShutdown {
 
     // remove all commons with bypass and current
     // should be removed blocks
+    // maybe this should execute after the enqueue
     const pollutedBlocks = this.bypassBlocks.filter(
       (b) => b < Math.max(...currentBatchBlocks) - 1,
     );
