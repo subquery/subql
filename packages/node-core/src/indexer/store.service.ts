@@ -159,16 +159,17 @@ export class StoreService {
           );
         }
       }
+      // Ref: https://www.graphile.org/postgraphile/enums/
+      // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
+      // It is difficult for sequelize use replacement, instead we use escape to avoid injection
 
-      const comment = `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`;
-
-      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS ?`, {
-        replacements: [comment],
-      });
+      const comment = this.sequelize.escape(
+        `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
+      );
+      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E${comment}`);
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
-
     if (this.config.subscription) {
       extraQueries.push(createSendNotificationTriggerFunction);
     }
