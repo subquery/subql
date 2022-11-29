@@ -5,6 +5,7 @@ import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
 import {delay} from '@subql/common';
+import {hashName} from '@subql/utils';
 import {getPostGraphileBuilder, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
 import {
   ApolloServerPluginCacheControl,
@@ -124,7 +125,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
 
     if (!argv['disable-hot-schema']) {
       const pgClient = await this.pgPool.connect();
-      await pgClient.query(`LISTEN "${dbSchema}._metadata.hot_schema"`);
+      await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
 
       pgClient.on('notification', (msg) => {
         if (msg.payload === 'schema_updated') {

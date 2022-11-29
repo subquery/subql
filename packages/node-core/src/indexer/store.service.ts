@@ -10,6 +10,7 @@ import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
   GraphQLRelationsType,
+  hashName,
   IndexType,
   METADATA_REGEX,
   MULTI_METADATA_REGEX,
@@ -49,7 +50,6 @@ import {
   BTREE_GIST_EXTENSION_EXIST_QUERY,
   modelsTypeToModelAttributes,
   camelCaseObjectKey,
-  makeTriggerName,
   createSchemaTriggerFunction,
   createSchemaTrigger,
   enumNameToHash,
@@ -203,7 +203,7 @@ export class StoreService {
       }
 
       if (this.config.subscription) {
-        const triggerName = makeTriggerName(schema, sequelizeModel.tableName, 'notify');
+        const triggerName = hashName(schema, 'notify_trigger', sequelizeModel.tableName);
         const notifyTriggers = await getTriggers(this.sequelize, triggerName);
 
         // Triggers not been found
@@ -279,7 +279,7 @@ export class StoreService {
 
     /* These SQL queries are to allow hot-schema reload on query service */
     extraQueries.push(createSchemaTriggerFunction(schema));
-    const schemaTriggerName = makeTriggerName(schema, this.metaDataRepo.tableName, 'schema');
+    const schemaTriggerName = hashName(schema, 'schema_trigger', this.metaDataRepo.tableName);
 
     const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
 
