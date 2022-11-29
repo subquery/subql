@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.1] - 2022-11-30
+### Fixed
+- Fixed enum name (#1441)
+
 ## [1.5.0] - 2022-11-23
 ### Added
 - Dictionary auth link integration (#1411)
