@@ -63,12 +63,11 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
 export function cleanedBatchBlocks(bypassBlocks: number[], currentBlockBatch: number[]): number[] {
   // if contains range, then transform it
   const _processedBypassBlocks = transformBypassBlocks(bypassBlocks);
-  console.log('transformed ', _processedBypassBlocks);
 
   // new blockBatch after filtering out all the bypass
   const cleanBlockBatch = without(currentBlockBatch, ..._processedBypassBlocks);
 
-  console.log('cleaned ', cleanBlockBatch);
+  console.log('cleaned batch', cleanBlockBatch);
   return cleanBlockBatch;
 }
 

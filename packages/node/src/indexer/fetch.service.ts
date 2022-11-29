@@ -98,6 +98,7 @@ export class FetchService implements OnApplicationShutdown {
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
   private bypassBlocks: number[] = [];
+  private bypassBufferHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -524,7 +525,8 @@ export class FetchService implements OnApplicationShutdown {
 
         // if (!blockBatch.length) continue
         console.log('fetch enqueued ', blockBatch);
-        this.blockDispatcher.enqueueBlocks(blockBatch, last(blockBatch));
+
+        this.blockDispatcher.enqueueBlocks(blockBatch, this.bypassBufferHeight);
       }
     }
   }
@@ -552,12 +554,16 @@ export class FetchService implements OnApplicationShutdown {
     // should be removed blocks
     // maybe this should execute after the enqueue
     const pollutedBlocks = this.bypassBlocks.filter(
-      (b) => b < Math.max(...currentBatchBlocks) - 1,
+      (b) => b < Math.max(...currentBatchBlocks),
     );
+    if (!cleanedBatch.length) {
+      this.bypassBufferHeight = Math.max(...currentBatchBlocks);
+      console.log('bypassBufferHeight ', this.bypassBufferHeight);
+    }
     console.log('polluted ', pollutedBlocks);
     // a cloned array, as this.bypassBlocks is used for intersection comparing
     const filteredBypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
-    console.log('filtered bypass ', filteredBypassBlocks);
+    // console.log('filtered bypass ', filteredBypassBlocks);
 
     this.bypassBlocks = filteredBypassBlocks;
     // remove all that is less than the max of
