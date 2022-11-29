@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
+
+## [1.12.0] - 2022-11-17
 ### Updated
 - Sync with latest changes on Substrate SDK ()
   - Hot schema reload
