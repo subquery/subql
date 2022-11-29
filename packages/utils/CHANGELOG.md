@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.3.1] - 2022-11-30
+### Fixed
+- Support postgres identifier restrictions (#1438)
+
 ## [1.3.0] - 2022-11-23
 ### Changed
 - Support for multi-chain indexing (#1375)
