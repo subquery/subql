@@ -902,8 +902,6 @@ describe('FetchService', () => {
     await fetchService.init(1);
     const filteredBatch = jest.spyOn(fetchService as any, `filteredBlockBatch`);
     (fetchService as any).latestFinalizedHeight = 45;
-    // const runtimeService = (fetchService as any).runtimeService;
-    // runtimeService.prefetchMeta = jest.fn();
     blockDispatcher.latestBufferedHeight = undefined;
     await new Promise((resolve) => {
       eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
@@ -920,7 +918,84 @@ describe('FetchService', () => {
     expect((fetchService as any).bypassBlocks).toEqual([80]);
   }, 500000);
 
-  // it('bypassBlocks < latestBufferHeight should be removed', async () => {
-  //
-  // });
+  it('latestBufferHeight should increment based on highest block if range exceeds batchSize', async () => {
+    const batchSize = 30;
+    project.network.bypassBlocks = ['1-30'];
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleBond',
+              kind: SubstrateHandlerKind.Block,
+            },
+          ],
+        },
+      },
+    ];
+    const nodeConfig = new NodeConfig({
+      subquery: '',
+      subqueryName: '',
+      batchSize,
+    });
+
+    const dictionaryService = new DictionaryService(project, nodeConfig);
+    const projectService = mockProjectService();
+    const schedulerRegistry = new SchedulerRegistry();
+    const eventEmitter = new EventEmitter2();
+    const dsProcessorService = new DsProcessorService(project, nodeConfig);
+    const dynamicDsService = new DynamicDsService(dsProcessorService, project);
+    (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
+    await unfinalizedBlocksService.init(getMockMetadata(), () =>
+      Promise.resolve(),
+    );
+
+    const blockDispatcher = new BlockDispatcherService(
+      apiService,
+      nodeConfig,
+      mockIndexerManager(),
+      eventEmitter,
+      projectService,
+    );
+    fetchService = new FetchService(
+      apiService,
+      nodeConfig,
+      project,
+      blockDispatcher,
+      dictionaryService,
+      dsProcessorService,
+      dynamicDsService,
+      unfinalizedBlocksService,
+      eventEmitter,
+      schedulerRegistry,
+      new RuntimeService(apiService, dictionaryService),
+    );
+    await fetchService.init(1);
+
+    (fetchService as any).latestFinalizedHeight = 10;
+    const filteredBatch = jest.spyOn(fetchService as any, `filteredBlockBatch`);
+    // blockDispatcher.latestBufferedHeight = undefined;
+    await new Promise((resolve) => {
+      eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
+        console.log(nextBufferSize);
+        if (nextBufferSize.value > 0) {
+          resolve(undefined);
+        }
+      });
+    });
+
+    console.log(filteredBatch.mock);
+    console.log(blockDispatcher.latestBufferedHeight);
+  }, 500000);
 });
