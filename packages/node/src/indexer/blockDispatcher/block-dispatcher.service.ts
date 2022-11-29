@@ -77,13 +77,8 @@ export class BlockDispatcherService
     this.processQueue.abort();
   }
 
-  enqueueBlocks(heights: number[], bufferHeight?: number): void {
-    console.log('dispatcher enqueued', heights);
-    if (!heights.length) {
-      this.latestBufferedHeight = bufferHeight;
-      logger.info(`Skipping shit ${this.latestBufferedHeight}`);
-      return;
-    }
+  enqueueBlocks(heights: number[]): void {
+    if (!heights.length) return;
     logger.info(
       `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
         heights.length
@@ -91,9 +86,7 @@ export class BlockDispatcherService
     );
 
     this.queue.putMany(heights);
-    // if empty array?
     this.latestBufferedHeight = last(heights);
-    console.log('latestBuffer ', this.latestBufferedHeight);
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {

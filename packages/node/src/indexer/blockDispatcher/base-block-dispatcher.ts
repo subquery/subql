@@ -22,7 +22,7 @@ export interface IBlockDispatcher {
     runtimeService?: RuntimeService,
   ): Promise<void>;
 
-  enqueueBlocks(heights: number[], bufferHeight?: number): void;
+  enqueueBlocks(heights: number[]): void;
 
   queueSize: number;
   freeSize: number;

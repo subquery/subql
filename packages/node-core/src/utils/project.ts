@@ -42,13 +42,7 @@ export async function getMetaDataInfo<T extends Metadata['value'] = number>(
   return res?.value as T | undefined;
 }
 
-interface bypassBlockValidatorType {
-  processedBypassBlocks: number[];
-  processedBatchBlocks: number[];
-}
-
 export function transformBypassBlocks(bypassBlocks: (number | string)[]): number[] {
-  // if no more bypass, just return []
   if (!bypassBlocks?.length) return [];
 
   return [].concat(
@@ -61,22 +55,5 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
 }
 
 export function cleanedBatchBlocks(bypassBlocks: number[], currentBlockBatch: number[]): number[] {
-  // if contains range, then transform it
-  const _processedBypassBlocks = transformBypassBlocks(bypassBlocks);
-
-  // new blockBatch after filtering out all the bypass
-  const cleanBlockBatch = without(currentBlockBatch, ..._processedBypassBlocks);
-
-  console.log('cleaned batch', cleanBlockBatch);
-  return cleanBlockBatch;
+  return without(currentBlockBatch, ...transformBypassBlocks(bypassBlocks));
 }
-
-// new bypassBatch after fitlering out all the commons with currentBatch
-// I think this may be the root of the issue
-// const cleanBypassBatch = filter(bypassBlocks, intersection(bypassBlocks, currentBlockBatch))
-
-// this is returning the removeblocks from currentBatch
-// const removedBlocks = filter(currentBlockBatch, (el) => bypassBlocks.indexOf(el) >= 0)
-
-// process bypass, remove all common, and should remove all that is less than the max of currentBatch
-// const processedBypassBlocks = _processedBypassBlocks.filter((block) => !currentBlockBatch.includes(block) || block > Math.max(...currentBlockBatch));

@@ -245,7 +245,6 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   async init(startHeight: number): Promise<void> {
-    // Declare bypassBlock in class
     if (this.project.network?.bypassBlocks !== undefined) {
       this.bypassBlocks =
         startHeight >
@@ -494,7 +493,6 @@ export class FetchService implements OnApplicationShutdown {
                 this.blockDispatcher.freeSize,
               );
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
-              console.log('dict ', this.filteredBlockBatch(batchBlocks));
               this.blockDispatcher.enqueueBlocks(
                 this.filteredBlockBatch(enqueuingBlocks),
               );
@@ -522,75 +520,32 @@ export class FetchService implements OnApplicationShutdown {
         const blockBatch = this.filteredBlockBatch(
           range(startBlockHeight, endHeight + 1),
         );
-
-        // if (!blockBatch.length) continue
-        console.log('fetch enqueued ', blockBatch);
-
-        this.blockDispatcher.enqueueBlocks(blockBatch, this.bypassBufferHeight);
+        this.blockDispatcher.enqueueBlocks(blockBatch);
       }
     }
   }
   private filteredBlockBatch(currentBatchBlocks: number[]): number[] {
-    // [1,2,3] 3
-    // [4, 5, 6] 4
-    // max currentBatch < min bypassBlock
-    // not using bypass
-    if (!this.bypassBlocks || !currentBatchBlocks) return currentBatchBlocks;
+    if (!this.bypassBlocks.length || !currentBatchBlocks) {
+      return currentBatchBlocks;
+    }
 
-    console.log('current ', currentBatchBlocks);
-    console.log('bypass ', this.bypassBlocks);
-    // if (Math.max(...currentBatchBlocks) <  Math.min(...this.bypassBlocks)) {
-    //   console.log('not reached')
-    //   return currentBatchBlocks;
-    // }
-
-    // new Batch
     const cleanedBatch = cleanedBatchBlocks(
       this.bypassBlocks,
       currentBatchBlocks,
     );
 
-    // remove all commons with bypass and current
-    // should be removed blocks
-    // maybe this should execute after the enqueue
     const pollutedBlocks = this.bypassBlocks.filter(
       (b) => b < Math.max(...currentBatchBlocks),
     );
-    if (!cleanedBatch.length) {
-      this.bypassBufferHeight = Math.max(...currentBatchBlocks);
-      console.log('bypassBufferHeight ', this.bypassBufferHeight);
+    if (pollutedBlocks.length) {
+      logger.info(`Bypassing blocks: ${pollutedBlocks}`);
     }
-    console.log('polluted ', pollutedBlocks);
-    // a cloned array, as this.bypassBlocks is used for intersection comparing
-    const filteredBypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
-    // console.log('filtered bypass ', filteredBypassBlocks);
-
-    this.bypassBlocks = filteredBypassBlocks;
-    // remove all that is less than the max of
-    // e.g. batch [1,2,3,4,5]
-    // to check if there is common, if common return the value
-    // const bypassingBlocks = batchBlocks.filter((blk) =>
-    //     // should be in session
-    //     this.bypassBlocks.includes(blk),
-    // );
-
-    // const {processedBatchBlocks, processedBypassBlocks} = cleanedBatchBlocks(
-    //   this.bypassBlocks,
-    //   batchBlocks,
-    // );
-
-    // this should be the total bypass left
-    // console.log('output bypass: ', processedBypassBlocks)
-
-    // if (bypassingBlocks.length) {
-    //   // should print the bypassed this session (current batch)
-    //   logger.info(`Bypassed blocks: ${bypassingBlocks}`);
-    // }
-
-    // this.bypassBlocks = processedBypassBlocks;
-    // console.log('new bypass', processedBypassBlocks)
-    // console.log('new batch ', processedBatchBlocks)
-    // return processedBatchBlocks;
+    if (cleanedBatch.length !== this.nodeConfig.batchSize) {
+      this.blockDispatcher.latestBufferedHeight = Math.max(
+        ...currentBatchBlocks,
+      );
+    }
+    this.bypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
     return cleanedBatch;
   }
 
