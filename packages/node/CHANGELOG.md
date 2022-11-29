@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.15.1] - 2022-11-30
+## Fixed
+- Patch release with @subql/node-core fix
+
+
 ## [1.15.0] - 2022-11-23
 ## Added
 - Dictionary auth link integration (#1411)
