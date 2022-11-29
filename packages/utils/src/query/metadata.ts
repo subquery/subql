@@ -15,5 +15,5 @@ export function getMetadataTableName(chainId: string): string {
 // Hash names of SQL functions, triggers, channels to ensure it does not exceed the char limit
 export function hashName(schema: string, type: string, tableName: string): string {
   // Postgres identifier limit is 63 bytes (chars)
-  return blake2AsHex(`${schema}_${tableName}_${type}`).substr(0, 63);
+  return blake2AsHex(`${schema}_${tableName}_${type}`, 64).substring(0, 63);
 }
