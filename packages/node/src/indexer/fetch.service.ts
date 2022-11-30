@@ -246,13 +246,10 @@ export class FetchService implements OnApplicationShutdown {
 
   async init(startHeight: number): Promise<void> {
     if (this.project.network?.bypassBlocks !== undefined) {
-      this.bypassBlocks =
-        startHeight >
-        Math.max(...transformBypassBlocks(this.project.network.bypassBlocks))
-          ? []
-          : transformBypassBlocks(this.project.network.bypassBlocks);
+      this.bypassBlocks = transformBypassBlocks(
+        this.project.network.bypassBlocks,
+      ).filter((blk) => blk >= startHeight);
     }
-
     if (this.api) {
       const CHAIN_INTERVAL = calcInterval(this.api)
         .muln(INTERVAL_PERCENT)
@@ -493,9 +490,11 @@ export class FetchService implements OnApplicationShutdown {
                 this.blockDispatcher.freeSize,
               );
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
-              this.blockDispatcher.enqueueBlocks(
-                this.filteredBlockBatch(enqueuingBlocks),
-              );
+              const cleanedBatchBlocks =
+                this.filteredBlockBatch(enqueuingBlocks);
+              this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
+              //
+              this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
             }
             continue; // skip nextBlockRange() way
           }
@@ -511,16 +510,15 @@ export class FetchService implements OnApplicationShutdown {
       );
 
       if (handlers.length && this.getModulos().length === handlers.length) {
-        this.blockDispatcher.enqueueBlocks(
-          this.filteredBlockBatch(
-            this.getEnqueuedModuloBlocks(startBlockHeight),
-          ),
-        );
+        const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
+        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
+        this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
       } else {
-        const blockBatch = this.filteredBlockBatch(
-          range(startBlockHeight, endHeight + 1),
-        );
-        this.blockDispatcher.enqueueBlocks(blockBatch);
+        const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
+        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
+        this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
       }
     }
   }
@@ -540,13 +538,19 @@ export class FetchService implements OnApplicationShutdown {
     if (pollutedBlocks.length) {
       logger.info(`Bypassing blocks: ${pollutedBlocks}`);
     }
-    if (cleanedBatch.length !== this.nodeConfig.batchSize) {
+    this.bypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
+    return cleanedBatch;
+  }
+
+  private setLatestBufferHeight(
+    cleanedBatchBlocks: number[],
+    currentBatchBlocks: number[],
+  ): void {
+    if (cleanedBatchBlocks.length !== this.nodeConfig.batchSize) {
       this.blockDispatcher.latestBufferedHeight = Math.max(
         ...currentBatchBlocks,
       );
     }
-    this.bypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
-    return cleanedBatch;
   }
 
   private nextEndBlockHeight(

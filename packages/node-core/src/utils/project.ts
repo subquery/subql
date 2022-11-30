@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {filter, intersection, isEqual, isNumber, range, remove, without} from 'lodash';
+import {filter, intersection, isEqual, isNumber, range, remove, uniq, without} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
 import {Metadata, MetadataRepo} from '../indexer/entities/Metadata.entity';
@@ -45,12 +45,14 @@ export async function getMetaDataInfo<T extends Metadata['value'] = number>(
 export function transformBypassBlocks(bypassBlocks: (number | string)[]): number[] {
   if (!bypassBlocks?.length) return [];
 
-  return [].concat(
-    ...bypassBlocks.map((bypassEntry) => {
-      if (isNumber(bypassEntry)) return bypassEntry;
-      const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
-      return range(splitRange[0], splitRange[1] + 1);
-    })
+  return uniq(
+    [].concat(
+      ...bypassBlocks.map((bypassEntry) => {
+        if (isNumber(bypassEntry)) return bypassEntry;
+        const splitRange = bypassEntry.split('-').map((val) => parseInt(val.trim(), 10));
+        return range(splitRange[0], splitRange[1] + 1);
+      })
+    )
   );
 }
 
