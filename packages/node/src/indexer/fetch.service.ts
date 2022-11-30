@@ -257,8 +257,6 @@ export class FetchService implements OnApplicationShutdown {
 
       BLOCK_TIME_VARIANCE = Math.min(BLOCK_TIME_VARIANCE, CHAIN_INTERVAL);
 
-      // set init bypassBlocks
-
       this.schedulerRegistry.addInterval(
         'getFinalizedBlockHead',
         setInterval(
@@ -493,7 +491,6 @@ export class FetchService implements OnApplicationShutdown {
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
               this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
-              //
               this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
             }
             continue; // skip nextBlockRange() way

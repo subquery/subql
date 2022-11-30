@@ -26,10 +26,7 @@ export abstract class ProjectManifestBaseImpl<D extends object> {
   }
 
   validate(): void {
-    const errors = validateSync(this.deployment, {
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    });
+    const errors = validateSync(this.deployment, {whitelist: true, forbidNonWhitelisted: true});
     if (errors?.length) {
       // TODO: print error details
       const errorMsgs = errors.map((e) => e.toString()).join('\n');

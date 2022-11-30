@@ -71,9 +71,6 @@ describe('project.yaml', () => {
   });
 
   it('can validate bypass blocks', () => {
-    // const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml')).asV1_0_0.deployment;
-    // expect(deployment.network.chainId).not.toBeNull();
-    // console.log(deployment.network.chainId);
     const deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass.yaml')).asV1_0_0.deployment;
     const range_deployment = loadSubstrateProjectManifest(path.join(projectsDir, 'project_bypass_range.yaml')).asV1_0_0
       .deployment;

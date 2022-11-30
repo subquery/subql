@@ -163,7 +163,6 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   @ValidateNested()
   @Type(() => SubstrateRunnerSpecsImpl)
   runner: RunnerSpecs;
-
   protected _deployment: D;
 
   get deployment(): D {
