@@ -493,7 +493,7 @@ export class FetchService implements OnApplicationShutdown {
               this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
 
               // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
-              // to ensure block is bypassed, latestBufferHeight is needs to manually set
+              // to ensure block is bypassed, latestBufferHeight needs to be manually set
               this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
             }
             continue; // skip nextBlockRange() way
