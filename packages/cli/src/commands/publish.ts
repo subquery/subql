@@ -45,6 +45,7 @@ export default class Publish extends Command {
     } else {
       throw new Error('Please provide SUBQL_ACCESS_TOKEN before publish');
     }
+
     const cid = await uploadToIpfs(project.manifest, authToken.trim(), flags.ipfs).catch((e) => this.error(e));
     await createIPFSFile(location, cid);
 

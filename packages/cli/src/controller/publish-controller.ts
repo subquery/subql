@@ -12,8 +12,6 @@ import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
-import axios from 'axios';
-import FormData from 'form-data';
 import {IPFSHTTPClient, create} from 'ipfs-http-client';
 
 export async function createIPFSFile(projectPath: string, cid: string): Promise<void> {
@@ -130,10 +128,12 @@ export async function uploadFile(
     if (fileMap.has(content)) {
       ipfsClusterCid = fileMap.get(content);
     } else {
-      ipfsClusterCid = await uploadFileByCluster(
-        determineStringOrFsStream(content) ? await fs.promises.readFile(content.path, 'utf8') : content,
-        authToken
-      );
+      const ipfsCluster = create({
+        url: IPFS_CLUSTER_ENDPOINT,
+        headers: {Authorization: `Bearer ${authToken}`},
+      });
+
+      ipfsClusterCid = (await ipfsCluster.add(content, {pin: true, cidVersion: 0})).cid.toString();
       fileMap.set(content, ipfsClusterCid);
     }
   } catch (e) {
@@ -145,40 +145,6 @@ export async function uploadFile(
     IPFS gateway: ${ipfsClientCid}, IPFS cluster: ${ipfsClusterCid}`);
   }
   return ipfsClusterCid;
-}
-
-function determineStringOrFsStream(toBeDetermined: unknown): toBeDetermined is fs.ReadStream {
-  return !!(toBeDetermined as fs.ReadStream).path;
-}
-
-async function uploadFileByCluster(content: string, authToken: string): Promise<string> {
-  const bodyFormData = new FormData();
-  bodyFormData.append('data', content);
-  const result = (
-    await axios({
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-        'Content-Type': 'multipart/form-data',
-        ...bodyFormData.getHeaders(),
-      },
-      method: 'post',
-      url: IPFS_CLUSTER_ENDPOINT,
-      data: bodyFormData,
-      maxBodyLength: 50 * 1024 * 1024, //50 MB
-      maxContentLength: 50 * 1024 * 1024,
-    })
-  ).data as ClusterResponseData;
-
-  if (typeof result.cid === 'string') {
-    return result.cid;
-  }
-  const cid = result.cid?.['/'];
-
-  if (!cid) {
-    throw new Error('Failed to get CID from response');
-  }
-
-  return cid;
 }
 
 function mapToObject(map: Map<string | number, unknown>): Record<string | number, unknown> {
@@ -193,14 +159,4 @@ function mapToObject(map: Map<string | number, unknown>): Record<string | number
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function isFileReference(value: any): value is FileReference {
   return value?.file && typeof value.file === 'string';
-}
-
-interface ClusterResponseData {
-  name: string;
-  cid: CidSpec | string;
-  size: number;
-}
-// cluster response cid stored as {'/': 'QmVq2bqunmkmEmMCY3x9U9kDcgoRBGRbuBm5j7XKZDvSYt'}
-interface CidSpec {
-  '/': string;
 }
