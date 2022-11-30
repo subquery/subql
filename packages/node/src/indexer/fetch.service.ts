@@ -492,8 +492,6 @@ export class FetchService implements OnApplicationShutdown {
                 this.filteredBlockBatch(enqueuingBlocks);
               this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
 
-              // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
-              // to ensure block is bypassed, latestBufferHeight needs to be manually set
               this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
             }
             continue; // skip nextBlockRange() way
@@ -546,7 +544,9 @@ export class FetchService implements OnApplicationShutdown {
     cleanedBatchBlocks: number[],
     currentBatchBlocks: number[],
   ): void {
-    if (cleanedBatchBlocks.length !== this.nodeConfig.batchSize) {
+    // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
+    // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    if (cleanedBatchBlocks.length !== currentBatchBlocks.length) {
       this.blockDispatcher.latestBufferedHeight = Math.max(
         ...currentBatchBlocks,
       );
