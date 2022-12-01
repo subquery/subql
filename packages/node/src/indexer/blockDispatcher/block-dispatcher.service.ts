@@ -77,22 +77,31 @@ export class BlockDispatcherService
     this.processQueue.abort();
   }
 
-  enqueueBlocks(heights: number[]): void {
-    if (!heights.length) return;
-    logger.info(
-      `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
-      } blocks`,
-    );
+  enqueueBlocks(cleanedBlocks: number[], rawBlocks?: number[]): void {
+    // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
+    // to ensure block is bypassed, latestBufferHeight needs to be manually set
 
-    this.queue.putMany(heights);
-    this.latestBufferedHeight = last(heights);
-    void this.fetchBlocksFromQueue().catch((e) => {
-      logger.error(e, 'Failed to fetch blocks from queue');
-      if (!this.isShutdown) {
-        process.exit(1);
-      }
-    });
+    if (cleanedBlocks.length) {
+      logger.info(
+        `Enqueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
+          cleanedBlocks.length
+        } blocks`,
+      );
+
+      this.queue.putMany(cleanedBlocks);
+      this.latestBufferedHeight =
+        cleanedBlocks.length !== rawBlocks?.length
+          ? Math.max(...rawBlocks)
+          : last(cleanedBlocks);
+      void this.fetchBlocksFromQueue().catch((e) => {
+        logger.error(e, 'Failed to fetch blocks from queue');
+        if (!this.isShutdown) {
+          process.exit(1);
+        }
+      });
+      return;
+    }
+    this.latestBufferedHeight = Math.max(...rawBlocks);
   }
 
   flushQueue(height: number): void {

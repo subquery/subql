@@ -490,9 +490,11 @@ export class FetchService implements OnApplicationShutdown {
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
-              this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
 
-              this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
+              this.blockDispatcher.enqueueBlocks(
+                cleanedBatchBlocks,
+                enqueuingBlocks,
+              );
             }
             continue; // skip nextBlockRange() way
           }
@@ -510,13 +512,11 @@ export class FetchService implements OnApplicationShutdown {
       if (handlers.length && this.getModulos().length === handlers.length) {
         const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
-        this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks, enqueuingBlocks);
       } else {
         const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks);
-        this.setLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks, enqueuingBlocks);
       }
     }
   }
@@ -538,19 +538,6 @@ export class FetchService implements OnApplicationShutdown {
     }
     this.bypassBlocks = without(this.bypassBlocks, ...pollutedBlocks);
     return cleanedBatch;
-  }
-
-  private setLatestBufferHeight(
-    cleanedBatchBlocks: number[],
-    currentBatchBlocks: number[],
-  ): void {
-    // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
-    // to ensure block is bypassed, latestBufferHeight needs to be manually set
-    if (cleanedBatchBlocks.length !== currentBatchBlocks.length) {
-      this.blockDispatcher.latestBufferedHeight = Math.max(
-        ...currentBatchBlocks,
-      );
-    }
   }
 
   private nextEndBlockHeight(
