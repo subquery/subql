@@ -195,20 +195,20 @@ async function prepareDirPath(path: string, recreate: boolean) {
 }
 
 //1. Prepare models directory and load schema
-export async function codegen(projectPath: string): Promise<void> {
+export async function codegen(projectPath: string, file?: string): Promise<void> {
   const modelDir = path.join(projectPath, MODEL_ROOT_DIR);
   const interfacesPath = path.join(projectPath, TYPE_ROOT_DIR, `interfaces.ts`);
   await prepareDirPath(modelDir, true);
   await prepareDirPath(interfacesPath, false);
 
-  const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath)) as {
+  const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath, file)) as {
     specVersion: string;
     templates?: TemplateKind[];
   };
   if (plainManifest.templates && plainManifest.templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
   }
-  const schemaPath = getSchemaPath(projectPath);
+  const schemaPath = getSchemaPath(projectPath, file);
 
   await generateJsonInterfaces(projectPath, schemaPath);
   await generateModels(projectPath, schemaPath);

@@ -16,26 +16,26 @@ export function loadFromJsonOrYaml(file: string): unknown {
   return yaml.load(rawContent);
 }
 
-export function getManifestPath(file: string): string {
-  let manifestPath = file;
-  if (fs.existsSync(file) && fs.lstatSync(file).isDirectory()) {
-    const yamlFilePath = path.join(file, 'project.yaml');
-    const jsonFilePath = path.join(file, 'project.json');
+export function getManifestPath(manifestDir: string, filePath?: string): string {
+  let manifestPath = manifestDir;
+  if (fs.existsSync(manifestDir) && fs.lstatSync(manifestDir).isDirectory()) {
+    const yamlFilePath = filePath ?? path.join(manifestDir, 'project.yaml');
+    const jsonFilePath = filePath ?? path.join(manifestDir, 'project.json');
     if (fs.existsSync(yamlFilePath)) {
       manifestPath = yamlFilePath;
     } else if (fs.existsSync(jsonFilePath)) {
       manifestPath = jsonFilePath;
     } else {
-      throw new Error(`Could not find project manifest under dir ${file}`);
+      throw new Error(`Could not find project manifest under dir ${manifestDir}`);
     }
   }
   return manifestPath;
 }
 
-export function getSchemaPath(file: string) {
-  const yamlFile = loadFromJsonOrYaml(getManifestPath(file));
+export function getSchemaPath(manifestDir: string, filePath?: string): string {
+  const yamlFile = loadFromJsonOrYaml(getManifestPath(manifestDir, filePath));
   if ((yamlFile as any).specVersion === '0.0.1') {
-    return path.join(file, (yamlFile as any).schema);
+    return path.join(manifestDir, (yamlFile as any).schema);
   }
   const project = yamlFile as ProjectManifestV0_2_0;
   if (!project.schema) {
@@ -44,7 +44,7 @@ export function getSchemaPath(file: string) {
   if (!project.schema.file) {
     throw new Error(`schemaPath expect to be schema.file`);
   }
-  return path.join(file, project.schema.file);
+  return path.join(manifestDir, project.schema.file);
 }
 
 // Only work for manifest specVersion >= 1.0.0
