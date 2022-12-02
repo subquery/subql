@@ -126,7 +126,7 @@ export class WorkerBlockDispatcherService
     }
   }
 
-  enqueueBlocks(heights: number[]): void {
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
     if (!heights.length) return;
     logger.info(
       `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
@@ -154,7 +154,7 @@ export class WorkerBlockDispatcherService
       );
     }
 
-    this.latestBufferedHeight = last(heights);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
   }
 
   private enqueueBlock(height: number, workerIdx: number) {

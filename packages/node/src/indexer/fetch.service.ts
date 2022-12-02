@@ -478,9 +478,12 @@ export class FetchService implements OnApplicationShutdown {
               .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              this.blockDispatcher.latestBufferedHeight = Math.min(
-                queryEndBlock - 1,
-                dictionary._metadata.lastProcessedHeight,
+              this.blockDispatcher.enqueueBlocks(
+                [],
+                Math.min(
+                  queryEndBlock - 1,
+                  dictionary._metadata.lastProcessedHeight,
+                ),
               );
             } else {
               const maxBlockSize = Math.min(
@@ -493,7 +496,7 @@ export class FetchService implements OnApplicationShutdown {
 
               this.blockDispatcher.enqueueBlocks(
                 cleanedBatchBlocks,
-                enqueuingBlocks,
+                this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
               );
             }
             continue; // skip nextBlockRange() way
@@ -512,13 +515,25 @@ export class FetchService implements OnApplicationShutdown {
       if (handlers.length && this.getModulos().length === handlers.length) {
         const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks, enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(
+          cleanedBatchBlocks,
+          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
+        );
       } else {
         const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(cleanedBatchBlocks, enqueuingBlocks);
+        this.blockDispatcher.enqueueBlocks(
+          cleanedBatchBlocks,
+          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
+        );
       }
     }
+  }
+  private getLatestBufferHeight(
+    cleanedBatchBlocks: number[],
+    rawBatchBlocks: number[],
+  ): number {
+    return Math.max(...cleanedBatchBlocks, ...rawBatchBlocks);
   }
   private filteredBlockBatch(currentBatchBlocks: number[]): number[] {
     if (!this.bypassBlocks.length || !currentBatchBlocks) {

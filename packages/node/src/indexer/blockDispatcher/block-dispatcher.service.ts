@@ -77,12 +77,12 @@ export class BlockDispatcherService
     this.processQueue.abort();
   }
 
-  enqueueBlocks(cleanedBlocks: number[], rawBlocks?: number[]): void {
-    if (!rawBlocks) return;
-    // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
-    // to ensure block is bypassed, latestBufferHeight needs to be manually set
-    if (!cleanedBlocks.length) {
-      this.latestBufferedHeight = Math.max(...rawBlocks);
+  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+    // // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
+    // // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    // If cleanedBlocks = []
+    if (!!latestBufferHeight && !cleanedBlocks.length) {
+      this.latestBufferedHeight = latestBufferHeight;
       return;
     }
 
@@ -93,10 +93,8 @@ export class BlockDispatcherService
     );
 
     this.queue.putMany(cleanedBlocks);
-    this.latestBufferedHeight =
-      cleanedBlocks.length !== rawBlocks?.length
-        ? Math.max(...rawBlocks)
-        : last(cleanedBlocks);
+
+    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
