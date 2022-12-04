@@ -32,8 +32,8 @@ export function getManifestPath(manifestDir: string, fileName?: string): string 
   return manifestPath;
 }
 
-export function getSchemaPath(manifestDir: string, filePath?: string): string {
-  const yamlFile = loadFromJsonOrYaml(getManifestPath(manifestDir, filePath));
+export function getSchemaPath(manifestDir: string, fileName?: string): string {
+  const yamlFile = loadFromJsonOrYaml(getManifestPath(manifestDir, fileName));
   if ((yamlFile as any).specVersion === '0.0.1') {
     return path.join(manifestDir, (yamlFile as any).schema);
   }
