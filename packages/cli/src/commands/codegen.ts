@@ -9,8 +9,8 @@ export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
 
   static flags = {
-    file: Flags.string({char: 'f', description: 'specify manifest file path'}),
     location: Flags.string({char: 'l', description: 'local folder to run codegen in'}),
+    file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
   };
 
   async run(): Promise<void> {
