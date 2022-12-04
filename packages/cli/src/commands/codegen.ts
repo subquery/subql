@@ -9,7 +9,7 @@ export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
 
   static flags = {
-    file: Flags.string({char: 'f', description: 'specify manifest name path'}),
+    file: Flags.string({char: 'f', description: 'specifiy manifest file path'}),
     location: Flags.string({char: 'l', description: 'local folder to run codegen in'}),
   };
 
@@ -19,11 +19,13 @@ export default class Codegen extends Command {
     this.log('---------Subql Codegen---------');
     this.log('===============================');
 
-    const file = flags.file ? path.resolve(flags.file) : undefined;
-    const location = flags.location ? path.resolve(flags.location) : process.cwd();
+    const {file, location} = flags;
+
+    const [fileDir, fileName] = file ? [path.dirname(file), path.basename(file)] : [undefined, undefined];
+    const resolvedLocation = fileDir ?? (location ? path.resolve(location) : process.cwd());
 
     try {
-      await codegen(location, file);
+      await codegen(resolvedLocation, fileName);
     } catch (err) {
       console.error(err.message);
       process.exit(1);
