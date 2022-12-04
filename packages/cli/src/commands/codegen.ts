@@ -9,7 +9,7 @@ export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
 
   static flags = {
-    file: Flags.string({char: 'f', description: 'specifiy manifest file path'}),
+    file: Flags.string({char: 'f', description: 'Specify manifest file path'}),
     location: Flags.string({char: 'l', description: 'local folder to run codegen in'}),
   };
 

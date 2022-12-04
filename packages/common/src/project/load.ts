@@ -16,11 +16,11 @@ export function loadFromJsonOrYaml(file: string): unknown {
   return yaml.load(rawContent);
 }
 
-export function getManifestPath(manifestDir: string, filePath?: string): string {
+export function getManifestPath(manifestDir: string, fileName?: string): string {
   let manifestPath = manifestDir;
   if (fs.existsSync(manifestDir) && fs.lstatSync(manifestDir).isDirectory()) {
-    const yamlFilePath = filePath ?? path.join(manifestDir, 'project.yaml');
-    const jsonFilePath = filePath ?? path.join(manifestDir, 'project.json');
+    const yamlFilePath = path.join(manifestDir, fileName ?? 'project.yaml');
+    const jsonFilePath = path.join(manifestDir, fileName ?? 'project.json');
     if (fs.existsSync(yamlFilePath)) {
       manifestPath = yamlFilePath;
     } else if (fs.existsSync(jsonFilePath)) {
