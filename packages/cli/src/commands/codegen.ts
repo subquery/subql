@@ -21,10 +21,15 @@ export default class Codegen extends Command {
 
     const {file, location} = flags;
 
-    const [fileDir, fileName] = file ? [path.dirname(file), path.basename(file)] : [undefined, undefined];
+    const resolvedFilePath = file ? path.resolve(file) : undefined;
+    const [fileDir, fileName] = resolvedFilePath ? [path.dirname(file), path.basename(file)] : [undefined, undefined];
+
     const resolvedLocation = fileDir ?? (location ? path.resolve(location) : process.cwd());
 
     try {
+      if (file && !resolvedFilePath) {
+        throw new Error('Cannot resolve project manifest from --file argument given');
+      }
       await codegen(resolvedLocation, fileName);
     } catch (err) {
       console.error(err.message);
