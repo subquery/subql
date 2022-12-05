@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0] - 2022-12-06
+### Added
+- Support for `bypassBlocks` (#1435)
+
 ## [1.5.1] - 2022-11-30
 ### Fixed
 - Fixed enum name (#1441)

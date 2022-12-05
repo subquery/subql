@@ -6,10 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.0] - 2022-12-06
+### Added
+- Support for `bypassBlocks`feature (#1435)
+
 ## [1.15.1] - 2022-11-30
 ## Fixed
 - Patch release with @subql/node-core fix
-
 
 ## [1.15.0] - 2022-11-23
 ## Added

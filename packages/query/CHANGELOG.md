@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.9.1] - 2022-12-06
+### Fixed
+- Removed `hot-schema-reload` support for RDS databases (#1449)
+
 ## [1.9.0] - 2022-11-30
 ### Added
 - Add `--playground-settings` options for passing the settings to the playground (#1436)
