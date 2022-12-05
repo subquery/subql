@@ -77,18 +77,24 @@ export class BlockDispatcherService
     this.processQueue.abort();
   }
 
-  enqueueBlocks(heights: number[]): void {
-    if (!heights.length) return;
+  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+    // // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
+    // // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    // If cleanedBlocks = []
+    if (!!latestBufferHeight && !cleanedBlocks.length) {
+      this.latestBufferedHeight = latestBufferHeight;
+      return;
+    }
 
     logger.info(
-      `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
+      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
+        cleanedBlocks.length
       } blocks`,
     );
 
-    this.queue.putMany(heights);
-    this.latestBufferedHeight = last(heights);
+    this.queue.putMany(cleanedBlocks);
 
+    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {

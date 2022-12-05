@@ -17,6 +17,7 @@ import {
   MetadataRepo,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
+import { difference, range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { calcInterval, fetchBlocksBatches } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -834,5 +835,86 @@ describe('FetchService', () => {
     expect(baseHandlerFilters).toHaveBeenCalledTimes(1);
     expect(getDsProcessor).toHaveBeenCalledTimes(3);
     fetchService.onApplicationShutdown();
+  }, 500000);
+  it('given bypassBlocks, should return correct output during runtime', async () => {
+    const batchSize = 20;
+    project.network.bypassBlocks = ['1 - 22', 35, 44, 40, 80];
+    project.dataSources = [
+      {
+        name: 'runtime',
+        kind: SubstrateDatasourceKind.Runtime,
+        startBlock: 1,
+        mapping: {
+          entryScript: '',
+          file: '',
+          handlers: [
+            {
+              handler: 'handleBond',
+              kind: SubstrateHandlerKind.Block,
+            },
+          ],
+        },
+      },
+    ];
+    const nodeConfig = new NodeConfig({
+      subquery: '',
+      subqueryName: '',
+      batchSize,
+    });
+
+    const dictionaryService = new DictionaryService(project, nodeConfig);
+    const projectService = mockProjectService();
+    const schedulerRegistry = new SchedulerRegistry();
+    const eventEmitter = new EventEmitter2();
+    const dsProcessorService = new DsProcessorService(project, nodeConfig);
+    const dynamicDsService = new DynamicDsService(dsProcessorService, project);
+    (dynamicDsService as any).getDynamicDatasources = jest.fn(() => []);
+
+    const unfinalizedBlocksService = new UnfinalizedBlocksService(
+      apiService,
+      nodeConfig,
+      null,
+    );
+    await unfinalizedBlocksService.init(getMockMetadata(), () =>
+      Promise.resolve(),
+    );
+
+    const blockDispatcher = new BlockDispatcherService(
+      apiService,
+      nodeConfig,
+      mockIndexerManager(),
+      eventEmitter,
+      projectService,
+    );
+    fetchService = new FetchService(
+      apiService,
+      nodeConfig,
+      project,
+      blockDispatcher,
+      dictionaryService,
+      dsProcessorService,
+      dynamicDsService,
+      unfinalizedBlocksService,
+      eventEmitter,
+      schedulerRegistry,
+      new RuntimeService(apiService, dictionaryService),
+    );
+    await fetchService.init(1);
+    const filteredBatch = jest.spyOn(fetchService as any, `filteredBlockBatch`);
+    (fetchService as any).latestFinalizedHeight = 45;
+    blockDispatcher.latestBufferedHeight = undefined;
+    await new Promise((resolve) => {
+      eventEmitter.on(IndexerEvent.BlocknumberQueueSize, (nextBufferSize) => {
+        if (nextBufferSize.value >= 5) {
+          resolve(undefined);
+        }
+      });
+    });
+    expect(filteredBatch.mock.results[0].value).toEqual([]);
+    expect(
+      difference(range(21, 40 + 1), filteredBatch.mock.results[1].value),
+    ).toEqual([21, 22, 35, 40]);
+    expect(filteredBatch.mock.results[2].value).not.toContain(44);
+    expect((fetchService as any).bypassBlocks).toEqual([80]);
   }, 500000);
 });
