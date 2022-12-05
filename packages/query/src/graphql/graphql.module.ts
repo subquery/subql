@@ -124,14 +124,18 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     }
 
     if (!argv['disable-hot-schema']) {
-      const pgClient = await this.pgPool.connect();
-      await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
+      try {
+        const pgClient = await this.pgPool.connect();
+        await pgClient.query(`LISTEN "${hashName(dbSchema, 'schema_channel', '_metadata')}"`);
 
-      pgClient.on('notification', (msg) => {
-        if (msg.payload === 'schema_updated') {
-          void this.schemaListener(dbSchema, options);
-        }
-      });
+        pgClient.on('notification', (msg) => {
+          if (msg.payload === 'schema_updated') {
+            void this.schemaListener(dbSchema, options);
+          }
+        });
+      } catch (e) {
+        logger.warn('Failed to init hot-schema reload', e);
+      }
     }
     const schema = await this.buildSchema(dbSchema, options);
 
