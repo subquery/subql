@@ -12,6 +12,7 @@ https://github.com/typescript-eslint/tslint-to-eslint-config/blob/master/docs/FA
 Happy linting! 💖
 */
 module.exports = {
+  root: true,
   env: {
     node: true,
     jest: true,
@@ -79,16 +80,6 @@ module.exports = {
           caseInsensitive: true /* ignore case. Options: [true, false] */,
         },
       },
-    ],
-    'header/header': [
-      2,
-      'line',
-      [
-        //Copyright 2020-2022 OnFinality Limited authors & contributors
-        {pattern: ' Copyright \\d{4}(-\\d{4})? OnFinality Limited authors & contributors'},
-        ' SPDX-License-Identifier: Apache-2.0',
-      ],
-      2,
     ],
     'sort-destructure-keys/sort-destructure-keys': [
       2,

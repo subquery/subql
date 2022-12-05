@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {NestFactory} from '@nestjs/core';
-import {findAvailablePort} from '@subql/common';
+import {telemetry, findAvailablePort} from '@subql/common';
 import {AppModule} from './app.module';
 import {getLogger, NestLogger} from './utils/logger';
 import {getYargsOption} from './yargs';
@@ -11,8 +11,17 @@ const DEFAULT_PORT = 3000;
 const {argv} = getYargsOption();
 
 void (async () => {
+  if (telemetry) {
+    await telemetry.start();
+  }
+
+  const logger = new NestLogger();
+  if (telemetry) {
+    logger.log('Tracing started...');
+  }
+
   const app = await NestFactory.create(AppModule, {
-    logger: new NestLogger(),
+    logger,
   });
 
   const validate = (x: any) => {
