@@ -52,7 +52,22 @@ import {makeAddInflectorsPlugin} from 'graphile-utils';
 import PgAggregationPlugin from './PgAggregationPlugin';
 import {PgBlockHeightPlugin} from './PgBlockHeightPlugin';
 import {PgRowByVirtualIdPlugin} from './PgRowByVirtualIdPlugin';
-
+// Order by plugins
+import {OrderCW20BalanceChangesByBlockHeight} from './fetch/wasm'
+import {OrderCW20TransfersByBlockHeight} from './fetch/wasm'
+import {OrderExecuteContractMessagesBy} from './fetch/wasm'
+import {OrderIBCTransfersByBlockHeight} from './fetch/wasm'
+import {OrderLegacyBridgeSwapsByBlockHeight} from './fetch/wasm'
+import {OrderNativeBalanceChangesByBlockHeight} from './fetch/bank'
+import {OrderNativeTransfersByBlockHeight} from './fetch/bank'
+import {OrderContractsByInstantiateMsgCodeId} from './fetch/contracts'
+import {OrderContractsByStoreMsgCodeId} from './fetch/contracts'
+import {OrderGovProposalVotesByBlockHeight} from './fetch/governance'
+import {OrderEventsByBlockHeight} from './fetch/primitives'
+import {OrderTransactionsByBlockHeight} from './fetch/primitives'
+import {OrderMessagesByBlockHeight} from './fetch/primitives'
+import {OrderAuthzExecsOrderByBlockHeight} from './fetch/staking'
+import {OrderDistDelegatorClaims} from './fetch/staking'
 /* eslint-enable */
 
 export const defaultPlugins = [
@@ -109,6 +124,23 @@ const plugins = [
   PgAggregationPlugin,
   PgBlockHeightPlugin,
   PgRowByVirtualIdPlugin,
+  //order by plugins
+  OrderCW20BalanceChangesByBlockHeight,
+  OrderCW20TransfersByBlockHeight,
+  OrderExecuteContractMessagesBy,
+  OrderIBCTransfersByBlockHeight,
+  OrderLegacyBridgeSwapsByBlockHeight,
+  OrderNativeBalanceChangesByBlockHeight,
+  OrderNativeTransfersByBlockHeight,
+  OrderContractsByInstantiateMsgCodeId,
+  OrderContractsByStoreMsgCodeId,
+  OrderGovProposalVotesByBlockHeight,
+  OrderEventsByBlockHeight,
+  OrderTransactionsByBlockHeight,
+  OrderMessagesByBlockHeight,
+  OrderAuthzExecsOrderByBlockHeight,
+  OrderDistDelegatorClaims,
+
   makeAddInflectorsPlugin((inflectors) => {
     const {constantCase: oldConstantCase} = inflectors;
     const enumValues = new Set();
