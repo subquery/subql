@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.5.0] - 2022-12-06
+### Fixed
+- Fixed `subql codegen` flags. (#1446)
+### Added
+- Support for `bypassBlocks`. (#1435)
+
 ## [1.4.4] - 2022-11-23
 ### Added
 - Add `flare` to network family constants. (#1416)

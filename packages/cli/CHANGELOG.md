@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.9.1] - 2022-12-05
+### Fixed
+- Fix for `subql` codegen `--file` flag. (#1446)
+
 ## [1.9.0] - 2022-11-23
 ### Added
 - Add support to cli/validator for flare (#1416)

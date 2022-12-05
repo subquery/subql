@@ -9,6 +9,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-12-06
+- Support for `bypassBlocks` (#1435)
+
 ## [1.6.0] - 2022-10-27
 ### Added
 - Timestamp filter to block handlers (#1310)
