@@ -52,15 +52,22 @@ export class ForceCleanService {
       );
 
       // remove schema from subquery table (might not exist)
-      await this.sequelize.query(
-        ` DELETE
+      const checker = await this.sequelize.query(
+        `
+              SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'public' AND  TABLE_NAME = 'subqueries'`,
+      );
+
+      if ((checker[1] as any).rowCount > 0) {
+        await this.sequelize.query(
+          ` DELETE
                   FROM public.subqueries
                   WHERE name = :name`,
-        {
-          replacements: { name: this.nodeConfig.subqueryName },
-          type: QueryTypes.DELETE,
-        },
-      );
+          {
+            replacements: { name: this.nodeConfig.subqueryName },
+            type: QueryTypes.DELETE,
+          },
+        );
+      }
 
       logger.info('force cleaned schema and tables');
 

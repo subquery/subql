@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   MetadataFactory,
@@ -33,7 +33,7 @@ export class ReindexService {
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
     private readonly unfinalizedBlocksService: UnfinalizedBlocksService,
     private readonly dynamicDsService: DynamicDsService,
