@@ -6,6 +6,7 @@ import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 export const yargsOptions = yargs(hideBin(process.argv))
+  .env('SUBQL_NODE')
   .command({
     command: 'force-clean',
     describe:
