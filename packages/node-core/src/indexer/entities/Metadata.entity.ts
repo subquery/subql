@@ -7,6 +7,7 @@ import {BuildOptions, DataTypes, Model, QueryTypes, Sequelize} from 'sequelize';
 export interface MetadataKeys {
   chain: string;
   genesisHash: string;
+  startHeight: number;
   historicalStateEnabled: boolean;
   indexerNodeVersion: string;
   lastProcessedHeight: number;

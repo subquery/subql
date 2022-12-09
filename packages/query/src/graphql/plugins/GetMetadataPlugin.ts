@@ -22,6 +22,7 @@ const METADATA_TYPES = {
   indexerNodeVersion: 'string',
   queryNodeVersion: 'string',
   dynamicDatasources: 'string',
+  startHeight: 'number',
 };
 
 type MetaType = number | string | boolean;
@@ -145,6 +146,7 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
         chain: String
         specName: String
         genesisHash: String
+        startHeight: Int
         indexerHealthy: Boolean
         indexerNodeVersion: String
         queryNodeVersion: String
@@ -175,7 +177,6 @@ export const GetMetadataPlugin = makeExtendSchemaPlugin((build, options) => {
           if (argv(`indexer`)) {
             return metaCache;
           }
-
           return;
         },
       },
