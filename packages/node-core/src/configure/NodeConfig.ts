@@ -41,7 +41,6 @@ export interface IConfig {
   readonly multiChain: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
-  readonly disableHotSchema?: boolean;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -62,7 +61,6 @@ const DEFAULT_CONFIG = {
   disableHistorical: false,
   multiChain: false,
   unfinalizedBlocks: false,
-  disableHotSchema: false,
 };
 
 export class NodeConfig implements IConfig {
@@ -195,10 +193,6 @@ export class NodeConfig implements IConfig {
 
   get unfinalizedBlocks(): boolean {
     return this._config.unfinalizedBlocks;
-  }
-
-  get disableHotSchema(): boolean {
-    return this._config.disableHotSchema;
   }
 
   merge(config: Partial<IConfig>): this {

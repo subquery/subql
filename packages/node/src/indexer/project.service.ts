@@ -106,9 +106,7 @@ export class ProjectService {
       this.metadataRepo = await this.ensureMetadata();
       this.dynamicDsService.init(this.metadataRepo);
 
-      if (!this.nodeConfig.disableHotSchema) {
-        await this.initHotSchemaReload();
-      }
+      await this.initHotSchemaReload();
 
       if (this.nodeConfig.proofOfIndex) {
         const blockOffset = await this.getMetadataBlockOffset();

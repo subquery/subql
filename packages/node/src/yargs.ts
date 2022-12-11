@@ -214,10 +214,4 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Enable to fetch and index unfinalized blocks',
       type: 'boolean',
     },
-    'disable-hot-schema': {
-      demandOption: false,
-      describe: 'Hot reload schema on schema-changes',
-      type: 'boolean',
-      default: false,
-    },
   });
