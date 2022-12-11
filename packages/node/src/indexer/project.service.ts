@@ -23,7 +23,7 @@ import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { initDbSchema } from '../utils/project';
+import { initDbSchema, initHotSchemaReload } from '../utils/project';
 import { reindex } from '../utils/reindex';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -106,6 +106,10 @@ export class ProjectService {
       this.metadataRepo = await this.ensureMetadata();
       this.dynamicDsService.init(this.metadataRepo);
 
+      if (!this.nodeConfig.disableHotSchema) {
+        await this.initHotSchemaReload();
+      }
+
       if (this.nodeConfig.proofOfIndex) {
         const blockOffset = await this.getMetadataBlockOffset();
         void this.setBlockOffset(Number(blockOffset));
@@ -179,6 +183,9 @@ export class ProjectService {
     return schema;
   }
 
+  private async initHotSchemaReload(): Promise<void> {
+    await initHotSchemaReload(this.schema, this.storeService);
+  }
   private async initDbSchema(): Promise<void> {
     await initDbSchema(this.project, this.schema, this.storeService);
   }

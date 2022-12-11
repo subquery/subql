@@ -118,6 +118,24 @@ export class StoreService {
     );
   }
 
+  async initHotSchemaReloadQueries(schema: string): Promise<void> {
+    /* These SQL queries are to allow hot-schema reload on query service */
+    const schemaTriggerName = hashName(schema, 'schema_trigger', this.metaDataRepo.tableName);
+    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
+
+    try {
+      await Promise.all([
+        await this.sequelize.query(`${createSchemaTriggerFunction(schema)}`),
+        schemaTriggers.length === 0 ??
+          (await this.sequelize.query(`
+            ${createSchemaTrigger(schema, this.metaDataRepo.tableName)}
+          `)),
+      ]);
+    } catch (e) {
+      logger.error(`Failed to init Hot schema reload`);
+    }
+  }
+
   // eslint-disable-next-line complexity
   async syncSchema(schema: string): Promise<void> {
     const enumTypeMap = new Map<string, string>();
@@ -276,16 +294,6 @@ export class StoreService {
       this.config.multiChain,
       this.subqueryProject.network.chainId
     );
-
-    /* These SQL queries are to allow hot-schema reload on query service */
-    extraQueries.push(createSchemaTriggerFunction(schema));
-    const schemaTriggerName = hashName(schema, 'schema_trigger', this.metaDataRepo.tableName);
-
-    const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
-
-    if (schemaTriggers.length === 0) {
-      extraQueries.push(createSchemaTrigger(schema, this.metaDataRepo.tableName));
-    }
 
     await this.sequelize.sync();
 
