@@ -208,6 +208,7 @@ export class ProjectService {
       'chain',
       'specName',
       'genesisHash',
+      'startHeight',
       'chainId',
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
@@ -280,6 +281,13 @@ export class ProjectService {
     }
     if (!keyValue.schemaMigrationCount) {
       await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
+    }
+
+    if (!keyValue.startHeight) {
+      await metadataRepo.upsert({
+        key: 'startHeight',
+        value: this.getStartBlockFromDataSources(),
+      });
     }
 
     return metadataRepo;
