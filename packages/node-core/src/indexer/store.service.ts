@@ -727,7 +727,7 @@ group by
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
           if (this.historical) {
-            if (fields.length !== 0) {
+            if (fields !== undefined && fields.length !== 0) {
               logger.warn(`Update specified fields with historical feature is not supported`);
             }
             const newRecordAttributes: CreationAttributes<Model>[] = [];
