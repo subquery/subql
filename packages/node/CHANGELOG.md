@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.17.0] - 2022-12-19
+### Fixed
+- Remove unused RuntimeService from indexer module, it had missing dependencies (#1453)
+- Fix subcommands bug (#1451)
+- Fix SequelizeDatabaseError - tuple concurrently updated (#1458)
+- Fix handle when Poi offset is 0 (#1459)
+### Added
+- Add start height to project (#1456)
+
 ## [1.16.0] - 2022-12-06
 ### Added
 - Support for `bypassBlocks`feature. User can now state blocks to skip, this can be implemented by stating an array of blocks in the `project.yaml`. See docs  [link](https://github.com/subquery/documentation/blob/master/docs/build/manifest/polkadot.md#bypass-blocks) (#1435)

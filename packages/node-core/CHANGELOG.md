@@ -10,6 +10,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2022-12-19
+### Fixed
+- Workers: Fix SequelizeDatabaseError - tuple concurrently updated (#1458)
+- Handle when fields got undefined with historical (#1463)
+### Added
+- Add start height to project (#1456)
+
 ## [1.6.0] - 2022-12-06
 ### Added
 - Support for `bypassBlocks` (#1435)
