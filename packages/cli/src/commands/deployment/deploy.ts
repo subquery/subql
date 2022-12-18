@@ -37,7 +37,7 @@ export default class Deploy extends Command {
     indexerUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
     indexerBatchSize: Flags.integer({description: 'Enter batchSize from 1 to 30', required: false}),
     indexerSubscription: Flags.boolean({description: 'Enable Indexer subscription', required: false}),
-    indexerHistoricalData: Flags.boolean({description: 'Enable Historical Data', required: false}),
+    disableHistorical: Flags.boolean({description: 'Disable Historical Data', required: false}),
     indexerWorkers: Flags.integer({description: 'Enter worker threads from 1 to 30', required: false}),
     //query flags
     queryUnsafe: Flags.boolean({description: 'Enable indexer unsafe', required: false}),
@@ -93,7 +93,7 @@ export default class Deploy extends Command {
       unsafe: flags.indexerUnsafe,
       batchSize: flags.indexerBatchSize,
       subscription: flags.indexerSubscription,
-      historicalData: flags.indexerHistoricalData,
+      historicalData: !flags.disableHistorical,
       workers: flags.indexerWorkers,
     };
 
