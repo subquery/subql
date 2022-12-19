@@ -95,15 +95,19 @@ export class RuntimeService implements OnApplicationShutdown {
       const parentSpecVersion = this.specVersionMap.find(
         (spec) => Number(spec.id) === this.parentSpecVersion,
       );
-      for (const specVersion of this.specVersionMap) {
-        if (
-          specVersion.start > parentSpecVersion.end &&
-          specVersion.start <= height
-        ) {
-          const blockHash = await this.api.rpc.chain.getBlockHash(
-            specVersion.start,
-          );
-          await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+      if (parentSpecVersion === undefined) {
+        await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+      } else {
+        for (const specVersion of this.specVersionMap) {
+          if (
+            specVersion.start > parentSpecVersion.end &&
+            specVersion.start <= height
+          ) {
+            const blockHash = await this.api.rpc.chain.getBlockHash(
+              specVersion.start,
+            );
+            await SubstrateUtil.prefetchMetadata(this.api, blockHash);
+          }
         }
       }
     } else {
