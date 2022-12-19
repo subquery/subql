@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.13.0] - 2022-12-20
+### Updated
+- Sync with latest changes on Substrate SDK (#86)
+### Fixed
+- Exit when `workers` fail to prevent missing blocks (#87)
+- `reindex` subcommand, missing dependency (#89)
+### Added
+-  Dictionary support for custom datasources (#85)
+
+
 ## [1.12.0] - 2022-11-17
 ### Updated
 - Sync with latest changes on Substrate SDK ()
