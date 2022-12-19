@@ -204,7 +204,7 @@ export class WorkerBlockDispatcherService
             e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
           }`,
         );
-        throw e;
+        process.exit(1);
       }
     };
 
