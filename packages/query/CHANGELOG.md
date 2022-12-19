@@ -10,7 +10,6 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [1.10.0] - 2022-12-06
 ### Added
-- Enable env vars parsing at node and query commands (#1452)
 - Add start height to _metadata (#1456)
 
 ## [1.9.0] - 2022-11-30
