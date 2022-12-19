@@ -156,13 +156,10 @@ export class FetchService implements OnApplicationShutdown {
 
   buildDictionaryQueryEntries(startBlock: number): DictionaryQueryEntry[] {
     const queryEntries: DictionaryQueryEntry[] = [];
-    const dataSources = this.project.dataSources.filter((ds) =>
-      isRuntimeDataSourceV0_3_0(ds),
-    );
 
     // Only run the ds that is equal or less than startBlock
     // sort array from lowest ds.startBlock to highest
-    const filteredDs = dataSources
+    const filteredDs = this.project.dataSources
       .concat(this.templateDynamicDatasouces)
       .filter((ds) => ds.startBlock <= startBlock)
       .sort((a, b) => a.startBlock - b.startBlock);
