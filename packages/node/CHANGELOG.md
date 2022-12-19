@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix subcommands bug (#1451)
 - Fix SequelizeDatabaseError - tuple concurrently updated (#1458)
 - Fix handle when Poi offset is 0 (#1459)
+- Fix missing blocks when using workers (#1464)
 ### Added
 - Add start height to project (#1456)
 
