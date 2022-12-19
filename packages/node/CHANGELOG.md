@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix handle when Poi offset is 0 (#1459)
 - Fix missing blocks when using workers (#1464)
 ### Added
-- Add start height to project (#1456)
+- Add start height to project metadata (#1456)
 
 ## [1.16.0] - 2022-12-06
 ### Added
