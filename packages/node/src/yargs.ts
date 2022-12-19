@@ -6,6 +6,7 @@ import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 export const yargsOptions = yargs(hideBin(process.argv))
+  .env('SUBQL_NODE')
   .command({
     command: 'force-clean',
     describe:
@@ -134,12 +135,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
     },
-    migrate: {
-      demandOption: false,
-      describe: 'Migrate db schema (for management tables only)',
-      type: 'boolean',
-      default: false,
-    },
     'timestamp-field': {
       demandOption: false,
       describe: 'Enable/disable created_at and updated_at in schema',
@@ -151,6 +146,12 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       describe: 'Specify the dictionary api for this network',
       type: 'string',
+    },
+    'sponsored-dictionary': {
+      demandOption: false,
+      describe: 'Use subquery network sponsored dictionary',
+      type: 'boolean',
+      default: false,
     },
     'dictionary-timeout': {
       demandOption: false,
@@ -184,6 +185,13 @@ export const yargsOptions = yargs(hideBin(process.argv))
       demandOption: false,
       default: false,
       describe: 'Disable storing historical state entities',
+      type: 'boolean',
+    },
+    'multi-chain': {
+      demandOption: false,
+      default: false,
+      describe:
+        'Enables indexing multiple subquery projects into the same database schema',
       type: 'boolean',
     },
     workers: {

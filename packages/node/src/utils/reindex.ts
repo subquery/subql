@@ -3,6 +3,7 @@
 
 import { getLogger, MmrService, StoreService } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
+import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { ForceCleanService } from '../subcommands/forceClean.service';
 
 const logger = getLogger('Reindex');
@@ -13,6 +14,7 @@ export async function reindex(
   targetBlockHeight: number,
   lastProcessedHeight: number,
   storeService: StoreService,
+  dynamicDsService: DynamicDsService,
   mmrService: MmrService,
   sequelize: Sequelize,
   forceCleanService?: ForceCleanService,
@@ -42,7 +44,10 @@ export async function reindex(
     logger.info(`Reindexing to block: ${targetBlockHeight}`);
     const transaction = await sequelize.transaction();
     try {
-      await storeService.rewind(targetBlockHeight, transaction);
+      await Promise.all([
+        storeService.rewind(targetBlockHeight, transaction),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
+      ]);
 
       if (blockOffset) {
         await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);

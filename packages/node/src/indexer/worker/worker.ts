@@ -43,7 +43,7 @@ async function initWorker(): Promise<void> {
     }
 
     app = await NestFactory.create(WorkerModule, {
-      logger: new NestLogger(),
+      logger: new NestLogger(), // TIP: If the worker is crashing comment out this line for better logging
     });
 
     await app.init();
@@ -54,6 +54,7 @@ async function initWorker(): Promise<void> {
 
     workerService = app.get(WorkerService);
   } catch (e) {
+    console.log('Failed to start worker', e);
     logger.error(e, 'Failed to start worker');
     throw e;
   }

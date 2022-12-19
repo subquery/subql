@@ -2,13 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   NodeConfig,
   getExistingProjectSchema,
+  enumNameToHash,
 } from '@subql/node-core';
+import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
+import { SubqueryProject } from '../configure/SubqueryProject';
 
 const logger = getLogger('Force-clean');
 
@@ -17,6 +20,7 @@ export class ForceCleanService {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly nodeConfig: NodeConfig,
+    @Inject('ISubqueryProject') protected project: SubqueryProject,
   ) {}
 
   async forceClean(): Promise<void> {
@@ -28,6 +32,7 @@ export class ForceCleanService {
       logger.error('Unable to locate schema');
       throw new Error('Schema does not exist.');
     }
+    const modelsRelation = getAllEntitiesRelations(this.project.schema);
 
     try {
       // drop existing project schema and metadata table
@@ -36,16 +41,33 @@ export class ForceCleanService {
         benchmark: false,
       });
 
+      // drop all related enums
+      await Promise.all(
+        modelsRelation.enums.map(async (e) => {
+          const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
+          await this.sequelize.query(`
+            DROP TYPE "${enumTypeName}";
+          `);
+        }),
+      );
+
       // remove schema from subquery table (might not exist)
-      await this.sequelize.query(
-        ` DELETE
+      const checker = await this.sequelize.query(
+        `
+              SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'public' AND  TABLE_NAME = 'subqueries'`,
+      );
+
+      if ((checker[1] as any).rowCount > 0) {
+        await this.sequelize.query(
+          ` DELETE
                   FROM public.subqueries
                   WHERE name = :name`,
-        {
-          replacements: { name: this.nodeConfig.subqueryName },
-          type: QueryTypes.DELETE,
-        },
-      );
+          {
+            replacements: { name: this.nodeConfig.subqueryName },
+            type: QueryTypes.DELETE,
+          },
+        );
+      }
 
       logger.info('force cleaned schema and tables');
 

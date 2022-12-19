@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   MetadataFactory,
@@ -13,7 +13,8 @@ import {
   getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
-import { SubqueryProject } from '../configure/SubqueryProject';
+import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { DynamicDsService } from '../indexer/dynamic-ds.service';
 import { initDbSchema } from '../utils/project';
 import { reindex } from '../utils/reindex';
 
@@ -31,8 +32,9 @@ export class ReindexService {
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
+    private readonly dynamicDsService: DynamicDsService,
   ) {}
 
   async init(): Promise<void> {
@@ -44,7 +46,13 @@ export class ReindexService {
     }
     await this.initDbSchema();
 
-    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+    this.metadataRepo = await MetadataFactory(
+      this.sequelize,
+      this.schema,
+      this.nodeConfig.multiChain,
+      this.project.network.chainId,
+    );
+    this.dynamicDsService.init(this.metadataRepo);
   }
 
   private async getExistingProjectSchema(): Promise<string> {
@@ -97,6 +105,7 @@ export class ReindexService {
       targetBlockHeight,
       lastProcessedHeight,
       this.storeService,
+      this.dynamicDsService,
       this.mmrService,
       this.sequelize,
       this.forceCleanService,

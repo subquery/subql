@@ -9,9 +9,15 @@ import { ProjectService } from '../project.service';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
+export type ProcessBlockResponse = {
+  dynamicDsCreated: boolean;
+  operationHash: Uint8Array;
+  reindexBlockHeight: number;
+};
+
 export interface IBlockDispatcher {
   init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
-  enqueueBlocks(heights: number[]): void;
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void;
 
   queueSize: number;
   freeSize: number;
@@ -21,12 +27,6 @@ export interface IBlockDispatcher {
   flushQueue(height: number): void;
   rewind(height: number): Promise<void>;
 }
-
-export type ProcessBlockResponse = {
-  dynamicDsCreated: boolean;
-  operationHash: Uint8Array;
-  reindexBlockHeight: number;
-};
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -42,7 +42,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
   protected latestProcessedHeight: number;
   protected currentProcessingHeight: number;
   protected onDynamicDsCreated: (height: number) => Promise<void>;
-  // private processQueue: AutoQueue<void>;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -75,7 +74,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
     this._latestBufferedHeight = height;
   }
 
-  protected setProcessedBlockCount(processedBlockCount: number) {
+  protected setProcessedBlockCount(processedBlockCount: number): void {
     this._processedBlockCount = processedBlockCount;
     this.eventEmitter.emit(IndexerEvent.BlockProcessedCount, {
       processedBlockCount,
@@ -98,8 +97,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
 
   flushQueue(height: number): void {
     this.latestBufferedHeight = height;
-    this.queue.flush(); // Empty
-    // this.processQueue.flush();
+    this.queue.flush();
   }
 
   protected preProcessBlock(height: number): void {
@@ -122,10 +120,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
       this.latestProcessedHeight = reindexBlockHeight;
     } else {
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
-        if (!this.projectService.blockOffset) {
+        // We only check if it is undefined, need to be caution here when blockOffset is 0
+        if (this.projectService.blockOffset === undefined) {
           // Which means during project init, it has not found offset and set value
           await this.projectService.upsertMetadataBlockOffset(height - 1);
         }
+        // this will return if project service blockOffset already exist
         void this.projectService.setBlockOffset(height - 1);
       }
       if (dynamicDsCreated) {

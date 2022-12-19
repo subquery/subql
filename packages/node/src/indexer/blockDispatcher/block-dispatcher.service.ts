@@ -19,42 +19,21 @@ import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
-export interface IBlockDispatcher {
-  init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
-  enqueueBlocks(heights: number[]): void;
-
-  queueSize: number;
-  freeSize: number;
-  latestBufferedHeight: number | undefined;
-
-  // Remove all enqueued blocks, used when a dynamic ds is created
-  flushQueue(height: number): void;
-  rewind(height: number): Promise<void>;
-}
-
 const logger = getLogger('BlockDispatcherService');
 
-// TODO move to another file
 /**
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
  */
 @Injectable()
 export class BlockDispatcherService
   extends BaseBlockDispatcher<Queue<number>>
-  implements IBlockDispatcher, OnApplicationShutdown
+  implements OnApplicationShutdown
 {
-  // private fetchQueue: Queue<number>;
   private processQueue: AutoQueue<void>;
 
   private fetching = false;
   private isShutdown = false;
-  // private onDynamicDsCreated: (height: number) => Promise<void>;
-  // private _latestBufferedHeight: number;
-  // private _processedBlockCount: number;
-
   private readonly fetchBlocksBatches = CosmosUtil.fetchBlocksBatches;
-  // private latestProcessedHeight: number;
-  // private currentProcessingHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -69,7 +48,6 @@ export class BlockDispatcherService
       projectService,
       new Queue(nodeConfig.batchSize * 3),
     );
-    // this.fetchQueue = new Queue(nodeConfig.batchSize * 3);
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
     if (this.nodeConfig.profiler) {
@@ -94,18 +72,24 @@ export class BlockDispatcherService
     this.processQueue.abort();
   }
 
-  enqueueBlocks(heights: number[]): void {
-    if (!heights.length) return;
+  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+    // // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
+    // // to ensure block is bypassed, latestBufferHeight needs to be manually set
+    // If cleanedBlocks = []
+    if (!!latestBufferHeight && !cleanedBlocks.length) {
+      this.latestBufferedHeight = latestBufferHeight;
+      return;
+    }
 
     logger.info(
-      `Enqueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
+      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
+        cleanedBlocks.length
       } blocks`,
     );
 
-    this.queue.putMany(heights);
-    this.latestBufferedHeight = last(heights);
+    this.queue.putMany(cleanedBlocks);
 
+    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
     void this.fetchBlocksFromQueue().catch((e) => {
       logger.error(e, 'Failed to fetch blocks from queue');
       if (!this.isShutdown) {
@@ -115,13 +99,9 @@ export class BlockDispatcherService
   }
 
   flushQueue(height: number): void {
-    // this.latestBufferedHeight = height;
-    super.flushQueue(height); // Empty
+    super.flushQueue(height);
     this.processQueue.flush();
   }
-  //  Compare it with current indexing number, if last corrected is already indexed
-  //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
-  //  if rollback is greater than current index flush queue only
 
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;

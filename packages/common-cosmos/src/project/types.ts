@@ -25,4 +25,5 @@ export type ICosmosProjectManifest = IProjectManifest<SubqlCosmosDatasource>;
 
 export interface CosmosProjectNetworkConfig extends ProjectNetworkConfig {
   chainId?: string;
+  bypassBlocks?: (number | string)[];
 }

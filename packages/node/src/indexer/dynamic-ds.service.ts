@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { isCustomCosmosDs, isRuntimeCosmosDs } from '@subql/common-cosmos';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { cloneDeep, isEqual, unionWith } from 'lodash';
@@ -28,7 +28,7 @@ export class DynamicDsService {
 
   constructor(
     private readonly dsProcessorService: DsProcessorService,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
   ) {}
 
   init(metaDataRepo: MetadataRepo): void {
@@ -36,6 +36,20 @@ export class DynamicDsService {
   }
 
   private _datasources: SubqlProjectDs[];
+
+  async resetDynamicDatasource(targetHeight: number, tx: Transaction) {
+    const dynamicDs = await this.getDynamicDatasourceParams();
+    if (dynamicDs.length !== 0) {
+      const filteredDs = dynamicDs.filter(
+        (ds) => ds.startBlock <= targetHeight,
+      );
+      const dsRecords = JSON.stringify(filteredDs);
+      await this.metaDataRepo.upsert(
+        { key: METADATA_KEY, value: dsRecords },
+        { transaction: tx },
+      );
+    }
+  }
 
   async createDynamicDatasource(
     params: DatasourceParams,

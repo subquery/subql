@@ -26,6 +26,8 @@ import {
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
+const logger = getLogger('WorkerBlockDispatcherService');
+
 type IIndexerWorker = {
   processBlock: ProcessBlock;
   fetchBlock: FetchBlock;
@@ -41,8 +43,6 @@ type IInitIndexerWorker = IIndexerWorker & {
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
-
-const logger = getLogger('WorkerBlockDispatcherService');
 
 async function createIndexerWorker(): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<IInitIndexerWorker>(
@@ -96,6 +96,7 @@ export class WorkerBlockDispatcherService
         'Sorry, best block feature is not supported with workers yet.',
       );
     }
+
     this.workers = await Promise.all(
       new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
     );
@@ -117,7 +118,7 @@ export class WorkerBlockDispatcherService
     }
   }
 
-  enqueueBlocks(heights: number[]): void {
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
     if (!heights.length) return;
     logger.info(
       `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
@@ -145,7 +146,7 @@ export class WorkerBlockDispatcherService
       );
     }
 
-    this.latestBufferedHeight = last(heights);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
   }
 
   private enqueueBlock(height: number, workerIdx: number) {
@@ -155,7 +156,7 @@ export class WorkerBlockDispatcherService
     assert(worker, `Worker ${workerIdx} not found`);
 
     // Used to compare before and after as a way to check if queue was flushed
-    const bufferedHeight = this._latestBufferedHeight;
+    const bufferedHeight = this.latestBufferedHeight;
     const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {
@@ -164,7 +165,7 @@ export class WorkerBlockDispatcherService
         const result = await pendingBlock;
         const end = new Date();
 
-        if (bufferedHeight > this._latestBufferedHeight) {
+        if (bufferedHeight > this.latestBufferedHeight) {
           logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
           return;
         }
@@ -218,6 +219,7 @@ export class WorkerBlockDispatcherService
     }
   }
 
+  // Getter doesn't seem to cary from abstract class
   get latestBufferedHeight(): number {
     return this._latestBufferedHeight;
   }

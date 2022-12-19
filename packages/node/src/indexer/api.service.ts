@@ -13,7 +13,7 @@ import {
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   NetworkMetadataPayload,
@@ -33,6 +33,7 @@ import {
 } from '../configure/SubqueryProject';
 import { DsProcessorService } from './ds-processor.service';
 import { HttpClient, WebsocketClient } from './rpc-clients';
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
@@ -44,9 +45,9 @@ export class ApiService {
   private api: CosmosClient;
   private tendermint: Tendermint34Client;
   networkMeta: NetworkMetadataPayload;
-  dsProcessor: DsProcessorService;
   registry: Registry;
-  constructor(protected project: SubqueryProject) {}
+
+  constructor(@Inject('ISubqueryProject') protected project: SubqueryProject) {}
 
   async init(): Promise<ApiService> {
     try {
