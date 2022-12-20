@@ -7,16 +7,19 @@ import {promisify} from 'util';
 import {getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
   isCustomDs as isCustomAvalancheDs,
+  isRuntimeDs as isRuntimeAvalancheDs,
   RuntimeDatasourceTemplate as AvalancheDsTemplate,
   CustomDatasourceTemplate as AvalancheCustomDsTemplate,
 } from '@subql/common-avalanche';
 import {
   isCustomCosmosDs,
+  isRuntimeCosmosDs,
   RuntimeDatasourceTemplate as CosmosDsTemplate,
   CustomDatasourceTemplate as CosmosCustomDsTemplate,
 } from '@subql/common-cosmos';
 import {
   isCustomDs as isCustomEthereumDs,
+  isRuntimeDs as isRuntimeEthereumDs,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
 } from '@subql/common-ethereum';
@@ -27,6 +30,7 @@ import {
 } from '@subql/common-substrate';
 import {
   isCustomTerraDs,
+  isRuntimeTerraDs,
   RuntimeDatasourceTemplate as TerraDsTemplate,
   CustomDatasourceTemplate as TerraCustomDsTemplate,
 } from '@subql/common-terra';
@@ -315,7 +319,7 @@ export async function generateDatasourceTemplates(
 ): Promise<void> {
   const props = templates.map((t) => ({
     name: t.name,
-    args: isCustomDs(t) ? 'Record<strigng, unknown>' : undefined,
+    args: hasParameters(t) ? 'Record<string, unknown>' : undefined,
   }));
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
@@ -329,12 +333,16 @@ export async function generateDatasourceTemplates(
   console.log(`* Datasource template constructors generated !`);
 }
 
-function isCustomDs(t: TemplateKind): boolean {
+function hasParameters(t: TemplateKind): boolean {
   return (
+    isRuntimeAvalancheDs(t as AvalancheDsTemplate) ||
     isCustomAvalancheDs(t as AvalancheDsTemplate) ||
+    isRuntimeCosmosDs(t as CosmosDsTemplate) ||
     isCustomCosmosDs(t as CosmosDsTemplate) ||
+    isRuntimeEthereumDs(t as EthereumDsTemplate) ||
     isCustomEthereumDs(t as EthereumDsTemplate) ||
     isCustomSubstrateDs(t as SubstrateDsTemplate) ||
+    isRuntimeTerraDs(t as TerraDsTemplate) ||
     isCustomTerraDs(t as TerraDsTemplate)
   );
 }
