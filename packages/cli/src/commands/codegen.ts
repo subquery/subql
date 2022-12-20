@@ -3,13 +3,17 @@
 
 import path from 'path';
 import {Command, Flags} from '@oclif/core';
+import {getProjectRootAndManifest} from '@subql/common';
 import {codegen} from '../controller/codegen-controller';
 
 export default class Codegen extends Command {
   static description = 'Generate schemas for graph node';
 
   static flags = {
-    location: Flags.string({char: 'l', description: 'local folder to run codegen in'}),
+    location: Flags.string({
+      char: 'l',
+      description: '[deprecated] local folder to run codegen in. please use file flag instead',
+    }),
     file: Flags.string({char: 'f', description: 'specify manifest file path (will overwrite -l if both used)'}),
   };
 
@@ -21,16 +25,18 @@ export default class Codegen extends Command {
 
     const {file, location} = flags;
 
-    const resolvedFilePath = file ? path.resolve(file) : undefined;
-    const [fileDir, fileName] = resolvedFilePath ? [path.dirname(file), path.basename(file)] : [undefined, undefined];
+    const projectPath = path.resolve(file ?? location ?? process.cwd());
 
-    const resolvedLocation = fileDir ?? (location ? path.resolve(location) : process.cwd());
+    const {manifest} = getProjectRootAndManifest(projectPath);
+
+    // Split directory and file name
+    const [fileDir, fileName] = [path.dirname(manifest), path.basename(manifest)];
 
     try {
-      if (file && !resolvedFilePath) {
+      if (!fileDir) {
         throw new Error('Cannot resolve project manifest from --file argument given');
       }
-      await codegen(resolvedLocation, fileName);
+      await codegen(fileDir, fileName);
     } catch (err) {
       console.error(err.message);
       process.exit(1);
