@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {isMainThread} from 'worker_threads';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
-import {blake2AsHex} from '@polkadot/util-crypto';
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -53,6 +51,8 @@ import {
   createSchemaTriggerFunction,
   createSchemaTrigger,
   enumNameToHash,
+  dropNotifyFunction,
+  getFunctions,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -124,13 +124,15 @@ export class StoreService {
     const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
 
     try {
-      await Promise.all([
-        await this.sequelize.query(`${createSchemaTriggerFunction(schema)}`),
-        schemaTriggers.length === 0 ??
-          (await this.sequelize.query(`
-            ${createSchemaTrigger(schema, this.metaDataRepo.tableName)}
-          `)),
-      ]);
+      // TODO
+      // For now, due to existing channel name over long issue, we will force replace function first
+      // We will change this to check with function length in future
+      // const schemaFunctions = await getFunctions(this.sequelize,schema,'schema_notification');
+      await this.sequelize.query(`${createSchemaTriggerFunction(schema)}`);
+
+      if (schemaTriggers.length === 0) {
+        await this.sequelize.query(createSchemaTrigger(schema, this.metaDataRepo.tableName));
+      }
     } catch (e) {
       logger.error(`Failed to init Hot schema reload`);
     }
@@ -188,10 +190,10 @@ export class StoreService {
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
+    // Function need to create ahead of triggers
     if (this.config.subscription) {
-      extraQueries.push(createSendNotificationTriggerFunction);
+      extraQueries.push(createSendNotificationTriggerFunction(schema));
     }
-
     for (const model of this.modelsRelations.models) {
       const attributes = modelsTypeToModelAttributes(model, enumTypeMap);
       const indexes = model.indexes.map(({fields, unique, using}) => ({
@@ -234,6 +236,11 @@ export class StoreService {
         extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
       }
     }
+    // We have to drop the function after all triggers depend on it are removed
+    if (!this.config.subscription) {
+      extraQueries.push(dropNotifyFunction(schema));
+    }
+
     const foreignKeyMap = new Map<string, Map<string, SmartTags>>();
     for (const relation of this.modelsRelations.relations) {
       const model = this.sequelize.model(relation.from);

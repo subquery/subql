@@ -1,6 +1,7 @@
 // Copyright 2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import {hashName} from '@subql/utils';
 import {PgIntrospectionResultsByKind} from '@subql/x-graphile-build-pg';
 import {makeExtendSchemaPlugin, gql, embed} from 'graphile-utils';
 
@@ -38,7 +39,9 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
     if (!table.namespace || table.name === '_metadata') return;
 
     const field = inflection.allRows(table);
-    const topic = `${table.namespace.name}.${table.name}`;
+
+    const topic = hashName(table.namespace.name, 'notify_channel', table.name);
+    // const topic = `${table.namespace.name}.${table.name}`;
     typeDefs.push(
       gql`
         extend type Subscription {
