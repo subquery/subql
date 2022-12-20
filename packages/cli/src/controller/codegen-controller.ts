@@ -6,13 +6,27 @@ import path from 'path';
 import {promisify} from 'util';
 import {getManifestPath, getSchemaPath, loadFromJsonOrYaml} from '@subql/common';
 import {
-  isCustomDs,
-  isSubstrateTemplates,
+  isCustomDs as isCustomAvalancheDs,
+  RuntimeDatasourceTemplate as AvalancheDsTemplate,
+  CustomDatasourceTemplate as AvalancheCustomDsTemplate,
+} from '@subql/common-avalanche';
+import {
+  isCustomCosmosDs,
+  RuntimeDatasourceTemplate as CosmosDsTemplate,
+  CustomDatasourceTemplate as CosmosCustomDsTemplate,
+} from '@subql/common-cosmos';
+import {
+  isCustomDs as isCustomEthereumDs,
+  RuntimeDatasourceTemplate as EthereumDsTemplate,
+  CustomDatasourceTemplate as EthereumCustomDsTemplate,
+} from '@subql/common-ethereum';
+import {
+  isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
 } from '@subql/common-substrate';
 import {
-  isTerraTemplates,
+  isCustomTerraDs,
   RuntimeDatasourceTemplate as TerraDsTemplate,
   CustomDatasourceTemplate as TerraCustomDsTemplate,
 } from '@subql/common-terra';
@@ -30,8 +44,18 @@ import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
 
-type TemplateKind = SubstrateDsTemplate | SubstrateCustomDsTemplate | TerraDsTemplate | TerraCustomDsTemplate;
-let MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
+type TemplateKind =
+  | SubstrateDsTemplate
+  | SubstrateCustomDsTemplate
+  | AvalancheDsTemplate
+  | AvalancheCustomDsTemplate
+  | CosmosDsTemplate
+  | CosmosCustomDsTemplate
+  | EthereumDsTemplate
+  | EthereumCustomDsTemplate
+  | TerraDsTemplate
+  | TerraCustomDsTemplate;
+const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
@@ -289,21 +313,10 @@ export async function generateDatasourceTemplates(
   specVersion: string,
   templates: TemplateKind[]
 ): Promise<void> {
-  let props;
-  if (isSubstrateTemplates(templates, specVersion)) {
-    props = templates.map((t) => ({
-      name: t.name,
-      args: isCustomDs(t) ? 'Record<string, unknown>' : undefined,
-    }));
-  } else if (isTerraTemplates(templates, specVersion)) {
-    props = templates.map((t) => ({
-      name: t.name,
-      args: 'Record<string, unknown>',
-    }));
-    MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/terramodel.ts.ejs');
-  } else {
-    throw new Error(`Generated datasource templates failed: unsupported templates`);
-  }
+  const props = templates.map((t) => ({
+    name: t.name,
+    args: isCustomDs(t) ? 'Record<strigng, unknown>' : undefined,
+  }));
   try {
     await renderTemplate(DYNAMIC_DATASOURCE_TEMPLATE_PATH, path.join(projectPath, TYPE_ROOT_DIR, `datasources.ts`), {
       props,
@@ -314,4 +327,14 @@ export async function generateDatasourceTemplates(
     throw new Error(`Unable to generate datasource template constructors`);
   }
   console.log(`* Datasource template constructors generated !`);
+}
+
+function isCustomDs(t: TemplateKind): boolean {
+  return (
+    isCustomAvalancheDs(t as AvalancheDsTemplate) ||
+    isCustomCosmosDs(t as CosmosDsTemplate) ||
+    isCustomEthereumDs(t as EthereumDsTemplate) ||
+    isCustomSubstrateDs(t as SubstrateDsTemplate) ||
+    isCustomTerraDs(t as TerraDsTemplate)
+  );
 }
