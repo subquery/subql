@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.0] - 2022-12-19
+### Changed
+- Update deploy cli to fix `disableHistorical` option (#1460)
+
 ## [1.9.1] - 2022-12-05
 ### Fixed
 - Fix for `subql` codegen `--file` flag. (#1446)

@@ -8,9 +8,9 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [1.9.1] - 2022-12-06
-### Fixed
-- Removed `hot-schema-reload` support for RDS databases (#1449)
+## [1.10.0] - 2022-12-06
+### Added
+- Add start height to _metadata (#1456)
 
 ## [1.9.0] - 2022-11-30
 ### Added
