@@ -41,7 +41,6 @@ export const PgSubscriptionPlugin = makeExtendSchemaPlugin((build) => {
     const field = inflection.allRows(table);
 
     const topic = hashName(table.namespace.name, 'notify_channel', table.name);
-    // const topic = `${table.namespace.name}.${table.name}`;
     typeDefs.push(
       gql`
         extend type Subscription {
