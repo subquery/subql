@@ -56,7 +56,8 @@ export interface ApiWrapper<BW extends BlockWrapper = EthereumBlockWrapper> {
   getChainId: () => number;
   getSpecName: () => string;
   getFinalizedBlockHeight: () => Promise<number>;
-  getLastHeight: () => Promise<number>;
+  getBestBlockHeight: () => Promise<number>;
+  getBlockByHeightOrHash: (hashOrHeight: number | string) => Promise<Block>;
   fetchBlocks: (bufferBlocks: number[]) => Promise<BW[]>;
   freezeApi: (processor: any, blockContent?: BlockWrapper) => void;
 }

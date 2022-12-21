@@ -3033,7 +3033,7 @@ __metadata:
     cron-converter: ^1.0.2
     dayjs: ^1.10.7
     dotenv: ^15.0.1
-    ethers: ^5.6.1
+    ethers: ^5.7.0
     eventemitter2: ^6.4.5
     lodash: ^4.17.21
     merkle-tools: ^1.4.1
@@ -6051,7 +6051,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^5.6.1, ethers@npm:^5.7.1":
+"ethers@npm:^5.7.0, ethers@npm:^5.7.1":
   version: 5.7.2
   resolution: "ethers@npm:5.7.2"
   dependencies:

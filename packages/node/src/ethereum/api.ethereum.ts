@@ -88,8 +88,12 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     this.chainId = (await this.client.getNetwork()).chainId;
   }
 
-  async getLastHeight(): Promise<number> {
-    return this.client.getBlockNumber();
+  async getFinalizedBlockHeight(): Promise<number> {
+    return (await this.client.getBlock('finalized')).number;
+  }
+
+  async getBestBlockHeight(): Promise<number> {
+    return (await this.client.getBlock('safe')).number;
   }
 
   getRuntimeChain(): string {
@@ -108,13 +112,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
     return 'ethereum';
   }
 
-  async getFinalizedBlockHeight(): Promise<number> {
-    // Doesn't seem to be a difference between finalized and latest
-    return this.client.getBlockNumber();
-  }
-
-  async getBlockByHeight(height: number): Promise<Block> {
-    return this.client.getBlock(height);
+  async getBlockByHeightOrHash(heightOrHash: number | string): Promise<Block> {
+    return this.client.getBlock(heightOrHash);
   }
 
   async getBlockPromise(num: number): Promise<any> {

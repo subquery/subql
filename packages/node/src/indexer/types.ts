@@ -13,3 +13,5 @@ export type OperationEntity = {
   entityType: string;
   data: Entity | string;
 };
+
+export type BestBlocks = Record<number, string>;

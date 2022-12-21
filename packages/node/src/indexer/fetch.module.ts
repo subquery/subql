@@ -24,6 +24,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
   providers: [
@@ -78,6 +79,7 @@ import { SandboxService } from './sandbox.service';
     PoiService,
     MmrService,
     ProjectService,
+    UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService],
 })

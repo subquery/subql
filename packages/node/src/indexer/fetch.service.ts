@@ -31,6 +31,7 @@ import { eventToTopic, functionToSighash } from '../utils/string';
 import { IBlockDispatcher } from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('fetch');
 let BLOCK_TIME_VARIANCE = 5000;
@@ -111,6 +112,7 @@ export class FetchService implements OnApplicationShutdown {
     @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
   ) {
@@ -254,12 +256,19 @@ export class FetchService implements OnApplicationShutdown {
     }
     try {
       const currentFinalizedHeight = await this.api.getFinalizedBlockHeight();
+      logger.debug(`finalized:${currentFinalizedHeight.toString()}`);
+      const finalizedHeader = await this.api.getBlockByHeightOrHash(
+        currentFinalizedHeight,
+      );
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
         this.latestFinalizedHeight = currentFinalizedHeight;
+        this.unfinalizedBlocksService.registerFinalizedBlock(finalizedHeader);
         if (!this.nodeConfig.unfinalizedBlocks) {
-          this.eventEmitter.emit(IndexerEvent.BlockTarget, {
-            height: this.latestFinalizedHeight,
-          });
+          if (!this.nodeConfig.unfinalizedBlocks) {
+            this.eventEmitter.emit(IndexerEvent.BlockTarget, {
+              height: this.latestFinalizedHeight,
+            });
+          }
         }
       }
     } catch (e) {
@@ -274,7 +283,8 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const currentBestHeight = await this.api.getLastHeight();
+      const currentBestHeight = await this.api.getBestBlockHeight();
+      logger.debug(`best:${currentBestHeight.toString()}`);
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
         this.eventEmitter.emit(IndexerEvent.BlockBest, {

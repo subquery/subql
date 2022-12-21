@@ -28,6 +28,12 @@ import { initDbSchema } from '../utils/project';
 import { reindex } from '../utils/reindex';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
+import { BestBlocks } from './types';
+import {
+  METADATA_LAST_FINALIZED_PROCESSED_KEY,
+  METADATA_UNFINALIZED_BLOCKS_KEY,
+  UnfinalizedBlocksService,
+} from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -54,6 +60,7 @@ export class ProjectService {
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
     private eventEmitter: EventEmitter2,
+    private unfinalizedBlockService: UnfinalizedBlocksService,
   ) {}
 
   get schema(): string {
@@ -124,6 +131,15 @@ export class ProjectService {
       );
       process.exit(1);
     }
+
+    const reindexedTo = await this.unfinalizedBlockService.init(
+      this.metadataRepo,
+      this.reindex,
+    );
+
+    if (reindexedTo !== undefined) {
+      this._startHeight = reindexedTo;
+    }
   }
 
   private async ensureProject(): Promise<string> {
@@ -177,6 +193,7 @@ export class ProjectService {
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
+      'bestBlocks',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -247,6 +264,13 @@ export class ProjectService {
       await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
     }
 
+    if (!keyValue.bestBlocks) {
+      await metadataRepo.upsert({
+        key: 'bestBlocks',
+        value: '{}',
+      });
+    }
+
     return metadataRepo;
   }
 
@@ -255,6 +279,24 @@ export class ProjectService {
       key: 'blockOffset',
       value: height,
     });
+  }
+
+  async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
+    const val = await getMetaDataInfo<string>(
+      this.metadataRepo,
+      METADATA_UNFINALIZED_BLOCKS_KEY,
+    );
+    if (val) {
+      return JSON.parse(val) as BestBlocks;
+    }
+    return undefined;
+  }
+
+  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
+    return getMetaDataInfo(
+      this.metadataRepo,
+      METADATA_LAST_FINALIZED_PROCESSED_KEY,
+    );
   }
 
   async getMetadataBlockOffset(): Promise<number | undefined> {

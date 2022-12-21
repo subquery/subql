@@ -35,7 +35,7 @@
     "app-module-path": "^2.2.0",
     "cron-converter": "^1.0.2",
     "dayjs": "^1.10.7",
-    "ethers": "^5.6.1",
+    "ethers": "^5.7.0",
     "eventemitter2": "^6.4.5",
     "lodash": "^4.17.21",
     "merkle-tools": "^1.4.1",

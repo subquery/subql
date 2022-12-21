@@ -16,6 +16,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
 
 @Module({
@@ -39,6 +40,7 @@ import { WorkerService } from './worker/worker.service';
     MmrService,
     ProjectService,
     WorkerService,
+    UnfinalizedBlocksService,
   ],
   exports: [StoreService],
 })

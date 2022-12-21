@@ -221,7 +221,7 @@ export async function generateTimestampReferenceForBlockFilters(
             if (handler.kind === EthereumHandlerKind.Block) {
               if (handler.filter?.timestamp) {
                 if (!block) {
-                  block = await api.getBlockByHeight(startBlock);
+                  block = await api.getBlockByHeightOrHash(startBlock);
                   timestampReference = new Date(block.timestamp * 1000); // Add millis
                 }
                 try {

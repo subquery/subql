@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { Block } from '@ethersproject/abstract-provider';
 import { Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
@@ -32,7 +33,7 @@ import {
   EthereumBlockWrapper,
   EthereumBlock,
 } from '@subql/types-ethereum';
-import { Sequelize } from 'sequelize';
+import { Sequelize, Transaction } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApi } from '../ethereum';
 import { EthereumBlockWrapped } from '../ethereum/block.ethereum';
@@ -44,6 +45,7 @@ import {
 import { DynamicDsService } from './dynamic-ds.service';
 import { ProjectService } from './project.service';
 import { SandboxService } from './sandbox.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 
@@ -63,6 +65,7 @@ export class IndexerManager {
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
     private dsProcessorService: DsProcessorService,
     private projectService: ProjectService,
   ) {
@@ -77,8 +80,9 @@ export class IndexerManager {
     operationHash: Uint8Array;
     reindexBlockHeight: null;
   }> {
-    const { blockHeight } = blockContent;
+    const { block, blockHeight } = blockContent;
     let dynamicDsCreated = false;
+    let reindexBlockHeight = null;
     const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
@@ -92,6 +96,8 @@ export class IndexerManager {
       const datasources = this.filteredDataSources.concat(
         ...(await this.dynamicDsService.getDynamicDatasources()),
       );
+
+      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
 
       await this.indexBlockData(
         blockContent,
@@ -167,13 +173,23 @@ export class IndexerManager {
     return {
       dynamicDsCreated,
       operationHash,
-      reindexBlockHeight: null,
+      reindexBlockHeight,
     };
   }
 
   async start(): Promise<void> {
     await this.projectService.init();
     logger.info('indexer manager started');
+  }
+
+  private async processUnfinalizedBlocks(
+    block: EthereumBlock,
+    tx: Transaction,
+  ): Promise<number | null> {
+    if (this.nodeConfig.unfinalizedBlocks) {
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
+    }
+    return null;
   }
 
   private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
