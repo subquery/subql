@@ -10,6 +10,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.1] - 2022-12-22
+### Fixed
+- Fix trigger function name too long (#1469)
+
 ## [1.7.0] - 2022-12-19
 ### Fixed
 - Workers: Fix SequelizeDatabaseError - tuple concurrently updated (#1458)

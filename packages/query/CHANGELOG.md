@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.1] - 2022-12-22
+### Fixed
+- Updated subscription `triggerName` (#1469)
+
 ## [1.10.0] - 2022-12-06
 ### Added
 - Add start height to _metadata (#1456)

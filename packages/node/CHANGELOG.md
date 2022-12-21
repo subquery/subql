@@ -6,6 +6,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.17.1] - 2022-12-22
+### Update 
+- error message for `genesisHash` (#1471)
+### Fixed
+- `triggerName`/ `channelName` too long, preventing indexer to start (1#469)
+
 ## [1.17.0] - 2022-12-19
 ### Fixed
 - Remove unused RuntimeService from indexer module, it had missing dependencies (#1453)
