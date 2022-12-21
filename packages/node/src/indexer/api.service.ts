@@ -93,9 +93,11 @@ export class ApiService implements OnApplicationShutdown {
 
     if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
       const err = new Error(
-        `Network chainId doesn't match expected genesisHash. expected="${
+        `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
           network.chainId ?? network.genesisHash
-        }" actual="${this.networkMeta.genesisHash}`,
+        }", however the endpoint that you are connecting to is different("${
+          this.networkMeta.genesisHash
+        }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
       );
       logger.error(err, err.message);
       throw err;
