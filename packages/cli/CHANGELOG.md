@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.1] - 2022-12-22
+### Fixed
+- Fix command `codegen` to allow templates with other SDKs(#1470)
+
 ## [1.10.0] - 2022-12-19
 ### Changed
 - Update deploy cli to fix `disableHistorical` option (#1460)
