@@ -88,46 +88,7 @@ export function createUniqueIndexQuery(schema: string, table: string, field: str
   )})`;
 }
 
-export const createSendNotificationTriggerFunction = `
-CREATE OR REPLACE FUNCTION send_notification()
-    RETURNS trigger AS $$
-DECLARE
-    row RECORD;
-    payload JSONB;
-BEGIN
-    IF (TG_OP = 'DELETE') THEN
-      row = OLD;
-    ELSE
-      row = NEW;
-    END IF;
-    payload = jsonb_build_object(
-      'id', row.id,
-      'mutation_type', TG_OP,
-      '_entity', row);
-    IF payload -> '_entity' ? '_block_range' THEN
-      IF NOT upper_inf(row._block_range) THEN
-        RETURN NULL;
-      END IF;
-      payload = payload || '{"mutation_type": "UPDATE"}';
-      payload = payload #- '{"_entity","_id"}';
-      payload = payload #- '{"_entity","_block_range"}';
-    END IF;
-    IF (octet_length(payload::text) >= 8000) THEN
-      payload = payload || '{"_entity": null}';
-    END IF;
-    PERFORM pg_notify(
-      CONCAT(TG_TABLE_SCHEMA, '.', TG_TABLE_NAME),
-      payload::text);
-    RETURN NULL;
-END;
-$$ LANGUAGE plpgsql;`;
-
-export function dropNotifyTrigger(schema: string, table: string): string {
-  const triggerName = hashName(schema, 'notify_trigger', table);
-  return `DROP TRIGGER IF EXISTS "${triggerName}"
-    ON "${schema}"."${table}";`;
-}
-
+// Subscriptions
 export async function getTriggers(sequelize: Sequelize, triggerName: string): Promise<any[]> {
   return sequelize.query(
     `select trigger_name as "triggerName", event_manipulation as "eventManipulation" from information_schema.triggers
@@ -138,31 +99,100 @@ export async function getTriggers(sequelize: Sequelize, triggerName: string): Pr
     }
   );
 }
+
+export async function getFunctions(sequelize: Sequelize, schema: string, functionName: string): Promise<any[]> {
+  return sequelize.query(
+    `SELECT
+         routine_schema as function_schema,
+         routine_name as function_name
+     FROM
+         information_schema.routines
+     WHERE
+         specific_schema not in ('pg_catalog', 'information_schema')
+       and routine_type = 'FUNCTION' 
+       and routine_schema = :schema 
+       and routine_name = :functionName;
+    `,
+    {
+      replacements: {schema, functionName},
+      type: QueryTypes.SELECT,
+    }
+  );
+}
+
+export function createSendNotificationTriggerFunction(schema: string) {
+  return `
+CREATE OR REPLACE FUNCTION "${schema}".send_notification()
+    RETURNS trigger AS $$
+DECLARE
+    channel TEXT;
+    row RECORD;
+    payload JSONB;
+BEGIN
+    channel:= TG_ARGV[0];
+    IF (TG_OP = 'DELETE') THEN
+        row = OLD;
+    ELSE
+        row = NEW;
+    END IF;
+    payload = jsonb_build_object(
+            'id', row.id,
+            'mutation_type', TG_OP,
+            '_entity', row);
+    IF payload -> '_entity' ? '_block_range' THEN
+        IF NOT upper_inf(row._block_range) THEN
+            RETURN NULL;
+        END IF;
+        payload = payload || '{"mutation_type": "UPDATE"}';
+        payload = payload #- '{"_entity","_id"}';
+        payload = payload #- '{"_entity","_block_range"}';
+    END IF;
+    IF (octet_length(payload::text) >= 8000) THEN
+        payload = payload || '{"_entity": null}';
+    END IF;
+    PERFORM pg_notify(
+            channel::text,
+            payload::text);
+    RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;`;
+}
+
 export function createNotifyTrigger(schema: string, table: string): string {
   const triggerName = hashName(schema, 'notify_trigger', table);
+  const channelName = hashName(schema, 'notify_channel', table);
   return `
 CREATE TRIGGER "${triggerName}"
     AFTER INSERT OR UPDATE OR DELETE
     ON "${schema}"."${table}"
-    FOR EACH ROW EXECUTE FUNCTION send_notification();`;
+    FOR EACH ROW EXECUTE FUNCTION "${schema}".send_notification('${channelName}');`;
 }
 
+export function dropNotifyTrigger(schema: string, table: string): string {
+  const triggerName = hashName(schema, 'notify_trigger', table);
+  return `DROP TRIGGER IF EXISTS "${triggerName}"
+    ON "${schema}"."${table}";`;
+}
+
+export function dropNotifyFunction(schema: string): string {
+  return `DROP FUNCTION IF EXISTS "${schema}".send_notification()`;
+}
+
+// Hot schema reload, _metadata table
 export function createSchemaTrigger(schema: string, metadataTableName: string): string {
   const triggerName = hashName(schema, 'schema_trigger', metadataTableName);
-  const functionName = hashName(schema, 'schema_function', metadataTableName);
   return `
   CREATE TRIGGER "${triggerName}"
     AFTER UPDATE
     ON "${schema}"."${metadataTableName}"
     FOR EACH ROW
     WHEN ( new.key = 'schemaMigrationCount')
-    EXECUTE FUNCTION "${functionName}"();`;
+    EXECUTE FUNCTION "${schema}".schema_notification()`;
 }
 
 export function createSchemaTriggerFunction(schema: string): string {
-  const functionName = hashName(schema, 'schema_function', '_metadata');
   return `
-  CREATE OR REPLACE FUNCTION "${functionName}"()
+  CREATE OR REPLACE FUNCTION "${schema}".schema_notification()
     RETURNS trigger AS $$
   BEGIN
     PERFORM pg_notify(
