@@ -278,9 +278,11 @@ export class FetchService implements OnApplicationShutdown {
     await this.getFinalizedBlockHead();
     await this.getBestBlockHead();
 
-    const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
+    //  Call metadata here, other network should align with this
+    //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
+    const metadata = await this.dictionaryService.getMetadata();
 
-    const validChecker = this.dictionaryValidation(rawSpecVersions);
+    const validChecker = this.dictionaryValidation(metadata);
 
     this.runtimeService.init(
       this.getUseDictionary.bind(this),
@@ -288,6 +290,10 @@ export class FetchService implements OnApplicationShutdown {
     );
 
     if (validChecker) {
+      const rawSpecVersions = await this.dictionaryService.getSpecVersionsRaw();
+      this.dictionaryService.setDictionaryStartHeight(
+        metadata._metadata.startHeight,
+      );
       this.runtimeService.setSpecVersionMap(rawSpecVersions);
     } else {
       this.runtimeService.setSpecVersionMap(undefined);
@@ -297,7 +303,6 @@ export class FetchService implements OnApplicationShutdown {
       this.resetForNewDs.bind(this),
       this.runtimeService,
     );
-
     void this.startLoop(startHeight);
   }
 
@@ -426,6 +431,14 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
+    if (this.dictionaryService.startHeight > getStartBlockHeight()) {
+      logger.warn(
+        `Dictionary start height ${
+          this.dictionaryService.startHeight
+        } is beyond indexing height ${getStartBlockHeight()}, skipping dictionary for now`,
+      );
+    }
+
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
@@ -445,7 +458,10 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
-      if (this.useDictionary) {
+      if (
+        this.useDictionary &&
+        startBlockHeight >= this.dictionaryService.startHeight
+      ) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
           startBlockHeight,
