@@ -435,7 +435,7 @@ export class FetchService implements OnApplicationShutdown {
       logger.warn(
         `Dictionary start height ${
           this.dictionaryService.startHeight
-        } is beyond indexing height ${getStartBlockHeight()}, skip use dictionary for now`,
+        } is beyond indexing height ${getStartBlockHeight()}, skipping dictionary for now`,
       );
     }
 
