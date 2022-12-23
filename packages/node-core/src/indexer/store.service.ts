@@ -29,6 +29,7 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
+import {Attributes, CountOptions, CountWithOptions} from 'sequelize/types/model';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
@@ -613,6 +614,28 @@ group by
 
   getStore(): Store {
     return {
+      count: async <T extends Entity>(
+        entity: string,
+        field?: keyof T,
+        value?: T[keyof T] | T[keyof T][],
+        options?: {
+          distinct?: false;
+          col?: keyof T;
+        }
+      ): Promise<number> => {
+        const model = this.sequelize.model(entity);
+        assert(model, `model ${entity} not exists`);
+        const countOption = {} as Omit<CountOptions<any>, 'group'>;
+        if (field && value) {
+          countOption.where = {[field]: value};
+        }
+        if (options) {
+          assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
+          countOption.distinct = options?.distinct;
+          countOption.col = options?.col as string;
+        }
+        return model.count(countOption);
+      },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
           const model = this.sequelize.model(entity);
