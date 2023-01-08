@@ -619,7 +619,7 @@ group by
         field?: keyof T,
         value?: T[keyof T] | T[keyof T][],
         options?: {
-          distinct?: false;
+          distinct?: boolean;
           col?: keyof T;
         }
       ): Promise<number> => {
