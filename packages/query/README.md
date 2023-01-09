@@ -2,7 +2,7 @@
 
 ## Run this package
 
-To quickly setup the project, add a `.env` file in the `subql/packages/query` folder with the following ontent:
+To quickly setup the project, add a `.env` file in the `subql/packages/query` folder with the following content:
 
 ```
 DB_HOST=localhost
