@@ -111,6 +111,9 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       replaceAllPlugins: plugins,
       subscriptions: true,
       dynamicJson: true,
+      graphileBuildOptions: {
+        connectionFilterRelations: true,
+      },
     };
 
     if (argv.subscription) {
