@@ -33,8 +33,8 @@
     "typescript": "^4.4.4"
   },
   "resolutions": {
-    "@polkadot/api": "9.5.2",
-    "@polkadot/util": "10.2.1",
+    "@polkadot/api": "9.11.1",
+    "@polkadot/util": "10.2.3",
     "@cosmjs/cosmwasm-stargate": "0.28.9",
     "node-fetch": "2.6.7"
   },

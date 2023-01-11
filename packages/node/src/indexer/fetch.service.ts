@@ -52,6 +52,7 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
+const DICTIONARY_VALIDATION_EXCEPTIONS = ['juno-1'];
 
 export function eventFilterToQueryEntry(
   filter: SubqlCosmosEventFilter,
@@ -115,14 +116,12 @@ export function messageFilterToQueryEntry(
 
 @Injectable()
 export class FetchService implements OnApplicationShutdown {
-  private latestBestHeight: number;
   private latestFinalizedHeight: number;
   private isShutdown = false;
   private batchSizeScale: number;
   private templateDynamicDatasouces: SubqlProjectDs[];
   private dictionaryGenesisMatches = true;
   private bypassBlocks: number[] = [];
-  private bypassBufferHeight: number;
 
   constructor(
     private apiService: ApiService,
@@ -285,8 +284,26 @@ export class FetchService implements OnApplicationShutdown {
 
     await this.blockDispatcher.init(this.resetForNewDs.bind(this));
 
+    //  Call metadata here, other network should align with this
+    //  For substrate, we might use the specVersion metadata in future if we have same error handling as in node-core
+    const metadata = await this.dictionaryService.getMetadata();
+
+    const validChecker = await this.dictionaryValidation(metadata);
+
+    if (validChecker) {
+      this.dictionaryService.setDictionaryStartHeight(
+        metadata._metadata.startHeight,
+      );
+    }
+
+    await this.blockDispatcher.init(this.resetForNewDs.bind(this));
     void this.startLoop(startHeight);
   }
+
+  // Substrate exclusive for getRuntime
+  // getUseDictionary(): boolean {
+  //   return this.useDictionary;
+  // }
 
   @Interval(CHECK_MEMORY_INTERVAL)
   checkBatchScale(): void {
@@ -374,6 +391,14 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
+    if (this.dictionaryService.startHeight > getStartBlockHeight()) {
+      logger.warn(
+        `Dictionary start height ${
+          this.dictionaryService.startHeight
+        } is beyond indexing height ${getStartBlockHeight()}, skipping dictionary for now`,
+      );
+    }
+
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
@@ -390,7 +415,10 @@ export class FetchService implements OnApplicationShutdown {
         continue;
       }
 
-      if (this.useDictionary) {
+      if (
+        this.useDictionary &&
+        startBlockHeight >= this.dictionaryService.startHeight
+      ) {
         const queryEndBlock = startBlockHeight + DICTIONARY_MAX_QUERY_SIZE;
         const moduloBlocks = this.getModuloBlocks(
           startBlockHeight,
@@ -526,8 +554,13 @@ export class FetchService implements OnApplicationShutdown {
     if (dictionary !== undefined) {
       const { _metadata: metaData } = dictionary;
 
-      const chain = await this.api.getChainId();
-      if (metaData.chain !== chain) {
+      const chain = await this.api.getChainId().catch();
+
+      // Exception for juno as juno does not have a genesisHash
+      if (
+        metaData.chain !== chain &&
+        !DICTIONARY_VALIDATION_EXCEPTIONS.find((ele) => ele === chain)
+      ) {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
         );
@@ -548,15 +581,10 @@ export class FetchService implements OnApplicationShutdown {
           return false;
         }
       }
+
       return true;
     }
     return false;
-  }
-
-  async resetForIncorrectBestBlock(blockHeight: number): Promise<void> {
-    await this.syncDynamicDatascourcesFromMeta();
-    this.updateDictionary();
-    this.blockDispatcher.flushQueue(blockHeight);
   }
 
   private getBaseHandlerKind(
