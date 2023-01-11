@@ -8,6 +8,15 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.13.1] - 2023-01-12
+### Update
+- Sync with latest changes on Substrate SDK (#90)
+- Bump versions
+  - `@subql/node-core`
+  - `@subql/utils`
+  - `@polkadot/api`
+  - `@polkadot/utils` 
+
 ## [1.13.0] - 2022-12-20
 ### Updated
 - Sync with latest changes on Substrate SDK (#86)

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.1] - 2023-01-12
+### Added
+- `count` to Store interface. (#90)
+
 ## [0.4.0] - 2022-11-02
 ### Added
 - `timestamp` filter to block handler. (#76)
