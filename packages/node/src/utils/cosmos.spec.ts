@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { CosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import {
   GeneratedType,
   Registry,
@@ -27,19 +26,19 @@ import {
 import { CosmosClient } from '../indexer/api.service';
 import { HttpClient } from '../indexer/rpc-clients';
 import { filterMessageData, wrapEvent } from './cosmos';
-import * as CosmosUtil from './cosmos';
 
-const ENDPOINT = 'https://rpc.juno-1.api.onfinality.io';
+const ENDPOINT = 'https://juno.api.onfinality.io/public';
 const CHAINID = 'juno-1';
 
-const TEST_BLOCKNUMBER = 3266772;
-const TEST_FAILTX_BLOCKNUMBER = 3451838;
+const TEST_BLOCKNUMBER = 4136538;
+
+const TEST_FAILTX_BLOCKNUMBER = 4136536;
 
 const TEST_MESSAGE_FILTER_TRUE: SubqlCosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'swap',
   values: {
-    sender: 'juno16z990xkfph8vh4wx906k5jzergr4t9fg9sr3y6',
+    sender: 'juno1p5afwncel44vfrvylghncu2su7we57gmf7gjcu',
     contract: 'juno1e8n6ch7msks487ecznyeagmzd5ml2pq9tgedqt2u63vra0q0r9mqrjy6ys',
   },
 };
@@ -48,8 +47,8 @@ const TEST_MESSAGE_FILTER_FALSE: SubqlCosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgExecuteContract',
   contractCall: 'increment',
   values: {
-    sender: 'juno16z990xkfph8vh4wx906k5jzergr4t9fg9sr3y6',
-    contract: 'juno1e8n6ch7msks487ecznyeagmzd5ml2pq9tgedqt2u63vra0q0r9mqrjy6ys',
+    sender: 'juno1p5afwncel44vfrvylghncu2su7we57gmf7gjcu',
+    contract: 'juno1jq40jyxg57kumvaceskedcgsaje8tfagtpxsu8gnray525333yxsk8sl7f',
   },
 };
 
@@ -81,6 +80,7 @@ const TEST_MESSAGE_FILTER_FALSE_2: SubqlCosmosMessageFilter = {
   type: '/cosmwasm.wasm.v1.MsgStoreCode',
 };
 
+jest.setTimeout(200000);
 describe('CosmosUtils', () => {
   let api: CosmosClient;
   let decodedTx: DecodedTxRaw;
@@ -106,7 +106,11 @@ describe('CosmosUtils', () => {
     msg = {
       idx: 0,
       block: {} as CosmosBlock,
-      tx: {} as CosmosTransaction,
+      tx: {
+        tx: {
+          code: 0,
+        },
+      } as CosmosTransaction,
       msg: {
         typeUrl: decodedTx.body.messages[0].typeUrl,
         get decodedMsg() {
@@ -146,7 +150,7 @@ describe('CosmosUtils', () => {
 
   it('does not wrap events of failed transaction', async () => {
     const blockInfo = await api.blockResults(TEST_FAILTX_BLOCKNUMBER);
-    const failedTx = blockInfo.results[2];
+    const failedTx = blockInfo.results[1];
     const tx: CosmosTransaction = {
       idx: 0,
       block: {} as CosmosBlock,
