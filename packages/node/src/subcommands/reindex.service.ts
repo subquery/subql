@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
   MetadataFactory,
@@ -32,7 +32,7 @@ export class ReindexService {
     private readonly nodeConfig: NodeConfig,
     private readonly storeService: StoreService,
     private readonly mmrService: MmrService,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private readonly forceCleanService: ForceCleanService,
     private readonly dynamicDsService: DynamicDsService,
   ) {}
@@ -45,7 +45,13 @@ export class ReindexService {
       throw new Error('Schema does not exist.');
     }
     await this.initDbSchema();
-    this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+    // Should we use an optional arg for multiChain?
+    this.metadataRepo = await MetadataFactory(
+      this.sequelize,
+      this.schema,
+      this.nodeConfig.multiChain,
+      this.project.network.chainId,
+    );
     this.dynamicDsService.init(this.metadataRepo);
   }
 

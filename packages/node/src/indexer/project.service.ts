@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import { isMainThread } from 'worker_threads';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   ApiService,
@@ -24,7 +24,7 @@ import {
   SubqlProjectDs,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { initDbSchema } from '../utils/project';
+import { initDbSchema, initHotSchemaReload } from '../utils/project';
 import { reindex } from '../utils/reindex';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -55,7 +55,7 @@ export class ProjectService {
     private readonly poiService: PoiService,
     protected readonly mmrService: MmrService,
     private readonly sequelize: Sequelize,
-    private readonly project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private readonly storeService: StoreService,
     private readonly nodeConfig: NodeConfig,
     private readonly dynamicDsService: DynamicDsService,
@@ -102,6 +102,8 @@ export class ProjectService {
       this.metadataRepo = await this.ensureMetadata();
       this.dynamicDsService.init(this.metadataRepo);
 
+      await this.initHotSchemaReload();
+
       if (this.nodeConfig.proofOfIndex) {
         const blockOffset = await this.getMetadataBlockOffset();
         void this.setBlockOffset(Number(blockOffset));
@@ -110,7 +112,12 @@ export class ProjectService {
 
       this._startHeight = await this.getStartHeight();
     } else {
-      this.metadataRepo = MetadataFactory(this.sequelize, this.schema);
+      this.metadataRepo = await MetadataFactory(
+        this.sequelize,
+        this.schema,
+        this.nodeConfig.multiChain,
+        this.project.network.chainId,
+      );
 
       this.dynamicDsService.init(this.metadataRepo);
 
@@ -134,7 +141,7 @@ export class ProjectService {
 
     const reindexedTo = await this.unfinalizedBlockService.init(
       this.metadataRepo,
-      this.reindex,
+      this.reindex.bind(this),
     );
 
     if (reindexedTo !== undefined) {
@@ -170,12 +177,20 @@ export class ProjectService {
     return schema;
   }
 
+  private async initHotSchemaReload(): Promise<void> {
+    await initHotSchemaReload(this.schema, this.storeService);
+  }
   private async initDbSchema(): Promise<void> {
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
   private async ensureMetadata(): Promise<MetadataRepo> {
-    const metadataRepo = MetadataFactory(this.sequelize, this.schema);
+    const metadataRepo = await MetadataFactory(
+      this.sequelize,
+      this.schema,
+      this.nodeConfig.multiChain,
+      this.project.network.chainId,
+    );
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
@@ -189,6 +204,7 @@ export class ProjectService {
       'chain',
       'specName',
       'genesisHash',
+      'startHeight',
       'chainId',
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
@@ -240,7 +256,6 @@ export class ProjectService {
         'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
-
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
     }
@@ -264,10 +279,16 @@ export class ProjectService {
       await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
     }
 
-    if (!keyValue.bestBlocks) {
+    // if (!keyValue.bestBlocks) {
+    //   await metadataRepo.upsert({
+    //     key: 'bestBlocks',
+    //     value: '{}',
+    //   });
+    // }
+    if (!keyValue.startHeight) {
       await metadataRepo.upsert({
-        key: 'bestBlocks',
-        value: '{}',
+        key: 'startHeight',
+        value: this.getStartBlockFromDataSources(),
       });
     }
 

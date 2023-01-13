@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { gql } from '@apollo/client/core';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import {
   NodeConfig,
   DictionaryService as CoreDictionaryService,
@@ -18,8 +18,11 @@ export class DictionaryService
   extends CoreDictionaryService
   implements OnApplicationShutdown
 {
-  constructor(protected project: SubqueryProject, nodeConfig: NodeConfig) {
-    super(project.network.dictionary, nodeConfig);
+  constructor(
+    @Inject('ISubqueryProject') protected project: SubqueryProject,
+    nodeConfig: NodeConfig,
+  ) {
+    super(project.network.dictionary, project.network.chainId, nodeConfig);
   }
 
   async getEvmChainId(): Promise<string> {

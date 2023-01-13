@@ -18,7 +18,7 @@ export type ProcessBlockResponse = {
 export interface IBlockDispatcher {
   init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void>;
 
-  enqueueBlocks(heights: number[]): void;
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void;
 
   queueSize: number;
   freeSize: number;
@@ -125,10 +125,12 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
       this.latestProcessedHeight = reindexBlockHeight;
     } else {
       if (this.nodeConfig.proofOfIndex && !isNullMerkelRoot(operationHash)) {
-        if (!this.projectService.blockOffset) {
+        // We only check if it is undefined, need to be caution here when blockOffset is 0
+        if (this.projectService.blockOffset === undefined) {
           // Which means during project init, it has not found offset and set value
           await this.projectService.upsertMetadataBlockOffset(height - 1);
         }
+        // this will return if project service blockOffset already exist
         void this.projectService.setBlockOffset(height - 1);
       }
       if (dynamicDsCreated) {

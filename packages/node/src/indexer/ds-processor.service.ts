@@ -3,7 +3,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   EthereumHandlerKind,
   isCustomDs,
@@ -110,7 +110,7 @@ export class DsProcessorService {
     [entry: string]: SubqlDatasourceProcessor<string, unknown>;
   } = {};
   constructor(
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private readonly nodeConfig: NodeConfig,
   ) {}
 
