@@ -209,7 +209,7 @@ export class ProjectService {
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-      'bestBlocks',
+      'unfinalizedBlocks',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -279,12 +279,12 @@ export class ProjectService {
       await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
     }
 
-    // if (!keyValue.bestBlocks) {
-    //   await metadataRepo.upsert({
-    //     key: 'bestBlocks',
-    //     value: '{}',
-    //   });
-    // }
+    if (!keyValue.unfinalizedBlocks) {
+      await metadataRepo.upsert({
+        key: 'unfinalizedBlocks',
+        value: '{}',
+      });
+    }
     if (!keyValue.startHeight) {
       await metadataRepo.upsert({
         key: 'startHeight',
@@ -394,5 +394,4 @@ export class ProjectService {
       /* Not providing force clean service, it should never be needed */
     );
   }
-  n;
 }
