@@ -6,7 +6,6 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   getLogger,
   NodeConfig,
@@ -14,8 +13,8 @@ import {
   Worker,
   AutoQueue,
 } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
+import { run } from 'jest';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtimeService';
@@ -25,8 +24,9 @@ import {
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
-  SetCurrentRuntimeVersion,
+  // SetCurrentRuntimeVersion,
   GetWorkerStatus,
+  SyncRuntimeService,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -37,8 +37,9 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
-  setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
+  // setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
   getStatus: GetWorkerStatus;
+  syncRuntimeService: SyncRuntimeService;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -58,8 +59,9 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
-      'setCurrentRuntimeVersion',
+      // 'setCurrentRuntimeVersion',
       'getStatus',
+      'syncRuntimeService',
     ],
   );
 
@@ -112,7 +114,11 @@ export class WorkerBlockDispatcherService
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
-    this.runtimeService = runtimeService;
+
+    // copy Runtime service to each worker
+    this.workers.map((w) =>
+      w.syncRuntimeService((runtimeService as any).specVersionMap),
+    );
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -174,7 +180,7 @@ export class WorkerBlockDispatcherService
     const processBlock = async () => {
       try {
         const start = new Date();
-        const result = await pendingBlock;
+        await pendingBlock;
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {
@@ -195,18 +201,18 @@ export class WorkerBlockDispatcherService
           );
         }
 
-        if (result) {
-          const runtimeVersion = await this.runtimeService.getRuntimeVersion({
-            specVersion: result.specVersion,
-            block: {
-              header: {
-                parentHash: result.parentHash,
-              },
-            },
-          } as any);
-
-          await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
-        }
+        // if (result) {
+        //   const runtimeVersion = await this.runtimeService.getRuntimeVersion({
+        //     specVersion: result.specVersion,
+        //     block: {
+        //       header: {
+        //         parentHash: result.parentHash,
+        //       },
+        //     },
+        //   } as any);
+        //
+        //   await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
+        // }
 
         // logger.info(
         //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,

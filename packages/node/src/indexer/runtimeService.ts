@@ -48,6 +48,11 @@ export class RuntimeService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
+  // sync specVersion between main and workers
+  syncSpecVersionMap(specVersionMap: SpecVersion[]): void {
+    this.specVersionMap = specVersionMap;
+  }
+
   setSpecVersionMap(raw: SpecVersionDictionary | undefined) {
     if (raw === undefined) {
       this.specVersionMap = [];
@@ -155,6 +160,7 @@ export class RuntimeService implements OnApplicationShutdown {
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
+    console.log(`~ getSpecFromApi ${height}`);
     const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
       parentBlockHash,
     );
@@ -167,6 +173,9 @@ export class RuntimeService implements OnApplicationShutdown {
       !this.currentRuntimeVersion ||
       this.currentRuntimeVersion.specVersion.toNumber() !== block.specVersion
     ) {
+      console.log(
+        `~ getRuntimeVersion ${block.block.header.number.toNumber()}`,
+      );
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         block.block.header.parentHash,
       );

@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import * as console from 'console';
 import {ApolloClient, HttpLink, ApolloLink, InMemoryCache, NormalizedCacheObject, gql} from '@apollo/client/core';
 import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {authHttpLink} from '@subql/apollo-links';
@@ -216,6 +217,8 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
+    console.log(query);
+    console.log(variables);
 
     try {
       const resp = await timeout(

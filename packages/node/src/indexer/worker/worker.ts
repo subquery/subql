@@ -21,7 +21,9 @@ import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
+import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
+import { RuntimeService } from '../runtimeService';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
@@ -29,7 +31,6 @@ import {
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';
-
 let app: INestApplication;
 let workerService: WorkerService;
 
@@ -72,11 +73,10 @@ async function processBlock(height: number): Promise<ProcessBlockResponse> {
   return workerService.processBlock(height);
 }
 
-// eslint-disable-next-line @typescript-eslint/require-await
-async function setCurrentRuntimeVersion(runtimeHex: string): Promise<void> {
+function syncRuntimeService(specVersions: SpecVersion[]): void {
   assert(workerService, 'Not initialised');
-
-  return workerService.setCurrentRuntimeVersion(runtimeHex);
+  console.log(`Sync runtime service`);
+  workerService.syncRuntimeService(specVersions);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -106,8 +106,9 @@ registerWorker({
   processBlock,
   numFetchedBlocks,
   numFetchingBlocks,
-  setCurrentRuntimeVersion,
+  // setCurrentRuntimeVersion,
   getStatus,
+  syncRuntimeService,
 });
 
 // Export types to be used on the parent
@@ -116,8 +117,9 @@ export type FetchBlock = typeof fetchBlock;
 export type ProcessBlock = typeof processBlock;
 export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
-export type SetCurrentRuntimeVersion = typeof setCurrentRuntimeVersion;
+// export type SetCurrentRuntimeVersion = typeof setCurrentRuntimeVersion;
 export type GetWorkerStatus = typeof getStatus;
+export type SyncRuntimeService = typeof syncRuntimeService;
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');

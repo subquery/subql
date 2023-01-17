@@ -3,13 +3,20 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StoreService, PoiService, MmrService } from '@subql/node-core';
+import {
+  StoreService,
+  PoiService,
+  MmrService,
+  NodeConfig,
+} from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
+import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
@@ -35,8 +42,30 @@ import { WorkerService } from './worker/worker.service';
     DynamicDsService,
     PoiService,
     MmrService,
+    DictionaryService,
     ProjectService,
     WorkerService,
+    {
+      provide: DictionaryService,
+      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
+        const dictionaryService = new DictionaryService(project, nodeConfig);
+        await dictionaryService.init();
+        return dictionaryService;
+      },
+      inject: ['ISubqueryProject', NodeConfig],
+    },
+    RuntimeService,
+    // {
+    //   provide: RuntimeService,
+    //   useFactory: (
+    //     apiService: ApiService,
+    //     dictionaryService: DictionaryService,
+    //   ) => {
+    //     const runtimeService = new RuntimeService(apiService, dictionaryService);
+    //     return runtimeService;
+    //   },
+    //   inject: ['ISubqueryProject', EventEmitter2],
+    // },
     UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService],

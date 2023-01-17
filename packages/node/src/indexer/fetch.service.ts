@@ -5,7 +5,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import {
   isCustomDs,
@@ -32,21 +31,13 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
-import {
-  filter,
-  intersection,
-  last,
-  range,
-  sortBy,
-  uniqBy,
-  without,
-} from 'lodash';
+import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { IBlockDispatcher } from './blockDispatcher';
-import { DictionaryService, SpecVersion } from './dictionary.service';
+import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { RuntimeService } from './runtimeService';
@@ -299,6 +290,8 @@ export class FetchService implements OnApplicationShutdown {
       this.runtimeService.setSpecVersionMap(undefined);
     }
 
+    console.log(`fetch service init, waiting this.blockDispatcher.init`);
+
     await this.blockDispatcher.init(
       this.resetForNewDs.bind(this),
       this.runtimeService,
@@ -431,6 +424,12 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
+    console.log(
+      `this.dictionaryService.startHeight ${
+        this.dictionaryService.startHeight
+      } > getStartBlockHeight() ${getStartBlockHeight()}`,
+    );
+
     if (this.dictionaryService.startHeight > getStartBlockHeight()) {
       logger.warn(
         `Dictionary start height ${
@@ -469,6 +468,11 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
+          // console.log(`dictionary :
+          //     startBlockHeight ${startBlockHeight},
+          //     queryEndBlock ${queryEndBlock},
+          //     scaledBatchSize ${scaledBatchSize},
+          //  `)
           const dictionary =
             await this.dictionaryService.scopedDictionaryEntries(
               startBlockHeight,
@@ -482,6 +486,8 @@ export class FetchService implements OnApplicationShutdown {
             );
             continue;
           }
+
+          console.log(`dictionary fetch result ${dictionary.batchBlocks}`);
 
           if (
             dictionary &&
@@ -538,6 +544,7 @@ export class FetchService implements OnApplicationShutdown {
       } else {
         const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+        console.log(`enqueue block ${cleanedBatchBlocks}`);
         this.blockDispatcher.enqueueBlocks(
           cleanedBatchBlocks,
           this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
