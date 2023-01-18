@@ -14,7 +14,6 @@ import {
   AutoQueue,
 } from '@subql/node-core';
 import chalk from 'chalk';
-import { run } from 'jest';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtimeService';
@@ -24,7 +23,6 @@ import {
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
-  // SetCurrentRuntimeVersion,
   GetWorkerStatus,
   SyncRuntimeService,
 } from '../worker/worker';
@@ -37,7 +35,6 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
-  // setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
   getStatus: GetWorkerStatus;
   syncRuntimeService: SyncRuntimeService;
 };
@@ -59,7 +56,6 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
-      // 'setCurrentRuntimeVersion',
       'getStatus',
       'syncRuntimeService',
     ],
@@ -204,23 +200,6 @@ export class WorkerBlockDispatcherService
             )}`,
           );
         }
-
-        // if (result) {
-        //   const runtimeVersion = await this.runtimeService.getRuntimeVersion({
-        //     specVersion: result.specVersion,
-        //     block: {
-        //       header: {
-        //         parentHash: result.parentHash,
-        //       },
-        //     },
-        //   } as any);
-        //
-        //   await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
-        // }
-
-        // logger.info(
-        //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
-        // );
 
         this.preProcessBlock(height);
 

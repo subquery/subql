@@ -55,17 +55,6 @@ import { WorkerService } from './worker/worker.service';
       inject: ['ISubqueryProject', NodeConfig],
     },
     RuntimeService,
-    // {
-    //   provide: RuntimeService,
-    //   useFactory: (
-    //     apiService: ApiService,
-    //     dictionaryService: DictionaryService,
-    //   ) => {
-    //     const runtimeService = new RuntimeService(apiService, dictionaryService);
-    //     return runtimeService;
-    //   },
-    //   inject: ['ISubqueryProject', EventEmitter2],
-    // },
     UnfinalizedBlocksService,
   ],
   exports: [StoreService, MmrService],

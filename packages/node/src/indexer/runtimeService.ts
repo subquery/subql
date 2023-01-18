@@ -6,6 +6,7 @@ import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { profiler } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
+import Pino from 'pino';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -173,7 +174,6 @@ export class RuntimeService implements OnApplicationShutdown {
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
-    console.log(`~ getSpecFromApi ${height}`);
     const runtimeVersion = await this.api.rpc.state.getRuntimeVersion(
       parentBlockHash,
     );
@@ -186,9 +186,6 @@ export class RuntimeService implements OnApplicationShutdown {
       !this.currentRuntimeVersion ||
       this.currentRuntimeVersion.specVersion.toNumber() !== block.specVersion
     ) {
-      console.log(
-        `~ getRuntimeVersion ${block.block.header.number.toNumber()}`,
-      );
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         block.block.header.parentHash,
       );

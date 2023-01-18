@@ -116,7 +116,6 @@ registerWorker({
   processBlock,
   numFetchedBlocks,
   numFetchingBlocks,
-  // setCurrentRuntimeVersion,
   getStatus,
   syncRuntimeService,
 });
@@ -127,7 +126,6 @@ export type FetchBlock = typeof fetchBlock;
 export type ProcessBlock = typeof processBlock;
 export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
-// export type SetCurrentRuntimeVersion = typeof setCurrentRuntimeVersion;
 export type GetWorkerStatus = typeof getStatus;
 export type SyncRuntimeService = typeof syncRuntimeService;
 

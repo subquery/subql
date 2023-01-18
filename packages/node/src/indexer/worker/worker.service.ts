@@ -33,7 +33,6 @@ const logger = getLogger(`Worker Service #${threadId}`);
 @Injectable()
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
-  // private currentRuntimeVersion: RuntimeVersion | undefined;
   private _isIndexing = false;
 
   private queue: AutoQueue<FetchBlockResponse>;
