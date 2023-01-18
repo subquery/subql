@@ -126,11 +126,15 @@ export class WorkerBlockDispatcherService
     }
   }
 
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
-    if (!heights.length) return;
+  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+    if (!!latestBufferHeight && !cleanedBlocks.length) {
+      this.latestBufferedHeight = latestBufferHeight;
+      return;
+    }
+
     logger.info(
-      `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
-        heights.length
+      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
+        cleanedBlocks.length
       } blocks`,
     );
 
@@ -142,19 +146,19 @@ export class WorkerBlockDispatcherService
        * worker2: 4,5,6
        */
       const workerIdx = this.getNextWorkerIndex();
-      heights.map((height) => this.enqueueBlock(height, workerIdx));
+      cleanedBlocks.map((height) => this.enqueueBlock(height, workerIdx));
     } else {
       /*
        * Load balancing:
        * worker1: 1,3,5
        * worker2: 2,4,6
        */
-      heights.map((height) =>
+      cleanedBlocks.map((height) =>
         this.enqueueBlock(height, this.getNextWorkerIndex()),
       );
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
+    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
   }
 
   private enqueueBlock(height: number, workerIdx: number) {
