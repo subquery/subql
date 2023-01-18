@@ -73,10 +73,20 @@ async function processBlock(height: number): Promise<ProcessBlockResponse> {
   return workerService.processBlock(height);
 }
 
-function syncRuntimeService(specVersions: SpecVersion[]): void {
+function syncRuntimeService(
+  specVersions: SpecVersion[],
+  parentSpecVersion?: number,
+  latestFinalizedHeight?: number,
+): void {
   assert(workerService, 'Not initialised');
-  console.log(`Sync runtime service`);
-  workerService.syncRuntimeService(specVersions);
+  console.log(
+    `Sync runtime service,specVersions ${specVersions.length},parentSpecVersion: ${parentSpecVersion}, latestFinalizedHeight: ${latestFinalizedHeight}  `,
+  );
+  workerService.syncRuntimeService(
+    specVersions,
+    parentSpecVersion,
+    latestFinalizedHeight,
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await

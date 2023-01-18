@@ -290,8 +290,6 @@ export class FetchService implements OnApplicationShutdown {
       this.runtimeService.setSpecVersionMap(undefined);
     }
 
-    console.log(`fetch service init, waiting this.blockDispatcher.init`);
-
     await this.blockDispatcher.init(
       this.resetForNewDs.bind(this),
       this.runtimeService,
@@ -424,12 +422,6 @@ export class FetchService implements OnApplicationShutdown {
         : initBlockHeight;
     };
 
-    console.log(
-      `this.dictionaryService.startHeight ${
-        this.dictionaryService.startHeight
-      } > getStartBlockHeight() ${getStartBlockHeight()}`,
-    );
-
     if (this.dictionaryService.startHeight > getStartBlockHeight()) {
       logger.warn(
         `Dictionary start height ${
@@ -468,11 +460,6 @@ export class FetchService implements OnApplicationShutdown {
         );
 
         try {
-          // console.log(`dictionary :
-          //     startBlockHeight ${startBlockHeight},
-          //     queryEndBlock ${queryEndBlock},
-          //     scaledBatchSize ${scaledBatchSize},
-          //  `)
           const dictionary =
             await this.dictionaryService.scopedDictionaryEntries(
               startBlockHeight,
@@ -486,8 +473,6 @@ export class FetchService implements OnApplicationShutdown {
             );
             continue;
           }
-
-          console.log(`dictionary fetch result ${dictionary.batchBlocks}`);
 
           if (
             dictionary &&
@@ -544,7 +529,6 @@ export class FetchService implements OnApplicationShutdown {
       } else {
         const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        console.log(`enqueue block ${cleanedBatchBlocks}`);
         this.blockDispatcher.enqueueBlocks(
           cleanedBatchBlocks,
           this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),

@@ -117,7 +117,11 @@ export class WorkerBlockDispatcherService
 
     // copy Runtime service to each worker
     this.workers.map((w) =>
-      w.syncRuntimeService((runtimeService as any).specVersionMap),
+      w.syncRuntimeService(
+        (runtimeService as any).specVersionMap,
+        (runtimeService as any).parentSpecVersion,
+        (runtimeService as any).latestFinalizedHeight,
+      ),
     );
   }
 

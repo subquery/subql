@@ -49,8 +49,21 @@ export class RuntimeService implements OnApplicationShutdown {
   }
 
   // sync specVersion between main and workers
-  syncSpecVersionMap(specVersionMap: SpecVersion[]): void {
+  syncSpecVersionMap(
+    specVersionMap: SpecVersion[],
+    parentSpecVersion?: number,
+    latestFinalizedHeight?: number,
+  ): void {
     this.specVersionMap = specVersionMap;
+    if (parentSpecVersion !== undefined) {
+      this.parentSpecVersion = parentSpecVersion;
+    }
+    if (
+      latestFinalizedHeight !== undefined ||
+      this.latestFinalizedHeight < latestFinalizedHeight
+    ) {
+      this.latestFinalizedHeight = latestFinalizedHeight;
+    }
   }
 
   setSpecVersionMap(raw: SpecVersionDictionary | undefined) {

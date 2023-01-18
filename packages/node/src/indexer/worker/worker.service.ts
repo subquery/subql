@@ -3,7 +3,6 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
@@ -54,11 +53,6 @@ export class WorkerService {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
         if (!this.fetchedBlocks[height]) {
           const specChanged = await this.runtimeService.specChanged(height);
-          logger.info(
-            `block ${height}, specChanged ${specChanged}, this.runtimeService.parentSpecVersion ${
-              specChanged ? undefined : this.runtimeService.parentSpecVersion
-            }`,
-          );
           const [block] = await fetchBlocksBatches(
             this.apiService.getApi(),
             [height],
@@ -68,16 +62,6 @@ export class WorkerService {
         }
 
         const block = this.fetchedBlocks[height];
-
-        // TODO,
-        // We have the current version, don't need a new one when processing
-        // if (
-        //   this.currentRuntimeVersion?.specVersion.toNumber() ===
-        //   block.block.specVersion
-        // ) {
-        //   return;
-        // }
-
         // Return info to get the runtime version, this lets the worker thread know
         return {
           specVersion: block.block.specVersion,
@@ -89,17 +73,17 @@ export class WorkerService {
     }
   }
 
-  syncRuntimeService(specVersions: SpecVersion[]): void {
-    this.runtimeService.syncSpecVersionMap(specVersions);
+  syncRuntimeService(
+    specVersions: SpecVersion[],
+    parentSpecVersion?: number,
+    latestFinalizedHeight?: number,
+  ): void {
+    this.runtimeService.syncSpecVersionMap(
+      specVersions,
+      parentSpecVersion,
+      latestFinalizedHeight,
+    );
   }
-
-  // setCurrentRuntimeVersion(runtimeHex: string): void {
-  //   const runtimeVersion = this.apiService
-  //     .getApi()
-  //     .registry.createType('RuntimeVersion', runtimeHex);
-  //
-  //   this.currentRuntimeVersion = runtimeVersion;
-  // }
 
   async processBlock(height: number): Promise<ProcessBlockResponse> {
     try {
