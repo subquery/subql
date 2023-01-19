@@ -258,10 +258,18 @@ export async function getBlockByHeight(
     logger.error(`failed to fetch BlockHash ${height}`);
     throw e;
   });
-  return api.rpc.chain.getBlock(blockHash).catch((e) => {
+
+  const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(`failed to fetch Block ${blockHash}`);
     throw e;
   });
+  // validate block is valid
+  if (block.block.header.hash.toHex() !== blockHash.toHex()) {
+    throw new Error(
+      `fetched block header hash ${block.block.header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}, please check with endpoint`,
+    );
+  }
+  return block;
 }
 
 export async function fetchBlocksRange(
