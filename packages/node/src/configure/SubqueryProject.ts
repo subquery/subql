@@ -26,6 +26,7 @@ import Cron from 'cron-converter';
 import { GraphQLSchema } from 'graphql';
 import * as protobuf from 'protobufjs';
 import { CosmosClient } from '../indexer/api.service';
+import { blockResponseToBlock } from '../utils/cosmos';
 import {
   getProjectRoot,
   updateDataSourcesV0_3_0,
@@ -227,8 +228,8 @@ export async function generateTimestampReferenceForBlockFilters(
             if (handler.kind === SubqlCosmosHandlerKind.Block) {
               if (handler.filter?.timestamp) {
                 if (!block) {
-                  block = await api.blockInfo(startBlock);
-
+                  const response = await api.blockInfo(startBlock);
+                  block = blockResponseToBlock(response);
                   timestampReference = new Date(block.header.time);
                 }
                 try {

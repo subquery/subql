@@ -4,7 +4,7 @@
 import {DecodedTxRaw} from '@cosmjs/proto-signing';
 import {Block} from '@cosmjs/stargate';
 import {Event, Log} from '@cosmjs/stargate/build/logs';
-import {TxData} from '@cosmjs/tendermint-rpc';
+import {TxData, Header} from '@cosmjs/tendermint-rpc';
 
 export interface Entity {
   id: string;
@@ -28,6 +28,7 @@ export interface Store {
 
 export interface CosmosBlock {
   block: Block;
+  header: Header; // Full header
   txs: TxData[];
 }
 

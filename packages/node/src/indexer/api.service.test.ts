@@ -73,7 +73,7 @@ describe.skip('ApiService', () => {
       header: {
         version: {
           block: new Uint53(+doc.block.header.version.block).toString(),
-          app: blockInfo.header.version.app,
+          app: blockInfo.block.header.version.app,
         },
         height: doc.block.header.height,
         chainId: doc.block.header.chainId,

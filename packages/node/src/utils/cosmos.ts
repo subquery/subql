@@ -4,10 +4,17 @@
 import assert from 'assert';
 import { sha256 } from '@cosmjs/crypto';
 import { toHex } from '@cosmjs/encoding';
+import { Uint53 } from '@cosmjs/math';
 import { decodeTxRaw } from '@cosmjs/proto-signing';
 import { Block } from '@cosmjs/stargate';
 import { Log, parseRawLog } from '@cosmjs/stargate/build/logs';
-import { BlockResultsResponse, TxData } from '@cosmjs/tendermint-rpc';
+import {
+  BlockResultsResponse,
+  TxData,
+  Header,
+  toRfc3339WithNanoseconds,
+} from '@cosmjs/tendermint-rpc';
+import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 import { getLogger } from '@subql/node-core';
 import {
   SubqlCosmosEventFilter,
@@ -23,6 +30,22 @@ import { CosmosClient } from '../indexer/api.service';
 import { BlockContent } from '../indexer/types';
 
 const logger = getLogger('fetch');
+
+export function blockResponseToBlock(response: BlockResponse): Block {
+  return {
+    id: toHex(response.blockId.hash).toUpperCase(),
+    header: {
+      version: {
+        block: new Uint53(response.block.header.version.block).toString(),
+        app: new Uint53(response.block.header.version.app).toString(),
+      },
+      height: response.block.header.height,
+      chainId: response.block.header.chainId,
+      time: toRfc3339WithNanoseconds(response.block.header.time),
+    },
+    txs: response.block.txs,
+  };
+}
 
 export function filterBlock(
   data: CosmosBlock,
@@ -163,7 +186,7 @@ export function filterEvents(
 async function getBlockByHeight(
   api: CosmosClient,
   height: number,
-): Promise<[Block, BlockResultsResponse]> {
+): Promise<[BlockResponse, BlockResultsResponse]> {
   return Promise.all([
     api.blockInfo(height).catch((e) => {
       logger.error(e, `failed to fetch block info ${height}`);
@@ -179,15 +202,20 @@ async function getBlockByHeight(
 export async function fetchCosmosBlocksArray(
   api: CosmosClient,
   blockArray: number[],
-): Promise<[Block, BlockResultsResponse][]> {
+): Promise<[BlockResponse, BlockResultsResponse][]> {
   return Promise.all(
     blockArray.map(async (height) => getBlockByHeight(api, height)),
   );
 }
 
-export function wrapBlock(block: Block, txs: TxData[]): CosmosBlock {
+export function wrapBlock(
+  block: Block,
+  header: Header,
+  txs: TxData[],
+): CosmosBlock {
   return {
     block: block,
+    header: header,
     txs: txs,
   };
 }
@@ -285,8 +313,8 @@ export async function fetchBlocksBatches(
   return blocks.map(([blockInfo, blockResults]) => {
     try {
       assert(
-        blockResults.results.length === blockInfo.txs.length,
-        `txInfos doesn't match up with block (${blockInfo.header.height}) transactions expected ${blockInfo.txs.length}, received: ${blockResults.results.length}`,
+        blockResults.results.length === blockInfo.block.txs.length,
+        `txInfos doesn't match up with block (${blockInfo.block.header.height}) transactions expected ${blockInfo.block.txs.length}, received: ${blockResults.results.length}`,
       );
 
       // Make non-readonly
@@ -296,7 +324,7 @@ export async function fetchBlocksBatches(
     } catch (e) {
       logger.error(
         e,
-        `Failed to fetch and prepare block ${blockInfo.header.height}`,
+        `Failed to fetch and prepare block ${blockInfo.block.header.height}`,
       );
       throw e;
     }
@@ -310,14 +338,19 @@ class LazyBlockContent implements BlockContent {
   private _wrappedEvent: CosmosEvent[];
 
   constructor(
-    private _blockInfo: Block,
+    private _blockInfo: BlockResponse,
     private _results: TxData[],
     private _api: CosmosClient,
   ) {}
 
   get block() {
     if (!this._wrappedBlock) {
-      this._wrappedBlock = wrapBlock(this._blockInfo, this._results);
+      const block = blockResponseToBlock(this._blockInfo);
+      this._wrappedBlock = wrapBlock(
+        block,
+        this._blockInfo.block.header,
+        this._results,
+      );
     }
     return this._wrappedBlock;
   }

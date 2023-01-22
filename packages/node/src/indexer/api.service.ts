@@ -13,6 +13,7 @@ import {
   toRfc3339WithNanoseconds,
   BlockResultsResponse,
 } from '@cosmjs/tendermint-rpc';
+import { BlockResponse } from '@cosmjs/tendermint-rpc/build/tendermint34/responses';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   getLogger,
@@ -164,9 +165,9 @@ export class CosmosClient extends CosmWasmClient {
   */
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async blockInfo(height?: number): Promise<Block> {
-    return retryOnFailAxios<Block>(
-      this.getBlock.bind(this, height),
+  async blockInfo(height?: number): Promise<BlockResponse> {
+    return retryOnFailAxios<BlockResponse>(
+      this.forceGetTmClient().block.bind(this, height),
       RETRY_STATUS_CODES,
     );
   }
@@ -216,6 +217,7 @@ export class CosmosSafeClient extends CosmWasmClient {
     this.height = height;
   }
 
+  // Deprecate
   async getBlock(): Promise<Block> {
     const response = await this.forceGetTmClient().block(this.height);
     return {
