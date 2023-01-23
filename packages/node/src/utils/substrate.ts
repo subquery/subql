@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ApiPromise } from '@polkadot/api';
-import { Option, Vec } from '@polkadot/types';
+import { Vec } from '@polkadot/types';
 import '@polkadot/api-augment/substrate';
 import {
   BlockHash,
   EventRecord,
-  LastRuntimeUpgradeInfo,
   RuntimeVersion,
   SignedBlock,
 } from '@polkadot/types/interfaces';
@@ -266,7 +265,7 @@ export async function getBlockByHeight(
   // validate block is valid
   if (block.block.header.hash.toHex() !== blockHash.toHex()) {
     throw new Error(
-      `fetched block header hash ${block.block.header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}`,
+      `fetched block header hash ${block.block.header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}. This is likely a problem with the rpc provider.`,
     );
   }
   return block;
