@@ -10,6 +10,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.0] - 2022-01-23
+### Added
+- Add validation of dictionary with start height (#1473)
+- `Store` add count for entity (#1480)
+### Fixed
+- Fix custom metadata keys not being applied (#1496)
+
 ## [1.7.1] - 2022-12-22
 ### Fixed
 - Fix trigger function name too long (#1469)
