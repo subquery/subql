@@ -331,11 +331,10 @@ export class DictionaryService implements OnApplicationShutdown {
   }
 
   private metadataQuery(): GqlQuery {
-    const keys = ['lastProcessedHeight', 'genesisHash', 'startHeight'];
     const nodes: GqlNode[] = [
       {
         entity: '_metadata',
-        project: this.useStartHeight ? keys : keys.filter((key) => key !== 'startHeight'),
+        project: this.useStartHeight ? [...this.metadataKeys, 'startHeight'] : this.metadataKeys,
       },
     ];
     return buildQuery([], nodes);
