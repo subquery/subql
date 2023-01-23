@@ -785,7 +785,7 @@ describe('FetchService', () => {
   // We skip this test, as process will exit. Test might not work once failed block on the endpoint is fixed
   // When it exits, and with error `Failed to fetch blocks from queue Error: fetched block header hash ... is not match ...`
   // issued block example: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fkarura-rpc-0.aca-api.network#/explorer/query/3467086
-  it('throw error if fetched block failed substrate block validation', async () => {
+  it.skip('throw error if fetched block failed substrate block validation', async () => {
     const project = testSubqueryProject();
 
     project.dataSources[0].startBlock = 3467085;
