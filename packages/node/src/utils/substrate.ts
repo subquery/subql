@@ -266,7 +266,7 @@ export async function getBlockByHeight(
   // validate block is valid
   if (block.block.header.hash.toHex() !== blockHash.toHex()) {
     throw new Error(
-      `fetched block header hash ${block.block.header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}, please check with endpoint`,
+      `fetched block header hash ${block.block.header.hash.toHex()} is not match with blockHash ${blockHash.toHex()} at block ${height}`,
     );
   }
   return block;
