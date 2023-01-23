@@ -781,4 +781,35 @@ describe('FetchService', () => {
     // Should be called 9151,9170,9180
     expect(getPrefechMetaSpy).toBeCalledTimes(3);
   }, 500000);
+
+  // We skip this test, as process will exit. Test might not work once failed block on the endpoint is fixed
+  // When it exits, and with error `Failed to fetch blocks from queue Error: fetched block header hash ... is not match ...`
+  // issued block example: https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fkarura-rpc-0.aca-api.network#/explorer/query/3467086
+  it.skip('throw error if fetched block failed substrate block validation', async () => {
+    const project = testSubqueryProject();
+
+    project.dataSources[0].startBlock = 3467085;
+    project.network.endpoint = 'wss://karura-rpc-0.aca-api.network';
+
+    const indexerManager = mockIndexerManager();
+
+    app = await createApp(project, indexerManager);
+
+    fetchService = app.get(FetchService);
+    await fetchService.init(3467085);
+    const pendingCondition = new Promise((resolve) => {
+      // eslint-disable-next-line @typescript-eslint/require-await
+      indexerManager.register(async (content) => {
+        if (content.block.block.header.number.toNumber() === 3467095) {
+          resolve(undefined);
+        }
+        return {
+          dynamicDsCreated: false,
+          operationHash: null,
+          reindexBlockHeight: null,
+        };
+      });
+    });
+    await pendingCondition;
+  }, 100000);
 });
