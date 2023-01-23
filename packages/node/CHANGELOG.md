@@ -6,11 +6,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.18.0] - 2022-01-23
+### Added
+- Add validation of dictionary with start height (#1473)
+- Add block hash validation after fetch (#1494)
+### Updated
+- Update Polkadot api to 9.11.1 (#1469)
+### Fixed 
+- Fix workers stuck due to missing set last buffered height from empty dictionary (#1492)
+
+
 ## [1.17.1] - 2022-12-22
 ### Update 
 - error message for `genesisHash` (#1471)
 ### Fixed
-- `triggerName`/ `channelName` too long, preventing indexer to start (1#469)
+- `triggerName`/ `channelName` too long, preventing indexer to start (#1469)
 
 ## [1.17.0] - 2022-12-19
 ### Fixed

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.2] - 2023-01-23
+### Changed
+- Enable connection filters (#1484)
+
 ## [1.10.1] - 2022-12-22
 ### Fixed
 - Updated subscription `triggerName` (#1469)

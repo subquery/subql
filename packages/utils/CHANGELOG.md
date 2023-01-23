@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.4.0] - 2023-01-23
+### Update
+- Update metadata type with `startHeight` (#1473)
+- Update Polkadot api to 9.11.1 (#1483)
+
 ## [1.3.1] - 2022-11-30
 ### Fixed
 - Support postgres identifier restrictions (#1438)
