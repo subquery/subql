@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.13.2] - 2023-01-23
+### Added
+- Add full block header to Block (#94)
+
 ## [1.13.1] - 2023-01-12
 ### Update
 - Sync with latest changes on Substrate SDK (#90)

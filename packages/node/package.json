@@ -1,6 +1,6 @@
 {
   "name": "@subql/node-cosmos",
-  "version": "1.13.2-1",
+  "version": "1.13.2",
   "description": "",
   "author": "Naveen Veluswamy",
   "license": "Apache-2.0",
@@ -30,7 +30,7 @@
     "@polkadot/api": "9.5.2",
     "@subql/common": "latest",
     "@subql/common-cosmos": "workspace:*",
-    "@subql/node-core": "1.7.2-2",
+    "@subql/node-core": "1.8.0",
     "@subql/types-cosmos": "workspace:*",
     "@subql/utils": "latest",
     "@subql/x-merkle-mountain-range": "2.0.0-0.1.2",
@@ -74,6 +74,5 @@
   "files": [
     "/dist",
     "/bin"
-  ],
-  "stableVersion": "1.13.2-0"
+  ]
 }

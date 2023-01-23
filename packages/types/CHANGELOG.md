@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.4.2] - 2023-01-23
+### Added
+- Add `header` to `CosmosBlock` interface (#94)
+
 ## [0.4.1] - 2023-01-12
 ### Added
 - `count` to Store interface. (#90)

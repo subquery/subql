@@ -3322,9 +3322,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:1.7.2-2":
-  version: 1.7.2-2
-  resolution: "@subql/node-core@npm:1.7.2-2"
+"@subql/node-core@npm:1.8.0":
+  version: 1.8.0
+  resolution: "@subql/node-core@npm:1.8.0"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
@@ -3332,8 +3332,8 @@ __metadata:
     "@polkadot/api": 9.11.1
     "@subql/apollo-links": 0.2.1-9
     "@subql/common": 1.5.0
-    "@subql/types": 1.7.1-0
-    "@subql/utils": 1.3.2-1
+    "@subql/types": 1.7.1
+    "@subql/utils": 1.4.0
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
     "@willsoto/nestjs-prometheus": ^4.4.0
     lodash: ^4.17.21
@@ -3341,7 +3341,7 @@ __metadata:
     sequelize: 6.23.0
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: 3e8256dee90a87572d389f6215d2213be491f18692024ef6633c33864ab5daaf46b558705d1ebf7991f381334e7a5cc1aca4f499b60011c2cc4768c54f438a1f
+  checksum: f90b041c90c9ca497388e2de45b4e7b7b7d6b1eb25329e436ec62335713d912c576ad31f9100635d42517eefda69e09cd7fda7f302c3eeb4c2f5a2505a38a5a4
   languageName: node
   linkType: hard
 
@@ -3363,7 +3363,7 @@ __metadata:
     "@polkadot/api": 9.5.2
     "@subql/common": latest
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": 1.7.2-2
+    "@subql/node-core": 1.8.0
     "@subql/types-cosmos": "workspace:*"
     "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
@@ -3415,18 +3415,18 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types@npm:1.7.1-0":
-  version: 1.7.1-0
-  resolution: "@subql/types@npm:1.7.1-0"
+"@subql/types@npm:1.7.1":
+  version: 1.7.1
+  resolution: "@subql/types@npm:1.7.1"
   peerDependencies:
     "@polkadot/api": ^9
-  checksum: 344c98f782d7cf944d665b2d56c7c43382a9729e2dd42c0733afaaf3ba068afe49e6ac5e4a38bdf1b4ff5d82492b4df75fe3c8575ff793df5326b2290776f01d
+  checksum: 37e493bc8b28b14f5b54824d8863257ad1e4b480d5c83ed3110ca86a253a43cd12b52f6afe8733aea33dc42a2fd15c7c5fd2bcfb07ddd84c88a8c65d9c029092
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:1.3.2-1":
-  version: 1.3.2-1
-  resolution: "@subql/utils@npm:1.3.2-1"
+"@subql/utils@npm:1.4.0":
+  version: 1.4.0
+  resolution: "@subql/utils@npm:1.4.0"
   dependencies:
     "@polkadot/util": ^10.2.3
     "@polkadot/util-crypto": ^10.2.3
@@ -3442,7 +3442,7 @@ __metadata:
     semver: ^7.3.7
     sequelize: 6.23.0
     tar: ^6.1.11
-  checksum: b8cac94ef2f53618ad392b103aa53bd2ada28b3fccc50cf98b2efc0346aaf210fdc582568d4bcff656849d4c16a84221cd0edfaee7f5dbd3c6df930b79bed850
+  checksum: db6429fb886d2f155f09bf6a91a7e83f60e871a1cee99c183946e32a663cbd7a70e78ee97eb4c366b081322e5208b6d4333b2c420ad3976f228bf0ff613d2601
   languageName: node
   linkType: hard
 
