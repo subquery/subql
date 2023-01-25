@@ -3891,7 +3891,7 @@ __metadata:
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
-    "@subql/common-near": ^0.0.1-0
+    "@subql/common-near": dev
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@subql/utils": "workspace:*"
@@ -4022,17 +4022,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/common-near@npm:^0.0.1-0":
-  version: 0.0.1-0
-  resolution: "@subql/common-near@npm:0.0.1-0"
+"@subql/common-near@npm:dev":
+  version: 0.0.1-2
+  resolution: "@subql/common-near@npm:0.0.1-2"
   dependencies:
     "@subql/common": latest
-    "@subql/types-near": 0.0.1-0
+    "@subql/types-near": 0.0.1-3
     class-transformer: 0.4.0
     class-validator: ^0.13.2
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
-  checksum: d27eef193bcaf30c24c54e9de37dd76ca045ed9ce5efe382741c89d0369a6ec00360d913a3c3ca52790b3d2dab6bd11d5c0e9f624501eec0792c03c348cfe35a
+  checksum: 4e36ec53772fa7bb234213e8c2542099775edd01ce2cd3701353eb0bc967b691d6bd992c3dfdc6e25e1633018178f31ec7c471a75eb9734520b6af6902e7e493
   languageName: node
   linkType: hard
 
@@ -4276,13 +4276,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-near@npm:0.0.1-0":
-  version: 0.0.1-0
-  resolution: "@subql/types-near@npm:0.0.1-0"
+"@subql/types-near@npm:0.0.1-3":
+  version: 0.0.1-3
+  resolution: "@subql/types-near@npm:0.0.1-3"
   dependencies:
     bn.js: 5.2.1
     near-api-js: ^1.1.0
-  checksum: d27d34349e6d8e4b124e99410fd0ea316f0b8c46080f8d9ce23036fc61f4adc117e4bf523c1fee5d6b5c908e82086c9fe57162139dbcecf52f13e7de1fb7cbc2
+  checksum: 1f820c334a9a88bebd10e9897acee8cbaaa669122bef70daf9ea63baa2d53ec49d22b16cfda1724ad1f422904ec2dbd6312f901fe21be0eff934796440c889d8
   languageName: node
   linkType: hard
 
@@ -4337,7 +4337,7 @@ __metadata:
     "@subql/common-cosmos": latest
     "@subql/common-ethereum": latest
     "@subql/common-flare": latest
-    "@subql/common-near": ^0.0.1-0
+    "@subql/common-near": dev
     "@subql/common-substrate": "workspace:*"
     "@subql/common-terra": latest
     "@types/js-yaml": ^4.0.5

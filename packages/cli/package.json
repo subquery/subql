@@ -18,7 +18,7 @@
     "@subql/common-cosmos": "latest",
     "@subql/common-ethereum": "latest",
     "@subql/common-flare": "latest",
-    "@subql/common-near": "^0.0.1-0",
+    "@subql/common-near": "dev",
     "@subql/common-substrate": "workspace:*",
     "@subql/common-terra": "latest",
     "@subql/utils": "workspace:*",
