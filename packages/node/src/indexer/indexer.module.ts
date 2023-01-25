@@ -42,7 +42,6 @@ import { WorkerService } from './worker/worker.service';
     DynamicDsService,
     PoiService,
     MmrService,
-    DictionaryService,
     ProjectService,
     WorkerService,
     {

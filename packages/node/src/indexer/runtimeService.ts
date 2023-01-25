@@ -6,7 +6,6 @@ import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { profiler } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
-import Pino from 'pino';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -22,11 +21,11 @@ type GetLatestFinalizedHeight = () => number;
 @Injectable()
 export class RuntimeService implements OnApplicationShutdown {
   parentSpecVersion: number;
-  protected specVersionMap: SpecVersion[];
+  specVersionMap: SpecVersion[];
   protected currentRuntimeVersion: RuntimeVersion;
   private isShutdown = false;
   private useDictionary: boolean;
-  private latestFinalizedHeight: number;
+  latestFinalizedHeight: number;
 
   constructor(
     private readonly apiService: ApiService,

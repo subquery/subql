@@ -23,7 +23,6 @@ import { NestFactory } from '@nestjs/core';
 import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
-import { RuntimeService } from '../runtimeService';
 import { WorkerModule } from './worker.module';
 import {
   FetchBlockResponse,
