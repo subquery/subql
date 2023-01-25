@@ -31,13 +31,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     StoreService,
     {
       provide: ApiService,
-      useFactory: async (project: SubqueryProject) => {
-        const apiService = new EthereumApiService(project);
-
+      useFactory: async (
+        project: SubqueryProject,
+        eventEmitter: EventEmitter2,
+      ) => {
+        const apiService = new EthereumApiService(project, eventEmitter);
         await apiService.init();
         return apiService;
       },
-      inject: [SubqueryProject],
+      inject: ['ISubqueryProject', EventEmitter2],
     },
     IndexerManager,
     {
@@ -72,7 +74,15 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     },
     FetchService,
     BenchmarkService,
-    DictionaryService,
+    {
+      provide: DictionaryService,
+      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
+        const dictionaryService = new DictionaryService(project, nodeConfig);
+        await dictionaryService.init();
+        return dictionaryService;
+      },
+      inject: ['ISubqueryProject', NodeConfig],
+    },
     SandboxService,
     DsProcessorService,
     DynamicDsService,

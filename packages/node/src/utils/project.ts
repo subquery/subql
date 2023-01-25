@@ -274,6 +274,13 @@ export async function initDbSchema(
   await storeService.init(modelsRelation, schema);
 }
 
+export async function initHotSchemaReload(
+  schema: string,
+  storeService: StoreService,
+): Promise<void> {
+  await storeService.initHotSchemaReloadQueries(schema);
+}
+
 const handledErrors = ['timeout'];
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function retryOnFailEth<T>(

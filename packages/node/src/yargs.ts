@@ -6,6 +6,7 @@ import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 export const yargsOptions = yargs(hideBin(process.argv))
+  .env('SUBQL_NODE')
   .command({
     command: 'force-clean',
     describe:
@@ -133,12 +134,6 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'Specify log level to print. Ignored when --debug is used',
       type: 'string',
       choices: ['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent'],
-    },
-    migrate: {
-      demandOption: false,
-      describe: 'Migrate db schema (for management tables only)',
-      type: 'boolean',
-      default: false,
     },
     'timestamp-field': {
       demandOption: false,

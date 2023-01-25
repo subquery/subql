@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Block } from '@ethersproject/abstract-provider';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
@@ -61,7 +61,7 @@ export class IndexerManager {
     private apiService: ApiService,
     private poiService: PoiService,
     private sequelize: Sequelize,
-    private project: SubqueryProject,
+    @Inject('ISubqueryProject') private readonly project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dynamicDsService: DynamicDsService,

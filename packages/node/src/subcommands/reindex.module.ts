@@ -2,7 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { DbModule, MmrService, StoreService } from '@subql/node-core';
+import {
+  DbModule,
+  MmrService,
+  NodeConfig,
+  StoreService,
+} from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
 import { DsProcessorService } from '../indexer/ds-processor.service';
 import { DynamicDsService } from '../indexer/dynamic-ds.service';

@@ -24,6 +24,7 @@ export type FunctionPropertyNames<T> = {
 }[keyof T];
 
 export interface Store {
+  count(entity: string, field?: string, value?: any, options?: {distinct?: boolean; col?: string}): Promise<number>;
   get(entity: string, id: string): Promise<Entity | null>;
   getByField(entity: string, field: string, value): Promise<Entity[]>;
   getOneByField(entity: string, field: string, value): Promise<Entity | null>;

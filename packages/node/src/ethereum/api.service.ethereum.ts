@@ -1,15 +1,23 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ProjectNetworkV1_0_0 } from '@subql/common-ethereum';
 import { ApiService, getLogger } from '@subql/node-core';
+import { SubqueryProject } from '../configure/SubqueryProject';
 import { EthereumApi } from './api.ethereum';
 
 const logger = getLogger('api');
 
 @Injectable()
 export class EthereumApiService extends ApiService {
+  constructor(
+    @Inject('ISubqueryProject') project: SubqueryProject,
+    private eventEmitter: EventEmitter2,
+  ) {
+    super(project);
+  }
   private _api: EthereumApi;
 
   async init(): Promise<EthereumApiService> {

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Block } from '@ethersproject/abstract-provider';
+import { Injectable } from '@nestjs/common';
 import { RegisteredTypes } from '@polkadot/types/types';
 import {
   ReaderFactory,
@@ -50,6 +51,7 @@ const NOT_SUPPORT = (name: string) => {
   throw new Error(`Manifest specVersion ${name}() is not supported`);
 };
 
+@Injectable()
 export class SubqueryProject {
   id: string;
   root: string;
