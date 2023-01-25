@@ -7,6 +7,7 @@ import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@s
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
+import {parseNearProjectManifest} from '@subql/common-near';
 import {parseSubstrateProjectManifest} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 
@@ -83,6 +84,9 @@ export class Validator {
         break;
       case NETWORK_FAMILY.flare:
         schema = parseFlareProjectManifest(rawSchema);
+        break;
+      case NETWORK_FAMILY.near:
+        schema = parseNearProjectManifest(rawSchema);
         break;
       default:
         console.error(`Load project failed, please check the manifest file.`);

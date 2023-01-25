@@ -9,6 +9,7 @@ import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@s
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
+import {parseNearProjectManifest} from '@subql/common-near';
 import {parseSubstrateProjectManifest, manifestIsV0_0_1} from '@subql/common-substrate';
 import {parseTerraProjectManifest} from '@subql/common-terra';
 import {FileReference} from '@subql/types';
@@ -60,7 +61,11 @@ export async function uploadToIpfs(projectPath: string, authToken: string, ipfsE
               try {
                 manifest = parseFlareProjectManifest(schema).asImpl;
               } catch (e) {
-                throw new Error('Unable to pass project manifest');
+                try {
+                  manifest = parseNearProjectManifest(schema).asImpl;
+                } catch (e) {
+                  throw new Error('Unable to pass project manifest');
+                }
               }
             }
           }

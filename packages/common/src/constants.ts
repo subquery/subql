@@ -25,6 +25,7 @@ export enum NETWORK_FAMILY {
   algorand = 'Algorand',
   ethereum = 'Ethereum',
   flare = 'Flare',
+  near = 'Near',
 }
 
 export const runnerMapping = {
@@ -36,4 +37,5 @@ export const runnerMapping = {
   '@subql/node-algorand': NETWORK_FAMILY.algorand,
   '@subql/node-ethereum': NETWORK_FAMILY.ethereum,
   '@subql/node-flare': NETWORK_FAMILY.flare,
+  '@subql/node-near': NETWORK_FAMILY.near,
 };
