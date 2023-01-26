@@ -8,8 +8,8 @@ import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
+import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent } from '../types';
-import { WorkerRuntimeService } from './workerRuntimeService';
 
 export type FetchBlockResponse =
   | { specVersion: number; parentHash: string }

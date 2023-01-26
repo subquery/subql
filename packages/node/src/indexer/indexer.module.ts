@@ -3,22 +3,17 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  StoreService,
-  PoiService,
-  MmrService,
-  NodeConfig,
-} from '@subql/node-core';
+import { StoreService, PoiService, MmrService } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
+import { WorkerRuntimeService } from './runtime/workerRuntimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
-import { WorkerRuntimeService } from './worker/workerRuntimeService';
 
 @Module({
   providers: [

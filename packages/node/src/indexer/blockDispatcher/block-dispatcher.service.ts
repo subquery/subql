@@ -17,7 +17,7 @@ import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
-import { RuntimeService } from '../runtimeService';
+import { RuntimeService } from '../runtime/runtimeService';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');

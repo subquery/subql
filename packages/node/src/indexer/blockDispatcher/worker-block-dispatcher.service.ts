@@ -16,7 +16,7 @@ import {
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
-import { RuntimeService } from '../runtimeService';
+import { RuntimeService } from '../runtime/runtimeService';
 import {
   FetchBlock,
   ProcessBlock,
