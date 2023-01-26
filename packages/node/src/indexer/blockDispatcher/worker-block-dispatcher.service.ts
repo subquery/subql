@@ -25,6 +25,7 @@ import {
   NumFetchingBlocks,
   GetWorkerStatus,
   SyncRuntimeService,
+  GetSpecFromMap,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -37,6 +38,7 @@ type IIndexerWorker = {
   numFetchingBlocks: NumFetchingBlocks;
   getStatus: GetWorkerStatus;
   syncRuntimeService: SyncRuntimeService;
+  getSpecFromMap: GetSpecFromMap;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -58,6 +60,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'numFetchingBlocks',
       'getStatus',
       'syncRuntimeService',
+      'getSpecFromMap',
     ],
   );
 
@@ -110,15 +113,9 @@ export class WorkerBlockDispatcherService
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
-
-    // copy Runtime service to each worker
-    this.workers.map((w) =>
-      w.syncRuntimeService(
-        runtimeService.specVersionMap,
-        runtimeService.parentSpecVersion,
-        runtimeService.latestFinalizedHeight,
-      ),
-    );
+    // Sync workers runtime from main
+    this.runtimeService = runtimeService;
+    this.syncWorkerRuntimes();
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -130,6 +127,15 @@ export class WorkerBlockDispatcherService
     if (this.workers) {
       await Promise.all(this.workers.map((w) => w.terminate()));
     }
+  }
+
+  syncWorkerRuntimes(): void {
+    this.workers.map((w) =>
+      w.syncRuntimeService(
+        this.runtimeService.specVersionMap,
+        this.runtimeService.latestFinalizedHeight,
+      ),
+    );
   }
 
   enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
@@ -175,12 +181,18 @@ export class WorkerBlockDispatcherService
 
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
-    const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {
       try {
+        // get SpecVersion from main runtime service
+        const { blockSpecVersion, syncedDictionary } =
+          await this.runtimeService.getSpecVersion(height);
+        // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
+        if (syncedDictionary) {
+          this.syncWorkerRuntimes();
+        }
         const start = new Date();
-        await pendingBlock;
+        await worker.fetchBlock(height, blockSpecVersion);
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {

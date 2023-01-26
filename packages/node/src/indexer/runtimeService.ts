@@ -14,7 +14,7 @@ import {
   SpecVersion,
   SpecVersionDictionary,
 } from './dictionary.service';
-const SPEC_VERSION_BLOCK_GAP = 100;
+export const SPEC_VERSION_BLOCK_GAP = 100;
 type GetUseDictionary = () => boolean;
 type GetLatestFinalizedHeight = () => number;
 
@@ -48,29 +48,13 @@ export class RuntimeService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  // sync specVersion between main and workers
-  syncSpecVersionMap(
-    specVersionMap: SpecVersion[],
-    parentSpecVersion?: number,
-    latestFinalizedHeight?: number,
-  ): void {
-    this.specVersionMap = specVersionMap;
-    if (parentSpecVersion !== undefined) {
-      this.parentSpecVersion = parentSpecVersion;
-    }
-    if (
-      latestFinalizedHeight !== undefined ||
-      this.latestFinalizedHeight < latestFinalizedHeight
-    ) {
-      this.latestFinalizedHeight = latestFinalizedHeight;
-    }
-  }
-
-  setSpecVersionMap(raw: SpecVersionDictionary | undefined) {
+  setSpecVersionMap(raw: SpecVersionDictionary | undefined): void {
     if (raw === undefined) {
       this.specVersionMap = [];
     }
+
     this.specVersionMap = this.parseSpecVersions(raw);
+    console.log(`this.specVersionMap length ${this.specVersionMap.length}`);
   }
 
   parseSpecVersions(raw: SpecVersionDictionary): SpecVersion[] {
@@ -104,6 +88,7 @@ export class RuntimeService implements OnApplicationShutdown {
 
   @profiler(yargsOptions.argv.profiler)
   async prefetchMeta(height: number): Promise<void> {
+    console.log(`~~~~~ main: prefetchMeta`);
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (
       this.parentSpecVersion &&
@@ -137,39 +122,45 @@ export class RuntimeService implements OnApplicationShutdown {
     blockHeight: number,
     specVersions: SpecVersion[],
   ): number | undefined {
-    //return undefined if can not find inside range
+    //return undefined block can not find inside range
     const spec = specVersions.find(
       (spec) => blockHeight >= spec.start && blockHeight <= spec.end,
     );
     return spec ? Number(spec.id) : undefined;
   }
 
-  async getSpecVersion(blockHeight: number): Promise<number> {
-    let currentSpecVersion: number;
+  async syncDictionarySpecVersions(): Promise<void> {
+    const response = this.useDictionary
+      ? await this.dictionaryService.getSpecVersions()
+      : undefined;
+    if (response !== undefined) {
+      this.specVersionMap = response;
+    }
+  }
+
+  async getSpecVersion(
+    blockHeight: number,
+  ): Promise<{ blockSpecVersion: number; syncedDictionary: boolean }> {
+    let blockSpecVersion: number;
+    let syncedDictionary = false;
     // we want to keep the specVersionMap in memory, and use it even useDictionary been disabled
     // therefore instead of check .useDictionary, we check it length before use it.
     if (this.specVersionMap && this.specVersionMap.length !== 0) {
-      currentSpecVersion = this.getSpecFromMap(
-        blockHeight,
-        this.specVersionMap,
-      );
+      blockSpecVersion = this.getSpecFromMap(blockHeight, this.specVersionMap);
     }
-    if (currentSpecVersion === undefined) {
-      currentSpecVersion = await this.getSpecFromApi(blockHeight);
-      // Assume dictionary is synced
+    if (blockSpecVersion === undefined) {
+      blockSpecVersion = await this.getSpecFromApi(blockHeight);
       if (blockHeight + SPEC_VERSION_BLOCK_GAP < this.latestFinalizedHeight) {
-        const response = this.useDictionary
-          ? await this.dictionaryService.getSpecVersions()
-          : undefined;
-        if (response !== undefined) {
-          this.specVersionMap = response;
-        }
+        // Ask to sync local specVersionMap with dictionary
+        await this.syncDictionarySpecVersions();
+        syncedDictionary = true;
       }
     }
-    return currentSpecVersion;
+    return { blockSpecVersion, syncedDictionary };
   }
 
   async getSpecFromApi(height: number): Promise<number> {
+    console.log(`~~~~~ main: getSpecFromApi block ${height}`);
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
@@ -188,14 +179,23 @@ export class RuntimeService implements OnApplicationShutdown {
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         block.block.header.parentHash,
       );
+      console.log(
+        `~~~~~ main: getRuntimeVersion from api, new spec ${this.currentRuntimeVersion.specVersion.toNumber()}`,
+      );
     }
     return this.currentRuntimeVersion;
   }
 
   @profiler(yargsOptions.argv.profiler)
-  async specChanged(height: number): Promise<boolean> {
-    const specVersion = await this.getSpecVersion(height);
+  async specChanged(height: number, specVersion?: number): Promise<boolean> {
+    if (specVersion === undefined) {
+      const { blockSpecVersion } = await this.getSpecVersion(height);
+      specVersion = blockSpecVersion;
+    }
     if (this.parentSpecVersion !== specVersion) {
+      console.log(
+        `this.parentSpecVersion ${this.parentSpecVersion}, specVersion ${specVersion}`,
+      );
       const parentSpecVersionCopy = this.parentSpecVersion;
       this.parentSpecVersion = specVersion;
       await this.prefetchMeta(height);

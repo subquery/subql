@@ -8,8 +8,8 @@ import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
-import { RuntimeService } from '../runtimeService';
 import { BlockContent } from '../types';
+import { WorkerRuntimeService } from './workerRuntimeService';
 
 export type FetchBlockResponse =
   | { specVersion: number; parentHash: string }
@@ -40,22 +40,37 @@ export class WorkerService {
   constructor(
     private apiService: ApiService,
     private indexerManager: IndexerManager,
-    private runtimeService: RuntimeService,
+    private workerRuntimeService: WorkerRuntimeService,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }
 
-  async fetchBlock(height: number): Promise<FetchBlockResponse> {
+  getSpecFromMap(height: number): number | undefined {
+    return this.workerRuntimeService.getSpecFromMap(
+      height,
+      this.workerRuntimeService.specVersionMap,
+    );
+  }
+
+  async fetchBlock(
+    height: number,
+    specVersion: number,
+  ): Promise<FetchBlockResponse> {
     try {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
         if (!this.fetchedBlocks[height]) {
-          const specChanged = await this.runtimeService.specChanged(height);
+          const specChanged = await this.workerRuntimeService.specChanged(
+            height,
+            specVersion,
+          );
           const [block] = await fetchBlocksBatches(
             this.apiService.getApi(),
             [height],
-            specChanged ? undefined : this.runtimeService.parentSpecVersion,
+            specChanged
+              ? undefined
+              : this.workerRuntimeService.parentSpecVersion,
           );
           this.fetchedBlocks[height] = block;
         }
@@ -74,13 +89,14 @@ export class WorkerService {
 
   syncRuntimeService(
     specVersions: SpecVersion[],
-    parentSpecVersion?: number,
     latestFinalizedHeight?: number,
   ): void {
-    this.runtimeService.syncSpecVersionMap(
+    this.workerRuntimeService.syncSpecVersionMap(
       specVersions,
-      parentSpecVersion,
       latestFinalizedHeight,
+    );
+    console.log(
+      `----- worker syncRuntimeService specVersions ${specVersions.length}, latestFinalizedHeight ${latestFinalizedHeight} `,
     );
   }
 
@@ -95,7 +111,7 @@ export class WorkerService {
 
       delete this.fetchedBlocks[height];
 
-      const runtimeVersion = await this.runtimeService.getRuntimeVersion(
+      const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
         block.block,
       );
 

@@ -60,10 +60,17 @@ async function initWorker(): Promise<void> {
   }
 }
 
-async function fetchBlock(height: number): Promise<FetchBlockResponse> {
+function getSpecFromMap(height: number): number | undefined {
   assert(workerService, 'Not initialised');
+  return workerService.getSpecFromMap(height);
+}
 
-  return workerService.fetchBlock(height);
+async function fetchBlock(
+  height: number,
+  specVersion: number,
+): Promise<FetchBlockResponse> {
+  assert(workerService, 'Not initialised');
+  return workerService.fetchBlock(height, specVersion);
 }
 
 async function processBlock(height: number): Promise<ProcessBlockResponse> {
@@ -74,18 +81,13 @@ async function processBlock(height: number): Promise<ProcessBlockResponse> {
 
 function syncRuntimeService(
   specVersions: SpecVersion[],
-  parentSpecVersion?: number,
   latestFinalizedHeight?: number,
 ): void {
   assert(workerService, 'Not initialised');
   console.log(
-    `Sync runtime service,specVersions ${specVersions.length},parentSpecVersion: ${parentSpecVersion}, latestFinalizedHeight: ${latestFinalizedHeight}  `,
+    `Sync runtime service,specVersions ${specVersions.length}, latestFinalizedHeight: ${latestFinalizedHeight}  `,
   );
-  workerService.syncRuntimeService(
-    specVersions,
-    parentSpecVersion,
-    latestFinalizedHeight,
-  );
+  workerService.syncRuntimeService(specVersions, latestFinalizedHeight);
 }
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -117,6 +119,7 @@ registerWorker({
   numFetchingBlocks,
   getStatus,
   syncRuntimeService,
+  getSpecFromMap,
 });
 
 // Export types to be used on the parent
@@ -127,6 +130,7 @@ export type NumFetchedBlocks = typeof numFetchedBlocks;
 export type NumFetchingBlocks = typeof numFetchingBlocks;
 export type GetWorkerStatus = typeof getStatus;
 export type SyncRuntimeService = typeof syncRuntimeService;
+export type GetSpecFromMap = typeof getSpecFromMap;
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');

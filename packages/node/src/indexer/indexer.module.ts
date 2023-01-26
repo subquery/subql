@@ -11,15 +11,14 @@ import {
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
-import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
-import { RuntimeService } from './runtimeService';
 import { SandboxService } from './sandbox.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 import { WorkerService } from './worker/worker.service';
+import { WorkerRuntimeService } from './worker/workerRuntimeService';
 
 @Module({
   providers: [
@@ -44,17 +43,8 @@ import { WorkerService } from './worker/worker.service';
     MmrService,
     ProjectService,
     WorkerService,
-    {
-      provide: DictionaryService,
-      useFactory: async (project: SubqueryProject, nodeConfig: NodeConfig) => {
-        const dictionaryService = new DictionaryService(project, nodeConfig);
-        await dictionaryService.init();
-        return dictionaryService;
-      },
-      inject: ['ISubqueryProject', NodeConfig],
-    },
-    RuntimeService,
     UnfinalizedBlocksService,
+    WorkerRuntimeService,
   ],
   exports: [StoreService, MmrService],
 })

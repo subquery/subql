@@ -409,7 +409,6 @@ export class FetchService implements OnApplicationShutdown {
     // setup parentSpecVersion
     await this.runtimeService.specChanged(initBlockHeight);
     await this.runtimeService.prefetchMeta(initBlockHeight);
-
     let startBlockHeight: number;
     let scaledBatchSize: number;
     const handlers = [].concat(
