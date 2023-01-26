@@ -643,6 +643,7 @@ group by
           const record = await model.findOne({
             where: {id},
             transaction: this.tx,
+            lock: true,
           });
           return record?.toJSON() as T;
         } catch (e) {
@@ -672,6 +673,7 @@ group by
             transaction: this.tx,
             limit: options?.limit ?? this.config.queryLimit,
             offset: options?.offset,
+            lock: true,
           });
           return records.map((record) => record.toJSON() as T);
         } catch (e) {
@@ -697,6 +699,7 @@ group by
           const record = await model.findOne({
             where: {[field]: value},
             transaction: this.tx,
+            lock: true,
           });
           return record?.toJSON() as T;
         } catch (e) {
