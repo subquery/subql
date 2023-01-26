@@ -7,6 +7,7 @@ import {SubstrateProjectManifestVersioned as AvalancheProjectManifestVersioned} 
 import {CosmosProjectManifestVersioned} from '@subql/common-cosmos';
 import {EthereumProjectManifestVersioned} from '@subql/common-ethereum';
 import {EthereumProjectManifestVersioned as FlareProjectManifestVersioned} from '@subql/common-flare';
+import {NearProjectManifestVersioned} from '@subql/common-near';
 import {SubstrateProjectManifestVersioned} from '@subql/common-substrate';
 import {TerraProjectManifestVersioned} from '@subql/common-terra';
 import {IPackageJson} from 'package-json-type';
@@ -21,7 +22,8 @@ export interface ContextData {
     | AvalancheProjectManifestVersioned
     | AlgorandProjectManifestVersioned
     | EthereumProjectManifestVersioned
-    | FlareProjectManifestVersioned;
+    | FlareProjectManifestVersioned
+    | NearProjectManifestVersioned;
 }
 
 export interface Context {

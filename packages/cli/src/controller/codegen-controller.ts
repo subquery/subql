@@ -24,6 +24,12 @@ import {
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
 } from '@subql/common-ethereum';
 import {
+  isCustomDs as isCustomNearDs,
+  isRuntimeDs as isRuntimeNearDs,
+  RuntimeDatasourceTemplate as NearDsTemplate,
+  CustomDatasourceTemplate as NearCustomDsTemplate,
+} from '@subql/common-near';
+import {
   isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
@@ -57,6 +63,8 @@ type TemplateKind =
   | CosmosCustomDsTemplate
   | EthereumDsTemplate
   | EthereumCustomDsTemplate
+  | NearDsTemplate
+  | NearCustomDsTemplate
   | TerraDsTemplate
   | TerraCustomDsTemplate;
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
@@ -343,6 +351,8 @@ function hasParameters(t: TemplateKind): boolean {
     isCustomEthereumDs(t as EthereumDsTemplate) ||
     isCustomSubstrateDs(t as SubstrateDsTemplate) ||
     isRuntimeTerraDs(t as TerraDsTemplate) ||
-    isCustomTerraDs(t as TerraDsTemplate)
+    isCustomTerraDs(t as TerraDsTemplate) ||
+    isRuntimeNearDs(t as NearDsTemplate) ||
+    isCustomNearDs(t as NearDsTemplate)
   );
 }
