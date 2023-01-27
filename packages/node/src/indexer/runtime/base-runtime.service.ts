@@ -54,7 +54,6 @@ export abstract class BaseRuntimeService {
   }
 
   async getSpecFromApi(height: number): Promise<number> {
-    console.log(`~~~~~ getSpecFromApi block ${height}`);
     const parentBlockHash = await this.api.rpc.chain.getBlockHash(
       Math.max(height - 1, 0),
     );
@@ -67,7 +66,6 @@ export abstract class BaseRuntimeService {
 
   @profiler(yargsOptions.argv.profiler)
   async prefetchMeta(height: number): Promise<void> {
-    console.log(`~~~~~ prefetchMeta`);
     const blockHash = await this.api.rpc.chain.getBlockHash(height);
     if (
       this.parentSpecVersion &&
@@ -104,9 +102,6 @@ export abstract class BaseRuntimeService {
     ) {
       this.currentRuntimeVersion = await this.api.rpc.state.getRuntimeVersion(
         block.block.header.parentHash,
-      );
-      console.log(
-        `~~~~~ getRuntimeVersion from api, new spec ${this.currentRuntimeVersion.specVersion.toNumber()}`,
       );
     }
     return this.currentRuntimeVersion;

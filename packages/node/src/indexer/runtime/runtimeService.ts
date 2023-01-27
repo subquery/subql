@@ -48,7 +48,6 @@ export class RuntimeService
       this.specVersionMap = [];
     }
     this.specVersionMap = this.dictionaryService.parseSpecVersions(raw);
-    console.log(`this.specVersionMap length ${this.specVersionMap.length}`);
   }
 
   // main runtime responsible for sync from dictionary
@@ -81,9 +80,6 @@ export class RuntimeService
       specVersion = blockSpecVersion;
     }
     if (this.parentSpecVersion !== specVersion) {
-      console.log(
-        `this.parentSpecVersion ${this.parentSpecVersion}, specVersion ${specVersion}`,
-      );
       const parentSpecVersionCopy = this.parentSpecVersion;
       this.parentSpecVersion = specVersion;
       await this.prefetchMeta(height);

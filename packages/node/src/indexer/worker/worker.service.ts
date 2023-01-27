@@ -95,9 +95,6 @@ export class WorkerService {
       specVersions,
       latestFinalizedHeight,
     );
-    console.log(
-      `----- worker syncRuntimeService specVersions ${specVersions.length}, latestFinalizedHeight ${latestFinalizedHeight} `,
-    );
   }
 
   async processBlock(height: number): Promise<ProcessBlockResponse> {

@@ -84,9 +84,6 @@ function syncRuntimeService(
   latestFinalizedHeight?: number,
 ): void {
   assert(workerService, 'Not initialised');
-  console.log(
-    `Sync runtime service,specVersions ${specVersions.length}, latestFinalizedHeight: ${latestFinalizedHeight}  `,
-  );
   workerService.syncRuntimeService(specVersions, latestFinalizedHeight);
 }
 
