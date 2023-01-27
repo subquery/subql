@@ -137,8 +137,8 @@ export class DeploymentV1_0_0 {
     discriminator: {
       property: 'kind',
       subTypes: [
-        {value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'flare/Runtime'},
-        {value: EthereumRuntimeDataSourceV0_3_0Impl, name: 'ethereum/Runtime'},
+        {value: RuntimeDatasourceTemplateImpl, name: 'flare/Runtime'},
+        {value: RuntimeDatasourceTemplateImpl, name: 'ethereum/Runtime'},
       ],
     },
     keepDiscriminatorProperty: true,

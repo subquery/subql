@@ -9,6 +9,14 @@ import {loadEthereumProjectManifest} from './load';
 
 const projectsDir = path.join(__dirname, '../../test');
 
+describe('test eth project.yaml', () => {
+  it('could get eth project template name from its deployment ', () => {
+    const manifest = loadEthereumProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+    const deployment = manifest.toDeployment();
+    expect(deployment).toContain('name: Pool');
+  });
+});
+
 describe.skip('project.yaml', () => {
   it('can validate project.yaml', () => {
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_falsy.yaml'))).toThrow();
