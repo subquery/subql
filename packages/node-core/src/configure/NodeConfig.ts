@@ -19,6 +19,7 @@ export interface IConfig {
   readonly localMode: boolean;
   readonly batchSize: number;
   readonly timeout: number;
+  readonly blockTime: number;
   readonly debug: boolean;
   readonly preferRange: boolean;
   readonly networkEndpoint?: string;
@@ -49,6 +50,7 @@ const DEFAULT_CONFIG = {
   localMode: false,
   batchSize: 100,
   timeout: 900,
+  blockTime: 6000,
   preferRange: false,
   debug: false,
   queryLimit: 100,
@@ -118,6 +120,10 @@ export class NodeConfig implements IConfig {
 
   get timeout(): number {
     return this._config.timeout;
+  }
+
+  get blockTime(): number {
+    return this._config.blockTime;
   }
 
   get debug(): boolean {
