@@ -9,6 +9,7 @@ import {IndexerEvent, ProcessBlockPayload, TargetBlockPayload} from '../events';
 import {StoreService} from '../indexer';
 
 const DEFAULT_TIMEOUT = 900000;
+const DEFAULT_BLOCK_TIME = 6000;
 const CHECK_HEALTH_INTERVAL = 60000;
 
 @Injectable()
@@ -17,12 +18,13 @@ export class HealthService {
   private recordBlockTimestamp?: number;
   private currentProcessingHeight?: number;
   private currentProcessingTimestamp?: number;
-  private blockTime = 6000;
+  private blockTime: number;
   private healthTimeout: number;
   private indexerHealthy: boolean;
 
   constructor(protected nodeConfig: NodeConfig, private storeService: StoreService) {
     this.healthTimeout = Math.max(DEFAULT_TIMEOUT, this.nodeConfig.timeout * 1000);
+    this.blockTime = Math.max(DEFAULT_BLOCK_TIME, this.nodeConfig.blockTime);
   }
 
   @Interval(CHECK_HEALTH_INTERVAL)
