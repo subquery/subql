@@ -8,7 +8,10 @@ import {getProjectRootAndManifest} from '@subql/common';
 import {createIPFSFile, uploadToIpfs} from '../controller/publish-controller';
 import Build from './build';
 
-const ACCESS_TOKEN_PATH = path.resolve(process.env.HOME, '.subql/SUBQL_ACCESS_TOKEN');
+const ACCESS_TOKEN_PATH = path.resolve(
+  process.env[process.platform === 'win32' ? 'USERPROFILE' : 'HOME'],
+  '.subql/SUBQL_ACCESS_TOKEN'
+);
 
 export default class Publish extends Command {
   static description = 'Upload this SubQuery project to IPFS';
