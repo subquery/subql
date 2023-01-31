@@ -8,6 +8,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.0] - 2023-01-31
+### Fixed
+- Fix `subql publish` failing on windows (#1502)
+
+### Added
+- Support for Near (#1498)
+
 ## [1.10.1] - 2022-12-22
 ### Fixed
 - Fix command `codegen` to allow templates with other SDKs(#1470)

@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.6.0] - 2023-01-31
+### Added
+- Support for Near (#1498)
+
 ## [1.5.0] - 2022-12-06
 ### Fixed
 - Fixed `subql codegen` flags. (#1446)
