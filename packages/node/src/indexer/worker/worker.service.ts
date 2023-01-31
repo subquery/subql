@@ -3,12 +3,12 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
+import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
-import { RuntimeService } from '../runtimeService';
+import { WorkerRuntimeService } from '../runtime/workerRuntimeService';
 import { BlockContent } from '../types';
 
 export type FetchBlockResponse =
@@ -33,7 +33,6 @@ const logger = getLogger(`Worker Service #${threadId}`);
 @Injectable()
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
-  private currentRuntimeVersion: RuntimeVersion | undefined;
   private _isIndexing = false;
 
   private queue: AutoQueue<FetchBlockResponse>;
@@ -41,32 +40,42 @@ export class WorkerService {
   constructor(
     private apiService: ApiService,
     private indexerManager: IndexerManager,
+    private workerRuntimeService: WorkerRuntimeService,
     nodeConfig: NodeConfig,
   ) {
     this.queue = new AutoQueue(undefined, nodeConfig.batchSize);
   }
 
-  async fetchBlock(height: number): Promise<FetchBlockResponse> {
+  getSpecFromMap(height: number): number | undefined {
+    return this.workerRuntimeService.getSpecFromMap(
+      height,
+      this.workerRuntimeService.specVersionMap,
+    );
+  }
+
+  async fetchBlock(
+    height: number,
+    specVersion: number,
+  ): Promise<FetchBlockResponse> {
     try {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
         if (!this.fetchedBlocks[height]) {
-          const [block] = await fetchBlocksBatches(this.apiService.getApi(), [
+          const specChanged = await this.workerRuntimeService.specChanged(
             height,
-          ]);
+            specVersion,
+          );
+          const [block] = await fetchBlocksBatches(
+            this.apiService.getApi(),
+            [height],
+            specChanged
+              ? undefined
+              : this.workerRuntimeService.parentSpecVersion,
+          );
           this.fetchedBlocks[height] = block;
         }
 
         const block = this.fetchedBlocks[height];
-
-        // We have the current version, don't need a new one when processing
-        if (
-          this.currentRuntimeVersion?.specVersion.toNumber() ===
-          block.block.specVersion
-        ) {
-          return;
-        }
-
         // Return info to get the runtime version, this lets the worker thread know
         return {
           specVersion: block.block.specVersion,
@@ -78,12 +87,14 @@ export class WorkerService {
     }
   }
 
-  setCurrentRuntimeVersion(runtimeHex: string): void {
-    const runtimeVersion = this.apiService
-      .getApi()
-      .registry.createType('RuntimeVersion', runtimeHex);
-
-    this.currentRuntimeVersion = runtimeVersion;
+  syncRuntimeService(
+    specVersions: SpecVersion[],
+    latestFinalizedHeight?: number,
+  ): void {
+    this.workerRuntimeService.syncSpecVersionMap(
+      specVersions,
+      latestFinalizedHeight,
+    );
   }
 
   async processBlock(height: number): Promise<ProcessBlockResponse> {
@@ -97,9 +108,13 @@ export class WorkerService {
 
       delete this.fetchedBlocks[height];
 
+      const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
+        block.block,
+      );
+
       const response = await this.indexerManager.indexBlock(
         block,
-        this.currentRuntimeVersion,
+        runtimeVersion,
       );
 
       this._isIndexing = false;

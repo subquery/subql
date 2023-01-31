@@ -6,7 +6,6 @@ import path from 'path';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 import {
   getLogger,
   NodeConfig,
@@ -14,19 +13,19 @@ import {
   Worker,
   AutoQueue,
 } from '@subql/node-core';
-import { SubstrateBlock } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
-import { RuntimeService } from '../runtimeService';
+import { RuntimeService } from '../runtime/runtimeService';
 import {
   FetchBlock,
   ProcessBlock,
   InitWorker,
   NumFetchedBlocks,
   NumFetchingBlocks,
-  SetCurrentRuntimeVersion,
   GetWorkerStatus,
+  SyncRuntimeService,
+  GetSpecFromMap,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -37,8 +36,9 @@ type IIndexerWorker = {
   fetchBlock: FetchBlock;
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
-  setCurrentRuntimeVersion: SetCurrentRuntimeVersion;
   getStatus: GetWorkerStatus;
+  syncRuntimeService: SyncRuntimeService;
+  getSpecFromMap: GetSpecFromMap;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -58,8 +58,9 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'fetchBlock',
       'numFetchedBlocks',
       'numFetchingBlocks',
-      'setCurrentRuntimeVersion',
       'getStatus',
+      'syncRuntimeService',
+      'getSpecFromMap',
     ],
   );
 
@@ -112,7 +113,9 @@ export class WorkerBlockDispatcherService
 
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
+    // Sync workers runtime from main
     this.runtimeService = runtimeService;
+    this.syncWorkerRuntimes();
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -124,6 +127,15 @@ export class WorkerBlockDispatcherService
     if (this.workers) {
       await Promise.all(this.workers.map((w) => w.terminate()));
     }
+  }
+
+  syncWorkerRuntimes(): void {
+    this.workers.map((w) =>
+      w.syncRuntimeService(
+        this.runtimeService.specVersionMap,
+        this.runtimeService.latestFinalizedHeight,
+      ),
+    );
   }
 
   enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
@@ -169,12 +181,18 @@ export class WorkerBlockDispatcherService
 
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
-    const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {
       try {
+        // get SpecVersion from main runtime service
+        const { blockSpecVersion, syncedDictionary } =
+          await this.runtimeService.getSpecVersion(height);
+        // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
+        if (syncedDictionary) {
+          this.syncWorkerRuntimes();
+        }
         const start = new Date();
-        const result = await pendingBlock;
+        await worker.fetchBlock(height, blockSpecVersion);
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {
@@ -194,23 +212,6 @@ export class WorkerBlockDispatcherService
             )}`,
           );
         }
-
-        if (result) {
-          const runtimeVersion = await this.runtimeService.getRuntimeVersion({
-            specVersion: result.specVersion,
-            block: {
-              header: {
-                parentHash: result.parentHash,
-              },
-            },
-          } as any);
-
-          await worker.setCurrentRuntimeVersion(runtimeVersion.toHex());
-        }
-
-        // logger.info(
-        //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
-        // );
 
         this.preProcessBlock(height);
 

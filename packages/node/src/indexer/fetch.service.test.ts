@@ -30,7 +30,7 @@ import { DynamicDsService } from './dynamic-ds.service';
 import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
-import { RuntimeService } from './runtimeService';
+import { RuntimeService } from './runtime/runtimeService';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -590,7 +590,7 @@ describe('FetchService', () => {
 
     await fetchService.init(1);
     const getSpecFromMapSpy = jest.spyOn(runtimeService, 'getSpecFromMap');
-    const specVersion = await runtimeService.getSpecVersion(8638105);
+    await runtimeService.getSpecVersion(8638105);
     expect(getSpecFromMapSpy).toBeCalledTimes(1);
   }, 500000);
 
@@ -723,7 +723,7 @@ describe('FetchService', () => {
     (runtimeService as any).specVersionMap = [
       { id: '9180', start: 9738718, end: 10156856 },
     ];
-    const spec = await runtimeService.getSpecVersion(10337859);
+    await runtimeService.getSpecVersion(10337859);
     const specVersionMap = (runtimeService as any).specVersionMap;
     // If the last finalized block specVersion are same,  we expect it will update the specVersion map
     const latestSpecVersion =

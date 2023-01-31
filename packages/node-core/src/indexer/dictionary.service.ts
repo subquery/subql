@@ -8,7 +8,6 @@ import {NodeConfig, timeout, getLogger, profiler} from '@subql/node-core';
 import {DictionaryQueryCondition, DictionaryQueryEntry} from '@subql/types';
 import {buildQuery, GqlNode, GqlQuery, GqlVar, MetaData} from '@subql/utils';
 import fetch from 'node-fetch';
-// import { yargsOptions } from '../yargs';
 
 export type SpecVersion = {
   id: string;
@@ -216,7 +215,6 @@ export class DictionaryService implements OnApplicationShutdown {
     conditions: DictionaryQueryEntry[]
   ): Promise<Dictionary> {
     const {query, variables} = this.dictionaryQuery(startBlock, queryEndBlock, batchSize, conditions);
-
     try {
       const resp = await timeout(
         this.client.query({

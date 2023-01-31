@@ -6,7 +6,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
 import { ProjectService } from '../project.service';
-import { RuntimeService } from '../runtimeService';
+import { RuntimeService } from '../runtime/runtimeService';
 
 const logger = getLogger('BaseBlockDispatcherService');
 

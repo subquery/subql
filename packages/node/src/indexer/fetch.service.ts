@@ -5,7 +5,6 @@ import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
 import { ApiPromise } from '@polkadot/api';
-import { RuntimeVersion } from '@polkadot/types/interfaces';
 
 import {
   isCustomDs,
@@ -32,24 +31,16 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
-import {
-  filter,
-  intersection,
-  last,
-  range,
-  sortBy,
-  uniqBy,
-  without,
-} from 'lodash';
+import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
 import { IBlockDispatcher } from './blockDispatcher';
-import { DictionaryService, SpecVersion } from './dictionary.service';
+import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { RuntimeService } from './runtimeService';
+import { RuntimeService } from './runtime/runtimeService';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 const logger = getLogger('fetch');
@@ -418,7 +409,6 @@ export class FetchService implements OnApplicationShutdown {
     // setup parentSpecVersion
     await this.runtimeService.specChanged(initBlockHeight);
     await this.runtimeService.prefetchMeta(initBlockHeight);
-
     let startBlockHeight: number;
     let scaledBatchSize: number;
     const handlers = [].concat(
