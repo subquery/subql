@@ -60,10 +60,11 @@ export class HealthService {
 
   getHealth(): void {
     if (
-      (this.recordBlockTimestamp && Date.now() - this.recordBlockTimestamp > this.blockTime * 10) ||
-      (this.recordBlockHeight &&
-        this.currentProcessingHeight &&
-        this.recordBlockHeight !== this.currentProcessingHeight)
+      this.recordBlockTimestamp &&
+      Date.now() - this.recordBlockTimestamp > this.blockTime * 10 &&
+      this.recordBlockHeight &&
+      this.currentProcessingHeight &&
+      this.recordBlockHeight !== this.currentProcessingHeight
     ) {
       throw new Error('Endpoint is not healthy');
     }
