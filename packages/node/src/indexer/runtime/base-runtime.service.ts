@@ -9,7 +9,7 @@ import { SubstrateBlock } from '@subql/types';
 import * as SubstrateUtil from '../../utils/substrate';
 import { yargsOptions } from '../../yargs';
 import { ApiService } from './../api.service';
-import { DictionaryService, SpecVersion } from './../dictionary.service';
+import { SpecVersion } from './../dictionary.service';
 export const SPEC_VERSION_BLOCK_GAP = 100;
 type GetUseDictionary = () => boolean;
 type GetLatestFinalizedHeight = () => number;
@@ -24,7 +24,17 @@ export abstract class BaseRuntimeService {
 
   constructor(protected apiService: ApiService) {}
 
-  abstract specChanged(height: number, specVersion?: number): Promise<boolean>;
+  async specChanged(height: number, specVersion: number): Promise<boolean> {
+    if (this.parentSpecVersion !== specVersion) {
+      const parentSpecVersionCopy = this.parentSpecVersion;
+      this.parentSpecVersion = specVersion;
+      await this.prefetchMeta(height);
+      // When runtime init parentSpecVersion is undefined, count as unchanged,
+      // so it will not use fetchRuntimeVersionRange
+      return parentSpecVersionCopy !== undefined;
+    }
+    return false;
+  }
 
   abstract getSpecVersion(
     blockHeight: number,

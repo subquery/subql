@@ -79,14 +79,6 @@ export class RuntimeService
       const { blockSpecVersion } = await this.getSpecVersion(height);
       specVersion = blockSpecVersion;
     }
-    if (this.parentSpecVersion !== specVersion) {
-      const parentSpecVersionCopy = this.parentSpecVersion;
-      this.parentSpecVersion = specVersion;
-      await this.prefetchMeta(height);
-      // When runtime init parentSpecVersion is undefined, count as unchanged,
-      // so it will not use fetchRuntimeVersionRange
-      return parentSpecVersionCopy === undefined ? false : true;
-    }
-    return false;
+    return super.specChanged(height, specVersion);
   }
 }
