@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.0] - 2023-01-31
+### Added
+- Support for Near (#1498)
+
 ## [1.7.0] - 2022-11-23
 ### Added
 - Add support to validator for flare (#1416)
