@@ -31,6 +31,7 @@ import {
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
+import { valueFromAST } from 'graphql';
 import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
@@ -78,6 +79,84 @@ function callFilterToQueryEntry(
       },
     ],
   };
+}
+
+class BlockSizeBuffer {
+  private buffer: number[] = [];
+
+  constructor(private capacity: number) {
+    if (this.capacity === 0) {
+      throw new Error('Block size buffer capacity cannot be 0');
+    }
+  }
+
+  pushToBack(value: number) {
+    if (this.buffer.length === this.capacity) {
+      this.popFromFront();
+    }
+    this.buffer.push(value);
+  }
+
+  popFromFront() {
+    if (this.buffer.length === 0) {
+      return;
+    }
+    this.buffer.shift();
+  }
+
+  pushBatch(values: number[]) {
+    values.forEach((value) => this.pushToBack(value));
+  }
+
+  popBatch(noOfPops: number) {
+    for (let i = 0; i < noOfPops; i++) {
+      this.popFromFront();
+    }
+  }
+
+  average() {
+    if (this.buffer.length === 0) {
+      throw new Error('No block sizes to average');
+    }
+
+    let sum = 0;
+    for (let i = 0; i < this.buffer.length; i++) {
+      sum += this.buffer[i];
+    }
+    return ~~(sum / this.capacity);
+  }
+}
+
+export class SmartBatchService {
+  private blockSizeBuffer: BlockSizeBuffer;
+
+  constructor(private memoryLimit: number, private maxBatchSize: number) {
+    this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
+  }
+
+  addToSizeBuffer(blocks: any[]) {
+    blocks.forEach((block) =>
+      this.blockSizeBuffer.pushToBack(this.blockSize(block)),
+    );
+  }
+
+  blockSize(block: any): number {
+    //find a better way to compute batch size
+    return JSON.stringify(block).length;
+  }
+
+  getSafeBatchSize() {
+    let averageBlockSize;
+
+    try {
+      averageBlockSize = this.blockSizeBuffer.average();
+    } catch (e) {
+      return this.maxBatchSize;
+    }
+
+    const safeBatchSize = ~~(this.memoryLimit / averageBlockSize);
+    return Math.min(safeBatchSize, this.maxBatchSize);
+  }
 }
 
 @Injectable()
@@ -432,10 +511,10 @@ export class FetchService implements OnApplicationShutdown {
     while (!this.isShutdown) {
       startBlockHeight = getStartBlockHeight();
 
-      scaledBatchSize = Math.max(
-        Math.round(this.batchSizeScale * this.nodeConfig.batchSize),
-        Math.min(MINIMUM_BATCH_SIZE, this.nodeConfig.batchSize * 3),
-      );
+      scaledBatchSize = this.blockDispatcher.smartBatchSize;
+
+      logger.info(`Smart Batch Size: ${scaledBatchSize}`);
+
       const latestHeight = this.nodeConfig.unfinalizedBlocks
         ? this.latestBestHeight
         : this.latestFinalizedHeight;

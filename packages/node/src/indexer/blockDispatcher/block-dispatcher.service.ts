@@ -15,6 +15,7 @@ import {
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
+import { SmartBatchService } from '../fetch.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
@@ -37,6 +38,8 @@ export class BlockDispatcherService
   // private getRuntimeVersion: GetRuntimeVersion;
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
 
+  smartBatchService: SmartBatchService;
+
   constructor(
     private apiService: ApiService,
     nodeConfig: NodeConfig,
@@ -51,7 +54,10 @@ export class BlockDispatcherService
       new Queue(nodeConfig.batchSize * 3),
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-
+    this.smartBatchService = new SmartBatchService(
+      1024 * 10,
+      nodeConfig.batchSize,
+    );
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         SubstrateUtil.fetchBlocksBatches,
@@ -150,6 +156,8 @@ export class BlockDispatcherService
           blockNums,
           specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
+
+        this.smartBatchService.addToSizeBuffer(blocks);
 
         if (bufferedHeight > this._latestBufferedHeight) {
           logger.debug(`Queue was reset for new DS, discarding fetched blocks`);

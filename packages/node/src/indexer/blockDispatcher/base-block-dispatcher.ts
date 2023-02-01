@@ -5,6 +5,7 @@ import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
+import { SmartBatchService } from '../fetch.service';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
 
@@ -27,6 +28,7 @@ export interface IBlockDispatcher {
   queueSize: number;
   freeSize: number;
   latestBufferedHeight: number | undefined;
+  smartBatchSize: number;
 
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
@@ -47,6 +49,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
   protected latestProcessedHeight: number;
   protected currentProcessingHeight: number;
   protected onDynamicDsCreated: (height: number) => Promise<void>;
+  protected smartBatchService: SmartBatchService;
 
   constructor(
     protected nodeConfig: NodeConfig,
@@ -67,6 +70,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
 
   get freeSize(): number {
     return this.queue.freeSpace;
+  }
+
+  get smartBatchSize(): number {
+    return this.smartBatchService.getSafeBatchSize();
   }
 
   get latestBufferedHeight(): number {
