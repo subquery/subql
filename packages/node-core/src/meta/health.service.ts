@@ -64,7 +64,7 @@ export class HealthService {
       if (
         this.recordBlockHeight &&
         this.currentProcessingHeight &&
-        this.recordBlockHeight !== this.currentProcessingHeight
+        this.recordBlockHeight > this.currentProcessingHeight
       ) {
         throw new Error('Endpoint is not healthy');
       }
