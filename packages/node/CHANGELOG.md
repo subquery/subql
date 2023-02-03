@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2023-02-03
+### Changed
+- Use `eth_getBlockReceipts` RPC method when available to improve performance (#23)
+
 ## [0.3.0] - 2022-11-24
 
 ### Added
