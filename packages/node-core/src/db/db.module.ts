@@ -13,6 +13,7 @@ export interface DbOption {
   username: string;
   password: string;
   database: string;
+  ssl: boolean;
 }
 
 const logger = getLogger('db');
@@ -23,6 +24,7 @@ const DEFAULT_DB_OPTION: DbOption = {
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASS ?? 'postgres',
   database: process.env.DB_DATABASE ?? 'postgres',
+  ssl: process.env.DB_SSL ? process.env.DB_SSL === 'true' : false,
 };
 
 async function establishConnection(sequelize: Sequelize, numRetries: number): Promise<void> {
