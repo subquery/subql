@@ -63,7 +63,6 @@ export class Queue<T> implements IQueue {
 
   takeAll(): T[] {
     const result = this.items;
-
     this.items = [];
     return result;
   }
@@ -169,6 +168,9 @@ export class AutoQueue<T> implements IQueue {
     // Empty the queue
     // TODO do we need to reject all promises?
     this.queue.takeAll();
+    this.pendingPromise = false;
+    this._abort = false;
+    this.processingTasks = 0;
   }
 
   abort(): void {
