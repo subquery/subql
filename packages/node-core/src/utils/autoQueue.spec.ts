@@ -19,7 +19,7 @@ describe('Auto Queue', () => {
     expect(newQ.size).toEqual(3);
 
     newQ.flush();
-
-    expect(newQ.size).toEqual(0);
+    // expect queue should be empty，this not including ongoing processing task
+    expect(newQ.queueSize).toEqual(0);
   });
 });
