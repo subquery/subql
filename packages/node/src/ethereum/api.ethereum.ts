@@ -166,7 +166,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         return new EthereumBlockWrapped(block, txs);
       } catch (e) {
         // Method not avaialble https://eips.ethereum.org/EIPS/eip-1474
-        if (e.error.code === -32601) {
+        if (e?.error?.code === -32601) {
           logger.warn(
             `The endpoint doesn't support 'eth_getBlockReceipts', individual receipts will be fetched instead, this will greatly impact performance.`,
           );

@@ -219,12 +219,12 @@ export class IndexerManager {
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
-    for (const log of logs) {
-      await this.indexEvent(log, dataSources, getVM);
-    }
-
     for (const tx of transactions) {
       await this.indexExtrinsic(tx, dataSources, getVM);
+
+      for (const log of logs.filter((l) => l.transactionHash === tx.hash)) {
+        await this.indexEvent(log, dataSources, getVM);
+      }
     }
   }
 
