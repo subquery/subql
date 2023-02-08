@@ -6,6 +6,7 @@ import {SubqlDatasource} from '@subql/types-ethereum';
 
 // All of these used to be redefined in this file, re-exporting for simplicity
 export {
+  SubqlEthereumProcessorOptions,
   SubqlRuntimeHandler,
   SubqlCustomHandler,
   SubqlHandler,

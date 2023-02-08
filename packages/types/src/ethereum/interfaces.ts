@@ -16,7 +16,6 @@ export interface EthereumTransactionFilter {
 
 export interface EthereumLogFilter {
   topics?: Array<string | null | undefined>;
-  address?: string;
 }
 
 export interface EthereumResult extends ReadonlyArray<any> {

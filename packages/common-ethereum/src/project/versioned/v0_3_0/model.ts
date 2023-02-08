@@ -129,7 +129,7 @@ export class ProjectManifestV0_3_0Impl
   get deployment(): DeploymentV0_3_0 {
     if (!this._deployment) {
       this._deployment = plainToClass(DeploymentV0_3_0, this);
-      validateSync(this._deployment, {whitelist: true});
+      validateSync(this._deployment, {whitelist: true, forbidNonWhitelisted: true, forbidUnknownValues: true});
     }
     return this._deployment;
   }

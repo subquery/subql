@@ -195,9 +195,9 @@ export class ProjectManifestV1_0_0Impl<D extends object = DeploymentV1_0_0>
   get deployment(): D {
     if (!this._deployment) {
       this._deployment = plainToClass(DeploymentV1_0_0, this) as unknown as D;
+      //validateSync(this._deployment.)
       validateSync(this._deployment, {whitelist: true});
     }
-
     return this._deployment;
   }
 }

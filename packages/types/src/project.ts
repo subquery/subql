@@ -91,10 +91,15 @@ interface ISubqlDatasource<M extends SubqlMapping> {
   mapping: M;
 }
 
+export interface SubqlEthereumProcessorOptions {
+  abi?: string;
+  address?: string;
+}
+
 export interface SubqlRuntimeDatasource<M extends SubqlMapping<SubqlRuntimeHandler> = SubqlMapping<SubqlRuntimeHandler>>
   extends ISubqlDatasource<M> {
   kind: EthereumDatasourceKind.Runtime;
-  options?: any;
+  options?: SubqlEthereumProcessorOptions;
   assets?: Map<string, {file: string}>;
 }
 
@@ -119,6 +124,7 @@ export interface SubqlCustomDatasource<
 > extends ISubqlDatasource<M> {
   kind: K;
   assets: Map<string, CustomDataSourceAsset>;
+  options?: SubqlEthereumProcessorOptions;
   processor: Processor<O>;
 }
 
