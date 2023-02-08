@@ -3,8 +3,15 @@
 
 import assert from 'assert';
 import { Inject, Injectable } from '@nestjs/common';
-import { isCustomDs, isRuntimeDs } from '@subql/common-ethereum';
+import {
+  EthereumRuntimeDataSourceV0_3_0Impl,
+  isCustomDs,
+  isRuntimeDs,
+  RuntimeDataSourceBase,
+} from '@subql/common-ethereum';
 import { getLogger, MetadataRepo } from '@subql/node-core';
+import { plainToClass } from 'class-transformer';
+import { validateSync } from 'class-validator';
 import { cloneDeep, isEqual, unionWith } from 'lodash';
 import { Transaction } from 'sequelize/types';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -170,9 +177,28 @@ export class DynamicDsService {
         };
         await this.dsProcessorService.validateCustomDs([dsObj]);
       } else if (isRuntimeDs(dsObj)) {
-        // XXX add any modifications to the ds here
-      }
+        dsObj.options = {
+          ...dsObj.options,
+          ...params.args,
+        };
 
+        const parsedDs = plainToClass(
+          EthereumRuntimeDataSourceV0_3_0Impl,
+          dsObj,
+        );
+
+        const errors = validateSync(parsedDs, {
+          whitelist: true,
+          forbidNonWhitelisted: false,
+        });
+        if (errors.length) {
+          throw new Error(
+            `Dynamic ds is invalid\n${errors
+              .map((e) => e.toString())
+              .join('\n')}`,
+          );
+        }
+      }
       return dsObj;
     } catch (e) {
       throw new Error(`Unable to create dynamic datasource.\n ${e.message}`);
