@@ -142,10 +142,16 @@ export class BlockDispatcherService
 
         const blocks = await this.fetchBlocksBatches(blockNums);
 
-        if (bufferedHeight > this._latestBufferedHeight) {
-          logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
+        // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
+        // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block
+        if (
+          bufferedHeight > this._latestBufferedHeight ||
+          this.queue.peek() < Math.min(...blockNums)
+        ) {
+          logger.info(`Queue was reset for new DS, discarding fetched blocks`);
           continue;
         }
+
         const blockTasks = blocks.map((block) => async () => {
           const height = block.blockHeight;
           try {
