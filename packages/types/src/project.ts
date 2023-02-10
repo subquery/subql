@@ -155,7 +155,8 @@ export interface HandlerInputTransformer_1_0_0<
 
 export interface DictionaryQueryCondition {
   field: string;
-  value: string;
+  value: string | string[];
+  matcher?: string;
 }
 
 export interface DictionaryQueryEntry {

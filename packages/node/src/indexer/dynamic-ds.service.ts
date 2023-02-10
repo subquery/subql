@@ -7,7 +7,6 @@ import {
   EthereumRuntimeDataSourceV0_3_0Impl,
   isCustomDs,
   isRuntimeDs,
-  RuntimeDataSourceBase,
 } from '@subql/common-ethereum';
 import { getLogger, MetadataRepo } from '@subql/node-core';
 import { plainToClass } from 'class-transformer';
@@ -44,7 +43,10 @@ export class DynamicDsService {
 
   private _datasources: SubqlProjectDs[];
 
-  async resetDynamicDatasource(targetHeight: number, tx: Transaction) {
+  async resetDynamicDatasource(
+    targetHeight: number,
+    tx: Transaction,
+  ): Promise<void> {
     const dynamicDs = await this.getDynamicDatasourceParams();
     if (dynamicDs.length !== 0) {
       const filteredDs = dynamicDs.filter(
@@ -98,7 +100,7 @@ export class DynamicDsService {
     return this._datasources;
   }
 
-  deleteTempDsRecords(blockHeight: number) {
+  deleteTempDsRecords(blockHeight: number): void {
     delete this.tempDsRecords[TEMP_DS_PREFIX + blockHeight];
   }
 
