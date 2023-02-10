@@ -216,6 +216,7 @@ export class RuntimeDataSourceBase<M extends SubqlMapping<SubqlRuntimeHandler>> 
   assets?: Map<string, FileReference>;
   @IsOptional()
   @ValidateNested()
+  @Type(() => EthereumProcessorOptions)
   options?: EthereumProcessorOptions;
 }
 
