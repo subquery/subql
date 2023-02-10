@@ -15,6 +15,12 @@ describe('test eth project.yaml', () => {
     const deployment = manifest.toDeployment();
     expect(deployment).toContain('name: Pool');
   });
+
+  it('could get options in template from its deployment ', () => {
+    const manifest = loadEthereumProjectManifest(path.join(projectsDir, 'project_1.0.0.yaml'));
+    const deployment = manifest.toDeployment();
+    expect(deployment).toContain('abi: Pool');
+  });
 });
 
 describe.skip('project.yaml', () => {
@@ -98,6 +104,10 @@ describe.skip('project.yaml', () => {
   });
 
   it('can fail validation if custom ds missing processor', () => {
+    expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_0.2.0_invalid_custom_ds.yaml'))).toThrow();
+  });
+
+  it('deployment get options in template ', () => {
     expect(() => loadEthereumProjectManifest(path.join(projectsDir, 'project_0.2.0_invalid_custom_ds.yaml'))).toThrow();
   });
 });
