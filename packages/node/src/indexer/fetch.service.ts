@@ -44,6 +44,7 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
+const QUERY_ADDRESS_LIMIT = 50;
 
 function eventFilterToQueryEntry(
   filter: EthereumLogFilter,
@@ -54,7 +55,7 @@ function eventFilterToQueryEntry(
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
 
-    if (addresses.length) {
+    if (addresses.length !== 0 && addresses.length <= QUERY_ADDRESS_LIMIT) {
       conditions.push({
         field: 'address',
         value: addresses,
