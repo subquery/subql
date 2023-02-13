@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
@@ -149,12 +150,12 @@ export class SmartBatchService {
   }
 
   heapMemoryLimit(): number {
-    //TODO: get memory limit from system
-    return Math.floor(512 * 1024 * 1024 * 0.9);
+    //make sure there is atleast 256mb left in heap to fetch next batch
+    return getHeapStatistics().heap_size_limit - 256 * 1024 * 1024;
   }
 
   getSafeBatchSize() {
-    const heapUsed = process.memoryUsage().heapUsed;
+    const heapUsed = getHeapStatistics().used_heap_size;
     let averageBlockSize;
 
     try {
@@ -163,7 +164,11 @@ export class SmartBatchService {
       return this.maxBatchSize;
     }
 
-    //logger.info(`${(this.heapMemoryLimit()/1024/1024).toString()}-${heapUsed/1024/1024}`);
+    logger.info(
+      `${(this.heapMemoryLimit() / 1024 / 1024).toString()}-${
+        heapUsed / 1024 / 1024
+      }`,
+    );
     const heapleft = this.heapMemoryLimit() - heapUsed;
 
     //stop fetching until memory is freed

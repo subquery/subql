@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -111,11 +112,16 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
-  private memoryUsedPercentage(): number {
+  private memoryleft(): number {
     logger.info(
-      `${(process.memoryUsage().heapUsed / 1024 / 1024).toString()}-${512}`,
+      `${(this.smartBatchService.heapMemoryLimit() / 1024 / 1024).toString()}-${
+        process.memoryUsage().heapUsed / 1024 / 1024
+      }`,
     );
-    return process.memoryUsage().heapUsed / (512 * 1024 * 1024);
+    return (
+      this.smartBatchService.heapMemoryLimit() -
+      getHeapStatistics().used_heap_size
+    );
   }
 
   private async fetchBlocksFromQueue(): Promise<void> {
@@ -128,6 +134,9 @@ export class BlockDispatcherService
     try {
       while (!this.isShutdown) {
         logger.info(`Smart Batch Size: ${this.smartBatchSize}`);
+        if (this.smartBatchSize === 0) {
+          logger.info(`${this.processQueue.freeSpace}`);
+        }
 
         const blockNums = this.queue.takeMany(
           Math.min(
@@ -149,8 +158,9 @@ export class BlockDispatcherService
           break;
         }
 
-        if (this.memoryUsedPercentage() > 0.5) {
+        if (this.memoryleft() < 0) {
           //stop fetching until memory is freed
+          logger.info(`${this.processQueue.freeSpace}`);
           await delay(10);
           continue;
         }
