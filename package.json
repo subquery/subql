@@ -35,7 +35,7 @@
   "resolutions": {
     "@polkadot/api": "9.11.1",
     "@polkadot/util": "10.2.3",
-    "@cosmjs/cosmwasm-stargate": "0.28.9",
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "node-fetch": "2.6.7"
   },
   "scripts": {

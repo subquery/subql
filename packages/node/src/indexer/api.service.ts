@@ -32,7 +32,6 @@ import {
   CosmosProjectNetConfig,
   SubqueryProject,
 } from '../configure/SubqueryProject';
-import { DsProcessorService } from './ds-processor.service';
 import { HttpClient, WebsocketClient } from './rpc-clients';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -167,7 +166,7 @@ export class CosmosClient extends CosmWasmClient {
   // eslint-disable-next-line @typescript-eslint/require-await
   async blockInfo(height?: number): Promise<BlockResponse> {
     return retryOnFailAxios<BlockResponse>(
-      this.forceGetTmClient().block.bind(this, height),
+      this.tendermintClient.block.bind(this.tendermintClient, height),
       RETRY_STATUS_CODES,
     );
   }
@@ -212,7 +211,7 @@ export class CosmosClient extends CosmWasmClient {
 export class CosmosSafeClient extends CosmWasmClient {
   height: number;
 
-  constructor(tmClient: Tendermint34Client | undefined, height: number) {
+  constructor(tmClient: Tendermint34Client, height: number) {
     super(tmClient);
     this.height = height;
   }
@@ -253,6 +252,13 @@ export class CosmosSafeClient extends CosmWasmClient {
         tx: tx.tx,
         gasUsed: tx.result.gasUsed,
         gasWanted: tx.result.gasWanted,
+        events: tx.result.events.map((evt) => ({
+          ...evt,
+          attributes: evt.attributes.map((attr) => ({
+            key: Buffer.from(attr.key).toString('utf8'),
+            value: Buffer.from(attr.value).toString('utf8'),
+          })),
+        })),
       };
     });
   }

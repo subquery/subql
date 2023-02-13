@@ -15,9 +15,9 @@
     "/dist"
   ],
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.28.9",
-    "@cosmjs/proto-signing": "^0.28.9",
-    "@cosmjs/stargate": "^0.28.9"
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
+    "@cosmjs/proto-signing": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5"
   },
   "devDependencies": {
     "@types/app-module-path": "^2.2.0"
