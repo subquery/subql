@@ -3,8 +3,6 @@
 
 import assert from 'assert';
 import fs from 'fs';
-import http from 'http';
-import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
 import { BigNumber } from '@ethersproject/bignumber';
@@ -22,6 +20,7 @@ import {
 import { ConnectionInfo, hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
 import { EthereumBlockWrapped } from './block.ethereum';
+import SafeEthProvider from './safe-api';
 import {
   formatBlock,
   formatReceipt,
@@ -207,7 +206,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   freezeApi(processor: any, blockContent: BlockWrapper): void {
-    processor.freeze(this.client, 'api');
+    processor.freeze(
+      new SafeEthProvider(this.client, blockContent.blockHeight),
+      'api',
+    );
   }
 
   private buildInterface(
