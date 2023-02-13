@@ -54,10 +54,7 @@ export class BlockDispatcherService
       new Queue(nodeConfig.batchSize * 3),
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-    this.smartBatchService = new SmartBatchService(
-      1024 * 10,
-      nodeConfig.batchSize,
-    );
+    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         SubstrateUtil.fetchBlocksBatches,
@@ -114,6 +111,13 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
+  private memoryUsedPercentage(): number {
+    logger.info(
+      `${(process.memoryUsage().heapUsed / 1024 / 1024).toString()}-${512}`,
+    );
+    return process.memoryUsage().heapUsed / (512 * 1024 * 1024);
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
@@ -123,8 +127,14 @@ export class BlockDispatcherService
 
     try {
       while (!this.isShutdown) {
+        logger.info(`Smart Batch Size: ${this.smartBatchSize}`);
+
         const blockNums = this.queue.takeMany(
-          Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace),
+          Math.min(
+            this.nodeConfig.batchSize,
+            this.processQueue.freeSpace,
+            this.smartBatchSize,
+          ),
         );
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
@@ -137,6 +147,12 @@ export class BlockDispatcherService
             continue;
           }
           break;
+        }
+
+        if (this.memoryUsedPercentage() > 0.5) {
+          //stop fetching until memory is freed
+          await delay(10);
+          continue;
         }
 
         logger.info(

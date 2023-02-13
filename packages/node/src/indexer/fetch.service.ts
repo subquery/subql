@@ -28,6 +28,7 @@ import {
   IndexerEvent,
   NodeConfig,
   transformBypassBlocks,
+  timeout,
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
@@ -123,15 +124,18 @@ class BlockSizeBuffer {
     for (let i = 0; i < this.buffer.length; i++) {
       sum += this.buffer[i];
     }
-    return ~~(sum / this.capacity);
+    return Math.floor(sum / this.capacity);
   }
 }
 
 export class SmartBatchService {
   private blockSizeBuffer: BlockSizeBuffer;
+  private memoryLimit: number;
 
-  constructor(private memoryLimit: number, private maxBatchSize: number) {
+  constructor(private maxBatchSize: number) {
     this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
+    this.memoryLimit = process.memoryUsage().heapTotal;
+    logger.info(JSON.stringify(this.memoryLimit / 1024 / 1024));
   }
 
   addToSizeBuffer(blocks: any[]) {
@@ -141,11 +145,16 @@ export class SmartBatchService {
   }
 
   blockSize(block: any): number {
-    //find a better way to compute batch size
-    return JSON.stringify(block).length;
+    return Buffer.byteLength(JSON.stringify(block));
+  }
+
+  heapMemoryLimit(): number {
+    //TODO: get memory limit from system
+    return Math.floor(512 * 1024 * 1024 * 0.9);
   }
 
   getSafeBatchSize() {
+    const heapUsed = process.memoryUsage().heapUsed;
     let averageBlockSize;
 
     try {
@@ -154,7 +163,15 @@ export class SmartBatchService {
       return this.maxBatchSize;
     }
 
-    const safeBatchSize = ~~(this.memoryLimit / averageBlockSize);
+    //logger.info(`${(this.heapMemoryLimit()/1024/1024).toString()}-${heapUsed/1024/1024}`);
+    const heapleft = this.heapMemoryLimit() - heapUsed;
+
+    //stop fetching until memory is freed
+    if (heapleft <= 0) {
+      return 0;
+    }
+
+    const safeBatchSize = Math.floor(heapleft / averageBlockSize);
     return Math.min(safeBatchSize, this.maxBatchSize);
   }
 }
@@ -513,7 +530,10 @@ export class FetchService implements OnApplicationShutdown {
 
       scaledBatchSize = this.blockDispatcher.smartBatchSize;
 
-      logger.info(`Smart Batch Size: ${scaledBatchSize}`);
+      if (scaledBatchSize === 0) {
+        await delay(10);
+        continue;
+      }
 
       const latestHeight = this.nodeConfig.unfinalizedBlocks
         ? this.latestBestHeight
