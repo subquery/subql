@@ -82,6 +82,10 @@ export class DynamicDsService {
         this._datasources = await Promise.all(
           params.map((params) => this.getDatasource(params)),
         );
+
+        logger.info(
+          `Initialised ${this._datasources.length} dynamic datasources`,
+        );
       } catch (e) {
         logger.error(e, `Unable to get dynamic datasources`);
         process.exit(1);
@@ -91,8 +95,11 @@ export class DynamicDsService {
     return this._datasources;
   }
 
-  deleteTempDsRecords(blockHeight: number) {
-    delete this.tempDsRecords[TEMP_DS_PREFIX + blockHeight];
+  deleteTempDsRecords(blockHeight: number): void {
+    // Main thread will not have tempDsRecords with workers
+    if (this.tempDsRecords) {
+      delete this.tempDsRecords[TEMP_DS_PREFIX + blockHeight];
+    }
   }
 
   private async getDynamicDatasourceParams(
@@ -152,10 +159,6 @@ export class DynamicDsService {
         `Unable to find matching template in project for name: "${params.templateName}"`,
       );
     }
-
-    logger.info(
-      `Initialised dynamic datasource from template: "${params.templateName}"`,
-    );
 
     const dsObj = {
       ...template,
