@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { getLogger, MetadataRepo } from '@subql/node-core';
@@ -75,24 +76,29 @@ export class DynamicDsService {
   }
 
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
-    if (!this._datasources) {
-      try {
-        const params = await this.getDynamicDatasourceParams();
-
-        this._datasources = await Promise.all(
-          params.map((params) => this.getDatasource(params)),
-        );
-
-        logger.info(
-          `Initialised ${this._datasources.length} dynamic datasources`,
-        );
-      } catch (e) {
-        logger.error(e, `Unable to get dynamic datasources`);
-        process.exit(1);
-      }
+    // Workers should not cache this result in order to keep in sync
+    if (!this._datasources || !isMainThread) {
+      this._datasources = await this.loadDynamicDatasources();
     }
 
     return this._datasources;
+  }
+
+  private async loadDynamicDatasources(): Promise<SubqlProjectDs[]> {
+    try {
+      const params = await this.getDynamicDatasourceParams();
+
+      const dataSources = await Promise.all(
+        params.map((params) => this.getDatasource(params)),
+      );
+
+      logger.info(`Loaded ${dataSources.length} dynamic datasources`);
+
+      return dataSources;
+    } catch (e) {
+      logger.error(`Unable to get dynamic datasources:\n${e.message}`);
+      process.exit(1);
+    }
   }
 
   deleteTempDsRecords(blockHeight: number): void {
