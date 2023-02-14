@@ -1,9 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readFileSync} from 'fs';
 import {ConnectionOptions} from 'tls';
 import {DynamicModule, Global, Module} from '@nestjs/common';
+import {getFileContent} from '@subql/common';
 import {Pool} from 'pg';
 import {getLogger} from '../utils/logger';
 import {getYargsOption} from '../yargs';
@@ -22,14 +22,26 @@ export class ConfigureModule {
       unsafe: opts.unsafe ?? false,
     });
 
-    const sslOption = (_config: Config) => {
-      if (_config.get('DB_SSL')) {
-        const sslConfig: ConnectionOptions = {
-          ca: readFileSync(_config.get('DB_CA_CERT')).toString(),
-          key: _config.get('DB_KEY_CERT') ? readFileSync(_config.get('DB_KEY_CERT')).toString() : undefined,
-          cert: _config.get('DB_CLIENT_CERT') ? readFileSync(_config.get('DB_CLIENT_CERT')).toString() : undefined,
-        };
-        return sslConfig;
+    const dbSslOption = () => {
+      if (opts['pg-ca']) {
+        try {
+          const sslConfig: ConnectionOptions = {
+            ca: getFileContent(opts['pg-ca'], 'postgres ca cert'),
+          };
+
+          if (opts['pg-key']) {
+            sslConfig.key = getFileContent(opts['pg-key'], 'postgres client key');
+          }
+
+          if (opts['pg-cert']) {
+            sslConfig.cert = getFileContent(opts['pg-cert'], 'postgres client cert');
+          }
+
+          return sslConfig;
+        } catch (e) {
+          getLogger('db config').error(e);
+          throw e;
+        }
       }
       return false;
     };
@@ -42,7 +54,7 @@ export class ConfigureModule {
       database: config.get('DB_DATABASE'),
       max: opts['max-connection'],
       statement_timeout: opts['query-timeout'],
-      ssl: sslOption(config),
+      ssl: dbSslOption(),
     });
     pgPool.on('error', (err) => {
       // tslint:disable-next-line no-console

@@ -59,3 +59,22 @@ export function getProjectNetwork(rawManifest: unknown): NETWORK_FAMILY {
     throw new Error('Can not identify project network under spec version 1.0.0');
   }
 }
+
+/**
+ * @param path path to the file
+ * @param identifier name to be used for logging purpose
+ * @returns file content
+ */
+export function getFileContent(path: string, identifier: string): string {
+  if (!fs.existsSync(path)) {
+    const err_msg = `${identifier} file ${path} is does not exist`;
+    throw new Error(err_msg);
+  }
+
+  try {
+    return fs.readFileSync(path).toString();
+  } catch (error) {
+    const err_msg = `Failed to load ${identifier} file, ${error}`;
+    throw new Error(err_msg);
+  }
+}

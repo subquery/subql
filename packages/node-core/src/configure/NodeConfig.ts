@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs, {readFileSync} from 'fs';
+import fs from 'fs';
 import path from 'path';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {getFileContent, loadFromJsonOrYaml} from '@subql/common';
 import {last} from 'lodash';
 import {LevelWithSilent} from 'pino';
 import {getLogger} from '../logger';
@@ -215,46 +215,41 @@ export class NodeConfig implements IConfig {
     if (!this._config.pgCa) {
       return undefined;
     }
-    return this._loadFile(this._config.pgCa, 'postgres ca cert');
+    try {
+      return getFileContent(this._config.pgCa, 'postgres ca cert');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
   }
 
   get postgresClientKey(): string | undefined {
     if (!this._config.pgKey) {
       return undefined;
     }
-    return this._loadFile(this._config.pgKey, 'postgres client key');
+
+    try {
+      return getFileContent(this._config.pgKey, 'postgres client key');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
   }
 
   get postgresClientCert(): string | undefined {
     if (!this._config.pgCert) {
       return undefined;
     }
-    return this._loadFile(this._config.pgCert, 'postgres client cert');
+    try {
+      return getFileContent(this._config.pgCert, 'postgres client cert');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
   }
 
   merge(config: Partial<IConfig>): this {
     assign(this._config, config);
     return this;
-  }
-
-  /**
-   * @param path path to the file
-   * @param identifier name to be used for logging purpose
-   * @returns file content
-   */
-  private _loadFile(path: string, identifier: string): string {
-    if (!fs.existsSync(path)) {
-      const err_msg = `${identifier} file ${path} is does not exist`;
-      logger.error(err_msg);
-      throw new Error(err_msg);
-    }
-
-    try {
-      return readFileSync(path).toString();
-    } catch (error) {
-      const err_msg = `Failed to load ${identifier} file, ${error}`;
-      logger.error(err_msg);
-      throw new Error(err_msg);
-    }
   }
 }
