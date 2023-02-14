@@ -23,6 +23,7 @@ import {
   NumFetchedBlocks,
   NumFetchingBlocks,
   GetWorkerStatus,
+  ReloadDynamicDs,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -34,6 +35,7 @@ type IIndexerWorker = {
   numFetchedBlocks: NumFetchedBlocks;
   numFetchingBlocks: NumFetchingBlocks;
   getStatus: GetWorkerStatus;
+  reloadDynamicDs: ReloadDynamicDs;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -54,6 +56,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'numFetchedBlocks',
       'numFetchingBlocks',
       'getStatus',
+      'reloadDynamicDs',
     ],
   );
 
@@ -197,6 +200,11 @@ export class WorkerBlockDispatcherService
           operationHash: Buffer.from(operationHash, 'base64'),
           reindexBlockHeight,
         });
+
+        if (dynamicDsCreated) {
+          // Ensure all workers are aware of all dynamic ds
+          await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
+        }
       } catch (e) {
         logger.error(
           e,
