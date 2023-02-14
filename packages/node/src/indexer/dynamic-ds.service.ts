@@ -77,11 +77,16 @@ export class DynamicDsService {
 
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
     // Workers should not cache this result in order to keep in sync
-    if (!this._datasources || !isMainThread) {
+    if (!this._datasources) {
       this._datasources = await this.loadDynamicDatasources();
     }
 
     return this._datasources;
+  }
+
+  // This is used to sync between worker threads
+  async reloadDynamicDatasources(): Promise<void> {
+    this._datasources = await this.loadDynamicDatasources();
   }
 
   private async loadDynamicDatasources(): Promise<SubqlProjectDs[]> {
