@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import fs from 'fs';
+import fs, {readFileSync} from 'fs';
 import path from 'path';
 import {loadFromJsonOrYaml} from '@subql/common';
 import {last} from 'lodash';
@@ -42,6 +42,9 @@ export interface IConfig {
   readonly multiChain: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
+  readonly pgCa?: string;
+  readonly pgKey?: string;
+  readonly pgCert?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -201,8 +204,57 @@ export class NodeConfig implements IConfig {
     return this._config.unfinalizedBlocks;
   }
 
+  get isPostgresSecureConnection(): boolean {
+    if (this._config.pgCa) {
+      return true;
+    }
+    return false;
+  }
+
+  get postgresCACert(): string | undefined {
+    if (!this._config.pgCa) {
+      return undefined;
+    }
+    return this._loadFile(this._config.pgCa, 'postgres ca cert');
+  }
+
+  get postgresClientKey(): string | undefined {
+    if (!this._config.pgKey) {
+      return undefined;
+    }
+    return this._loadFile(this._config.pgKey, 'postgres client key');
+  }
+
+  get postgresClientCert(): string | undefined {
+    if (!this._config.pgCert) {
+      return undefined;
+    }
+    return this._loadFile(this._config.pgCert, 'postgres client cert');
+  }
+
   merge(config: Partial<IConfig>): this {
     assign(this._config, config);
     return this;
+  }
+
+  /**
+   * @param path path to the file
+   * @param identifier name to be used for logging purpose
+   * @returns file content
+   */
+  private _loadFile(path: string, identifier: string): string {
+    if (!fs.existsSync(path)) {
+      const err_msg = `${identifier} file ${path} is does not exist`;
+      logger.error(err_msg);
+      throw new Error(err_msg);
+    }
+
+    try {
+      return readFileSync(path).toString();
+    } catch (error) {
+      const err_msg = `Failed to load ${identifier} file, ${error}`;
+      logger.error(err_msg);
+      throw new Error(err_msg);
+    }
   }
 }

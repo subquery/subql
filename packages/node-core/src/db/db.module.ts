@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {readFileSync} from 'fs';
 import {DynamicModule, Global} from '@nestjs/common';
 import {Sequelize, Options as SequelizeOption} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
@@ -14,14 +13,6 @@ export interface DbOption {
   username: string;
   password: string;
   database: string;
-  ssl: boolean;
-  dialectOptions?: {
-    ssl?: {
-      ca: string;
-      cert?: string;
-      key?: string;
-    };
-  };
 }
 
 const logger = getLogger('db');
@@ -32,42 +23,6 @@ const DEFAULT_DB_OPTION: DbOption = {
   username: process.env.DB_USER ?? 'postgres',
   password: process.env.DB_PASS ?? 'postgres',
   database: process.env.DB_DATABASE ?? 'postgres',
-  ssl: process.env.DB_SSL === 'true' ?? false,
-};
-
-/** Adding the ssl option to the sequelize option. If the ssl is enabled ,
-USER should provide the path as environment variable
-- DB_CA_CERT: path to the CA file (Required)
-- DB_KEY_CERT: path to the KEY file (Optional)
-- DB_CLIENT_CERT: path to the CERT file (Optional)
-@return the option with ssl option
-@exception throw error if the ssl is enabled but there is not correct file path
-*/
-const dbOptionWithSSLOptions = (option: DbOption): DbOption => {
-  if (option.ssl) {
-    const ca_content = readFileSync(process.env.DB_CA_CERT).toString();
-    let key_content = '';
-    let cert_content = '';
-
-    if (process.env.DB_KEY_CERT) {
-      key_content = readFileSync(process.env.DB_KEY_CERT).toString();
-    }
-
-    if (process.env.DB_CLIENT_CERT) {
-      cert_content = readFileSync(process.env.DB_CLIENT_CERT).toString();
-    }
-
-    option.dialectOptions = {
-      ssl: {
-        ca: ca_content,
-        key: key_content,
-        cert: cert_content,
-      },
-    };
-    return option;
-  }
-
-  return option;
 };
 
 async function establishConnection(sequelize: Sequelize, numRetries: number): Promise<void> {
@@ -96,10 +51,17 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
-    option = dbOptionWithSSLOptions(option);
     const factory = sequelizeFactory({
       ...option,
       dialect: 'postgres',
+      ssl: nodeConfig.isPostgresSecureConnection,
+      dialectOptions: {
+        ssl: {
+          ca: nodeConfig.postgresCACert,
+          key: nodeConfig.postgresClientKey ?? '',
+          cert: nodeConfig.postgresClientCert ?? '',
+        },
+      },
       logging: nodeConfig.debug
         ? (sql: string, timing?: number) => {
             logger.debug(sql);
@@ -121,7 +83,6 @@ export class DbModule {
 
   static forRoot(option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
-    option = dbOptionWithSSLOptions(option);
     return {
       module: DbModule,
       providers: [
@@ -131,6 +92,14 @@ export class DbModule {
             sequelizeFactory({
               ...option,
               dialect: 'postgres',
+              ssl: nodeConfig.isPostgresSecureConnection,
+              dialectOptions: {
+                ssl: {
+                  ca: nodeConfig.postgresCACert,
+                  key: nodeConfig.postgresClientKey,
+                  cert: nodeConfig.postgresClientCert,
+                },
+              },
               logging: nodeConfig.debug
                 ? (sql: string, timing?: number) => {
                     logger.debug(sql);
