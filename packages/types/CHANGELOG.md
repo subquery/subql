@@ -7,42 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
-## [1.7.1] - 2023-01-23
-### Added
-- Add `count` to `Store` interface (#1480)
 
-## [1.7.0] - 2022-12-06
-- Support for `bypassBlocks` (#1435)
-
-## [1.6.0] - 2022-10-27
-### Added
-- Timestamp filter to block handlers (#1310)
-
-## [1.5.1] - 2022-10-11
-### Added
-- Matcher to dictionary query condition. (#1345)
-
-## [1.5.0] - 2022-09-13
-### Changed
-- Change types to support wasm processor and update polkadot API to v9. (#1280)
-
-## [1.4.0] - 2022-08-26
-
-### Changed
-- Updated store.getByField to have limit and offset options. `getByField(entity: string, field: string, value: any, options?: {offset?: number; limit?: number}): Promise<Entity[]>;`. (#1259)
-
-## [1.3.0] - 2022-08-17
-### Added
-- `bulkUpdate` and `bulkGet` to the injected store. This can be used to optimise handlers and speed up indexing. (#1246)
-
-## [1.2.1] - 2022-08-04
-### Fixed
-- Export `EventTypeRecord`. (#1225)
-
-## [1.2.0] - 2022-07-27
-### Changed
-- Update `SubstrateBlockFilter` with new `modulo` filter. (#1196)
-- Make `SubstrateExtrinsic` and `SubstrateEvent` types generic. This allows specifying the data/args type rather than being provided with `Codec[]` or `AnyTuple`. (#1194)
+## [0.4.3] - 2023-02-14
+### Updated
+- Sync with main sdk (#97)
+- Update cosmjs (#96)
 
 ## [0.4.2] - 2023-01-23
 ### Added

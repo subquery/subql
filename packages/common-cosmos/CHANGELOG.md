@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [0.2.2] - 2023-02-14
+### Updated
+- Sync with main sdk (#97)
+
 ## [0.2.1] - 2022-12-20
 ### Added
 - Support `bypassBlocks` feature 

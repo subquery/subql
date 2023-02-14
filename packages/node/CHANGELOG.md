@@ -8,6 +8,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.18.0] - 2023-02-14
+### Updated
+- Sync with main sdk (#97)
+- Update cosmjs (#96)
+- Fix decoding blocks (#96)
+
 ## [1.13.2] - 2023-01-23
 ### Added
 - Add full block header to Block (#94)
