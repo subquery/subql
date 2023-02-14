@@ -26,6 +26,7 @@ import {
   GetWorkerStatus,
   SyncRuntimeService,
   GetSpecFromMap,
+  ReloadDynamicDs,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -39,6 +40,7 @@ type IIndexerWorker = {
   getStatus: GetWorkerStatus;
   syncRuntimeService: SyncRuntimeService;
   getSpecFromMap: GetSpecFromMap;
+  reloadDynamicDs: ReloadDynamicDs;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -61,6 +63,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'getStatus',
       'syncRuntimeService',
       'getSpecFromMap',
+      'reloadDynamicDs',
     ],
   );
 
@@ -223,6 +226,11 @@ export class WorkerBlockDispatcherService
           operationHash: Buffer.from(operationHash, 'base64'),
           reindexBlockHeight,
         });
+
+        if (dynamicDsCreated) {
+          // Ensure all workers are aware of all dynamic ds
+          await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
+        }
       } catch (e) {
         logger.error(
           e,

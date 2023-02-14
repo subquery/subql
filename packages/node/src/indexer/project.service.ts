@@ -116,6 +116,7 @@ export class ProjectService {
 
       this._startHeight = await this.getStartHeight();
     } else {
+      this._schema = await this.getExistingProjectSchema();
       this.metadataRepo = await MetadataFactory(
         this.sequelize,
         this.schema,
@@ -127,7 +128,6 @@ export class ProjectService {
 
       await this.sequelize.sync();
 
-      this._schema = await this.getExistingProjectSchema();
       assert(this._schema, 'Schema should be created in main thread');
       await this.initDbSchema();
 
