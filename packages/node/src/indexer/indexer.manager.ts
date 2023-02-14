@@ -30,7 +30,7 @@ import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import * as CosmosUtil from '../utils/cosmos';
 import { yargsOptions } from '../yargs';
-import { ApiService, CosmosClient, CosmosSafeClient } from './api.service';
+import { ApiService, CosmosSafeClient } from './api.service';
 import {
   asSecondLayerHandlerProcessor_1_0_0,
   DsProcessorService,

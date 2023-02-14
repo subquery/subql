@@ -4,7 +4,6 @@
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
-
 import {
   isCustomCosmosDs,
   isRuntimeCosmosDs,
@@ -52,6 +51,7 @@ const DICTIONARY_MAX_QUERY_SIZE = 10000;
 const CHECK_MEMORY_INTERVAL = 60000;
 const MINIMUM_BATCH_SIZE = 5;
 const INTERVAL_PERCENT = 0.9;
+
 const DICTIONARY_VALIDATION_EXCEPTIONS = ['juno-1'];
 
 export function eventFilterToQueryEntry(
@@ -581,7 +581,6 @@ export class FetchService implements OnApplicationShutdown {
           return false;
         }
       }
-
       return true;
     }
     return false;

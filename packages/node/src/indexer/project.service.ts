@@ -187,6 +187,7 @@ export class ProjectService {
       'processedBlockCount',
       'schemaMigrationCount',
       'startHeight',
+      'bypassBlocks',
     ] as const;
 
     const entries = await metadataRepo.findAll({
@@ -226,6 +227,11 @@ export class ProjectService {
 
     if (keyValue.chain !== chain) {
       await metadataRepo.upsert({ key: 'chain', value: chain });
+    }
+
+    // If project was created before this feature, don't add the key. If it is project created after, add this key.
+    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
+      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
     }
 
     // If project was created before this feature, don't add the key. If it is project created after, add this key.

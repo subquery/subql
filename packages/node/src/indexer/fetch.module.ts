@@ -16,7 +16,7 @@ import { ApiService } from './api.service';
 import {
   BlockDispatcherService,
   WorkerBlockDispatcherService,
-} from './blockDispatcher/';
+} from './blockDispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';

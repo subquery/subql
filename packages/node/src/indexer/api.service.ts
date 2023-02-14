@@ -37,6 +37,9 @@ import { HttpClient, WebsocketClient } from './rpc-clients';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
 
+// https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
+const RETRY_DELAY = 2_500;
+
 const logger = getLogger('api');
 const RETRY_STATUS_CODES = [429, 502];
 
@@ -44,6 +47,8 @@ const RETRY_STATUS_CODES = [429, 502];
 export class ApiService {
   private api: CosmosClient;
   private tendermint: Tendermint34Client;
+  private currentBlockHash: string;
+  private currentBlockNumber: number;
   networkMeta: NetworkMetadataPayload;
   registry: Registry;
 
@@ -97,7 +102,7 @@ export class ApiService {
       const chainId = await this.api.getChainId();
       if (network.chainId !== chainId) {
         const err = new Error(
-          `Network chainId doesn't match expected chainId. expected="${network.chainId}" actual="${chainId}`,
+          `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${network.chainId}", however the endpoint that you are connecting to is different("${this.networkMeta.genesisHash}). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
         );
         logger.error(err, err.message);
         throw err;

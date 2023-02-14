@@ -82,6 +82,9 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
     });
   }
 
+  //  Compare it with current indexing number, if last corrected is already indexed
+  //  rewind, also flush queued blocks, drop current indexing transaction, set last processed to correct block too
+  //  if rollback is greater than current index flush queue only
   async rewind(lastCorrectHeight: number): Promise<void> {
     if (lastCorrectHeight <= this.currentProcessingHeight) {
       logger.info(
@@ -100,6 +103,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
     this.queue.flush();
   }
 
+  // Is called directly before a block is processed
   protected preProcessBlock(height: number): void {
     this.currentProcessingHeight = height;
     this.eventEmitter.emit(IndexerEvent.BlockProcessing, {

@@ -55,6 +55,9 @@ export class CosmosProjectNetworkDeploymentV0_3_0 {
   @IsOptional()
   @ValidateNested({each: true})
   chainTypes?: Map<string, CustomModule>;
+  @IsOptional()
+  @IsArray()
+  bypassBlocks?: (number | string)[];
 }
 
 export class CosmosProjectNetworkV0_3_0 extends CosmosProjectNetworkDeploymentV0_3_0 {

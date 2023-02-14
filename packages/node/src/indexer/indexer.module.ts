@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Module } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import { StoreService, PoiService, MmrService } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';

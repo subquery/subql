@@ -31,6 +31,7 @@ export interface CosmosProjectManifestV0_3_0 extends ICosmosProjectManifest {
   network: {
     endpoint?: string;
     dictionary?: string;
+    bypassBlocks?: (number | string)[];
     chainId: string;
     chainTypes?: Map<string, CustomModule>;
   };

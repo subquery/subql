@@ -44,7 +44,7 @@ describe.skip('ApiService', () => {
     const module = await Test.createTestingModule({
       providers: [
         {
-          provide: SubqueryProject,
+          provide: 'ISubqueryProject',
           useFactory: () => testCosmosProject(),
         },
         ApiService,

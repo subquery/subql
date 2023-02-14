@@ -119,7 +119,10 @@ export class WorkerBlockDispatcherService
   }
 
   enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
-    if (!heights.length) return;
+    if (!!latestBufferHeight && !heights.length) {
+      this.latestBufferedHeight = latestBufferHeight;
+      return;
+    }
     logger.info(
       `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
         heights.length
@@ -182,10 +185,6 @@ export class WorkerBlockDispatcherService
             )}`,
           );
         }
-
-        // logger.info(
-        //   `worker ${workerIdx} processing block ${height}, fetched blocks: ${await worker.numFetchedBlocks()}, fetching blocks: ${await worker.numFetchingBlocks()}`,
-        // );
 
         this.preProcessBlock(height);
 

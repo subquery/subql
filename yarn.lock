@@ -3184,7 +3184,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/node-core@npm:1.8.0":
+"@subql/node-core@npm:^1.8.0":
   version: 1.8.0
   resolution: "@subql/node-core@npm:1.8.0"
   dependencies:
@@ -3222,10 +3222,10 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.4
     "@nestjs/testing": ^8.1.2
-    "@polkadot/api": 9.5.2
+    "@polkadot/api": 9.11.1
     "@subql/common": latest
     "@subql/common-cosmos": "workspace:*"
-    "@subql/node-core": 1.8.0
+    "@subql/node-core": ^1.8.0
     "@subql/types-cosmos": "workspace:*"
     "@subql/utils": latest
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2

@@ -19,7 +19,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
   - `@subql/node-core`
   - `@subql/utils`
   - `@polkadot/api`
-  - `@polkadot/utils` 
+  - `@polkadot/utils`
 
 ## [1.13.0] - 2022-12-20
 ### Updated
@@ -35,7 +35,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ### Updated
 - Sync with latest changes on Substrate SDK ()
   - Hot schema reload
-  - Update `@subql/node-core` dependencies 
+  - Update `@subql/node-core` dependencies
 
 ## [1.11.2] - 2022-11-10
 ### Added
@@ -44,7 +44,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 ## [1.11.1] - 2022-11-08
 ### Updated
 - Sync with latest changes with @subql/node-core, remove sequelize alter table
-  
+
 ## [1.11.0] - 2022-11-02
 ### Changed
 - Sync with latest changes on Substrate SDK (#76):
