@@ -204,6 +204,8 @@ export class BlockDispatcherService
             );
 
             await this.postProcessBlock(height, processBlockResponse);
+
+            block = null;
           } catch (e) {
             if (this.isShutdown) {
               return;
