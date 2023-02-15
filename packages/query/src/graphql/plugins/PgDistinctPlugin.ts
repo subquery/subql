@@ -6,6 +6,7 @@ import {Build, Plugin} from 'graphile-build';
 import type {GraphQLEnumType} from 'graphql';
 import * as PgSql from 'pg-sql2';
 import {SQLNode} from 'pg-sql2';
+import {argv} from '../../yargs';
 
 type Extend = <T1, T2>(base: T1, extra: T2, hint?: string) => T1 & T2;
 
@@ -88,6 +89,10 @@ export const PgDistinctPlugin: Plugin = (builder) => {
 
             // Dependent on https://github.com/graphile/graphile-engine/pull/805
             (queryBuilder as any).distinctOn(id);
+
+            if (argv('dictionary-optimisation')) {
+              queryBuilder.setOrderIsUnique();
+            }
           });
         },
       }));

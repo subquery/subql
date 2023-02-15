@@ -113,6 +113,12 @@ export function getYargsOption() {
         type: 'boolean',
         default: false,
       },
+      'dictionary-optimisation': {
+        demandOption: false,
+        describe: 'Dictionary optimisation',
+        type: 'boolean',
+        default: false,
+      },
     });
 }
 
