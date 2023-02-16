@@ -113,6 +113,7 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       dynamicJson: true,
       graphileBuildOptions: {
         connectionFilterRelations: true,
+        pgUsePartitionedParent: true,
       },
     };
 
