@@ -90,6 +90,7 @@ export const PgDistinctPlugin: Plugin = (builder) => {
             // Dependent on https://github.com/graphile/graphile-engine/pull/805
             (queryBuilder as any).distinctOn(id);
 
+            // set BlockHeight as orderBy key, as by default it uses primaryKey (This will speed up the query speed of dictionaries)
             if (argv('dictionary-optimisation')) {
               queryBuilder.setOrderIsUnique();
             }
