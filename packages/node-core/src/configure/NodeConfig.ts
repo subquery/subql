@@ -205,10 +205,7 @@ export class NodeConfig implements IConfig {
   }
 
   get isPostgresSecureConnection(): boolean {
-    if (this._config.pgCa) {
-      return true;
-    }
-    return false;
+    return !!this._config.pgCa;
   }
 
   get postgresCACert(): string | undefined {
