@@ -7,8 +7,6 @@
 import {QueryBuilder} from '@subql/x-graphile-build-pg';
 import {argv} from '../../yargs';
 
-const MAX_ENTITY_COUNT = 100;
-
 const base64Decode = (str) => Buffer.from(String(str), 'base64').toString('utf8');
 
 export default (builder) => {
@@ -26,7 +24,7 @@ export default (builder) => {
         scope: {fieldName, isPgFieldConnection, isPgFieldSimpleCollection, pgFieldIntrospection: source},
       } = context;
       const unsafe = argv('unsafe') as boolean;
-      const safeClamp = (x: number) => (unsafe ? x : Math.min(x, MAX_ENTITY_COUNT));
+      const safeClamp = (x: number) => Math.min(x, argv('query-limit') as number);
 
       if (
         !(isPgFieldConnection || isPgFieldSimpleCollection) ||
@@ -41,7 +39,7 @@ export default (builder) => {
         return {
           pgQuery: (queryBuilder: QueryBuilder) => {
             if (!first && !last && !unsafe) {
-              queryBuilder.first(MAX_ENTITY_COUNT);
+              queryBuilder.first(argv('query-limit') as number);
             }
             if (first) {
               first = safeClamp(first);

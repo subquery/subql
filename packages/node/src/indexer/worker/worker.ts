@@ -22,6 +22,7 @@ import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
+import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
@@ -32,6 +33,7 @@ import {
 } from './worker.service';
 let app: INestApplication;
 let workerService: WorkerService;
+let dynamicDsService: DynamicDsService;
 
 const logger = getLogger(`worker #${threadId}`);
 
@@ -53,6 +55,7 @@ async function initWorker(): Promise<void> {
     await indexerManager.start();
 
     workerService = app.get(WorkerService);
+    dynamicDsService = app.get(DynamicDsService);
   } catch (e) {
     console.log('Failed to start worker', e);
     logger.error(e, 'Failed to start worker');
@@ -76,7 +79,15 @@ async function fetchBlock(
 async function processBlock(height: number): Promise<ProcessBlockResponse> {
   assert(workerService, 'Not initialised');
 
-  return workerService.processBlock(height);
+  const res = await workerService.processBlock(height);
+
+  // Clean up the temp ds records for worker thread instance
+  if (res.dynamicDsCreated) {
+    const dynamicDsService = app.get(DynamicDsService);
+    dynamicDsService.deleteTempDsRecords(height);
+  }
+
+  return res;
 }
 
 function syncRuntimeService(
@@ -107,6 +118,10 @@ async function getStatus(): Promise<WorkerStatusResponse> {
   };
 }
 
+async function reloadDynamicDs(): Promise<void> {
+  return dynamicDsService.reloadDynamicDatasources();
+}
+
 // Register these functions to be exposed to worker host
 registerWorker({
   initWorker,
@@ -117,6 +132,7 @@ registerWorker({
   getStatus,
   syncRuntimeService,
   getSpecFromMap,
+  reloadDynamicDs,
 });
 
 // Export types to be used on the parent
@@ -128,6 +144,7 @@ export type NumFetchingBlocks = typeof numFetchingBlocks;
 export type GetWorkerStatus = typeof getStatus;
 export type SyncRuntimeService = typeof syncRuntimeService;
 export type GetSpecFromMap = typeof getSpecFromMap;
+export type ReloadDynamicDs = typeof reloadDynamicDs;
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');

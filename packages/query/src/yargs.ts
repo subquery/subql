@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {argv as yargv} from 'yargs';
+// import {argv as yargv} from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -60,6 +60,12 @@ export function getYargsOption() {
         demandOption: false,
         describe: 'Disable limits on query depth and allowable number returned query records',
         type: 'boolean',
+      },
+      'query-limit': {
+        demandOption: false,
+        describe: 'Set limit on query depth',
+        type: 'number',
+        default: 100,
       },
       subscription: {
         demandOption: false,
@@ -123,6 +129,12 @@ export function getYargsOption() {
         describe:
           'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
         type: 'string',
+      },
+      'dictionary-optimisation': {
+        demandOption: false,
+        describe: 'Dictionary optimisation',
+        type: 'boolean',
+        default: false,
       },
     });
 }
