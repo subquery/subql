@@ -51,10 +51,17 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
-
     const factory = sequelizeFactory({
       ...option,
       dialect: 'postgres',
+      ssl: nodeConfig.isPostgresSecureConnection,
+      dialectOptions: {
+        ssl: {
+          ca: nodeConfig.postgresCACert,
+          key: nodeConfig.postgresClientKey ?? '',
+          cert: nodeConfig.postgresClientCert ?? '',
+        },
+      },
       logging: nodeConfig.debug
         ? (sql: string, timing?: number) => {
             logger.debug(sql);
@@ -85,6 +92,14 @@ export class DbModule {
             sequelizeFactory({
               ...option,
               dialect: 'postgres',
+              ssl: nodeConfig.isPostgresSecureConnection,
+              dialectOptions: {
+                ssl: {
+                  ca: nodeConfig.postgresCACert,
+                  key: nodeConfig.postgresClientKey,
+                  cert: nodeConfig.postgresClientCert,
+                },
+              },
               logging: nodeConfig.debug
                 ? (sql: string, timing?: number) => {
                     logger.debug(sql);

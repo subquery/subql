@@ -113,6 +113,23 @@ export function getYargsOption() {
         type: 'boolean',
         default: false,
       },
+      'pg-ca': {
+        demandOption: false,
+        describe:
+          'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+        type: 'string',
+      },
+      'pg-key': {
+        demandOption: false,
+        describe: 'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
+        type: 'string',
+      },
+      'pg-cert': {
+        demandOption: false,
+        describe:
+          'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
+        type: 'string',
+      },
       'dictionary-optimisation': {
         demandOption: false,
         describe: 'Dictionary optimisation',
