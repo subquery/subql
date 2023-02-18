@@ -39,6 +39,22 @@ async function establishConnection(sequelize: Sequelize, numRetries: number): Pr
   }
 }
 
+const sslOptions = (nodeConfig: NodeConfig) => {
+  if (nodeConfig.isPostgresSecureConnection) {
+    return {
+      ssl: true,
+      dialectOptions: {
+        ssl: {
+          ca: nodeConfig.postgresCACert,
+          key: nodeConfig.postgresClientKey ?? '',
+          cert: nodeConfig.postgresClientCert ?? '',
+        },
+      },
+    };
+  }
+  return {};
+};
+
 const sequelizeFactory = (option: SequelizeOption) => async () => {
   const sequelize = new Sequelize(option);
   const numRetries = 5;
@@ -54,14 +70,7 @@ export class DbModule {
     const factory = sequelizeFactory({
       ...option,
       dialect: 'postgres',
-      ssl: nodeConfig.isPostgresSecureConnection,
-      dialectOptions: {
-        ssl: {
-          ca: nodeConfig.postgresCACert,
-          key: nodeConfig.postgresClientKey ?? '',
-          cert: nodeConfig.postgresClientCert ?? '',
-        },
-      },
+      ...sslOptions(nodeConfig),
       logging: nodeConfig.debug
         ? (sql: string, timing?: number) => {
             logger.debug(sql);
@@ -92,14 +101,7 @@ export class DbModule {
             sequelizeFactory({
               ...option,
               dialect: 'postgres',
-              ssl: nodeConfig.isPostgresSecureConnection,
-              dialectOptions: {
-                ssl: {
-                  ca: nodeConfig.postgresCACert,
-                  key: nodeConfig.postgresClientKey,
-                  cert: nodeConfig.postgresClientCert,
-                },
-              },
+              ...sslOptions(nodeConfig),
               logging: nodeConfig.debug
                 ? (sql: string, timing?: number) => {
                     logger.debug(sql);
