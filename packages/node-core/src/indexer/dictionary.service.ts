@@ -34,21 +34,32 @@ const logger = getLogger('dictionary');
 const distinctErrorEscaped = `Unknown argument \\"distinct\\"`;
 const startHeightEscaped = `Cannot query field \\"startHeight\\"`;
 
-function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
-  let gqlType: string;
-  switch (typeof cond.value) {
+function getGqlType(value: any): string {
+  switch (typeof value) {
     case 'number':
-      gqlType = 'BigFloat!';
-      break;
+      return 'BigFloat!';
     case 'boolean':
-      gqlType = 'Boolean!';
-      break;
+      return 'Boolean!';
+    case 'object': {
+      if (Array.isArray(value)) {
+        if (!value.length) {
+          throw new Error('Unable to determine array type');
+        }
+
+        // Use the first value to get the type, assume they are all the same type
+        return `[${getGqlType(value[0])}]`;
+      } else {
+        throw new Error('Object types not supported');
+      }
+    }
     default:
     case 'string':
-      gqlType = 'String!';
-      break;
+      return 'String!';
   }
+}
 
+function extractVar(name: string, cond: DictionaryQueryCondition): GqlVar {
+  let gqlType = getGqlType(cond.value);
   if (cond.matcher === 'contains') {
     gqlType = 'JSON';
   }

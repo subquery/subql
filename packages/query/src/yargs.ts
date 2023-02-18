@@ -1,7 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {argv as yargv} from 'yargs';
+// import {argv as yargv} from 'yargs';
 import {hideBin} from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
@@ -61,6 +61,12 @@ export function getYargsOption() {
         describe: 'Disable limits on query depth and allowable number returned query records',
         type: 'boolean',
       },
+      'query-limit': {
+        demandOption: false,
+        describe: 'Set limit on query depth',
+        type: 'number',
+        default: 100,
+      },
       subscription: {
         demandOption: false,
         describe: 'Enable subscription service',
@@ -104,6 +110,29 @@ export function getYargsOption() {
       'disable-hot-schema': {
         demandOption: false,
         describe: 'Hot reload schema on schema-changes',
+        type: 'boolean',
+        default: false,
+      },
+      'pg-ca': {
+        demandOption: false,
+        describe:
+          'Postgres ca certificate - to enables TLS/SSL connections to your PostgreSQL, path to the server certificate file are required, e.g /path/to/server-certificates/root.crt',
+        type: 'string',
+      },
+      'pg-key': {
+        demandOption: false,
+        describe: 'Postgres client key - Path to key file e.g /path/to/client-key/postgresql.key',
+        type: 'string',
+      },
+      'pg-cert': {
+        demandOption: false,
+        describe:
+          'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
+        type: 'string',
+      },
+      'dictionary-optimisation': {
+        demandOption: false,
+        describe: 'Dictionary optimisation',
         type: 'boolean',
         default: false,
       },
