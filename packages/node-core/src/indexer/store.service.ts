@@ -4,6 +4,7 @@
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
+import {getDbType, SUPPORT_DB} from '@subql/common';
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -29,31 +30,30 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
-import {Attributes, CountOptions, CountWithOptions} from 'sequelize/types/model';
+import {CountOptions} from 'sequelize/types/model';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
-  commentTableQuery,
+  addTagsToForeignKeyMap,
+  BTREE_GIST_EXTENSION_EXIST_QUERY,
+  camelCaseObjectKey,
   commentConstraintQuery,
+  commentTableQuery,
+  createExcludeConstraintQuery,
   createNotifyTrigger,
+  createSchemaTrigger,
+  createSchemaTriggerFunction,
   createSendNotificationTriggerFunction,
   createUniqueIndexQuery,
+  dropNotifyFunction,
   dropNotifyTrigger,
+  enumNameToHash,
   getFkConstraint,
   getTriggers,
+  getVirtualFkTag,
+  modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
-  getVirtualFkTag,
-  addTagsToForeignKeyMap,
-  createExcludeConstraintQuery,
-  BTREE_GIST_EXTENSION_EXIST_QUERY,
-  modelsTypeToModelAttributes,
-  camelCaseObjectKey,
-  createSchemaTriggerFunction,
-  createSchemaTrigger,
-  enumNameToHash,
-  dropNotifyFunction,
-  getFunctions,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -89,6 +89,8 @@ export class StoreService {
   @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
   private blockHeight: number;
   historical: boolean;
+  private dbType: SUPPORT_DB;
+  private useSubscription: boolean;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
@@ -97,7 +99,17 @@ export class StoreService {
     this.modelsRelations = modelsRelations;
     this.historical = await this.getHistoricalStateEnabled();
     logger.info(`Historical state is ${this.historical ? 'enabled' : 'disabled'}`);
+    this.dbType = await getDbType(this.sequelize);
 
+    this.useSubscription = this.config.subscription;
+    if (this.useSubscription && this.dbType === SUPPORT_DB.cockRoach) {
+      this.useSubscription = false;
+      logger.warn(`Subscription is not support with ${this.dbType}`);
+    }
+    if (this.historical && this.dbType === SUPPORT_DB.cockRoach) {
+      this.historical = false;
+      logger.warn(`Historical feature is not support with ${this.dbType}`);
+    }
     try {
       await this.syncSchema(this.schema);
     } catch (e) {
@@ -120,6 +132,11 @@ export class StoreService {
   }
 
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
+    if (this.dbType === SUPPORT_DB.cockRoach) {
+      logger.warn(`Hot schema reload feature is not supported with ${this.dbType}`);
+      return;
+    }
+
     /* These SQL queries are to allow hot-schema reload on query service */
     const schemaTriggerName = hashName(schema, 'schema_trigger', this.metaDataRepo.tableName);
     const schemaTriggers = await getTriggers(this.sequelize, schemaTriggerName);
@@ -183,16 +200,24 @@ export class StoreService {
       // Ref: https://www.graphile.org/postgraphile/enums/
       // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
       // It is difficult for sequelize use replacement, instead we use escape to avoid injection
+      // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
+      // See https://github.com/cockroachdb/cockroach/issues/44135
 
-      const comment = this.sequelize.escape(
-        `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
-      );
-      await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E${comment}`);
+      if (this.dbType === SUPPORT_DB.cockRoach) {
+        logger.warn(
+          `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
+        );
+      } else {
+        const comment = this.sequelize.escape(
+          `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
+        );
+        await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E${comment}`);
+      }
       enumTypeMap.set(e.name, `"${enumTypeName}"`);
     }
     const extraQueries = [];
     // Function need to create ahead of triggers
-    if (this.config.subscription) {
+    if (this.useSubscription) {
       extraQueries.push(createSendNotificationTriggerFunction(schema));
     }
     for (const model of this.modelsRelations.models) {
@@ -223,10 +248,9 @@ export class StoreService {
         extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
       }
 
-      if (this.config.subscription) {
+      if (this.useSubscription) {
         const triggerName = hashName(schema, 'notify_trigger', sequelizeModel.tableName);
         const notifyTriggers = await getTriggers(this.sequelize, triggerName);
-
         // Triggers not been found
         if (notifyTriggers.length === 0) {
           extraQueries.push(createNotifyTrigger(schema, sequelizeModel.tableName));
@@ -234,11 +258,14 @@ export class StoreService {
           this.validateNotifyTriggers(triggerName, notifyTriggers as NotifyTriggerPayload[]);
         }
       } else {
-        extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
+        //TODO: DROP TRIGGER IF EXIST is not valid syntax for cockroach, better check trigger exist at first.
+        if (this.dbType !== SUPPORT_DB.cockRoach) {
+          extraQueries.push(dropNotifyTrigger(schema, sequelizeModel.tableName));
+        }
       }
     }
     // We have to drop the function after all triggers depend on it are removed
-    if (!this.config.subscription) {
+    if (!this.useSubscription && this.dbType !== SUPPORT_DB.cockRoach) {
       extraQueries.push(dropNotifyFunction(schema));
     }
 

@@ -30,7 +30,7 @@
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "lodash": "^4.17.21",
     "prom-client": "^14.0.1",
-    "sequelize": "6.23.0",
+    "sequelize": "6.28.0",
     "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },

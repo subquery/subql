@@ -4,7 +4,7 @@
 import PgPubSub from '@graphile/pg-pubsub';
 import {Module, OnModuleDestroy, OnModuleInit} from '@nestjs/common';
 import {HttpAdapterHost} from '@nestjs/core';
-import {delay} from '@subql/common';
+import {delay, getDbType, SUPPORT_DB} from '@subql/common';
 import {hashName} from '@subql/utils';
 import {getPostGraphileBuilder, PostGraphileCoreOptions} from '@subql/x-postgraphile-core';
 import {
@@ -38,7 +38,7 @@ const SCHEMA_RETRY_NUMBER = 5;
 })
 export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
   private apolloServer: ApolloServer;
-
+  private dbType: SUPPORT_DB;
   constructor(
     private readonly httpAdapterHost: HttpAdapterHost,
     private readonly config: Config,
@@ -54,6 +54,12 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
       this.apolloServer = await this.createServer();
     } catch (e) {
       throw new Error(`create apollo server failed, ${e.message}`);
+    }
+    this.dbType = await getDbType(this.pgPool);
+    if (this.dbType === SUPPORT_DB.cockRoach) {
+      logger.info(`Using Cockroach database, subscription and hot-schema functions are not supported`);
+      argv.subscription = false;
+      argv['disable-hot-schema'] = true;
     }
   }
 
