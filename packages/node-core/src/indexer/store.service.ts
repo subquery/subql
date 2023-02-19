@@ -201,6 +201,8 @@ export class StoreService {
       // Example query for enum name: COMMENT ON TYPE "polkadot-starter_enum_a40fe73329" IS E'@enum\n@enumName TestEnum'
       // It is difficult for sequelize use replacement, instead we use escape to avoid injection
       // UPDATE: this comment got syntax error with cockroach db, disable it for now. Waiting to be fixed.
+      // See https://github.com/cockroachdb/cockroach/issues/44135
+
       if (this.dbType === SUPPORT_DB.cockRoach) {
         logger.warn(
           `Comment on enum ${e.description} is not supported with ${this.dbType}, enum name may display incorrectly in query service`
