@@ -169,21 +169,25 @@ export class StoreService {
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
+      const enumTypeName = enumNameToHash(e.name);
 
       const [results] = await this.sequelize.query(
         `select e.enumlabel as enum_value
          from pg_type t
          join pg_enum e on t.oid = e.enumtypid
+         join information_schema.tables tab on tab.table_schema = '${schema}'
          where t.typname = ?
          order by enumsortorder;`,
         {replacements: [enumTypeName]}
       );
 
       if (results.length === 0) {
-        await this.sequelize.query(`CREATE TYPE "${enumTypeName}" as ENUM (${e.values.map(() => '?').join(',')});`, {
-          replacements: e.values,
-        });
+        await this.sequelize.query(
+          `CREATE TYPE "${schema}".${enumTypeName} as ENUM (${e.values.map(() => '?').join(',')});`,
+          {
+            replacements: e.values,
+          }
+        );
       } else {
         const currentValues = results.map((v: any) => v.enum_value);
         // Assert the existing enum is same
@@ -211,9 +215,9 @@ export class StoreService {
         const comment = this.sequelize.escape(
           `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
         );
-        await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E${comment}`);
+        await this.sequelize.query(`COMMENT ON TYPE "${schema}".${enumTypeName} IS E${comment}`);
       }
-      enumTypeMap.set(e.name, `"${enumTypeName}"`);
+      enumTypeMap.set(e.name, `"${schema}".${enumTypeName}`);
     }
     const extraQueries = [];
     // Function need to create ahead of triggers
