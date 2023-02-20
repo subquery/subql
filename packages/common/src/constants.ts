@@ -45,3 +45,6 @@ export enum SUPPORT_DB {
   cockRoach = 'CockroachDB',
   postgres = 'PostgreSQL',
 }
+
+// DATABASE ERROR REGEX
+export const CONNECTION_SSL_ERROR_REGEX = 'not support SSL';
