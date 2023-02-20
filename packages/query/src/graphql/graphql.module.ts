@@ -50,12 +50,12 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     if (!this.httpAdapterHost) {
       return;
     }
+    this.dbType = await getDbType(this.pgPool);
     try {
       this.apolloServer = await this.createServer();
     } catch (e) {
       throw new Error(`create apollo server failed, ${e.message}`);
     }
-    this.dbType = await getDbType(this.pgPool);
     if (this.dbType === SUPPORT_DB.cockRoach) {
       logger.info(`Using Cockroach database, subscription and hot-schema functions are not supported`);
       argv.subscription = false;
@@ -112,14 +112,14 @@ export class GraphqlModule implements OnModuleInit, OnModuleDestroy {
     const httpServer = this.httpAdapterHost.httpAdapter.getHttpServer();
 
     const dbSchema = await this.projectService.getProjectSchema(this.config.get('name'));
-
     let options: PostGraphileCoreOptions = {
       replaceAllPlugins: plugins,
       subscriptions: true,
       dynamicJson: true,
       graphileBuildOptions: {
         connectionFilterRelations: true,
-        pgUsePartitionedParent: true,
+        // cockroach db does not support pgPartition
+        pgUsePartitionedParent: this.dbType !== SUPPORT_DB.cockRoach,
       },
     };
 
