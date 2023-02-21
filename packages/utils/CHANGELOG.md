@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
+## [1.4.1] - 2023-02-21
+### Update
+- Update sequlize to 6.28.0 (#1521)
+
 ## [1.4.0] - 2023-01-23
 ### Update
 - Update metadata type with `startHeight` (#1473)

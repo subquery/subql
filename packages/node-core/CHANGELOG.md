@@ -10,7 +10,13 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
-## [1.8.0] - 2022-01-23
+## [1.9.0] - 2023-02-21
+### Added
+- add blockTime to NodeConfig (#1501)
+### Changed
+- Support array type in dictionary queries (#1510)
+
+## [1.8.0] - 2023-01-23
 ### Added
 - Add validation of dictionary with start height (#1473)
 - `Store` add count for entity (#1480)
