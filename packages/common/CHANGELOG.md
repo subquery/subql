@@ -8,6 +8,11 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.7.0] - 2023-02-21
+### Added
+- Support for database SSL connection (#1513)
+- Support for cockroach database (#1521)
+
 ## [1.6.0] - 2023-01-31
 ### Added
 - Support for Near (#1498)

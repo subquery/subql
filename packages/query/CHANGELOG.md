@@ -8,6 +8,16 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.11.0] - 2023-02-21
+### Added
+- Add flag `--query-limit`, moved from `--unsafe` (#1514)
+- Add `dictionary-optimisation` flag to improve dictionary query performance (#1519)
+- Add SSL connection option (#1513)
+- Support Cockroach database (#1521)
+### Changed
+- Update postgraphile enable table partitions (#1520)
+
+
 ## [1.10.2] - 2023-01-23
 ### Changed
 - Enable connection filters (#1484)
