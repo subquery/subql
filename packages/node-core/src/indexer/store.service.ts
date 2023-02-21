@@ -172,13 +172,10 @@ export class StoreService {
       const enumTypeName = enumNameToHash(e.name);
 
       const [results] = await this.sequelize.query(
-        `select e.enumlabel as enum_value
-         from pg_type t
-         join pg_enum e on t.oid = e.enumtypid
-         join information_schema.tables tab on tab.table_schema = '${schema}'
-         where t.typname = ?
-         order by enumsortorder;`,
-        {replacements: [enumTypeName]}
+        `SELECT pg_enum.enumlabel as enum_value
+         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
+        {replacements: [enumTypeName, schema]}
       );
 
       if (results.length === 0) {
