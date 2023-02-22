@@ -696,7 +696,7 @@ group by
           assert(indexed, `to query by field ${String(field)}, an index must be created on model ${entity}`);
           if (options?.limit && this.config.queryLimit < options?.limit) {
             logger.warn(
-              `store getByField for entity ${entity} with ${options?.limit} records excesses config limit ${this.config.queryLimit}  `
+              `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${options.limit} as the limit.`
             );
           }
           const records = await model.findAll({
