@@ -694,10 +694,15 @@ group by
                 upperFirst(camelCase(indexField.entityName)) === entity && camelCase(indexField.fieldName) === field
             ) > -1;
           assert(indexed, `to query by field ${String(field)}, an index must be created on model ${entity}`);
+          if (options?.limit && this.config.queryLimit < options?.limit) {
+            logger.warn(
+              `store getByField for entity ${entity} with ${options?.limit} records excesses config limit ${this.config.queryLimit}  `
+            );
+          }
           const records = await model.findAll({
             where: {[field]: value},
             transaction: this.tx,
-            limit: options?.limit ?? this.config.queryLimit,
+            limit: options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit,
             offset: options?.offset,
           });
           return records.map((record) => record.toJSON() as T);
