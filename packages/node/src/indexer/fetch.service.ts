@@ -63,7 +63,7 @@ function eventFilterToQueryEntry(
       });
     }
   } else {
-    if (dsOptions.address) {
+    if (dsOptions?.address) {
       conditions.push({
         field: 'address',
         value: dsOptions.address.toLowerCase(),
