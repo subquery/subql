@@ -1,11 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import fs from 'fs';
 import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
-import { BigNumber } from '@ethersproject/bignumber';
 import { JsonRpcProvider, WebSocketProvider } from '@ethersproject/providers';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
 import { getLogger } from '@subql/node-core';
@@ -23,6 +21,7 @@ import { EthereumBlockWrapped } from './block.ethereum';
 import SafeEthProvider from './safe-api';
 import {
   formatBlock,
+  formatLog,
   formatReceipt,
   formatTransaction,
 } from './utils.ethereum';
@@ -57,7 +56,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   private contractInterfaces: Record<string, Interface> = {};
   private chainId: number;
 
-  private endpointSupportsGetBlockReceipts = true;
+  // Ethereum POS
+  private supportsFinalization = true;
 
   constructor(private endpoint: string) {
     const { hostname, pathname, port, protocol, searchParams } = new URL(
@@ -92,11 +92,23 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
-    return (await this.client.getBlock('finalized')).number;
+    try {
+      if (this.supportsFinalization) {
+        return (await this.client.getBlock('finalised')).number;
+      } else {
+        // TODO make number of blocks finalised configurable
+        return (await this.getBestBlockHeight()) - 15; // Consider 15 blocks finalized
+      }
+    } catch (e) {
+      // TODO handle specific error for this
+      this.supportsFinalization = false;
+      return this.getFinalizedBlockHeight();
+    }
   }
 
   async getBestBlockHeight(): Promise<number> {
-    return (await this.client.getBlock('safe')).number;
+    const tag = this.supportsFinalization ? 'safe' : 'latest';
+    return (await this.client.getBlock(tag)).number;
   }
 
   getRuntimeChain(): string {
@@ -116,13 +128,22 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async getBlockByHeightOrHash(heightOrHash: number | string): Promise<Block> {
+    if (typeof heightOrHash === 'number') {
+      heightOrHash = hexValue(heightOrHash);
+    }
     return this.client.getBlock(heightOrHash);
   }
 
-  async getBlockPromise(num: number): Promise<any> {
-    return retryOnFailEth(() =>
-      this.client.send('eth_getBlockByNumber', [hexValue(num), true]),
+  private async getBlockPromise(num: number, includeTx = true): Promise<any> {
+    const rawBlock = await retryOnFailEth(() =>
+      this.client.send('eth_getBlockByNumber', [hexValue(num), includeTx]),
     );
+
+    const block = formatBlock(rawBlock);
+
+    block.stateRoot = this.client.formatter.hash(block.stateRoot);
+
+    return block;
   }
 
   async getTransactionReceipt(
@@ -132,61 +153,33 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       this.client.getTransactionReceipt.bind(this.client, transactionHash),
     );
   }
-  async fetchBlock(num: number): Promise<EthereumBlockWrapper> {
-    const block_promise = await this.getBlockPromise(num);
 
-    const block = formatBlock(block_promise);
-    block.stateRoot = this.client.formatter.hash(block.stateRoot);
-
-    if (this.endpointSupportsGetBlockReceipts) {
-      try {
-        const rawReceipts: any[] = await this.client.send(
-          'eth_getBlockReceipts',
-          [hexValue(block.number)],
-        );
-
-        const receipts = rawReceipts.map((receipt) =>
-          formatReceipt(receipt, block),
-        );
-
-        const txs = block.transactions.map((tx) => {
-          const transaction = formatTransaction(tx);
-          transaction.receipt =
-            receipts[BigNumber.from(transaction.transactionIndex).toNumber()];
-
-          assert(
-            transaction.hash === transaction.receipt.transactionHash,
-            'Failed to match receipt to transaction',
-          );
-
-          return transaction;
-        });
-
-        return new EthereumBlockWrapped(block, txs);
-      } catch (e) {
-        // Method not avaialble https://eips.ethereum.org/EIPS/eip-1474
-        if (e?.error?.code === -32601) {
-          logger.warn(
-            `The endpoint doesn't support 'eth_getBlockReceipts', individual receipts will be fetched instead, this will greatly impact performance.`,
-          );
-          this.endpointSupportsGetBlockReceipts = false;
-
-          // Should continue and use old method here
-        } else {
-          throw e;
-        }
-      }
-    }
-
-    const transactions = await Promise.all(
-      block.transactions.map(async (tx) => {
-        const transaction = formatTransaction(tx);
-        const receipt = await this.getTransactionReceipt(tx.hash);
-        transaction.receipt = formatReceipt(receipt, block);
-        return transaction;
+  async fetchBlock(
+    blockNumber: number,
+    includeTx?: boolean,
+  ): Promise<EthereumBlockWrapped> {
+    const [block, logs] = await Promise.all([
+      this.getBlockPromise(blockNumber, includeTx),
+      this.client.getLogs({
+        fromBlock: hexValue(blockNumber),
+        toBlock: hexValue(blockNumber),
       }),
+    ]);
+
+    return new EthereumBlockWrapped(
+      block,
+      includeTx
+        ? block.transactions.map((tx) => ({
+            ...formatTransaction(tx),
+            // TODO memoise
+            receipt: () =>
+              this.getTransactionReceipt(tx).then((r) =>
+                formatReceipt(r, block),
+              ),
+          }))
+        : [],
+      logs.map((l) => formatLog(l, block)),
     );
-    return new EthereumBlockWrapped(block, transactions);
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {
@@ -194,11 +187,11 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       bufferBlocks.map(async (num) => {
         try {
           // Fetch Block
-          return await this.fetchBlock(num);
+          return await this.fetchBlock(num, true);
         } catch (e) {
           // Wrap error from an axios error to fix issue with error being undefined
           const error = new Error(e.message);
-          logger.error(error, `Failed to fetch block at height ${num}`);
+          logger.error(e, `Failed to fetch block at height ${num}`);
           throw error;
         }
       }),

@@ -18,6 +18,7 @@ import {
   SubqlHandler,
   EthereumHandlerKind,
   EthereumDatasourceKind,
+  SubqlEthereumHandlerKind,
 } from '@subql/common-ethereum';
 import { retryOnFail, StoreService } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
@@ -288,4 +289,19 @@ export async function retryOnFailEth<T>(
   errors = handledErrors,
 ): Promise<T> {
   return retryOnFail(request, (e) => !!errors.find((t) => t === e?.reason));
+}
+
+export function onlyHasLogDataSources(dataSources: SubqlProjectDs[]): boolean {
+  for (const ds of dataSources) {
+    for (const handler of ds.mapping.handlers) {
+      if (
+        handler.kind !== SubqlEthereumHandlerKind.EthEvent &&
+        handler.kind !== SubqlEthereumHandlerKind.FlareEvent
+      ) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

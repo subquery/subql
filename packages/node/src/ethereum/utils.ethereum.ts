@@ -12,6 +12,7 @@ import {
   EthereumResult,
   EthereumTransaction,
 } from '@subql/types-ethereum';
+import { omit } from 'lodash';
 
 export function calcInterval(api: ApiWrapper): number {
   // TODO find a way to get this from the blockchain
@@ -55,7 +56,10 @@ export function formatBlock(block: Record<string, any>): EthereumBlock {
   } as EthereumBlock;
 }
 export function formatLog(
-  log: EthereumLog<EthereumResult> | EthereumLog,
+  log: Omit<
+    EthereumLog<EthereumResult> | EthereumLog,
+    'blockTimestamp' | 'block' | 'transaction'
+  >,
   block: EthereumBlock,
 ): EthereumLog<EthereumResult> | EthereumLog {
   return {
@@ -65,6 +69,13 @@ export function formatLog(
     transactionIndex: handleNumber(log.transactionIndex).toNumber(),
     logIndex: handleNumber(log.logIndex).toNumber(),
     block,
+    get transaction() {
+      return block.transactions?.find((tx) => tx.hash === log.transactionHash);
+    },
+
+    toJson() {
+      return JSON.stringify(omit(this, ['transaction', 'block']));
+    },
   } as EthereumLog<EthereumResult>;
 }
 
@@ -72,7 +83,7 @@ export function formatTransaction(
   tx: Record<string, any>,
 ): EthereumTransaction {
   return {
-    ...tx,
+    ...(tx as Partial<EthereumTransaction>),
     from: handleAddress(tx.from),
     to: handleAddress(tx.to),
     blockNumber: handleNumber(tx.blockNumber).toNumber(),
@@ -89,6 +100,9 @@ export function formatTransaction(
       ? handleNumber(tx.maxPriorityFeePerGas).toBigInt()
       : undefined,
     receipt: undefined, // Filled in at AvalancheApi.fetchBlocks
+    toJson() {
+      return JSON.stringify(omit(this, ['logs']));
+    },
   } as EthereumTransaction;
 }
 
@@ -104,7 +118,7 @@ export function formatReceipt(
     cumulativeGasUsed: handleNumber(receipt.cumulativeGasUsed).toBigInt(),
     effectiveGasPrice: handleNumber(receipt.effectiveGasPrice).toBigInt(),
     gasUsed: handleNumber(receipt.gasUsed).toBigInt(),
-    logs: receipt.logs.map((log) => formatLog(log, block)),
+    logs: receipt.logs.map(formatLog),
     status: Boolean(handleNumber(receipt.status).toNumber()),
     transactionIndex: handleNumber(receipt.transactionIndex).toNumber(),
   } as EthereumReceipt;

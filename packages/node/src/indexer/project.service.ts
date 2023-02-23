@@ -395,4 +395,12 @@ export class ProjectService {
       /* Not providing force clean service, it should never be needed */
     );
   }
+
+  async getAllDataSources(blockHeight: number): Promise<SubqlProjectDs[]> {
+    const dynamicDs = await this.dynamicDsService.getDynamicDatasources();
+
+    return [...this.dataSources, ...dynamicDs].filter(
+      (ds) => ds.startBlock <= blockHeight,
+    );
+  }
 }

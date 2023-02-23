@@ -70,7 +70,8 @@ export type EthereumTransaction<T extends EthereumResult = EthereumResult> = {
   v: bigint;
   r: string;
   s: string;
-  receipt: EthereumReceipt;
+  receipt: () => Promise<EthereumReceipt>;
+  logs?: EthereumLog[];
   accessList?: string[];
   chainId?: string;
   maxFeePerGas?: bigint;
@@ -111,6 +112,7 @@ export type EthereumLog<T extends EthereumResult = EthereumResult> = {
   removed: boolean;
   args?: T;
   block: EthereumBlock;
+  transaction: EthereumTransaction;
 };
 
 export type FlareLog<T extends FlareResult = FlareResult> = EthereumLog<T>;

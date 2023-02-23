@@ -160,6 +160,7 @@ export class WorkerBlockDispatcherService
 
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
+
     const pendingBlock = worker.fetchBlock(height);
 
     const processBlock = async () => {

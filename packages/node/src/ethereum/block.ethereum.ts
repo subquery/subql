@@ -6,38 +6,32 @@ import {
   EthereumTransactionFilter,
   EthereumLog,
   EthereumLogFilter,
-  EthereumResult,
   EthereumBlockFilter,
   EthereumBlockWrapper,
   EthereumTransaction,
 } from '@subql/types-ethereum';
-import { flatten } from 'lodash';
 import {
   eventToTopic,
   functionToSighash,
   hexStringEq,
   stringNormalizedEq,
 } from '../utils/string';
-import { formatLog } from './utils.ethereum';
 
 export class EthereumBlockWrapped implements EthereumBlockWrapper {
-  private _logs: EthereumLog[];
   constructor(
     private _block: EthereumBlock,
     private _txs: EthereumTransaction[],
+    private _logs: EthereumLog[],
   ) {
-    this._logs = flatten(_txs.map((tx) => tx.receipt.logs)).map((log) =>
-      formatLog(log, _block),
-    ) as EthereumLog[];
-    this._logs.map((log) => {
-      log.block = this.block;
-      return log;
-    });
     this._block.transactions = this._txs;
-    this._block.logs = this._logs.map((log) => {
-      const logCopy = { ...log };
-      logCopy.block = undefined;
-      return logCopy;
+    this._block.logs = this._logs;
+
+    // Set logs on tx
+    this._logs.forEach((l) => {
+      const tx = this._txs.find((tx) => tx.hash === l.transactionHash);
+
+      if (!tx) return;
+      tx.logs = tx.logs ? [...tx.logs, l] : [l];
     });
   }
 

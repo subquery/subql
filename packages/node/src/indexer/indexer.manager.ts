@@ -91,11 +91,12 @@ export class IndexerManager {
     let poiBlockHash: Uint8Array;
 
     try {
-      this.filteredDataSources = this.filterDataSources(blockHeight);
-
-      const datasources = this.filteredDataSources.concat(
-        ...(await this.dynamicDsService.getDynamicDatasources()),
+      const datasources = await this.projectService.getAllDataSources(
+        blockHeight,
       );
+
+      // Check that we have valid datasources
+      this.assertDataSources(datasources, blockHeight);
 
       reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
 
@@ -192,24 +193,14 @@ export class IndexerManager {
     return null;
   }
 
-  private filterDataSources(nextProcessingHeight: number): SubqlProjectDs[] {
-    const filteredDs = this.projectService.dataSources.filter(
-      (ds) => ds.startBlock <= nextProcessingHeight,
-    );
-
-    if (filteredDs.length === 0) {
+  private assertDataSources(ds: SubqlProjectDs[], blockHeight: number) {
+    if (!ds.length) {
       logger.error(
-        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${nextProcessingHeight}
+        `Your start block is greater than the current indexed block height in your database. Either change your startBlock (project.yaml) to <= ${blockHeight}
          or delete your database and start again from the currently specified startBlock`,
       );
       process.exit(1);
     }
-    // perform filter for custom ds
-    if (!filteredDs.length) {
-      logger.error(`Did not find any datasources with associated processor`);
-      process.exit(1);
-    }
-    return filteredDs;
   }
 
   private async indexBlockData(
