@@ -12,6 +12,7 @@ import {
   profilerWrap,
   AutoQueue,
   Queue,
+  waitForHeap,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
@@ -161,7 +162,7 @@ export class BlockDispatcherService
         if (this.memoryleft() < 0) {
           //stop fetching until memory is freed
           logger.info(`${this.processQueue.freeSpace}`);
-          await delay(10);
+          await waitForHeap(256);
           continue;
         }
 
@@ -205,6 +206,7 @@ export class BlockDispatcherService
 
             await this.postProcessBlock(height, processBlockResponse);
 
+            //set block to null for garbage collection
             block = null;
           } catch (e) {
             if (this.isShutdown) {

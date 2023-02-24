@@ -106,7 +106,7 @@ export class WorkerService {
         throw new Error(`Block ${height} has not been fetched`);
       }
 
-      delete this.fetchedBlocks[height];
+      this.fetchedBlocks[height] = null;
 
       const runtimeVersion = await this.workerRuntimeService.getRuntimeVersion(
         block.block,

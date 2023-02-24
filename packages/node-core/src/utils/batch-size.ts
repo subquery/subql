@@ -35,3 +35,19 @@ export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig)
   }
   return scale;
 }
+
+export async function waitForHeap(sizeInMB: number) {
+  const sizeInBytes = sizeInMB * 1024 * 1024;
+  return new Promise((resolve) => {
+    const checkHeap = () => {
+      const {heapTotal, heapUsed} = process.memoryUsage();
+      const availableHeap = heapTotal - heapUsed;
+      if (availableHeap >= sizeInBytes) {
+        resolve(()=>{return;});
+      } else {
+        setTimeout(checkHeap, 100);
+      }
+    }
+    checkHeap();
+  })
+}

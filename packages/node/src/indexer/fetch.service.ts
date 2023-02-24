@@ -30,6 +30,8 @@ import {
   NodeConfig,
   transformBypassBlocks,
   timeout,
+  Queue,
+  waitForHeap,
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
@@ -83,47 +85,27 @@ function callFilterToQueryEntry(
   };
 }
 
-class BlockSizeBuffer {
-  private buffer: number[] = [];
-
-  constructor(private capacity: number) {
-    if (this.capacity === 0) {
-      throw new Error('Block size buffer capacity cannot be 0');
-    }
+class BlockSizeBuffer extends Queue<number> {
+  
+  constructor(capacity: number) {
+    super(capacity);
   }
 
-  pushToBack(value: number) {
-    if (this.buffer.length === this.capacity) {
-      this.popFromFront();
+  putMany(items: number[]): void {
+    if (this.capacity && items.length > this.freeSpace) {
+      this.takeMany(items.length);
     }
-    this.buffer.push(value);
-  }
-
-  popFromFront() {
-    if (this.buffer.length === 0) {
-      return;
-    }
-    this.buffer.shift();
-  }
-
-  pushBatch(values: number[]) {
-    values.forEach((value) => this.pushToBack(value));
-  }
-
-  popBatch(noOfPops: number) {
-    for (let i = 0; i < noOfPops; i++) {
-      this.popFromFront();
-    }
+    this.items.push(...items);
   }
 
   average() {
-    if (this.buffer.length === 0) {
+    if (this.size === 0) {
       throw new Error('No block sizes to average');
     }
 
     let sum = 0;
-    for (let i = 0; i < this.buffer.length; i++) {
-      sum += this.buffer[i];
+    for (let i = 0; i < this.size; i++) {
+      sum += this.items[i];
     }
     return Math.floor(sum / this.capacity);
   }
@@ -141,7 +123,7 @@ export class SmartBatchService {
 
   addToSizeBuffer(blocks: any[]) {
     blocks.forEach((block) =>
-      this.blockSizeBuffer.pushToBack(this.blockSize(block)),
+      this.blockSizeBuffer.put(this.blockSize(block)),
     );
   }
 
@@ -177,6 +159,19 @@ export class SmartBatchService {
     }
 
     const safeBatchSize = Math.floor(heapleft / averageBlockSize);
+    return Math.min(safeBatchSize, this.maxBatchSize);
+  }
+
+  safeBatchSizeForRemainingMemory(memLeft: number) {
+    let averageBlockSize;
+
+    try {
+      averageBlockSize = this.blockSizeBuffer.average();
+    } catch (e) {
+      return this.maxBatchSize;
+    }
+
+    const safeBatchSize = Math.floor(memLeft / averageBlockSize);
     return Math.min(safeBatchSize, this.maxBatchSize);
   }
 }
@@ -536,7 +531,7 @@ export class FetchService implements OnApplicationShutdown {
       scaledBatchSize = this.blockDispatcher.smartBatchSize;
 
       if (scaledBatchSize === 0) {
-        await delay(10);
+        await waitForHeap(256);
         continue;
       }
 

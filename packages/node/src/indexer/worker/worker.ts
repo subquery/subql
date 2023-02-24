@@ -20,7 +20,7 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
+import { registerWorker, getLogger, NestLogger, waitForHeap } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
@@ -30,6 +30,7 @@ import {
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';
+import { getHeapStatistics } from 'v8';
 let app: INestApplication;
 let workerService: WorkerService;
 
@@ -107,6 +108,18 @@ async function getStatus(): Promise<WorkerStatusResponse> {
   };
 }
 
+// eslint-disable-next-line @typescript-eslint/require-await
+async function getMemoryLeft(): Promise<number> {
+  const totalHeap = getHeapStatistics().heap_size_limit;
+  const heapUsed = process.memoryUsage().heapUsed;
+
+  return totalHeap - heapUsed;
+}
+
+async function waitForWorkerHeap(heapSizeInMB) {
+  await waitForHeap(heapSizeInMB);
+}
+
 // Register these functions to be exposed to worker host
 registerWorker({
   initWorker,
@@ -117,6 +130,8 @@ registerWorker({
   getStatus,
   syncRuntimeService,
   getSpecFromMap,
+  getMemoryLeft,
+  waitForWorkerHeap
 });
 
 // Export types to be used on the parent
@@ -128,6 +143,8 @@ export type NumFetchingBlocks = typeof numFetchingBlocks;
 export type GetWorkerStatus = typeof getStatus;
 export type SyncRuntimeService = typeof syncRuntimeService;
 export type GetSpecFromMap = typeof getSpecFromMap;
+export type GetMemoryLeft = typeof getMemoryLeft;
+export type WaitForWorkerHeap = typeof waitForWorkerHeap;
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');

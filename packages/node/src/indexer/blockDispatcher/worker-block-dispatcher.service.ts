@@ -26,8 +26,11 @@ import {
   GetWorkerStatus,
   SyncRuntimeService,
   GetSpecFromMap,
+  GetMemoryLeft,
+  WaitForWorkerHeap,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
+import { SmartBatchService } from '../fetch.service';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -39,6 +42,8 @@ type IIndexerWorker = {
   getStatus: GetWorkerStatus;
   syncRuntimeService: SyncRuntimeService;
   getSpecFromMap: GetSpecFromMap;
+  getMemoryLeft: GetMemoryLeft;
+  waitForWorkerHeap: WaitForWorkerHeap;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -61,6 +66,8 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'getStatus',
       'syncRuntimeService',
       'getSpecFromMap',
+      'getMemoryLeft',
+      'waitForWorkerHeap'
     ],
   );
 
@@ -76,6 +83,7 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
+  smartBatchService: SmartBatchService;
 
   private taskCounter = 0;
   private isShutdown = false;
@@ -93,6 +101,7 @@ export class WorkerBlockDispatcherService
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
     );
     this.numWorkers = numWorkers;
+    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
   }
 
   async init(
@@ -138,7 +147,7 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+  async enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): Promise<void> {
     if (!!latestBufferHeight && !cleanedBlocks.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
@@ -158,6 +167,20 @@ export class WorkerBlockDispatcherService
        * worker2: 4,5,6
        */
       const workerIdx = this.getNextWorkerIndex();
+      const batchSize = Math.min(cleanedBlocks.length, await this.maxBatchSize(workerIdx));
+
+      logger.info(`smart batch size: ${batchSize}`)
+
+      if(batchSize === 0) {
+        return this.enqueueBlocks(cleanedBlocks);
+      }
+
+      if(batchSize < cleanedBlocks.length) {
+        cleanedBlocks.slice(0, batchSize).map((height) => this.enqueueBlock(height, workerIdx));
+        this.latestBufferedHeight = cleanedBlocks[batchSize-1];
+        return this.enqueueBlocks(cleanedBlocks.slice(batchSize));
+      }
+
       cleanedBlocks.map((height) => this.enqueueBlock(height, workerIdx));
     } else {
       /*
@@ -191,6 +214,13 @@ export class WorkerBlockDispatcherService
         if (syncedDictionary) {
           this.syncWorkerRuntimes();
         }
+
+        logger.info(`memory left ${workerIdx}: ${await worker.getMemoryLeft() / 1024 /  1024}`);
+
+        if(await worker.getMemoryLeft() < 256) {
+          await worker.waitForWorkerHeap(256);
+        }
+
         const start = new Date();
         await worker.fetchBlock(height, blockSpecVersion);
         const end = new Date();
@@ -235,6 +265,12 @@ export class WorkerBlockDispatcherService
     };
 
     void this.queue.put(processBlock);
+  }
+
+  private async maxBatchSize(workerIdx: number): Promise<number> {
+    const memLeft = await this.workers[workerIdx].getMemoryLeft()
+    if(memLeft < 256 * 1024 * 1024) return 0;
+    return this.smartBatchService.safeBatchSizeForRemainingMemory(memLeft);
   }
 
   @Interval(15000)
