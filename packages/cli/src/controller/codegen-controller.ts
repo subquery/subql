@@ -56,7 +56,7 @@ import {
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
-import {runTypeChain, glob} from 'typechain';
+import {runTypeChain, glob, parseContractPath} from 'typechain';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -84,6 +84,8 @@ const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/da
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
 const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
+const ETHERS_CONTRACTS_DIR = 'src/types/ethers-contracts'; //generated
+const TYPECHAIN_TARGET = 'ethers-v5';
 
 const exportTypes = {
   models: false,
@@ -168,7 +170,7 @@ export async function generateEnums(projectPath: string, schema: string): Promis
 interface abiRenderProps {
   name: string;
   events: string[];
-  functions: string[];
+  functions: {typeName: string; functionName: string}[];
 }
 interface abiInterface {
   name: string;
@@ -189,7 +191,7 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
       }
       // We use actual abi file name instead on name provided in assets
       // This is aligning with files in './ethers-contracts'
-      sortedAssets.set(path.parse(value.file).name, value.file);
+      sortedAssets.set(parseContractPath(filePath).name, value.file);
     });
   });
   if (sortedAssets.size !== 0) {
@@ -200,8 +202,8 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
         cwd: projectPath,
         filesToProcess: allFiles,
         allFiles,
-        outDir: 'src/types/ethers-contracts',
-        target: 'ethers-v5',
+        outDir: ETHERS_CONTRACTS_DIR,
+        target: TYPECHAIN_TARGET,
       });
       // we iterate here as we have to make sure type chain generated successful,
       // also avoid duplicate generate same abi interfaces
@@ -211,21 +213,30 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
         const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
         // We need to use for loop instead of map, due to events/function name could be duplicate,
         // because they have different input, and following ether typegen rules, name also changed
-        // we need to find duplicates, and update its name rather than just unique them.
-        const duplicateNames = readAbi
-          .map((obj) => obj.name) // create an array of names
+        // we need to find duplicates, and update its name rather than just unify them.
+        const duplicateEventNames = readAbi
+          .filter((abiObject) => abiObject.type === 'event')
+          .map((obj) => obj.name)
+          .filter((name, index, arr) => arr.indexOf(name) !== index);
+        const duplicateFunctionNames = readAbi
+          .filter((abiObject) => abiObject.type === 'function')
+          .map((obj) => obj.name)
           .filter((name, index, arr) => arr.indexOf(name) !== index);
         readAbi.map((abiObject) => {
-          let name = abiObject.name;
-          if (duplicateNames.includes(name)) {
-            const inputToName: string = abiObject.inputs.map((obj) => obj.type.toLowerCase()).join('_');
-            // example: "TextChanged_bytes32_string_string_string_Event", Event will be joined in ejs
-            name = `${abiObject.name}_${inputToName}_`;
-          }
           if (abiObject.type === 'function') {
-            renderProps.functions.push(name);
+            let typeName = abiObject.name;
+            let functionName = abiObject.name;
+            if (duplicateFunctionNames.includes(abiObject.name)) {
+              functionName = `${abiObject.name}(${abiObject.inputs.map((obj) => obj.type.toLowerCase()).join(',')})`;
+              typeName = joinInputAbiName(abiObject);
+            }
+            renderProps.functions.push({typeName, functionName});
           }
           if (abiObject.type === 'event') {
+            let name = abiObject.name;
+            if (duplicateEventNames.includes(abiObject.name)) {
+              name = joinInputAbiName(abiObject);
+            }
             renderProps.events.push(name);
           }
         });
@@ -248,6 +259,12 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
       throw new Error(`When render abi interface having problems.`);
     }
   }
+}
+
+function joinInputAbiName(abiObject: abiInterface) {
+  // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
+  const inputToSnake: string = abiObject.inputs.map((obj) => obj.type.toLowerCase()).join('_');
+  return `${abiObject.name}_${inputToSnake}_`;
 }
 
 export function processFields(
