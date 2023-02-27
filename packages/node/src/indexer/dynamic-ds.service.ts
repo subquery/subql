@@ -75,28 +75,6 @@ export class DynamicDsService {
     }
   }
 
-  // This is used to sync between worker threads
-  async reloadDynamicDatasources(): Promise<void> {
-    this._datasources = await this.loadDynamicDatasources();
-  }
-
-  private async loadDynamicDatasources(): Promise<SubqlProjectDs[]> {
-    try {
-      const params = await this.getDynamicDatasourceParams();
-
-      const dataSources = await Promise.all(
-        params.map((params) => this.getDatasource(params)),
-      );
-
-      logger.info(`Loaded ${dataSources.length} dynamic datasources`);
-
-      return dataSources;
-    } catch (e) {
-      logger.error(`Unable to get dynamic datasources:\n${e.message}`);
-      process.exit(1);
-    }
-  }
-
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
     // Workers should not cache this result in order to keep in sync
     if (!this._datasources) {

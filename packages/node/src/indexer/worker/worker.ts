@@ -22,7 +22,6 @@ import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { registerWorker, getLogger, NestLogger, waitForHeap } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
-import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
