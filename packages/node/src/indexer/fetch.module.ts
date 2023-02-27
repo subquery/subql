@@ -25,6 +25,7 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { SandboxService } from './sandbox.service';
+import { SmartBatchService } from './smartBatch.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
@@ -33,6 +34,13 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     ApiService,
     IndexerManager,
     {
+      provide: SmartBatchService,
+      useFactory: (nodeConfig: NodeConfig) => {
+        return new SmartBatchService(nodeConfig.batchSize);
+      },
+      inject: [NodeConfig],
+    },
+    {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
@@ -40,12 +48,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectService: ProjectService,
         apiService: ApiService,
         indexerManager: IndexerManager,
+        smartBatchService: SmartBatchService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
               projectService,
+              smartBatchService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -53,6 +63,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              smartBatchService,
             ),
       inject: [
         NodeConfig,
@@ -60,6 +71,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ProjectService,
         ApiService,
         IndexerManager,
+        SmartBatchService,
       ],
     },
     FetchService,

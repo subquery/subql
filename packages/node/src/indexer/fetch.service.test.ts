@@ -31,6 +31,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
+import { SmartBatchService } from './smartBatch.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -144,6 +145,7 @@ async function createApp(
             indexerManager,
             eventEmitter,
             mockProjectService(),
+            new SmartBatchService(nodeConfig.batchSize),
           ),
         inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
       },

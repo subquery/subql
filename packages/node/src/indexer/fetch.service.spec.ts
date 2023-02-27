@@ -29,6 +29,7 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
+import { SmartBatchService } from './smartBatch.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
@@ -366,6 +367,7 @@ async function createFetchService(
       indexerManager,
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     ),
     dictionaryService,
     dsProcessorService,
@@ -558,6 +560,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -654,6 +657,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -744,6 +748,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -885,6 +890,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,

@@ -13,14 +13,15 @@ import {
   AutoQueue,
   Queue,
   waitForHeap,
+  memoryLock,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
-import { SmartBatchService } from '../fetch.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
+import { SmartBatchService } from '../smartBatch.service';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
@@ -40,23 +41,22 @@ export class BlockDispatcherService
   // private getRuntimeVersion: GetRuntimeVersion;
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
 
-  smartBatchService: SmartBatchService;
-
   constructor(
     private apiService: ApiService,
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
+    smartBatchService: SmartBatchService,
   ) {
     super(
       nodeConfig,
       eventEmitter,
       projectService,
       new Queue(nodeConfig.batchSize * 3),
+      smartBatchService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         SubstrateUtil.fetchBlocksBatches,
@@ -114,11 +114,6 @@ export class BlockDispatcherService
   }
 
   private memoryleft(): number {
-    logger.info(
-      `${(this.smartBatchService.heapMemoryLimit() / 1024 / 1024).toString()}-${
-        process.memoryUsage().heapUsed / 1024 / 1024
-      }`,
-    );
     return (
       this.smartBatchService.heapMemoryLimit() -
       getHeapStatistics().used_heap_size
@@ -134,11 +129,6 @@ export class BlockDispatcherService
 
     try {
       while (!this.isShutdown) {
-        logger.info(`Smart Batch Size: ${this.smartBatchSize}`);
-        if (this.smartBatchSize === 0) {
-          logger.info(`${this.processQueue.freeSpace}`);
-        }
-
         const blockNums = this.queue.takeMany(
           Math.min(
             this.nodeConfig.batchSize,
@@ -161,7 +151,6 @@ export class BlockDispatcherService
 
         if (this.memoryleft() < 0) {
           //stop fetching until memory is freed
-          logger.info(`${this.processQueue.freeSpace}`);
           await waitForHeap(256);
           continue;
         }
@@ -178,11 +167,15 @@ export class BlockDispatcherService
 
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
-        const blocks = await this.fetchBlocksBatches(
-          this.apiService.getApi(),
-          blockNums,
-          specChanged ? undefined : this.runtimeService.parentSpecVersion,
-        );
+        let blocks;
+
+        await memoryLock.acquire('waitForHeap', async () => {
+          blocks = await this.fetchBlocksBatches(
+            this.apiService.getApi(),
+            blockNums,
+            specChanged ? undefined : this.runtimeService.parentSpecVersion,
+          );
+        });
 
         this.smartBatchService.addToSizeBuffer(blocks);
 

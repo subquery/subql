@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getHeapStatistics} from 'v8';
+import AsyncLock from 'async-lock';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 
@@ -36,18 +37,41 @@ export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig)
   return scale;
 }
 
+export const memoryLock = new AsyncLock();
+
 export async function waitForHeap(sizeInMB: number) {
   const sizeInBytes = sizeInMB * 1024 * 1024;
+  let resolved = false;
+
   return new Promise((resolve) => {
-    const checkHeap = () => {
-      const {heapTotal, heapUsed} = process.memoryUsage();
-      const availableHeap = heapTotal - heapUsed;
-      if (availableHeap >= sizeInBytes) {
-        resolve(()=>{return;});
-      } else {
-        setTimeout(checkHeap, 100);
+    const checkHeap = async () => {
+      await memoryLock.acquire('waitForHeap', () => {
+        logger.info('Out of Memory - waiting for heap to be freed...');
+        const heapTotal = getHeapStatistics().heap_size_limit;
+        const {heapUsed} = process.memoryUsage();
+        const availableHeap = heapTotal - heapUsed;
+
+        if (availableHeap >= sizeInBytes && !resolved) {
+          resolved = true;
+          resolve(() => {
+            return;
+          });
+        }
+      });
+
+      if (!resolved) {
+        await checkHeap();
       }
-    }
+    };
+
     checkHeap();
-  })
+  });
+}
+
+export function formatMBtoBytes(sizeInMB: number): number {
+  return sizeInMB / 1024 / 1024;
+}
+
+export function formatBytesToMB(sizeInBytes: number): number {
+  return sizeInBytes * 1024 * 1024;
 }

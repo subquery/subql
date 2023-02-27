@@ -28,11 +28,15 @@
     "@subql/utils": "workspace:*",
     "@subql/x-merkle-mountain-range": "^2.0.0-0.1.2",
     "@willsoto/nestjs-prometheus": "^4.4.0",
+    "async-lock": "^1.4.0",
     "lodash": "^4.17.21",
     "prom-client": "^14.0.1",
     "sequelize": "6.23.0",
     "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
-  "stableVersion": "1.8.1-0"
+  "stableVersion": "1.8.1-0",
+  "devDependencies": {
+    "@types/async-lock": "^1"
+  }
 }

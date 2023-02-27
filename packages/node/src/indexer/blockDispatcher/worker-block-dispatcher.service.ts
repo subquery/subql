@@ -12,11 +12,14 @@ import {
   IndexerEvent,
   Worker,
   AutoQueue,
+  waitForHeap,
+  memoryLock,
 } from '@subql/node-core';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
+import { SmartBatchService } from '../smartBatch.service';
 import {
   FetchBlock,
   ProcessBlock,
@@ -30,7 +33,6 @@ import {
   WaitForWorkerHeap,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
-import { SmartBatchService } from '../fetch.service';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -67,7 +69,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'syncRuntimeService',
       'getSpecFromMap',
       'getMemoryLeft',
-      'waitForWorkerHeap'
+      'waitForWorkerHeap',
     ],
   );
 
@@ -92,6 +94,7 @@ export class WorkerBlockDispatcherService
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
+    smartBatchService: SmartBatchService,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
@@ -99,9 +102,9 @@ export class WorkerBlockDispatcherService
       eventEmitter,
       projectService,
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
+      smartBatchService,
     );
     this.numWorkers = numWorkers;
-    this.smartBatchService = new SmartBatchService(nodeConfig.batchSize);
   }
 
   async init(
@@ -147,7 +150,10 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  async enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): Promise<void> {
+  async enqueueBlocks(
+    cleanedBlocks: number[],
+    latestBufferHeight?: number,
+  ): Promise<void> {
     if (!!latestBufferHeight && !cleanedBlocks.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
@@ -166,22 +172,18 @@ export class WorkerBlockDispatcherService
        * worker1: 1,2,3
        * worker2: 4,5,6
        */
-      const workerIdx = this.getNextWorkerIndex();
-      const batchSize = Math.min(cleanedBlocks.length, await this.maxBatchSize(workerIdx));
-
-      logger.info(`smart batch size: ${batchSize}`)
-
-      if(batchSize === 0) {
-        return this.enqueueBlocks(cleanedBlocks);
+      let startIndex = 0;
+      while (startIndex < cleanedBlocks.length) {
+        const workerIdx = this.getNextWorkerIndex();
+        const batchSize = Math.min(
+          cleanedBlocks.length - startIndex,
+          await this.maxBatchSize(workerIdx),
+        );
+        cleanedBlocks
+          .slice(startIndex, startIndex + batchSize)
+          .forEach((height) => this.enqueueBlock(height, workerIdx));
+        startIndex += batchSize;
       }
-
-      if(batchSize < cleanedBlocks.length) {
-        cleanedBlocks.slice(0, batchSize).map((height) => this.enqueueBlock(height, workerIdx));
-        this.latestBufferedHeight = cleanedBlocks[batchSize-1];
-        return this.enqueueBlocks(cleanedBlocks.slice(batchSize));
-      }
-
-      cleanedBlocks.map((height) => this.enqueueBlock(height, workerIdx));
     } else {
       /*
        * Load balancing:
@@ -215,14 +217,14 @@ export class WorkerBlockDispatcherService
           this.syncWorkerRuntimes();
         }
 
-        logger.info(`memory left ${workerIdx}: ${await worker.getMemoryLeft() / 1024 /  1024}`);
-
-        if(await worker.getMemoryLeft() < 256) {
+        if ((await worker.getMemoryLeft()) < 256) {
           await worker.waitForWorkerHeap(256);
         }
 
         const start = new Date();
-        await worker.fetchBlock(height, blockSpecVersion);
+        await memoryLock.acquire('waitForHeap', async () => {
+          await worker.fetchBlock(height, blockSpecVersion);
+        });
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {
@@ -268,8 +270,8 @@ export class WorkerBlockDispatcherService
   }
 
   private async maxBatchSize(workerIdx: number): Promise<number> {
-    const memLeft = await this.workers[workerIdx].getMemoryLeft()
-    if(memLeft < 256 * 1024 * 1024) return 0;
+    const memLeft = await this.workers[workerIdx].getMemoryLeft();
+    if (memLeft < 256 * 1024 * 1024) return 0;
     return this.smartBatchService.safeBatchSizeForRemainingMemory(memLeft);
   }
 

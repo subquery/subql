@@ -38,6 +38,7 @@ import { MetaData } from '@subql/utils';
 import { valueFromAST } from 'graphql';
 import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { BlockSizeBuffer } from '../utils/blockSizeBuffer';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -83,97 +84,6 @@ function callFilterToQueryEntry(
       },
     ],
   };
-}
-
-class BlockSizeBuffer extends Queue<number> {
-  
-  constructor(capacity: number) {
-    super(capacity);
-  }
-
-  putMany(items: number[]): void {
-    if (this.capacity && items.length > this.freeSpace) {
-      this.takeMany(items.length);
-    }
-    this.items.push(...items);
-  }
-
-  average() {
-    if (this.size === 0) {
-      throw new Error('No block sizes to average');
-    }
-
-    let sum = 0;
-    for (let i = 0; i < this.size; i++) {
-      sum += this.items[i];
-    }
-    return Math.floor(sum / this.capacity);
-  }
-}
-
-export class SmartBatchService {
-  private blockSizeBuffer: BlockSizeBuffer;
-  private memoryLimit: number;
-
-  constructor(private maxBatchSize: number) {
-    this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
-    this.memoryLimit = process.memoryUsage().heapTotal;
-    logger.info(JSON.stringify(this.memoryLimit / 1024 / 1024));
-  }
-
-  addToSizeBuffer(blocks: any[]) {
-    blocks.forEach((block) =>
-      this.blockSizeBuffer.put(this.blockSize(block)),
-    );
-  }
-
-  blockSize(block: any): number {
-    return Buffer.byteLength(JSON.stringify(block));
-  }
-
-  heapMemoryLimit(): number {
-    //make sure there is atleast 256mb left in heap to fetch next batch
-    return getHeapStatistics().heap_size_limit - 256 * 1024 * 1024;
-  }
-
-  getSafeBatchSize() {
-    const heapUsed = getHeapStatistics().used_heap_size;
-    let averageBlockSize;
-
-    try {
-      averageBlockSize = this.blockSizeBuffer.average();
-    } catch (e) {
-      return this.maxBatchSize;
-    }
-
-    logger.info(
-      `${(this.heapMemoryLimit() / 1024 / 1024).toString()}-${
-        heapUsed / 1024 / 1024
-      }`,
-    );
-    const heapleft = this.heapMemoryLimit() - heapUsed;
-
-    //stop fetching until memory is freed
-    if (heapleft <= 0) {
-      return 0;
-    }
-
-    const safeBatchSize = Math.floor(heapleft / averageBlockSize);
-    return Math.min(safeBatchSize, this.maxBatchSize);
-  }
-
-  safeBatchSizeForRemainingMemory(memLeft: number) {
-    let averageBlockSize;
-
-    try {
-      averageBlockSize = this.blockSizeBuffer.average();
-    } catch (e) {
-      return this.maxBatchSize;
-    }
-
-    const safeBatchSize = Math.floor(memLeft / averageBlockSize);
-    return Math.min(safeBatchSize, this.maxBatchSize);
-  }
 }
 
 @Injectable()
@@ -583,7 +493,8 @@ export class FetchService implements OnApplicationShutdown {
               .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              this.blockDispatcher.enqueueBlocks(
+              // eslint-disable-next-line @typescript-eslint/await-thenable
+              await this.blockDispatcher.enqueueBlocks(
                 [],
                 Math.min(
                   queryEndBlock - 1,
@@ -598,8 +509,8 @@ export class FetchService implements OnApplicationShutdown {
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
-
-              this.blockDispatcher.enqueueBlocks(
+              // eslint-disable-next-line @typescript-eslint/await-thenable
+              await this.blockDispatcher.enqueueBlocks(
                 cleanedBatchBlocks,
                 this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
               );
@@ -612,6 +523,7 @@ export class FetchService implements OnApplicationShutdown {
           this.eventEmitter.emit(IndexerEvent.SkipDictionary);
         }
       }
+
       const endHeight = this.nextEndBlockHeight(
         startBlockHeight,
         scaledBatchSize,
@@ -620,14 +532,16 @@ export class FetchService implements OnApplicationShutdown {
       if (handlers.length && this.getModulos().length === handlers.length) {
         const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        await this.blockDispatcher.enqueueBlocks(
           cleanedBatchBlocks,
           this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
         );
       } else {
         const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
         const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        this.blockDispatcher.enqueueBlocks(
+        // eslint-disable-next-line @typescript-eslint/await-thenable
+        await this.blockDispatcher.enqueueBlocks(
           cleanedBatchBlocks,
           this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
         );
