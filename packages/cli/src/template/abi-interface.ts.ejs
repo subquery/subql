@@ -15,7 +15,7 @@ import {
   export type <%= event %>Log = EthereumLog< <%=event%>Event["args"] >
 <% }); %>
 <% props.abi.functions.forEach(function(_function){ %>
-  export type <%=_function.typeName%>Transaction = EthereumTransaction< Parameters < <%=props.abi.name%>['functions']['<%=_function.functionName%>']>>
+  export type <%=_function.typeName%>Transaction = EthereumTransaction<Parameters<<%=props.abi.name%>['functions']['<%=_function.functionName%>']>>;
 <% }); %>
 
 
