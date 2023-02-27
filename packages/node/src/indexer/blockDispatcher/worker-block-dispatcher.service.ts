@@ -31,6 +31,7 @@ import {
   GetSpecFromMap,
   GetMemoryLeft,
   WaitForWorkerHeap,
+  ReloadDynamicDs,
 } from '../worker/worker';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
@@ -46,6 +47,7 @@ type IIndexerWorker = {
   getSpecFromMap: GetSpecFromMap;
   getMemoryLeft: GetMemoryLeft;
   waitForWorkerHeap: WaitForWorkerHeap;
+  reloadDynamicDs: ReloadDynamicDs;
 };
 
 type IInitIndexerWorker = IIndexerWorker & {
@@ -70,6 +72,7 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'getSpecFromMap',
       'getMemoryLeft',
       'waitForWorkerHeap',
+      'reloadDynamicDs',
     ],
   );
 

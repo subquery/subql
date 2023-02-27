@@ -35,7 +35,7 @@
     "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
-  "stableVersion": "1.8.1-0",
+  "stableVersion": "1.9.0",
   "devDependencies": {
     "@types/async-lock": "^1"
   }

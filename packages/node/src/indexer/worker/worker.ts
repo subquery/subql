@@ -31,8 +31,10 @@ import {
   WorkerStatusResponse,
 } from './worker.service';
 import { getHeapStatistics } from 'v8';
+import { DynamicDsService } from '../dynamic-ds.service';
 let app: INestApplication;
 let workerService: WorkerService;
+let dynamicDsService: DynamicDsService;
 
 const logger = getLogger(`worker #${threadId}`);
 
@@ -54,6 +56,7 @@ async function initWorker(): Promise<void> {
     await indexerManager.start();
 
     workerService = app.get(WorkerService);
+    dynamicDsService = app.get(DynamicDsService);
   } catch (e) {
     console.log('Failed to start worker', e);
     logger.error(e, 'Failed to start worker');
@@ -120,6 +123,10 @@ async function waitForWorkerHeap(heapSizeInMB) {
   await waitForHeap(heapSizeInMB);
 }
 
+async function reloadDynamicDs(): Promise<void> {
+  return dynamicDsService.reloadDynamicDatasources();
+}
+
 // Register these functions to be exposed to worker host
 registerWorker({
   initWorker,
@@ -131,7 +138,8 @@ registerWorker({
   syncRuntimeService,
   getSpecFromMap,
   getMemoryLeft,
-  waitForWorkerHeap
+  waitForWorkerHeap,
+  reloadDynamicDs,
 });
 
 // Export types to be used on the parent
@@ -145,6 +153,7 @@ export type SyncRuntimeService = typeof syncRuntimeService;
 export type GetSpecFromMap = typeof getSpecFromMap;
 export type GetMemoryLeft = typeof getMemoryLeft;
 export type WaitForWorkerHeap = typeof waitForWorkerHeap;
+export type ReloadDynamicDs = typeof reloadDynamicDs;
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');
