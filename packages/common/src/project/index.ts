@@ -5,4 +5,5 @@ export * from './load';
 export * from './types';
 export * from './versioned';
 export * from './readers';
+export * from './database';
 export * from './utils';

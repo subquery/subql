@@ -4,7 +4,7 @@
 import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
-import {loadFromJsonOrYaml} from '@subql/common';
+import {getFileContent, loadFromJsonOrYaml} from '@subql/common';
 import {last} from 'lodash';
 import {LevelWithSilent} from 'pino';
 import {getLogger} from '../logger';
@@ -42,6 +42,9 @@ export interface IConfig {
   readonly multiChain: boolean;
   readonly reindex?: number;
   readonly unfinalizedBlocks?: boolean;
+  readonly pgCa?: string;
+  readonly pgKey?: string;
+  readonly pgCert?: string;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -199,6 +202,47 @@ export class NodeConfig implements IConfig {
 
   get unfinalizedBlocks(): boolean {
     return this._config.unfinalizedBlocks;
+  }
+
+  get isPostgresSecureConnection(): boolean {
+    return !!this._config.pgCa;
+  }
+
+  get postgresCACert(): string | undefined {
+    if (!this._config.pgCa) {
+      return undefined;
+    }
+    try {
+      return getFileContent(this._config.pgCa, 'postgres ca cert');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
+  }
+
+  get postgresClientKey(): string | undefined {
+    if (!this._config.pgKey) {
+      return undefined;
+    }
+
+    try {
+      return getFileContent(this._config.pgKey, 'postgres client key');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
+  }
+
+  get postgresClientCert(): string | undefined {
+    if (!this._config.pgCert) {
+      return undefined;
+    }
+    try {
+      return getFileContent(this._config.pgCert, 'postgres client cert');
+    } catch (e) {
+      logger.error(e);
+      throw e;
+    }
   }
 
   merge(config: Partial<IConfig>): this {

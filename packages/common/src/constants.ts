@@ -39,3 +39,12 @@ export const runnerMapping = {
   '@subql/node-flare': NETWORK_FAMILY.flare,
   '@subql/node-near': NETWORK_FAMILY.near,
 };
+
+// DATABASE TYPE
+export enum SUPPORT_DB {
+  cockRoach = 'CockroachDB',
+  postgres = 'PostgreSQL',
+}
+
+// DATABASE ERROR REGEX
+export const CONNECTION_SSL_ERROR_REGEX = 'not support SSL';

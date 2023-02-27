@@ -25,24 +25,33 @@ const DEFAULT_DB_OPTION: DbOption = {
   database: process.env.DB_DATABASE ?? 'postgres',
 };
 
-async function establishConnection(sequelize: Sequelize, numRetries: number): Promise<void> {
+const CONNECTION_SSL_ERROR_REGEX = 'not support SSL';
+
+async function establishConnectionSequelize(option: SequelizeOption, numRetries: number): Promise<Sequelize> {
+  const uri = `postgresql://${option.username}:${option.password}@${option.host}:${option.port}/${option.database}`;
+
+  const sequelize = new Sequelize(uri, option);
   try {
     await sequelize.authenticate();
   } catch (error) {
-    logger.error(error, 'Unable to connect to the database');
+    if (JSON.stringify(error.message).includes(CONNECTION_SSL_ERROR_REGEX)) {
+      logger.warn('Database does not support SSL connection, will try to connect without it');
+      option.dialectOptions = undefined;
+    }
     if (numRetries > 0) {
       await delay(3);
-      void (await establishConnection(sequelize, numRetries - 1));
+      return establishConnectionSequelize(option, numRetries - 1);
     } else {
+      logger.error(error, 'Unable to connect to the database');
       process.exit(1);
     }
   }
+  return sequelize;
 }
 
 const sequelizeFactory = (option: SequelizeOption) => async () => {
-  const sequelize = new Sequelize(option);
   const numRetries = 5;
-  await establishConnection(sequelize, numRetries);
+  const sequelize = await establishConnectionSequelize(option, numRetries);
   await sequelize.sync();
   return sequelize;
 };
@@ -51,10 +60,18 @@ const sequelizeFactory = (option: SequelizeOption) => async () => {
 export class DbModule {
   static forRootWithConfig(nodeConfig: NodeConfig, option: DbOption = DEFAULT_DB_OPTION): DynamicModule {
     const logger = getLogger('db');
-
     const factory = sequelizeFactory({
       ...option,
       dialect: 'postgres',
+      ssl: nodeConfig.isPostgresSecureConnection,
+      dialectOptions: {
+        ssl: {
+          rejectUnauthorized: false,
+          ca: nodeConfig.postgresCACert,
+          key: nodeConfig.postgresClientKey ?? '',
+          cert: nodeConfig.postgresClientCert ?? '',
+        },
+      },
       logging: nodeConfig.debug
         ? (sql: string, timing?: number) => {
             logger.debug(sql);
@@ -85,6 +102,15 @@ export class DbModule {
             sequelizeFactory({
               ...option,
               dialect: 'postgres',
+              ssl: nodeConfig.isPostgresSecureConnection,
+              dialectOptions: {
+                ssl: {
+                  rejectUnauthorized: false,
+                  ca: nodeConfig.postgresCACert,
+                  key: nodeConfig.postgresClientKey,
+                  cert: nodeConfig.postgresClientCert,
+                },
+              },
               logging: nodeConfig.debug
                 ? (sql: string, timing?: number) => {
                     logger.debug(sql);

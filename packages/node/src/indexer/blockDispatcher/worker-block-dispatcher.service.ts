@@ -258,6 +258,11 @@ export class WorkerBlockDispatcherService
           operationHash: Buffer.from(operationHash, 'base64'),
           reindexBlockHeight,
         });
+
+        if (dynamicDsCreated) {
+          // Ensure all workers are aware of all dynamic ds
+          await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
+        }
       } catch (e) {
         logger.error(
           e,

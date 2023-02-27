@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
+import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { getLogger, MetadataRepo } from '@subql/node-core';
@@ -97,24 +98,41 @@ export class DynamicDsService {
   }
 
   async getDynamicDatasources(): Promise<SubqlProjectDs[]> {
+    // Workers should not cache this result in order to keep in sync
     if (!this._datasources) {
-      try {
-        const params = await this.getDynamicDatasourceParams();
-
-        this._datasources = await Promise.all(
-          params.map((params) => this.getDatasource(params)),
-        );
-      } catch (e) {
-        logger.error(e, `Unable to get dynamic datasources`);
-        process.exit(1);
-      }
+      this._datasources = await this.loadDynamicDatasources();
     }
 
     return this._datasources;
   }
 
-  deleteTempDsRecords(blockHeight: number) {
-    delete this.tempDsRecords[TEMP_DS_PREFIX + blockHeight];
+  // This is used to sync between worker threads
+  async reloadDynamicDatasources(): Promise<void> {
+    this._datasources = await this.loadDynamicDatasources();
+  }
+
+  private async loadDynamicDatasources(): Promise<SubqlProjectDs[]> {
+    try {
+      const params = await this.getDynamicDatasourceParams();
+
+      const dataSources = await Promise.all(
+        params.map((params) => this.getDatasource(params)),
+      );
+
+      logger.info(`Loaded ${dataSources.length} dynamic datasources`);
+
+      return dataSources;
+    } catch (e) {
+      logger.error(`Unable to get dynamic datasources:\n${e.message}`);
+      process.exit(1);
+    }
+  }
+
+  deleteTempDsRecords(blockHeight: number): void {
+    // Main thread will not have tempDsRecords with workers
+    if (this.tempDsRecords) {
+      delete this.tempDsRecords[TEMP_DS_PREFIX + blockHeight];
+    }
   }
 
   private async getDynamicDatasourceParams(
@@ -174,10 +192,6 @@ export class DynamicDsService {
         `Unable to find matching template in project for name: "${params.templateName}"`,
       );
     }
-
-    logger.info(
-      `Initialised dynamic datasource from template: "${params.templateName}"`,
-    );
 
     const dsObj = {
       ...template,

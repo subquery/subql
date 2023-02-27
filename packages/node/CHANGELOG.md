@@ -6,8 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.19.0] - 2023-02-21
+### Added
+- Support Cockroach database (#1521)
+- Add SSL connection option (#1513)
+### Changed
+- Worker use runtime service (#1491)
+### Fixed
+- When create new dynamic datasource, check queue for lower blocks before processing fetched blocks (#1509)
+- Fix error with tempDsRecords being undefined with workers (#1516)
 
-## [1.18.0] - 2022-01-23
+## [1.18.0] - 2023-01-23
 ### Added
 - Add validation of dictionary with start height (#1473)
 - Add block hash validation after fetch (#1494)

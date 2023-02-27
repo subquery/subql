@@ -1,6 +1,6 @@
 {
   "name": "@subql/query",
-  "version": "1.10.2",
+  "version": "1.11.0",
   "description": "",
   "bin": {
     "subql-query": "./bin/run"
@@ -38,8 +38,8 @@
     "@nestjs/platform-express": "^8.2.6",
     "@subql/common": "workspace:*",
     "@subql/utils": "workspace:*",
-    "@subql/x-graphile-build-pg": "^4.12.3-0.1.0",
-    "@subql/x-postgraphile-core": "^4.12.3-0.1.0",
+    "@subql/x-graphile-build-pg": "4.13.0-0.2.2",
+    "@subql/x-postgraphile-core": "4.13.0-0.2.0",
     "apollo-server-express": "^3.6.2",
     "express-pino-logger": "^6.0.0",
     "graphile-build": "^4.12.2",
@@ -48,7 +48,7 @@
     "graphql-query-complexity": "^0.11.0",
     "lodash": "^4.17.21",
     "pg": "^8.7.1",
-    "postgraphile": "^4.12.9",
+    "postgraphile": "^4.13.0",
     "postgraphile-plugin-connection-filter": "^2.2.2",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
