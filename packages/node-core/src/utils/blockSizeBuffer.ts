@@ -1,7 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Queue } from '@subql/node-core';
+import { Queue } from './autoQueue';
 
 export class BlockSizeBuffer extends Queue<number> {
   constructor(capacity: number) {

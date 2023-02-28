@@ -4,10 +4,9 @@
 import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
-import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
+import { getLogger, IndexerEvent, IQueue, NodeConfig, SmartBatchService } from '@subql/node-core';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
-import { SmartBatchService } from '../smartBatch.service';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -29,6 +28,7 @@ export interface IBlockDispatcher {
   freeSize: number;
   latestBufferedHeight: number | undefined;
   smartBatchSize: number;
+  minimumHeapLimit: number;
 
   // Remove all enqueued blocks, used when a dynamic ds is created
   flushQueue(height: number): void;
@@ -74,6 +74,10 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
 
   get smartBatchSize(): number {
     return this.smartBatchService.getSafeBatchSize();
+  }
+
+  get minimumHeapLimit(): number {
+    return this.smartBatchService.minimumHeapRequired;
   }
 
   get latestBufferedHeight(): number {

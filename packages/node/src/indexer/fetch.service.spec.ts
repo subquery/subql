@@ -15,6 +15,7 @@ import {
   NodeConfig,
   Dictionary,
   MetadataRepo,
+  SmartBatchService
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -29,7 +30,6 @@ import { FetchService } from './fetch.service';
 import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
-import { SmartBatchService } from './smartBatch.service';
 import { BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 

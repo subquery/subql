@@ -12,8 +12,9 @@ import {
   profilerWrap,
   AutoQueue,
   Queue,
-  waitForHeap,
+  waitForBatchSize,
   memoryLock,
+  SmartBatchService
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
@@ -21,8 +22,8 @@ import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
-import { SmartBatchService } from '../smartBatch.service';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
+import { BlockContent } from '../types';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -131,7 +132,6 @@ export class BlockDispatcherService
       while (!this.isShutdown) {
         const blockNums = this.queue.takeMany(
           Math.min(
-            this.nodeConfig.batchSize,
             this.processQueue.freeSpace,
             this.smartBatchSize,
           ),
@@ -151,9 +151,11 @@ export class BlockDispatcherService
 
         if (this.memoryleft() < 0) {
           //stop fetching until memory is freed
-          await waitForHeap(256);
+          await waitForBatchSize(this.minimumHeapLimit);
           continue;
         }
+
+        logger.info(`free space: ${this.processQueue.freeSpace}`)
 
         logger.info(
           `fetch block [${blockNums[0]},${
@@ -167,15 +169,14 @@ export class BlockDispatcherService
 
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
-        let blocks;
-
-        await memoryLock.acquire('waitForHeap', async () => {
-          blocks = await this.fetchBlocksBatches(
-            this.apiService.getApi(),
-            blockNums,
-            specChanged ? undefined : this.runtimeService.parentSpecVersion,
-          );
-        });
+        
+        await memoryLock.acquire();
+        const blocks = await this.fetchBlocksBatches(
+          this.apiService.getApi(),
+          blockNums,
+          specChanged ? undefined : this.runtimeService.parentSpecVersion,
+        );
+        memoryLock.release();
 
         this.smartBatchService.addToSizeBuffer(blocks);
 

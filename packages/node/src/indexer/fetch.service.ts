@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval, SchedulerRegistry } from '@nestjs/schedule';
@@ -29,16 +28,12 @@ import {
   IndexerEvent,
   NodeConfig,
   transformBypassBlocks,
-  timeout,
-  Queue,
-  waitForHeap,
+  waitForBatchSize,
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
-import { valueFromAST } from 'graphql';
 import { range, sortBy, uniqBy, without } from 'lodash';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
-import { BlockSizeBuffer } from '../utils/blockSizeBuffer';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
@@ -441,7 +436,7 @@ export class FetchService implements OnApplicationShutdown {
       scaledBatchSize = this.blockDispatcher.smartBatchSize;
 
       if (scaledBatchSize === 0) {
-        await waitForHeap(256);
+        await waitForBatchSize(this.blockDispatcher.minimumHeapLimit);
         continue;
       }
 

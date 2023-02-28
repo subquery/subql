@@ -20,7 +20,7 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { registerWorker, getLogger, NestLogger, waitForHeap } from '@subql/node-core';
+import { registerWorker, getLogger, NestLogger, waitForBatchSize } from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
@@ -127,8 +127,8 @@ async function getMemoryLeft(): Promise<number> {
   return totalHeap - heapUsed;
 }
 
-async function waitForWorkerHeap(heapSizeInMB) {
-  await waitForHeap(heapSizeInMB);
+async function waitForWorkerBatchSize(heapSizeInBytes) {
+  await waitForBatchSize(heapSizeInBytes);
 }
 
 async function reloadDynamicDs(): Promise<void> {
@@ -146,7 +146,7 @@ registerWorker({
   syncRuntimeService,
   getSpecFromMap,
   getMemoryLeft,
-  waitForWorkerHeap,
+  waitForWorkerBatchSize,
   reloadDynamicDs,
 });
 
@@ -160,7 +160,7 @@ export type GetWorkerStatus = typeof getStatus;
 export type SyncRuntimeService = typeof syncRuntimeService;
 export type GetSpecFromMap = typeof getSpecFromMap;
 export type GetMemoryLeft = typeof getMemoryLeft;
-export type WaitForWorkerHeap = typeof waitForWorkerHeap;
+export type waitForWorkerBatchSize = typeof waitForWorkerBatchSize;
 export type ReloadDynamicDs = typeof reloadDynamicDs;
 
 process.on('uncaughtException', (e) => {

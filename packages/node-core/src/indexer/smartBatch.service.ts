@@ -3,7 +3,7 @@
 
 import { getHeapStatistics } from 'v8';
 import { Injectable } from '@nestjs/common';
-import { getLogger } from '@subql/node-core';
+import { formatMBtoBytes, getLogger } from '@subql/node-core';
 import { BlockSizeBuffer } from '../utils/blockSizeBuffer';
 
 const logger = getLogger('smart-batch-service');
@@ -13,9 +13,16 @@ export class SmartBatchService {
   private blockSizeBuffer: BlockSizeBuffer;
   private memoryLimit: number;
 
-  constructor(private maxBatchSize: number) {
+  constructor(private maxBatchSize: number, private minHeapRequired?: number) {
     this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
     this.memoryLimit = process.memoryUsage().heapTotal;
+    if(!minHeapRequired){
+      this.minHeapRequired = formatMBtoBytes(128);
+    }
+  }
+
+  get minimumHeapRequired(): number {
+    return this.minHeapRequired;
   }
 
   addToSizeBuffer(blocks: any[]) {
@@ -27,8 +34,7 @@ export class SmartBatchService {
   }
 
   heapMemoryLimit(): number {
-    //make sure there is atleast 256mb left in heap to fetch next batch
-    return getHeapStatistics().heap_size_limit - 256 * 1024 * 1024;
+    return getHeapStatistics().heap_size_limit - this.minHeapRequired ;
   }
 
   getSafeBatchSize() {

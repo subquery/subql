@@ -9,6 +9,7 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
+  SmartBatchService
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -25,7 +26,6 @@ import { IndexerManager } from './indexer.manager';
 import { ProjectService } from './project.service';
 import { RuntimeService } from './runtime/runtimeService';
 import { SandboxService } from './sandbox.service';
-import { SmartBatchService } from './smartBatch.service';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 @Module({
