@@ -50,7 +50,7 @@ function eventFilterToQueryEntry(
   filter: EthereumLogFilter,
   dsOptions: SubqlEthereumProcessorOptions | SubqlEthereumProcessorOptions[],
 ): DictionaryQueryEntry {
-  const conditions = [];
+  const conditions: DictionaryQueryCondition[] = [];
 
   if (Array.isArray(dsOptions)) {
     const addresses = dsOptions.map((option) => option.address).filter(Boolean);
@@ -67,6 +67,7 @@ function eventFilterToQueryEntry(
       conditions.push({
         field: 'address',
         value: dsOptions.address.toLowerCase(),
+        // matcher: 'equals',
       });
     }
   }
@@ -77,7 +78,11 @@ function eventFilterToQueryEntry(
         continue;
       }
       const field = `topics${i}`;
-      conditions.push({ field, value: eventToTopic(topic) });
+      conditions.push({
+        field,
+        value: eventToTopic(topic),
+        matcher: 'equalTo',
+      });
     }
   }
   return {
@@ -89,7 +94,7 @@ function eventFilterToQueryEntry(
 function callFilterToQueryEntry(
   filter: EthereumTransactionFilter,
 ): DictionaryQueryEntry {
-  const conditions = [];
+  const conditions: DictionaryQueryCondition[] = [];
   if (filter.from) {
     conditions.push({
       field: 'from',
@@ -106,6 +111,7 @@ function callFilterToQueryEntry(
     conditions.push({
       field: 'func',
       value: functionToSighash(filter.function),
+      matcher: 'equalTo',
     });
   }
   return {
@@ -180,38 +186,35 @@ export class FetchService implements OnApplicationShutdown {
 
     for (const ds of filteredDs) {
       for (const handler of ds.mapping.handlers) {
-        let filterList: SubqlHandlerFilter[];
-        filterList = [handler.filter];
-        filterList = filterList.filter((f) => f);
-        if (!filterList.length) return [];
+        // No filters, cant use dictionary
+        if (!handler.filter) return [];
+
         switch (handler.kind) {
           case EthereumHandlerKind.Block:
             return [];
           case EthereumHandlerKind.Call: {
-            for (const filter of filterList as EthereumTransactionFilter[]) {
-              if (
-                filter.from !== undefined ||
-                filter.to !== undefined ||
-                filter.function
-              ) {
-                queryEntries.push(callFilterToQueryEntry(filter));
-              } else {
-                return [];
-              }
+            const filter = handler.filter as EthereumTransactionFilter;
+            if (
+              filter.from !== undefined ||
+              filter.to !== undefined ||
+              filter.function
+            ) {
+              queryEntries.push(callFilterToQueryEntry(filter));
+            } else {
+              return [];
             }
             break;
           }
           case EthereumHandlerKind.Event: {
-            for (const filter of filterList as EthereumLogFilter[]) {
-              if (ds.groupedOptions) {
-                queryEntries.push(
-                  eventFilterToQueryEntry(filter, ds.groupedOptions),
-                );
-              } else if (ds.options?.address || filter.topics) {
-                queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
-              } else {
-                return [];
-              }
+            const filter = handler.filter as EthereumLogFilter;
+            if (ds.groupedOptions) {
+              queryEntries.push(
+                eventFilterToQueryEntry(filter, ds.groupedOptions),
+              );
+            } else if (ds.options?.address || filter.topics) {
+              queryEntries.push(eventFilterToQueryEntry(filter, ds.options));
+            } else {
+              return [];
             }
             break;
           }
