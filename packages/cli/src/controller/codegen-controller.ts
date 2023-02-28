@@ -22,6 +22,8 @@ import {
   isRuntimeDs as isRuntimeEthereumDs,
   RuntimeDatasourceTemplate as EthereumDsTemplate,
   CustomDatasourceTemplate as EthereumCustomDsTemplate,
+  RuntimeDataSourceV0_3_0 as EthereumDs,
+  CustomDatasourceV0_3_0 as EthereumCustomDs,
 } from '@subql/common-ethereum';
 import {
   isCustomDs as isCustomNearDs,
@@ -33,6 +35,7 @@ import {
   isCustomDs as isCustomSubstrateDs,
   RuntimeDatasourceTemplate as SubstrateDsTemplate,
   CustomDatasourceTemplate as SubstrateCustomDsTemplate,
+  CustomDatasourceV0_2_0 as SubstrateCustomDatasource,
 } from '@subql/common-substrate';
 import {
   isCustomTerraDs,
@@ -53,6 +56,7 @@ import {
 import ejs from 'ejs';
 import {upperFirst, uniq} from 'lodash';
 import rimraf from 'rimraf';
+import {runTypeChain, glob, parseContractPath} from 'typechain';
 
 type TemplateKind =
   | SubstrateDsTemplate
@@ -67,14 +71,22 @@ type TemplateKind =
   | NearCustomDsTemplate
   | TerraDsTemplate
   | TerraCustomDsTemplate;
+
+type DatasourceKind = SubstrateCustomDatasource | EthereumDs | EthereumCustomDs;
+
 const MODEL_TEMPLATE_PATH = path.resolve(__dirname, '../template/model.ts.ejs');
 const MODELS_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/models-index.ts.ejs');
 const TYPES_INDEX_TEMPLATE_PATH = path.resolve(__dirname, '../template/types-index.ts.ejs');
 const INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/interface.ts.ejs');
+const ABI_INTERFACE_TEMPLATE_PATH = path.resolve(__dirname, '../template/abi-interface.ts.ejs');
 const ENUM_TEMPLATE_PATH = path.resolve(__dirname, '../template/enum.ts.ejs');
 const DYNAMIC_DATASOURCE_TEMPLATE_PATH = path.resolve(__dirname, '../template/datasource-templates.ts.ejs');
 const TYPE_ROOT_DIR = 'src/types';
 const MODEL_ROOT_DIR = 'src/types/models';
+const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
+const CONTRACTS_DIR = 'src/types/contracts'; //generated
+const TYPECHAIN_TARGET = 'ethers-v5';
+
 const exportTypes = {
   models: false,
   interfaces: false,
@@ -153,6 +165,118 @@ export async function generateEnums(projectPath: string, schema: string): Promis
       throw new Error(`When render enums having problems.`);
     }
   }
+}
+
+interface abiRenderProps {
+  name: string;
+  events: string[];
+  functions: {typeName: string; functionName: string}[];
+}
+interface abiInterface {
+  name: string;
+  type: 'event' | 'function';
+  inputs: {
+    internalType: string;
+    name: string;
+    type: string;
+  }[];
+}
+export async function generateAbis(datasources: DatasourceKind[], projectPath: string): Promise<void> {
+  const sortedAssets = new Map<string, string>();
+  datasources.map((d) => {
+    if (!d?.assets || !isRuntimeEthereumDs(d) || !isCustomEthereumDs(d) || !isCustomSubstrateDs(d)) {
+      return;
+    }
+    Object.entries(d.assets).map(([name, value]) => {
+      const filePath = path.join(projectPath, value.file);
+      if (!fs.existsSync(filePath)) {
+        throw new Error(`Error: Asset ${name}, file ${value.file} does not exist`);
+      }
+      // We use actual abi file name instead on name provided in assets
+      // This is aligning with files in './ethers-contracts'
+      sortedAssets.set(parseContractPath(filePath).name, value.file);
+    });
+  });
+  if (sortedAssets.size !== 0) {
+    await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);
+    try {
+      const allFiles = glob(projectPath, [...sortedAssets.values()]);
+      // Typechain generate interfaces under CONTRACTS_DIR
+      await runTypeChain({
+        cwd: projectPath,
+        filesToProcess: allFiles,
+        allFiles,
+        outDir: CONTRACTS_DIR,
+        target: TYPECHAIN_TARGET,
+      });
+      // Iterate here as we have to make sure type chain generated successful,
+      // also avoid duplicate generate same abi interfaces
+      const renderAbiJobs = processAbis(sortedAssets, projectPath);
+      await Promise.all(
+        renderAbiJobs.map((renderProps) => {
+          console.log(`* Abi Interface ${renderProps.name} generated`);
+          return renderTemplate(
+            ABI_INTERFACE_TEMPLATE_PATH,
+            path.join(projectPath, ABI_INTERFACES_ROOT_DIR, `${renderProps.name}.ts`),
+            {
+              props: {abi: renderProps},
+              helper: {upperFirst},
+            }
+          );
+        })
+      );
+    } catch (e) {
+      throw new Error(`When render abi interface having problems.`);
+    }
+  }
+}
+
+function processAbis(sortedAssets: Map<string, string>, projectPath: string): abiRenderProps[] {
+  const renderInterfaceJobs: abiRenderProps[] = [];
+  sortedAssets.forEach((value, key) => {
+    const renderProps: abiRenderProps = {name: key, events: [], functions: []};
+    const readAbi = loadFromJsonOrYaml(path.join(projectPath, value)) as abiInterface[];
+    // We need to use for loop instead of map, due to events/function name could be duplicate,
+    // because they have different input, and following ether typegen rules, name also changed
+    // we need to find duplicates, and update its name rather than just unify them.
+    const duplicateEventNames = readAbi
+      .filter((abiObject) => abiObject.type === 'event')
+      .map((obj) => obj.name)
+      .filter((name, index, arr) => arr.indexOf(name) !== index);
+    const duplicateFunctionNames = readAbi
+      .filter((abiObject) => abiObject.type === 'function')
+      .map((obj) => obj.name)
+      .filter((name, index, arr) => arr.indexOf(name) !== index);
+    readAbi.map((abiObject) => {
+      if (abiObject.type === 'function') {
+        let typeName = abiObject.name;
+        let functionName = abiObject.name;
+        if (duplicateFunctionNames.includes(abiObject.name)) {
+          functionName = `${abiObject.name}(${abiObject.inputs.map((obj) => obj.type.toLowerCase()).join(',')})`;
+          typeName = joinInputAbiName(abiObject);
+        }
+        renderProps.functions.push({typeName, functionName});
+      }
+      if (abiObject.type === 'event') {
+        let name = abiObject.name;
+        if (duplicateEventNames.includes(abiObject.name)) {
+          name = joinInputAbiName(abiObject);
+        }
+        renderProps.events.push(name);
+      }
+    });
+    // avoid empty json
+    if (!!renderProps.events || !!renderProps.functions) {
+      renderInterfaceJobs.push(renderProps);
+    }
+  });
+  return renderInterfaceJobs;
+}
+
+function joinInputAbiName(abiObject: abiInterface) {
+  // example: "TextChanged_bytes32_string_string_string_Event", Event name/Function type name will be joined in ejs
+  const inputToSnake: string = abiObject.inputs.map((obj) => obj.type.toLowerCase()).join('_');
+  return `${abiObject.name}_${inputToSnake}_`;
 }
 
 export function processFields(
@@ -240,12 +364,15 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
   const plainManifest = loadFromJsonOrYaml(getManifestPath(projectPath, fileName)) as {
     specVersion: string;
     templates?: TemplateKind[];
+    dataSources: DatasourceKind[];
   };
   if (plainManifest.templates && plainManifest.templates.length !== 0) {
     await generateDatasourceTemplates(projectPath, plainManifest.specVersion, plainManifest.templates);
   }
+
   const schemaPath = getSchemaPath(projectPath, fileName);
 
+  await generateAbis(plainManifest.dataSources, projectPath);
   await generateJsonInterfaces(projectPath, schemaPath);
   await generateModels(projectPath, schemaPath);
   await generateEnums(projectPath, schemaPath);
