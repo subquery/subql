@@ -3915,7 +3915,7 @@ __metadata:
     "@subql/common-terra": latest
     "@subql/utils": "workspace:*"
     "@subql/validator": "workspace:*"
-    "@typechain/ethers-v5": latest
+    "@typechain/ethers-v5": 10.2.0
     "@types/ejs": ^3.1.0
     "@types/inquirer": ^8.2.0
     "@types/node": ^14.18.10
@@ -4519,7 +4519,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@typechain/ethers-v5@npm:latest":
+"@typechain/ethers-v5@npm:10.2.0":
   version: 10.2.0
   resolution: "@typechain/ethers-v5@npm:10.2.0"
   dependencies:
