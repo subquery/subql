@@ -151,8 +151,6 @@ export class BlockDispatcherService
           continue;
         }
 
-        logger.info(`free space: ${this.processQueue.freeSpace}`);
-
         logger.info(
           `fetch block [${blockNums[0]},${
             blockNums[blockNums.length - 1]
