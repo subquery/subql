@@ -18,10 +18,17 @@ initLogger(
 
 import assert from 'assert';
 import { threadId } from 'node:worker_threads';
+import { getHeapStatistics } from 'v8';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { registerWorker, getLogger, NestLogger, waitForBatchSize } from '@subql/node-core';
+import {
+  registerWorker,
+  getLogger,
+  NestLogger,
+  waitForBatchSize,
+} from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
+import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { WorkerModule } from './worker.module';
 import {
@@ -30,8 +37,6 @@ import {
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';
-import { getHeapStatistics } from 'v8';
-import { DynamicDsService } from '../dynamic-ds.service';
 let app: INestApplication;
 let workerService: WorkerService;
 let dynamicDsService: DynamicDsService;
