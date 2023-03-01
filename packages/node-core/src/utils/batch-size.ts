@@ -3,9 +3,9 @@
 
 import {getHeapStatistics} from 'v8';
 import AsyncLock from 'async-lock';
+import {Mutex} from 'async-mutex';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
-import { Mutex } from 'async-mutex';
 
 const HIGH_THRESHOLD = 0.85;
 const LOW_THRESHOLD = 0.6;
@@ -42,11 +42,10 @@ export const memoryLock = new Mutex();
 
 export async function waitForBatchSize(sizeInBytes: number) {
   let resolved = false;
-  logger.warn('Out of Memory - waiting for heap to be freed...');
   const checkHeap = async () => {
     await memoryLock.acquire();
     const heapTotal = getHeapStatistics().heap_size_limit;
-    const { heapUsed } = process.memoryUsage();
+    const {heapUsed} = process.memoryUsage();
     const availableHeap = heapTotal - heapUsed;
     if (availableHeap >= sizeInBytes && !resolved) {
       resolved = true;
@@ -55,13 +54,12 @@ export async function waitForBatchSize(sizeInBytes: number) {
     }
     memoryLock.release();
     if (!resolved) {
+      logger.warn('Out of Memory - waiting for heap to be freed...');
       await checkHeap();
     }
   };
   await checkHeap();
 }
-
-
 
 export function formatMBtoBytes(sizeInMB: number): number {
   return sizeInMB / 1024 / 1024;

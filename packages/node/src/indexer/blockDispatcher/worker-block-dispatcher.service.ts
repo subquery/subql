@@ -13,7 +13,7 @@ import {
   Worker,
   AutoQueue,
   memoryLock,
-  SmartBatchService
+  SmartBatchService,
 } from '@subql/node-core';
 import chalk from 'chalk';
 import { last } from 'lodash';
@@ -171,7 +171,7 @@ export class WorkerBlockDispatcherService
     if (true) {
       let startIndex = 0;
       while (startIndex < cleanedBlocks.length) {
-        const workerIdx = this.getNextWorkerIndex();
+        const workerIdx = await this.getNextWorkerIndex();
         const batchSize = Math.min(
           cleanedBlocks.length - startIndex,
           await this.maxBatchSize(workerIdx),
@@ -182,9 +182,10 @@ export class WorkerBlockDispatcherService
         startIndex += batchSize;
       }
     } else {
-      cleanedBlocks.map((height) =>
-        this.enqueueBlock(height, this.getNextWorkerIndex()),
-      );
+      cleanedBlocks.map(async (height) => {
+        const workerIndex = await this.getNextWorkerIndex();
+        return this.enqueueBlock(height, workerIndex);
+      });
     }
 
     this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
@@ -291,11 +292,11 @@ export class WorkerBlockDispatcherService
     });
   }
 
-  private getNextWorkerIndex(): number {
-    const index = this.taskCounter % this.numWorkers;
-
-    this.taskCounter++;
-
-    return index;
+  private async getNextWorkerIndex(): Promise<number> {
+    return Promise.all(
+      this.workers.map((worker) => worker.getMemoryLeft()),
+    ).then((memoryLeftValues) => {
+      return memoryLeftValues.indexOf(Math.max(...memoryLeftValues));
+    });
   }
 }
