@@ -14,7 +14,7 @@ import {
   Queue,
   waitForBatchSize,
   memoryLock,
-  SmartBatchService
+  SmartBatchService,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
@@ -23,7 +23,6 @@ import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
-import { BlockContent } from '../types';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -131,10 +130,7 @@ export class BlockDispatcherService
     try {
       while (!this.isShutdown) {
         const blockNums = this.queue.takeMany(
-          Math.min(
-            this.processQueue.freeSpace,
-            this.smartBatchSize,
-          ),
+          Math.min(this.processQueue.freeSpace, this.smartBatchSize),
         );
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
@@ -155,7 +151,7 @@ export class BlockDispatcherService
           continue;
         }
 
-        logger.info(`free space: ${this.processQueue.freeSpace}`)
+        logger.info(`free space: ${this.processQueue.freeSpace}`);
 
         logger.info(
           `fetch block [${blockNums[0]},${
@@ -169,7 +165,7 @@ export class BlockDispatcherService
 
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
-        
+
         await memoryLock.acquire();
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
