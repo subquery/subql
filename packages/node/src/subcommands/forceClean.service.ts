@@ -41,7 +41,8 @@ export class ForceCleanService {
         benchmark: false,
       });
 
-      // drop all related enums
+      // TODO, remove this soon, once original enum are cleaned
+      // Deprecate, now enums are moved under schema, drop schema will remove project enums
       await Promise.all(
         modelsRelation.enums.map(async (e) => {
           const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;

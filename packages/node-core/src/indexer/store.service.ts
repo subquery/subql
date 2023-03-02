@@ -169,19 +169,33 @@ export class StoreService {
     for (const e of this.modelsRelations.enums) {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
-      const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
+      const enumTypeName = enumNameToHash(e.name);
+      let type = `"${schema}".${enumTypeName}`;
+      let [results] = await this.sequelize.query(
+        `SELECT pg_enum.enumlabel as enum_value
+         FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
+         WHERE t.typname = ? AND n.nspname = ? order by enumsortorder;`,
+        {replacements: [enumTypeName, schema]}
+      );
 
-      const [results] = await this.sequelize.query(
+      // If enum has created before and not under schema, still following the original logic
+      // This logic should be deprecated for new project
+      const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
+      const [resultsDeprecated] = await this.sequelize.query(
         `select e.enumlabel as enum_value
          from pg_type t
          join pg_enum e on t.oid = e.enumtypid
          where t.typname = ?
          order by enumsortorder;`,
-        {replacements: [enumTypeName]}
+        {replacements: [enumTypeNameDeprecated]}
       );
+      if (resultsDeprecated.length !== 0) {
+        results = resultsDeprecated;
+        type = `"${enumTypeNameDeprecated}"`;
+      }
 
       if (results.length === 0) {
-        await this.sequelize.query(`CREATE TYPE "${enumTypeName}" as ENUM (${e.values.map(() => '?').join(',')});`, {
+        await this.sequelize.query(`CREATE TYPE ${type} as ENUM (${e.values.map(() => '?').join(',')});`, {
           replacements: e.values,
         });
       } else {
@@ -211,9 +225,9 @@ export class StoreService {
         const comment = this.sequelize.escape(
           `@enum\\n@enumName ${e.name}${e.description ? `\\n ${e.description}` : ''}`
         );
-        await this.sequelize.query(`COMMENT ON TYPE "${enumTypeName}" IS E${comment}`);
+        await this.sequelize.query(`COMMENT ON TYPE ${type} IS E${comment}`);
       }
-      enumTypeMap.set(e.name, `"${enumTypeName}"`);
+      enumTypeMap.set(e.name, type);
     }
     const extraQueries = [];
     // Function need to create ahead of triggers
