@@ -1,10 +1,10 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { getHeapStatistics } from 'v8';
-import { Injectable } from '@nestjs/common';
-import { formatMBtoBytes, getLogger } from '@subql/node-core';
-import { BlockSizeBuffer } from '../utils/blockSizeBuffer';
+import {getHeapStatistics} from 'v8';
+import {Injectable} from '@nestjs/common';
+import {formatMBtoBytes, getLogger} from '@subql/node-core';
+import {BlockSizeBuffer} from '../utils/blockSizeBuffer';
 
 const logger = getLogger('smart-batch-service');
 
@@ -16,7 +16,7 @@ export class SmartBatchService {
   constructor(private maxBatchSize: number, private minHeapRequired?: number) {
     this.blockSizeBuffer = new BlockSizeBuffer(maxBatchSize);
     this.memoryLimit = process.memoryUsage().heapTotal;
-    if(!minHeapRequired){
+    if (!minHeapRequired) {
       this.minHeapRequired = formatMBtoBytes(128);
     }
   }
@@ -26,6 +26,9 @@ export class SmartBatchService {
   }
 
   addToSizeBuffer(blocks: any[]) {
+    if (this.blockSizeBuffer.capacity && blocks.length > this.blockSizeBuffer.freeSpace) {
+      this.blockSizeBuffer.takeMany(blocks.length - this.blockSizeBuffer.freeSpace);
+    }
     blocks.forEach((block) => this.blockSizeBuffer.put(this.blockSize(block)));
   }
 
@@ -34,7 +37,7 @@ export class SmartBatchService {
   }
 
   heapMemoryLimit(): number {
-    return getHeapStatistics().heap_size_limit - this.minHeapRequired ;
+    return getHeapStatistics().heap_size_limit - this.minHeapRequired;
   }
 
   getSafeBatchSize() {
