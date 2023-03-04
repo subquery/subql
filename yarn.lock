@@ -15663,13 +15663,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"retry-as-promised@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "retry-as-promised@npm:5.0.0"
-  checksum: 4d17e0597f967db0516714f0f2b085e2d1e8ea592450b013a1e0cd41dad74a9c3d1eb3c45351887de4bca1c3ac5f74dd07ef9942a3fb0e4db996a83bb28cb46e
-  languageName: node
-  linkType: hard
-
 "retry-as-promised@npm:^7.0.3":
   version: 7.0.3
   resolution: "retry-as-promised@npm:7.0.3"
@@ -15981,7 +15974,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:6.28.0, sequelize@npm:^6.28.0":
+"sequelize@npm:6.28.0":
   version: 6.28.0
   resolution: "sequelize@npm:6.28.0"
   dependencies:
@@ -16021,47 +16014,6 @@ __metadata:
     tedious:
       optional: true
   checksum: 7e10ba4ebabab1ed54d6769fa73cac86dd3df88415ee32dd82f01ade6e1ebd9f6672288b601bd12507eae9eb2480ba905f74c93b1e380eb335430bf43ed757e9
-  languageName: node
-  linkType: hard
-
-"sequelize@npm:^6.6.2":
-  version: 6.20.1
-  resolution: "sequelize@npm:6.20.1"
-  dependencies:
-    "@types/debug": ^4.1.7
-    "@types/validator": ^13.7.1
-    debug: ^4.3.3
-    dottie: ^2.0.2
-    inflection: ^1.13.2
-    lodash: ^4.17.21
-    moment: ^2.29.1
-    moment-timezone: ^0.5.34
-    pg-connection-string: ^2.5.0
-    retry-as-promised: ^5.0.0
-    semver: ^7.3.5
-    sequelize-pool: ^7.1.0
-    toposort-class: ^1.0.1
-    uuid: ^8.3.2
-    validator: ^13.7.0
-    wkx: ^0.5.0
-  peerDependenciesMeta:
-    ibm_db:
-      optional: true
-    mariadb:
-      optional: true
-    mysql2:
-      optional: true
-    pg:
-      optional: true
-    pg-hstore:
-      optional: true
-    snowflake-sdk:
-      optional: true
-    sqlite3:
-      optional: true
-    tedious:
-      optional: true
-  checksum: 08a6f9e3fb9d31d87399b378802cc5a0531f93cfb5ac18e0b11dc0942cac4a886bbba2dbe5aa33dd3d7ba060d32891876ba0de5c03ebfb4f6459ce84f430be79
   languageName: node
   linkType: hard
 
