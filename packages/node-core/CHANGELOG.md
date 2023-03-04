@@ -10,6 +10,7 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+
 ## [1.9.0] - 2023-02-21
 ### Added
 - add blockTime to NodeConfig (#1501)
