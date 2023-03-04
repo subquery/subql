@@ -75,7 +75,14 @@ export function createExcludeConstraintQuery(schema: string, table: string): str
   const constraint = getExcludeConstraint(table);
   return `DO $$
     BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = '${constraint}') THEN
+      IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint con
+         INNER JOIN pg_catalog.pg_class rel
+                    ON rel.oid = con.conrelid
+         INNER JOIN pg_catalog.pg_namespace nsp
+                    ON nsp.oid = connamespace
+        WHERE con.conname = '${constraint}'
+        AND nsp.nspname = '${schema}'
+        AND rel.relname = '${table}') THEN
         ALTER TABLE "${schema}"."${table}" ADD CONSTRAINT ${constraint} EXCLUDE USING gist (id WITH =, _block_range WITH &&);
       END IF;
     END;
