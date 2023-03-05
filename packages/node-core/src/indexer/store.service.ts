@@ -54,6 +54,7 @@ import {
   modelsTypeToModelAttributes,
   SmartTags,
   smartTags,
+  getEnumDeprecated,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
 import {StoreOperations} from './StoreOperations';
@@ -178,17 +179,8 @@ export class StoreService {
         {replacements: [enumTypeName, schema]}
       );
 
-      // If enum has created before and not under schema, still following the original logic
-      // This logic should be deprecated for new project
       const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(e.name)}`;
-      const [resultsDeprecated] = await this.sequelize.query(
-        `select e.enumlabel as enum_value
-         from pg_type t
-         join pg_enum e on t.oid = e.enumtypid
-         where t.typname = ?
-         order by enumsortorder;`,
-        {replacements: [enumTypeNameDeprecated]}
-      );
+      const resultsDeprecated = await getEnumDeprecated(this.sequelize, enumTypeNameDeprecated);
       if (resultsDeprecated.length !== 0) {
         results = resultsDeprecated;
         type = `"${enumTypeNameDeprecated}"`;

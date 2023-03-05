@@ -8,6 +8,7 @@ import {
   NodeConfig,
   getExistingProjectSchema,
   enumNameToHash,
+  getEnumDeprecated,
 } from '@subql/node-core';
 import { getAllEntitiesRelations } from '@subql/utils';
 import { QueryTypes, Sequelize } from 'sequelize';
@@ -45,10 +46,18 @@ export class ForceCleanService {
       // Deprecate, now enums are moved under schema, drop schema will remove project enums
       await Promise.all(
         modelsRelation.enums.map(async (e) => {
-          const enumTypeName = `${schema}_enum_${enumNameToHash(e.name)}`;
-          await this.sequelize.query(`
-            DROP TYPE "${enumTypeName}";
+          const enumTypeNameDeprecated = `${schema}_enum_${enumNameToHash(
+            e.name,
+          )}`;
+          const resultsDeprecated = await getEnumDeprecated(
+            this.sequelize,
+            enumTypeNameDeprecated,
+          );
+          if (resultsDeprecated.length !== 0) {
+            await this.sequelize.query(`
+            DROP TYPE "${enumTypeNameDeprecated}";
           `);
+          }
         }),
       );
 
