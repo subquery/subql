@@ -122,7 +122,10 @@ export class WorkerBlockDispatcherService
   }
 
   enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
-    if (!heights.length) return;
+    if (!!latestBufferHeight && !heights.length) {
+      this.latestBufferedHeight = latestBufferHeight;
+      return;
+    }
     logger.info(
       `Enqueing blocks [${heights[0]}...${last(heights)}], total ${
         heights.length
