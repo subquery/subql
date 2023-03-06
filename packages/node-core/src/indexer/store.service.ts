@@ -39,7 +39,6 @@ import {
   camelCaseObjectKey,
   commentConstraintQuery,
   commentTableQuery,
-  createExcludeConstraintQuery,
   createNotifyTrigger,
   createSchemaTrigger,
   createSchemaTriggerFunction,
