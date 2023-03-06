@@ -251,7 +251,8 @@ export class StoreService {
       });
       if (this.historical) {
         this.addScopeAndBlockHeightHooks(sequelizeModel);
-        extraQueries.push(createExcludeConstraintQuery(schema, sequelizeModel.tableName));
+        // TODO, remove id and block_range constrain, check id manually
+        // see https://github.com/subquery/subql/issues/1542
       }
 
       if (this.useSubscription) {
