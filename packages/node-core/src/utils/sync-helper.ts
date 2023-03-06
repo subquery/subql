@@ -71,24 +71,6 @@ export function addTagsToForeignKeyMap(
 
 export const BTREE_GIST_EXTENSION_EXIST_QUERY = `SELECT * FROM pg_extension where extname = 'btree_gist'`;
 
-export function createExcludeConstraintQuery(schema: string, table: string): string {
-  const constraint = getExcludeConstraint(table);
-  return `DO $$
-    BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_constraint con
-         INNER JOIN pg_catalog.pg_class rel
-                    ON rel.oid = con.conrelid
-         INNER JOIN pg_catalog.pg_namespace nsp
-                    ON nsp.oid = connamespace
-        WHERE con.conname = '${constraint}'
-        AND nsp.nspname = '${schema}'
-        AND rel.relname = '${table}') THEN
-        ALTER TABLE "${schema}"."${table}" ADD CONSTRAINT ${constraint} EXCLUDE USING gist (id WITH =, _block_range WITH &&);
-      END IF;
-    END;
-    $$`;
-}
-
 export function createUniqueIndexQuery(schema: string, table: string, field: string): string {
   return `create unique index if not exists '${getUniqConstraint(table, field)}' on '${schema}.${table}' (${underscored(
     field
