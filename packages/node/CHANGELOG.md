@@ -6,6 +6,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.20.0] - 2023-03-06
+### Changed
+- Move enum under schema (#1527)
+### Fixed 
+- update for Deprecate `excludeConstraint` in node-core
 
 ## [1.19.0] - 2023-02-21
 ### Added

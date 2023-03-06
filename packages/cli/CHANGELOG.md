@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.12.0] - 2023-03-06
+### Added
+- Support ETH abi codegen (#1532)
+
 ## [1.11.0] - 2023-01-31
 ### Fixed
 - Fix `subql publish` failing on windows (#1502)

@@ -10,6 +10,12 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.10.0] - 2023-03-06
+### Fixed
+- fix issue store getByField limit could potentially excess config limit (#1529)
+### Changed
+- Move enum under schema (#1527)
+- Deprecate exclude constraint (#1543)
 
 ## [1.9.0] - 2023-02-21
 ### Added
