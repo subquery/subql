@@ -25,8 +25,8 @@ import {SubstrateProjectNetworkConfig} from '../../types';
 import {ManifestV0_0_1Mapping, ProjectManifestV0_0_1, RuntimeDataSourceV0_0_1} from './types';
 
 export class ProjectNetworkV0_0_1 extends ChainTypes implements SubstrateProjectNetworkConfig {
-  @IsString()
-  endpoint: string;
+  @IsString({each: true})
+  endpoints: string[];
   @IsString()
   @IsOptional()
   dictionary?: string;

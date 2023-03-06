@@ -15,7 +15,7 @@ function getTestProject(
   return {
     network: {
       genesisHash: '0x',
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     dataSources: [
       {

@@ -54,13 +54,13 @@ jest.setTimeout(200000);
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  networkEndpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
 });
 
 function testSubqueryProject_1(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     dataSources: [
       {
@@ -98,7 +98,7 @@ function testSubqueryProject_1(): SubqueryProject {
 function testSubqueryProject_2(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
       genesisHash:
         '0x91b171bb158e2d3848fa23a9f1c25182fb8e20313b2c1eb49219da7a70ce90c3',

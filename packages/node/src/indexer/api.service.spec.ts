@@ -23,7 +23,7 @@ jest.mock('@polkadot/api', () => {
 });
 
 const testNetwork: ProjectNetworkV0_0_1 = {
-  endpoint: 'wss://kusama.api.onfinality.io/public-ws',
+  endpoints: ['wss://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',
   },
@@ -49,7 +49,7 @@ const testNetwork: ProjectNetworkV0_0_1 = {
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoint: testNetwork.endpoint,
+      endpoints: testNetwork.endpoints,
       genesisHash:
         '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     },
@@ -74,7 +74,7 @@ describe('ApiService', () => {
     const apiService = new ApiService(project, new EventEmitter2());
     await apiService.init();
     const { version } = require('../../package.json');
-    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint, 2500, {
+    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoints, 2500, {
       'User-Agent': `SubQuery-Node ${version}`,
     });
     expect(ApiPromise.create).toHaveBeenCalledWith({

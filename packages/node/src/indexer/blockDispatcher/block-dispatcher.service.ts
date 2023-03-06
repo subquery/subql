@@ -18,6 +18,7 @@ import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
+import { BlockContent } from '../types';
 import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
@@ -143,8 +144,6 @@ export class BlockDispatcherService
           blockNums[blockNums.length - 1],
         );
 
-        // If specVersion not changed, a known overallSpecVer will be pass in
-        // Otherwise use api to fetch runtimes
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,
@@ -157,6 +156,7 @@ export class BlockDispatcherService
           bufferedHeight > this._latestBufferedHeight ||
           this.queue.peek() < Math.min(...blockNums)
         ) {
+          logger.info(`${this.queue.peek()} - ${Math.min(...blockNums)}`);
           logger.info(`Queue was reset for new DS, discarding fetched blocks`);
           continue;
         }

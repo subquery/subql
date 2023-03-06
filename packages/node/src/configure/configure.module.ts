@@ -108,7 +108,7 @@ export class ConfigureModule {
         config.subquery,
         omitBy<SubstrateProjectNetworkConfig>(
           {
-            endpoint: config.networkEndpoint,
+            endpoints: config.networkEndpoints,
             dictionary: config.networkDictionary,
           },
           isNil,
@@ -170,7 +170,7 @@ export class ConfigureModule {
         argv.subquery,
         omitBy<SubstrateProjectNetworkConfig>(
           {
-            endpoint: config.networkEndpoint,
+            endpoints: config.networkEndpoints,
             dictionary: config.networkDictionary,
           },
           isNil,

@@ -11,7 +11,7 @@ export interface ProjectManifestV0_2_0<D extends object = BaseDataSource> {
   };
   network: {
     genesisHash: string;
-    endpoint?: string;
+    endpoints?: string[];
     dictionary?: string;
     chaintypes?: {
       file: string;

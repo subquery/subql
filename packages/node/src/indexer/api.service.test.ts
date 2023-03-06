@@ -20,10 +20,10 @@ const TEST_BLOCKHASH =
 
 const TEST_BLOCKNUMBER = 6721189; // kusama
 
-function testSubqueryProject(endpoint: string): SubqueryProject {
+function testSubqueryProject(endpoints: string[]): SubqueryProject {
   return {
     network: {
-      endpoint,
+      endpoints,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
     },
     dataSources: [],
@@ -54,7 +54,7 @@ describe('ApiService', () => {
       providers: [
         {
           provide: 'ISubqueryProject',
-          useFactory: () => testSubqueryProject(endpoint),
+          useFactory: () => testSubqueryProject([endpoint]),
         },
         ApiService,
       ],

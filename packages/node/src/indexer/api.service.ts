@@ -31,10 +31,11 @@ const logger = getLogger('api');
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
-  private api: ApiPromise;
+  private api: ApiPromise[] = [];
   private currentBlockHash: string;
   private currentBlockNumber: number;
-  private apiOption: ApiOptions;
+  private apiOptions: ApiOptions[] = [];
+  private taskCounter = 0;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
@@ -43,7 +44,19 @@ export class ApiService implements OnApplicationShutdown {
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all([this.api?.disconnect()]);
+    await Promise.all(this.api?.map((api) => api.disconnect()));
+  }
+
+  private metadataMismatchError(
+    metadata: string,
+    expected: string,
+    actual: string,
+  ): Error {
+    return Error(
+      `Value of ${metadata} does not match across all endpoints\n
+       Expected: ${expected}
+       Actual: ${actual}`,
+    );
   }
 
   async init(): Promise<ApiService> {
@@ -62,52 +75,101 @@ export class ApiService implements OnApplicationShutdown {
     const headers = {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
     };
-    if (network.endpoint.startsWith('ws')) {
-      provider = new WsProvider(network.endpoint, RETRY_DELAY, headers);
-    } else if (network.endpoint.startsWith('http')) {
-      provider = new HttpProvider(network.endpoint, headers);
-      throwOnConnect = true;
-    }
+    for (const endpoint of network.endpoints) {
+      logger.info(JSON.stringify(endpoint));
+      if (endpoint.startsWith('ws')) {
+        provider = new WsProvider(endpoint, RETRY_DELAY, headers);
+      } else if (endpoint.startsWith('http')) {
+        provider = new HttpProvider(endpoint, headers);
+        throwOnConnect = true;
+      }
 
-    this.apiOption = {
-      provider,
-      throwOnConnect,
-      noInitWarn: true,
-      ...chainTypes,
-    };
-    this.api = await ApiPromise.create(this.apiOption);
+      const apiOption = {
+        provider,
+        throwOnConnect,
+        noInitWarn: true,
+        ...chainTypes,
+      };
+      const api = await ApiPromise.create(apiOption);
+      logger.info('here');
 
-    this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    this.api.on('connected', () => {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
-    });
-    this.api.on('disconnected', () => {
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
-    });
+      api.on('connected', () => {
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
+      });
+      api.on('disconnected', () => {
+        this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
+      });
 
-    this.networkMeta = {
-      chain: this.api.runtimeChain.toString(),
-      specName: this.api.runtimeVersion.specName.toString(),
-      genesisHash: this.api.genesisHash.toString(),
-    };
+      if (!this.networkMeta) {
+        this.networkMeta = {
+          chain: api.runtimeChain.toString(),
+          specName: api.runtimeVersion.specName.toString(),
+          genesisHash: api.genesisHash.toString(),
+        };
 
-    if (network.chainId && network.chainId !== this.networkMeta.genesisHash) {
-      const err = new Error(
-        `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-          network.chainId ?? network.genesisHash
-        }", however the endpoint that you are connecting to is different("${
-          this.networkMeta.genesisHash
-        }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-      );
-      logger.error(err, err.message);
-      throw err;
+        if (
+          network.chainId &&
+          network.chainId !== this.networkMeta.genesisHash
+        ) {
+          const err = new Error(
+            `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
+              network.chainId ?? network.genesisHash
+            }", however the endpoint that you are connecting to is different("${
+              this.networkMeta.genesisHash
+            }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+          );
+          logger.error(err, err.message);
+          throw err;
+        }
+      } else {
+        const chain = api.runtimeChain.toString();
+        if (this.networkMeta.chain !== chain) {
+          throw this.metadataMismatchError(
+            'Runtime Chain',
+            this.networkMeta.chain,
+            chain,
+          );
+        }
+
+        const specName = api.runtimeVersion.specName.toString();
+        if (this.networkMeta.specName !== specName) {
+          throw this.metadataMismatchError(
+            'Spec Name',
+            this.networkMeta.specName,
+            specName,
+          );
+        }
+
+        const genesisHash = api.genesisHash.toString();
+        if (this.networkMeta.genesisHash !== genesisHash) {
+          throw this.metadataMismatchError(
+            'Genesis Hash',
+            this.networkMeta.genesisHash,
+            genesisHash,
+          );
+        }
+      }
+
+      this.api.push(api);
+      this.apiOptions.push(apiOption);
     }
 
     return this;
   }
 
   getApi(): ApiPromise {
-    return this.api;
+    return this.api[this.getNextApiIndex()];
+  }
+
+  private getNextApiIndex(): number {
+    const index = this.taskCounter % this.api.length;
+    this.taskCounter++;
+    return index;
+  }
+
+  get numConnections(): number {
+    return this.api.length;
   }
 
   async getPatchedApi(
@@ -117,11 +179,13 @@ export class ApiService implements OnApplicationShutdown {
     this.currentBlockHash = block.block.hash.toString();
     this.currentBlockNumber = block.block.header.number.toNumber();
 
-    const apiAt = (await this.api.at(
+    const apiIndex = this.getNextApiIndex();
+
+    const apiAt = (await this.api[apiIndex].at(
       this.currentBlockHash,
       runtimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.api, apiAt);
+    this.patchApiRpc(this.api[apiIndex], apiAt);
     return apiAt;
   }
 
@@ -154,9 +218,9 @@ export class ApiService implements OnApplicationShutdown {
             if (argsClone[hashIndex] === undefined) {
               argsClone[hashIndex] = this.currentBlockHash;
             } else {
-              const atBlock = await this.api.rpc.chain.getBlock(
-                argsClone[hashIndex],
-              );
+              const atBlock = await this.api[
+                this.getNextApiIndex()
+              ].rpc.chain.getBlock(argsClone[hashIndex]);
               const atBlockNumber = atBlock.block.header.number.toNumber();
               if (atBlockNumber > this.currentBlockNumber) {
                 throw new Error(

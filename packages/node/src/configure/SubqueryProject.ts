@@ -108,7 +108,7 @@ export class SubqueryProject {
 
 export interface SubqueryProjectNetwork {
   chainId: string;
-  endpoint?: string;
+  endpoints?: string[];
   dictionary?: string;
   chaintypes?: FileType;
 }
@@ -142,7 +142,7 @@ async function loadProjectFromManifestBase(
     ...networkOverrides,
   });
 
-  if (!network.endpoint) {
+  if (!network.endpoints) {
     throw new Error(
       `Network endpoint must be provided for network. chainId="${network.chainId}"`,
     );

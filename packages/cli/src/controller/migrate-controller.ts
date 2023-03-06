@@ -63,7 +63,7 @@ export async function prepare(
   if (project.runner.node.name === SUBSTRATE_NODE_NAME) {
     cli.action.start('Getting network genesis hash from endpoint for Chain ID');
     try {
-      genesisHash = await getGenesisHash(projectNetwork.endpoint);
+      genesisHash = await getGenesisHash(projectNetwork.endpoints);
     } catch (e) {
       genesisHash = null;
     }
@@ -150,7 +150,7 @@ export async function migrate(
     }
     data.network = {
       chainId: project.chainId,
-      endpoint: manifest.asV1_0_0.network.endpoint,
+      endpoints: manifest.asV1_0_0.network.endpoints,
     };
     if (manifest.asV1_0_0.network.dictionary) {
       data.network.dictionary = manifest.asV1_0_0.network.dictionary;

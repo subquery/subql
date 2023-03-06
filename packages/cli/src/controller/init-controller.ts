@@ -87,7 +87,7 @@ export async function readDefaults(projectPath: string): Promise<string[]> {
   return [
     currentProject.specVersion,
     currentProject.repository,
-    currentProject.network.endpoint,
+    currentProject.network.endpoints,
     currentPackage.author,
     currentPackage.version,
     currentPackage.description,

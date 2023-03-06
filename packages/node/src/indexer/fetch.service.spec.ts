@@ -39,7 +39,7 @@ jest.mock('../utils/substrate', () =>
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  networkEndpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
 });
 
@@ -274,7 +274,7 @@ function mockDictionaryService3(): DictionaryService {
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+      endpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     chainTypes: {
       types: {

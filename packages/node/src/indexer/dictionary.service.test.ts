@@ -21,7 +21,7 @@ function testSubqueryProject(): SubqueryProject {
 const nodeConfig = new NodeConfig({
   subquery: 'asdf',
   subqueryName: 'asdf',
-  networkEndpoint: 'wss://polkadot.api.onfinality.io/public-ws',
+  networkEndpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
   dictionaryTimeout: 10,
 });
 
