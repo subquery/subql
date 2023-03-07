@@ -169,12 +169,14 @@ export class IndexerManager {
           );
         }
       }
+      await this.storeService.flushCache();
     } catch (e) {
       await tx.rollback();
       throw e;
     }
 
     await tx.commit();
+    this.storeService.resetMemoryStore();
 
     return {
       dynamicDsCreated,
