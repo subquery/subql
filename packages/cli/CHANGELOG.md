@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.12.2] - 2023-03-07
+### Fix
+- Fix `subql publish` with Avalanche manifest (#1546)
+
 ## [1.12.1] - 2023-03-07
 ### Update
 - `@subql/common-avalanche` dependency update
