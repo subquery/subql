@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import {ReaderFactory, IPFS_CLUSTER_ENDPOINT, getProjectRootAndManifest} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
-import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
+import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';
