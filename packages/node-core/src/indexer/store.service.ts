@@ -91,8 +91,34 @@ export class StoreService {
   historical: boolean;
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
+  private storeGetCache: Record<string, Record<string, Entity>>;
+  private storeSetCache: Record<string, Record<string, Entity>>;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {
+    this.resetMemoryStore();
+  }
+
+  async flushCache(): Promise<void> {
+    if (!this.historical || Object.keys(this.storeSetCache).length === 0) {
+      return;
+    }
+    for (const entityName in this.storeSetCache) {
+      const model = this.sequelize.model(entityName);
+      await Promise.all([
+        // mark to close previous records within blockheight -1, within all entity IDs
+        this.markPreviousHeightRecordsBatch(model, Object.keys(this.storeSetCache[entityName])),
+        // bulkCreate all new records for this entity
+        model.bulkCreate(Object.values(this.storeSetCache[entityName]) as unknown as CreationAttributes<Model>[], {
+          transaction: this.tx,
+        }),
+      ]);
+    }
+  }
+
+  resetMemoryStore() {
+    this.storeGetCache = {};
+    this.storeSetCache = {};
+  }
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
@@ -595,6 +621,32 @@ group by
     );
   }
 
+  private async markPreviousHeightRecordsBatch(model: ModelStatic<any>, ids: string[]) {
+    // Different with markAsDeleted, we only mark/close all the records less than current block height
+    // thus, and new record with current block height will not be impacted,
+    // advantage is this sql is safe to concurrency resolve with any insert sql
+
+    return model.update(
+      {
+        __block_range: this.sequelize.fn(
+          'int8range',
+          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
+          this.blockHeight
+        ),
+      },
+      {
+        hooks: false,
+        transaction: this.tx,
+        where: {
+          id: {[Op.in]: ids},
+          __block_range: {
+            [Op.contains]: (this.blockHeight - 1) as any,
+          },
+        },
+      }
+    );
+  }
+
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
@@ -673,11 +725,19 @@ group by
         try {
           const model = this.sequelize.model(entity);
           assert(model, `model ${entity} not exists`);
-          const record = await model.findOne({
-            where: {id},
-            transaction: this.tx,
-          });
-          return record?.toJSON() as T;
+          // try to get from StoreSet first, as it is result from current block
+          const cachedRecord = this.storeSetCache[entity]?.[id] ?? this.storeGetCache[entity]?.[id];
+          if (!cachedRecord) {
+            const record = await model.findOne({
+              where: {id},
+              transaction: this.tx,
+            });
+            if (!this.storeGetCache[entity]) {
+              this.storeGetCache[entity] = {};
+            }
+            this.storeGetCache[entity][id] = record?.toJSON() as T;
+          }
+          return (this.storeSetCache[entity]?.[id] ?? this.storeGetCache[entity][id]) as T;
         } catch (e) {
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
@@ -747,20 +807,10 @@ group by
           assert(model, `model ${entity} not exists`);
           const attributes = data as unknown as CreationAttributes<Model>;
           if (this.historical) {
-            const [updatedRows] = await model.update(attributes, {
-              hooks: false,
-              transaction: this.tx,
-              where: this.sequelize.and(
-                {id: data.id},
-                this.sequelize.where(this.sequelize.fn('lower', this.sequelize.col('_block_range')), this.blockHeight)
-              ),
-            });
-            if (updatedRows < 1) {
-              await this.markAsDeleted(model, data.id);
-              await model.create(attributes, {
-                transaction: this.tx,
-              });
+            if (!this.storeSetCache[entity]) {
+              this.storeSetCache[entity] = {};
             }
+            this.storeSetCache[entity][_id] = data;
           } else {
             await model.upsert(attributes, {
               transaction: this.tx,
