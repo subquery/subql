@@ -3964,12 +3964,12 @@ __metadata:
   linkType: hard
 
 "@subql/common-avalanche@npm:latest":
-  version: 0.2.0
-  resolution: "@subql/common-avalanche@npm:0.2.0"
+  version: 0.2.3
+  resolution: "@subql/common-avalanche@npm:0.2.3"
   dependencies:
-    "@polkadot/util": ^8
+    "@polkadot/util": ^10
     "@subql/common": latest
-    "@subql/types-avalanche": 0.4.0
+    "@subql/types-avalanche": 0.4.2
     bn.js: 4.11.6
     class-transformer: 0.4.0
     class-validator: ^0.13.2
@@ -3981,7 +3981,7 @@ __metadata:
     reflect-metadata: ^0.1.13
     sequelize: ^6.6.2
     vm2: ^3.9.9
-  checksum: d3b18ab86f1626628c1c0a7da42c98390b559fb8c932400555357498aa4b13591da0a315b0717d398b77be6a2da394d0fa22be7d94f197b04dc8bb5a6f749fa6
+  checksum: c9398262e88296096fb4491b3a51194c45305a8178d03dd8fde84531d8dd7cedfa76a1fffebef48ed7e51cd3881e2f6a6671ef7cd9761e5293502b5430dc47f7
   languageName: node
   linkType: hard
 
@@ -4253,14 +4253,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/types-avalanche@npm:0.4.0":
-  version: 0.4.0
-  resolution: "@subql/types-avalanche@npm:0.4.0"
+"@subql/types-avalanche@npm:0.4.2":
+  version: 0.4.2
+  resolution: "@subql/types-avalanche@npm:0.4.2"
   dependencies:
     "@ethersproject/abstract-provider": ^5.6.1
   peerDependencies:
     "@polkadot/api": ^9
-  checksum: de8f4b13798677e6184cb015ab2698d960078f4e1572d7e8c961816bce5a7bf9da9c6d1c8d187dfb6b0ac852ecdf6c8c756d374160a0d89bb289afcf9bf6b7f2
+  checksum: 17c6f03e956ac52a282d9adda00dab4d5b869749fcdd294dc47bd47ba251a74b4ea8dd72d6985eddeac742b27ae33c1537e5063509572a7dfab6b496eb693643
   languageName: node
   linkType: hard
 
