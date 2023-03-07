@@ -112,7 +112,7 @@ export class IndexerManager {
           // Injected runtimeVersion from fetch service might be outdated
           apiAt =
             apiAt ??
-            (await this.apiService.getPatchedApi(block, runtimeVersion));
+            (await this.apiService.getPatchedApi(block, runtimeVersion, 0));
 
           const vm = this.sandboxService.getDsProcessor(ds, apiAt);
 

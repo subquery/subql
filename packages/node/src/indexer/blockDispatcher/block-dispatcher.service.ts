@@ -14,7 +14,7 @@ import {
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
-import { ApiService } from '../api.service';
+import { ApiLoadBalancer, ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
@@ -37,6 +37,7 @@ export class BlockDispatcherService
   private isShutdown = false;
   // private getRuntimeVersion: GetRuntimeVersion;
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
+  private loadBalancer: ApiLoadBalancer;
 
   constructor(
     private apiService: ApiService,
@@ -52,6 +53,10 @@ export class BlockDispatcherService
       new Queue(nodeConfig.batchSize * 3),
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
+    this.loadBalancer = new ApiLoadBalancer(
+      this.apiService.numConnections,
+      nodeConfig.batchSize,
+    );
 
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
@@ -144,11 +149,48 @@ export class BlockDispatcherService
           blockNums[blockNums.length - 1],
         );
 
-        const blocks = await this.fetchBlocksBatches(
-          this.apiService.getApi(),
-          blockNums,
-          specChanged ? undefined : this.runtimeService.parentSpecVersion,
-        );
+        const weights = this.loadBalancer.getWeights();
+        const blocks: BlockContent[] = [];
+        //implement splitArrayByRatio
+        const splitArrayByRatio = (arr: number[], weights: number[]) => {
+          const result: number[][] = [];
+          let start = 0;
+          for (let i = 0; i < weights.length; i++) {
+            const end = Math.floor(arr.length * weights[i]) + start;
+            result.push(arr.slice(start, end));
+            start = end;
+          }
+          return result;
+        };
+        //split the blockNums into batches based on the weight as ratio of length of blockNums
+        //for example, if blocknums = [1,2,3,4,5,6,7,8,9,10] and weights = [0.5, 0.5], then the batches will be [[1,2,3,4,5], [6,7,8,9,10]]
+        const batches = splitArrayByRatio(blockNums, weights);
+
+        const fetchBlocksBatches = async (batches: number[][]) => {
+          //track the response time of each batch
+          const promises = batches.map((batch, index) => {
+            const batchStartTime = new Date().getTime(); // Track start time of batch
+            return this.fetchBlocksBatches(
+              this.apiService.getApi(index),
+              batch,
+              specChanged ? undefined : this.runtimeService.parentSpecVersion,
+            ).then((result) => {
+              const batchEndTime = new Date().getTime(); // Track end time of batch
+              const batchTime = batchEndTime - batchStartTime; // Calculate batch response time
+              this.loadBalancer.addToBuffer(
+                index,
+                Math.ceil(batchTime / batch.length),
+              ); // Add batch response time to buffer
+              return result;
+            });
+          });
+          const results = await Promise.all(promises);
+          results.forEach((result) => {
+            blocks.push(...result);
+          });
+        };
+
+        await fetchBlocksBatches(batches);
 
         // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
         // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block

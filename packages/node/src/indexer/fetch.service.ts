@@ -117,7 +117,7 @@ export class FetchService implements OnApplicationShutdown {
     this.isShutdown = true;
   }
 
-  get api(): ApiPromise {
+  api(index: number): ApiPromise {
     return this.apiService.getApi();
   }
 
@@ -135,7 +135,7 @@ export class FetchService implements OnApplicationShutdown {
         isRuntimeDataSourceV0_2_0(ds) ||
         !(ds as RuntimeDataSourceV0_0_1).filter?.specName ||
         (ds as RuntimeDataSourceV0_0_1).filter.specName ===
-          this.api.runtimeVersion.specName.toString(),
+          this.api(0).runtimeVersion.specName.toString(),
     );
 
     // Only run the ds that is equal or less than startBlock
@@ -241,8 +241,8 @@ export class FetchService implements OnApplicationShutdown {
         this.project.network.bypassBlocks,
       ).filter((blk) => blk >= startHeight);
     }
-    if (this.api) {
-      const CHAIN_INTERVAL = calcInterval(this.api)
+    if (this.api(0)) {
+      const CHAIN_INTERVAL = calcInterval(this.api(0))
         .muln(INTERVAL_PERCENT)
         .toNumber();
 
@@ -322,8 +322,10 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const finalizedHash = await this.api.rpc.chain.getFinalizedHead();
-      const finalizedHeader = await this.api.rpc.chain.getHeader(finalizedHash);
+      const finalizedHash = await this.api(0).rpc.chain.getFinalizedHead();
+      const finalizedHeader = await this.api(0).rpc.chain.getHeader(
+        finalizedHash,
+      );
       this.unfinalizedBlocksService.registerFinalizedBlock(finalizedHeader);
       const currentFinalizedHeight = finalizedHeader.number.toNumber();
       if (this.latestFinalizedHeight !== currentFinalizedHeight) {
@@ -345,7 +347,7 @@ export class FetchService implements OnApplicationShutdown {
       return;
     }
     try {
-      const bestHeader = await this.api.rpc.chain.getHeader();
+      const bestHeader = await this.api(0).rpc.chain.getHeader();
       const currentBestHeight = bestHeader.number.toNumber();
       if (this.latestBestHeight !== currentBestHeight) {
         this.latestBestHeight = currentBestHeight;
@@ -598,7 +600,7 @@ export class FetchService implements OnApplicationShutdown {
     if (dictionary !== undefined) {
       const { _metadata: metaData } = dictionary;
 
-      if (metaData.genesisHash !== this.api.genesisHash.toString()) {
+      if (metaData.genesisHash !== this.api(0).genesisHash.toString()) {
         logger.error(
           'The dictionary that you have specified does not match the chain you are indexing, it will be ignored. Please update your project manifest to reference the correct dictionary',
         );

@@ -11,6 +11,7 @@ import {
   IndexerEvent,
   NetworkMetadataPayload,
   getLogger,
+  Queue,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -28,6 +29,47 @@ const NOT_SUPPORT = (name: string) => () => {
 const RETRY_DELAY = 2_500;
 
 const logger = getLogger('api');
+
+export class ApiResponseTimeBuffer extends Queue<number> {
+  constructor(capacity: number) {
+    super(capacity);
+  }
+
+  average() {
+    return this.items.reduce((a, b) => a + b, 0) / this.items.length;
+  }
+}
+
+export class ApiLoadBalancer {
+  private buffers: ApiResponseTimeBuffer[];
+
+  constructor(numberOfConnections: number, batchCapacity: number) {
+    this.buffers = Array.from(
+      { length: numberOfConnections },
+      () => new ApiResponseTimeBuffer(batchCapacity),
+    );
+  }
+
+  addToBuffer(connectionIndex: number, responseTime: number) {
+    if (
+      this.buffers[connectionIndex].size ===
+      this.buffers[connectionIndex].capacity
+    ) {
+      this.buffers[connectionIndex].take();
+    }
+    this.buffers[connectionIndex].put(responseTime);
+  }
+
+  getWeights(): number[] {
+    const weights = this.buffers.map((buffer) => buffer.average());
+    const total = weights.reduce((a, b) => a + b, 0);
+    //deal with the case where average is 0
+    if (total === 0) {
+      return weights.map(() => 1 / weights.length);
+    }
+    return weights.map((weight) => weight / total);
+  }
+}
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
@@ -158,14 +200,11 @@ export class ApiService implements OnApplicationShutdown {
     return this;
   }
 
-  getApi(): ApiPromise {
-    return this.api[this.getNextApiIndex()];
-  }
-
-  private getNextApiIndex(): number {
-    const index = this.taskCounter % this.api.length;
-    this.taskCounter++;
-    return index;
+  getApi(index?: number): ApiPromise {
+    if (!index) {
+      return this.api[0];
+    }
+    return this.api[index];
   }
 
   get numConnections(): number {
@@ -175,11 +214,10 @@ export class ApiService implements OnApplicationShutdown {
   async getPatchedApi(
     block: SubstrateBlock,
     runtimeVersion: RuntimeVersion,
+    apiIndex: number,
   ): Promise<ApiAt> {
     this.currentBlockHash = block.block.hash.toString();
     this.currentBlockNumber = block.block.header.number.toNumber();
-
-    const apiIndex = this.getNextApiIndex();
 
     const apiAt = (await this.api[apiIndex].at(
       this.currentBlockHash,
@@ -218,9 +256,9 @@ export class ApiService implements OnApplicationShutdown {
             if (argsClone[hashIndex] === undefined) {
               argsClone[hashIndex] = this.currentBlockHash;
             } else {
-              const atBlock = await this.api[
-                this.getNextApiIndex()
-              ].rpc.chain.getBlock(argsClone[hashIndex]);
+              const atBlock = await this.api[0].rpc.chain.getBlock(
+                argsClone[hashIndex],
+              );
               const atBlockNumber = atBlock.block.header.number.toNumber();
               if (atBlockNumber > this.currentBlockNumber) {
                 throw new Error(
