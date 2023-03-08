@@ -12,7 +12,7 @@ export interface IQueue {
 }
 
 export class Queue<T> implements IQueue {
-  private items: T[] = [];
+  protected items: T[] = [];
   private _capacity?: number;
 
   constructor(capacity?: number) {

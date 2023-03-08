@@ -4135,7 +4135,10 @@ __metadata:
     "@subql/types": "workspace:*"
     "@subql/utils": "workspace:*"
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
+    "@types/async-lock": ^1
     "@willsoto/nestjs-prometheus": ^4.4.0
+    async-lock: ^1.4.0
+    async-mutex: ^0.4.0
     lodash: ^4.17.21
     prom-client: ^14.0.1
     sequelize: 6.28.0
@@ -4549,6 +4552,13 @@ __metadata:
   version: 2.2.0
   resolution: "@types/app-module-path@npm:2.2.0"
   checksum: 47f749a26ecd71f92e8a85230cf912719f92e92c48a514e4f66cdd72ba91c3308cfcd91c45da8e3277d9ba2e13c6b20406911c6604de15fbc23727b9b715045a
+  languageName: node
+  linkType: hard
+
+"@types/async-lock@npm:^1":
+  version: 1.4.0
+  resolution: "@types/async-lock@npm:1.4.0"
+  checksum: 3822d080b83384b021453324001912a10925624c90e2129a66ac5b17b6bb81d5070f60fef394846c7880d8094cfdf92501a31352bfc5a239e76ab0caa0ea6be6
   languageName: node
   linkType: hard
 
@@ -6272,6 +6282,22 @@ __metadata:
   version: 2.0.0
   resolution: "astral-regex@npm:2.0.0"
   checksum: 876231688c66400473ba505731df37ea436e574dd524520294cc3bbc54ea40334865e01fa0d074d74d036ee874ee7e62f486ea38bc421ee8e6a871c06f011766
+  languageName: node
+  linkType: hard
+
+"async-lock@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "async-lock@npm:1.4.0"
+  checksum: a71ef9e50dc448a8e8dd6482494210d7b6f556d4815612b1fed5662216cd756c2c8fb9c2153a9a66ea90b36ba7fb18aa568d11813aadc23feb4c5b0b188df614
+  languageName: node
+  linkType: hard
+
+"async-mutex@npm:^0.4.0":
+  version: 0.4.0
+  resolution: "async-mutex@npm:0.4.0"
+  dependencies:
+    tslib: ^2.4.0
+  checksum: 813a71728b35a4fbfd64dba719f04726d9133c67b577fcd951b7028c4a675a13ee34e69beb82d621f87bf81f5d4f135c4c44be0448550c7db728547244ef71fc
   languageName: node
   linkType: hard
 
@@ -17321,6 +17347,13 @@ __metadata:
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.4.0":
+  version: 2.5.0
+  resolution: "tslib@npm:2.5.0"
+  checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
   languageName: node
   linkType: hard
 
