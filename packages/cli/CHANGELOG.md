@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.12.3] - 2023-03-09
+### Fix
+- Fix ABI codegen skipped due to runtime validation (#1552)
+
 ## [1.12.2] - 2023-03-07
 ### Fix
 - Fix `subql publish` with Avalanche manifest (#1546)
