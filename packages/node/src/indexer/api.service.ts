@@ -26,6 +26,7 @@ const NOT_SUPPORT = (name: string) => () => {
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
 const RETRY_DELAY = 2_500;
+const TIMEOUT = 90 * 1000;
 
 const logger = getLogger('api');
 
@@ -63,7 +64,12 @@ export class ApiService implements OnApplicationShutdown {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
     };
     if (network.endpoint.startsWith('ws')) {
-      provider = new WsProvider(network.endpoint, RETRY_DELAY, headers);
+      provider = new WsProvider(
+        network.endpoint,
+        RETRY_DELAY,
+        headers,
+        TIMEOUT,
+      );
     } else if (network.endpoint.startsWith('http')) {
       provider = new HttpProvider(network.endpoint, headers);
       throwOnConnect = true;
