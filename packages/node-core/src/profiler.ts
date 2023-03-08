@@ -3,6 +3,7 @@
 
 /* class decorator */
 
+import {performance} from 'perf_hooks';
 import {getLogger} from './logger';
 
 function isPromise(e: any): boolean {
@@ -11,7 +12,7 @@ function isPromise(e: any): boolean {
 
 const logger = getLogger('profiler');
 
-function printCost(start: Date, end: Date, target: string, method: string): void {
+function printCost(start: number, end: number, target: string, method: string): void {
   logger.info(`${target}, ${method}, ${end - start} ms`);
 }
 
