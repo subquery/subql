@@ -1,0 +1,21 @@
+// SPDX-License-Identifier: Apache-2.0
+
+// Auto-generated , DO NOT EDIT
+import {EthereumLog, EthereumTransaction} from "@subql/types-ethereum";
+
+import {
+<% props.abi.events.forEach(function(event){ %>
+  <%= event %>Event,
+<% });
+%>
+  <%=props.abi.name%>
+} from '../contracts/<%=props.abi.name%>'
+
+<% props.abi.events.forEach(function(event){ %>
+  export type <%=helper.upperFirst(event) %>Log = EthereumLog<<%=event%>Event["args"]>
+<% }); %>
+<% props.abi.functions.forEach(function(_function){ %>
+  export type <%=helper.upperFirst(_function.typeName) %>Transaction = EthereumTransaction<Parameters<<%=props.abi.name%>['functions']['<%=_function.functionName%>']>>
+<% }); %>
+
+

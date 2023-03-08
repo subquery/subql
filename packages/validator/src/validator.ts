@@ -3,7 +3,7 @@
 
 import {getProjectNetwork, NETWORK_FAMILY, Reader, ReaderFactory, ReaderOptions} from '@subql/common';
 import {parseAlgorandProjectManifest} from '@subql/common-algorand';
-import {parseSubstrateProjectManifest as parseAvalancheProjectManifest} from '@subql/common-avalanche';
+import {parseAvalancheProjectManifest} from '@subql/common-avalanche';
 import {parseCosmosProjectManifest} from '@subql/common-cosmos';
 import {parseEthereumProjectManifest} from '@subql/common-ethereum';
 import {parseEthereumProjectManifest as parseFlareProjectManifest} from '@subql/common-flare';

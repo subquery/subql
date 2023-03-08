@@ -59,3 +59,15 @@ export function transformBypassBlocks(bypassBlocks: (number | string)[]): number
 export function cleanedBatchBlocks(bypassBlocks: number[], currentBlockBatch: number[]): number[] {
   return without(currentBlockBatch, ...transformBypassBlocks(bypassBlocks));
 }
+
+export async function getEnumDeprecated(sequelize: Sequelize, enumTypeNameDeprecated: string): Promise<unknown[]> {
+  const [resultsDeprecated] = await sequelize.query(
+    `select e.enumlabel as enum_value
+         from pg_type t
+         join pg_enum e on t.oid = e.enumtypid
+         where t.typname = ?
+         order by enumsortorder;`,
+    {replacements: [enumTypeNameDeprecated]}
+  );
+  return resultsDeprecated;
+}
