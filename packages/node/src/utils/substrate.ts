@@ -254,7 +254,7 @@ export async function getBlockByHeight(
   height: number,
 ): Promise<SignedBlock> {
   const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
-    logger.error(`failed to fetch BlockHash ${height}`);
+    //logger.error(`failed to fetch BlockHash ${height}`);
     throw e;
   });
 
@@ -325,6 +325,7 @@ export async function fetchBlocksBatches(
   blockArray: number[],
   overallSpecVer?: number,
 ): Promise<BlockContent[]> {
+  //await api.disconnect();
   const blocks = await fetchBlocksArray(api, blockArray);
   const blockHashs = blocks.map((b) => b.block.header.hash);
   const parentBlockHashs = blocks.map((b) => b.block.header.parentHash);

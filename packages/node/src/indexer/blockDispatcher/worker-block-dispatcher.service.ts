@@ -195,7 +195,12 @@ export class WorkerBlockDispatcherService
           this.syncWorkerRuntimes();
         }
         const start = new Date();
-        await worker.fetchBlock(height, blockSpecVersion);
+        try {
+          await worker.fetchBlock(height, blockSpecVersion);
+        } catch (e) {
+          logger.debug(`Failed to fetch block ${height}: ${e.message}`);
+          return processBlock();
+        }
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {

@@ -3,6 +3,7 @@
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ApiOptions, RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
@@ -14,6 +15,7 @@ import {
   Queue,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
+import { range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiAt } from './types';
 import { HttpProvider } from './x-provider/http';
@@ -27,6 +29,7 @@ const NOT_SUPPORT = (name: string) => () => {
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
 const RETRY_DELAY = 2_500;
+const RECONNECT_INTERVAL = 60000;
 
 const logger = getLogger('api');
 
@@ -36,18 +39,22 @@ export class ApiResponseTimeBuffer extends Queue<number> {
   }
 
   average() {
+    if (this.items.length === 0) {
+      return 0;
+    }
     return this.items.reduce((a, b) => a + b, 0) / this.items.length;
   }
 }
 
 export class ApiLoadBalancer {
-  private buffers: ApiResponseTimeBuffer[];
+  private buffers: ApiResponseTimeBuffer[] = [];
 
   constructor(numberOfConnections: number, batchCapacity: number) {
-    this.buffers = Array.from(
-      { length: numberOfConnections },
-      () => new ApiResponseTimeBuffer(batchCapacity),
-    );
+    // fill buffers with ApiResponseTimeBuffer object with capacity of batchCapacity
+    range(0, numberOfConnections).forEach((n) => {
+      this.buffers.push(new ApiResponseTimeBuffer(batchCapacity));
+    });
+    logger.info(`length: ${this.buffers.length}`);
   }
 
   addToBuffer(connectionIndex: number, responseTime: number) {
@@ -60,12 +67,17 @@ export class ApiLoadBalancer {
     this.buffers[connectionIndex].put(responseTime);
   }
 
-  getWeights(): number[] {
-    const weights = this.buffers.map((buffer) => buffer.average());
+  getWeights(disconnectedIndices?: number[]): number[] {
+    const weights = this.buffers.map((buffer, index) => {
+      if (disconnectedIndices?.includes(index)) {
+        return 0;
+      }
+      return buffer.average();
+    });
     const total = weights.reduce((a, b) => a + b, 0);
     //deal with the case where average is 0
     if (total === 0) {
-      return weights.map(() => 1 / weights.length);
+      return weights.map((weight) => 1 / this.buffers.length);
     }
     return weights.map((weight) => weight / total);
   }
@@ -74,6 +86,8 @@ export class ApiLoadBalancer {
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
   private api: ApiPromise[] = [];
+  private disconnectedApiIndices: number[] = [];
+  private endpoints: string[] = [];
   private currentBlockHash: string;
   private currentBlockNumber: number;
   private apiOptions: ApiOptions[] = [];
@@ -117,8 +131,8 @@ export class ApiService implements OnApplicationShutdown {
     const headers = {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
     };
-    for (const endpoint of network.endpoints) {
-      logger.info(JSON.stringify(endpoint));
+    for (let i = 0; i < network.endpoints.length; i++) {
+      const endpoint = network.endpoints[i];
       if (endpoint.startsWith('ws')) {
         provider = new WsProvider(endpoint, RETRY_DELAY, headers);
       } else if (endpoint.startsWith('http')) {
@@ -133,7 +147,6 @@ export class ApiService implements OnApplicationShutdown {
         ...chainTypes,
       };
       const api = await ApiPromise.create(apiOption);
-      logger.info('here');
 
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
       api.on('connected', () => {
@@ -141,6 +154,8 @@ export class ApiService implements OnApplicationShutdown {
       });
       api.on('disconnected', () => {
         this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
+        logger.warn(`Disconnected from ${endpoint}`);
+        this.disconnectedApiIndices.push(i);
       });
 
       if (!this.networkMeta) {
@@ -195,20 +210,79 @@ export class ApiService implements OnApplicationShutdown {
 
       this.api.push(api);
       this.apiOptions.push(apiOption);
+      this.endpoints.push(endpoint);
     }
 
     return this;
   }
 
+  @Interval(RETRY_DELAY)
+  async attemptReconnects(): Promise<void> {
+    if (this.disconnectedApiIndices.length === 0) {
+      return;
+    }
+    await Promise.all(
+      this.disconnectedApiIndices.map(async (index) => {
+        try {
+          logger.info(`Attempting to reconnect to ${this.endpoints[index]}`);
+          await this.api[index].connect();
+          this.disconnectedApiIndices = this.disconnectedApiIndices.filter(
+            (i) => i !== index,
+          );
+          logger.info(`Reconnected to ${this.endpoints[index]}`);
+        } catch (e) {
+          logger.error(e);
+          logger.error(`Failed to reconnect to ${this.endpoints[index]}`);
+        }
+      }),
+    );
+  }
+
+  async addToDisconnectedApiIndices(index: number): Promise<void> {
+    if (this.disconnectedApiIndices.includes(index)) {
+      return;
+    }
+    await this.api[index].disconnect();
+    this.disconnectedApiIndices.push(index);
+  }
+
   getApi(index?: number): ApiPromise {
     if (!index) {
-      return this.api[0];
+      index = this.getNextConnectedApiIndex();
     }
     return this.api[index];
   }
 
+  getNextConnectedApiIndex(): number {
+    // get the next connected api index
+    const nextIndex = this.taskCounter % this.api.length;
+    this.taskCounter++;
+    if (this.disconnectedApiIndices.includes(nextIndex)) {
+      return this.getNextConnectedApiIndex();
+    }
+    return nextIndex;
+  }
+
+  getFirstConnectedApiIndex(): number {
+    // get the first connected api index
+    for (let i = 0; i < this.api.length; i++) {
+      if (!this.disconnectedApiIndices.includes(i)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  get disconnectApis(): number[] {
+    return this.disconnectedApiIndices;
+  }
+
   get numConnections(): number {
     return this.api.length;
+  }
+
+  getEndpoints(index: number): string {
+    return this.endpoints[index];
   }
 
   async getPatchedApi(

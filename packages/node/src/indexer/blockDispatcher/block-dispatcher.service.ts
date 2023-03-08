@@ -11,6 +11,7 @@ import {
   profilerWrap,
   AutoQueue,
   Queue,
+  splitArrayByRatio,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
@@ -53,10 +54,6 @@ export class BlockDispatcherService
       new Queue(nodeConfig.batchSize * 3),
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-    this.loadBalancer = new ApiLoadBalancer(
-      this.apiService.numConnections,
-      nodeConfig.batchSize,
-    );
 
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
@@ -76,6 +73,10 @@ export class BlockDispatcherService
     const blockAmount = await this.projectService.getProcessedBlockCount();
     this.setProcessedBlockCount(blockAmount ?? 0);
     this.runtimeService = runtimeService;
+    this.loadBalancer = new ApiLoadBalancer(
+      this.apiService.numConnections,
+      this.nodeConfig.batchSize,
+    );
   }
 
   onApplicationShutdown(): void {
@@ -114,6 +115,31 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
+  private async fetchBlocksFromFirstAvailableEndpoint(
+    batch: number[],
+    specChanged?: boolean,
+  ): Promise<BlockContent[]> {
+    try {
+      const start = Date.now();
+      const index = this.apiService.getFirstConnectedApiIndex();
+      if (index === -1) {
+        throw new Error('No connected api');
+      }
+      const blocks = await this.fetchBlocksBatches(
+        this.apiService.getApi(index),
+        batch,
+        specChanged ? undefined : this.runtimeService.parentSpecVersion,
+      );
+      const end = Date.now();
+      this.loadBalancer.addToBuffer(index, (end - start) / batch.length);
+      return blocks;
+    } catch (e) {
+      logger.error(e, 'Failed to fetch blocks');
+      this.apiService.attemptReconnects();
+      return this.fetchBlocksFromFirstAvailableEndpoint(batch, specChanged);
+    }
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
@@ -149,41 +175,59 @@ export class BlockDispatcherService
           blockNums[blockNums.length - 1],
         );
 
-        const weights = this.loadBalancer.getWeights();
+        //await this.apiService.addToDisconnectedApiIndices(0);
+        const weights = this.loadBalancer.getWeights(
+          this.apiService.disconnectApis,
+        );
+        logger.info(`weights: ${weights}`);
         const blocks: BlockContent[] = [];
-        //implement splitArrayByRatio
-        const splitArrayByRatio = (arr: number[], weights: number[]) => {
-          const result: number[][] = [];
-          let start = 0;
-          for (let i = 0; i < weights.length; i++) {
-            const end = Math.floor(arr.length * weights[i]) + start;
-            result.push(arr.slice(start, end));
-            start = end;
-          }
-          return result;
-        };
+
         //split the blockNums into batches based on the weight as ratio of length of blockNums
         //for example, if blocknums = [1,2,3,4,5,6,7,8,9,10] and weights = [0.5, 0.5], then the batches will be [[1,2,3,4,5], [6,7,8,9,10]]
         const batches = splitArrayByRatio(blockNums, weights);
 
         const fetchBlocksBatches = async (batches: number[][]) => {
-          //track the response time of each batch
-          const promises = batches.map((batch, index) => {
-            const batchStartTime = new Date().getTime(); // Track start time of batch
-            return this.fetchBlocksBatches(
-              this.apiService.getApi(index),
-              batch,
-              specChanged ? undefined : this.runtimeService.parentSpecVersion,
-            ).then((result) => {
-              const batchEndTime = new Date().getTime(); // Track end time of batch
-              const batchTime = batchEndTime - batchStartTime; // Calculate batch response time
+          //fetch blocks from each batch in parallel and record the time it takes to fetch each batch
+          //if fetching fails for a batch, add the batch to the end of the queue and try again
+
+          const promises = batches.map(async (batch, index) => {
+            try {
+              const start = Date.now();
+              const blocks = await this.fetchBlocksBatches(
+                this.apiService.getApi(index),
+                batch,
+                specChanged ? undefined : this.runtimeService.parentSpecVersion,
+              );
+              const end = Date.now();
               this.loadBalancer.addToBuffer(
                 index,
-                Math.ceil(batchTime / batch.length),
-              ); // Add batch response time to buffer
-              return result;
-            });
+                Math.ceil((end - start) / batch.length),
+              );
+              return blocks;
+            } catch (e) {
+              logger.error(
+                e,
+                `Failed to fetch blocks ${batch[0]}...${
+                  batch[batch.length - 1]
+                }`,
+              );
+              await this.apiService.addToDisconnectedApiIndices(index);
+              if (index === batches.length - 1) {
+                //if it is the last batch, fetch batch from the first available endpoint
+                const blocks = await this.fetchBlocksFromFirstAvailableEndpoint(
+                  batch,
+                  specChanged,
+                );
+                return blocks;
+              } else {
+                //if it is not the last batch, add the batch to the next batch
+                batches[index + 1].push(...batch);
+              }
+
+              return [];
+            }
           });
+
           const results = await Promise.all(promises);
           results.forEach((result) => {
             blocks.push(...result);
@@ -191,6 +235,7 @@ export class BlockDispatcherService
         };
 
         await fetchBlocksBatches(batches);
+        //logger.info(JSON.stringify(blocks))
 
         // Check if the queues have been flushed between queue.takeMany and fetchBlocksBatches resolving
         // Peeking the queue is because the latestBufferedHeight could have regrown since fetching block

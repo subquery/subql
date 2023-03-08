@@ -57,6 +57,9 @@ export class WorkerService {
     height: number,
     specVersion: number,
   ): Promise<FetchBlockResponse> {
+    const api = this.apiService.getApi(
+      this.apiService.getNextConnectedApiIndex(),
+    );
     try {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
@@ -66,7 +69,7 @@ export class WorkerService {
             specVersion,
           );
           const [block] = await fetchBlocksBatches(
-            this.apiService.getApi(),
+            api,
             [height],
             specChanged
               ? undefined
@@ -84,6 +87,9 @@ export class WorkerService {
       });
     } catch (e) {
       logger.error(e, `Failed to fetch block ${height}`);
+      logger.warn(`disconnecting endpoint and attempting to reconnect`);
+      await api.disconnect();
+      throw e;
     }
   }
 
