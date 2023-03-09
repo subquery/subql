@@ -170,7 +170,7 @@ export class StoreService {
       // We shouldn't set the typename to e.name because it could potentially create SQL injection,
       // using a replacement at the type name location doesn't work.
       const enumTypeName = enumNameToHash(e.name);
-      let type = `"${schema}".${enumTypeName}`;
+      let type = `"${schema}"."${enumTypeName}"`;
       let [results] = await this.sequelize.query(
         `SELECT pg_enum.enumlabel as enum_value
          FROM pg_type t JOIN pg_enum ON pg_enum.enumtypid = t.oid JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
