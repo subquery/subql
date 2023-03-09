@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import { Block } from '@ethersproject/abstract-provider';
 import { Inject, Injectable } from '@nestjs/common';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import {
@@ -54,7 +53,6 @@ const logger = getLogger('indexer');
 @Injectable()
 export class IndexerManager {
   private api: EthereumApi;
-  private filteredDataSources: SubqlProjectDs[];
 
   constructor(
     private storeService: StoreService,
@@ -133,15 +131,17 @@ export class IndexerManager {
         },
       );
 
-      await this.storeService.setMetadataBatch(
-        [
-          { key: 'lastProcessedHeight', value: blockHeight },
-          { key: 'lastProcessedTimestamp', value: Date.now() },
-        ],
-        { transaction: tx },
-      );
-      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      await this.storeService.incrementJsonbCount('processedBlockCount', tx);
+      await Promise.all([
+        this.storeService.setMetadataBatch(
+          [
+            { key: 'lastProcessedHeight', value: blockHeight },
+            { key: 'lastProcessedTimestamp', value: Date.now() },
+          ],
+          { transaction: tx },
+        ),
+        // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
+        this.storeService.incrementJsonbCount('processedBlockCount', tx),
+      ]);
 
       // Need calculate operationHash to ensure correct offset insert all time
       operationHash = this.storeService.getOperationMerkleRoot();
@@ -204,16 +204,16 @@ export class IndexerManager {
   }
 
   private async indexBlockData(
-    { block, logs, transactions }: EthereumBlockWrapper,
+    { block, transactions }: EthereumBlockWrapper,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,
   ): Promise<void> {
     await this.indexBlockContent(block, dataSources, getVM);
 
     for (const tx of transactions) {
-      await this.indexExtrinsic(tx, dataSources, getVM);
+      await this.indexTransaction(tx, dataSources, getVM);
 
-      for (const log of logs.filter((l) => l.transactionHash === tx.hash)) {
+      for (const log of tx.logs ?? []) {
         await this.indexEvent(log, dataSources, getVM);
       }
     }
@@ -229,7 +229,7 @@ export class IndexerManager {
     }
   }
 
-  private async indexExtrinsic(
+  private async indexTransaction(
     tx: EthereumTransaction,
     dataSources: SubqlProjectDs[],
     getVM: (d: SubqlProjectDs) => Promise<IndexerSandbox>,

@@ -79,6 +79,13 @@ export class BlockDispatcherService
   }
 
   enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
+    this.eventEmitter.emit('enqueueBlocks', cleanedBlocks.length);
+    if (cleanedBlocks.length) {
+      this.eventEmitter.emit(
+        'filteringBlocks',
+        cleanedBlocks[cleanedBlocks.length - 1],
+      );
+    }
     // // In the case where factors of batchSize is equal to bypassBlock or when cleanedBatchBlocks is []
     // // to ensure block is bypassed, latestBufferHeight needs to be manually set
     // If cleanedBlocks = []

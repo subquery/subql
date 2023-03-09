@@ -16,14 +16,29 @@ export function hexStringEq(a: string, b: string): boolean {
   return stringNormalizedEq(hexStripZeros(a), hexStripZeros(b));
 }
 
+const eventTopicsCache: Record<string, string> = {};
+const functionSighashCache: Record<string, string> = {};
+
 export function eventToTopic(input: string): string {
   if (isHexString(input)) return input;
 
-  return id(EventFragment.fromString(input).format());
+  if (!eventTopicsCache[input]) {
+    eventTopicsCache[input] = id(EventFragment.fromString(input).format());
+  }
+
+  return eventTopicsCache[input];
 }
 
 export function functionToSighash(input: string): string {
   if (isHexString(input)) return input;
 
-  return hexDataSlice(id(FunctionFragment.fromString(input).format()), 0, 4);
+  if (!functionSighashCache[input]) {
+    functionSighashCache[input] = hexDataSlice(
+      id(FunctionFragment.fromString(input).format()),
+      0,
+      4,
+    );
+  }
+
+  return functionSighashCache[input];
 }

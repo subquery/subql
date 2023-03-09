@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import fs from 'fs';
+import http from 'http';
+import https from 'https';
 import { Interface } from '@ethersproject/abi';
 import { Block, TransactionReceipt } from '@ethersproject/abstract-provider';
-import { JsonRpcProvider, WebSocketProvider } from '@ethersproject/providers';
+import { Provider, WebSocketProvider } from '@ethersproject/providers';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { RuntimeDataSourceV0_2_0 } from '@subql/common-ethereum';
-import { getLogger } from '@subql/node-core';
+import { getLogger, profiler } from '@subql/node-core';
 import {
   ApiWrapper,
   BlockWrapper,
@@ -15,9 +18,12 @@ import {
   EthereumResult,
   EthereumLog,
 } from '@subql/types-ethereum';
-import { ConnectionInfo, hexDataSlice, hexValue } from 'ethers/lib/utils';
+import { hexDataSlice, hexValue } from 'ethers/lib/utils';
 import { retryOnFailEth } from '../utils/project';
 import { EthereumBlockWrapped } from './block.ethereum';
+import { JsonRpcBatchProvider } from './ethers/json-rpc-batch-provider';
+import { JsonRpcProvider } from './ethers/json-rpc-provider';
+import { ConnectionInfo } from './ethers/web';
 import SafeEthProvider from './safe-api';
 import {
   formatBlock,
@@ -59,7 +65,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   // Ethereum POS
   private supportsFinalization = true;
 
-  constructor(private endpoint: string) {
+  constructor(private endpoint: string, private eventEmitter: EventEmitter2) {
     const { hostname, pathname, port, protocol, searchParams } = new URL(
       endpoint,
     );
@@ -73,11 +79,18 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         headers: {
           'User-Agent': `Subquery-Node ${packageVersion}`,
         },
+        allowGzip: true,
+        throttleLimit: 5,
+        throttleSlotInterval: 1,
+        agents: {
+          http: new http.Agent({ keepAlive: true /*, maxSockets: 100*/ }),
+          https: new https.Agent({ keepAlive: true /*, maxSockets: 100*/ }),
+        },
       };
       searchParams.forEach((value, name, searchParams) => {
         (connection.headers as any)[name] = value;
       });
-      this.client = new JsonRpcProvider(connection);
+      this.client = new JsonRpcBatchProvider(connection);
     } else if (protocolStr === 'ws' || protocolStr === 'wss') {
       this.client = new WebSocketProvider(this.endpoint);
     } else {
@@ -86,9 +99,20 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   async init(): Promise<void> {
+    this.injectClient();
     this.genesisBlock = await this.client.getBlock(0);
 
     this.chainId = (await this.client.getNetwork()).chainId;
+  }
+
+  private injectClient(): void {
+    const orig = this.client.send.bind(this.client);
+    Object.defineProperty(this.client, 'send', {
+      value: (...args) => {
+        this.eventEmitter.emit('rpcCall');
+        return orig(...args);
+      },
+    });
   }
 
   async getFinalizedBlockHeight(): Promise<number> {
@@ -135,9 +159,10 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
   }
 
   private async getBlockPromise(num: number, includeTx = true): Promise<any> {
-    const rawBlock = await retryOnFailEth(() =>
-      this.client.send('eth_getBlockByNumber', [hexValue(num), includeTx]),
-    );
+    const rawBlock = await this.client.send('eth_getBlockByNumber', [
+      hexValue(num),
+      includeTx,
+    ]);
 
     const block = formatBlock(rawBlock);
 
@@ -166,7 +191,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
       }),
     ]);
 
-    return new EthereumBlockWrapped(
+    const ret = new EthereumBlockWrapped(
       block,
       includeTx
         ? block.transactions.map((tx) => ({
@@ -180,6 +205,8 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
         : [],
       logs.map((l) => formatLog(l, block)),
     );
+    this.eventEmitter.emit('fetchBlock');
+    return ret;
   }
 
   async fetchBlocks(bufferBlocks: number[]): Promise<EthereumBlockWrapper[]> {

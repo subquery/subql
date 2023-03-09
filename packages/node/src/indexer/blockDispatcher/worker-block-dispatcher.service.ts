@@ -122,6 +122,10 @@ export class WorkerBlockDispatcherService
   }
 
   enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
+    this.eventEmitter.emit('enqueueBlocks', heights.length);
+    if (heights.length) {
+      this.eventEmitter.emit('filteringBlocks', heights[heights.length - 1]);
+    }
     if (!!latestBufferHeight && !heights.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
@@ -170,6 +174,7 @@ export class WorkerBlockDispatcherService
       try {
         const start = new Date();
         const result = await pendingBlock;
+        this.eventEmitter.emit('fetchBlock');
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {
