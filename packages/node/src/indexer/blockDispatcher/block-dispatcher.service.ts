@@ -15,6 +15,7 @@ import {
   memoryLock,
   SmartBatchService,
 } from '@subql/node-core';
+import { StoreCacheService } from '@subql/node-core/indexer/storeCache.service';
 import { last } from 'lodash';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
@@ -46,6 +47,7 @@ export class BlockDispatcherService
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
     smartBatchService: SmartBatchService,
+    storeCacheService: StoreCacheService,
   ) {
     super(
       nodeConfig,
@@ -53,6 +55,7 @@ export class BlockDispatcherService
       projectService,
       new Queue(nodeConfig.batchSize * 3),
       smartBatchService,
+      storeCacheService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
   }
@@ -186,15 +189,27 @@ export class BlockDispatcherService
 
             this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
+            const tx = await this.storeCacheService.registryTransaction();
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
               runtimeVersion,
+              tx,
+              this.storeCacheService.getCache(),
             );
-
+            this.storeCacheService.syncCacheFeedback(
+              processBlockResponse.storeCacheFeedback,
+            );
             await this.postProcessBlock(height, processBlockResponse);
 
             //set block to null for garbage collection
             block = null;
+
+            if (this.storeCacheService.isFlushable()) {
+              await this.storeCacheService.flushCache(height);
+              // Note flushCache and commit transaction need to sequential
+              await this.storeCacheService.commitTransaction();
+              this.storeCacheService.resetMemoryStore();
+            }
           } catch (e) {
             if (this.isShutdown) {
               return;
