@@ -102,17 +102,19 @@ export class StoreService {
     if (!this.historical || Object.keys(this.storeSetCache).length === 0) {
       return;
     }
-    for (const entityName in this.storeSetCache) {
-      const model = this.sequelize.model(entityName);
-      await Promise.all([
-        // mark to close previous records within blockheight -1, within all entity IDs
-        this.markPreviousHeightRecordsBatch(model, Object.keys(this.storeSetCache[entityName])),
-        // bulkCreate all new records for this entity
-        model.bulkCreate(Object.values(this.storeSetCache[entityName]) as unknown as CreationAttributes<Model>[], {
-          transaction: this.tx,
-        }),
-      ]);
-    }
+    await Promise.all(
+      Object.entries(this.storeSetCache).map(([entityName, record]) => {
+        const model = this.sequelize.model(entityName);
+        return Promise.all([
+          // mark to close previous records within blockheight -1, within all entity IDs
+          this.markPreviousHeightRecordsBatch(model, Object.keys(record)),
+          // bulkCreate all new records for this entity
+          model.bulkCreate(Object.values(record) as unknown as CreationAttributes<Model>[], {
+            transaction: this.tx,
+          }),
+        ]);
+      })
+    );
   }
 
   resetMemoryStore() {
@@ -482,6 +484,7 @@ export class StoreService {
   }
 
   private addScopeAndBlockHeightHooks(sequelizeModel: ModelStatic<any>): void {
+    // TODO, check impact of remove this
     sequelizeModel.addScope('defaultScope', {
       attributes: {
         exclude: ['__id', '__block_range'],
