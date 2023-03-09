@@ -232,4 +232,9 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
       type: 'string',
     },
+    'index-count-limit': {
+      demandOption: false,
+      describe: 'indexCountLimit',
+      type: 'number',
+    },
   });
