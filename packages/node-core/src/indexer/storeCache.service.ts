@@ -6,7 +6,7 @@ import {Entity} from '@subql/types';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../configure';
 
-const FLUSH_FREQUENCY = 10;
+const FLUSH_FREQUENCY = 1;
 
 export interface StoreCache {
   storeGetCache: Record<string, Record<string, Entity>>;
@@ -20,6 +20,7 @@ export class StoreCacheService {
   private storeSetCache: Record<string, Record<string, Entity>>;
   private flushCounter: number;
   tx: Transaction;
+  private currentIndexingHeight: number;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {
     this.resetMemoryStore();
@@ -29,6 +30,10 @@ export class StoreCacheService {
 
   counterIncrement(): void {
     this.flushCounter += 1;
+  }
+
+  setCurrentIndexingHeight(height: number): void {
+    this.currentIndexingHeight = height;
   }
 
   getCache(): StoreCache {
@@ -51,7 +56,7 @@ export class StoreCacheService {
   }
 
   //TODO, flush cache should use each entity own blockHeight
-  async flushCache(blockHeight: number): Promise<void> {
+  private async _flushCache(): Promise<void> {
     if (!this.historical || Object.keys(this.storeSetCache).length === 0) {
       return;
     }
@@ -60,7 +65,7 @@ export class StoreCacheService {
         const model = this.sequelize.model(entityName);
         return Promise.all([
           // mark to close previous records within blockheight -1, within all entity IDs
-          this.markPreviousHeightRecordsBatch(model, Object.keys(record), blockHeight),
+          this.markPreviousHeightRecordsBatch(model, Object.keys(record)),
           // bulkCreate all new records for this entity
           model.bulkCreate(Object.values(record) as unknown as CreationAttributes<Model>[], {
             transaction: this.tx,
@@ -68,6 +73,15 @@ export class StoreCacheService {
         ]);
       })
     );
+  }
+
+  async flushCache() {
+    if (this.isFlushable()) {
+      await this._flushCache();
+      // Note flushCache and commit transaction need to sequential
+      await this.commitTransaction();
+      this.resetMemoryStore();
+    }
   }
 
   isFlushable(): boolean {
@@ -79,7 +93,7 @@ export class StoreCacheService {
     this.storeSetCache = {};
   }
 
-  private async markPreviousHeightRecordsBatch(model: ModelStatic<any>, ids: string[], blockHeight: number) {
+  private async markPreviousHeightRecordsBatch(model: ModelStatic<any>, ids: string[]) {
     // Different with markAsDeleted, we only mark/close all the records less than current block height
     // thus, and new record with current block height will not be impacted,
     // advantage is this sql is safe to concurrency resolve with any insert sql
@@ -89,7 +103,7 @@ export class StoreCacheService {
         __block_range: this.sequelize.fn(
           'int8range',
           this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          blockHeight
+          this.currentIndexingHeight
         ),
       },
       {
@@ -98,7 +112,7 @@ export class StoreCacheService {
         where: {
           id: {[Op.in]: ids},
           __block_range: {
-            [Op.contains]: (blockHeight - 1) as any,
+            [Op.contains]: (this.currentIndexingHeight - 1) as any,
           },
         },
       }
