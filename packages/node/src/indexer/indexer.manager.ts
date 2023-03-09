@@ -70,7 +70,6 @@ export class IndexerManager {
     private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
-
     this.api = this.apiService.getApi();
   }
 
