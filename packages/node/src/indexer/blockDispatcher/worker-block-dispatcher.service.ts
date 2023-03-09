@@ -14,6 +14,7 @@ import {
   AutoQueue,
   memoryLock,
   SmartBatchService,
+  StoreCacheService,
 } from '@subql/node-core';
 import chalk from 'chalk';
 import { last } from 'lodash';
@@ -97,6 +98,7 @@ export class WorkerBlockDispatcherService
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
     smartBatchService: SmartBatchService,
+    storeCacheService: StoreCacheService,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
@@ -105,6 +107,7 @@ export class WorkerBlockDispatcherService
       projectService,
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
       smartBatchService,
+      storeCacheService,
     );
     this.numWorkers = numWorkers;
   }
