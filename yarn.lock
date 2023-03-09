@@ -2948,7 +2948,7 @@ __metadata:
   resolution: "@subql/common-ethereum@workspace:packages/common-ethereum"
   dependencies:
     "@polkadot/util": ^8
-    "@subql/common": 1.5.0
+    "@subql/common": 1.7.0
     "@subql/types-ethereum": "workspace:*"
     "@types/bn.js": 4.11.6
     "@types/js-yaml": ^4.0.4
@@ -2962,14 +2962,14 @@ __metadata:
     js-yaml: ^4.1.0
     pino: ^6.13.3
     reflect-metadata: ^0.1.13
-    sequelize: ^6.6.2
+    sequelize: 6.28.0
     vm2: ^3.9.9
   languageName: unknown
   linkType: soft
 
-"@subql/common@npm:1.4.2":
-  version: 1.4.2
-  resolution: "@subql/common@npm:1.4.2"
+"@subql/common@npm:1.7.0":
+  version: 1.7.0
+  resolution: "@subql/common@npm:1.7.0"
   dependencies:
     axios: ^0.27.2
     class-transformer: 0.5.1
@@ -2979,83 +2979,30 @@ __metadata:
     js-yaml: ^4.1.0
     reflect-metadata: ^0.1.13
     semver: ^7.3.5
-  checksum: 466111a70fea068e9edf3b80f5f1f23614e334d2e0f50f6a81363a68e252cf012c54bf548aaba4eb498964ddb47845fdae0604bd4d5dfb87a52e6685a5030f96
+  checksum: a76767f788e7e33fdb2984aed0ba5ede4110ce025c5decbaeb04fda0f63ce6e21e67428da93731f216fa816f6b8f6501459abdf7fc3bc46746f8f6a8b7acd144
   languageName: node
   linkType: hard
 
-"@subql/common@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@subql/common@npm:1.5.0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: 0.5.1
-    class-validator: ^0.13.2
-    fs-extra: ^10.1.0
-    ipfs-http-client: ^52.0.3
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.3.5
-  checksum: d2f4b080a445befb5f79b7ea67e4d6b40a1221dd26104be15ed1255481937c9598a8b8df2ad6a86f57fec3e73ed13f377365ce3d084efdd933e001f13d58de27
-  languageName: node
-  linkType: hard
-
-"@subql/common@npm:1.6.0":
-  version: 1.6.0
-  resolution: "@subql/common@npm:1.6.0"
-  dependencies:
-    axios: ^0.27.2
-    class-transformer: 0.5.1
-    class-validator: ^0.13.2
-    fs-extra: ^10.1.0
-    ipfs-http-client: ^52.0.3
-    js-yaml: ^4.1.0
-    reflect-metadata: ^0.1.13
-    semver: ^7.3.5
-  checksum: 61ad1f6d39818c7b67d42939756e2fc75cc11113d70b66c5011c5bf89b69d0924f5c30e22c07a71997e026507ccb00c62d9cad4a2ee014ce5f436a111ec9bf38
-  languageName: node
-  linkType: hard
-
-"@subql/node-core@npm:1.8.1-2":
-  version: 1.8.1-2
-  resolution: "@subql/node-core@npm:1.8.1-2"
+"@subql/node-core@npm:1.10.0, @subql/node-core@npm:^1.10.0":
+  version: 1.10.0
+  resolution: "@subql/node-core@npm:1.10.0"
   dependencies:
     "@nestjs/common": ^8.2.6
     "@nestjs/event-emitter": ^1.3.0
     "@nestjs/schedule": ^1.0.2
     "@polkadot/api": 9.11.1
     "@subql/apollo-links": 0.2.1-9
-    "@subql/common": 1.6.0
+    "@subql/common": 1.7.0
     "@subql/types": 1.7.1
-    "@subql/utils": 1.4.0
+    "@subql/utils": 1.4.1
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
     "@willsoto/nestjs-prometheus": ^4.4.0
     lodash: ^4.17.21
     prom-client: ^14.0.1
-    sequelize: 6.23.0
+    sequelize: 6.28.0
     vm2: ^3.9.9
     yargs: ^16.2.0
-  checksum: 1d84de4ecc500699a32f0404772ca43beb4edf4bf174d5df2ba14ddaf4272e2710cb8931481f33e1a2c4a876a76bf87e78d2a1716311a9c8b46f79fabeb8788a
-  languageName: node
-  linkType: hard
-
-"@subql/node-core@npm:^0.1.1":
-  version: 0.1.3
-  resolution: "@subql/node-core@npm:0.1.3"
-  dependencies:
-    "@nestjs/common": ^8.2.6
-    "@nestjs/event-emitter": ^1.3.0
-    "@nestjs/schedule": ^1.0.2
-    "@polkadot/api": 9.4.2
-    "@subql/common": 1.4.2
-    "@subql/types": 1.5.0
-    "@subql/utils": 1.2.0
-    "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
-    "@willsoto/nestjs-prometheus": ^4.4.0
-    lodash: ^4.17.21
-    prom-client: ^14.0.1
-    sequelize: 6.23.0
-    yargs: ^16.2.0
-  checksum: 013e1514f87ca015e09882532cea4af8a4577dbd7d6139c40af79c26724ee4b1bbbe07a6a19425b50f3b5890a40fda996bc620e4e880cf86a2e5632a912b0515
+  checksum: e9e33a84ddf95688a5c35f815f430f9c0e215facabcb0548c8f2a8c734e1fd9695f7e2ca706ae7b98f95e3065f0bd34b39c18213aa06bbef3a3625952532b97f
   languageName: node
   linkType: hard
 
@@ -3071,11 +3018,11 @@ __metadata:
     "@nestjs/schedule": ^1.0.2
     "@nestjs/schematics": ^8.0.5
     "@nestjs/testing": ^8.2.6
-    "@subql/common": 1.5.0
+    "@subql/common": 1.7.0
     "@subql/common-ethereum": "workspace:*"
-    "@subql/node-core": 1.8.1-2
+    "@subql/node-core": 1.10.0
     "@subql/types-ethereum": "workspace:*"
-    "@subql/utils": 1.3.2-1
+    "@subql/utils": 1.4.1
     "@subql/x-merkle-mountain-range": 2.0.0-0.1.2
     "@types/app-module-path": ^2.2.0
     "@types/express": ^4.17.13
@@ -3126,15 +3073,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@subql/types@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@subql/types@npm:1.5.0"
-  peerDependencies:
-    "@polkadot/api": ^9
-  checksum: beb7396b3e8451e3bcf3f8e551683d6eccb1e82908e39331b8466339531472cd7ac22ee984bc923898371e2466236514c663d30e9a77a1f116f28d02141d0674
-  languageName: node
-  linkType: hard
-
 "@subql/types@npm:1.7.1":
   version: 1.7.1
   resolution: "@subql/types@npm:1.7.1"
@@ -3144,30 +3082,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@subql/utils@npm:1.2.0, @subql/utils@npm:^1.1.0":
-  version: 1.2.0
-  resolution: "@subql/utils@npm:1.2.0"
-  dependencies:
-    "@polkadot/util": ^10
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: 6.23.0
-    tar: ^6.1.11
-  checksum: 57bfb8bb6307badd1dbf945f01a5cf28b775bb556b7c2f2bcc747d9565132b096d1906b2103621f1117d2bd08aab51ca16aac6f3a0fcd534ef89d623bb3906bb
-  languageName: node
-  linkType: hard
-
-"@subql/utils@npm:1.3.2-1":
-  version: 1.3.2-1
-  resolution: "@subql/utils@npm:1.3.2-1"
+"@subql/utils@npm:1.4.1, @subql/utils@npm:^1.4.1":
+  version: 1.4.1
+  resolution: "@subql/utils@npm:1.4.1"
   dependencies:
     "@polkadot/util": ^10.2.3
     "@polkadot/util-crypto": ^10.2.3
@@ -3181,31 +3098,9 @@ __metadata:
     pino: ^6.13.3
     rotating-file-stream: ^3.0.2
     semver: ^7.3.7
-    sequelize: 6.23.0
+    sequelize: 6.28.0
     tar: ^6.1.11
-  checksum: b8cac94ef2f53618ad392b103aa53bd2ada28b3fccc50cf98b2efc0346aaf210fdc582568d4bcff656849d4c16a84221cd0edfaee7f5dbd3c6df930b79bed850
-  languageName: node
-  linkType: hard
-
-"@subql/utils@npm:1.4.0":
-  version: 1.4.0
-  resolution: "@subql/utils@npm:1.4.0"
-  dependencies:
-    "@polkadot/util": ^10.2.3
-    "@polkadot/util-crypto": ^10.2.3
-    ansi-styles: ^6.1.0
-    axios: ^0.27.1
-    chalk: ^4.1.2
-    detect-port: ^1.3.0
-    flatted: ^3.2.5
-    graphql: ^15.8.0
-    graphql-tag: ^2.12.6
-    pino: ^6.13.3
-    rotating-file-stream: ^3.0.2
-    semver: ^7.3.7
-    sequelize: 6.23.0
-    tar: ^6.1.11
-  checksum: db6429fb886d2f155f09bf6a91a7e83f60e871a1cee99c183946e32a663cbd7a70e78ee97eb4c366b081322e5208b6d4333b2c420ad3976f228bf0ff613d2601
+  checksum: dcda9e44acd23d68a065cab99eb8886ab04269ad914bf18e4a23463fc725ecefb5c505c1eb465c482f7d63d80a2495fe513ef67b9c71bfe31158ecbc51245bb5
   languageName: node
   linkType: hard
 
@@ -10468,17 +10363,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"retry-as-promised@npm:^5.0.0":
-  version: 5.0.0
-  resolution: "retry-as-promised@npm:5.0.0"
-  checksum: 4d17e0597f967db0516714f0f2b085e2d1e8ea592450b013a1e0cd41dad74a9c3d1eb3c45351887de4bca1c3ac5f74dd07ef9942a3fb0e4db996a83bb28cb46e
-  languageName: node
-  linkType: hard
-
 "retry-as-promised@npm:^6.1.0":
   version: 6.1.0
   resolution: "retry-as-promised@npm:6.1.0"
   checksum: cde3ad5c827d3f51b9161b9453dfd5eb8b8b6c22b6b405f7294eaa1939ef1966f8bd4c8a228ce2d66a24959d1dcc48b113c4c810ecdaddec2968b6d20576329d
+  languageName: node
+  linkType: hard
+
+"retry-as-promised@npm:^7.0.3":
+  version: 7.0.4
+  resolution: "retry-as-promised@npm:7.0.4"
+  checksum: 2b0dcddb06649d42b1384ec1f933c7cb4461939c28004460b0c4be0c8ae16cabaed2411aa5d46e734a320f33f4a1d480078a19b97c743c754bd32e896b3f8ea2
   languageName: node
   linkType: hard
 
@@ -10711,47 +10606,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:6.19.0":
-  version: 6.19.0
-  resolution: "sequelize@npm:6.19.0"
-  dependencies:
-    "@types/debug": ^4.1.7
-    "@types/validator": ^13.7.1
-    debug: ^4.3.3
-    dottie: ^2.0.2
-    inflection: ^1.13.2
-    lodash: ^4.17.21
-    moment: ^2.29.1
-    moment-timezone: ^0.5.34
-    pg-connection-string: ^2.5.0
-    retry-as-promised: ^5.0.0
-    semver: ^7.3.5
-    sequelize-pool: ^7.1.0
-    toposort-class: ^1.0.1
-    uuid: ^8.3.2
-    validator: ^13.7.0
-    wkx: ^0.5.0
-  peerDependenciesMeta:
-    ibm_db:
-      optional: true
-    mariadb:
-      optional: true
-    mysql2:
-      optional: true
-    pg:
-      optional: true
-    pg-hstore:
-      optional: true
-    snowflake-sdk:
-      optional: true
-    sqlite3:
-      optional: true
-    tedious:
-      optional: true
-  checksum: e1faa389fe8bf4e58f4781763d313e6a28b5cf8376f9c34ba6a6af9f158a309d8fa30277706bbee004caa8068a5f3030cf1620735a2d9f84a33f204ab2dae2f2
-  languageName: node
-  linkType: hard
-
 "sequelize@npm:6.23.0":
   version: 6.23.0
   resolution: "sequelize@npm:6.23.0"
@@ -10795,9 +10649,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sequelize@npm:^6.6.2":
-  version: 6.25.5
-  resolution: "sequelize@npm:6.25.5"
+"sequelize@npm:6.28.0":
+  version: 6.28.0
+  resolution: "sequelize@npm:6.28.0"
   dependencies:
     "@types/debug": ^4.1.7
     "@types/validator": ^13.7.1
@@ -10808,7 +10662,7 @@ __metadata:
     moment: ^2.29.1
     moment-timezone: ^0.5.34
     pg-connection-string: ^2.5.0
-    retry-as-promised: ^6.1.0
+    retry-as-promised: ^7.0.3
     semver: ^7.3.5
     sequelize-pool: ^7.1.0
     toposort-class: ^1.0.1
@@ -10834,7 +10688,7 @@ __metadata:
       optional: true
     tedious:
       optional: true
-  checksum: fc0acfeff6ba17659a1a7a6a0c2475fc6761cef4efa151e0692ed6314649dffb73288f8958e7094f644f7f0fd1b45b3084943644a69f18f6af359a678704fcfb
+  checksum: 7e10ba4ebabab1ed54d6769fa73cac86dd3df88415ee32dd82f01ade6e1ebd9f6672288b601bd12507eae9eb2480ba905f74c93b1e380eb335430bf43ed757e9
   languageName: node
   linkType: hard
 
@@ -11260,8 +11114,8 @@ __metadata:
     "@actions/core": ^1.6.0
     "@babel/preset-env": ^7.16.11
     "@octokit/request": ^5.6.3
-    "@subql/node-core": ^0.1.1
-    "@subql/utils": ^1.1.0
+    "@subql/node-core": ^1.10.0
+    "@subql/utils": ^1.4.1
     "@types/cron-converter": ^1
     "@types/node": ^14.18.10
     "@typescript-eslint/eslint-plugin": ^5.10.2
@@ -11281,7 +11135,7 @@ __metadata:
     prettier: ^2.5.1
     pretty-quick: ^3.1.3
     regenerator-runtime: ^0.13.9
-    sequelize: 6.19.0
+    sequelize: 6.28.0
     ts-jest: ^27.1.3
     ts-loader: ^9.2.6
     ts-node: ^10.4.0

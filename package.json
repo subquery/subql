@@ -57,10 +57,10 @@
   },
   "packageManager": "yarn@3.1.1",
   "dependencies": {
-    "@subql/node-core": "^0.1.1",
-    "@subql/utils": "^1.1.0",
+    "@subql/node-core": "^1.10.0",
+    "@subql/utils": "^1.4.1",
     "ethers": "^5.7.1",
-    "sequelize": "6.19.0",
+    "sequelize": "6.28.0",
     "web3-providers-http": "^1.7.5",
     "web3-providers-ws": "^1.7.5"
   }
