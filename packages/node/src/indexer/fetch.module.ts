@@ -9,6 +9,7 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
+  StoreCacheService,
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -30,6 +31,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 @Module({
   providers: [
     StoreService,
+    StoreCacheService,
     ApiService,
     IndexerManager,
     {
@@ -40,12 +42,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectService: ProjectService,
         apiService: ApiService,
         indexerManager: IndexerManager,
+        storeCacheService: StoreCacheService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
               projectService,
+              storeCacheService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -53,6 +57,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              storeCacheService,
             ),
       inject: [
         NodeConfig,
@@ -60,6 +65,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ProjectService,
         ApiService,
         IndexerManager,
+        StoreCacheService,
       ],
     },
     FetchService,
@@ -82,6 +88,6 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     UnfinalizedBlocksService,
     RuntimeService,
   ],
-  exports: [StoreService, MmrService],
+  exports: [StoreService, MmrService, StoreCacheService],
 })
 export class FetchModule {}

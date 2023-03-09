@@ -5,6 +5,7 @@ import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {getDbType, SUPPORT_DB} from '@subql/common';
+import {StoreCache} from '@subql/node-core/indexer/storeCache.service';
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -94,33 +95,7 @@ export class StoreService {
   private storeGetCache: Record<string, Record<string, Entity>>;
   private storeSetCache: Record<string, Record<string, Entity>>;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {
-    this.resetMemoryStore();
-  }
-
-  async flushCache(): Promise<void> {
-    if (!this.historical || Object.keys(this.storeSetCache).length === 0) {
-      return;
-    }
-    await Promise.all(
-      Object.entries(this.storeSetCache).map(([entityName, record]) => {
-        const model = this.sequelize.model(entityName);
-        return Promise.all([
-          // mark to close previous records within blockheight -1, within all entity IDs
-          this.markPreviousHeightRecordsBatch(model, Object.keys(record)),
-          // bulkCreate all new records for this entity
-          model.bulkCreate(Object.values(record) as unknown as CreationAttributes<Model>[], {
-            transaction: this.tx,
-          }),
-        ]);
-      })
-    );
-  }
-
-  resetMemoryStore() {
-    this.storeGetCache = {};
-    this.storeSetCache = {};
-  }
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
@@ -150,6 +125,15 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
+  }
+
+  setCache(storeCache: StoreCache) {
+    this.storeGetCache = storeCache.storeGetCache;
+    this.storeSetCache = storeCache.storeSetCache;
+  }
+
+  getCache(): StoreCache {
+    return {storeGetCache: this.storeGetCache, storeSetCache: this.storeSetCache};
   }
 
   async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {

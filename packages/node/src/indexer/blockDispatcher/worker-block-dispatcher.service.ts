@@ -12,6 +12,7 @@ import {
   IndexerEvent,
   Worker,
   AutoQueue,
+  StoreCacheService,
 } from '@subql/node-core';
 import chalk from 'chalk';
 import { last } from 'lodash';
@@ -87,6 +88,7 @@ export class WorkerBlockDispatcherService
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
+    storeCacheService: StoreCacheService,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
@@ -94,6 +96,7 @@ export class WorkerBlockDispatcherService
       eventEmitter,
       projectService,
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
+      storeCacheService,
     );
     this.numWorkers = numWorkers;
   }

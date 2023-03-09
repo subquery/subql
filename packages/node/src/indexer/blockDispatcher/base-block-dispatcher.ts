@@ -5,6 +5,7 @@ import assert from 'assert';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { hexToU8a, u8aEq } from '@polkadot/util';
 import { getLogger, IndexerEvent, IQueue, NodeConfig } from '@subql/node-core';
+import { StoreCacheService } from '@subql/node-core/indexer/storeCache.service';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
 
@@ -53,6 +54,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
     protected eventEmitter: EventEmitter2,
     protected projectService: ProjectService,
     protected queue: Q,
+    protected storeCacheService: StoreCacheService,
     protected runtimeService?: RuntimeService,
   ) {}
 
@@ -148,6 +150,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue>
       // In memory _processedBlockCount increase, db metadata increase BlockCount in indexer.manager
       this.setProcessedBlockCount(this._processedBlockCount + 1);
       this.latestProcessedHeight = height;
+      // indexed block + 1
+      this.storeCacheService.counterIncrement();
     }
   }
 }

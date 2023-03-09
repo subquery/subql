@@ -12,6 +12,7 @@ import {
   AutoQueue,
   Queue,
 } from '@subql/node-core';
+import { StoreCacheService } from '@subql/node-core/indexer/storeCache.service';
 import { last } from 'lodash';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
@@ -43,12 +44,14 @@ export class BlockDispatcherService
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
+    storeCacheService: StoreCacheService,
   ) {
     super(
       nodeConfig,
       eventEmitter,
       projectService,
       new Queue(nodeConfig.batchSize * 3),
+      storeCacheService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
 
@@ -170,12 +173,24 @@ export class BlockDispatcherService
 
             this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
+            const tx = await this.storeCacheService.registryTransaction();
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
               runtimeVersion,
+              tx,
+              this.storeCacheService.getCache(),
             );
-
+            this.storeCacheService.syncCacheFeedback(
+              processBlockResponse.storeCacheFeedback,
+            );
             await this.postProcessBlock(height, processBlockResponse);
+
+            if (this.storeCacheService.isFlushable()) {
+              await this.storeCacheService.flushCache(height);
+              // Note flushCache and commit transaction need to sequential
+              await this.storeCacheService.commitTransaction();
+              this.storeCacheService.resetMemoryStore();
+            }
           } catch (e) {
             if (this.isShutdown) {
               return;

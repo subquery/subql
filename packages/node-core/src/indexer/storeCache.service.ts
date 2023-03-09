@@ -8,32 +8,49 @@ import {NodeConfig} from '../configure';
 
 const FLUSH_FREQUENCY = 10;
 
+export interface StoreCache {
+  storeGetCache: Record<string, Record<string, Entity>>;
+  storeSetCache: Record<string, Record<string, Entity>>;
+}
+
 @Injectable()
 export class StoreCacheService {
   historical: boolean;
   private storeGetCache: Record<string, Record<string, Entity>>;
   private storeSetCache: Record<string, Record<string, Entity>>;
   private flushCounter: number;
-  private tx: Transaction;
+  tx: Transaction;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {
     this.resetMemoryStore();
     this.flushCounter = 0;
+    this.historical = true; // TODO, need handle when is not historical
   }
 
   counterIncrement(): void {
     this.flushCounter += 1;
   }
 
-  registryTransaction(tx: Transaction): void {
-    this.tx = tx;
-    tx.afterCommit(() => (this.tx = undefined));
+  getCache(): StoreCache {
+    return {storeGetCache: this.storeGetCache, storeSetCache: this.storeSetCache};
+  }
+
+  syncCacheFeedback(storeCache: StoreCache) {
+    this.storeGetCache = storeCache.storeGetCache;
+    this.storeSetCache = storeCache.storeSetCache;
+  }
+
+  async registryTransaction(): Promise<Transaction> {
+    this.tx = await this.sequelize.transaction();
+    this.tx.afterCommit(() => (this.tx = undefined));
+    return this.tx;
   }
 
   async commitTransaction(): Promise<void> {
     await this.tx.commit();
   }
 
+  //TODO, flush cache should use each entity own blockHeight
   async flushCache(blockHeight: number): Promise<void> {
     if (!this.historical || Object.keys(this.storeSetCache).length === 0) {
       return;
