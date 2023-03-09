@@ -171,7 +171,7 @@ export class DynamicDsService {
     params: DatasourceParams,
   ): Promise<SubqlProjectDs> {
     const template = cloneDeep(
-      this.project.templates.find((t) => t.name === params.templateName),
+      this.project?.templates.find((t) => t.name === params.templateName),
     );
 
     if (!template) {
