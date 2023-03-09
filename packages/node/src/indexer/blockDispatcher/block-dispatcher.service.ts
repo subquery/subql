@@ -198,6 +198,7 @@ export class BlockDispatcherService
 
             this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
+            this.storeCacheService.setCurrentIndexingHeight(height);
             const tx = await this.storeCacheService.registryTransaction();
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
@@ -213,12 +214,7 @@ export class BlockDispatcherService
             //set block to null for garbage collection
             block = null;
 
-            if (this.storeCacheService.isFlushable()) {
-              await this.storeCacheService.flushCache(height);
-              // Note flushCache and commit transaction need to sequential
-              await this.storeCacheService.commitTransaction();
-              this.storeCacheService.resetMemoryStore();
-            }
+            await this.storeCacheService.flushCache();
           } catch (e) {
             if (this.isShutdown) {
               return;
