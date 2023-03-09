@@ -63,11 +63,9 @@ export async function prepare(
   if (project.runner.node.name === SUBSTRATE_NODE_NAME) {
     cli.action.start('Getting network genesis hash from endpoint for Chain ID');
     try {
-      if (projectNetwork instanceof TerraProjectNetworkV0_3_0) {
-        genesisHash = await getGenesisHash(projectNetwork.endpoint);
-      } else {
-        genesisHash = await getGenesisHash(projectNetwork.endpoints[0]);
-      }
+      genesisHash = await getGenesisHash(
+        typeof projectNetwork.endpoint === 'string' ? projectNetwork.endpoint : projectNetwork.endpoint[0]
+      );
     } catch (e) {
       genesisHash = null;
     }
@@ -154,10 +152,7 @@ export async function migrate(
     }
     data.network = {
       chainId: project.chainId,
-      endpoints:
-        project instanceof TerraProjectManifestVersioned
-          ? [(manifest as TerraProjectManifestVersioned).asV1_0_0.network.endpoint]
-          : (manifest as SubstrateProjectManifestVersioned).asV1_0_0.network.endpoints,
+      endpoint: manifest.asV1_0_0.network.endpoint,
     };
     if (manifest.asV1_0_0.network.dictionary) {
       data.network.dictionary = manifest.asV1_0_0.network.dictionary;

@@ -18,7 +18,7 @@ export interface SubstrateProjectManifestV0_3_0 extends ISubstrateProjectManifes
 
   network: {
     genesisHash: string;
-    endpoint?: string;
+    endpoint?: string | string[];
     dictionary?: string;
     chaintypes?: {
       file: string;

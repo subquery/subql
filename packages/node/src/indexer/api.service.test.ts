@@ -20,10 +20,10 @@ const TEST_BLOCKHASH =
 
 const TEST_BLOCKNUMBER = 6721189; // kusama
 
-function testSubqueryProject(endpoints: string[]): SubqueryProject {
+function testSubqueryProject(endpoint: string[]): SubqueryProject {
   return {
     network: {
-      endpoints,
+      endpoint,
       dictionary: `https://api.subquery.network/sq/subquery/dictionary-polkadot`,
     },
     dataSources: [],
@@ -91,7 +91,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     const [patchedValidators, currentValidators] = await Promise.all([
       patchedApi.query.session.validators(),
@@ -111,7 +110,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     const apiResults = await api.query.staking.erasStakers.at(
       blockhash,
@@ -142,7 +140,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     const patchedResult = await patchedApi.rpc.state.getRuntimeVersion(
       earlyBlockhash,
@@ -171,7 +168,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     await expect(
       patchedApi.rpc.state.getRuntimeVersion(futureBlockhash),
@@ -199,7 +195,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     expect(
       patchedApi.consts.staking.maxNominatorRewardedPerValidator.toNumber(),
@@ -373,7 +368,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     await expect(patchedApi.query.system.events()).resolves.toHaveLength(2);
   });
@@ -394,7 +388,6 @@ describe('ApiService', () => {
     const patchedApi = await apiService.getPatchedApi(
       mockBlock,
       runtimeVersion,
-      0,
     );
     /* If Block number not provided should be ignored and `blockNumber` above used */
     const balance = await patchedApi.rpc.eth.getBalance(

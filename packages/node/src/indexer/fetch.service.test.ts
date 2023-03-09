@@ -40,7 +40,7 @@ const HTTP_ENDPOINT = 'https://polkadot.api.onfinality.io/public';
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoints: [WS_ENDPOINT],
+      endpoint: [WS_ENDPOINT],
     },
     chainTypes: {
       types: {
@@ -500,7 +500,7 @@ describe('FetchService', () => {
     const indexerManager = mockIndexerManager();
     //set dictionary to different network
     //set to a kusama network and use polkadot dictionary
-    project.network.endpoints = ['wss://kusama.api.onfinality.io/public-ws'];
+    project.network.endpoint = ['wss://kusama.api.onfinality.io/public-ws'];
     project.network.dictionary =
       'https://api.subquery.network/sq/subquery/polkadot-dictionary';
     project.dataSources = [
@@ -790,7 +790,7 @@ describe('FetchService', () => {
     const project = testSubqueryProject();
 
     project.dataSources[0].startBlock = 3467085;
-    project.network.endpoints = ['wss://karura-rpc-0.aca-api.network'];
+    project.network.endpoint = ['wss://karura-rpc-0.aca-api.network'];
 
     const indexerManager = mockIndexerManager();
 

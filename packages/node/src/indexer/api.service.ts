@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { performance } from 'perf_hooks';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
@@ -13,11 +14,15 @@ import {
   NetworkMetadataPayload,
   getLogger,
   Queue,
+  splitArrayByRatio,
+  NodeConfig,
+  profilerWrap,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
-import { range } from 'lodash';
+import { map, range, toNumber } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiAt } from './types';
+import * as SubstrateUtil from '../utils/substrate';
+import { ApiAt, BlockContent } from './types';
 import { HttpProvider } from './x-provider/http';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -29,7 +34,7 @@ const NOT_SUPPORT = (name: string) => () => {
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
 const RETRY_DELAY = 2_500;
-const RECONNECT_INTERVAL = 60000;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 const logger = getLogger('api');
 
@@ -47,14 +52,14 @@ export class ApiResponseTimeBuffer extends Queue<number> {
 }
 
 export class ApiLoadBalancer {
-  private buffers: ApiResponseTimeBuffer[] = [];
+  private buffers: Record<number, ApiResponseTimeBuffer> = {};
 
   constructor(numberOfConnections: number, batchCapacity: number) {
     // fill buffers with ApiResponseTimeBuffer object with capacity of batchCapacity
     range(0, numberOfConnections).forEach((n) => {
-      this.buffers.push(new ApiResponseTimeBuffer(batchCapacity));
+      this.buffers[n] = new ApiResponseTimeBuffer(batchCapacity);
     });
-    logger.info(`length: ${this.buffers.length}`);
+    logger.info(`length: ${Object.keys(this.buffers).length}`);
   }
 
   addToBuffer(connectionIndex: number, responseTime: number) {
@@ -67,25 +72,39 @@ export class ApiLoadBalancer {
     this.buffers[connectionIndex].put(responseTime);
   }
 
-  getWeights(disconnectedIndices?: number[]): number[] {
-    const weights = this.buffers.map((buffer, index) => {
-      if (disconnectedIndices?.includes(index)) {
-        return 0;
+  getWeights(disconnectedIndices?: number[]): Record<number, number> {
+    const weightsMap: Record<number, number> = {};
+    Object.keys(this.buffers).map((key) => {
+      if (disconnectedIndices?.includes(toNumber(key))) {
+        return;
       }
-      return buffer.average();
+      weightsMap[key] = this.buffers[key].average();
     });
-    const total = weights.reduce((a, b) => a + b, 0);
+    if (Object.keys(weightsMap).length === 0) {
+      return {};
+    }
+
+    const total = Object.values(weightsMap).reduce((a, b) => a + b, 0);
     //deal with the case where average is 0
     if (total === 0) {
-      return weights.map((weight) => 1 / this.buffers.length);
+      Object.keys(weightsMap).map((key) => {
+        weightsMap[key] = 1 / Object.keys(weightsMap).length;
+      });
+      return weightsMap;
     }
-    return weights.map((weight) => weight / total);
+    Object.keys(weightsMap).map((key) => {
+      weightsMap[key] = weightsMap[key] / total;
+    });
+    return weightsMap;
   }
 }
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
-  private api: ApiPromise[] = [];
+  private connectionPool: Record<number, ApiPromise> = {};
+  private disconnectedApis: Record<number, ApiPromise> = {};
+  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
+  private loadBalancer: ApiLoadBalancer;
   private disconnectedApiIndices: number[] = [];
   private endpoints: string[] = [];
   private currentBlockHash: string;
@@ -97,10 +116,23 @@ export class ApiService implements OnApplicationShutdown {
   constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
     private eventEmitter: EventEmitter2,
-  ) {}
+    private nodeConfig: NodeConfig,
+  ) {
+    if (this.nodeConfig.profiler) {
+      this.fetchBlocksBatches = profilerWrap(
+        SubstrateUtil.fetchBlocksBatches,
+        'SubstrateUtil',
+        'fetchBlocksBatches',
+      );
+    }
+  }
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all(this.api?.map((api) => api.disconnect()));
+    await Promise.all(
+      Object.keys(this.connectionPool)?.map((key) =>
+        this.connectionPool[key].disconnect(),
+      ),
+    );
   }
 
   private metadataMismatchError(
@@ -131,8 +163,8 @@ export class ApiService implements OnApplicationShutdown {
     const headers = {
       'User-Agent': `SubQuery-Node ${packageVersion}`,
     };
-    for (let i = 0; i < network.endpoints.length; i++) {
-      const endpoint = network.endpoints[i];
+    for (let i = 0; i < network.endpoint.length; i++) {
+      const endpoint = network.endpoint[i];
       if (endpoint.startsWith('ws')) {
         provider = new WsProvider(endpoint, RETRY_DELAY, headers);
       } else if (endpoint.startsWith('http')) {
@@ -151,11 +183,17 @@ export class ApiService implements OnApplicationShutdown {
       this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
       api.on('connected', () => {
         this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 1 });
+        this.connectionPool[i] = api;
+        if (this.disconnectedApis[i]) {
+          delete this.disconnectApis[i];
+        }
       });
       api.on('disconnected', () => {
         this.eventEmitter.emit(IndexerEvent.ApiConnected, { value: 0 });
         logger.warn(`Disconnected from ${endpoint}`);
-        this.disconnectedApiIndices.push(i);
+        this.disconnectedApis[i] = api;
+        delete this.connectionPool[i];
+        this.attemptReconnects();
       });
 
       if (!this.networkMeta) {
@@ -208,31 +246,32 @@ export class ApiService implements OnApplicationShutdown {
         }
       }
 
-      this.api.push(api);
+      this.connectionPool[i] = api;
       this.apiOptions.push(apiOption);
       this.endpoints.push(endpoint);
     }
 
+    this.loadBalancer = new ApiLoadBalancer(
+      this.numConnections,
+      this.nodeConfig.batchSize,
+    );
+
     return this;
   }
 
-  @Interval(RETRY_DELAY)
   async attemptReconnects(): Promise<void> {
-    if (this.disconnectedApiIndices.length === 0) {
+    if (Object.keys(this.disconnectedApis).length === 0) {
       return;
     }
     await Promise.all(
-      this.disconnectedApiIndices.map(async (index) => {
+      Object.keys(this.disconnectedApis).map(async (key) => {
         try {
-          logger.info(`Attempting to reconnect to ${this.endpoints[index]}`);
-          await this.api[index].connect();
-          this.disconnectedApiIndices = this.disconnectedApiIndices.filter(
-            (i) => i !== index,
-          );
-          logger.info(`Reconnected to ${this.endpoints[index]}`);
+          logger.info(`Attempting to reconnect to ${this.endpoints[key]}`);
+          await this.disconnectedApis[key].connect();
+          logger.info(`Reconnected to ${this.endpoints[key]}`);
         } catch (e) {
           logger.error(e);
-          logger.error(`Failed to reconnect to ${this.endpoints[index]}`);
+          logger.error(`Failed to reconnect to ${this.endpoints[key]}`);
         }
       }),
     );
@@ -242,7 +281,7 @@ export class ApiService implements OnApplicationShutdown {
     if (this.disconnectedApiIndices.includes(index)) {
       return;
     }
-    await this.api[index].disconnect();
+    await this.connectionPool[index].disconnect();
     this.disconnectedApiIndices.push(index);
   }
 
@@ -250,27 +289,26 @@ export class ApiService implements OnApplicationShutdown {
     if (!index) {
       index = this.getNextConnectedApiIndex();
     }
-    return this.api[index];
+    return this.connectionPool[index];
   }
 
   getNextConnectedApiIndex(): number {
     // get the next connected api index
-    const nextIndex = this.taskCounter % this.api.length;
-    this.taskCounter++;
-    if (this.disconnectedApiIndices.includes(nextIndex)) {
-      return this.getNextConnectedApiIndex();
+    if (Object.keys(this.connectionPool).length === 0) {
+      return -1;
     }
-    return nextIndex;
+    const nextIndex =
+      this.taskCounter % Object.keys(this.connectionPool).length;
+    this.taskCounter++;
+    return toNumber(Object.keys(this.connectionPool)[nextIndex]);
   }
 
   getFirstConnectedApiIndex(): number {
     // get the first connected api index
-    for (let i = 0; i < this.api.length; i++) {
-      if (!this.disconnectedApiIndices.includes(i)) {
-        return i;
-      }
+    if (Object.keys(this.connectionPool).length === 0) {
+      return -1;
     }
-    return -1;
+    return this.connectionPool[Object.keys(this.connectionPool)[0]];
   }
 
   get disconnectApis(): number[] {
@@ -278,7 +316,7 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   get numConnections(): number {
-    return this.api.length;
+    return Object.keys(this.connectionPool).length;
   }
 
   getEndpoints(index: number): string {
@@ -288,16 +326,16 @@ export class ApiService implements OnApplicationShutdown {
   async getPatchedApi(
     block: SubstrateBlock,
     runtimeVersion: RuntimeVersion,
-    apiIndex: number,
   ): Promise<ApiAt> {
     this.currentBlockHash = block.block.hash.toString();
     this.currentBlockNumber = block.block.header.number.toNumber();
 
-    const apiAt = (await this.api[apiIndex].at(
+    const index = this.getNextConnectedApiIndex();
+    const apiAt = (await this.connectionPool[index].at(
       this.currentBlockHash,
       runtimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.api[apiIndex], apiAt);
+    this.patchApiRpc(this.connectionPool[index], apiAt);
     return apiAt;
   }
 
@@ -330,9 +368,9 @@ export class ApiService implements OnApplicationShutdown {
             if (argsClone[hashIndex] === undefined) {
               argsClone[hashIndex] = this.currentBlockHash;
             } else {
-              const atBlock = await this.api[0].rpc.chain.getBlock(
-                argsClone[hashIndex],
-              );
+              const atBlock = await this.connectionPool[
+                this.getFirstConnectedApiIndex()
+              ].rpc.chain.getBlock(argsClone[hashIndex]);
               const atBlockNumber = atBlock.block.header.number.toNumber();
               if (atBlockNumber > this.currentBlockNumber) {
                 throw new Error(
@@ -380,5 +418,99 @@ export class ApiService implements OnApplicationShutdown {
     const ext = original.meta as unknown as DefinitionRpcExt;
 
     return `api.rpc.${ext?.section ?? '*'}.${ext?.method ?? '*'}`;
+  }
+
+  private async fetchBlocksFromFirstAvailableEndpoint(
+    batch: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    let reconnectAttempts = 0;
+    while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+      try {
+        const start = performance.now();
+        const index = this.getFirstConnectedApiIndex();
+        if (index === -1) {
+          throw new Error('No connected api');
+        }
+        const blocks = await this.fetchBlocksBatches(
+          this.getApi(index),
+          batch,
+          overallSpecVer,
+        );
+        const end = performance.now();
+        this.loadBalancer.addToBuffer(index, (end - start) / batch.length);
+        return blocks;
+      } catch (e) {
+        logger.error(e, 'Failed to fetch blocks');
+        reconnectAttempts++;
+      }
+    }
+    throw new Error(
+      `Maximum number of retries (${MAX_RECONNECT_ATTEMPTS}) reached.`,
+    );
+  }
+
+  async fetchBlocks(
+    blockNums: number[],
+    overallSpecVer?: number,
+  ): Promise<BlockContent[]> {
+    if (this.connectionPool[0]) {
+      //await this.connectionPool[0].disconnect();
+    }
+    const weights = this.loadBalancer.getWeights(
+      Object.keys(this.disconnectApis).map((key) => toNumber(key)),
+    );
+    logger.info(`weights: ${JSON.stringify(weights)}`);
+    const blocks: BlockContent[] = [];
+
+    //split the blockNums into batches based on the weight as ratio of length of blockNums
+    //for example, if blocknums = [1,2,3,4,5,6,7,8,9,10] and weights = [0.5, 0.5], then the batches will be [[1,2,3,4,5], [6,7,8,9,10]]
+    const batches = splitArrayByRatio(blockNums, Object.values(weights));
+
+    //fetch blocks from each batch in parallel and record the time it takes to fetch each batch
+    //if fetching fails for a batch, add the batch to the end of the queue and try again
+
+    const promises = batches.map(async (batch, index) => {
+      try {
+        const start = performance.now();
+        const blocks = await this.fetchBlocksBatches(
+          this.getApi(index),
+          batch,
+          overallSpecVer,
+        );
+        const end = performance.now();
+        this.loadBalancer.addToBuffer(
+          index,
+          Math.ceil((end - start) / batch.length),
+        );
+        return blocks;
+      } catch (e) {
+        logger.error(
+          e,
+          `Failed to fetch blocks ${batch[0]}...${batch[batch.length - 1]}`,
+        );
+        await this.addToDisconnectedApiIndices(index);
+        if (index === batches.length - 1) {
+          //if it is the last batch, fetch batch from the first available endpoint
+          const blocks = await this.fetchBlocksFromFirstAvailableEndpoint(
+            batch,
+            overallSpecVer,
+          );
+          return blocks;
+        } else {
+          //if it is not the last batch, add the batch to the next batch
+          batches[index + 1].push(...batch);
+        }
+
+        return [];
+      }
+    });
+
+    const results = await Promise.all(promises);
+    results.forEach((result) => {
+      blocks.push(...result);
+    });
+
+    return blocks;
   }
 }

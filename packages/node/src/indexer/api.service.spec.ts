@@ -4,6 +4,7 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProjectNetworkV0_0_1 } from '@subql/common-substrate';
+import { NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -23,7 +24,7 @@ jest.mock('@polkadot/api', () => {
 });
 
 const testNetwork: ProjectNetworkV0_0_1 = {
-  endpoints: ['wss://kusama.api.onfinality.io/public-ws'],
+  endpoint: ['wss://kusama.api.onfinality.io/public-ws'],
   types: {
     TestType: 'u32',
   },
@@ -46,10 +47,17 @@ const testNetwork: ProjectNetworkV0_0_1 = {
   typesSpec: { spec3: { TestType6: 'test' } },
 };
 
+const nodeConfig = new NodeConfig({
+  subquery: 'asdf',
+  subqueryName: 'asdf',
+  networkEndpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
+  dictionaryTimeout: 10,
+});
+
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoints: testNetwork.endpoints,
+      endpoint: testNetwork.endpoint,
       genesisHash:
         '0xb0a8d493285c2df73290dfb7e61f870f17b41801197a149ca93654499ea3dafe',
     },
@@ -71,10 +79,10 @@ function testSubqueryProject(): SubqueryProject {
 describe('ApiService', () => {
   it('read custom types from project manifest', async () => {
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2());
+    const apiService = new ApiService(project, new EventEmitter2(), nodeConfig);
     await apiService.init();
     const { version } = require('../../package.json');
-    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoints, 2500, {
+    expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint, 2500, {
       'User-Agent': `SubQuery-Node ${version}`,
     });
     expect(ApiPromise.create).toHaveBeenCalledWith({
@@ -91,7 +99,7 @@ describe('ApiService', () => {
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
-    const apiService = new ApiService(project, new EventEmitter2());
+    const apiService = new ApiService(project, new EventEmitter2(), nodeConfig);
 
     await expect(apiService.init()).rejects.toThrow();
   });

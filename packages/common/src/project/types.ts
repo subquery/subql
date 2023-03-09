@@ -11,7 +11,7 @@ export interface IProjectManifest<D> {
 }
 
 export interface ProjectNetworkConfig {
-  endpoints: string[];
+  endpoint: string | string[];
   dictionary?: string;
   bypassBlocks?: (number | string)[];
   //genesisHash?: string;

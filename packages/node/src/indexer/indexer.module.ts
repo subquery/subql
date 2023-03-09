@@ -3,7 +3,12 @@
 
 import { Module } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { StoreService, PoiService, MmrService } from '@subql/node-core';
+import {
+  StoreService,
+  PoiService,
+  MmrService,
+  NodeConfig,
+} from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
@@ -19,13 +24,15 @@ import { WorkerService } from './worker/worker.service';
   providers: [
     IndexerManager,
     StoreService,
+    NodeConfig,
     {
       provide: ApiService,
       useFactory: async (
         project: SubqueryProject,
         eventEmitter: EventEmitter2,
+        nodeConfig: NodeConfig,
       ) => {
-        const apiService = new ApiService(project, eventEmitter);
+        const apiService = new ApiService(project, eventEmitter, nodeConfig);
         await apiService.init();
         return apiService;
       },

@@ -274,7 +274,7 @@ function mockDictionaryService3(): DictionaryService {
 function testSubqueryProject(): SubqueryProject {
   return {
     network: {
-      endpoints: ['wss://polkadot.api.onfinality.io/public-ws'],
+      endpoint: ['wss://polkadot.api.onfinality.io/public-ws'],
     },
     chainTypes: {
       types: {
