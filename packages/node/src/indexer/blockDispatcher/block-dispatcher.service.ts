@@ -173,17 +173,11 @@ export class BlockDispatcherService
 
             this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
-            this.storeCacheService.setCurrentIndexingHeight(height);
-            const tx = await this.storeCacheService.registryTransaction();
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
               runtimeVersion,
-              tx,
-              this.storeCacheService.getCache(),
             );
-            this.storeCacheService.syncCacheFeedback(
-              processBlockResponse.storeCacheFeedback,
-            );
+
             await this.postProcessBlock(height, processBlockResponse);
             await this.storeCacheService.flushCache();
           } catch (e) {
