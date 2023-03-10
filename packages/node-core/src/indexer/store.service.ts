@@ -5,7 +5,7 @@ import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
 import {hexToU8a, u8aToBuffer} from '@polkadot/util';
 import {getDbType, SUPPORT_DB} from '@subql/common';
-import {StoreCache} from '@subql/node-core/indexer/storeCache.service';
+
 import {Entity, Store} from '@subql/types';
 import {
   GraphQLModelsRelationsEnums,
@@ -57,6 +57,7 @@ import {
   getEnumDeprecated,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import { StoreCacheService } from './storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 
@@ -77,7 +78,6 @@ interface NotifyTriggerPayload {
   eventManipulation: string;
 }
 
-type SchemaTriggerPayload = string;
 @Injectable()
 export class StoreService {
   private tx?: Transaction;
@@ -92,10 +92,12 @@ export class StoreService {
   historical: boolean;
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
-  private storeGetCache: Record<string, Record<string, Entity>>;
-  private storeSetCache: Record<string, Record<string, Entity>>;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
+  constructor(
+    private sequelize: Sequelize,
+    private config: NodeConfig,
+    public readonly storeCache: StoreCacheService,
+  ) {}
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
@@ -125,15 +127,6 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
-  }
-
-  setCache(storeCache: StoreCache) {
-    this.storeGetCache = storeCache.storeGetCache;
-    this.storeSetCache = storeCache.storeSetCache;
-  }
-
-  getCache(): StoreCache {
-    return {storeGetCache: this.storeGetCache, storeSetCache: this.storeSetCache};
   }
 
   async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
@@ -710,21 +703,7 @@ group by
       },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          // try to get from StoreSet first, as it is result from current block
-          const cachedRecord = this.storeSetCache[entity]?.[id] ?? this.storeGetCache[entity]?.[id];
-          if (!cachedRecord) {
-            const record = await model.findOne({
-              where: {id},
-              transaction: this.tx,
-            });
-            if (!this.storeGetCache[entity]) {
-              this.storeGetCache[entity] = {};
-            }
-            this.storeGetCache[entity][id] = record?.toJSON() as T;
-          }
-          return (this.storeSetCache[entity]?.[id] ?? this.storeGetCache[entity][id]) as T;
+          return this.storeCache.getModel<T>(entity).get(id, this.tx);
         } catch (e) {
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
@@ -790,19 +769,8 @@ group by
       },
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          const attributes = data as unknown as CreationAttributes<Model>;
-          if (this.historical) {
-            if (!this.storeSetCache[entity]) {
-              this.storeSetCache[entity] = {};
-            }
-            this.storeSetCache[entity][_id] = data;
-          } else {
-            await model.upsert(attributes, {
-              transaction: this.tx,
-            });
-          }
+          this.storeCache.getModel(entity).set(_id, data, this.blockHeight);
+
           if (this.config.proofOfIndex) {
             this.operationStack.put(OperationType.Set, entity, data);
           }
