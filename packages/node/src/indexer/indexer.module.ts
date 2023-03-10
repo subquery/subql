@@ -45,9 +45,9 @@ import { WorkerService } from './worker/worker.service';
       },
       inject: [
         'ISubqueryProject',
+        ConnectionPoolService,
         EventEmitter2,
         NodeConfig,
-        ConnectionPoolService,
       ],
     },
     SandboxService,
