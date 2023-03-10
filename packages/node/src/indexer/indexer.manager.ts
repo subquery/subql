@@ -26,7 +26,7 @@ import {
   profiler,
   profilerWrap,
   IndexerSandbox,
-  StoreCache,
+  EntitySetData,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
@@ -78,22 +78,18 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-    storeCacheTransaction?: Transaction,
-    storeCache?: StoreCache,
   ): Promise<{
     dynamicDsCreated: boolean;
     operationHash: Uint8Array;
     reindexBlockHeight: number;
-    storeCacheFeedback: StoreCache;
   }> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
     let reindexBlockHeight = null;
     const blockHeight = block.block.header.number.toNumber();
-    const tx = storeCacheTransaction ?? (await this.sequelize.transaction());
+    const tx = await this.sequelize.transaction();
     this.storeService.setTransaction(tx);
     this.storeService.setBlockHeight(blockHeight);
-    this.storeService.setCache(storeCache);
 
     let operationHash = NULL_MERKEL_ROOT;
     let poiBlockHash: Uint8Array;
@@ -174,22 +170,17 @@ export class IndexerManager {
         }
       }
     } catch (e) {
-      if (!storeCacheTransaction) {
-        await tx.rollback();
-      }
+      await tx.rollback();
       throw e;
     }
 
-    if (!storeCacheTransaction) {
-      await tx.commit();
-    }
-    const storeCacheFeedback = this.storeService.getCache();
+    await tx.commit();
+    // const storeCacheFeedback = this.storeService.getCache();
 
     return {
       dynamicDsCreated,
       operationHash,
       reindexBlockHeight,
-      storeCacheFeedback,
     };
   }
 
