@@ -5,14 +5,13 @@ import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../configure';
-import { Entity } from '@subql/types';
 
-const FLUSH_FREQUENCY = 1;
+const FLUSH_FREQUENCY = 300;
 
 type SetData<T> = Record<string, SetValue<T>>;
 export type EntitySetData = Record<string, SetData<any>>;
 
-interface ICachedModel<T>{
+interface ICachedModel<T> {
   get: (id: string, tx: Transaction) => Promise<T | null>;
   set: (id: string, data: T, blockHeight: number) => void;
 
@@ -20,9 +19,7 @@ interface ICachedModel<T>{
 }
 
 interface ICachedModelControl<T> {
-
   isFlushable: boolean;
-
 
   sync(data: SetData<T>): void;
   flush(tx: Transaction): Promise<void>;
@@ -34,30 +31,26 @@ type GetValue<T> = {
   // Null value indicates its not defined in the db
   data: T | null;
   // Future-proof to allow meta for clearing cache
-}
+};
 
 type SetValue<T> = {
   data: T;
   blockHeight: number;
-}
+};
 
-type HistoricalModel = { __block_range: any; };
+type HistoricalModel = {__block_range: any};
 
-
-class CachedModel<T extends {  id: string; } = { id: string; }> implements ICachedModel<T>, ICachedModelControl<T> {
-
+class CachedModel<
+  T extends {id: string; __block_range?: (number | null)[]} = {id: string; __block_range?: (number | null)[]}
+> implements ICachedModel<T>, ICachedModelControl<T>
+{
   // Null value indicates its not defined in the db
   private getCache: Record<string, GetValue<T>> = {};
 
   // TODO support key by historical
   private setCache: SetData<T> = {};
 
-  constructor(
-    readonly model: ModelStatic<Model<T, T>>,
-    private readonly historical = true
-  ) {
-
-  }
+  constructor(readonly model: ModelStatic<Model<T, T>>, private readonly historical = true) {}
 
   private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
     return this.model as ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>>;
@@ -67,12 +60,12 @@ class CachedModel<T extends {  id: string; } = { id: string; }> implements ICach
     if (this.getCache[id] === undefined) {
       const record = await this.model.findOne({
         // https://github.com/sequelize/sequelize/issues/15179
-        where: { id } as any,
+        where: {id} as any,
         transaction: tx,
       });
 
       this.getCache[id] = {
-        data: record.toJSON<T>()
+        data: record?.toJSON<T>(),
       };
     }
 
@@ -80,22 +73,25 @@ class CachedModel<T extends {  id: string; } = { id: string; }> implements ICach
   }
 
   set(id: string, data: T, blockHeight: number): void {
-
-    this.setCache[id] = { data, blockHeight };
-    this.getCache[id] = { data };
+    this.setCache[id] = {data, blockHeight};
+    this.getCache[id] = {data};
   }
 
   get isFlushable(): boolean {
-    return !!Object.keys(this.setCache).length
+    return !!Object.keys(this.setCache).length;
   }
 
   async flush(tx: Transaction): Promise<void> {
-
-    const records = Object.values(this.setCache).map(v => v.data) as unknown as CreationAttributes<Model<T, T>>[];
+    const records = Object.values(this.setCache).map((v) => {
+      if (this.historical) {
+        // v.data.__block_range = `'[${v.blockHeight},)'`
+        v.data.__block_range = [v.blockHeight, null];
+      }
+      return v.data;
+    }) as unknown as CreationAttributes<Model<T, T>>[];
 
     if (this.historical) {
       // TODO update records __block_range
-
       await Promise.all([
         // mark to close previous records within blockheight -1, within all entity IDs
         this.markPreviousHeightRecordsBatch(tx),
@@ -127,12 +123,10 @@ class CachedModel<T extends {  id: string; } = { id: string; }> implements ICach
   }
 
   sync(data: SetData<T>) {
-
-    Object.entries(data)
-      .map(([id, enttity]) => {
-        // TODO update for historical
-        this.setCache[id] = enttity;
-      })
+    Object.entries(data).map(([id, enttity]) => {
+      // TODO update for historical
+      this.setCache[id] = enttity;
+    });
   }
 
   private async markPreviousHeightRecordsBatch(tx: Transaction): Promise<any[]> {
@@ -140,27 +134,30 @@ class CachedModel<T extends {  id: string; } = { id: string; }> implements ICach
     // thus, and new record with current block height will not be impacted,
     // advantage is this sql is safe to concurrency resolve with any insert sql
 
-    return Promise.all(Object.entries(this.setCache).map(([id, value]) =>
-      this.historicalModel.update(
-      {
-        __block_range: this.model.sequelize.fn(
-          'int8range',
-          this.model.sequelize.fn('lower', this.model.sequelize.col('_block_range')),
-          value.blockHeight
-        ),
-      },
-      {
-        hooks: false,
-        transaction: tx,
-        // https://github.com/sequelize/sequelize/issues/15179
-        where: {
-          id,
-          __block_range: {
-            [Op.contains]: (value.blockHeight - 1) as any,
+    return Promise.all(
+      Object.entries(this.setCache).map(([id, value]) =>
+        this.historicalModel.update(
+          {
+            __block_range: this.model.sequelize.fn(
+              'int8range',
+              this.model.sequelize.fn('lower', this.model.sequelize.col('_block_range')),
+              value.blockHeight
+            ),
           },
-        } as any,
-      }
-    )));
+          {
+            hooks: false,
+            transaction: tx,
+            // https://github.com/sequelize/sequelize/issues/15179
+            where: {
+              id,
+              __block_range: {
+                [Op.contains]: (value.blockHeight - 1) as any,
+              },
+            } as any,
+          }
+        )
+      )
+    );
   }
 }
 
@@ -183,7 +180,6 @@ export class StoreCacheService {
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
-
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
@@ -207,12 +203,11 @@ export class StoreCacheService {
   dumpSetData(): EntitySetData {
     const res: EntitySetData = {};
 
-    Object.entries(this.cachedModels)
-      .map(([entity, model]) => {
-        if (model.isFlushable) {
-          res[entity] = model.dumpSetData();
-        }
-      });
+    Object.entries(this.cachedModels).map(([entity, model]) => {
+      if (model.isFlushable) {
+        res[entity] = model.dumpSetData();
+      }
+    });
 
     return res;
   }
@@ -223,27 +218,24 @@ export class StoreCacheService {
     }
 
     // Get models that have data to flush
-    const updatableModels = Object.values(this.cachedModels)
-      .filter(m => m.isFlushable);
+    const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
-    await Promise.all(updatableModels.map(model => model.flush(this.tx)));
+    await Promise.all(updatableModels.map((model) => model.flush(this.tx)));
   }
 
   async flushCache(): Promise<void> {
     if (this.isFlushable()) {
       await this._flushCache();
       // Note flushCache and commit transaction need to sequential
-      await this.commitTransaction();
+      // await this.commitTransaction();
       this.resetMemoryStore();
     }
   }
 
   syncData(data: EntitySetData): void {
-    Object.entries(data)
-      .map(([entity, setData]) => {
-        (this.getModel(entity) as CachedModel)
-          .sync(setData);
-      })
+    Object.entries(data).map(([entity, setData]) => {
+      (this.getModel(entity) as CachedModel).sync(setData);
+    });
   }
 
   isFlushable(): boolean {
@@ -251,7 +243,6 @@ export class StoreCacheService {
   }
 
   resetMemoryStore(): void {
-    Object.values(this.cachedModels)
-      .map(model => model.clear());
+    Object.values(this.cachedModels).map((model) => model.clear());
   }
 }
