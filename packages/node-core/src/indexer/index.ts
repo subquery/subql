@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './benchmark.service';
+export * from './connectionPool.service';
 export * from './entities';
 export * from './PoiBlock';
 export * from './types';

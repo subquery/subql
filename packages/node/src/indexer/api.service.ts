@@ -13,6 +13,8 @@ import {
   getLogger,
   NodeConfig,
   profilerWrap,
+  ApiConnection,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { identity, toNumber } from 'lodash';
@@ -34,28 +36,43 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 
 const logger = getLogger('api');
 
+export class ApiPromiseConnection extends ApiConnection {
+  constructor(private _api: ApiPromise) {
+    super();
+  }
+
+  static fromApi(api: ApiPromise): ApiPromiseConnection {
+    return new ApiPromiseConnection(api);
+  }
+
+  get api(): ApiPromise {
+    return this._api;
+  }
+
+  async apiConnect(): Promise<void> {
+    await this._api.connect();
+  }
+  async apiDisconnect(): Promise<void> {
+    await this._api.disconnect();
+  }
+}
+
 @Injectable()
 export class ApiService implements OnApplicationShutdown {
-  private allApi: ApiPromise[] = [];
-  private connectionPool: Record<number, ApiPromise> = {};
   private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
   private currentBlockHash: string;
   private currentBlockNumber: number;
-  private taskCounter = 0;
   networkMeta: NetworkMetadataPayload;
 
   constructor(
     @Inject('ISubqueryProject') protected project: SubqueryProject,
+    private connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
     private eventEmitter: EventEmitter2,
     private nodeConfig: NodeConfig,
   ) {}
 
   async onApplicationShutdown(): Promise<void> {
-    await Promise.all(
-      Object.keys(this.connectionPool)?.map((key) =>
-        this.connectionPool[key].disconnect(),
-      ),
-    );
+    await this.connectionPoolService.onApplicationShutdown();
   }
 
   private metadataMismatchError(
@@ -130,7 +147,7 @@ export class ApiService implements OnApplicationShutdown {
           apiIndex: i,
           endpoint: endpoint,
         });
-        this.handleApiDisconnects(i, endpoint);
+        this.connectionPoolService.handleApiDisconnects(i, endpoint);
       });
 
       if (!this.networkMeta) {
@@ -185,23 +202,16 @@ export class ApiService implements OnApplicationShutdown {
 
       logger.info(`Connected to ${endpoint} successfully`);
 
-      this.allApi.push(api);
-      this.connectionPool[i] = api;
+      this.connectionPoolService.addToConnections(
+        ApiPromiseConnection.fromApi(api),
+      );
     }
 
     return this;
   }
 
-  private async connectToApi(apiIndex: number): Promise<void> {
-    await this.allApi[apiIndex].connect();
-  }
-
   get api(): ApiPromise {
-    const index = this.getNextConnectedApiIndex();
-    if (index === -1) {
-      throw new Error('No connected api found');
-    }
-    return this.connectionPool[this.getNextConnectedApiIndex()];
+    return this.connectionPoolService.api.api;
   }
 
   async getPatchedApi(
@@ -211,12 +221,12 @@ export class ApiService implements OnApplicationShutdown {
     this.currentBlockHash = block.block.hash.toString();
     this.currentBlockNumber = block.block.header.number.toNumber();
 
-    const index = this.getNextConnectedApiIndex();
-    const apiAt = (await this.connectionPool[index].at(
+    const api = this.api;
+    const apiAt = (await api.at(
       this.currentBlockHash,
       runtimeVersion,
     )) as ApiAt;
-    this.patchApiRpc(this.connectionPool[index], apiAt);
+    this.patchApiRpc(api, apiAt);
     return apiAt;
   }
 
@@ -249,9 +259,9 @@ export class ApiService implements OnApplicationShutdown {
             if (argsClone[hashIndex] === undefined) {
               argsClone[hashIndex] = this.currentBlockHash;
             } else {
-              const atBlock = await this.connectionPool[
-                this.getFirstConnectedApiIndex()
-              ].rpc.chain.getBlock(argsClone[hashIndex]);
+              const atBlock = await this.api.rpc.chain.getBlock(
+                argsClone[hashIndex],
+              );
               const atBlockNumber = atBlock.block.header.number.toNumber();
               if (atBlockNumber > this.currentBlockNumber) {
                 throw new Error(
@@ -308,8 +318,7 @@ export class ApiService implements OnApplicationShutdown {
     let reconnectAttempts = 0;
     while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
       try {
-        const index = this.getFirstConnectedApiIndex();
-        if (index === -1) {
+        if (this.connectionPoolService.numConnections === 0) {
           throw new Error('No connected api');
         }
         const blocks = await this.fetchBlocksBatches(
@@ -362,41 +371,4 @@ export class ApiService implements OnApplicationShutdown {
   }
 
   // functions that can be moved to node-core
-
-  async handleApiDisconnects(
-    apiIndex: number,
-    endpoint: string,
-  ): Promise<void> {
-    logger.warn(`disconnected from ${endpoint}`);
-    delete this.connectionPool[apiIndex];
-
-    logger.debug(`reconnecting to ${endpoint}...`);
-    await this.connectToApi(apiIndex);
-
-    logger.info(`reconnected to ${endpoint}!`);
-    this.connectionPool[apiIndex] = this.allApi[apiIndex];
-  }
-
-  getNextConnectedApiIndex(): number {
-    // get the next connected api index
-    if (Object.keys(this.connectionPool).length === 0) {
-      return -1;
-    }
-    const nextIndex =
-      this.taskCounter % Object.keys(this.connectionPool).length;
-    this.taskCounter++;
-    return toNumber(Object.keys(this.connectionPool)[nextIndex]);
-  }
-
-  getFirstConnectedApiIndex(): number {
-    // get the first connected api index
-    if (Object.keys(this.connectionPool).length === 0) {
-      return -1;
-    }
-    return this.connectionPool[Object.keys(this.connectionPool)[0]];
-  }
-
-  get numConnections(): number {
-    return Object.keys(this.connectionPool).length;
-  }
 }

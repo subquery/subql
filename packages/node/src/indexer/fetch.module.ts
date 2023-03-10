@@ -9,6 +9,7 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
+  ConnectionPoolService,
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -32,6 +33,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     StoreService,
     ApiService,
     IndexerManager,
+    ConnectionPoolService,
     {
       provide: 'IBlockDispatcher',
       useFactory: (
@@ -60,6 +62,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ProjectService,
         ApiService,
         IndexerManager,
+        ConnectionPoolService,
       ],
     },
     FetchService,

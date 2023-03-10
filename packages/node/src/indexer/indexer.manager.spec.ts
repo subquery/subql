@@ -11,11 +11,12 @@ import {
   PoiService,
   MmrService,
   NodeConfig,
+  ConnectionPoolService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from './api.service';
+import { ApiPromiseConnection, ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';
@@ -126,11 +127,17 @@ function testSubqueryProject_2(): SubqueryProject {
 
 function createIndexerManager(
   project: SubqueryProject,
+  connectionPoolService: ConnectionPoolService<ApiPromiseConnection>,
   nodeConfig: NodeConfig,
 ): IndexerManager {
   const sequilize = new Sequelize();
   const eventEmitter = new EventEmitter2();
-  const apiService = new ApiService(project, eventEmitter, nodeConfig);
+  const apiService = new ApiService(
+    project,
+    connectionPoolService,
+    eventEmitter,
+    nodeConfig,
+  );
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
@@ -188,14 +195,22 @@ describe('IndexerManager', () => {
   });
 
   xit('should be able to start the manager (v0.0.1)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_1(), nodeConfig);
+    indexerManager = createIndexerManager(
+      testSubqueryProject_1(),
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      nodeConfig,
+    );
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);
   });
 
   xit('should be able to start the manager (v0.2.0)', async () => {
-    indexerManager = createIndexerManager(testSubqueryProject_2(), nodeConfig);
+    indexerManager = createIndexerManager(
+      testSubqueryProject_2(),
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      nodeConfig,
+    );
     await expect(indexerManager.start()).resolves.toBe(undefined);
 
     expect(Object.keys((indexerManager as any).vms).length).toBe(1);

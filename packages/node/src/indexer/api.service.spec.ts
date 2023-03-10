@@ -4,11 +4,11 @@
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ProjectNetworkV0_0_1 } from '@subql/common-substrate';
-import { NodeConfig } from '@subql/node-core';
+import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiService } from './api.service';
+import { ApiPromiseConnection, ApiService } from './api.service';
 
 jest.mock('@polkadot/api', () => {
   const ApiPromise = jest.fn();
@@ -79,7 +79,12 @@ function testSubqueryProject(): SubqueryProject {
 describe('ApiService', () => {
   it('read custom types from project manifest', async () => {
     const project = testSubqueryProject();
-    const apiService = new ApiService(project, new EventEmitter2(), nodeConfig);
+    const apiService = new ApiService(
+      project,
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      new EventEmitter2(),
+      nodeConfig,
+    );
     await apiService.init();
     const { version } = require('../../package.json');
     expect(WsProvider).toHaveBeenCalledWith(testNetwork.endpoint, 2500, {
@@ -99,7 +104,12 @@ describe('ApiService', () => {
     // Now after manifest 1.0.0, will use chainId instead of genesisHash
     (project.network as any).chainId = '0x';
 
-    const apiService = new ApiService(project, new EventEmitter2(), nodeConfig);
+    const apiService = new ApiService(
+      project,
+      new ConnectionPoolService<ApiPromiseConnection>(),
+      new EventEmitter2(),
+      nodeConfig,
+    );
 
     await expect(apiService.init()).rejects.toThrow();
   });
