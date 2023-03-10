@@ -3,25 +3,39 @@
 
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
-import {flatten} from 'lodash';
+import { flatten, isEqual, includes} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
+import {CountOptions} from 'sequelize/types/model';
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../configure';
 
 const FLUSH_FREQUENCY = 5;
 
-type SetData<T> = Record<string, SetValueModel<T>>;
-export type EntitySetData = Record<string, SetData<any>>;
-
 interface ICachedModel<T> {
+  count: (
+    field?: keyof T,
+    value?: T[keyof T] | T[keyof T][],
+    options?: {distinct?: boolean; col?: keyof T}
+  ) => Promise<number>;
   get: (id: string, tx: Transaction) => Promise<T | null>;
+  // limit always defined from store
+  getByField: (
+    field: keyof T,
+    value: T[keyof T] | T[keyof T][],
+    tx: Transaction,
+    options?: {limit: number; offset?: number}
+  ) => Promise<T[] | undefined>;
+  getOneByField: (field: keyof T, value: T[keyof T], tx: Transaction) => Promise<T | undefined>;
   set: (id: string, data: T, blockHeight: number) => void;
-
-  // TODO implement other Store interface methods: count, getByField, getOneByField, bulkCreate, bulkUpdate, remove
+  bulkCreate: (data: T[], blockHeight: number) => void;
+  bulkUpdate: (data: T[], blockHeight: number, fields?: string[]) => void;
+  remove: (id: string, blockHeight: number) => void;
 }
 
 interface ICachedModelControl<T> {
+
   isFlushable: boolean;
+
 
   sync(data: SetData<T>): void;
   flush(tx: Transaction): Promise<void>;
@@ -29,10 +43,16 @@ interface ICachedModelControl<T> {
   clear(): void;
 }
 
+export type EntitySetData = Record<string, SetData<any>>;
+
 type GetValue<T> = {
   // Null value indicates its not defined in the db
   data: T | null;
   // Future-proof to allow meta for clearing cache
+};
+
+type RemoveValue<T> = {
+  removedAtBlock: number;
 };
 
 type SetValue<T> = {
@@ -40,6 +60,8 @@ type SetValue<T> = {
   startHeight: number;
   endHeight: number | null;
 };
+
+type SetData<T> = Record<string, SetValueModel<T>>;
 
 type HistoricalModel = {__block_range: any};
 
@@ -97,6 +119,22 @@ class SetValueModel<T> {
   getValues(): SetValue<T>[] {
     return this.historicalValues;
   }
+
+  markAsRemoved(removeAtBlock: number) {
+    const latestIndex = this.latestIndex();
+    if (latestIndex === -1) {
+      return;
+    }
+    this.historicalValues[latestIndex].endHeight = removeAtBlock;
+  }
+
+  isMatchData(field: keyof T, value: T[keyof T] | T[keyof T][]): boolean {
+    if (Array.isArray(value)) {
+      return value.findIndex((v) => isEqual(this.getLatest().data[field], value)) > -1;
+    } else {
+      return isEqual(this.getLatest().data[field], value);
+    }
+  }
 }
 
 class CachedModel<
@@ -106,8 +144,9 @@ class CachedModel<
   // Null value indicates its not defined in the db
   private getCache: Record<string, GetValue<T>> = {};
 
-  // TODO support key by historical
   private setCache: SetData<T> = {};
+
+  private removeCache: Record<string, RemoveValue<T>> = {};
 
   constructor(readonly model: ModelStatic<Model<T, T>>, private readonly historical = true) {}
 
@@ -116,56 +155,166 @@ class CachedModel<
   }
 
   async get(id: string, tx: Transaction): Promise<T | null> {
+    // If this already been removed
+    if (this.removeCache[id]) {
+      return;
+    }
     if (this.getCache[id] === undefined) {
       const record = await this.model.findOne({
         // https://github.com/sequelize/sequelize/issues/15179
-        where: {id} as any,
+        where: { id } as any,
         transaction: tx,
       });
 
       this.getCache[id] = {
-        data: record?.toJSON<T>(),
+        data: record.toJSON<T>()
       };
     }
-
     return this.getCache[id].data;
   }
 
-  set(id: string, data: T, blockHeight: number): void {
-    if (this.setCache[id] === undefined) {
-      this.setCache[id] = new SetValueModel();
+  async getByField(
+    field: keyof T,
+    value: T[keyof T] | T[keyof T][],
+    tx: Transaction,
+    options: {offset?: number; limit?: number} | undefined
+  ): Promise<T[] | undefined> {
+    let cachedData = this.getByFieldFromCache(field, value);
+    const cachedDataIds = Object.values(cachedData).map((data) => data?.id);
+    if (options?.offset) {
+      if (cachedData.length <= options.offset) {
+        // example cache length 16, offset is 30
+        // it should skip cache value
+        cachedData = [];
+      } else if (cachedData.length > options.offset + options.limit) {
+        // example cache length 166, offset is 30, limit is 50
+        // then return all from cache [30,80]
+        return cachedData.slice(options.offset, options.offset + options.limit);
+      } else if (cachedData.length < options.offset + options.limit) {
+        // example cache length 66, offset is 30, limit is 50
+        // then return [30,66] from cache, set new limit and join record from db
+        cachedData = cachedData.slice(options.offset, cachedData.length);
+        options.limit = options.limit - (cachedData.length - options.offset);
+      }
     }
-    this.setCache[id].set(data, blockHeight);
-    this.getCache[id] = {data};
+    const records = await this.model.findAll({
+      where: {[field]: value, id: {[Op.notIn]: cachedDataIds}} as any,
+      transaction: tx,
+      limit: options?.limit, //limit should pass from store
+      offset: options?.offset,
+    });
+    const joinedData = cachedData.concat(records.map((record) => record.toJSON() as T));
+    return joinedData;
+  }
+
+  async getOneByField(field: keyof T, value: T[keyof T], tx: Transaction): Promise<T | undefined> {
+    // Might likely be more efficient than use getByField[0]
+    if (field === 'id') {
+      return this.get(value.toString(), tx);
+    } else {
+      const oneFromCached = this.getByFieldFromCache(field, value, true);
+      return (
+        oneFromCached[0] ??
+        ((
+          await this.model.findOne({
+            where: {[field]: value} as any,
+            transaction: tx,
+          })
+        )?.toJSON() as T)
+      );
+    }
+  }
+
+  set(id: string, data: T, blockHeight: number): void {
+
+    this.setCache[id] = { data, blockHeight };
+    this.getCache[id] = { data };
+  }
+
+  bulkCreate(data: T[], blockHeight: number): void {
+    for (const entity of data) {
+      this.set(entity.id, entity, blockHeight);
+    }
+  }
+
+  bulkUpdate(data: T[], blockHeight: number, fields?: string[] | undefined): void {
+    for (const entity of data) {
+      this.set(entity.id, entity, blockHeight);
+    }
+    //TODO, remove fields
+    if (fields) {
+      throw new Error(`Currently not support update by fields`);
+    }
+  }
+
+  async count(
+    field?: keyof T | undefined,
+    value?: T[keyof T] | T[keyof T][] | undefined,
+    options?: {distinct?: boolean; col?: keyof T} | undefined
+  ): Promise<number> {
+    const countOption = {} as Omit<CountOptions<any>, 'group'>;
+    let cachedCount = 0;
+    if (field && value) {
+      const cachedData = this.getByFieldFromCache(field, value);
+      const cachedDataIds = Object.values(cachedData).map((data) => data.id);
+      cachedCount = cachedDataIds.length;
+      // count should exclude any id already existed in cache
+      countOption.where = cachedCount !== 0 ? {[field]: value, id: {[Op.notIn]: cachedDataIds}} : {[field]: value};
+    }
+    //TODO, this seems not working with field and values
+    if (options) {
+      assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
+      countOption.distinct = options?.distinct;
+      countOption.col = options?.col as string;
+    }
+    return cachedCount + (await this.model.count(countOption));
+  }
+
+  remove(id: string, blockHeight: number): void {
+    if (this.removeCache[id] === undefined) {
+      this.removeCache[id] = {
+        removedAtBlock: blockHeight,
+      };
+      if (this.getCache[id]) {
+        delete this.getCache[id];
+        // Also when .get, check removeCache first, should return undefined if removed
+      }
+      if (this.setCache[id]) {
+        // close last record
+        this.setCache[id].markAsRemoved(blockHeight);
+      }
+    }
+    //else, this already been removed, do nothing
   }
 
   get isFlushable(): boolean {
-    return !!Object.keys(this.setCache).length;
+    return !!Object.keys(this.setCache).length
   }
 
   async flush(tx: Transaction): Promise<void> {
     const records = flatten(
       Object.values(this.setCache).map((v) => {
+        if (!this.historical) {
+          return v.getLatest().data;
+        }
+        // Historical
         return v.getValues().map((historicalValue) => {
-          if (this.historical) {
-            // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
-            historicalValue.data.__block_range = this.model.sequelize.fn(
-              'int8range',
-              historicalValue.startHeight,
-              historicalValue.endHeight
-            );
-          }
+          // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
+          historicalValue.data.__block_range = this.model.sequelize.fn(
+            'int8range',
+            historicalValue.startHeight,
+            historicalValue.endHeight
+          );
           return historicalValue.data;
         });
       })
     ) as unknown as CreationAttributes<Model<T, T>>[];
-
     if (this.historical) {
-      // TODO update records __block_range
       await Promise.all([
-        // mark to close previous records within blockHeight -1, within all entity IDs
-        this.markPreviousHeightRecordsBatch(tx),
-        // bulkCreate all new records for this entity
+        // set, bulkCreate, bulkUpdate & remove close previous records
+        this.historicalMarkPreviousHeightRecordsBatch(tx),
+        // bulkCreate all new records for this entity,
+        // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
           transaction: tx,
         }),
@@ -175,14 +324,14 @@ class CachedModel<
         transaction: tx,
         updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
       });
+      await this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx});
     }
-
-    this.setCache = {};
   }
 
   clear(): void {
     this.getCache = {};
     this.setCache = {};
+    this.removeCache = {};
   }
 
   dumpSetData(): SetData<T> {
@@ -199,22 +348,62 @@ class CachedModel<
     });
   }
 
-  private async markPreviousHeightRecordsBatch(tx: Transaction): Promise<any[]> {
-    // Different with markAsDeleted, we only mark/close all the records less than current block height
-    // thus, and new record with current block height will not be impacted,
-    // advantage is this sql is safe to concurrency resolve with any insert sql
+  private getByFieldFromCache(field: keyof T, value: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
+    const joinedData: T[] = [];
+    const unifiedIds: string[] = [];
+    if (Object.keys(this.setCache).length !== 0) {
+      joinedData.concat(
+        Object.entries(this.setCache).map(([, model]) => {
+          if (model.isMatchData(field, value)) {
+            const latestData = model.getLatest().data;
+            unifiedIds.push(latestData.id);
+            return latestData;
+          }
+        })
+      );
+      // No need search further
+      if (findOne && joinedData.length !== 0) {
+        return joinedData;
+      }
+    } else if (Object.keys(this.getCache).length !== 0) {
+      joinedData.concat(
+        Object.entries(this.getCache).map(([, getValue]) => {
+          if (
+            // We don't need to include anything duplicated
+            (!includes(unifiedIds, getValue.data.id) &&
+              Array.isArray(value) &&
+              includes(value, getValue.data[field])) ||
+            isEqual(getValue.data[field], value)
+          ) {
+            return getValue.data;
+          }
+        })
+      );
+    }
+    return joinedData;
+  }
+
+  // Different with markAsDeleted, we only mark/close all the records less than current block height
+  // thus, and new record with current block height will not be impacted,
+  // advantage is this sql is safe to concurrency resolve with any insert sql
+  private async historicalMarkPreviousHeightRecordsBatch(tx: Transaction): Promise<any[]> {
+    const closeSetRecords = Object.entries(this.setCache).map(([id, value]) => {
+      return {id, blockHeight: value.getFirst().startHeight};
+    });
+    const closeRemoveRecords = Object.entries(this.removeCache).map(([id, value]) => {
+      return {id, blockHeight: value.removedAtBlock};
+    });
+
+    const mergedRecords = closeSetRecords.concat(closeRemoveRecords);
+
     return Promise.all(
-      Object.entries(this.setCache).map(([id, value]) => {
-        const firstCachedValue = value.getFirst();
-        if (!firstCachedValue) {
-          return;
-        }
+      mergedRecords.map(({blockHeight, id}) => {
         this.historicalModel.update(
           {
             __block_range: this.model.sequelize.fn(
               'int8range',
               this.model.sequelize.fn('lower', this.model.sequelize.col('_block_range')),
-              firstCachedValue.startHeight
+              blockHeight
             ),
           },
           {
@@ -224,7 +413,7 @@ class CachedModel<
             where: {
               id,
               __block_range: {
-                [Op.contains]: (firstCachedValue.startHeight - 1) as any,
+                [Op.contains]: (blockHeight - 1) as any,
               },
             } as any,
           }
@@ -253,6 +442,7 @@ export class StoreCacheService {
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
+
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);

@@ -684,18 +684,11 @@ group by
           col?: keyof T;
         }
       ): Promise<number> => {
-        const model = this.sequelize.model(entity);
-        assert(model, `model ${entity} not exists`);
-        const countOption = {} as Omit<CountOptions<any>, 'group'>;
-        if (field && value) {
-          countOption.where = {[field]: value};
+        try {
+          return this.storeCache.getModel<T>(entity).count(field, value, options);
+        } catch (e) {
+          throw new Error(`Failed to count Entity ${entity}, ${e}`);
         }
-        if (options) {
-          assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
-          countOption.distinct = options?.distinct;
-          countOption.col = options?.col as string;
-        }
-        return model.count(countOption);
       },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
@@ -714,8 +707,6 @@ group by
         }
       ): Promise<T[] | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
           const indexed =
             this.modelIndexedFields.findIndex(
               (indexField) =>
@@ -727,13 +718,10 @@ group by
               `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
             );
           }
-          const records = await model.findAll({
-            where: {[field]: value},
-            transaction: this.tx,
-            limit: options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit,
-            offset: options?.offset,
-          });
-          return records.map((record) => record.toJSON() as T);
+          const finalLimit = options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit;
+          return this.storeCache
+            .getModel<T>(entity)
+            .getByField(field, value, this.tx, {limit: finalLimit, offset: options?.offset});
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
@@ -742,10 +730,9 @@ group by
         entity: string,
         field: keyof T,
         value: T[keyof T]
+        // eslint-disable-next-line @typescript-eslint/require-await
       ): Promise<T | undefined> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
           const indexed =
             this.modelIndexedFields.findIndex(
               (indexField) =>
@@ -754,11 +741,7 @@ group by
                 indexField.isUnique
             ) > -1;
           assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
-          const record = await model.findOne({
-            where: {[field]: value},
-            transaction: this.tx,
-          });
-          return record?.toJSON() as T;
+          return this.storeCache.getModel<T>(entity).getOneByField(field, value, this.tx);
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
@@ -775,13 +758,9 @@ group by
           throw new Error(`Failed to set Entity ${entity} with _id ${_id}: ${e}`);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
-            transaction: this.tx,
-          });
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -791,49 +770,10 @@ group by
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
-
+      // eslint-disable-next-line @typescript-eslint/require-await
       bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          if (this.historical) {
-            if (fields !== undefined && fields.length !== 0) {
-              logger.warn(`Update specified fields with historical feature is not supported`);
-            }
-            const newRecordAttributes: CreationAttributes<Model>[] = [];
-            await Promise.all(
-              data.map(async (record) => {
-                const attributes = record as unknown as CreationAttributes<Model>;
-                const [updatedRows] = await model.update(attributes, {
-                  hooks: false,
-                  transaction: this.tx,
-                  where: this.sequelize.and(
-                    {id: record.id},
-                    this.sequelize.where(
-                      this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-                      this.blockHeight
-                    )
-                  ),
-                });
-                if (updatedRows < 1) {
-                  await this.markAsDeleted(model, record.id);
-                  newRecordAttributes.push(attributes);
-                }
-              })
-            );
-            if (newRecordAttributes.length !== 0) {
-              await model.bulkCreate(newRecordAttributes, {
-                transaction: this.tx,
-              });
-            }
-          } else {
-            const modelFields =
-              fields ?? Object.keys(model.getAttributes()).filter((item) => !KEY_FIELDS.includes(item));
-            await model.bulkCreate(data as unknown as CreationAttributes<Model>[], {
-              transaction: this.tx,
-              updateOnDuplicate: modelFields,
-            });
-          }
+          this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight);
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -843,19 +783,10 @@ group by
           throw new Error(`Failed to bulkCreate Entity ${entity}: ${e}`);
         }
       },
-
+      // eslint-disable-next-line @typescript-eslint/require-await
       remove: async (entity: string, id: string): Promise<void> => {
         try {
-          const model = this.sequelize.model(entity);
-          assert(model, `model ${entity} not exists`);
-          if (this.historical) {
-            await this.markAsDeleted(model, id);
-          } else {
-            await model.destroy({where: {id}, transaction: this.tx});
-          }
-          if (this.config.proofOfIndex) {
-            this.operationStack.put(OperationType.Remove, entity, id);
-          }
+          this.storeCache.getModel(entity).remove(id, this.blockHeight);
         } catch (e) {
           throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
         }
