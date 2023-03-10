@@ -17,7 +17,6 @@ import {
   ConnectionPoolService,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
-import { identity, toNumber } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { ApiAt, BlockContent } from './types';
@@ -356,12 +355,7 @@ export class ApiService implements OnApplicationShutdown {
           blockNums[blockNums.length - 1]
         }`,
       );
-      logger.warn(
-        `disconnecting from endpoint and retrying with another endpoint`,
-      );
-      if (api.isConnected) {
-        await api.disconnect();
-      }
+
       const blocks = await this.fetchBlocksFromFirstAvailableEndpoint(
         blockNums,
         overallSpecVer,
@@ -369,6 +363,4 @@ export class ApiService implements OnApplicationShutdown {
       return blocks;
     }
   }
-
-  // functions that can be moved to node-core
 }

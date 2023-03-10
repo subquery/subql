@@ -9,6 +9,11 @@ const logger = getLogger('api');
 
 export abstract class ApiConnection {
   // eslint-disable-next-line @typescript-eslint/require-await
+  async create(endpoint: string, args: any): Promise<void> {
+    throw new Error('create() is not supported');
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
   async apiConnect(): Promise<void> {
     throw new Error('apiConnect() is not supported');
   }
