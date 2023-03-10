@@ -70,7 +70,7 @@ describe('ApiService', () => {
 
   it('can instantiate api', async () => {
     const apiService = await prepareApiService();
-    const api = apiService.getApi();
+    const api = apiService.api;
 
     const apiAt = await api.at(TEST_BLOCKHASH);
     apiAt.registry;
@@ -82,7 +82,7 @@ describe('ApiService', () => {
 
   it('api query is locked at specified block', async () => {
     const apiService = await prepareApiService();
-    const api = apiService.getApi();
+    const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(2);
     const validators = await api.query.session.validators.at(blockhash);
     const block = await api.rpc.chain.getBlock(blockhash);
@@ -102,7 +102,7 @@ describe('ApiService', () => {
 
   it('api query input is double map', async () => {
     const apiService = await prepareApiService();
-    const api = apiService.getApi();
+    const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(6721189);
     const block = await api.rpc.chain.getBlock(blockhash);
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
@@ -128,7 +128,7 @@ describe('ApiService', () => {
     const apiService = await prepareApiService(
       'wss://polkadot.api.onfinality.io/public-ws',
     );
-    const api = apiService.getApi();
+    const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(6721195);
     const block = await api.rpc.chain.getBlock(blockhash);
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
@@ -157,7 +157,7 @@ describe('ApiService', () => {
     const apiService = await prepareApiService(
       'wss://polkadot.api.onfinality.io/public-ws',
     );
-    const api = apiService.getApi();
+    const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(5661443);
     const block = await api.rpc.chain.getBlock(blockhash);
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
@@ -178,7 +178,7 @@ describe('ApiService', () => {
 
   it.skip('api consts is swapped to the specified block', async () => {
     const apiService = await prepareApiService();
-    const api = apiService.getApi();
+    const api = apiService.api;
     // upgrade at 4401242 that maxNominatorRewardedPerValidator changed from 256 to 128
     let blockhash: BlockHash;
     const currentMaxNRPV =
@@ -203,7 +203,7 @@ describe('ApiService', () => {
 
   // it('.tx.*.*, .derive.*.* are removed', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //   const multiResults = await Promise.all([
   //     await api.query.system.account.at(TEST_BLOCKHASH, account1),
   //     await api.query.system.account.at(TEST_BLOCKHASH, account2),
@@ -227,7 +227,7 @@ describe('ApiService', () => {
   //
   // it.skip('xxx.xxx.multi with input parameter is a double map', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //   const patchedApi = await apiService.getPatchedApi(
   //     TEST_BLOCKHASH,
   //     TEST_BLOCKNUMBER,
@@ -254,7 +254,7 @@ describe('ApiService', () => {
   // it('api.queryMulti', async () => {
   //   const account = 'E7ncQKp4xayUoUdpraxBjT7NzLoayLJA4TuPcKKboBkJ5GH';
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //   const patchedApi = await apiService.getPatchedApi(
   //     TEST_BLOCKHASH,
   //     TEST_BLOCKNUMBER,
@@ -288,7 +288,7 @@ describe('ApiService', () => {
   //
   // it.skip('api.rx.queryMulti is not supported', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //   const patchedApi = await apiService.getPatchedApi(
   //     TEST_BLOCKHASH,
   //     TEST_BLOCKNUMBER,
@@ -303,7 +303,7 @@ describe('ApiService', () => {
   //
   // it('support .entries', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //   const patchedApi = await apiService.getPatchedApi(
   //     TEST_BLOCKHASH,
   //     TEST_BLOCKNUMBER,
@@ -318,7 +318,7 @@ describe('ApiService', () => {
   //
   // it('support historic api rpc', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //
   //   const blockhash = await api.rpc.chain.getBlockHash(4401242);
   //   const patchedApi = await apiService.getPatchedApi(blockhash, 4401242);
@@ -337,7 +337,7 @@ describe('ApiService', () => {
   //
   // it('successful set block hash when continuous call api.xxx.xxx.at ', async () => {
   //   const apiService = await prepareApiService();
-  //   const api = apiService.getApi();
+  //   const api = apiService.api;
   //
   //   const blockhash1 = await api.rpc.chain.getBlockHash(1378036);
   //   let patchedApi = await apiService.getPatchedApi(blockhash1, 1378036);
@@ -359,7 +359,7 @@ describe('ApiService', () => {
   //
   it('support http provider', async () => {
     const apiService = await prepareApiService(HTTP_ENDPOINT);
-    const api = apiService.getApi();
+    const api = apiService.api;
     const blockhash = await api.rpc.chain.getBlockHash(1);
     const block = await api.rpc.chain.getBlock(blockhash);
     const mockBlock = wrapBlock(block, []) as unknown as SubstrateBlock;
@@ -377,7 +377,7 @@ describe('ApiService', () => {
     const apiService = await prepareApiService(
       'wss://moonbeam-alpha.api.onfinality.io/public-ws',
     );
-    const api = apiService.getApi();
+    const api = apiService.api;
 
     const blockNumber = 1545235;
     const blockhash = await api.rpc.chain.getBlockHash(blockNumber);

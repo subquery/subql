@@ -8,14 +8,11 @@ import {
   NodeConfig,
   IndexerEvent,
   delay,
-  profilerWrap,
   AutoQueue,
   Queue,
-  splitArrayByRatio,
 } from '@subql/node-core';
 import { last } from 'lodash';
-import * as SubstrateUtil from '../../utils/substrate';
-import { ApiLoadBalancer, ApiService } from '../api.service';
+import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
 import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';

@@ -415,10 +415,8 @@ describe('FetchService', () => {
       project,
     );
     const pendingInit = fetchService.init(1);
-    expect(
-      apiService.getApi().rpc.chain.getFinalizedHead,
-    ).toHaveBeenCalledTimes(1);
-    expect(apiService.getApi().rpc.chain.getHeader).toHaveBeenCalledTimes(1);
+    expect(apiService.api.rpc.chain.getFinalizedHead).toHaveBeenCalledTimes(1);
+    expect(apiService.api.rpc.chain.getHeader).toHaveBeenCalledTimes(1);
     await pendingInit;
     fetchService.onApplicationShutdown();
   });

@@ -49,7 +49,7 @@ export abstract class BaseRuntimeService {
   }
 
   get api(): ApiPromise {
-    return this.apiService.getApi();
+    return this.apiService.api;
   }
 
   getSpecFromMap(

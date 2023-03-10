@@ -118,7 +118,7 @@ export class FetchService implements OnApplicationShutdown {
   }
 
   api(index: number): ApiPromise {
-    return this.apiService.getApi();
+    return this.apiService.api;
   }
 
   async syncDynamicDatascourcesFromMeta(): Promise<void> {

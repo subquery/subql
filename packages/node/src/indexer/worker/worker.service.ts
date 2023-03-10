@@ -4,7 +4,6 @@
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
 import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
-import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
 import { IndexerManager } from '../indexer.manager';
@@ -57,9 +56,6 @@ export class WorkerService {
     height: number,
     specVersion: number,
   ): Promise<FetchBlockResponse> {
-    const api = this.apiService.getApi(
-      this.apiService.getNextConnectedApiIndex(),
-    );
     try {
       return await this.queue.put(async () => {
         // If a dynamic ds is created we might be asked to fetch blocks again, use existing result
@@ -68,8 +64,7 @@ export class WorkerService {
             height,
             specVersion,
           );
-          const [block] = await fetchBlocksBatches(
-            api,
+          const [block] = await this.apiService.fetchBlocks(
             [height],
             specChanged
               ? undefined
@@ -87,9 +82,6 @@ export class WorkerService {
       });
     } catch (e) {
       logger.error(e, `Failed to fetch block ${height}`);
-      logger.warn(`disconnecting endpoint and attempting to reconnect`);
-      await api.disconnect();
-      throw e;
     }
   }
 

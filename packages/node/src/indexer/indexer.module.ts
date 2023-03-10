@@ -24,7 +24,6 @@ import { WorkerService } from './worker/worker.service';
   providers: [
     IndexerManager,
     StoreService,
-    NodeConfig,
     {
       provide: ApiService,
       useFactory: async (
@@ -36,7 +35,7 @@ import { WorkerService } from './worker/worker.service';
         await apiService.init();
         return apiService;
       },
-      inject: ['ISubqueryProject', EventEmitter2],
+      inject: ['ISubqueryProject', EventEmitter2, NodeConfig],
     },
     SandboxService,
     DsProcessorService,

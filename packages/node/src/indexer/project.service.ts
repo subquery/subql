@@ -98,7 +98,7 @@ export class ProjectService {
     // Do extra work on main thread to setup stuff
     this.project.dataSources = await generateTimestampReferenceForBlockFilters(
       this.project.dataSources,
-      this.apiService.getApi(),
+      this.apiService.api,
     );
     if (isMainThread) {
       this._schema = await this.ensureProject();
@@ -383,7 +383,7 @@ export class ProjectService {
       (ds) =>
         !ds.filter?.specName ||
         ds.filter.specName ===
-          this.apiService.getApi().runtimeVersion.specName.toString(),
+          this.apiService.api.runtimeVersion.specName.toString(),
     );
   }
 
