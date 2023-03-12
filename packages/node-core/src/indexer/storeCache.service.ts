@@ -3,12 +3,14 @@
 
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
+import {flatten} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
+import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../configure';
 
-const FLUSH_FREQUENCY = 300;
+const FLUSH_FREQUENCY = 2;
 
-type SetData<T> = Record<string, SetValue<T>>;
+type SetData<T> = Record<string, SetValueModel<T>>;
 export type EntitySetData = Record<string, SetData<any>>;
 
 interface ICachedModel<T> {
@@ -35,13 +37,70 @@ type GetValue<T> = {
 
 type SetValue<T> = {
   data: T;
-  blockHeight: number;
+  startHeight: number;
+  endHeight: number | null;
 };
 
 type HistoricalModel = {__block_range: any};
 
+class SetValueModel<T> {
+  private historicalValues: SetValue<T>[] = [];
+  private _latestIndex = -1;
+
+  create(data: T, blockHeight: number) {
+    this.historicalValues.push({data, startHeight: blockHeight, endHeight: null});
+    this._latestIndex += 1;
+  }
+
+  set(data: T, blockHeight: number) {
+    const latestIndex = this.latestIndex();
+
+    if (latestIndex >= 0) {
+      // Set multiple time within same block, replace with input data only
+      if (this.historicalValues[latestIndex].startHeight === blockHeight) {
+        this.historicalValues[latestIndex].data = data;
+      } else if (this.historicalValues[latestIndex].startHeight > blockHeight) {
+        throw new Error(`Can not set record with block height ${blockHeight}`);
+      } else {
+        this.historicalValues[latestIndex].endHeight = blockHeight;
+        this.create(data, blockHeight);
+      }
+    } else {
+      this.create(data, blockHeight);
+    }
+  }
+
+  latestIndex(): number {
+    if (this.historicalValues.length === 0) {
+      return -1;
+    } else {
+      // Expect latestIndex should always sync with array growth
+      if (this.historicalValues.length - 1 !== this._latestIndex) {
+        this._latestIndex = this.historicalValues.findIndex((value) => value.endHeight === null);
+      }
+      return this._latestIndex;
+    }
+  }
+
+  getLatest(): SetValue<T> | undefined {
+    const latestIndex = this.latestIndex();
+    if (latestIndex === -1) {
+      return;
+    }
+    return this.historicalValues[latestIndex];
+  }
+
+  getFirst(): SetValue<T> | undefined {
+    return this.historicalValues[0];
+  }
+
+  getValues(): SetValue<T>[] {
+    return this.historicalValues;
+  }
+}
+
 class CachedModel<
-  T extends {id: string; __block_range?: (number | null)[]} = {id: string; __block_range?: (number | null)[]}
+  T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
 > implements ICachedModel<T>, ICachedModelControl<T>
 {
   // Null value indicates its not defined in the db
@@ -73,7 +132,10 @@ class CachedModel<
   }
 
   set(id: string, data: T, blockHeight: number): void {
-    this.setCache[id] = {data, blockHeight};
+    if (this.setCache[id] === undefined) {
+      this.setCache[id] = new SetValueModel();
+    }
+    this.setCache[id].set(data, blockHeight);
     this.getCache[id] = {data};
   }
 
@@ -82,18 +144,27 @@ class CachedModel<
   }
 
   async flush(tx: Transaction): Promise<void> {
-    const records = Object.values(this.setCache).map((v) => {
-      if (this.historical) {
-        // v.data.__block_range = `'[${v.blockHeight},)'`
-        v.data.__block_range = [v.blockHeight, null];
-      }
-      return v.data;
-    }) as unknown as CreationAttributes<Model<T, T>>[];
+    const records = flatten(
+      Object.values(this.setCache).map((v) => {
+        return v.getValues().map((historicalValue) => {
+          if (this.historical) {
+            // historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
+            historicalValue.data.__block_range = this.model.sequelize.fn(
+              'int8range',
+              historicalValue.startHeight,
+              historicalValue.endHeight,
+              historicalValue.endHeight === null ? '[)' : '[]'
+            );
+          }
+          return historicalValue.data;
+        });
+      })
+    ) as unknown as CreationAttributes<Model<T, T>>[];
 
     if (this.historical) {
       // TODO update records __block_range
       await Promise.all([
-        // mark to close previous records within blockheight -1, within all entity IDs
+        // mark to close previous records within blockHeight -1, within all entity IDs
         this.markPreviousHeightRecordsBatch(tx),
         // bulkCreate all new records for this entity
         this.model.bulkCreate(records, {
@@ -135,13 +206,17 @@ class CachedModel<
     // advantage is this sql is safe to concurrency resolve with any insert sql
 
     return Promise.all(
-      Object.entries(this.setCache).map(([id, value]) =>
+      Object.entries(this.setCache).map(([id, value]) => {
+        const firstCachedValue = value.getFirst();
+        if (!firstCachedValue) {
+          return;
+        }
         this.historicalModel.update(
           {
             __block_range: this.model.sequelize.fn(
               'int8range',
               this.model.sequelize.fn('lower', this.model.sequelize.col('_block_range')),
-              value.blockHeight
+              firstCachedValue.startHeight
             ),
           },
           {
@@ -151,12 +226,12 @@ class CachedModel<
             where: {
               id,
               __block_range: {
-                [Op.contains]: (value.blockHeight - 1) as any,
+                [Op.contains]: (firstCachedValue.startHeight - 1) as any,
               },
             } as any,
           }
-        )
-      )
+        );
+      })
     );
   }
 }
