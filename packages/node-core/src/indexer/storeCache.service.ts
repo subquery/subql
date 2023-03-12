@@ -8,7 +8,7 @@ import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from
 import {Fn} from 'sequelize/types/utils';
 import {NodeConfig} from '../configure';
 
-const FLUSH_FREQUENCY = 2;
+const FLUSH_FREQUENCY = 5;
 
 type SetData<T> = Record<string, SetValueModel<T>>;
 export type EntitySetData = Record<string, SetData<any>>;
@@ -148,12 +148,11 @@ class CachedModel<
       Object.values(this.setCache).map((v) => {
         return v.getValues().map((historicalValue) => {
           if (this.historical) {
-            // historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
+            // Alternative: historicalValue.data.__block_range = [historicalValue.startHeight, historicalValue.endHeight];
             historicalValue.data.__block_range = this.model.sequelize.fn(
               'int8range',
               historicalValue.startHeight,
-              historicalValue.endHeight,
-              historicalValue.endHeight === null ? '[)' : '[]'
+              historicalValue.endHeight
             );
           }
           return historicalValue.data;
@@ -204,7 +203,6 @@ class CachedModel<
     // Different with markAsDeleted, we only mark/close all the records less than current block height
     // thus, and new record with current block height will not be impacted,
     // advantage is this sql is safe to concurrency resolve with any insert sql
-
     return Promise.all(
       Object.entries(this.setCache).map(([id, value]) => {
         const firstCachedValue = value.getFirst();
