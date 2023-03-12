@@ -57,7 +57,7 @@ import {
   getEnumDeprecated,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
-import { StoreCacheService } from './storeCache.service';
+import {StoreCacheService} from './storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 
@@ -93,11 +93,7 @@ export class StoreService {
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
 
-  constructor(
-    private sequelize: Sequelize,
-    private config: NodeConfig,
-    public readonly storeCache: StoreCacheService,
-  ) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig, readonly storeCache: StoreCacheService) {}
 
   async init(modelsRelations: GraphQLModelsRelationsEnums, schema: string): Promise<void> {
     this.schema = schema;
@@ -475,11 +471,11 @@ export class StoreService {
     sequelizeModel.addHook('beforeValidate', (attributes, options) => {
       attributes.__block_range = [this.blockHeight, null];
     });
-    sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
-      instances.forEach((item) => {
-        item.__block_range = [this.blockHeight, null];
-      });
-    });
+    // sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
+    //   instances.forEach((item) => {
+    //     item.__block_range = [this.blockHeight, null];
+    //   });
+    // });
   }
 
   validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
@@ -767,6 +763,7 @@ group by
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
       },
+      // eslint-disable-next-line @typescript-eslint/require-await
       set: async (entity: string, _id: string, data: Entity): Promise<void> => {
         try {
           this.storeCache.getModel(entity).set(_id, data, this.blockHeight);
