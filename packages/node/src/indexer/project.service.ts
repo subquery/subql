@@ -6,6 +6,7 @@ import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
+  IProjectService,
   MetadataFactory,
   MetadataRepo,
   NodeConfig,
@@ -43,7 +44,7 @@ const DEFAULT_DB_SCHEMA = 'public';
 const logger = getLogger('Project');
 
 @Injectable()
-export class ProjectService {
+export class ProjectService implements IProjectService {
   private _schema: string;
   private metadataRepo: MetadataRepo;
   private _startHeight: number;

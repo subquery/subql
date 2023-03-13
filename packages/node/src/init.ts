@@ -3,7 +3,7 @@
 
 import { NestFactory } from '@nestjs/core';
 import { findAvailablePort } from '@subql/common';
-import { getLogger, NestLogger } from '@subql/node-core';
+import { getLogger, IProjectService, NestLogger } from '@subql/node-core';
 import { AppModule } from './app.module';
 import { ApiService } from './indexer/api.service';
 import { FetchService } from './indexer/fetch.service';
@@ -47,7 +47,7 @@ export async function bootstrap() {
     });
     await app.init();
 
-    const projectService = app.get(ProjectService);
+    const projectService: ProjectService = app.get('IProjectService');
     const fetchService = app.get(FetchService);
     const apiService = app.get(ApiService);
 

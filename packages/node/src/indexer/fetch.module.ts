@@ -11,6 +11,7 @@ import {
   NodeConfig,
   StoreCacheService,
 } from '@subql/node-core';
+import { Sequelize } from 'sequelize';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -42,14 +43,22 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectService: ProjectService,
         apiService: ApiService,
         indexerManager: IndexerManager,
+        storeService: StoreService,
         storeCacheService: StoreCacheService,
+        sequelize: Sequelize,
+        poiService: PoiService,
+        project: SubqueryProject,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
               projectService,
+              storeService,
               storeCacheService,
+              sequelize,
+              poiService,
+              project,
             )
           : new BlockDispatcherService(
               apiService,
@@ -57,15 +66,23 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              storeService,
               storeCacheService,
+              sequelize,
+              poiService,
+              project,
             ),
       inject: [
         NodeConfig,
         EventEmitter2,
-        ProjectService,
+        'IProjectService',
         ApiService,
         IndexerManager,
+        StoreService,
         StoreCacheService,
+        Sequelize,
+        PoiService,
+        'ISubqueryProject',
       ],
     },
     FetchService,
@@ -84,7 +101,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DynamicDsService,
     PoiService,
     MmrService,
-    ProjectService,
+    {
+      useClass: ProjectService,
+      provide: 'IProjectService',
+    },
     UnfinalizedBlocksService,
     RuntimeService,
   ],

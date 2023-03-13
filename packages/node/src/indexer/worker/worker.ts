@@ -20,7 +20,13 @@ import assert from 'assert';
 import { threadId } from 'node:worker_threads';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { registerWorker, getLogger, NestLogger } from '@subql/node-core';
+import {
+  WorkerHost,
+  getLogger,
+  NestLogger,
+  hostStoreKeys,
+  HostStore,
+} from '@subql/node-core';
 import { SpecVersion } from '../dictionary.service';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
@@ -45,7 +51,7 @@ async function initWorker(): Promise<void> {
     }
 
     app = await NestFactory.create(WorkerModule, {
-      logger: new NestLogger(), // TIP: If the worker is crashing comment out this line for better logging
+      // logger: new NestLogger(), // TIP: If the worker is crashing comment out this line for better logging
     });
 
     await app.init();
@@ -123,17 +129,21 @@ async function reloadDynamicDs(): Promise<void> {
 }
 
 // Register these functions to be exposed to worker host
-registerWorker({
-  initWorker,
-  fetchBlock,
-  processBlock,
-  numFetchedBlocks,
-  numFetchingBlocks,
-  getStatus,
-  syncRuntimeService,
-  getSpecFromMap,
-  reloadDynamicDs,
-});
+(global as any).host = WorkerHost.create<HostStore>(
+  hostStoreKeys,
+  {
+    initWorker,
+    fetchBlock,
+    processBlock,
+    numFetchedBlocks,
+    numFetchingBlocks,
+    getStatus,
+    syncRuntimeService,
+    getSpecFromMap,
+    reloadDynamicDs,
+  },
+  logger,
+);
 
 // Export types to be used on the parent
 export type InitWorker = typeof initWorker;

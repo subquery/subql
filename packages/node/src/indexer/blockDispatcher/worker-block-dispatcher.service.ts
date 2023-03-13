@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
@@ -12,11 +12,17 @@ import {
   IndexerEvent,
   Worker,
   AutoQueue,
+  StoreService,
+  PoiService,
   StoreCacheService,
+  BaseBlockDispatcher,
+  IProjectService,
 } from '@subql/node-core';
+import { Store } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { ProjectService } from '../project.service';
+import { Sequelize, Transaction } from 'sequelize';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { RuntimeService } from '../runtime/runtimeService';
 import {
   FetchBlock,
@@ -29,7 +35,7 @@ import {
   GetSpecFromMap,
   ReloadDynamicDs,
 } from '../worker/worker';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
+// import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -52,7 +58,7 @@ type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
 
-async function createIndexerWorker(): Promise<IndexerWorker> {
+async function createIndexerWorker(store: Store): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<IInitIndexerWorker>(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -66,6 +72,16 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'getSpecFromMap',
       'reloadDynamicDs',
     ],
+    {
+      storeCount: store.count.bind(store),
+      storeGet: store.get.bind(store),
+      storeGetByField: store.getByField.bind(store),
+      storeGetOneByField: store.getOneByField.bind(store),
+      storeSet: store.set.bind(store),
+      storeBulkCreate: store.bulkCreate.bind(store),
+      storeBulkUpdate: store.bulkUpdate.bind(store),
+      storeRemove: store.remove.bind(store),
+    },
   );
 
   await indexerWorker.initWorker();
@@ -80,6 +96,7 @@ export class WorkerBlockDispatcherService
 {
   private workers: IndexerWorker[];
   private numWorkers: number;
+  private runtimeService: RuntimeService;
 
   private taskCounter = 0;
   private isShutdown = false;
@@ -87,16 +104,23 @@ export class WorkerBlockDispatcherService
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    projectService: ProjectService,
+    @Inject('IProjectService') projectService: IProjectService,
+    storeService: StoreService,
     storeCacheService: StoreCacheService,
+    private sequelize: Sequelize,
+    poiService: PoiService,
+    @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
       nodeConfig,
       eventEmitter,
+      project,
       projectService,
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
+      storeService,
       storeCacheService,
+      poiService,
     );
     this.numWorkers = numWorkers;
   }
@@ -112,7 +136,9 @@ export class WorkerBlockDispatcherService
     }
 
     this.workers = await Promise.all(
-      new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
+      new Array(this.numWorkers)
+        .fill(0)
+        .map(() => createIndexerWorker(this.storeService.getStore())),
     );
 
     this.onDynamicDsCreated = onDynamicDsCreated;
@@ -144,15 +170,15 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  enqueueBlocks(cleanedBlocks: number[], latestBufferHeight?: number): void {
-    if (!!latestBufferHeight && !cleanedBlocks.length) {
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
+    if (!!latestBufferHeight && !heights.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
     }
 
     logger.info(
-      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
-        cleanedBlocks.length
+      `Enqueueing blocks ${heights[0]}...${last(heights)}, total ${
+        heights.length
       } blocks`,
     );
 
@@ -164,19 +190,19 @@ export class WorkerBlockDispatcherService
        * worker2: 4,5,6
        */
       const workerIdx = this.getNextWorkerIndex();
-      cleanedBlocks.map((height) => this.enqueueBlock(height, workerIdx));
+      heights.map((height) => this.enqueueBlock(height, workerIdx));
     } else {
       /*
        * Load balancing:
        * worker1: 1,3,5
        * worker2: 2,4,6
        */
-      cleanedBlocks.map((height) =>
+      heights.map((height) =>
         this.enqueueBlock(height, this.getNextWorkerIndex()),
       );
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
   }
 
   private enqueueBlock(height: number, workerIdx: number) {
@@ -189,6 +215,7 @@ export class WorkerBlockDispatcherService
     const bufferedHeight = this.latestBufferedHeight;
 
     const processBlock = async () => {
+      let tx: Transaction;
       try {
         // get SpecVersion from main runtime service
         const { blockSpecVersion, syncedDictionary } =
@@ -219,22 +246,31 @@ export class WorkerBlockDispatcherService
           );
         }
 
-        this.preProcessBlock(height);
+        tx = await this.sequelize.transaction();
 
-        const { dynamicDsCreated, operationHash, reindexBlockHeight } =
-          await worker.processBlock(height);
+        this.preProcessBlock(height, tx);
 
-        await this.postProcessBlock(height, {
+        const {
+          blockHash,
           dynamicDsCreated,
-          operationHash: Buffer.from(operationHash, 'base64'),
+          /*operationHash, */ reindexBlockHeight,
+        } = await worker.processBlock(height);
+
+        await this.postProcessBlock(height, tx, {
+          dynamicDsCreated,
+          blockHash,
+          // operationHash: Buffer.from(operationHash, 'base64'),
           reindexBlockHeight,
         });
+
+        await tx.commit();
 
         if (dynamicDsCreated) {
           // Ensure all workers are aware of all dynamic ds
           await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
         }
       } catch (e) {
+        await tx.rollback();
         logger.error(
           e,
           `failed to index block at height ${height} ${

@@ -28,6 +28,7 @@ import {
   IndexerEvent,
   NodeConfig,
   transformBypassBlocks,
+  IBlockDispatcher,
 } from '@subql/node-core';
 import { DictionaryQueryEntry, SubstrateCustomHandler } from '@subql/types';
 import { MetaData } from '@subql/utils';
@@ -36,7 +37,7 @@ import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
 import { isBaseHandler, isCustomHandler } from '../utils/project';
 import { calcInterval } from '../utils/substrate';
 import { ApiService } from './api.service';
-import { IBlockDispatcher } from './blockDispatcher';
+import { ISubstrateBlockDispatcher } from './blockDispatcher/substrate-block-dispatcher';
 import { DictionaryService } from './dictionary.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
@@ -95,7 +96,8 @@ export class FetchService implements OnApplicationShutdown {
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private project: SubqueryProject,
-    @Inject('IBlockDispatcher') private blockDispatcher: IBlockDispatcher,
+    @Inject('IBlockDispatcher')
+    private blockDispatcher: ISubstrateBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
