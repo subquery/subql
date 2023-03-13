@@ -19,53 +19,36 @@ import {
   StoreCacheService,
   BaseBlockDispatcher,
   IProjectService,
+  IDynamicDsService,
+  HostStore,
+  HostDynamicDS,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
 import { Sequelize, Transaction } from 'sequelize';
-import { SubqueryProject } from '../../configure/SubqueryProject';
-import { RuntimeService } from '../runtime/runtimeService';
 import {
-  FetchBlock,
-  ProcessBlock,
-  InitWorker,
-  NumFetchedBlocks,
-  NumFetchingBlocks,
-  GetWorkerStatus,
-  SyncRuntimeService,
-  GetSpecFromMap,
-  GetMemoryLeft,
-  waitForWorkerBatchSize,
-  ReloadDynamicDs,
-} from '../worker/worker';
-// import { BaseBlockDispatcher } from './base-block-dispatcher';
+  SubqlProjectDs,
+  SubqueryProject,
+} from '../../configure/SubqueryProject';
+import { DynamicDsService } from '../dynamic-ds.service';
+import { RuntimeService } from '../runtime/runtimeService';
+import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
 
 const logger = getLogger('WorkerBlockDispatcherService');
-
-type IIndexerWorker = {
-  processBlock: ProcessBlock;
-  fetchBlock: FetchBlock;
-  numFetchedBlocks: NumFetchedBlocks;
-  numFetchingBlocks: NumFetchingBlocks;
-  getStatus: GetWorkerStatus;
-  syncRuntimeService: SyncRuntimeService;
-  getSpecFromMap: GetSpecFromMap;
-  getMemoryLeft: GetMemoryLeft;
-  waitForWorkerBatchSize: waitForWorkerBatchSize;
-  reloadDynamicDs: ReloadDynamicDs;
-};
-
-type IInitIndexerWorker = IIndexerWorker & {
-  initWorker: InitWorker;
-};
 
 type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
 
-async function createIndexerWorker(store: Store): Promise<IndexerWorker> {
-  const indexerWorker = Worker.create<IInitIndexerWorker>(
+async function createIndexerWorker(
+  store: Store,
+  dynamicDsService: IDynamicDsService<SubqlProjectDs>,
+): Promise<IndexerWorker> {
+  const indexerWorker = Worker.create<
+    IInitIndexerWorker,
+    HostDynamicDS<SubqlProjectDs> & HostStore
+  >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
       'initWorker',
@@ -89,6 +72,10 @@ async function createIndexerWorker(store: Store): Promise<IndexerWorker> {
       storeBulkCreate: store.bulkCreate.bind(store),
       storeBulkUpdate: store.bulkUpdate.bind(store),
       storeRemove: store.remove.bind(store),
+      dynamicDsCreateDynamicDatasource:
+        dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
+      dynamicDsGetDynamicDatasources:
+        dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
     },
   );
 
@@ -120,6 +107,7 @@ export class WorkerBlockDispatcherService
     private sequelize: Sequelize,
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
+    dynamicDsService: DynamicDsService,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
@@ -132,6 +120,7 @@ export class WorkerBlockDispatcherService
       storeService,
       storeCacheService,
       poiService,
+      dynamicDsService,
     );
     this.numWorkers = numWorkers;
   }
@@ -149,7 +138,12 @@ export class WorkerBlockDispatcherService
     this.workers = await Promise.all(
       new Array(this.numWorkers)
         .fill(0)
-        .map(() => createIndexerWorker(this.storeService.getStore())),
+        .map(() =>
+          createIndexerWorker(
+            this.storeService.getStore(),
+            this.dynamicDsService,
+          ),
+        ),
     );
 
     this.onDynamicDsCreated = onDynamicDsCreated;
@@ -291,11 +285,6 @@ export class WorkerBlockDispatcherService
         });
 
         await tx.commit();
-
-        if (dynamicDsCreated) {
-          // Ensure all workers are aware of all dynamic ds
-          await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
-        }
       } catch (e) {
         await tx.rollback();
         logger.error(

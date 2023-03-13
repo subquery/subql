@@ -115,8 +115,6 @@ abstract class WorkerIO {
         }
       };
 
-      console.log('REQUEST', fnName, args, JSON.stringify(args));
-
       this.port.postMessage(<Request>{
         id,
         name: fnName,
@@ -134,9 +132,9 @@ export class WorkerHost<T extends AsyncMethods> extends WorkerIO {
     super(workers.parentPort, workerFns as string[], hostFns, logger);
   }
 
-  static create<T extends AsyncMethods>(
+  static create<T extends AsyncMethods, H extends AsyncMethods>(
     workerFns: (keyof T)[],
-    hostFns: AsyncMethods,
+    hostFns: H,
     logger: Logger
   ): WorkerHost<T> & T {
     const workerHost = new WorkerHost(workerFns, hostFns, logger);
@@ -158,7 +156,6 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     super(worker, workerFns as string[], hostFns, getLogger(`worker: ${worker.threadId}`));
 
     this.worker.on('error', (error) => {
-      console.log('WORKER ERROR', error);
       this.logger.error(error, 'Worker error');
     });
 
@@ -172,7 +169,11 @@ export class Worker<T extends AsyncMethods> extends WorkerIO {
     });
   }
 
-  static create<T extends AsyncMethods>(path: string, workerFns: (keyof T)[], hostFns: AsyncMethods): Worker<T> & T {
+  static create<T extends AsyncMethods, H extends AsyncMethods>(
+    path: string,
+    workerFns: (keyof T)[],
+    hostFns: H
+  ): Worker<T> & T {
     const worker = new Worker(
       new workers.Worker(path, {
         argv: process.argv,
