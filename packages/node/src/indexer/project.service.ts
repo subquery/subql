@@ -125,8 +125,6 @@ export class ProjectService implements IProjectService {
         this.project.network.chainId,
       );
 
-      this.dynamicDsService.init(this.metadataRepo);
-
       await this.sequelize.sync();
 
       assert(this._schema, 'Schema should be created in main thread');

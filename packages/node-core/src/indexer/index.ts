@@ -13,3 +13,4 @@ export * from './mmr.service';
 export * from './worker';
 export * from './dictionary.service';
 export * from './sandbox';
+export * from './dynamic-ds.service';

@@ -3,3 +3,4 @@
 
 export * from './worker.builder';
 export * from './worker.store.service';
+export * from './worker.dynamic-ds.service';

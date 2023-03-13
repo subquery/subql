@@ -9,6 +9,7 @@ import {Transaction} from 'sequelize';
 import {NodeConfig} from '../configure';
 import {IndexerEvent} from '../events';
 import {
+  DynamicDsService,
   IProjectNetworkConfig,
   IProjectService,
   ISubqueryProject,
@@ -63,7 +64,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     protected queue: Q,
     protected storeService: StoreService,
     private storeCacheService: StoreCacheService,
-    private poiService: PoiService
+    private poiService: PoiService,
+    protected dynamicDsService: DynamicDsService<any>
   ) {}
 
   abstract enqueueBlocks(heights: number[]): void;
@@ -118,6 +120,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
   // Is called directly before a block is processed
   protected preProcessBlock(height: number, tx: Transaction): void {
     this.storeService.setTransaction(tx);
+    this.dynamicDsService.setTransaction(tx);
     this.storeService.setBlockHeight(height);
 
     this.currentProcessingHeight = height;

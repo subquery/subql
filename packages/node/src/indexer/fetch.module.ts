@@ -48,6 +48,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         sequelize: Sequelize,
         poiService: PoiService,
         project: SubqueryProject,
+        dynamicDsService: DynamicDsService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -59,6 +60,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               sequelize,
               poiService,
               project,
+              dynamicDsService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -71,6 +73,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               sequelize,
               poiService,
               project,
+              dynamicDsService,
             ),
       inject: [
         NodeConfig,
@@ -83,6 +86,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         Sequelize,
         PoiService,
         'ISubqueryProject',
+        DynamicDsService,
       ],
     },
     FetchService,

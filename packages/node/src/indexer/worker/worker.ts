@@ -26,7 +26,10 @@ import {
   NestLogger,
   hostStoreKeys,
   HostStore,
+  hostDynamicDsKeys,
+  HostDynamicDS,
 } from '@subql/node-core';
+import { SubqlProjectDs } from '../../configure/SubqueryProject';
 import { SpecVersion } from '../dictionary.service';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
@@ -39,7 +42,6 @@ import {
 } from './worker.service';
 let app: INestApplication;
 let workerService: WorkerService;
-let dynamicDsService: DynamicDsService;
 
 const logger = getLogger(`worker #${threadId}`);
 
@@ -51,7 +53,7 @@ async function initWorker(): Promise<void> {
     }
 
     app = await NestFactory.create(WorkerModule, {
-      // logger: new NestLogger(), // TIP: If the worker is crashing comment out this line for better logging
+      logger: new NestLogger(), // TIP: If the worker is crashing comment out this line for better logging
     });
 
     await app.init();
@@ -61,7 +63,6 @@ async function initWorker(): Promise<void> {
     await indexerManager.start();
 
     workerService = app.get(WorkerService);
-    dynamicDsService = app.get(DynamicDsService);
   } catch (e) {
     console.log('Failed to start worker', e);
     logger.error(e, 'Failed to start worker');
@@ -124,13 +125,12 @@ async function getStatus(): Promise<WorkerStatusResponse> {
   };
 }
 
-async function reloadDynamicDs(): Promise<void> {
-  return dynamicDsService.reloadDynamicDatasources();
-}
-
 // Register these functions to be exposed to worker host
-(global as any).host = WorkerHost.create<HostStore>(
-  hostStoreKeys,
+(global as any).host = WorkerHost.create<
+  HostStore & HostDynamicDS<SubqlProjectDs>,
+  IInitIndexerWorker
+>(
+  [...hostStoreKeys, ...hostDynamicDsKeys],
   {
     initWorker,
     fetchBlock,
@@ -140,21 +140,33 @@ async function reloadDynamicDs(): Promise<void> {
     getStatus,
     syncRuntimeService,
     getSpecFromMap,
-    reloadDynamicDs,
   },
   logger,
 );
 
 // Export types to be used on the parent
-export type InitWorker = typeof initWorker;
-export type FetchBlock = typeof fetchBlock;
-export type ProcessBlock = typeof processBlock;
-export type NumFetchedBlocks = typeof numFetchedBlocks;
-export type NumFetchingBlocks = typeof numFetchingBlocks;
-export type GetWorkerStatus = typeof getStatus;
-export type SyncRuntimeService = typeof syncRuntimeService;
-export type GetSpecFromMap = typeof getSpecFromMap;
-export type ReloadDynamicDs = typeof reloadDynamicDs;
+type InitWorker = typeof initWorker;
+type FetchBlock = typeof fetchBlock;
+type ProcessBlock = typeof processBlock;
+type NumFetchedBlocks = typeof numFetchedBlocks;
+type NumFetchingBlocks = typeof numFetchingBlocks;
+type GetWorkerStatus = typeof getStatus;
+type SyncRuntimeService = typeof syncRuntimeService;
+type GetSpecFromMap = typeof getSpecFromMap;
+
+export type IIndexerWorker = {
+  processBlock: ProcessBlock;
+  fetchBlock: FetchBlock;
+  numFetchedBlocks: NumFetchedBlocks;
+  numFetchingBlocks: NumFetchingBlocks;
+  getStatus: GetWorkerStatus;
+  syncRuntimeService: SyncRuntimeService;
+  getSpecFromMap: GetSpecFromMap;
+};
+
+export type IInitIndexerWorker = IIndexerWorker & {
+  initWorker: InitWorker;
+};
 
 process.on('uncaughtException', (e) => {
   logger.error(e, 'Uncaught Exception');

@@ -4,7 +4,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { hexToU8a } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -18,9 +17,6 @@ import {
   SubstrateRuntimeHandlerInputMap,
 } from '@subql/common-substrate';
 import {
-  PoiBlock,
-  StoreService,
-  PoiService,
   NodeConfig,
   getLogger,
   profiler,
@@ -32,8 +28,8 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { Sequelize, Transaction } from 'sequelize';
-import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
+import { Transaction } from 'sequelize';
+import { SubqlProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
 import { ApiService } from './api.service';
@@ -47,8 +43,6 @@ import { SandboxService } from './sandbox.service';
 import { ApiAt, BlockContent } from './types';
 import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
-const NULL_MERKEL_ROOT = hexToU8a('0x00');
-
 const logger = getLogger('indexer');
 
 @Injectable()
@@ -57,11 +51,7 @@ export class IndexerManager {
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
-    // private storeService: StoreService,
     private apiService: ApiService,
-    // private poiService: PoiService,
-    // private sequelize: Sequelize,
-    @Inject('ISubqueryProject') private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
@@ -84,16 +74,10 @@ export class IndexerManager {
     reindexBlockHeight: number;
   }> {
     const { block } = blockContent;
-    const dynamicDsCreated = false;
+    let dynamicDsCreated = false;
     const reindexBlockHeight = null;
     const blockHeight = block.block.header.number.toNumber();
-    // const tx = await this.sequelize.transaction();
-    // this.storeService.setTransaction(tx);
-    // this.storeService.setBlockHeight(blockHeight);
 
-    // let operationHash = NULL_MERKEL_ROOT;
-    // let poiBlockHash: Uint8Array;
-    // try {
     this.filteredDataSources = this.filterDataSources(
       block.block.header.number.toNumber(),
     );
@@ -120,20 +104,15 @@ export class IndexerManager {
 
         // Inject function to create ds into vm
         vm.freeze(
-          // eslint-disable-next-line @typescript-eslint/require-await
           async (templateName: string, args?: Record<string, unknown>) => {
-            throw new Error('Fix up');
-            // const newDs = await this.dynamicDsService.createDynamicDatasource(
-            //   {
-            //     templateName,
-            //     args,
-            //     startBlock: blockHeight,
-            //   },
-            //   tx,
-            // );
+            const newDs = await this.dynamicDsService.createDynamicDatasource({
+              templateName,
+              args,
+              startBlock: blockHeight,
+            });
             // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-            // datasources.push(newDs);
-            // dynamicDsCreated = true;
+            datasources.push(newDs);
+            dynamicDsCreated = true;
           },
           'createDynamicDatasource',
         );
@@ -142,48 +121,8 @@ export class IndexerManager {
       },
     );
 
-    // await this.storeService.setMetadataBatch(
-    //   [
-    //     { key: 'lastProcessedHeight', value: blockHeight },
-    //     { key: 'lastProcessedTimestamp', value: Date.now() },
-    //   ],
-    //   { transaction: tx },
-    // );
-    // // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-    // await this.storeService.incrementJsonbCount('processedBlockCount', tx);
-
-    // Need calculate operationHash to ensure correct offset insert all time
-    // operationHash = this.storeService.getOperationMerkleRoot();
-    // if (this.nodeConfig.proofOfIndex) {
-    //   //check if operation is null, then poi will not be inserted
-    //   if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-    //     const poiBlock = PoiBlock.create(
-    //       blockHeight,
-    //       block.block.header.hash.toHex(),
-    //       operationHash,
-    //       await this.poiService.getLatestPoiBlockHash(),
-    //       this.project.id,
-    //     );
-    //     poiBlockHash = poiBlock.hash;
-    //     await this.storeService.setPoi(poiBlock, { transaction: tx });
-    //     this.poiService.setLatestPoiBlockHash(poiBlockHash);
-    //     await this.storeService.setMetadataBatch(
-    //       [{ key: 'lastPoiHeight', value: blockHeight }],
-    //       { transaction: tx },
-    //     );
-    //   }
-    // }
-    // } catch (e) {
-    //   // await tx.rollback();
-    //   throw e;
-    // }
-
-    // await tx.commit();
-    // const storeCacheFeedback = this.storeService.getCache();
-
     return {
       dynamicDsCreated,
-      // operationHash,
       blockHash: block.block.header.hash.toHex(),
       reindexBlockHeight,
     };
