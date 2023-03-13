@@ -9,6 +9,7 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
+  SmartBatchService,
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -31,6 +32,13 @@ import { SandboxService } from './sandbox.service';
     ApiService,
     IndexerManager,
     {
+      provide: SmartBatchService,
+      useFactory: (nodeConfig: NodeConfig) => {
+        return new SmartBatchService(nodeConfig.batchSize);
+      },
+      inject: [NodeConfig],
+    },
+    {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
@@ -38,12 +46,14 @@ import { SandboxService } from './sandbox.service';
         projectService: ProjectService,
         apiService: ApiService,
         indexerManager: IndexerManager,
+        smartBatchService: SmartBatchService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
               projectService,
+              smartBatchService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -51,6 +61,7 @@ import { SandboxService } from './sandbox.service';
               indexerManager,
               eventEmitter,
               projectService,
+              smartBatchService,
             ),
       inject: [
         NodeConfig,
@@ -58,6 +69,7 @@ import { SandboxService } from './sandbox.service';
         ProjectService,
         ApiService,
         IndexerManager,
+        SmartBatchService,
       ],
     },
     FetchService,

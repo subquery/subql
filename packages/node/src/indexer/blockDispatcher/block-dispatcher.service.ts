@@ -1,6 +1,7 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import { getHeapStatistics } from 'v8';
 import { Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
@@ -11,6 +12,9 @@ import {
   profilerWrap,
   AutoQueue,
   Queue,
+  waitForBatchSize,
+  memoryLock,
+  SmartBatchService,
 } from '@subql/node-core';
 import { last } from 'lodash';
 import * as CosmosUtil from '../../utils/cosmos';
@@ -41,15 +45,16 @@ export class BlockDispatcherService
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
     projectService: ProjectService,
+    smartBatchService: SmartBatchService,
   ) {
     super(
       nodeConfig,
       eventEmitter,
       projectService,
       new Queue(nodeConfig.batchSize * 3),
+      smartBatchService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
-
     if (this.nodeConfig.profiler) {
       this.fetchBlocksBatches = profilerWrap(
         CosmosUtil.fetchBlocksBatches,
@@ -103,6 +108,13 @@ export class BlockDispatcherService
     this.processQueue.flush();
   }
 
+  private memoryleft(): number {
+    return (
+      this.smartBatchService.heapMemoryLimit() -
+      getHeapStatistics().used_heap_size
+    );
+  }
+
   private async fetchBlocksFromQueue(): Promise<void> {
     if (this.fetching || this.isShutdown) return;
     // Process queue is full, no point in fetching more blocks
@@ -113,7 +125,7 @@ export class BlockDispatcherService
     try {
       while (!this.isShutdown) {
         const blockNums = this.queue.takeMany(
-          Math.min(this.nodeConfig.batchSize, this.processQueue.freeSpace),
+          Math.min(this.processQueue.freeSpace, this.smartBatchSize),
         );
         // Used to compare before and after as a way to check if queue was flushed
         const bufferedHeight = this._latestBufferedHeight;
@@ -128,16 +140,26 @@ export class BlockDispatcherService
           break;
         }
 
+        if (this.memoryleft() < 0) {
+          //stop fetching until memory is freed
+          await waitForBatchSize(this.minimumHeapLimit);
+          continue;
+        }
+
         logger.info(
           `fetch block [${blockNums[0]},${
             blockNums[blockNums.length - 1]
           }], total ${blockNums.length} blocks`,
         );
 
+        await memoryLock.acquire();
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,
         );
+        memoryLock.release();
+
+        this.smartBatchService.addToSizeBuffer(blocks);
 
         if (
           bufferedHeight > this._latestBufferedHeight ||
@@ -157,6 +179,9 @@ export class BlockDispatcherService
             );
 
             await this.postProcessBlock(height, processBlockResponse);
+
+            //set block to null for garbage collection
+            block = null;
           } catch (e) {
             if (this.isShutdown) {
               return;
