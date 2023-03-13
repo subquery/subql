@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {Store} from '@subql/types';
+import {classToPlain} from 'class-transformer';
 
 export type HostStore = {
   // This matches the store interface
@@ -42,9 +43,18 @@ export const hostStoreToStore = (host: HostStore): Store => {
     get: host.storeGet,
     getByField: host.storeGetByField,
     getOneByField: host.storeGetOneByField,
-    set: (entity, id, data) => host.storeSet(entity, id, JSON.parse(JSON.stringify(data))),
-    bulkCreate: host.storeBulkCreate,
-    bulkUpdate: host.storeBulkUpdate,
+    set: (entity, id, data) => host.storeSet(entity, id, classToPlain(data)),
+    bulkCreate: (entity, data) =>
+      host.storeBulkCreate(
+        entity,
+        data.map((d) => classToPlain(d))
+      ),
+    bulkUpdate: (entity, data, fields) =>
+      host.storeBulkUpdate(
+        entity,
+        data.map((d) => classToPlain(d)),
+        fields
+      ),
     remove: host.storeRemove,
   };
 };
