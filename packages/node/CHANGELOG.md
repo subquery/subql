@@ -8,6 +8,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.19.0] - 2023-03-13
+### Updated
+- Sync with main sdk (#100)
+
 ## [1.18.0] - 2023-02-14
 ### Updated
 - Sync with main sdk (#97)
