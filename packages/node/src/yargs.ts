@@ -162,7 +162,7 @@ export const yargsOptions = yargs(hideBin(process.argv))
     },
     'dictionary-resolver': {
       demandOption: false,
-      describe: 'Use subquery network sponsored dictionary',
+      describe: 'Use subquery network dictionary resolver',
       type: 'boolean',
       default: false,
     },
