@@ -4,7 +4,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ApiPromise } from '@polkadot/api';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { hexToU8a, u8aEq } from '@polkadot/util';
+import { hexToU8a } from '@polkadot/util';
 import {
   isBlockHandlerProcessor,
   isCallHandlerProcessor,
@@ -57,17 +57,17 @@ export class IndexerManager {
   private filteredDataSources: SubqlProjectDs[];
 
   constructor(
-    private storeService: StoreService,
+    // private storeService: StoreService,
     private apiService: ApiService,
-    private poiService: PoiService,
-    private sequelize: Sequelize,
+    // private poiService: PoiService,
+    // private sequelize: Sequelize,
     @Inject('ISubqueryProject') private project: SubqueryProject,
     private nodeConfig: NodeConfig,
     private sandboxService: SandboxService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
     private unfinalizedBlocksService: UnfinalizedBlocksService,
-    private projectService: ProjectService,
+    @Inject('IProjectService') private projectService: ProjectService,
   ) {
     logger.info('indexer manager start');
   }
@@ -78,107 +78,113 @@ export class IndexerManager {
     runtimeVersion: RuntimeVersion,
   ): Promise<{
     dynamicDsCreated: boolean;
-    operationHash: Uint8Array;
+    // operationHash: Uint8Array;
+    blockHash: string;
     reindexBlockHeight: number;
   }> {
     this.api = this.apiService.api;
     const { block } = blockContent;
-    let dynamicDsCreated = false;
-    let reindexBlockHeight = null;
+    const dynamicDsCreated = false;
+    const reindexBlockHeight = null;
     const blockHeight = block.block.header.number.toNumber();
-    const tx = await this.sequelize.transaction();
-    this.storeService.setTransaction(tx);
-    this.storeService.setBlockHeight(blockHeight);
+    // const tx = await this.sequelize.transaction();
+    // this.storeService.setTransaction(tx);
+    // this.storeService.setBlockHeight(blockHeight);
 
-    let operationHash = NULL_MERKEL_ROOT;
-    let poiBlockHash: Uint8Array;
-    try {
-      this.filteredDataSources = this.filterDataSources(
-        block.block.header.number.toNumber(),
-      );
+    // let operationHash = NULL_MERKEL_ROOT;
+    // let poiBlockHash: Uint8Array;
+    // try {
+    this.filteredDataSources = this.filterDataSources(
+      block.block.header.number.toNumber(),
+    );
 
-      const datasources = this.filteredDataSources.concat(
-        ...(await this.dynamicDsService.getDynamicDatasources()),
-      );
+    const datasources = this.filteredDataSources.concat(
+      ...(await this.dynamicDsService.getDynamicDatasources()),
+    );
 
-      let apiAt: ApiAt;
-      reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
-
-      await this.indexBlockData(
-        blockContent,
-        datasources,
-        async (ds: SubqlProjectDs) => {
-          // Injected runtimeVersion from fetch service might be outdated
-          apiAt =
-            apiAt ??
-            (await this.apiService.getPatchedApi(block, runtimeVersion));
-
-          const vm = this.sandboxService.getDsProcessor(ds, apiAt);
-
-          // Inject function to create ds into vm
-          vm.freeze(
-            async (templateName: string, args?: Record<string, unknown>) => {
-              const newDs = await this.dynamicDsService.createDynamicDatasource(
-                {
-                  templateName,
-                  args,
-                  startBlock: blockHeight,
-                },
-                tx,
-              );
-              // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-              datasources.push(newDs);
-              dynamicDsCreated = true;
-            },
-            'createDynamicDatasource',
-          );
-
-          return vm;
-        },
-      );
-
-      await this.storeService.setMetadataBatch(
-        [
-          { key: 'lastProcessedHeight', value: blockHeight },
-          { key: 'lastProcessedTimestamp', value: Date.now() },
-        ],
-        { transaction: tx },
-      );
-      // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      await this.storeService.incrementJsonbCount('processedBlockCount', tx);
-
-      // Need calculate operationHash to ensure correct offset insert all time
-      operationHash = this.storeService.getOperationMerkleRoot();
-      if (this.nodeConfig.proofOfIndex) {
-        //check if operation is null, then poi will not be inserted
-        if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
-          const poiBlock = PoiBlock.create(
-            blockHeight,
-            block.block.header.hash.toHex(),
-            operationHash,
-            await this.poiService.getLatestPoiBlockHash(),
-            this.project.id,
-          );
-          poiBlockHash = poiBlock.hash;
-          await this.storeService.setPoi(poiBlock, { transaction: tx });
-          this.poiService.setLatestPoiBlockHash(poiBlockHash);
-          await this.storeService.setMetadataBatch(
-            [{ key: 'lastPoiHeight', value: blockHeight }],
-            { transaction: tx },
-          );
-        }
-      }
-    } catch (e) {
-      await tx.rollback();
-      throw e;
+    let apiAt: ApiAt;
+    if (this.nodeConfig.unfinalizedBlocks) {
+      throw new Error('Unfinalized blocks needs to be reconnected');
     }
+    // reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
 
-    await tx.commit();
+    await this.indexBlockData(
+      blockContent,
+      datasources,
+      async (ds: SubqlProjectDs) => {
+        // Injected runtimeVersion from fetch service might be outdated
+        apiAt =
+          apiAt ?? (await this.apiService.getPatchedApi(block, runtimeVersion));
+
+        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+
+        // Inject function to create ds into vm
+        vm.freeze(
+          // eslint-disable-next-line @typescript-eslint/require-await
+          async (templateName: string, args?: Record<string, unknown>) => {
+            throw new Error('Fix up');
+            // const newDs = await this.dynamicDsService.createDynamicDatasource(
+            //   {
+            //     templateName,
+            //     args,
+            //     startBlock: blockHeight,
+            //   },
+            //   tx,
+            // );
+            // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
+            // datasources.push(newDs);
+            // dynamicDsCreated = true;
+          },
+          'createDynamicDatasource',
+        );
+
+        return vm;
+      },
+    );
+
+    // await this.storeService.setMetadataBatch(
+    //   [
+    //     { key: 'lastProcessedHeight', value: blockHeight },
+    //     { key: 'lastProcessedTimestamp', value: Date.now() },
+    //   ],
+    //   { transaction: tx },
+    // );
+    // // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
+    // await this.storeService.incrementJsonbCount('processedBlockCount', tx);
+
+    // Need calculate operationHash to ensure correct offset insert all time
+    // operationHash = this.storeService.getOperationMerkleRoot();
+    // if (this.nodeConfig.proofOfIndex) {
+    //   //check if operation is null, then poi will not be inserted
+    //   if (!u8aEq(operationHash, NULL_MERKEL_ROOT)) {
+    //     const poiBlock = PoiBlock.create(
+    //       blockHeight,
+    //       block.block.header.hash.toHex(),
+    //       operationHash,
+    //       await this.poiService.getLatestPoiBlockHash(),
+    //       this.project.id,
+    //     );
+    //     poiBlockHash = poiBlock.hash;
+    //     await this.storeService.setPoi(poiBlock, { transaction: tx });
+    //     this.poiService.setLatestPoiBlockHash(poiBlockHash);
+    //     await this.storeService.setMetadataBatch(
+    //       [{ key: 'lastPoiHeight', value: blockHeight }],
+    //       { transaction: tx },
+    //     );
+    //   }
+    // }
+    // } catch (e) {
+    //   // await tx.rollback();
+    //   throw e;
+    // }
+
+    // await tx.commit();
     // const storeCacheFeedback = this.storeService.getCache();
 
     return {
       dynamicDsCreated,
-      operationHash,
+      // operationHash,
+      blockHash: block.block.header.hash.toHex(),
       reindexBlockHeight,
     };
   }

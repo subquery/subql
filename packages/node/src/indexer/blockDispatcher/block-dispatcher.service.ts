@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getHeapStatistics } from 'v8';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   getLogger,
@@ -15,14 +15,18 @@ import {
   memoryLock,
   SmartBatchService,
   StoreCacheService,
+  StoreService,
+  IProjectService,
+  PoiService,
+  BaseBlockDispatcher,
 } from '@subql/node-core';
 import { last } from 'lodash';
+import { Sequelize, Transaction } from 'sequelize';
+import { SubqueryProject } from '../../configure/SubqueryProject';
+import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';
-import { ProjectService } from '../project.service';
 import { RuntimeService } from '../runtime/runtimeService';
-import { BlockContent } from '../types';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -35,27 +39,35 @@ export class BlockDispatcherService
   implements OnApplicationShutdown
 {
   private processQueue: AutoQueue<void>;
+  private runtimeService: RuntimeService;
 
   private fetching = false;
   private isShutdown = false;
-  // private getRuntimeVersion: GetRuntimeVersion;
+  private fetchBlocksBatches = SubstrateUtil.fetchBlocksBatches;
 
   constructor(
     private apiService: ApiService,
     nodeConfig: NodeConfig,
     private indexerManager: IndexerManager,
     eventEmitter: EventEmitter2,
-    projectService: ProjectService,
+    @Inject('IProjectService') projectService: IProjectService,
     smartBatchService: SmartBatchService,
+    storeService: StoreService,
     storeCacheService: StoreCacheService,
+    private sequelize: Sequelize,
+    poiService: PoiService,
+    @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
     super(
       nodeConfig,
       eventEmitter,
+      project,
       projectService,
       new Queue(nodeConfig.batchSize * 3),
       smartBatchService,
+      storeService,
       storeCacheService,
+      poiService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
   }
@@ -182,12 +194,15 @@ export class BlockDispatcherService
 
         const blockTasks = blocks.map((block) => async () => {
           const height = block.block.block.header.number.toNumber();
+          let tx: Transaction;
           try {
             const runtimeVersion = await this.runtimeService.getRuntimeVersion(
               block.block,
             );
 
-            this.preProcessBlock(height);
+            tx = await this.sequelize.transaction();
+
+            this.preProcessBlock(height, tx);
             // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,
@@ -200,7 +215,9 @@ export class BlockDispatcherService
             block = null;
 
             await this.storeCacheService.flushCache();
+            await tx.commit();
           } catch (e) {
+            await tx.rollback();
             if (this.isShutdown) {
               return;
             }

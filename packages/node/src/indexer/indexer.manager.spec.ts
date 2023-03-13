@@ -171,10 +171,10 @@ function createIndexerManager(
   );
 
   return new IndexerManager(
-    storeService,
+    // storeService,
     apiService,
-    poiService,
-    sequilize,
+    // poiService,
+    // sequilize,
     project,
     nodeConfig,
     sandboxService,

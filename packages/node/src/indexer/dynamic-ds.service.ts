@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import { isMainThread } from 'worker_threads';
 import { Inject, Injectable } from '@nestjs/common';
 import { isCustomDs, isRuntimeDs } from '@subql/common-substrate';
 import { getLogger, MetadataRepo } from '@subql/node-core';
@@ -38,7 +37,10 @@ export class DynamicDsService {
 
   private _datasources: SubqlProjectDs[];
 
-  async resetDynamicDatasource(targetHeight: number, tx: Transaction) {
+  async resetDynamicDatasource(
+    targetHeight: number,
+    tx: Transaction,
+  ): Promise<void> {
     const dynamicDs = await this.getDynamicDatasourceParams();
     if (dynamicDs.length !== 0) {
       const filteredDs = dynamicDs.filter(
