@@ -72,7 +72,7 @@ export class EthereumApi implements ApiWrapper<EthereumBlockWrapper> {
 
     const protocolStr = protocol.replace(':', '');
 
-    logger.info(this.endpoint.split('?')[0]);
+    logger.info(`Api host: ${hostname}, method: ${protocolStr}`);
     if (protocolStr === 'https' || protocolStr === 'http') {
       const connection: ConnectionInfo = {
         url: this.endpoint.split('?')[0],
