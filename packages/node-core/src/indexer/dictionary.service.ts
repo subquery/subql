@@ -166,10 +166,10 @@ export class DictionaryService implements OnApplicationShutdown {
   async init(): Promise<void> {
     let link: ApolloLink;
 
-    if (this.nodeConfig.sponsoredDictionary) {
+    if (this.nodeConfig.dictionaryResolver) {
       try {
         link = await authHttpLink({
-          authUrl: this.nodeConfig.sponsoredDictionary,
+          authUrl: this.nodeConfig.dictionaryResolver,
           chainId: this.chainId,
           httpOptions: {fetch},
         });
