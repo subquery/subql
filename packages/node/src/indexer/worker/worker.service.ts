@@ -18,7 +18,6 @@ export type FetchBlockResponse =
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
   blockHash: string;
-  // operationHash: string; // Base64 encoded u8a array
   reindexBlockHeight: number;
 };
 

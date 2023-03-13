@@ -26,6 +26,7 @@ import { Sequelize, Transaction } from 'sequelize';
 import { SubqueryProject } from '../../configure/SubqueryProject';
 import * as SubstrateUtil from '../../utils/substrate';
 import { ApiService } from '../api.service';
+import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { RuntimeService } from '../runtime/runtimeService';
 
@@ -58,6 +59,7 @@ export class BlockDispatcherService
     private sequelize: Sequelize,
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
+    dynamicDsService: DynamicDsService,
   ) {
     super(
       nodeConfig,
@@ -69,6 +71,7 @@ export class BlockDispatcherService
       storeService,
       storeCacheService,
       poiService,
+      dynamicDsService,
     );
     this.processQueue = new AutoQueue(nodeConfig.batchSize * 3);
     if (this.nodeConfig.profiler) {
