@@ -6,7 +6,11 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
+import {
+  AnyFunction,
+  DefinitionRpcExt,
+  RegisteredTypes,
+} from '@polkadot/types/types';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
@@ -40,7 +44,31 @@ export class ApiPromiseConnection extends ApiConnection {
     super();
   }
 
-  static fromApi(api: ApiPromise): ApiPromiseConnection {
+  static async create(
+    endpoint: string,
+    args: { chainTypes: RegisteredTypes },
+  ): Promise<ApiPromiseConnection> {
+    let provider: WsProvider | HttpProvider;
+    let throwOnConnect = false;
+
+    const headers = {
+      'User-Agent': `SubQuery-Node ${packageVersion}`,
+    };
+
+    if (endpoint.startsWith('ws')) {
+      provider = new WsProvider(endpoint, RETRY_DELAY, headers);
+    } else if (endpoint.startsWith('http')) {
+      provider = new HttpProvider(endpoint, headers);
+      throwOnConnect = true;
+    }
+
+    const apiOption = {
+      provider,
+      throwOnConnect,
+      noInitWarn: true,
+      ...args.chainTypes,
+    };
+    const api = await ApiPromise.create(apiOption);
     return new ApiPromiseConnection(api);
   }
 
@@ -104,28 +132,13 @@ export class ApiService implements OnApplicationShutdown {
       );
     }
 
-    let provider: WsProvider | HttpProvider;
-    let throwOnConnect = false;
-
-    const headers = {
-      'User-Agent': `SubQuery-Node ${packageVersion}`,
-    };
     for (let i = 0; i < network.endpoint.length; i++) {
       const endpoint = network.endpoint[i];
-      if (endpoint.startsWith('ws')) {
-        provider = new WsProvider(endpoint, RETRY_DELAY, headers);
-      } else if (endpoint.startsWith('http')) {
-        provider = new HttpProvider(endpoint, headers);
-        throwOnConnect = true;
-      }
 
-      const apiOption = {
-        provider,
-        throwOnConnect,
-        noInitWarn: true,
-        ...chainTypes,
-      };
-      const api = await ApiPromise.create(apiOption);
+      const connection = await ApiPromiseConnection.create(endpoint, {
+        chainTypes,
+      });
+      const api = connection.api;
 
       this.eventEmitter.emit(IndexerEvent.ApiConnected, {
         value: 1,
@@ -201,9 +214,7 @@ export class ApiService implements OnApplicationShutdown {
 
       logger.info(`Connected to ${endpoint} successfully`);
 
-      this.connectionPoolService.addToConnections(
-        ApiPromiseConnection.fromApi(api),
-      );
+      this.connectionPoolService.addToConnections(connection);
     }
 
     return this;
