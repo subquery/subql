@@ -22,25 +22,62 @@ export type Response<T = any> = {
   result?: T;
 };
 
+function isRequest(message: Request | Response): message is Request {
+  return !!(message as Request).name;
+}
+
+function isResponse(message: Request | Response): message is Response {
+  return !isRequest(message);
+}
+
+type ResponseListener = Record<number | string, (data?: any, error?: SerializableError) => void>;
+
 export type AsyncFunc<T = any> = (...args: any[]) => T | Promise<T | void> | void;
 type AsyncMethods = Record<string, AsyncFunc>;
 
-// TODO can we pass an event emitter rather than use parent port
-// This would make it agnostic to child process
+abstract class WorkerIO {
+  private responseListeners: ResponseListener = {};
 
-/* Builds an interface on the worker side to interact with main process */
-export function registerWorker(fns: AsyncMethods): void {
-  let functions: AsyncMethods;
+  protected abstract getReqId(): number;
 
-  function register(fns: typeof functions) {
-    functions = fns;
+  constructor(
+    protected port: workers.MessagePort | workers.Worker,
+    workerFns: string[],
+    private hostFns: AsyncMethods,
+    protected logger: Logger
+  ) {
+    port.on('message', (message) => this.handleMessage(message));
+
+    // Add expected methods to class
+    workerFns.map((fn) => {
+      if ((this as any)[fn]) {
+        throw new Error(`Method ${String(fn)} is already defined`);
+      }
+      Object.assign(this, {[fn]: (...args: any[]) => this.execute(fn, args)});
+    });
   }
 
-  async function handleRequest(req: Request): Promise<void> {
-    const fn = functions[req.name];
+  private handleMessage(message: Request | Response): void {
+    if (isResponse(message)) {
+      if (this.responseListeners[message.id]) {
+        this.responseListeners[message.id](message.result, message.error);
+
+        delete this.responseListeners[message.id];
+      } else {
+        this.logger.warn(`No handler found for request: "${message.id}"`);
+      }
+    } else if (isRequest(message)) {
+      void this.handleRequest(message);
+    } else {
+      this.logger.warn(`Unsupported message: "${message}"`);
+    }
+  }
+
+  private async handleRequest(req: Request): Promise<void> {
+    const fn = this.hostFns[req.name];
 
     if (!fn) {
-      workers.parentPort.postMessage(<Response>{
+      this.port.postMessage(<Response>{
         id: req.id,
         error: {
           message: `handleRequest: Function "${req.name}" not found`,
@@ -52,88 +89,19 @@ export function registerWorker(fns: AsyncMethods): void {
     try {
       const res = await fn(...req.args);
 
-      workers.parentPort.postMessage(<Response>{
+      this.port.postMessage(<Response>{
         id: req.id,
         result: res,
       });
     } catch (e) {
-      workers.parentPort.postMessage(<Response>{
+      this.port.postMessage(<Response>{
         id: req.id,
         error: e,
       });
     }
   }
 
-  workers.parentPort.on('message', (req: Request) => {
-    void handleRequest(req);
-  });
-
-  register(fns);
-}
-
-/* Host side, used to initialise and interact with worker */
-export class Worker<T extends AsyncMethods> {
-  private worker: workers.Worker;
-  private logger: Logger;
-
-  private responseListeners: Record<number | string, (data?: any, error?: SerializableError) => void> = {};
-
-  private _reqCounter = 0;
-
-  private constructor(path: string, fns: (keyof T)[]) {
-    this.worker = new workers.Worker(path, {
-      argv: process.argv,
-    });
-
-    this.logger = getLogger(`worker: ${this.worker.threadId}`);
-
-    this.worker.on('message', (res: Response) => {
-      if (this.responseListeners[res.id]) {
-        this.responseListeners[res.id](res.result, res.error);
-
-        delete this.responseListeners[res.id];
-      } else {
-        this.logger.warn(`No handler found for request: "${res.id}"`);
-      }
-    });
-
-    this.worker.on('error', (error) => {
-      this.logger.error(error, 'Worker error');
-    });
-
-    this.worker.on('messageerror', (error) => {
-      this.logger.error(error, 'Worker message error');
-    });
-
-    this.worker.on('exit', (code) => {
-      this.logger.error(`Worker exited with code ${code}`);
-      process.exit(code);
-    });
-
-    // Add expected methods to class
-    fns.map((fn) => {
-      if ((this as any)[fn]) {
-        throw new Error(`Method ${String(fn)} is already defined`);
-      }
-      Object.assign(this, {[fn]: (...args: any[]) => this.execute(fn, args)});
-    });
-  }
-
-  static create<T extends AsyncMethods>(path: string, fns: (keyof T)[]): Worker<T> & T {
-    const worker = new Worker(path, fns);
-
-    return worker as Worker<T> & T;
-  }
-
-  private getReqId(): number {
-    return this._reqCounter++;
-  }
-
-  async terminate(): Promise<number> {
-    return this.worker.terminate();
-  }
-
-  private async execute<T>(fnName: keyof T, args: any[]): Promise<T> {
+  protected async execute<T>(fnName: keyof T, args: any[]): Promise<T> {
     const id = this.getReqId();
 
     return new Promise<T>((resolve, reject) => {
@@ -147,11 +115,81 @@ export class Worker<T extends AsyncMethods> {
         }
       };
 
-      this.worker.postMessage(<Request>{
+      console.log('REQUEST', fnName, args, JSON.stringify(args));
+
+      this.port.postMessage(<Request>{
         id,
         name: fnName,
         args,
       });
     });
+  }
+}
+
+/* Worker side, used to initialise and interact with main thread */
+export class WorkerHost<T extends AsyncMethods> extends WorkerIO {
+  private _reqCounter = -1;
+
+  private constructor(workerFns: (keyof T)[], hostFns: AsyncMethods, logger: Logger) {
+    super(workers.parentPort, workerFns as string[], hostFns, logger);
+  }
+
+  static create<T extends AsyncMethods>(
+    workerFns: (keyof T)[],
+    hostFns: AsyncMethods,
+    logger: Logger
+  ): WorkerHost<T> & T {
+    const workerHost = new WorkerHost(workerFns, hostFns, logger);
+
+    return workerHost as WorkerHost<T> & T;
+  }
+
+  // Host requests are in decreasing ID while Worker is increasing IDs to not conflict
+  protected getReqId(): number {
+    return this._reqCounter--;
+  }
+}
+
+/* Host side, used to initialise and interact with worker */
+export class Worker<T extends AsyncMethods> extends WorkerIO {
+  private _reqCounter = 0;
+
+  private constructor(private worker: workers.Worker, workerFns: (keyof T)[], hostFns: AsyncMethods) {
+    super(worker, workerFns as string[], hostFns, getLogger(`worker: ${worker.threadId}`));
+
+    this.worker.on('error', (error) => {
+      console.log('WORKER ERROR', error);
+      this.logger.error(error, 'Worker error');
+    });
+
+    this.worker.on('messageerror', (error) => {
+      this.logger.error(error, 'Worker message error');
+    });
+
+    this.worker.on('exit', (code) => {
+      this.logger.error(`Worker exited with code ${code}`);
+      process.exit(code);
+    });
+  }
+
+  static create<T extends AsyncMethods>(path: string, workerFns: (keyof T)[], hostFns: AsyncMethods): Worker<T> & T {
+    const worker = new Worker(
+      new workers.Worker(path, {
+        argv: process.argv,
+      }),
+      workerFns,
+      hostFns
+    );
+
+    return worker as Worker<T> & T;
+  }
+
+  // Host requests are in decreasing ID while Worker is increasing IDs to not conflict
+  protected getReqId(): number {
+    return this._reqCounter++;
+  }
+
+  async terminate(): Promise<number> {
+    return this.worker.terminate();
   }
 }

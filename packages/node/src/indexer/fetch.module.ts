@@ -13,6 +13,7 @@ import {
   SmartBatchService,
   StoreCacheService,
 } from '@subql/node-core';
+import { Sequelize } from 'sequelize';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -53,7 +54,11 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         apiService: ApiService,
         indexerManager: IndexerManager,
         smartBatchService: SmartBatchService,
+        storeService: StoreService,
         storeCacheService: StoreCacheService,
+        sequelize: Sequelize,
+        poiService: PoiService,
+        project: SubqueryProject,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -61,7 +66,11 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               eventEmitter,
               projectService,
               smartBatchService,
+              storeService,
               storeCacheService,
+              sequelize,
+              poiService,
+              project,
             )
           : new BlockDispatcherService(
               apiService,
@@ -70,16 +79,24 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               eventEmitter,
               projectService,
               smartBatchService,
+              storeService,
               storeCacheService,
+              sequelize,
+              poiService,
+              project,
             ),
       inject: [
         NodeConfig,
         EventEmitter2,
-        ProjectService,
+        'IProjectService',
         ApiService,
         IndexerManager,
         SmartBatchService,
+        StoreService,
         StoreCacheService,
+        Sequelize,
+        PoiService,
+        'ISubqueryProject',
       ],
     },
     FetchService,
@@ -98,7 +115,10 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     DynamicDsService,
     PoiService,
     MmrService,
-    ProjectService,
+    {
+      useClass: ProjectService,
+      provide: 'IProjectService',
+    },
     UnfinalizedBlocksService,
     RuntimeService,
   ],
