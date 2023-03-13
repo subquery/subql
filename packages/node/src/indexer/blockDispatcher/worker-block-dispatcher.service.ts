@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import path from 'path';
-import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Interval } from '@nestjs/schedule';
 import {
@@ -14,11 +14,17 @@ import {
   AutoQueue,
   memoryLock,
   SmartBatchService,
+  StoreService,
+  PoiService,
   StoreCacheService,
+  BaseBlockDispatcher,
+  IProjectService,
 } from '@subql/node-core';
+import { Store } from '@subql/types';
 import chalk from 'chalk';
 import { last } from 'lodash';
-import { ProjectService } from '../project.service';
+import { Sequelize, Transaction } from 'sequelize';
+import { SubqueryProject } from '../../configure/SubqueryProject';
 import { RuntimeService } from '../runtime/runtimeService';
 import {
   FetchBlock,
@@ -33,7 +39,7 @@ import {
   waitForWorkerBatchSize,
   ReloadDynamicDs,
 } from '../worker/worker';
-import { BaseBlockDispatcher } from './base-block-dispatcher';
+// import { BaseBlockDispatcher } from './base-block-dispatcher';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -58,7 +64,7 @@ type IndexerWorker = IIndexerWorker & {
   terminate: () => Promise<number>;
 };
 
-async function createIndexerWorker(): Promise<IndexerWorker> {
+async function createIndexerWorker(store: Store): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<IInitIndexerWorker>(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -74,6 +80,16 @@ async function createIndexerWorker(): Promise<IndexerWorker> {
       'waitForWorkerBatchSize',
       'reloadDynamicDs',
     ],
+    {
+      storeCount: store.count.bind(store),
+      storeGet: store.get.bind(store),
+      storeGetByField: store.getByField.bind(store),
+      storeGetOneByField: store.getOneByField.bind(store),
+      storeSet: store.set.bind(store),
+      storeBulkCreate: store.bulkCreate.bind(store),
+      storeBulkUpdate: store.bulkUpdate.bind(store),
+      storeRemove: store.remove.bind(store),
+    },
   );
 
   await indexerWorker.initWorker();
@@ -89,6 +105,7 @@ export class WorkerBlockDispatcherService
   private workers: IndexerWorker[];
   private numWorkers: number;
   smartBatchService: SmartBatchService;
+  private runtimeService: RuntimeService;
 
   private taskCounter = 0;
   private isShutdown = false;
@@ -96,18 +113,25 @@ export class WorkerBlockDispatcherService
   constructor(
     nodeConfig: NodeConfig,
     eventEmitter: EventEmitter2,
-    projectService: ProjectService,
+    @Inject('IProjectService') projectService: IProjectService,
     smartBatchService: SmartBatchService,
+    storeService: StoreService,
     storeCacheService: StoreCacheService,
+    private sequelize: Sequelize,
+    poiService: PoiService,
+    @Inject('ISubqueryProject') project: SubqueryProject,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
       nodeConfig,
       eventEmitter,
+      project,
       projectService,
       new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
       smartBatchService,
+      storeService,
       storeCacheService,
+      poiService,
     );
     this.numWorkers = numWorkers;
   }
@@ -123,7 +147,9 @@ export class WorkerBlockDispatcherService
     }
 
     this.workers = await Promise.all(
-      new Array(this.numWorkers).fill(0).map(() => createIndexerWorker()),
+      new Array(this.numWorkers)
+        .fill(0)
+        .map(() => createIndexerWorker(this.storeService.getStore())),
     );
 
     this.onDynamicDsCreated = onDynamicDsCreated;
@@ -155,45 +181,42 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  async enqueueBlocks(
-    cleanedBlocks: number[],
-    latestBufferHeight?: number,
-  ): Promise<void> {
-    if (!!latestBufferHeight && !cleanedBlocks.length) {
+  async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
+    if (!!latestBufferHeight && !heights.length) {
       this.latestBufferedHeight = latestBufferHeight;
       return;
     }
 
     logger.info(
-      `Enqueueing blocks ${cleanedBlocks[0]}...${last(cleanedBlocks)}, total ${
-        cleanedBlocks.length
+      `Enqueueing blocks ${heights[0]}...${last(heights)}, total ${
+        heights.length
       } blocks`,
     );
 
     // eslint-disable-next-line no-constant-condition
     if (true) {
       let startIndex = 0;
-      while (startIndex < cleanedBlocks.length) {
+      while (startIndex < heights.length) {
         const workerIdx = await this.getNextWorkerIndex();
         const batchSize = Math.min(
-          cleanedBlocks.length - startIndex,
+          heights.length - startIndex,
           await this.maxBatchSize(workerIdx),
         );
         await Promise.all(
-          cleanedBlocks
+          heights
             .slice(startIndex, startIndex + batchSize)
             .map((height) => this.enqueueBlock(height, workerIdx)),
         );
         startIndex += batchSize;
       }
     } else {
-      cleanedBlocks.map(async (height) => {
+      heights.map(async (height) => {
         const workerIndex = await this.getNextWorkerIndex();
         return this.enqueueBlock(height, workerIndex);
       });
     }
 
-    this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
+    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
   }
 
   private async enqueueBlock(height: number, workerIdx: number) {
@@ -214,6 +237,7 @@ export class WorkerBlockDispatcherService
     const pendingBlock = worker.fetchBlock(height, blockSpecVersion);
 
     const processBlock = async () => {
+      let tx: Transaction;
       try {
         // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
         if (syncedDictionary) {
@@ -242,22 +266,31 @@ export class WorkerBlockDispatcherService
           );
         }
 
-        this.preProcessBlock(height);
+        tx = await this.sequelize.transaction();
 
-        const { dynamicDsCreated, operationHash, reindexBlockHeight } =
-          await worker.processBlock(height);
+        this.preProcessBlock(height, tx);
 
-        await this.postProcessBlock(height, {
+        const {
+          blockHash,
           dynamicDsCreated,
-          operationHash: Buffer.from(operationHash, 'base64'),
+          /*operationHash, */ reindexBlockHeight,
+        } = await worker.processBlock(height);
+
+        await this.postProcessBlock(height, tx, {
+          dynamicDsCreated,
+          blockHash,
+          // operationHash: Buffer.from(operationHash, 'base64'),
           reindexBlockHeight,
         });
+
+        await tx.commit();
 
         if (dynamicDsCreated) {
           // Ensure all workers are aware of all dynamic ds
           await Promise.all(this.workers.map((w) => w.reloadDynamicDs()));
         }
       } catch (e) {
+        await tx.rollback();
         logger.error(
           e,
           `failed to index block at height ${height} ${
