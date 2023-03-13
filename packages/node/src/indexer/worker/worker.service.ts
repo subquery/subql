@@ -16,7 +16,8 @@ export type FetchBlockResponse =
 
 export type ProcessBlockResponse = {
   dynamicDsCreated: boolean;
-  operationHash: string; // Base64 encoded u8a array
+  blockHash: string;
+  // operationHash: string; // Base64 encoded u8a array
   reindexBlockHeight: number;
 };
 
@@ -126,7 +127,7 @@ export class WorkerService {
       this._isIndexing = false;
       return {
         ...response,
-        operationHash: Buffer.from(response.operationHash).toString('base64'),
+        // operationHash: Buffer.from(response.operationHash).toString('base64'),
       };
     } catch (e) {
       logger.error(e, `Failed to index block ${height}: ${e.stack}`);

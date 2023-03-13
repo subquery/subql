@@ -9,6 +9,7 @@ import {
   MmrService,
   NodeConfig,
   ConnectionPoolService,
+  StoreCacheService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import { ApiService } from './api.service';
@@ -25,6 +26,7 @@ import { WorkerService } from './worker/worker.service';
 @Module({
   providers: [
     IndexerManager,
+    StoreCacheService,
     StoreService,
     ConnectionPoolService,
     {
@@ -56,7 +58,10 @@ import { WorkerService } from './worker/worker.service';
     DynamicDsService,
     PoiService,
     MmrService,
-    ProjectService,
+    {
+      provide: 'IProjectService',
+      useClass: ProjectService,
+    },
     WorkerService,
     UnfinalizedBlocksService,
     WorkerRuntimeService,
