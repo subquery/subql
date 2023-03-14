@@ -87,6 +87,8 @@ const ABI_INTERFACES_ROOT_DIR = 'src/types/abi-interfaces';
 const CONTRACTS_DIR = 'src/types/contracts'; //generated
 const TYPECHAIN_TARGET = 'ethers-v5';
 
+const RESERVED_KEYS = ['filter', 'filters'];
+
 const exportTypes = {
   models: false,
   interfaces: false,
@@ -392,14 +394,23 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     console.log(`* Types index generated !`);
   }
 }
-
+export function validateEntityName(name: string): string {
+  for (const reservedKey of RESERVED_KEYS) {
+    if (name.toLowerCase().endsWith(reservedKey.toLowerCase())) {
+      throw new Error(`EntityName: ${name} cannot end with reservedKey: ${reservedKey}`);
+    }
+  }
+  return name;
+}
 // 2. Loop all entities and render it
 export async function generateModels(projectPath: string, schema: string): Promise<void> {
   const extractEntities = getAllEntitiesRelations(schema);
   for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
     const className = upperFirst(entity.name);
-    const entityName = entity.name;
+
+    const entityName = validateEntityName(entity.name);
+
     const fields = processFields('entity', className, entity.fields, entity.indexes);
     const importJsonInterfaces = uniq(fields.filter((field) => field.isJsonInterface).map((f) => f.type));
     const importEnums = fields.filter((field) => field.isEnum).map((f) => f.type);
