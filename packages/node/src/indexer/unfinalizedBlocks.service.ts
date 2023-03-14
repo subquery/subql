@@ -28,12 +28,19 @@ const UNFINALIZED_THRESHOLD = 200;
 
 type UnfinalizedBlocks = [blockHeight: number, blockHash: HexString][];
 
+export interface IUnfinalizedBlocksService {
+  processUnfinalizedBlocks(
+    block: SubstrateBlock | undefined,
+  ): Promise<number | null>;
+}
+
 @Injectable()
 export class UnfinalizedBlocksService {
   private unfinalizedBlocks: UnfinalizedBlocks;
   private finalizedHeader: Header;
   private metadataRepo: MetadataRepo;
   private lastCheckedBlockHeight: number;
+  private tx: Transaction | undefined;
 
   constructor(
     private readonly apiService: ApiService,
@@ -58,8 +65,8 @@ export class UnfinalizedBlocksService {
       logger.info('Processing unfinalized blocks');
       // Validate any previously unfinalized blocks
 
-      const tx = await this.sequelize.transaction();
-      const rewindHeight = await this.processUnfinalizedBlocks(null, tx);
+      this.tx = await this.sequelize.transaction();
+      const rewindHeight = await this.processUnfinalizedBlocks(null);
 
       if (rewindHeight !== null) {
         logger.info(
@@ -69,11 +76,16 @@ export class UnfinalizedBlocksService {
         logger.info(`Successful rewind to block ${rewindHeight}!`);
         return rewindHeight;
       } else {
-        await this.resetUnfinalizedBlocks(tx);
-        await this.resetLastFinalizedVerifiedHeight(tx);
+        await this.resetUnfinalizedBlocks(this.tx);
+        await this.resetLastFinalizedVerifiedHeight(this.tx);
       }
-      await tx.commit();
+      await this.tx.commit();
+      this.tx = null;
     }
+  }
+
+  setTransaction(tx: Transaction | undefined): void {
+    this.tx = tx;
   }
 
   private get api(): ApiPromise {
@@ -86,20 +98,23 @@ export class UnfinalizedBlocksService {
 
   async processUnfinalizedBlocks(
     block: SubstrateBlock | undefined,
-    tx: Transaction,
   ): Promise<number | null> {
+    if (!this.tx) {
+      logger.warn('Transaction has not been set for unfinalized blocks');
+    }
+
     if (block) {
       await this.registerUnfinalizedBlock(
         block.block.header.number.toNumber(),
         block.block.header.hash.toHex(),
-        tx,
+        this.tx,
       );
     }
 
     const forkedHeader = await this.hasForked();
     if (!forkedHeader) {
       // Remove blocks that are now confirmed finalized
-      await this.deleteFinalizedBlock(tx);
+      await this.deleteFinalizedBlock(this.tx);
     } else {
       // Get the last unfinalized block that is now finalized
       return this.getLastCorrectFinalizedBlock(forkedHeader);

@@ -75,7 +75,7 @@ export class IndexerManager {
   }> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
-    const reindexBlockHeight = null;
+    let reindexBlockHeight: number | null = null;
     const blockHeight = block.block.header.number.toNumber();
 
     this.filteredDataSources = this.filterDataSources(
@@ -87,39 +87,42 @@ export class IndexerManager {
     );
 
     let apiAt: ApiAt;
-    if (this.nodeConfig.unfinalizedBlocks) {
-      throw new Error('Unfinalized blocks needs to be reconnected');
+    reindexBlockHeight = await this.processUnfinalizedBlocks(block);
+
+    // Only index block if we're not going to reindex
+    if (!reindexBlockHeight) {
+      await this.indexBlockData(
+        blockContent,
+        datasources,
+        async (ds: SubqlProjectDs) => {
+          // Injected runtimeVersion from fetch service might be outdated
+          apiAt =
+            apiAt ??
+            (await this.apiService.getPatchedApi(block, runtimeVersion));
+
+          const vm = this.sandboxService.getDsProcessor(ds, apiAt);
+
+          // Inject function to create ds into vm
+          vm.freeze(
+            async (templateName: string, args?: Record<string, unknown>) => {
+              const newDs = await this.dynamicDsService.createDynamicDatasource(
+                {
+                  templateName,
+                  args,
+                  startBlock: blockHeight,
+                },
+              );
+              // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
+              datasources.push(newDs);
+              dynamicDsCreated = true;
+            },
+            'createDynamicDatasource',
+          );
+
+          return vm;
+        },
+      );
     }
-    // reindexBlockHeight = await this.processUnfinalizedBlocks(block, tx);
-
-    await this.indexBlockData(
-      blockContent,
-      datasources,
-      async (ds: SubqlProjectDs) => {
-        // Injected runtimeVersion from fetch service might be outdated
-        apiAt =
-          apiAt ?? (await this.apiService.getPatchedApi(block, runtimeVersion));
-
-        const vm = this.sandboxService.getDsProcessor(ds, apiAt);
-
-        // Inject function to create ds into vm
-        vm.freeze(
-          async (templateName: string, args?: Record<string, unknown>) => {
-            const newDs = await this.dynamicDsService.createDynamicDatasource({
-              templateName,
-              args,
-              startBlock: blockHeight,
-            });
-            // Push the newly created dynamic ds to be processed this block on any future extrinsics/events
-            datasources.push(newDs);
-            dynamicDsCreated = true;
-          },
-          'createDynamicDatasource',
-        );
-
-        return vm;
-      },
-    );
 
     return {
       dynamicDsCreated,
@@ -135,10 +138,9 @@ export class IndexerManager {
 
   private async processUnfinalizedBlocks(
     block: SubstrateBlock,
-    tx: Transaction,
   ): Promise<number | null> {
     if (this.nodeConfig.unfinalizedBlocks) {
-      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block, tx);
+      return this.unfinalizedBlocksService.processUnfinalizedBlocks(block);
     }
     return null;
   }

@@ -180,11 +180,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
@@ -200,11 +198,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
@@ -217,11 +213,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     unfinalizedBlocksService.registerFinalizedBlock(
@@ -230,7 +224,6 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([
@@ -245,11 +238,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -259,7 +250,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -279,27 +269,21 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(114, '0xabc114'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(115, '0xabc115'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(116, '0xabc116'),
-      null,
     );
 
     // Forked block
@@ -309,7 +293,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(117, '0xabc117'),
-      null,
     );
 
     // Last valid block
@@ -323,11 +306,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -337,7 +318,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -351,11 +331,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -365,7 +343,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -397,7 +374,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block
@@ -411,11 +387,9 @@ describe('UnfinalizedBlocksService', () => {
 
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(111, '0xabc111'),
-      null,
     );
     await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(112, '0xabc112'),
-      null,
     );
 
     // Forked block
@@ -425,7 +399,6 @@ describe('UnfinalizedBlocksService', () => {
 
     const res = await unfinalizedBlocksService.processUnfinalizedBlocks(
       mockBlock(113, '0xabc113'),
-      null,
     );
 
     // Last valid block

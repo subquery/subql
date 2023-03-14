@@ -42,6 +42,10 @@ import {
   WorkerService,
   WorkerStatusResponse,
 } from './worker.service';
+import {
+  HostUnfinalizedBlocks,
+  hostUnfinalizedBlocksKeys,
+} from './worker.unfinalizedBlocks.service';
 let app: INestApplication;
 let workerService: WorkerService;
 
@@ -141,10 +145,10 @@ async function waitForWorkerBatchSize(heapSizeInBytes: number) {
 
 // Register these functions to be exposed to worker host
 (global as any).host = WorkerHost.create<
-  HostStore & HostDynamicDS<SubqlProjectDs>,
+  HostStore & HostDynamicDS<SubqlProjectDs> & HostUnfinalizedBlocks,
   IInitIndexerWorker
 >(
-  [...hostStoreKeys, ...hostDynamicDsKeys],
+  [...hostStoreKeys, ...hostDynamicDsKeys, ...hostUnfinalizedBlocksKeys],
   {
     initWorker,
     fetchBlock,
