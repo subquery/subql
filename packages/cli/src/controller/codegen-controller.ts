@@ -404,14 +404,13 @@ export function validateEntityName(name: string): string {
 }
 // 2. Loop all entities and render it
 export async function generateModels(projectPath: string, schema: string): Promise<void> {
-  console.log('schema: ', schema);
   const extractEntities = getAllEntitiesRelations(schema);
   for (const entity of extractEntities.models) {
     const baseFolderPath = '.../../base';
     const className = upperFirst(entity.name);
-    console.log('name: ', entity.name);
 
     const entityName = validateEntityName(entity.name);
+
     const fields = processFields('entity', className, entity.fields, entity.indexes);
     const importJsonInterfaces = uniq(fields.filter((field) => field.isJsonInterface).map((f) => f.type));
     const importEnums = fields.filter((field) => field.isEnum).map((f) => f.type);
