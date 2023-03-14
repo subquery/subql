@@ -13,6 +13,7 @@ describe('Codegen can generate schema', () => {
   afterEach(async () => {
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest1/src'));
     await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest2/src'));
+    await promisify(rimraf)(path.join(__dirname, '../../test/schemaTest3/src'));
   });
 
   it('codegen with correct schema should pass', async () => {
@@ -22,6 +23,10 @@ describe('Codegen can generate schema', () => {
 
   it('codegen with incorrect schema field should fail', async () => {
     const projectPath = path.join(__dirname, '../../test/schemaTest2');
+    await expect(codegen(projectPath)).rejects.toThrow(/is not an valid type/);
+  });
+  it('codegen with entities that uses reserved names should throw', async () => {
+    const projectPath = path.join(__dirname, '../../test/schemaTest3');
     await expect(codegen(projectPath)).rejects.toThrow(/is not an valid type/);
   });
 });

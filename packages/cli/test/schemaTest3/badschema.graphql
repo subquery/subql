@@ -1,0 +1,15 @@
+type exampleEntity @entity {
+  id: ID!
+  filter: exampleEntityFilter
+  filters: exampleEntityFilters
+}
+
+type exampleEntityFilter @entity {
+  id: ID!
+  minSore: Int
+}
+
+type exampleEntityFilters @entity {
+  id: ID!
+  maxSore: Int
+}
