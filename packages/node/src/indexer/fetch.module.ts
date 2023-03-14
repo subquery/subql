@@ -9,7 +9,7 @@ import {
   StoreService,
   PoiService,
   NodeConfig,
-  SmartBatchService
+  SmartBatchService,
   StoreCacheService,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';

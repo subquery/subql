@@ -10,4 +10,3 @@ export * from './db';
 export * from './meta';
 export * from './utils';
 export * from './indexer';
-export * from './blockDispatcher';

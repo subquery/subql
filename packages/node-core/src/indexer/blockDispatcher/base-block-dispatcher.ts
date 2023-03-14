@@ -6,8 +6,6 @@ import assert from 'assert';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@polkadot/util';
 import {Transaction} from 'sequelize';
-import {NodeConfig} from '../configure';
-import {IndexerEvent} from '../events';
 import {
   DynamicDsService,
   IProjectNetworkConfig,
@@ -16,11 +14,13 @@ import {
   PoiBlock,
   PoiService,
   StoreCacheService,
-  SmartBatchService
+  SmartBatchService,
   StoreService,
-} from '../indexer';
-import {getLogger} from '../logger';
-import {IQueue} from '../utils';
+} from '..';
+import {NodeConfig} from '../../configure';
+import {IndexerEvent} from '../../events';
+import {getLogger} from '../../logger';
+import {IQueue} from '../../utils';
 
 const logger = getLogger('BaseBlockDispatcherService');
 
@@ -151,7 +151,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     await this.updateStoreMetadata(height, tx);
 
     const operationHash = this.storeService.getOperationMerkleRoot();
-    const {blockHash, dynamicDsCreated, /*operationHash, */ reindexBlockHeight} = processBlockResponse;
+    const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
 
     await this.updatePOI(height, blockHash, operationHash, tx);
 
