@@ -25,6 +25,7 @@ import { ApiService } from '../api.service';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { RuntimeService } from '../runtime/runtimeService';
+import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 
 const logger = getLogger('BlockDispatcherService');
 
@@ -55,6 +56,7 @@ export class BlockDispatcherService
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksService: UnfinalizedBlocksService,
   ) {
     super(
       nodeConfig,
@@ -189,6 +191,7 @@ export class BlockDispatcherService
             tx = await this.sequelize.transaction();
 
             this.preProcessBlock(height, tx);
+            this.unfinalizedBlocksService.setTransaction(tx);
             // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexerManager.indexBlock(
               block,

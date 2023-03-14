@@ -116,6 +116,22 @@ export class ProjectService implements IProjectService {
       }
 
       this._startHeight = await this.getStartHeight();
+
+      if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
+        logger.error(
+          'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
+        );
+        process.exit(1);
+      }
+
+      const reindexedTo = await this.unfinalizedBlockService.init(
+        this.metadataRepo,
+        this.reindex.bind(this),
+      );
+
+      if (reindexedTo !== undefined) {
+        this._startHeight = reindexedTo;
+      }
     } else {
       this._schema = await this.getExistingProjectSchema();
       this.metadataRepo = await MetadataFactory(
@@ -133,22 +149,6 @@ export class ProjectService implements IProjectService {
       if (this.nodeConfig.proofOfIndex) {
         await this.poiService.init(this.schema);
       }
-    }
-
-    if (this.nodeConfig.unfinalizedBlocks && !this.isHistorical) {
-      logger.error(
-        'Unfinalized blocks cannot be enabled without historical. You will need to reindex your project to enable historical',
-      );
-      process.exit(1);
-    }
-
-    const reindexedTo = await this.unfinalizedBlockService.init(
-      this.metadataRepo,
-      this.reindex.bind(this),
-    );
-
-    if (reindexedTo !== undefined) {
-      this._startHeight = reindexedTo;
     }
   }
 

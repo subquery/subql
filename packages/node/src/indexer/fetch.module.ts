@@ -49,6 +49,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         poiService: PoiService,
         project: SubqueryProject,
         dynamicDsService: DynamicDsService,
+        unfinalizedBlocks: UnfinalizedBlocksService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
@@ -61,6 +62,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               poiService,
               project,
               dynamicDsService,
+              unfinalizedBlocks,
             )
           : new BlockDispatcherService(
               apiService,
@@ -74,6 +76,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               poiService,
               project,
               dynamicDsService,
+              unfinalizedBlocks,
             ),
       inject: [
         NodeConfig,
@@ -87,6 +90,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         PoiService,
         'ISubqueryProject',
         DynamicDsService,
+        UnfinalizedBlocksService,
       ],
     },
     FetchService,

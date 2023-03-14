@@ -31,7 +31,12 @@ import {
 } from '../../configure/SubqueryProject';
 import { DynamicDsService } from '../dynamic-ds.service';
 import { RuntimeService } from '../runtime/runtimeService';
+import {
+  IUnfinalizedBlocksService,
+  UnfinalizedBlocksService,
+} from '../unfinalizedBlocks.service';
 import { IIndexerWorker, IInitIndexerWorker } from '../worker/worker';
+import { HostUnfinalizedBlocks } from '../worker/worker.unfinalizedBlocks.service';
 
 const logger = getLogger('WorkerBlockDispatcherService');
 
@@ -42,10 +47,11 @@ type IndexerWorker = IIndexerWorker & {
 async function createIndexerWorker(
   store: Store,
   dynamicDsService: IDynamicDsService<SubqlProjectDs>,
+  unfinalizedBlocksService: IUnfinalizedBlocksService,
 ): Promise<IndexerWorker> {
   const indexerWorker = Worker.create<
     IInitIndexerWorker,
-    HostDynamicDS<SubqlProjectDs> & HostStore
+    HostDynamicDS<SubqlProjectDs> & HostStore & HostUnfinalizedBlocks
   >(
     path.resolve(__dirname, '../../../dist/indexer/worker/worker.js'),
     [
@@ -71,6 +77,10 @@ async function createIndexerWorker(
         dynamicDsService.createDynamicDatasource.bind(dynamicDsService),
       dynamicDsGetDynamicDatasources:
         dynamicDsService.getDynamicDatasources.bind(dynamicDsService),
+      unfinalizedBlocksProcess:
+        unfinalizedBlocksService.processUnfinalizedBlocks.bind(
+          unfinalizedBlocksService,
+        ),
     },
   );
 
@@ -101,6 +111,7 @@ export class WorkerBlockDispatcherService
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
+    private unfinalizedBlocksSevice: UnfinalizedBlocksService,
   ) {
     const numWorkers = nodeConfig.workers;
     super(
@@ -134,6 +145,7 @@ export class WorkerBlockDispatcherService
           createIndexerWorker(
             this.storeService.getStore(),
             this.dynamicDsService,
+            this.unfinalizedBlocksSevice,
           ),
         ),
     );
@@ -246,6 +258,7 @@ export class WorkerBlockDispatcherService
         tx = await this.sequelize.transaction();
 
         this.preProcessBlock(height, tx);
+        this.unfinalizedBlocksSevice.setTransaction(tx);
 
         const {
           blockHash,
