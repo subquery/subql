@@ -1,29 +1,24 @@
 // Copyright 2020-2021 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import path from 'path';
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { Interval } from '@nestjs/schedule';
 import {
   getLogger,
   NodeConfig,
-  IndexerEvent,
   Worker,
-  AutoQueue,
   StoreService,
   PoiService,
   StoreCacheService,
-  BaseBlockDispatcher,
   IProjectService,
   IDynamicDsService,
   HostStore,
   HostDynamicDS,
+  WorkerBlockDispatcher,
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import chalk from 'chalk';
-import { last } from 'lodash';
 import { Sequelize, Transaction } from 'sequelize';
 import {
   SubqlProjectDs,
@@ -91,15 +86,10 @@ async function createIndexerWorker(
 
 @Injectable()
 export class WorkerBlockDispatcherService
-  extends BaseBlockDispatcher<AutoQueue<void>>
+  extends WorkerBlockDispatcher<SubqlProjectDs, IndexerWorker>
   implements OnApplicationShutdown
 {
-  private workers: IndexerWorker[];
-  private numWorkers: number;
   private runtimeService: RuntimeService;
-
-  private taskCounter = 0;
-  private isShutdown = false;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -107,67 +97,39 @@ export class WorkerBlockDispatcherService
     @Inject('IProjectService') projectService: IProjectService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    private sequelize: Sequelize,
+    sequelize: Sequelize,
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
     private unfinalizedBlocksSevice: UnfinalizedBlocksService,
   ) {
-    const numWorkers = nodeConfig.workers;
     super(
       nodeConfig,
       eventEmitter,
-      project,
       projectService,
-      new AutoQueue(numWorkers * nodeConfig.batchSize * 2),
       storeService,
       storeCacheService,
+      sequelize,
       poiService,
+      project,
       dynamicDsService,
+      () =>
+        createIndexerWorker(
+          storeService.getStore(),
+          dynamicDsService,
+          unfinalizedBlocksSevice,
+        ),
     );
-    this.numWorkers = numWorkers;
   }
 
   async init(
     onDynamicDsCreated: (height: number) => Promise<void>,
     runtimeService?: RuntimeService,
   ): Promise<void> {
-    if (this.nodeConfig.unfinalizedBlocks) {
-      throw new Error(
-        'Sorry, best block feature is not supported with workers yet.',
-      );
-    }
-
-    this.workers = await Promise.all(
-      new Array(this.numWorkers)
-        .fill(0)
-        .map(() =>
-          createIndexerWorker(
-            this.storeService.getStore(),
-            this.dynamicDsService,
-            this.unfinalizedBlocksSevice,
-          ),
-        ),
-    );
-
-    this.onDynamicDsCreated = onDynamicDsCreated;
-
-    const blockAmount = await this.projectService.getProcessedBlockCount();
-    this.setProcessedBlockCount(blockAmount ?? 0);
+    await super.init(onDynamicDsCreated);
     // Sync workers runtime from main
     this.runtimeService = runtimeService;
     this.syncWorkerRuntimes();
-  }
-
-  async onApplicationShutdown(): Promise<void> {
-    this.isShutdown = true;
-    // Stop processing blocks
-    this.queue.abort();
-
-    // Stop all workers
-    if (this.workers) {
-      await Promise.all(this.workers.map((w) => w.terminate()));
-    }
   }
 
   syncWorkerRuntimes(): void {
@@ -179,142 +141,34 @@ export class WorkerBlockDispatcherService
     );
   }
 
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): void {
-    if (!!latestBufferHeight && !heights.length) {
-      this.latestBufferedHeight = latestBufferHeight;
-      return;
+  protected prepareTx(tx: Transaction): void {
+    this.unfinalizedBlocksSevice.setTransaction(tx);
+  }
+
+  protected async fetchBlock(
+    worker: IndexerWorker,
+    height: number,
+  ): Promise<void> {
+    // get SpecVersion from main runtime service
+    const { blockSpecVersion, syncedDictionary } =
+      await this.runtimeService.getSpecVersion(height);
+    // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
+    if (syncedDictionary) {
+      this.syncWorkerRuntimes();
     }
+    const start = new Date();
+    await worker.fetchBlock(height, blockSpecVersion);
+    const end = new Date();
 
-    logger.info(
-      `Enqueueing blocks ${heights[0]}...${last(heights)}, total ${
-        heights.length
-      } blocks`,
-    );
-
-    // eslint-disable-next-line no-constant-condition
-    if (true) {
-      /*
-       * Load balancing:
-       * worker1: 1,2,3
-       * worker2: 4,5,6
-       */
-      const workerIdx = this.getNextWorkerIndex();
-      heights.map((height) => this.enqueueBlock(height, workerIdx));
-    } else {
-      /*
-       * Load balancing:
-       * worker1: 1,3,5
-       * worker2: 2,4,6
-       */
-      heights.map((height) =>
-        this.enqueueBlock(height, this.getNextWorkerIndex()),
+    const waitTime = end.getTime() - start.getTime();
+    if (waitTime > 1000) {
+      logger.info(
+        `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
+      );
+    } else if (waitTime > 200) {
+      logger.info(
+        `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
       );
     }
-
-    this.latestBufferedHeight = latestBufferHeight ?? last(heights);
-  }
-
-  private enqueueBlock(height: number, workerIdx: number) {
-    if (this.isShutdown) return;
-    const worker = this.workers[workerIdx];
-
-    assert(worker, `Worker ${workerIdx} not found`);
-
-    // Used to compare before and after as a way to check if queue was flushed
-    const bufferedHeight = this.latestBufferedHeight;
-
-    const processBlock = async () => {
-      let tx: Transaction;
-      try {
-        // get SpecVersion from main runtime service
-        const { blockSpecVersion, syncedDictionary } =
-          await this.runtimeService.getSpecVersion(height);
-        // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
-        if (syncedDictionary) {
-          this.syncWorkerRuntimes();
-        }
-        const start = new Date();
-        await worker.fetchBlock(height, blockSpecVersion);
-        const end = new Date();
-
-        if (bufferedHeight > this.latestBufferedHeight) {
-          logger.debug(`Queue was reset for new DS, discarding fetched blocks`);
-          return;
-        }
-
-        const waitTime = end.getTime() - start.getTime();
-        if (waitTime > 1000) {
-          logger.info(
-            `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
-          );
-        } else if (waitTime > 200) {
-          logger.info(
-            `Waiting to fetch block ${height}: ${chalk.yellow(
-              `${waitTime}ms`,
-            )}`,
-          );
-        }
-
-        tx = await this.sequelize.transaction();
-
-        this.preProcessBlock(height, tx);
-        this.unfinalizedBlocksSevice.setTransaction(tx);
-
-        const {
-          blockHash,
-          dynamicDsCreated,
-          /*operationHash, */ reindexBlockHeight,
-        } = await worker.processBlock(height);
-
-        await this.postProcessBlock(height, tx, {
-          dynamicDsCreated,
-          blockHash,
-          // operationHash: Buffer.from(operationHash, 'base64'),
-          reindexBlockHeight,
-        });
-
-        await tx.commit();
-      } catch (e) {
-        await tx.rollback();
-        logger.error(
-          e,
-          `failed to index block at height ${height} ${
-            e.handler ? `${e.handler}(${e.stack ?? ''})` : ''
-          }`,
-        );
-        process.exit(1);
-      }
-    };
-
-    void this.queue.put(processBlock);
-  }
-
-  @Interval(15000)
-  async sampleWorkerStatus(): Promise<void> {
-    for (const worker of this.workers) {
-      const status = await worker.getStatus();
-      logger.info(JSON.stringify(status));
-    }
-  }
-
-  // Getter doesn't seem to cary from abstract class
-  get latestBufferedHeight(): number {
-    return this._latestBufferedHeight;
-  }
-
-  set latestBufferedHeight(height: number) {
-    super.latestBufferedHeight = height;
-    // There is only a single queue with workers so we treat them as the same
-    this.eventEmitter.emit(IndexerEvent.BlockQueueSize, {
-      value: this.queueSize,
-    });
-  }
-
-  private getNextWorkerIndex(): number {
-    const index = this.taskCounter % this.numWorkers;
-
-    this.taskCounter++;
-
-    return index;
   }
 }

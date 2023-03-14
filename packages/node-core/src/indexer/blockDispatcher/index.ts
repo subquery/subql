@@ -2,3 +2,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './base-block-dispatcher';
+export * from './block-dispatcher';
+export * from './worker-block-dispatcher';

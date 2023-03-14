@@ -28,7 +28,6 @@ import {
   SubstrateEvent,
   SubstrateExtrinsic,
 } from '@subql/types';
-import { Transaction } from 'sequelize';
 import { SubqlProjectDs } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
 import { yargsOptions } from '../yargs';
