@@ -33,7 +33,9 @@ export class SmartBatchService {
   }
 
   blockSize(block: any): number {
-    return Buffer.byteLength(JSON.stringify(block));
+    return Buffer.byteLength(
+      JSON.stringify(block, (key, value) => (typeof value === 'bigint' ? value.toString() : value))
+    );
   }
 
   heapMemoryLimit(): number {
