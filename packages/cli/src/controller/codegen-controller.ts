@@ -184,18 +184,20 @@ interface abiInterface {
 export async function generateAbis(datasources: DatasourceKind[], projectPath: string): Promise<void> {
   const sortedAssets = new Map<string, string>();
   datasources.map((d) => {
-    if (!d?.assets || !isRuntimeEthereumDs(d) || !isCustomEthereumDs(d) || !isCustomSubstrateDs(d)) {
+    if (!d?.assets) {
       return;
     }
-    Object.entries(d.assets).map(([name, value]) => {
-      const filePath = path.join(projectPath, value.file);
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Error: Asset ${name}, file ${value.file} does not exist`);
-      }
-      // We use actual abi file name instead on name provided in assets
-      // This is aligning with files in './ethers-contracts'
-      sortedAssets.set(parseContractPath(filePath).name, value.file);
-    });
+    if (isRuntimeEthereumDs(d) || isCustomEthereumDs(d) || isCustomSubstrateDs(d)) {
+      Object.entries(d.assets).map(([name, value]) => {
+        const filePath = path.join(projectPath, value.file);
+        if (!fs.existsSync(filePath)) {
+          throw new Error(`Error: Asset ${name}, file ${value.file} does not exist`);
+        }
+        // We use actual abi file name instead on name provided in assets
+        // This is aligning with files in './ethers-contracts'
+        sortedAssets.set(parseContractPath(filePath).name, value.file);
+      });
+    }
   });
   if (sortedAssets.size !== 0) {
     await prepareDirPath(path.join(projectPath, ABI_INTERFACES_ROOT_DIR), true);

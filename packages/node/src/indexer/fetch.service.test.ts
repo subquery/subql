@@ -17,6 +17,7 @@ import {
   NodeConfig,
   PoiService,
   StoreService,
+  SmartBatchService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
@@ -144,6 +145,7 @@ async function createApp(
             indexerManager,
             eventEmitter,
             mockProjectService(),
+            new SmartBatchService(nodeConfig.batchSize),
           ),
         inject: [ApiService, NodeConfig, EventEmitter2, IndexerManager],
       },

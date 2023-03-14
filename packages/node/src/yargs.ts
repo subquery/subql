@@ -160,9 +160,9 @@ export const yargsOptions = yargs(hideBin(process.argv))
       describe: 'scale batch size based on memory usage',
       default: false,
     },
-    'sponsored-dictionary': {
+    'dictionary-resolver': {
       demandOption: false,
-      describe: 'Use subquery network sponsored dictionary',
+      describe: 'Use subquery network dictionary resolver',
       type: 'boolean',
       default: false,
     },

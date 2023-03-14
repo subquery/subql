@@ -9,6 +9,10 @@ All logs must start with the format: [x.y.z] - yyyy-mm-dd
 
 ## [Unreleased]
 
+## [1.8.1] - 2023-03-07
+### Updated
+- Updated `suql/common-avalanche` (#1546)
+
 ## [1.8.0] - 2023-01-31
 ### Added
 - Support for Near (#1498)

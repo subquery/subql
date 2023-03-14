@@ -3,86 +3,33 @@
 
 import { Inject, Injectable, OnApplicationShutdown } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ApiPromise } from '@polkadot/api';
 import { RpcMethodResult } from '@polkadot/api/types';
 import { RuntimeVersion } from '@polkadot/types/interfaces';
-import {
-  AnyFunction,
-  DefinitionRpcExt,
-  RegisteredTypes,
-} from '@polkadot/types/types';
+import { AnyFunction, DefinitionRpcExt } from '@polkadot/types/types';
 import {
   IndexerEvent,
   NetworkMetadataPayload,
   getLogger,
   NodeConfig,
   profilerWrap,
-  ApiConnection,
   ConnectionPoolService,
 } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { SubqueryProject } from '../configure/SubqueryProject';
 import * as SubstrateUtil from '../utils/substrate';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import { ApiAt, BlockContent } from './types';
-import { HttpProvider } from './x-provider/http';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { version: packageVersion } = require('../../package.json');
 
 const NOT_SUPPORT = (name: string) => () => {
   throw new Error(`${name}() is not supported`);
 };
 
 // https://github.com/polkadot-js/api/blob/12750bc83d8d7f01957896a80a7ba948ba3690b7/packages/rpc-provider/src/ws/index.ts#L43
-const RETRY_DELAY = 2_500;
 const MAX_RECONNECT_ATTEMPTS = 5;
+const TIMEOUT = 90 * 1000;
 
 const logger = getLogger('api');
-
-export class ApiPromiseConnection extends ApiConnection {
-  constructor(private _api: ApiPromise) {
-    super();
-  }
-
-  static async create(
-    endpoint: string,
-    args: { chainTypes: RegisteredTypes },
-  ): Promise<ApiPromiseConnection> {
-    let provider: WsProvider | HttpProvider;
-    let throwOnConnect = false;
-
-    const headers = {
-      'User-Agent': `SubQuery-Node ${packageVersion}`,
-    };
-
-    if (endpoint.startsWith('ws')) {
-      provider = new WsProvider(endpoint, RETRY_DELAY, headers);
-    } else if (endpoint.startsWith('http')) {
-      provider = new HttpProvider(endpoint, headers);
-      throwOnConnect = true;
-    }
-
-    const apiOption = {
-      provider,
-      throwOnConnect,
-      noInitWarn: true,
-      ...args.chainTypes,
-    };
-    const api = await ApiPromise.create(apiOption);
-    return new ApiPromiseConnection(api);
-  }
-
-  get api(): ApiPromise {
-    return this._api;
-  }
-
-  async apiConnect(): Promise<void> {
-    await this._api.connect();
-  }
-  async apiDisconnect(): Promise<void> {
-    await this._api.disconnect();
-  }
-}
 
 @Injectable()
 export class ApiService implements OnApplicationShutdown {

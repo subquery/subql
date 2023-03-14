@@ -10,6 +10,7 @@ import {
   PoiService,
   NodeConfig,
   ConnectionPoolService,
+  SmartBatchService,
 } from '@subql/node-core';
 
 import { SubqueryProject } from '../configure/SubqueryProject';
@@ -35,6 +36,13 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
     IndexerManager,
     ConnectionPoolService,
     {
+      provide: SmartBatchService,
+      useFactory: (nodeConfig: NodeConfig) => {
+        return new SmartBatchService(nodeConfig.batchSize);
+      },
+      inject: [NodeConfig],
+    },
+    {
       provide: 'IBlockDispatcher',
       useFactory: (
         nodeConfig: NodeConfig,
@@ -42,12 +50,14 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         projectService: ProjectService,
         apiService: ApiService,
         indexerManager: IndexerManager,
+        smartBatchService: SmartBatchService,
       ) =>
         nodeConfig.workers !== undefined
           ? new WorkerBlockDispatcherService(
               nodeConfig,
               eventEmitter,
               projectService,
+              smartBatchService,
             )
           : new BlockDispatcherService(
               apiService,
@@ -55,6 +65,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
               indexerManager,
               eventEmitter,
               projectService,
+              smartBatchService,
             ),
       inject: [
         NodeConfig,
@@ -62,7 +73,7 @@ import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
         ProjectService,
         ApiService,
         IndexerManager,
-        ConnectionPoolService,
+        SmartBatchService,
       ],
     },
     FetchService,

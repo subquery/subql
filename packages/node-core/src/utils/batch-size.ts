@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getHeapStatistics} from 'v8';
+import AsyncLock from 'async-lock';
+import {Mutex} from 'async-mutex';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
 
@@ -34,4 +36,35 @@ export function checkMemoryUsage(batchSizeScale: number, nodeConfig: NodeConfig)
     }
   }
   return scale;
+}
+
+export const memoryLock = new Mutex();
+
+export async function waitForBatchSize(sizeInBytes: number) {
+  let resolved = false;
+  const checkHeap = async () => {
+    await memoryLock.acquire();
+    const heapTotal = getHeapStatistics().heap_size_limit;
+    const {heapUsed} = process.memoryUsage();
+    const availableHeap = heapTotal - heapUsed;
+    if (availableHeap >= sizeInBytes && !resolved) {
+      resolved = true;
+      memoryLock.release();
+      return;
+    }
+    memoryLock.release();
+    if (!resolved) {
+      logger.warn('Out of Memory - waiting for heap to be freed...');
+      await checkHeap();
+    }
+  };
+  await checkHeap();
+}
+
+export function formatMBtoBytes(sizeInMB: number): number {
+  return sizeInMB / 1024 / 1024;
+}
+
+export function formatBytesToMB(sizeInBytes: number): number {
+  return sizeInBytes * 1024 * 1024;
 }

@@ -15,6 +15,7 @@ import {
   NodeConfig,
   Dictionary,
   MetadataRepo,
+  SmartBatchService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
@@ -366,6 +367,7 @@ async function createFetchService(
       indexerManager,
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     ),
     dictionaryService,
     dsProcessorService,
@@ -556,6 +558,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -652,6 +655,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -742,6 +746,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,
@@ -883,6 +888,7 @@ describe('FetchService', () => {
       mockIndexerManager(),
       eventEmitter,
       projectService,
+      new SmartBatchService(nodeConfig.batchSize),
     );
     fetchService = new FetchService(
       apiService,

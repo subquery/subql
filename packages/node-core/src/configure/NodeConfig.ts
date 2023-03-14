@@ -24,7 +24,7 @@ export interface IConfig {
   readonly preferRange: boolean;
   readonly networkEndpoints?: string[];
   readonly networkDictionary?: string;
-  readonly sponsoredDictionary?: string;
+  readonly dictionaryResolver?: string;
   readonly outputFmt?: 'json';
   readonly logLevel?: LevelWithSilent;
   readonly queryLimit: number;
@@ -117,8 +117,8 @@ export class NodeConfig implements IConfig {
     return this._config.networkDictionary;
   }
 
-  get sponsoredDictionary(): string {
-    return this._config.sponsoredDictionary;
+  get dictionaryResolver(): string {
+    return this._config.dictionaryResolver;
   }
 
   get timeout(): number {
