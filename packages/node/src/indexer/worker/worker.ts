@@ -139,7 +139,7 @@ async function getMemoryLeft(): Promise<number> {
   return totalHeap - heapUsed;
 }
 
-async function waitForWorkerBatchSize(heapSizeInBytes: number) {
+async function waitForWorkerBatchSize(heapSizeInBytes: number): Promise<void> {
   await waitForBatchSize(heapSizeInBytes);
 }
 
