@@ -394,13 +394,12 @@ export async function codegen(projectPath: string, fileName?: string): Promise<v
     console.log(`* Types index generated !`);
   }
 }
-function validateEntityName(name: string): string {
-  RESERVED_KEYS.forEach((it) => {
-    if (name.toLowerCase().includes(it.toLowerCase())) {
-      // should only be at the end of the entityname
-      throw new Error(`EntityName: ${name} cannot contain reservedKey: ${it} `);
+export function validateEntityName(name: string): string {
+  for (const reservedKey of RESERVED_KEYS) {
+    if (name.toLowerCase().endsWith(reservedKey.toLowerCase())) {
+      throw new Error(`EntityName: ${name} cannot end with reservedKey: ${reservedKey}`);
     }
-  });
+  }
   return name;
 }
 // 2. Loop all entities and render it
