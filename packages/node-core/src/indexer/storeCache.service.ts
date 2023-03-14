@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
-import { flatten, isEqual, includes} from 'lodash';
+import {flatten, isEqual, includes} from 'lodash';
 import {CreationAttributes, Model, ModelStatic, Op, Sequelize, Transaction} from 'sequelize';
 import {CountOptions} from 'sequelize/types/model';
 import {Fn} from 'sequelize/types/utils';
@@ -33,9 +33,7 @@ interface ICachedModel<T> {
 }
 
 interface ICachedModelControl<T> {
-
   isFlushable: boolean;
-
 
   sync(data: SetData<T>): void;
   flush(tx: Transaction): Promise<void>;
@@ -162,12 +160,12 @@ class CachedModel<
     if (this.getCache[id] === undefined) {
       const record = await this.model.findOne({
         // https://github.com/sequelize/sequelize/issues/15179
-        where: { id } as any,
+        where: {id} as any,
         transaction: tx,
       });
 
       this.getCache[id] = {
-        data: record.toJSON<T>()
+        data: record?.toJSON<T>(),
       };
     }
     return this.getCache[id].data;
@@ -226,9 +224,11 @@ class CachedModel<
   }
 
   set(id: string, data: T, blockHeight: number): void {
-
-    this.setCache[id] = { data, blockHeight };
-    this.getCache[id] = { data };
+    if (this.setCache[id] === undefined) {
+      this.setCache[id] = new SetValueModel();
+    }
+    this.setCache[id].set(data, blockHeight);
+    this.getCache[id] = {data};
   }
 
   bulkCreate(data: T[], blockHeight: number): void {
@@ -288,7 +288,7 @@ class CachedModel<
   }
 
   get isFlushable(): boolean {
-    return !!Object.keys(this.setCache).length
+    return !!Object.keys(this.setCache).length;
   }
 
   async flush(tx: Transaction): Promise<void> {
@@ -442,7 +442,6 @@ export class StoreCacheService {
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
-
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
       assert(model, `model ${entity} not exists`);
