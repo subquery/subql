@@ -37,6 +37,8 @@ export const hostStoreKeys: (keyof HostStore)[] = [
   'storeRemove',
 ];
 
+// Entities have to be converted to plain objects so they can be serialized.
+// We don't need the funcitons to be included
 export const hostStoreToStore = (host: HostStore): Store => {
   return {
     count: host.storeCount,
