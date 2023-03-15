@@ -239,10 +239,10 @@ export class CachedModel<
     const setData = this.setCache;
 
     this.setCache = {};
-    return this.setCache;
+    return setData;
   }
 
-  sync(data: SetData<T>) {
+  sync(data: SetData<T>): void {
     Object.entries(data).map(([id, enttity]) => {
       // TODO update for historical
       this.setCache[id] = enttity;
@@ -274,7 +274,7 @@ export class CachedModel<
 
     return Promise.all(
       mergedRecords.map(({blockHeight, id}) => {
-        this.historicalModel.update(
+        return this.historicalModel.update(
           {
             __block_range: this.model.sequelize.fn(
               'int8range',

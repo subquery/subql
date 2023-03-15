@@ -105,7 +105,9 @@ export class ProjectService implements IProjectService {
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       this.metadataRepo = await this.ensureMetadata();
-      this.dynamicDsService.init(this.metadataRepo);
+      this.dynamicDsService.init(
+        this.storeService.storeCache.getMetadataModel(),
+      );
 
       await this.initHotSchemaReload();
 
@@ -292,12 +294,12 @@ export class ProjectService implements IProjectService {
     return metadataRepo;
   }
 
-  async upsertMetadataBlockOffset(height: number): Promise<void> {
-    await this.metadataRepo.upsert({
-      key: 'blockOffset',
-      value: height,
-    });
-  }
+  // async upsertMetadataBlockOffset(height: number): Promise<void> {
+  //   await this.metadataRepo.upsert({
+  //     key: 'blockOffset',
+  //     value: height,
+  //   });
+  // }
 
   //string should be jsonb object
   async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {

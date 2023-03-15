@@ -35,7 +35,7 @@ export interface IProjectService {
   blockOffset: number;
 
   reindex(lastCorrectHeight: number): Promise<void>;
-  upsertMetadataBlockOffset(offset: number): Promise<void>;
+  // upsertMetadataBlockOffset(offset: number): Promise<void>;
   setBlockOffset(offset: number): Promise<void>;
   getProcessedBlockCount(): Promise<number>;
 }
