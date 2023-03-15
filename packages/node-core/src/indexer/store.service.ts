@@ -17,7 +17,6 @@ import {
 } from '@subql/utils';
 import {camelCase, flatten, isEqual, upperFirst} from 'lodash';
 import {
-  CreationAttributes,
   DataTypes,
   IndexesOptions,
   Model,
@@ -31,7 +30,6 @@ import {
   UpsertOptions,
   Utils,
 } from 'sequelize';
-import {CountOptions} from 'sequelize/types/model';
 import {NodeConfig} from '../configure';
 import {getLogger} from '../logger';
 import {
@@ -57,7 +55,7 @@ import {
   getEnumDeprecated,
 } from '../utils';
 import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
-import {StoreCacheService} from './storeCache.service';
+import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 

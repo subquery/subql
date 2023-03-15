@@ -1,8 +1,8 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {StoreCacheService} from '@subql/node-core';
 import {Sequelize} from 'sequelize';
+import {StoreCacheService} from './storeCache.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
