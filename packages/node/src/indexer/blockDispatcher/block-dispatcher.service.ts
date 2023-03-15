@@ -11,7 +11,7 @@ import {
   IProjectService,
   PoiService,
   BlockDispatcher,
-  ProcessBlockResponse
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import { Sequelize, Transaction } from 'sequelize';
 import {
