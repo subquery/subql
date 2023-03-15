@@ -14,8 +14,8 @@ import {
   waitForBatchSize,
   memoryLock,
   SmartBatchService,
+  StoreCacheService,
 } from '@subql/node-core';
-import { StoreCacheService } from '@subql/node-core/indexer/storeCache.service';
 import { last } from 'lodash';
 import { ApiService } from '../api.service';
 import { IndexerManager } from '../indexer.manager';

@@ -26,7 +26,6 @@ import {
   profiler,
   profilerWrap,
   IndexerSandbox,
-  EntitySetData,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
