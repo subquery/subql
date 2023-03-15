@@ -9,7 +9,8 @@ import {
   StoreService,
   IProjectService,
   PoiService,
-  BaseBlockDispatcher,
+  BlockDispatcher,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import { Sequelize, Transaction } from 'sequelize';
 import {
