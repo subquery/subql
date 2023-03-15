@@ -62,8 +62,13 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     logger.warn(`disconnected from ${endpoint}`);
     delete this.connectionPool[apiIndex];
 
-    logger.debug(`reconnecting to ${endpoint}...`);
-    await this.connectToApi(apiIndex);
+    try {
+      logger.debug(`reconnecting to ${endpoint}...`);
+      await this.connectToApi(apiIndex);
+    } catch (e) {
+      logger.error(`unable to reconnect to endpoint ${endpoint}`, e);
+      return;
+    }
 
     logger.info(`reconnected to ${endpoint}!`);
     this.connectionPool[apiIndex] = this.allApi[apiIndex];
