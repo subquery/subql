@@ -504,10 +504,6 @@ export class StoreService {
     this.blockHeight = blockHeight;
   }
 
-  // private async setMetadataBatch(metadata: Metadata[], options?: UpsertOptions<Metadata>): Promise<void> {
-  //   await Promise.all(metadata.map(({key, value}) => this.setMetadata(key, value, options)));
-  // }
-
   async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
     assert(this.metaDataRepo, `Model _metadata does not exist`);
     await this.metaDataRepo.upsert({key, value}, options);
