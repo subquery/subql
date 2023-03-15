@@ -7,6 +7,13 @@ import {ICachedModelControl, SetData} from './types';
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
+const unfinalizedKeys: MetadataKey[] = ['unfinalizedBlocks', 'lastFinalizedVerifiedHeight'];
+
+function guardBlockedKeys(key: MetadataKey): void {
+  if (unfinalizedKeys.includes(key)) {
+    throw new Error(`Key ${key} is not allowed to be cached metadata`);
+  }
+}
 
 export class CacheMetadataModel implements ICachedModelControl<any> {
   private setCache: Partial<MetadataKeys> = {};
@@ -16,6 +23,7 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   constructor(readonly model: MetadataRepo) {}
 
   async find<K extends MetadataKey>(key: K): Promise<MetadataKeys[K] | undefined> {
+    guardBlockedKeys(key);
     if (!this.getCache[key]) {
       const record = await this.model.findByPk(key);
 
@@ -28,6 +36,7 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   }
 
   set<K extends MetadataKey>(key: K, value: MetadataKeys[K]): void {
+    guardBlockedKeys(key);
     this.setCache[key] = value;
     this.getCache[key] = value;
   }
@@ -37,6 +46,7 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   }
 
   setIncrement(key: 'processedBlockCount' | 'schemaMigrationCount', amount = 1): void {
+    guardBlockedKeys(key);
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
