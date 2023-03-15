@@ -11,7 +11,8 @@ import {
   ConnectionPoolService,
 } from '@subql/node-core';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiPromiseConnection, ApiService } from './api.service';
+import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
 import { IndexerManager } from './indexer.manager';

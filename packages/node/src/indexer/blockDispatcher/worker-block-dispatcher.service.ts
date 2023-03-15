@@ -214,13 +214,7 @@ export class WorkerBlockDispatcherService
 
         const start = new Date();
         await memoryLock.acquire();
-        try {
-          await worker.fetchBlock(height, blockSpecVersion);
-        } catch (e) {
-          logger.debug(`Failed to fetch block ${height}: ${e.message}`);
-          memoryLock.release();
-          return processBlock();
-        }
+        await worker.fetchBlock(height, blockSpecVersion);
         memoryLock.release();
         const end = new Date();
 

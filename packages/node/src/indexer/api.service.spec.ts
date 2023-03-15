@@ -8,7 +8,8 @@ import { ConnectionPoolService, NodeConfig } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { omit } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';
-import { ApiPromiseConnection, ApiService } from './api.service';
+import { ApiService } from './api.service';
+import { ApiPromiseConnection } from './apiPromise.connection';
 
 jest.mock('@polkadot/api', () => {
   const ApiPromise = jest.fn();

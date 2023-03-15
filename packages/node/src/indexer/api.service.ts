@@ -79,91 +79,76 @@ export class ApiService implements OnApplicationShutdown {
       );
     }
 
-    for (let i = 0; i < network.endpoint.length; i++) {
-      const endpoint = network.endpoint[i];
+    const connections: ApiPromiseConnection[] = [];
 
-      const connection = await ApiPromiseConnection.create(endpoint, {
-        chainTypes,
-      });
-      const api = connection.api;
+    await Promise.all(
+      network.endpoint.map(async (endpoint, i) => {
+        const connection = await ApiPromiseConnection.create(endpoint, {
+          chainTypes,
+        });
+        const api = connection.api;
 
-      this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-        value: 1,
-        apiIndex: i,
-        endpoint: endpoint,
-      });
-
-      api.on('connected', () => {
         this.eventEmitter.emit(IndexerEvent.ApiConnected, {
           value: 1,
           apiIndex: i,
           endpoint: endpoint,
         });
-      });
-      api.on('disconnected', () => {
-        this.eventEmitter.emit(IndexerEvent.ApiConnected, {
-          value: 0,
-          apiIndex: i,
-          endpoint: endpoint,
+
+        api.on('connected', () => {
+          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+            value: 1,
+            apiIndex: i,
+            endpoint: endpoint,
+          });
         });
-        this.connectionPoolService.handleApiDisconnects(i, endpoint);
-      });
+        api.on('disconnected', () => {
+          this.eventEmitter.emit(IndexerEvent.ApiConnected, {
+            value: 0,
+            apiIndex: i,
+            endpoint: endpoint,
+          });
+          this.connectionPoolService.handleApiDisconnects(i, endpoint);
+        });
 
-      if (!this.networkMeta) {
-        this.networkMeta = {
-          chain: api.runtimeChain.toString(),
-          specName: api.runtimeVersion.specName.toString(),
-          genesisHash: api.genesisHash.toString(),
-        };
+        if (!this.networkMeta) {
+          this.networkMeta = {
+            chain: api.runtimeChain.toString(),
+            specName: api.runtimeVersion.specName.toString(),
+            genesisHash: api.genesisHash.toString(),
+          };
 
-        if (
-          network.chainId &&
-          network.chainId !== this.networkMeta.genesisHash
-        ) {
-          const err = new Error(
-            `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
-              network.chainId ?? network.genesisHash
-            }", however the endpoint that you are connecting to is different("${
-              this.networkMeta.genesisHash
-            }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
-          );
-          logger.error(err, err.message);
-          throw err;
-        }
-      } else {
-        const chain = api.runtimeChain.toString();
-        if (this.networkMeta.chain !== chain) {
-          throw this.metadataMismatchError(
-            'Runtime Chain',
-            this.networkMeta.chain,
-            chain,
-          );
-        }
-
-        const specName = api.runtimeVersion.specName.toString();
-        if (this.networkMeta.specName !== specName) {
-          throw this.metadataMismatchError(
-            'Spec Name',
-            this.networkMeta.specName,
-            specName,
-          );
+          if (
+            network.chainId &&
+            network.chainId !== this.networkMeta.genesisHash
+          ) {
+            const err = new Error(
+              `Network chainId doesn't match expected genesisHash. Your SubQuery project is expecting to index data from "${
+                network.chainId ?? network.genesisHash
+              }", however the endpoint that you are connecting to is different("${
+                this.networkMeta.genesisHash
+              }). Please check that the RPC endpoint is actually for your desired network or update the genesisHash.`,
+            );
+            logger.error(err, err.message);
+            throw err;
+          }
+        } else {
+          const genesisHash = api.genesisHash.toString();
+          if (this.networkMeta.genesisHash !== genesisHash) {
+            throw this.metadataMismatchError(
+              'Genesis Hash',
+              this.networkMeta.genesisHash,
+              genesisHash,
+            );
+          }
         }
 
-        const genesisHash = api.genesisHash.toString();
-        if (this.networkMeta.genesisHash !== genesisHash) {
-          throw this.metadataMismatchError(
-            'Genesis Hash',
-            this.networkMeta.genesisHash,
-            genesisHash,
-          );
-        }
-      }
+        logger.info(`Connected to ${endpoint} successfully`);
 
-      logger.info(`Connected to ${endpoint} successfully`);
+        connections.push(connection);
+      }),
+    );
 
-      this.connectionPoolService.addToConnections(connection);
-    }
-
+    this.connectionPoolService.addBatchToConnections(connections);
     return this;
   }
 
@@ -275,9 +260,6 @@ export class ApiService implements OnApplicationShutdown {
     let reconnectAttempts = 0;
     while (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
       try {
-        if (this.connectionPoolService.numConnections === 0) {
-          throw new Error('No connected api');
-        }
         const blocks = await this.fetchBlocksBatches(
           this.api,
           batch,

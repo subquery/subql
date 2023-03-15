@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getHeapStatistics} from 'v8';
-import AsyncLock from 'async-lock';
 import {Mutex} from 'async-mutex';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';

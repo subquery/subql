@@ -301,7 +301,6 @@ export class IndexerManager {
         (h) => h.kind === kind && FilterTypeMap[kind](data as any, h.filter),
       );
 
-      //const start = new Date();
       for (const handler of handlers) {
         vm = vm ?? (await getVM(ds));
         this.nodeConfig.profiler
@@ -312,8 +311,6 @@ export class IndexerManager {
             )(handler.handler, [data])
           : await vm.securedExec(handler.handler, [data]);
       }
-      //const end = new Date();
-      //logger.info(`${end.getTime() - start.getTime()}`)
     } else if (isCustomDs(ds)) {
       const handlers = this.filterCustomDsHandlers<K>(
         ds,

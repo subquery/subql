@@ -7,21 +7,9 @@ import {getLogger} from '../logger';
 
 const logger = getLogger('api');
 
-export abstract class ApiConnection {
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async create(endpoint: string, args: any): Promise<void> {
-    throw new Error('create() is not supported');
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async apiConnect(): Promise<void> {
-    throw new Error('apiConnect() is not supported');
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async apiDisconnect(): Promise<void> {
-    throw new Error('apiDisconnect() is not supported');
-  }
+export interface ApiConnection {
+  apiConnect(): Promise<void>;
+  apiDisconnect(): Promise<void>;
 }
 
 @Injectable()
@@ -41,6 +29,10 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     this.connectionPool[this.allApi.length - 1] = api;
   }
 
+  addBatchToConnections(apis: T[]): void {
+    apis.forEach((api) => this.addToConnections(api));
+  }
+
   async connectToApi(apiIndex: number): Promise<void> {
     await this.allApi[apiIndex].apiConnect();
   }
@@ -53,30 +45,13 @@ export class ConnectionPoolService<T extends ApiConnection> implements OnApplica
     return this.connectionPool[index];
   }
 
-  get firstConnectedApi(): T {
-    const index = this.getFirstConnectedApiIndex();
-    if (index === -1) {
-      throw new Error('No connected api');
-    }
-    return this.connectionPool[index];
-  }
-
   getNextConnectedApiIndex(): number {
-    // get the next connected api index
     if (Object.keys(this.connectionPool).length === 0) {
       return -1;
     }
     const nextIndex = this.taskCounter % Object.keys(this.connectionPool).length;
     this.taskCounter++;
     return toNumber(Object.keys(this.connectionPool)[nextIndex]);
-  }
-
-  private getFirstConnectedApiIndex(): number {
-    // get the first connected api index
-    if (Object.keys(this.connectionPool).length === 0) {
-      return -1;
-    }
-    return toNumber(Object.keys(this.connectionPool)[0]);
   }
 
   get numConnections(): number {

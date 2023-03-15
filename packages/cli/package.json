@@ -89,6 +89,7 @@
   },
   "types": "lib/index.d.ts",
   "resolutions": {
-    "node-fetch": "2.6.7"
+    "node-fetch": "2.6.7",
+    "inquirer": "8.2.0"
   }
 }

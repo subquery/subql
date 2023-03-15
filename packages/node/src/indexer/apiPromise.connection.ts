@@ -11,10 +11,8 @@ const { version: packageVersion } = require('../../package.json');
 
 const RETRY_DELAY = 2_500;
 
-export class ApiPromiseConnection extends ApiConnection {
-  constructor(private _api: ApiPromise) {
-    super();
-  }
+export class ApiPromiseConnection implements ApiConnection {
+  constructor(private _api: ApiPromise) {}
 
   static async create(
     endpoint: string,
