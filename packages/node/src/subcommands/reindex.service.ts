@@ -11,6 +11,7 @@ import {
   StoreService,
   getExistingProjectSchema,
   getMetaDataInfo,
+  CacheMetadataModel,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import { SubqlProjectDs, SubqueryProject } from '../configure/SubqueryProject';
@@ -54,7 +55,7 @@ export class ReindexService {
       this.nodeConfig.multiChain,
       this.project.network.chainId,
     );
-    this.dynamicDsService.init(this.metadataRepo);
+    this.dynamicDsService.init(new CacheMetadataModel(this.metadataRepo));
   }
 
   async getTargetHeightWithUnfinalizedBlocks(inputHeight): Promise<number> {

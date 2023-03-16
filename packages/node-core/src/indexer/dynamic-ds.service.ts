@@ -1,11 +1,10 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import assert from 'assert';
 import {isEqual, unionWith} from 'lodash';
-import {Transaction} from 'sequelize/types';
+import {Transaction} from 'sequelize';
 import {getLogger} from '../logger';
-import {MetadataRepo} from './entities';
+import {CacheMetadataModel} from './storeCache/cacheMetadata';
 
 const logger = getLogger('dynamic-ds');
 
@@ -24,18 +23,13 @@ export interface IDynamicDsService<DS> {
 }
 
 export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
-  private metaDataRepo: MetadataRepo;
+  private metadata: CacheMetadataModel;
   private tempDsRecords: Record<string, string>;
 
   private _datasources: DS[];
-  private tx: Transaction;
 
-  init(metaDataRepo: MetadataRepo): void {
-    this.metaDataRepo = metaDataRepo;
-  }
-
-  setTransaction(tx: Transaction): void {
-    this.tx = tx;
+  init(metadata: CacheMetadataModel): void {
+    this.metadata = metadata;
   }
 
   async resetDynamicDatasource(targetHeight: number, tx: Transaction): Promise<void> {
@@ -43,19 +37,21 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     if (dynamicDs.length !== 0) {
       const filteredDs = dynamicDs.filter((ds) => ds.startBlock <= targetHeight);
       const dsRecords = JSON.stringify(filteredDs);
-      await this.metaDataRepo.upsert({key: METADATA_KEY, value: dsRecords}, {transaction: tx});
+      await this.metadata.model.upsert(
+        {
+          key: METADATA_KEY,
+          value: dsRecords,
+        },
+        {transaction: tx}
+      );
     }
   }
 
   async createDynamicDatasource(params: DatasourceParams): Promise<DS> {
     try {
-      if (!this.tx) {
-        throw new Error('Transaction must be set on service');
-      }
-
       const ds = await this.getDatasource(params);
 
-      await this.saveDynamicDatasourceParams(params, this.tx);
+      await this.saveDynamicDatasourceParams(params);
 
       logger.info(`Created new dynamic datasource from template: "${params.templateName}"`);
 
@@ -106,12 +102,11 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
   }
 
   private async getDynamicDatasourceParams(blockHeight?: number): Promise<DatasourceParams[]> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    const record = await this.metaDataRepo.findByPk(METADATA_KEY);
+    const record = await this.metadata.find(METADATA_KEY);
 
     let results: DatasourceParams[] = [];
 
-    const metaResults: DatasourceParams[] = JSON.parse((record?.value as string) ?? '[]');
+    const metaResults: DatasourceParams[] = JSON.parse(record ?? '[]');
     if (metaResults.length) {
       results = [...metaResults];
     }
@@ -126,17 +121,15 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     return results;
   }
 
-  private async saveDynamicDatasourceParams(dsParams: DatasourceParams, tx: Transaction): Promise<void> {
+  private async saveDynamicDatasourceParams(dsParams: DatasourceParams): Promise<void> {
     const existing = await this.getDynamicDatasourceParams(dsParams.startBlock);
 
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
     const dsRecords = JSON.stringify([...existing, dsParams]);
-    await this.metaDataRepo.upsert({key: METADATA_KEY, value: dsRecords}, {transaction: tx}).then(() => {
-      this.tempDsRecords = {
-        ...this.tempDsRecords,
-        [TEMP_DS_PREFIX + dsParams.startBlock]: dsRecords,
-      };
-    });
+    this.metadata.set(METADATA_KEY, dsRecords);
+    this.tempDsRecords = {
+      ...this.tempDsRecords,
+      [TEMP_DS_PREFIX + dsParams.startBlock]: dsRecords,
+    };
   }
 
   protected abstract getDatasource(params: DatasourceParams): Promise<DS>;
