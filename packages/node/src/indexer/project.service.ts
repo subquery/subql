@@ -16,7 +16,6 @@ import {
   MmrService,
   getLogger,
   getExistingProjectSchema,
-  getMetaDataInfo,
 } from '@subql/node-core';
 import { Sequelize } from 'sequelize';
 import {
@@ -29,12 +28,7 @@ import { reindex } from '../utils/reindex';
 import { ApiService } from './api.service';
 import { DsProcessorService } from './ds-processor.service';
 import { DynamicDsService } from './dynamic-ds.service';
-import { BestBlocks } from './types';
-import {
-  METADATA_LAST_FINALIZED_PROCESSED_KEY,
-  METADATA_UNFINALIZED_BLOCKS_KEY,
-  UnfinalizedBlocksService,
-} from './unfinalizedBlocks.service';
+import { UnfinalizedBlocksService } from './unfinalizedBlocks.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { version: packageVersion } = require('../../package.json');
@@ -105,7 +99,9 @@ export class ProjectService implements IProjectService {
       this._schema = await this.ensureProject();
       await this.initDbSchema();
       this.metadataRepo = await this.ensureMetadata();
-      this.dynamicDsService.init(this.metadataRepo);
+      this.dynamicDsService.init(
+        this.storeService.storeCache.getMetadataModel(),
+      );
 
       await this.initHotSchemaReload();
 
@@ -292,38 +288,14 @@ export class ProjectService implements IProjectService {
     return metadataRepo;
   }
 
-  async upsertMetadataBlockOffset(height: number): Promise<void> {
-    await this.metadataRepo.upsert({
-      key: 'blockOffset',
-      value: height,
-    });
+  private async getMetadataBlockOffset(): Promise<number | undefined> {
+    return this.storeService.storeCache.getMetadataModel().find('blockOffset');
   }
 
-  //string should be jsonb object
-  async getMetadataUnfinalizedBlocks(): Promise<BestBlocks | undefined> {
-    const val = await getMetaDataInfo<string>(
-      this.metadataRepo,
-      METADATA_UNFINALIZED_BLOCKS_KEY,
-    );
-    if (val) {
-      return JSON.parse(val) as BestBlocks;
-    }
-    return undefined;
-  }
-
-  async getLastFinalizedVerifiedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(
-      this.metadataRepo,
-      METADATA_LAST_FINALIZED_PROCESSED_KEY,
-    );
-  }
-
-  async getMetadataBlockOffset(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'blockOffset');
-  }
-
-  async getLastProcessedHeight(): Promise<number | undefined> {
-    return getMetaDataInfo(this.metadataRepo, 'lastProcessedHeight');
+  private async getLastProcessedHeight(): Promise<number | undefined> {
+    return this.storeService.storeCache
+      .getMetadataModel()
+      .find('lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {

@@ -120,7 +120,6 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
   // Is called directly before a block is processed
   protected preProcessBlock(height: number, tx: Transaction): void {
     this.storeService.setTransaction(tx);
-    this.dynamicDsService.setTransaction(tx);
     this.storeService.setBlockHeight(height);
 
     this.currentProcessingHeight = height;
@@ -136,7 +135,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     tx: Transaction,
     processBlockResponse: ProcessBlockResponse
   ): Promise<void> {
-    await this.updateStoreMetadata(height, tx);
+    this.updateStoreMetadata(height);
 
     const operationHash = this.storeService.getOperationMerkleRoot();
     const {blockHash, dynamicDsCreated, reindexBlockHeight} = processBlockResponse;
@@ -151,7 +150,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
         // We only check if it is undefined, need to be caution here when blockOffset is 0
         if (this.projectService.blockOffset === undefined) {
           // Which means during project init, it has not found offset and set value
-          await this.projectService.upsertMetadataBlockOffset(height - 1);
+          this.storeCacheService.getMetadataModel().set('blockOffset', height - 1);
         }
         // this will return if project service blockOffset already exist
         void this.projectService.setBlockOffset(height - 1);
@@ -169,7 +168,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     }
 
     // TODO make sure all DB operations are under this
-    await this.storeCacheService.flushCache();
+    await this.storeCacheService.flushCache(tx);
   }
 
   private async updatePOI(
@@ -193,22 +192,18 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
       const poiBlockHash = poiBlock.hash;
       await this.storeService.setPoi(poiBlock, {transaction: tx});
       this.poiService.setLatestPoiBlockHash(poiBlockHash);
-      await this.storeService.setMetadataBatch([{key: 'lastPoiHeight', value: height}], {transaction: tx});
+      this.storeCacheService.getMetadataModel().set('lastPoiHeight', height);
     }
   }
 
-  private async updateStoreMetadata(height: number, tx: Transaction): Promise<void> {
-    await Promise.all([
-      // Update store metadata
-      this.storeService.setMetadataBatch(
-        [
-          {key: 'lastProcessedHeight', value: height},
-          {key: 'lastProcessedTimestamp', value: Date.now()},
-        ],
-        {transaction: tx}
-      ),
+  private updateStoreMetadata(height: number): void {
+    const meta = this.storeCacheService.getMetadataModel();
+    // Update store metadata
+    meta.setBulk([
+      {key: 'lastProcessedHeight', value: height},
+      {key: 'lastProcessedTimestamp', value: Date.now()},
+    ]),
       // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-      this.storeService.incrementJsonbCount('processedBlockCount', tx),
-    ]);
+      meta.setIncrement('processedBlockCount');
   }
 }

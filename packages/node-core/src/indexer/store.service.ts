@@ -121,11 +121,13 @@ export class StoreService {
       logger.error(e, `Having a problem when get indexed fields`);
       process.exit(1);
     }
+
+    this.storeCache.setMetadataRepo(this.metaDataRepo);
   }
 
-  async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
+  private async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
     await this.sequelize.query(
-      `UPDATE "${this.schema}".${this.metaDataRepo.tableName} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+      `UPDATE ${this.metaDataRepo.getTableName()} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
       tx && {transaction: tx}
     );
   }
@@ -491,6 +493,7 @@ export class StoreService {
 
   setTransaction(tx: Transaction): void {
     this.tx = tx;
+
     tx.afterCommit(() => (this.tx = undefined));
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
@@ -499,10 +502,6 @@ export class StoreService {
 
   setBlockHeight(blockHeight: number): void {
     this.blockHeight = blockHeight;
-  }
-
-  async setMetadataBatch(metadata: Metadata[], options?: UpsertOptions<Metadata>): Promise<void> {
-    await Promise.all(metadata.map(({key, value}) => this.setMetadata(key, value, options)));
   }
 
   async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
