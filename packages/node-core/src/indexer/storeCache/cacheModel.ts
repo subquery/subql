@@ -7,21 +7,27 @@ import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize
 import {CountOptions} from 'sequelize/types/model';
 import {Fn} from 'sequelize/types/utils';
 import {
-  GetValue,
   HistoricalModel,
   ICachedModelControl,
   RemoveValue,
   SetData,
   ICachedModel,
   SetValueModel,
+  GetDataModel,
+  LfuOptions,
 } from './types';
+
+const getCacheOptions: LfuOptions = {
+  max: 500,
+  maxAge: 1000 * 60 * 60, //in ms
+};
 
 export class CachedModel<
   T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
 > implements ICachedModel<T>, ICachedModelControl<T>
 {
   // Null value indicates its not defined in the db
-  private getCache: Record<string, GetValue<T>> = {};
+  private getCache = new GetDataModel<T>(getCacheOptions);
 
   private setCache: SetData<T> = {};
 
@@ -38,7 +44,7 @@ export class CachedModel<
   allCachedIds(): string[] {
     // unified ids
     // Don't need to get from setCache, as it is synced with setCache
-    return uniq(flatten([Object.keys(this.getCache), Object.keys(this.removeCache)]));
+    return uniq(flatten([this.getCache.keys(), Object.keys(this.removeCache)]));
   }
 
   async get(id: string, tx: Transaction): Promise<T | null> {
@@ -46,18 +52,22 @@ export class CachedModel<
     if (this.removeCache[id]) {
       return;
     }
-    if (this.getCache[id] === undefined) {
-      const record = await this.model.findOne({
-        // https://github.com/sequelize/sequelize/issues/15179
-        where: {id} as any,
-        transaction: tx,
-      });
-
-      this.getCache[id] = {
-        data: record?.toJSON<T>(),
-      };
+    if (this.getCache.get(id) === undefined) {
+      // LFU getCache could remove record from due to it is least frequently used
+      // Then we try look from setCache
+      let record = this.setCache[id].getLatest().data;
+      if (!record) {
+        record = (
+          await this.model.findOne({
+            // https://github.com/sequelize/sequelize/issues/15179
+            where: {id} as any,
+            transaction: tx,
+          })
+        )?.toJSON<T>();
+      }
+      this.getCache.set(id, record);
     }
-    return this.getCache[id].data;
+    return this.getCache.get(id);
   }
 
   async getByField(
@@ -93,7 +103,7 @@ export class CachedModel<
     // Update getCache value here
     records.map((record) => {
       const data = record.toJSON<T>();
-      this.getCache[data.id] = {data};
+      this.getCache.set(data.id, data);
     });
 
     const joinedData = cachedData.concat(records.map((record) => record.toJSON() as T));
@@ -105,7 +115,7 @@ export class CachedModel<
     if (field === 'id') {
       return this.get(value.toString(), tx);
     } else {
-      const oneFromCached = this.getByFieldFromCache(field, value)[0];
+      const oneFromCached = this.getByFieldFromCache(field, value, true)[0];
       if (oneFromCached) {
         return oneFromCached;
       } else {
@@ -115,9 +125,8 @@ export class CachedModel<
             transaction: tx,
           })
         )?.toJSON<T>();
-        this.getCache[record.id] = {
-          data: record,
-        };
+
+        this.getCache.set(record.id, record);
         return record;
       }
     }
@@ -132,7 +141,7 @@ export class CachedModel<
     // IMPORTANT
     // This sync getCache with setCache
     // Change this will impact `getByFieldFromCache`, `allCachedIds` and related methods.
-    this.getCache[id] = {data};
+    this.getCache.set(id, data);
   }
 
   bulkCreate(data: T[], blockHeight: number): void {
@@ -156,6 +165,9 @@ export class CachedModel<
     value?: T[keyof T] | T[keyof T][] | undefined,
     options?: {distinct?: boolean; col?: keyof T} | undefined
   ): Promise<number> {
+    if (!field && !value && !options) {
+      return this.allCachedIds().length;
+    }
     const countOption = {} as Omit<CountOptions<any>, 'group'>;
     let cachedCount = 0;
     if (field && value) {
@@ -180,8 +192,8 @@ export class CachedModel<
         removedAtBlock: blockHeight,
       };
       this.flushableRecordCounter += 1;
-      if (this.getCache[id]) {
-        delete this.getCache[id];
+      if (this.getCache.get(id)) {
+        this.getCache.del(id);
         // Also when .get, check removeCache first, should return undefined if removed
       }
       if (this.setCache[id]) {
@@ -234,7 +246,7 @@ export class CachedModel<
   }
 
   clear(): void {
-    this.getCache = {};
+    this.getCache.reset();
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
@@ -254,14 +266,38 @@ export class CachedModel<
     });
   }
 
-  private getByFieldFromCache(field: keyof T, value: T[keyof T] | T[keyof T][]): T[] {
-    // As getCache always synced the latest record with setCache, from `set` method
-    // We only set getCache here, otherwise we need to search setCache.
-    return Object.entries(this.getCache).map(([, getValue]) => {
-      if ((Array.isArray(value) && includes(value, getValue.data[field])) || isEqual(getValue.data[field], value)) {
-        return getValue.data;
+  private getByFieldFromCache(field: keyof T, value: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
+    const joinedData: T[] = [];
+    const unifiedIds: string[] = [];
+    if (Object.keys(this.setCache).length !== 0) {
+      joinedData.concat(
+        Object.entries(this.setCache).map(([, model]) => {
+          if (model.isMatchData(field, value)) {
+            const latestData = model.getLatest().data;
+            unifiedIds.push(latestData.id);
+            return latestData;
+          }
+        })
+      );
+      // No need search further
+      if (findOne && joinedData.length !== 0) {
+        return joinedData;
       }
-    });
+    }
+    if (this.getCache.length !== 0) {
+      joinedData.concat(
+        Object.entries(this.getCache).map(([, getValue]) => {
+          if (
+            // We don't need to include anything duplicated
+            (!includes(unifiedIds, getValue.id) && Array.isArray(value) && includes(value, getValue[field])) ||
+            isEqual(getValue[field], value)
+          ) {
+            return getValue;
+          }
+        })
+      );
+    }
+    return joinedData;
   }
 
   // Different with markAsDeleted, we only mark/close all the records less than current block height
