@@ -3,19 +3,12 @@
 
 import {Transaction} from 'sequelize';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
-import {ICachedModelControl, SetData} from './types';
+import {ICachedModelControl } from './types';
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
-const unfinalizedKeys: MetadataKey[] = ['unfinalizedBlocks', 'lastFinalizedVerifiedHeight'];
 
-function guardBlockedKeys(key: MetadataKey): void {
-  if (unfinalizedKeys.includes(key)) {
-    throw new Error(`Key ${key} is not allowed to be cached metadata`);
-  }
-}
-
-export class CacheMetadataModel implements ICachedModelControl<any> {
+export class CacheMetadataModel implements ICachedModelControl {
   private setCache: Partial<MetadataKeys> = {};
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
@@ -25,7 +18,6 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   constructor(readonly model: MetadataRepo) {}
 
   async find<K extends MetadataKey>(key: K): Promise<MetadataKeys[K] | undefined> {
-    guardBlockedKeys(key);
     if (!this.getCache[key]) {
       const record = await this.model.findByPk(key);
 
@@ -37,8 +29,34 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
     return this.getCache[key] as MetadataKeys[K] | undefined;
   }
 
+  async findMany<K extends MetadataKey>(keys: readonly K[]): Promise<Partial<MetadataKeys>> {
+    const entries = await this.model.findAll({
+      where: {
+        key: keys,
+      },
+    });
+
+    const keyValue = entries.reduce((arr, curr) => {
+      arr[curr.key as K] = curr.value as MetadataKeys[K];
+      return arr;
+    }, {} as Partial<MetadataKeys>);
+
+    // Get any unsaved changes
+    const result = {
+      ...keyValue,
+      ...this.setCache,
+    };
+
+    // Update cache
+    this.getCache = {
+      ...this.getCache,
+      ...result,
+    };
+
+    return result;
+  }
+
   set<K extends MetadataKey>(key: K, value: MetadataKeys[K]): void {
-    guardBlockedKeys(key);
     if (this.setCache[key] === undefined) {
       this.flushableRecordCounter += 1;
     }
@@ -51,7 +69,6 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   }
 
   setIncrement(key: 'processedBlockCount' | 'schemaMigrationCount', amount = 1): void {
-    guardBlockedKeys(key);
     this.setCache[key] = (this.setCache[key] ?? 0) + amount;
   }
 
@@ -66,10 +83,6 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
 
   get isFlushable(): boolean {
     return !!Object.keys(this.setCache).length;
-  }
-
-  sync(data: SetData<any>): void {
-    throw new Error('Method not implemented.');
   }
 
   async flush(tx: Transaction): Promise<void> {
@@ -88,10 +101,6 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
     ]);
 
     this.clear();
-  }
-
-  dumpSetData(): SetData<any> {
-    throw new Error('Method not implemented.');
   }
 
   clear(): void {

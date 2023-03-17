@@ -13,27 +13,24 @@ export interface ICachedModel<T> {
     value?: T[keyof T] | T[keyof T][],
     options?: {distinct?: boolean; col?: keyof T}
   ) => Promise<number>;
-  get: (id: string, tx: Transaction) => Promise<T | null>;
+  get: (id: string) => Promise<T | null>;
   // limit always defined from store
   getByField: (
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    tx: Transaction,
     options?: {limit: number; offset?: number}
   ) => Promise<T[] | undefined>;
-  getOneByField: (field: keyof T, value: T[keyof T], tx: Transaction) => Promise<T | undefined>;
+  getOneByField: (field: keyof T, value: T[keyof T]) => Promise<T | undefined>;
   set: (id: string, data: T, blockHeight: number) => void;
   bulkCreate: (data: T[], blockHeight: number) => void;
   bulkUpdate: (data: T[], blockHeight: number, fields?: string[]) => void;
   remove: (id: string, blockHeight: number) => void;
 }
 
-export interface ICachedModelControl<T> {
+export interface ICachedModelControl {
   isFlushable: boolean;
   flushableRecordCounter: number;
-  sync(data: SetData<T>): void;
   flush(tx: Transaction): Promise<void>;
-  dumpSetData(): SetData<T>;
   clear(): void;
 }
 
@@ -61,12 +58,12 @@ export class SetValueModel<T> {
   private historicalValues: SetValue<T>[] = [];
   private _latestIndex = -1;
 
-  create(data: T, blockHeight: number) {
+  create(data: T, blockHeight: number): void {
     this.historicalValues.push({data, startHeight: blockHeight, endHeight: null});
     this._latestIndex += 1;
   }
 
-  set(data: T, blockHeight: number) {
+  set(data: T, blockHeight: number): void {
     const latestIndex = this.latestIndex();
 
     if (latestIndex >= 0) {
@@ -112,7 +109,7 @@ export class SetValueModel<T> {
     return this.historicalValues;
   }
 
-  markAsRemoved(removeAtBlock: number) {
+  markAsRemoved(removeAtBlock: number): void {
     const latestIndex = this.latestIndex();
     if (latestIndex === -1) {
       return;

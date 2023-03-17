@@ -12,7 +12,6 @@ import {
   BlockDispatcher,
   ProcessBlockResponse,
 } from '@subql/node-core';
-import { Sequelize, Transaction } from 'sequelize';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -23,7 +22,6 @@ import { DynamicDsService } from '../dynamic-ds.service';
 import { IndexerManager } from '../indexer.manager';
 import { RuntimeService } from '../runtime/runtimeService';
 import { BlockContent } from '../types';
-import { UnfinalizedBlocksService } from '../unfinalizedBlocks.service';
 
 /**
  * @description Intended to behave the same as WorkerBlockDispatcherService but doesn't use worker threads or any parallel processing
@@ -43,11 +41,9 @@ export class BlockDispatcherService
     @Inject('IProjectService') projectService: IProjectService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    sequelize: Sequelize,
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
-    private unfinalizedBlocksService: UnfinalizedBlocksService,
   ) {
     const fetchBlockBatchesWrapped = async (
       blockNums: number[],
@@ -71,7 +67,6 @@ export class BlockDispatcherService
       projectService,
       storeService,
       storeCacheService,
-      sequelize,
       poiService,
       project,
       dynamicDsService,
@@ -89,10 +84,6 @@ export class BlockDispatcherService
 
   protected getBlockHeight(block: BlockContent): number {
     return block.block.block.header.number.toNumber();
-  }
-
-  protected prepareTx(tx: Transaction): void {
-    this.unfinalizedBlocksService.setTransaction(tx);
   }
 
   protected async indexBlock(

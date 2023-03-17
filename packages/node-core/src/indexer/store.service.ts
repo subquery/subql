@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 import {Inject, Injectable} from '@nestjs/common';
-import {hexToU8a, u8aToBuffer} from '@polkadot/util';
+import {hexToU8a} from '@polkadot/util';
 import {getDbType, SUPPORT_DB} from '@subql/common';
 
 import {Entity, Store} from '@subql/types';
@@ -27,7 +27,6 @@ import {
   QueryTypes,
   Sequelize,
   Transaction,
-  UpsertOptions,
   Utils,
 } from 'sequelize';
 import {NodeConfig} from '../configure';
@@ -54,7 +53,9 @@ import {
   smartTags,
   getEnumDeprecated,
 } from '../utils';
-import {Metadata, MetadataFactory, MetadataRepo, PoiFactory, PoiRepo, ProofOfIndex} from './entities';
+import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
+import {CacheMetadataModel} from './storeCache';
+import {CachePoiModel} from './storeCache/cachePOI';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
@@ -62,7 +63,6 @@ import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
 const logger = getLogger('store');
 const NULL_MERKEL_ROOT = hexToU8a('0x00');
 const NotifyTriggerManipulationType = [`INSERT`, `DELETE`, `UPDATE`];
-const KEY_FIELDS = ['id', '__id', '__block_range'];
 
 interface IndexField {
   entityName: string;
@@ -78,11 +78,10 @@ interface NotifyTriggerPayload {
 
 @Injectable()
 export class StoreService {
-  private tx?: Transaction;
   private modelIndexedFields: IndexField[];
   private schema: string;
   private modelsRelations: GraphQLModelsRelationsEnums;
-  private poiRepo: PoiRepo;
+  private poiRepo: PoiRepo | undefined;
   private metaDataRepo: MetadataRepo;
   private operationStack: StoreOperations;
   @Inject('ISubqueryProject') private subqueryProject: ISubqueryProject<IProjectNetworkConfig>;
@@ -90,6 +89,9 @@ export class StoreService {
   historical: boolean;
   private dbType: SUPPORT_DB;
   private useSubscription: boolean;
+
+  poiModel: CachePoiModel;
+  metadataModel: CacheMetadataModel;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig, readonly storeCache: StoreCacheService) {}
 
@@ -122,15 +124,20 @@ export class StoreService {
       process.exit(1);
     }
 
-    this.storeCache.setMetadataRepo(this.metaDataRepo);
+    this.storeCache.setRepos(this.metaDataRepo, this.poiRepo);
+    this.metadataModel = this.storeCache.metadata;
+    this.poiModel = this.storeCache.poi;
+
+    this.metadataModel.set('historicalStateEnabled', this.historical);
+    this.metadataModel.setIncrement('schemaMigrationCount');
   }
 
-  private async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
-    await this.sequelize.query(
-      `UPDATE ${this.metaDataRepo.getTableName()} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
-      tx && {transaction: tx}
-    );
-  }
+  // private async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
+  //   await this.sequelize.query(
+  //     `UPDATE ${this.metaDataRepo.getTableName()} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
+  //     tx && {transaction: tx}
+  //   );
+  // }
 
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
     if (this.dbType === SUPPORT_DB.cockRoach) {
@@ -339,9 +346,6 @@ export class StoreService {
 
     await this.sequelize.sync();
 
-    await this.setMetadata('historicalStateEnabled', this.historical);
-    await this.incrementJsonbCount('schemaMigrationCount');
-
     for (const query of extraQueries) {
       await this.sequelize.query(query);
     }
@@ -400,7 +404,7 @@ export class StoreService {
     }
   }
 
-  addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
+  private addBlockRangeColumnToIndexes(indexes: IndexesOptions[]): void {
     indexes.forEach((index) => {
       if (index.using === IndexType.GIN) {
         return;
@@ -478,7 +482,7 @@ export class StoreService {
     // });
   }
 
-  validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
+  private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
     if (triggers.length !== NotifyTriggerManipulationType.length) {
       throw new Error(
         `Found ${triggers.length} ${triggerName} triggers, expected ${NotifyTriggerManipulationType.length} triggers `
@@ -491,10 +495,10 @@ export class StoreService {
     });
   }
 
-  setTransaction(tx: Transaction): void {
-    this.tx = tx;
+  setTransaction(/*tx: Transaction*/): void {
+    // this.tx = tx;
 
-    tx.afterCommit(() => (this.tx = undefined));
+    // tx.afterCommit(() => (this.tx = undefined));
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
@@ -504,18 +508,18 @@ export class StoreService {
     this.blockHeight = blockHeight;
   }
 
-  async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
-    assert(this.metaDataRepo, `Model _metadata does not exist`);
-    await this.metaDataRepo.upsert({key, value}, options);
-  }
+  // async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
+  //   assert(this.metaDataRepo, `Model _metadata does not exist`);
+  //   await this.metaDataRepo.upsert({key, value}, options);
+  // }
 
-  async setPoi(blockPoi: ProofOfIndex, options?: UpsertOptions<ProofOfIndex>): Promise<void> {
-    assert(this.poiRepo, `Model _poi does not exist`);
-    blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
-    blockPoi.hash = u8aToBuffer(blockPoi.hash);
-    blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-    await this.poiRepo.upsert(blockPoi, options);
-  }
+  // async setPoi(blockPoi: ProofOfIndex, options?: UpsertOptions<ProofOfIndex>): Promise<void> {
+  //   assert(this.poiRepo, `Model _poi does not exist`);
+  //   blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
+  //   blockPoi.hash = u8aToBuffer(blockPoi.hash);
+  //   blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
+  //   await this.poiRepo.upsert(blockPoi, options);
+  // }
 
   getOperationMerkleRoot(): Uint8Array {
     if (this.config.proofOfIndex) {
@@ -572,54 +576,6 @@ group by
     return rows.map((result) => camelCaseObjectKey(result)) as IndexField[];
   }
 
-  private async markAsDeleted(model: ModelStatic<any>, id: string) {
-    return model.update(
-      {
-        __block_range: this.sequelize.fn(
-          'int8range',
-          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          this.blockHeight
-        ),
-      },
-      {
-        hooks: false,
-        transaction: this.tx,
-        where: {
-          id: id,
-          __block_range: {
-            [Op.contains]: this.blockHeight as any,
-          },
-        },
-      }
-    );
-  }
-
-  private async markPreviousHeightRecordsBatch(model: ModelStatic<any>, ids: string[]) {
-    // Different with markAsDeleted, we only mark/close all the records less than current block height
-    // thus, and new record with current block height will not be impacted,
-    // advantage is this sql is safe to concurrency resolve with any insert sql
-
-    return model.update(
-      {
-        __block_range: this.sequelize.fn(
-          'int8range',
-          this.sequelize.fn('lower', this.sequelize.col('_block_range')),
-          this.blockHeight
-        ),
-      },
-      {
-        hooks: false,
-        transaction: this.tx,
-        where: {
-          id: {[Op.in]: ids},
-          __block_range: {
-            [Op.contains]: (this.blockHeight - 1) as any,
-          },
-        },
-      }
-    );
-  }
-
   async rewind(targetBlockHeight: number, transaction: Transaction): Promise<void> {
     for (const model of Object.values(this.sequelize.models)) {
       if ('__block_range' in model.getAttributes()) {
@@ -652,9 +608,7 @@ group by
         );
       }
     }
-    await this.setMetadata('lastProcessedHeight', targetBlockHeight, {
-      transaction,
-    });
+    this.metadataModel.set('lastProcessedHeight', targetBlockHeight);
     if (this.config.proofOfIndex) {
       await this.poiRepo.destroy({
         transaction,
@@ -664,9 +618,7 @@ group by
           },
         },
       });
-      await this.setMetadata('lastPoiHeight', targetBlockHeight, {
-        transaction,
-      });
+      this.metadataModel.set('lastPoiHeight', targetBlockHeight);
     }
   }
 
@@ -689,7 +641,7 @@ group by
       },
       get: async <T extends Entity>(entity: string, id: string): Promise<T | undefined> => {
         try {
-          return this.storeCache.getModel<T>(entity).get(id, this.tx);
+          return this.storeCache.getModel<T>(entity).get(id);
         } catch (e) {
           throw new Error(`Failed to get Entity ${entity} with id ${id}: ${e}`);
         }
@@ -721,7 +673,7 @@ group by
           }
           return this.storeCache
             .getModel<T>(entity)
-            .getByField(field, value, this.tx, {limit: finalLimit, offset: options.offset});
+            .getByField(field, value, {limit: finalLimit, offset: options.offset});
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
         }
@@ -741,7 +693,7 @@ group by
                 indexField.isUnique
             ) > -1;
           assert(indexed, `to query by field ${String(field)}, an unique index must be created on model ${entity}`);
-          return this.storeCache.getModel<T>(entity).getOneByField(field, value, this.tx);
+          return this.storeCache.getModel<T>(entity).getOneByField(field, value);
         } catch (e) {
           throw new Error(`Failed to getOneByField Entity ${entity} with field ${String(field)}: ${e}`);
         }

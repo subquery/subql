@@ -10,12 +10,7 @@ import {
   SubstrateDatasourceKind,
   SubstrateHandlerKind,
 } from '@subql/common-substrate';
-import {
-  IndexerEvent,
-  NodeConfig,
-  Dictionary,
-  MetadataRepo,
-} from '@subql/node-core';
+import { IndexerEvent, NodeConfig, Dictionary } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { difference, range } from 'lodash';
 import { SubqueryProject } from '../configure/SubqueryProject';

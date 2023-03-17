@@ -24,7 +24,7 @@ const getCacheOptions = {
 
 export class CachedModel<
   T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
-> implements ICachedModel<T>, ICachedModelControl<T>
+> implements ICachedModel<T>, ICachedModelControl
 {
   // Null value indicates its not defined in the db
   private getCache = new GetData<T>(getCacheOptions);
@@ -47,7 +47,7 @@ export class CachedModel<
     return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
-  async get(id: string, tx: Transaction): Promise<T | null> {
+  async get(id: string): Promise<T | null> {
     // If this already been removed
     if (this.removeCache[id]) {
       return;
@@ -61,7 +61,6 @@ export class CachedModel<
           await this.model.findOne({
             // https://github.com/sequelize/sequelize/issues/15179
             where: {id} as any,
-            transaction: tx,
           })
         )?.toJSON<T>();
         // getCache only keep records from db
@@ -74,7 +73,6 @@ export class CachedModel<
   async getByField(
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    tx: Transaction,
     options: {
       offset: number;
       limit: number;
@@ -97,8 +95,7 @@ export class CachedModel<
     }
 
     const records = await this.model.findAll({
-      where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
-      transaction: tx,
+      where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
       limit: options?.limit, //limit should pass from store
       offset: options?.offset,
     });
@@ -113,9 +110,9 @@ export class CachedModel<
     return joinedData;
   }
 
-  async getOneByField(field: keyof T, value: T[keyof T], tx: Transaction): Promise<T | undefined> {
+  async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
     if (field === 'id') {
-      return this.get(value.toString(), tx);
+      return this.get(value.toString());
     } else {
       const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
@@ -123,8 +120,7 @@ export class CachedModel<
       } else {
         const record = (
           await this.model.findOne({
-            where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
-            transaction: tx,
+            where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
           })
         )?.toJSON<T>();
 
@@ -242,20 +238,6 @@ export class CachedModel<
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
-  }
-
-  dumpSetData(): SetData<T> {
-    const setData = this.setCache;
-
-    this.setCache = {};
-    return setData;
-  }
-
-  sync(data: SetData<T>): void {
-    Object.entries(data).map(([id, enttity]) => {
-      // TODO update for historical
-      this.setCache[id] = enttity;
-    });
   }
 
   // If field and value are passed, will getByField

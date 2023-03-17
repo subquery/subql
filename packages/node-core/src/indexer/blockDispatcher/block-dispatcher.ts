@@ -5,7 +5,6 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {profilerWrap} from '@subql/node-core/profiler';
 import {last} from 'lodash';
-import {Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
@@ -37,7 +36,6 @@ export abstract class BlockDispatcher<B, DS>
 
   protected abstract indexBlock(block: B): Promise<ProcessBlockResponse>;
   protected abstract getBlockHeight(block: B): number;
-  protected abstract prepareTx(tx: Transaction): void;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -45,7 +43,6 @@ export abstract class BlockDispatcher<B, DS>
     projectService: IProjectService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    private sequelize: Sequelize,
     poiService: PoiService,
     project: ISubqueryProject<IProjectNetworkConfig>,
     dynamicDsService: DynamicDsService<DS>,
@@ -69,13 +66,6 @@ export abstract class BlockDispatcher<B, DS>
     } else {
       this.fetchBlocksBatches = fetchBlocksBatches;
     }
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
-    this.onDynamicDsCreated = onDynamicDsCreated;
-    const blockAmount = await this.projectService.getProcessedBlockCount();
-    this.setProcessedBlockCount(blockAmount ?? 0);
   }
 
   onApplicationShutdown(): void {
@@ -143,20 +133,14 @@ export abstract class BlockDispatcher<B, DS>
 
         const blockTasks = blocks.map((block) => async () => {
           const height = this.getBlockHeight(block);
-          let tx: Transaction;
           try {
-            tx = await this.sequelize.transaction();
-
-            this.preProcessBlock(height, tx);
-            this.prepareTx(tx);
+            this.preProcessBlock(height);
             // Inject runtimeVersion here to enhance api.at preparation
             const processBlockResponse = await this.indexBlock(block);
 
-            await this.postProcessBlock(height, tx, processBlockResponse);
-
-            await tx.commit();
+            await this.postProcessBlock(height, processBlockResponse);
           } catch (e) {
-            await tx.rollback();
+            // TODO discard any cache changes from this block height
             if (this.isShutdown) {
               return;
             }

@@ -19,7 +19,7 @@ import {
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import chalk from 'chalk';
-import { Sequelize, Transaction } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import {
   SubqlProjectDs,
   SubqueryProject,
@@ -97,11 +97,10 @@ export class WorkerBlockDispatcherService
     @Inject('IProjectService') projectService: IProjectService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    sequelize: Sequelize,
     poiService: PoiService,
     @Inject('ISubqueryProject') project: SubqueryProject,
     dynamicDsService: DynamicDsService,
-    private unfinalizedBlocksSevice: UnfinalizedBlocksService,
+    unfinalizedBlocksSevice: UnfinalizedBlocksService,
   ) {
     super(
       nodeConfig,
@@ -109,7 +108,6 @@ export class WorkerBlockDispatcherService
       projectService,
       storeService,
       storeCacheService,
-      sequelize,
       poiService,
       project,
       dynamicDsService,
@@ -139,10 +137,6 @@ export class WorkerBlockDispatcherService
         this.runtimeService.latestFinalizedHeight,
       ),
     );
-  }
-
-  protected prepareTx(tx: Transaction): void {
-    this.unfinalizedBlocksSevice.setTransaction(tx);
   }
 
   protected async fetchBlock(

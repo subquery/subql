@@ -5,28 +5,34 @@ import assert from 'assert';
 import {Injectable} from '@nestjs/common';
 import {NodeConfig} from '@subql/node-core/configure';
 import {sum} from 'lodash';
-import {Sequelize, Transaction} from 'sequelize';
-import {MetadataRepo} from '../entities';
+import {Sequelize} from 'sequelize';
+import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
-import {ICachedModel, EntitySetData, ICachedModelControl} from './types';
+import {CachePoiModel} from './cachePoi';
+import {ICachedModel, ICachedModelControl} from './types';
 
 @Injectable()
 export class StoreCacheService {
-  private cachedModels: Record<string, ICachedModelControl<any>> = {};
+  private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo: MetadataRepo;
+  private poiRepo: PoiRepo;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {
     this.resetMemoryStore();
   }
 
-  setMetadataRepo(repo: MetadataRepo): void {
-    this.metadataRepo = repo;
+  setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
+    this.metadataRepo = meta;
+    this.poiRepo = poi;
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
     if (entity === '_metadata') {
       throw new Error('Please use getMetadataModel instead');
+    }
+    if (entity === 'poi') {
+      throw new Error('Please use getPoiModel instead');
     }
     if (!this.cachedModels[entity]) {
       const model = this.sequelize.model(entity);
@@ -38,7 +44,7 @@ export class StoreCacheService {
     return this.cachedModels[entity] as unknown as ICachedModel<T>;
   }
 
-  getMetadataModel(): CacheMetadataModel {
+  get metadata(): CacheMetadataModel {
     const entity = '_metadata';
     if (!this.cachedModels[entity]) {
       if (!this.metadataRepo) {
@@ -50,38 +56,42 @@ export class StoreCacheService {
     return this.cachedModels[entity] as unknown as CacheMetadataModel;
   }
 
-  dumpSetData(): EntitySetData {
-    const res: EntitySetData = {};
-
-    Object.entries(this.cachedModels).map(([entity, model]) => {
-      if (model.isFlushable) {
-        res[entity] = model.dumpSetData();
+  get poi(): CachePoiModel | null {
+    const entity = 'poi';
+    if (!this.cachedModels[entity]) {
+      if (!this.poiRepo) {
+        return null;
+        // throw new Error('Poi entity has not been set on store cache');
       }
-    });
+      this.cachedModels[entity] = new CachePoiModel(this.poiRepo);
+    }
 
-    return res;
+    return this.cachedModels[entity] as unknown as CachePoiModel;
   }
 
-  private async _flushCache(tx: Transaction): Promise<void> {
-    // Get models that have data to flush
-    const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
+  private async _flushCache(): Promise<void> {
 
-    await Promise.all(updatableModels.map((model) => model.flush(tx)));
+    const tx = await this.sequelize.transaction();
+    try {
+      // Get models that have data to flush
+      const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
+
+      await Promise.all(updatableModels.map((model) => model.flush(tx)));
+
+      await tx.commit();
+    } catch (e) {
+      await tx.rollback();
+      throw e;
+    }
   }
 
-  async flushCache(tx: Transaction, forceFlush?: boolean): Promise<void> {
+  async flushCache(forceFlush?: boolean): Promise<void> {
     if (this.isFlushable() || forceFlush) {
-      await this._flushCache(tx);
+      await this._flushCache();
       // Note flushCache and commit transaction need to sequential
       // await this.commitTransaction();
       this.resetMemoryStore();
     }
-  }
-
-  syncData(data: EntitySetData): void {
-    Object.entries(data).map(([entity, setData]) => {
-      (this.getModel(entity) as CachedModel).sync(setData);
-    });
   }
 
   isFlushable(): boolean {

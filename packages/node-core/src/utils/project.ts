@@ -1,10 +1,9 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {filter, intersection, isEqual, isNumber, range, remove, uniq, without} from 'lodash';
+import {isNumber, range, uniq, without} from 'lodash';
 import {QueryTypes, Sequelize} from 'sequelize';
 import {NodeConfig} from '../configure/NodeConfig';
-import {Metadata, MetadataRepo} from '../indexer/entities/Metadata.entity';
 import {getLogger} from '../logger';
 
 const logger = getLogger('Project-Utils');
@@ -30,16 +29,6 @@ export async function getExistingProjectSchema(
     return undefined;
   }
   return schema;
-}
-
-export async function getMetaDataInfo<T extends Metadata['value'] = number>(
-  metadataRepo: MetadataRepo,
-  key: Metadata['key']
-): Promise<T | undefined> {
-  const res = await metadataRepo.findOne({
-    where: {key: key},
-  });
-  return res?.value as T | undefined;
 }
 
 export function transformBypassBlocks(bypassBlocks: (number | string)[]): number[] {
