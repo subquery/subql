@@ -27,6 +27,8 @@ export class CachedModel<
 
   private removeCache: Record<string, RemoveValue> = {};
 
+  flushableRecordCounter = 0;
+
   constructor(readonly model: ModelStatic<Model<T, T>>, private readonly historical = true) {}
 
   private get historicalModel(): ModelStatic<Model<T & HistoricalModel, T & HistoricalModel>> {
@@ -126,6 +128,7 @@ export class CachedModel<
       this.setCache[id] = new SetValueModel();
     }
     this.setCache[id].set(data, blockHeight);
+    this.flushableRecordCounter += 1;
     // IMPORTANT
     // This sync getCache with setCache
     // Change this will impact `getByFieldFromCache`, `allCachedIds` and related methods.
@@ -176,6 +179,7 @@ export class CachedModel<
       this.removeCache[id] = {
         removedAtBlock: blockHeight,
       };
+      this.flushableRecordCounter += 1;
       if (this.getCache[id]) {
         delete this.getCache[id];
         // Also when .get, check removeCache first, should return undefined if removed
@@ -233,6 +237,7 @@ export class CachedModel<
     this.getCache = {};
     this.setCache = {};
     this.removeCache = {};
+    this.flushableRecordCounter = 0;
   }
 
   dumpSetData(): SetData<T> {

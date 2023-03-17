@@ -38,14 +38,14 @@ describe('Store Cache Service historical', () => {
   const sequilize = new Sequelize();
 
   it('could init store cache service and init cache for models', () => {
-    storeService = new StoreCacheService(sequilize);
+    storeService = new StoreCacheService(sequilize, null);
     storeService.getModel('entity1');
     expect((storeService as any).cachedModels.entity1).toBeDefined();
     expect((storeService as any).cachedModels.entity2).toBeUndefined();
   });
 
   it('could set cache for entity, also get from it', async () => {
-    storeService = new StoreCacheService(sequilize);
+    storeService = new StoreCacheService(sequilize, null);
     storeService.getModel('entity1');
     storeService.getModel('entity2');
 

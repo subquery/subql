@@ -29,7 +29,7 @@ export interface ICachedModel<T> {
 
 export interface ICachedModelControl<T> {
   isFlushable: boolean;
-
+  flushableRecordCounter: number;
   sync(data: SetData<T>): void;
   flush(tx: Transaction): Promise<void>;
   dumpSetData(): SetData<T>;
