@@ -20,6 +20,8 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
   // Needed for dynamic datasources
   private getCache: Partial<MetadataKeys> = {};
 
+  flushableRecordCounter = 0;
+
   constructor(readonly model: MetadataRepo) {}
 
   async find<K extends MetadataKey>(key: K): Promise<MetadataKeys[K] | undefined> {
@@ -37,6 +39,9 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
 
   set<K extends MetadataKey>(key: K, value: MetadataKeys[K]): void {
     guardBlockedKeys(key);
+    if (this.setCache[key] === undefined) {
+      this.flushableRecordCounter += 1;
+    }
     this.setCache[key] = value;
     this.getCache[key] = value;
   }
@@ -91,5 +96,6 @@ export class CacheMetadataModel implements ICachedModelControl<any> {
 
   clear(): void {
     this.setCache = {};
+    this.flushableRecordCounter = 0;
   }
 }

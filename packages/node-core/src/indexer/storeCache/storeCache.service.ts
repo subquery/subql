@@ -3,34 +3,25 @@
 
 import assert from 'assert';
 import {Injectable} from '@nestjs/common';
+import {NodeConfig} from '@subql/node-core/configure';
+import {sum} from 'lodash';
 import {Sequelize, Transaction} from 'sequelize';
-import {NodeConfig} from '../../configure';
 import {MetadataRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {ICachedModel, EntitySetData, ICachedModelControl} from './types';
 
-const FLUSH_FREQUENCY = 5;
-
 @Injectable()
 export class StoreCacheService {
-  historical: boolean;
-  private flushCounter: number;
   private cachedModels: Record<string, ICachedModelControl<any>> = {};
   private metadataRepo: MetadataRepo;
 
-  constructor(private sequelize: Sequelize) {
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {
     this.resetMemoryStore();
-    this.flushCounter = 0;
-    this.historical = true; // TODO, need handle when is not historical
   }
 
   setMetadataRepo(repo: MetadataRepo): void {
     this.metadataRepo = repo;
-  }
-
-  counterIncrement(): void {
-    this.flushCounter += 1;
   }
 
   getModel<T>(entity: string): ICachedModel<T> {
@@ -72,18 +63,14 @@ export class StoreCacheService {
   }
 
   private async _flushCache(tx: Transaction): Promise<void> {
-    if (!this.historical) {
-      return;
-    }
-
     // Get models that have data to flush
     const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
     await Promise.all(updatableModels.map((model) => model.flush(tx)));
   }
 
-  async flushCache(tx: Transaction): Promise<void> {
-    if (this.isFlushable()) {
+  async flushCache(tx: Transaction, forceFlush?: boolean): Promise<void> {
+    if (this.isFlushable() || forceFlush) {
       await this._flushCache(tx);
       // Note flushCache and commit transaction need to sequential
       // await this.commitTransaction();
@@ -98,7 +85,8 @@ export class StoreCacheService {
   }
 
   isFlushable(): boolean {
-    return this.flushCounter % FLUSH_FREQUENCY === 0;
+    const numOfRecords = sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter));
+    return numOfRecords >= this.config.storeCacheThreshold;
   }
 
   resetMemoryStore(): void {
