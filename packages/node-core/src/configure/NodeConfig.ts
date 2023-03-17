@@ -45,6 +45,7 @@ export interface IConfig {
   readonly pgCa?: string;
   readonly pgKey?: string;
   readonly pgCert?: string;
+  readonly storeCacheThreshold: number;
 }
 
 export type MinConfig = Partial<Omit<IConfig, 'subquery'>> & Pick<IConfig, 'subquery'>;
@@ -66,6 +67,7 @@ const DEFAULT_CONFIG = {
   disableHistorical: false,
   multiChain: false,
   unfinalizedBlocks: false,
+  storeCacheThreshold: 300,
 };
 
 export class NodeConfig implements IConfig {
@@ -113,6 +115,14 @@ export class NodeConfig implements IConfig {
     return typeof this._config.networkEndpoint === 'string'
       ? [this._config.networkEndpoint]
       : this._config.networkEndpoint;
+  }
+
+  get storeCacheThreshold(): number {
+    return this._config.storeCacheThreshold;
+  }
+
+  get networkEndpoint(): string | undefined {
+    return this._config.networkEndpoint;
   }
 
   get networkDictionary(): string | undefined {
