@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {isEqual} from 'lodash';
-// @ts-ignore
-import {LFU} from 'node-lfu-cache';
 import {Transaction} from 'sequelize';
+
+// @ts-ignore
+const LFU = require('node-lfu-cache');
 
 export type HistoricalModel = {__block_range: any};
 

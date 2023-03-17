@@ -55,7 +55,7 @@ export class CachedModel<
     if (this.getCache.get(id) === undefined) {
       // LFU getCache could remove record from due to it is least frequently used
       // Then we try look from setCache
-      let record = this.setCache[id].getLatest().data;
+      let record = this.setCache[id]?.getLatest().data;
       if (!record) {
         record = (
           await this.model.findOne({
@@ -77,22 +77,25 @@ export class CachedModel<
     options: {offset?: number; limit?: number} | undefined
   ): Promise<T[] | undefined> {
     let cachedData = this.getByFieldFromCache(field, value);
-    if (options?.offset) {
-      if (cachedData.length <= options.offset) {
-        // example cache length 16, offset is 30
-        // it should skip cache value
-        cachedData = [];
-      } else if (cachedData.length > options.offset + options.limit) {
-        // example cache length 166, offset is 30, limit is 50
-        // then return all from cache [30,80]
-        return cachedData.slice(options.offset, options.offset + options.limit);
-      } else if (cachedData.length < options.offset + options.limit) {
-        // example cache length 66, offset is 30, limit is 50
-        // then return [30,66] from cache, set new limit and join record from db
-        cachedData = cachedData.slice(options.offset, cachedData.length);
-        options.limit = options.limit - (cachedData.length - options.offset);
-      }
+    if (options?.offset === undefined) {
+      options.offset = 0;
     }
+
+    if (cachedData.length <= options.offset) {
+      // example cache length 16, offset is 30
+      // it should skip cache value
+      cachedData = [];
+    } else if (cachedData.length >= options.offset + options.limit) {
+      // example cache length 166, offset is 30, limit is 50
+      // then return all from cache [30,80]
+      return cachedData.slice(options.offset, options.offset + options.limit);
+    } else if (cachedData.length < options.offset + options.limit) {
+      // example cache length 66, offset is 30, limit is 50
+      // then return [30,66] from cache, set new limit and join record from db
+      cachedData = cachedData.slice(options.offset, cachedData.length);
+      options.limit = options.limit - (cachedData.length - options.offset);
+    }
+
     const records = await this.model.findAll({
       where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
       transaction: tx,
@@ -270,32 +273,28 @@ export class CachedModel<
     const joinedData: T[] = [];
     const unifiedIds: string[] = [];
     if (Object.keys(this.setCache).length !== 0) {
-      joinedData.concat(
-        Object.entries(this.setCache).map(([, model]) => {
-          if (model.isMatchData(field, value)) {
-            const latestData = model.getLatest().data;
-            unifiedIds.push(latestData.id);
-            return latestData;
-          }
-        })
-      );
+      Object.entries(this.setCache).map(([, model]) => {
+        if (model.isMatchData(field, value)) {
+          const latestData = model.getLatest().data;
+          unifiedIds.push(latestData.id);
+          joinedData.push(latestData);
+        }
+      });
       // No need search further
       if (findOne && joinedData.length !== 0) {
         return joinedData;
       }
     }
     if (this.getCache.length !== 0) {
-      joinedData.concat(
-        Object.entries(this.getCache).map(([, getValue]) => {
-          if (
-            // We don't need to include anything duplicated
-            (!includes(unifiedIds, getValue.id) && Array.isArray(value) && includes(value, getValue[field])) ||
-            isEqual(getValue[field], value)
-          ) {
-            return getValue;
-          }
-        })
-      );
+      Object.entries(this.getCache).map(([, getValue]) => {
+        if (
+          // We don't need to include anything duplicated
+          (!includes(unifiedIds, getValue.id) && Array.isArray(value) && includes(value, getValue[field])) ||
+          isEqual(getValue[field], value)
+        ) {
+          joinedData.concat(getValue);
+        }
+      });
     }
     return joinedData;
   }
