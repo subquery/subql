@@ -13,13 +13,11 @@ import {ICachedModel, EntitySetData, ICachedModelControl} from './types';
 
 @Injectable()
 export class StoreCacheService {
-  historical: boolean;
   private cachedModels: Record<string, ICachedModelControl<any>> = {};
   private metadataRepo: MetadataRepo;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {
     this.resetMemoryStore();
-    this.historical = true;
   }
 
   setMetadataRepo(repo: MetadataRepo): void {
@@ -65,18 +63,14 @@ export class StoreCacheService {
   }
 
   private async _flushCache(tx: Transaction): Promise<void> {
-    if (!this.historical) {
-      return;
-    }
-
     // Get models that have data to flush
     const updatableModels = Object.values(this.cachedModels).filter((m) => m.isFlushable);
 
     await Promise.all(updatableModels.map((model) => model.flush(tx)));
   }
 
-  async flushCache(tx: Transaction): Promise<void> {
-    if (this.isFlushable()) {
+  async flushCache(tx: Transaction, forceFlush?: boolean): Promise<void> {
+    if (this.isFlushable() || forceFlush) {
       await this._flushCache(tx);
       // Note flushCache and commit transaction need to sequential
       // await this.commitTransaction();
