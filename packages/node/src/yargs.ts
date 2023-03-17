@@ -232,4 +232,10 @@ export const yargsOptions = yargs(hideBin(process.argv))
         'Postgres client certificate - Path to client certificate e.g /path/to/client-certificates/postgresql.crt',
       type: 'string',
     },
+    'store-cache-threshold': {
+      demandOption: false,
+      describe:
+        'Store cache will flush when number of records excess this threshold',
+      type: 'number',
+    },
   });
