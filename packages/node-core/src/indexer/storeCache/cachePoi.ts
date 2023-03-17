@@ -2,11 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {u8aToBuffer} from '@polkadot/util';
-import { uniqBy } from 'lodash';
+import {uniqBy} from 'lodash';
 import {Op, Transaction} from 'sequelize';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ICachedModelControl} from './types';
-
 
 const DEFAULT_FETCH_RANGE = 100;
 
@@ -56,9 +55,9 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'ASC']],
     });
 
-    const poiBlocks = uniqBy([...Object.values(this.setCache), ...result], i => i.id);
+    const poiBlocks = uniqBy([...Object.values(this.setCache), ...result], (i) => i.id);
     if (poiBlocks.length !== 0) {
-      return poiBlocks.sort(v => v.id);
+      return poiBlocks.sort((v) => v.id);
     } else {
       return [];
     }
@@ -69,10 +68,7 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'DESC']],
     });
 
-    return Object.values({
-      ...this.setCache,
-      [result.id]: result
-    }).reduce((acc, val) => {
+    return Object.values(this.mergeResultWithCache(result)).reduce((acc, val) => {
       if (acc && acc.id < val.id) return acc;
       return val;
     }, null as ProofOfIndex | null);
@@ -84,11 +80,8 @@ export class CachePoiModel implements ICachedModelControl {
       where: {mmrRoot: {[Op.ne]: null}},
     });
 
-    return Object.values({
-      ...this.setCache,
-      [poiBlock.id]: poiBlock
-    })
-      .filter(v => v.mmrRoot !== null)
+    return Object.values(this.mergeResultWithCache(poiBlock))
+      .filter((v) => v.mmrRoot !== null)
       .reduce((acc, val) => {
         if (acc && acc.id < val.id) return acc;
         return val;
@@ -106,6 +99,16 @@ export class CachePoiModel implements ICachedModelControl {
     ]);
 
     this.clear();
+  }
+
+  private mergeResultWithCache(result: ProofOfIndex): Record<number, ProofOfIndex> {
+    const copy = {...this.setCache};
+
+    if (result) {
+      copy[result.id] = result;
+    }
+
+    return copy;
   }
 
   clear(): void {
