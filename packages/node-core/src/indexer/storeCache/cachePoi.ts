@@ -11,12 +11,10 @@ const DEFAULT_FETCH_RANGE = 100;
 
 export class CachePoiModel implements ICachedModelControl {
   private setCache: Record<number, ProofOfIndex> = {};
-  private removeCache: number[];
-  flushableRecordCounter: number;
+  private removeCache: number[] = [];
+  flushableRecordCounter = 0;
 
-  constructor(readonly model: PoiRepo) {
-    this.flushableRecordCounter = 0;
-  }
+  constructor(readonly model: PoiRepo) {}
 
   set(proof: ProofOfIndex): void {
     proof.chainBlockHash = u8aToBuffer(proof.chainBlockHash);
