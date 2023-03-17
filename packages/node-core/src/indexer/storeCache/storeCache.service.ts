@@ -2,18 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {Injectable} from '@nestjs/common';
+import {Injectable, OnApplicationShutdown} from '@nestjs/common';
 import {NodeConfig} from '@subql/node-core/configure';
 import {sum} from 'lodash';
 import {Sequelize} from 'sequelize';
+import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
 import {CachedModel} from './cacheModel';
 import {CachePoiModel} from './cachePoi';
 import {ICachedModel, ICachedModelControl} from './types';
 
+const logger = getLogger('StoreCache');
+
 @Injectable()
-export class StoreCacheService {
+export class StoreCacheService implements OnApplicationShutdown {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo: MetadataRepo;
   private poiRepo: PoiRepo;
@@ -70,7 +73,7 @@ export class StoreCacheService {
   }
 
   private async _flushCache(): Promise<void> {
-
+    logger.info('Flushing cache');
     const tx = await this.sequelize.transaction();
     try {
       // Get models that have data to flush
@@ -101,5 +104,9 @@ export class StoreCacheService {
 
   resetMemoryStore(): void {
     Object.values(this.cachedModels).map((model) => model.clear());
+  }
+
+  async onApplicationShutdown(signal?: string): Promise<void> {
+    await this.flushCache(true);
   }
 }
