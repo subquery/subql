@@ -42,7 +42,7 @@ export class CachePoiModel implements ICachedModelControl {
 
     const res = await this.model.findByPk(id);
 
-    return res?.dataValues;
+    return res?.toJSON<ProofOfIndex>();
   }
 
   remove(id: number): void {
@@ -58,7 +58,7 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'ASC']],
     });
 
-    const resultData = result.map((r) => r?.dataValues);
+    const resultData = result.map((r) => r?.toJSON<ProofOfIndex>());
 
     const poiBlocks = Object.values(this.mergeResultsWithCache(resultData)).filter(
       (poiBlock) => poiBlock.id >= startHeight
@@ -75,14 +75,10 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'DESC']],
     });
 
-    const res = Object.values(this.mergeResultsWithCache([result?.dataValues])).reduce((acc, val) => {
+    return Object.values(this.mergeResultsWithCache([result?.toJSON<ProofOfIndex>()])).reduce((acc, val) => {
       if (acc && acc.id < val.id) return acc;
       return val;
     }, null as ProofOfIndex | null);
-
-    console.log('getLatestPoi', res);
-
-    return res;
   }
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
@@ -91,7 +87,7 @@ export class CachePoiModel implements ICachedModelControl {
       where: {mmrRoot: {[Op.ne]: null}},
     });
 
-    return Object.values(this.mergeResultsWithCache([poiBlock?.dataValues]))
+    return Object.values(this.mergeResultsWithCache([poiBlock?.toJSON<ProofOfIndex>()]))
       .filter((v) => !!v.mmrRoot)
       .reduce((acc, val) => {
         if (acc && acc.id < val.id) return acc;
@@ -104,13 +100,17 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   async flush(tx: Transaction): Promise<void> {
-    logger.info('Flushing cache');
-    await Promise.all([
-      this.model.bulkCreate(Object.values(this.setCache), {transaction: tx}),
+    logger.info(`Flushing ${this.flushableRecordCounter} items from cache`);
+    const pendingFlush = Promise.all([
+      this.model.bulkCreate(Object.values(this.setCache), {transaction: tx, updateOnDuplicate: ['mmrRoot']}),
       this.model.destroy({where: {id: this.removeCache}, transaction: tx}),
     ]);
 
+    // Don't await DB operations to complete before clearing.
+    // This allows new data to be cached while flushing
     this.clear();
+
+    await pendingFlush;
   }
 
   private mergeResultsWithCache(results: ProofOfIndex[]): Record<number, ProofOfIndex> {

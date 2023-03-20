@@ -3,7 +3,11 @@
 
 import {Transaction} from 'sequelize';
 import {Metadata, MetadataKeys, MetadataRepo} from '../entities';
-import {ICachedModelControl } from './types';
+import {ICachedModelControl} from './types';
+
+function hasValue<T>(obj: T | undefined | null): obj is T {
+  return obj !== undefined && obj !== null;
+}
 
 type MetadataKey = keyof MetadataKeys;
 const incrementKeys: MetadataKey[] = ['processedBlockCount', 'schemaMigrationCount'];
@@ -17,12 +21,14 @@ export class CacheMetadataModel implements ICachedModelControl {
 
   constructor(readonly model: MetadataRepo) {}
 
-  async find<K extends MetadataKey>(key: K): Promise<MetadataKeys[K] | undefined> {
+  async find<K extends MetadataKey>(key: K, fallback?: MetadataKeys[K]): Promise<MetadataKeys[K] | undefined> {
     if (!this.getCache[key]) {
       const record = await this.model.findByPk(key);
 
-      if (record?.value) {
+      if (hasValue(record?.value)) {
         this.getCache[key] = record.value as any;
+      } else if (hasValue(fallback)) {
+        this.getCache[key] = fallback;
       }
     }
 

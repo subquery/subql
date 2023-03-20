@@ -5,7 +5,6 @@ import assert from 'assert';
 
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {hexToU8a, u8aEq} from '@polkadot/util';
-import {Transaction} from 'sequelize';
 import {
   DynamicDsService,
   IProjectNetworkConfig,
@@ -70,7 +69,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this.onDynamicDsCreated = onDynamicDsCreated;
-    this.setProcessedBlockCount(await this.storeCacheService.metadata.find('processedBlockCount'));
+    this.setProcessedBlockCount(await this.storeCacheService.metadata.find('processedBlockCount', 0));
   }
 
   get queueSize(): number {
