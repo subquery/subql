@@ -92,7 +92,7 @@ export class MmrService implements OnApplicationShutdown {
     // The next leaf index in mmr, current latest leaf index always .getLeafLength -1.
     await this.fileBasedMmr.append(newLeaf, estLeafIndexByBlockHeight);
     const mmrRoot = await this.fileBasedMmr.getRoot(estLeafIndexByBlockHeight);
-    await this.updatePoiMmrRoot(poiBlock.id, mmrRoot);
+    this.updatePoiMmrRoot(poiBlock, mmrRoot);
     this.nextMmrBlockHeight = poiBlock.id + 1;
   }
 
@@ -110,10 +110,8 @@ export class MmrService implements OnApplicationShutdown {
     }
   }
 
-  // TODO use cache here
-  private async updatePoiMmrRoot(id: number, mmrValue: Uint8Array): Promise<void> {
-    const poiBlock = await this.storeCacheService.poi.getById(id);
-    if (poiBlock.mmrRoot === null) {
+  private updatePoiMmrRoot(poiBlock: ProofOfIndex, mmrValue: Uint8Array): void {
+    if (!poiBlock.mmrRoot) {
       poiBlock.mmrRoot = mmrValue;
       this.storeCacheService.poi.set(poiBlock);
     } else {

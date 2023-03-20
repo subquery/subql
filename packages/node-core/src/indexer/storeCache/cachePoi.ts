@@ -2,10 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {u8aToBuffer} from '@polkadot/util';
-import {uniqBy} from 'lodash';
 import {Op, Transaction} from 'sequelize';
+import {getLogger} from '../../logger';
 import {PoiRepo, ProofOfIndex} from '../entities';
 import {ICachedModelControl} from './types';
+
+const logger = getLogger('PoiCache');
 
 const DEFAULT_FETCH_RANGE = 100;
 
@@ -28,8 +30,9 @@ export class CachePoiModel implements ICachedModelControl {
     this.setCache[proof.id] = proof;
   }
 
-  async getById(id: number): Promise<ProofOfIndex> {
+  async getById(id: number): Promise<ProofOfIndex | undefined> {
     if (this.removeCache.includes(id)) {
+      logger.debug(`Attempted to get deleted POI with id="${id}"`);
       return undefined;
     }
 
@@ -37,7 +40,9 @@ export class CachePoiModel implements ICachedModelControl {
       return this.setCache[id];
     }
 
-    return this.model.findByPk(id);
+    const res = await this.model.findByPk(id);
+
+    return res?.dataValues;
   }
 
   remove(id: number): void {
@@ -53,7 +58,11 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'ASC']],
     });
 
-    const poiBlocks = uniqBy([...Object.values(this.setCache), ...result], (i) => i.id);
+    const resultData = result.map((r) => r?.dataValues);
+
+    const poiBlocks = Object.values(this.mergeResultsWithCache(resultData)).filter(
+      (poiBlock) => poiBlock.id >= startHeight
+    );
     if (poiBlocks.length !== 0) {
       return poiBlocks.sort((v) => v.id);
     } else {
@@ -66,10 +75,14 @@ export class CachePoiModel implements ICachedModelControl {
       order: [['id', 'DESC']],
     });
 
-    return Object.values(this.mergeResultWithCache(result)).reduce((acc, val) => {
+    const res = Object.values(this.mergeResultsWithCache([result?.dataValues])).reduce((acc, val) => {
       if (acc && acc.id < val.id) return acc;
       return val;
     }, null as ProofOfIndex | null);
+
+    console.log('getLatestPoi', res);
+
+    return res;
   }
 
   async getLatestPoiWithMmr(): Promise<ProofOfIndex> {
@@ -78,8 +91,8 @@ export class CachePoiModel implements ICachedModelControl {
       where: {mmrRoot: {[Op.ne]: null}},
     });
 
-    return Object.values(this.mergeResultWithCache(poiBlock))
-      .filter((v) => v.mmrRoot !== null)
+    return Object.values(this.mergeResultsWithCache([poiBlock?.dataValues]))
+      .filter((v) => !!v.mmrRoot)
       .reduce((acc, val) => {
         if (acc && acc.id < val.id) return acc;
         return val;
@@ -87,10 +100,11 @@ export class CachePoiModel implements ICachedModelControl {
   }
 
   get isFlushable(): boolean {
-    return !!(Object.entries(this.setCache).length && this.removeCache.length);
+    return !!(Object.entries(this.setCache).length || this.removeCache.length);
   }
 
   async flush(tx: Transaction): Promise<void> {
+    logger.info('Flushing cache');
     await Promise.all([
       this.model.bulkCreate(Object.values(this.setCache), {transaction: tx}),
       this.model.destroy({where: {id: this.removeCache}, transaction: tx}),
@@ -99,12 +113,14 @@ export class CachePoiModel implements ICachedModelControl {
     this.clear();
   }
 
-  private mergeResultWithCache(result: ProofOfIndex): Record<number, ProofOfIndex> {
+  private mergeResultsWithCache(results: ProofOfIndex[]): Record<number, ProofOfIndex> {
     const copy = {...this.setCache};
 
-    if (result) {
-      copy[result.id] = result;
-    }
+    results.map((result) => {
+      if (result) {
+        copy[result.id] = result;
+      }
+    });
 
     return copy;
   }

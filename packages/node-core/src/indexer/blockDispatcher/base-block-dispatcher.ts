@@ -150,6 +150,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
           this.storeCacheService.metadata.set('blockOffset', height - 1);
         }
         // this will return if project service blockOffset already exist
+        // dont await this, this starts a loop
         void this.projectService.setBlockOffset(height - 1);
       }
       if (dynamicDsCreated) {

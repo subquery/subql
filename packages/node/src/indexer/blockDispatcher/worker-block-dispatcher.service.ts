@@ -19,7 +19,6 @@ import {
 } from '@subql/node-core';
 import { Store } from '@subql/types';
 import chalk from 'chalk';
-import { Sequelize } from 'sequelize';
 import {
   SubqlProjectDs,
   SubqueryProject,

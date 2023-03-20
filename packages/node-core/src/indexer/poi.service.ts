@@ -26,7 +26,7 @@ export class PoiService implements OnApplicationShutdown {
     this.latestPoiBlockHash = await this.getLatestPoiBlockHash();
   }
 
-  async fetchPoiBlockHashFromDb(): Promise<Uint8Array | null> {
+  private async fetchPoiBlockHashFromDb(): Promise<Uint8Array | null> {
     const lastPoi = await this.poiRepo.getLatestPoi();
     if (lastPoi === null || lastPoi === undefined) {
       return null;
