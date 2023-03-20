@@ -14,7 +14,7 @@ const getBaseConfig = (
   mode: development ? 'development' : 'production',
   context: projectDir,
   entry: buildEntries,
-  devtool: 'source-map',
+  devtool: 'inline-source-map',
   module: {
     rules: [
       {
@@ -24,7 +24,6 @@ const getBaseConfig = (
         options: {
           compilerOptions: {
             declaration: false,
-            sourceMap: true,
           },
         },
       },

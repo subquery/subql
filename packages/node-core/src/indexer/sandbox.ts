@@ -6,6 +6,7 @@ import path from 'path';
 import {Store} from '@subql/types';
 import {levelFilter} from '@subql/utils';
 import {merge} from 'lodash';
+import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
 import {decode} from 'vlq';
 import {NodeVM, NodeVMOptions, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
@@ -38,12 +39,7 @@ const logger = getLogger('sandbox');
 
 export class Sandbox extends NodeVM {
   private root: string;
-  private sourceMap:
-    | {
-        decoded: number[][][];
-        json: any;
-      }
-    | undefined;
+  private sourceMap: any | undefined;
 
   constructor(option: SandboxOption, protected readonly script: VMScript, protected config: NodeConfig) {
     super(
@@ -59,7 +55,7 @@ export class Sandbox extends NodeVM {
     this.root = option.root;
 
     const filename = 'dist/index.js';
-    const sourceMapPath = path.join(this.root, `${filename}.map`);
+    const sourceMapPath = path.join(this.root, filename);
 
     if (existsSync(sourceMapPath)) {
       this.sourceMap = this.decodeSourceMap(sourceMapPath);
@@ -70,7 +66,7 @@ export class Sandbox extends NodeVM {
     return timeout(this.run(this.script), duration);
   }
 
-  convertStack(stackTrace: any) {
+  async convertStack(stackTrace: any) {
     if (!this.sourceMap) {
       return stackTrace;
     }
@@ -78,12 +74,11 @@ export class Sandbox extends NodeVM {
     const matches = [...stackTrace.matchAll(regex)];
 
     for (const match of matches) {
-      const lineNumber = Number.parseInt(match[1]) - 1;
-      if (lineNumber >= this.sourceMap.decoded.length) {
-        continue;
-      }
-      const lineInfo = this.findLineInfo(this.sourceMap, lineNumber);
-      const newLineTrace = `${lineInfo[0]}:${lineInfo[1]}:${match[2]}`;
+      const lineNumber = Number.parseInt(match[1]);
+      const columnNumber = Number.parseInt(match[2]);
+      logger.info(lineNumber.toString());
+      const lineInfo = await this.findLineInfo(this.sourceMap, lineNumber, columnNumber);
+      const newLineTrace = `${lineInfo.source}:${lineInfo.line}:${lineInfo.column}`;
       const filepath = path.join(this.root, 'dist/index.js');
       stackTrace = stackTrace.replace(`${filepath}:${match[1]}:${match[2]}`, newLineTrace);
     }
@@ -92,62 +87,23 @@ export class Sandbox extends NodeVM {
   }
 
   decodeSourceMap(sourceMapPath: string) {
-    const jsonStr = readFileSync(sourceMapPath).toString();
-    const json = JSON.parse(jsonStr);
+    const source = readFileSync(sourceMapPath).toString();
+    const sourceMapBase64 = source.split(`//# sourceMappingURL=data:application/json;charset=utf-8;base64,`)[1];
+    const sourceMap = Buffer.from(sourceMapBase64, 'base64').toString();
+    const json = JSON.parse(sourceMap);
 
-    const mappings: string = json.mappings;
-    const vlqs = mappings.split(';').map((line) => line.split(','));
-    let decoded = vlqs.map((line) => line.map(decode));
-
-    let sourceFileIndex = 0; // second field
-    let sourceCodeLine = 0; // third field
-    let sourceCodeColumn = 0; // fourth field
-    let nameIndex = 0; // fifth field
-
-    decoded = decoded.map((line) => {
-      let generatedCodeColumn = 0; // first field - reset each time
-
-      return line.map((segment) => {
-        if (segment.length === 0) {
-          return [];
-        }
-        generatedCodeColumn += segment[0];
-
-        const result = [generatedCodeColumn];
-
-        if (segment.length === 1) {
-          // only one field!
-          return result;
-        }
-
-        sourceFileIndex += segment[1];
-        sourceCodeLine += segment[2];
-        sourceCodeColumn += segment[3];
-
-        result.push(sourceFileIndex, sourceCodeLine, sourceCodeColumn);
-
-        if (segment.length === 5) {
-          nameIndex += segment[4];
-          result.push(nameIndex);
-        }
-
-        return result;
-      });
-    });
-
-    return {decoded, json};
+    return json;
   }
 
-  findLineInfo(sourcemap: {json: any; decoded: any}, compiledLineNumber: number) {
-    const json = sourcemap.json;
-    const decoded = sourcemap.decoded;
-    const lineMapping = decoded[compiledLineNumber][0];
+  async findLineInfo(
+    sourcemap: any,
+    compiledLineNumber: number,
+    compiledColumnNumber: number
+  ): Promise<NullableMappedPosition> {
+    const consumer = await new SourceMapConsumer(sourcemap);
+    const lineInfo = consumer.originalPositionFor({line: compiledLineNumber, column: compiledColumnNumber});
 
-    const sourceFile = json.sources[lineMapping[1]];
-    const lineNumber = Number.parseInt(lineMapping[2]) + 1;
-    const columnNumber = Number.parseInt(lineMapping[3]) + 1;
-
-    return [sourceFile, lineNumber, columnNumber];
+    return lineInfo;
   }
 }
 
@@ -172,7 +128,7 @@ export class IndexerSandbox extends Sandbox {
     try {
       await this.runTimeout(this.config.timeout);
     } catch (e) {
-      const newStack = this.convertStack(e.stack);
+      const newStack = await this.convertStack(e.stack);
       e.stack = newStack;
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
