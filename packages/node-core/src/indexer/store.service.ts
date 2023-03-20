@@ -698,10 +698,10 @@ group by
         entity: string,
         field: keyof T,
         value: T[keyof T] | T[keyof T][],
-        options?: {
+        options: {
           offset?: number;
           limit?: number;
-        }
+        } = {}
       ): Promise<T[] | undefined> => {
         try {
           const indexed =
@@ -715,8 +715,8 @@ group by
               `store getByField for entity ${entity} with ${options.limit} records exceeds config limit ${this.config.queryLimit}. Will use ${this.config.queryLimit} as the limit.`
             );
           }
-          const finalLimit = options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit;
-          if (options?.offset === undefined) {
+          const finalLimit = options.limit ? Math.min(options.limit, this.config.queryLimit) : this.config.queryLimit;
+          if (options.offset === undefined) {
             options.offset = 0;
           }
           return this.storeCache

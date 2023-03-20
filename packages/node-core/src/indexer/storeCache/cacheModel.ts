@@ -75,7 +75,10 @@ export class CachedModel<
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
     tx: Transaction,
-    options: {offset: number; limit: number} | undefined
+    options: {
+      offset: number;
+      limit: number;
+    }
   ): Promise<T[] | undefined> {
     let cachedData = this.getFromCache(field, value);
     if (cachedData.length <= options.offset) {
@@ -236,7 +239,6 @@ export class CachedModel<
   }
 
   clear(): void {
-    this.getCache.clear();
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
