@@ -230,7 +230,7 @@ export async function generateAbis(datasources: DatasourceKind[], projectPath: s
         })
       );
     } catch (e) {
-      throw new Error(`When render abi interface having problems.`);
+      console.error(`! When render abi interface having problems. ${e.message}`);
     }
   }
 }
