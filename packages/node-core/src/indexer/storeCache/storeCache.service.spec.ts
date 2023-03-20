@@ -164,6 +164,7 @@ describe('Store Cache Service historical', () => {
     // getByField
     const appleEntity_b5_records = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {
       limit: 2,
+      offset: 0,
     });
     expect(appleEntity_b5_records.length).toBe(2);
 
@@ -176,8 +177,9 @@ describe('Store Cache Service historical', () => {
 
     // Manually remove data from setCache, it should look from getCache
     (appleModel as any).setCache = {};
+    (appleModel as any).getCache.set('apple-get-id1', {id: 'apple-get-id1', field1: 'set apple at block 5'});
     const cacheData1 = (appleModel as any).getFromCache('field1' as any, 'set apple at block 5');
-    expect(cacheData1.length).toBe(2);
+    expect(cacheData1).toStrictEqual([{id: 'apple-get-id1', field1: 'set apple at block 5'}]);
   });
 
   it('count', () => {

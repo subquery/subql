@@ -2,10 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {isEqual} from 'lodash';
+import LRUCache from 'lru-cache';
 import {Transaction} from 'sequelize';
-
-// @ts-ignore
-const LFU = require('node-lfu-cache');
 
 export type HistoricalModel = {__block_range: any};
 
@@ -134,63 +132,4 @@ export class SetValueModel<T> {
   }
 }
 
-// Fill missing FLU interface
-// https://www.npmjs.com/package/node-lfu-cache?activeTab=readme
-interface Lfu<T> {
-  length: number;
-  set(key: string, value: T, maxAge?: number): void;
-  get(key: string): T | undefined;
-  reset(): void;
-  del(key: string): void;
-  has(key: string): boolean;
-  keys(): string[];
-  values(): T[];
-}
-
-export interface LfuOptions {
-  max: number;
-  length?(): void;
-  dispose?(): void;
-  maxAge: number;
-}
-
-// We might have other features
-export class GetDataModel<T> implements Lfu<T> {
-  private getData: Lfu<T>;
-
-  constructor(options: LfuOptions) {
-    this.getData = LFU(options);
-  }
-
-  get length(): number {
-    return this.getData.length;
-  }
-
-  values(): T[] {
-    return this.getData.values();
-  }
-
-  keys(): string[] {
-    return this.getData.keys();
-  }
-
-  has(key: string): boolean {
-    return this.getData.has(key);
-  }
-
-  get(key: string): T {
-    return this.getData.get(key);
-  }
-
-  reset(): void {
-    this.getData.reset();
-  }
-
-  set(key: string, value: T): void {
-    this.getData.set(key, value);
-  }
-
-  del(key: string): void {
-    this.getData.del(key);
-  }
-}
+export class GetData<T> extends LRUCache<string, T, unknown> {}

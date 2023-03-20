@@ -716,9 +716,12 @@ group by
             );
           }
           const finalLimit = options?.limit ? Math.min(options?.limit, this.config.queryLimit) : this.config.queryLimit;
+          if (options?.offset === undefined) {
+            options.offset = 0;
+          }
           return this.storeCache
             .getModel<T>(entity)
-            .getByField(field, value, this.tx, {limit: finalLimit, offset: options?.offset});
+            .getByField(field, value, this.tx, {limit: finalLimit, offset: options.offset});
         } catch (e) {
           throw new Error(`Failed to getByField Entity ${entity} with field ${String(field)}: ${e}`);
         }

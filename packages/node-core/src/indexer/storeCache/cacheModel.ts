@@ -13,13 +13,13 @@ import {
   SetData,
   ICachedModel,
   SetValueModel,
-  GetDataModel,
-  LfuOptions,
+  GetData,
 } from './types';
 
-const getCacheOptions: LfuOptions = {
+const getCacheOptions = {
   max: 500,
-  maxAge: 1000 * 60 * 60, //in ms
+  ttl: 1000 * 60 * 60, // in ms
+  updateAgeOnGet: true, // we want to keep most used record in cache longer
 };
 
 export class CachedModel<
@@ -27,7 +27,7 @@ export class CachedModel<
 > implements ICachedModel<T>, ICachedModelControl<T>
 {
   // Null value indicates its not defined in the db
-  private getCache = new GetDataModel<T>(getCacheOptions);
+  private getCache = new GetData<T>(getCacheOptions);
 
   private setCache: SetData<T> = {};
 
@@ -44,7 +44,7 @@ export class CachedModel<
   allCachedIds(): string[] {
     // unified ids
     // We need to look from setCache too, as setCache is LFU cache, it might have more/fewer entities with setCache
-    return uniq(flatten([this.getCache.keys(), Object.keys(this.setCache), Object.keys(this.removeCache)]));
+    return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
   async get(id: string, tx: Transaction): Promise<T | null> {
@@ -52,7 +52,7 @@ export class CachedModel<
     if (this.removeCache[id]) {
       return;
     }
-    if (this.getCache.get(id) === undefined) {
+    if (!this.getCache.has(id)) {
       // LFU getCache could remove record from due to it is least frequently used
       // Then we try look from setCache
       let record = this.setCache[id]?.getLatest().data;
@@ -64,23 +64,20 @@ export class CachedModel<
             transaction: tx,
           })
         )?.toJSON<T>();
+        // getCache only keep records from db
+        this.getCache.set(id, record);
       }
-      this.getCache.set(id, record);
+      return record;
     }
-    return this.getCache.get(id);
   }
 
   async getByField(
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
     tx: Transaction,
-    options: {offset?: number; limit?: number} | undefined
+    options: {offset: number; limit: number} | undefined
   ): Promise<T[] | undefined> {
     let cachedData = this.getFromCache(field, value);
-    if (options?.offset === undefined) {
-      options.offset = 0;
-    }
-
     if (cachedData.length <= options.offset) {
       // example cache length 16, offset is 30
       // it should skip cache value
@@ -140,10 +137,6 @@ export class CachedModel<
     }
     this.setCache[id].set(data, blockHeight);
     this.flushableRecordCounter += 1;
-    // IMPORTANT
-    // This sync getCache with setCache
-    // Change this will impact `getByFieldFromCache`, `allCachedIds` and related methods.
-    this.getCache.set(id, data);
   }
 
   bulkCreate(data: T[], blockHeight: number): void {
@@ -190,7 +183,7 @@ export class CachedModel<
       };
       this.flushableRecordCounter += 1;
       if (this.getCache.get(id)) {
-        this.getCache.del(id);
+        this.getCache.delete(id);
         // Also when .get, check removeCache first, should return undefined if removed
       }
       if (this.setCache[id]) {
@@ -243,7 +236,7 @@ export class CachedModel<
   }
 
   clear(): void {
-    this.getCache.reset();
+    this.getCache.clear();
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
@@ -268,31 +261,29 @@ export class CachedModel<
   private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
     const joinedData: T[] = [];
     const unifiedIds: string[] = [];
-    if (Object.keys(this.setCache).length !== 0) {
-      Object.entries(this.setCache).map(([, model]) => {
-        if (model.isMatchData(field, value)) {
-          const latestData = model.getLatest().data;
-          unifiedIds.push(latestData.id);
-          joinedData.push(latestData);
-        }
-      });
-      // No need search further
-      if (findOne && joinedData.length !== 0) {
-        return joinedData;
+    Object.entries(this.setCache).map(([, model]) => {
+      if (model.isMatchData(field, value)) {
+        const latestData = model.getLatest().data;
+        unifiedIds.push(latestData.id);
+        joinedData.push(latestData);
       }
+    });
+    // No need search further
+    if (findOne && joinedData.length !== 0) {
+      return joinedData;
     }
-    if (this.getCache.length !== 0) {
-      this.getCache.values().map((getValue) => {
-        if (
-          !unifiedIds.includes(getValue.id) &&
-          ((field === undefined && value === undefined) ||
-            (Array.isArray(value) && includes(value, getValue[field])) ||
-            isEqual(getValue[field], value))
-        ) {
-          joinedData.push(getValue);
-        }
-      });
-    }
+
+    this.getCache.forEach((getValue, key) => {
+      if (
+        !unifiedIds.includes(key) &&
+        ((field === undefined && value === undefined) ||
+          (Array.isArray(value) && includes(value, getValue[field])) ||
+          isEqual(getValue[field], value))
+      ) {
+        // increase recency with get
+        joinedData.push(this.getCache.get(key));
+      }
+    });
     return joinedData;
   }
 

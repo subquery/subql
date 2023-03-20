@@ -4137,7 +4137,7 @@ __metadata:
     "@subql/x-merkle-mountain-range": ^2.0.0-0.1.2
     "@willsoto/nestjs-prometheus": ^4.4.0
     lodash: ^4.17.21
-    node-lfu-cache: 5.0.0
+    lru-cache: 8.0.4
     prom-client: ^14.0.1
     sequelize: 6.28.0
     vm2: ^3.9.9
@@ -12884,6 +12884,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"lru-cache@npm:8.0.4":
+  version: 8.0.4
+  resolution: "lru-cache@npm:8.0.4"
+  checksum: dee2b905a8cd688c5847faa46ba3cfeaa0766283b244bfd6177420e04e9d923fc901a9a578fc3963d70959631595240ead37abaf43e21968bb9805bbd9519856
+  languageName: node
+  linkType: hard
+
 "lru-cache@npm:>=4 <5":
   version: 4.1.5
   resolution: "lru-cache@npm:4.1.5"
@@ -13738,15 +13745,6 @@ __metadata:
   version: 0.4.0
   resolution: "node-int64@npm:0.4.0"
   checksum: d0b30b1ee6d961851c60d5eaa745d30b5c95d94bc0e74b81e5292f7c42a49e3af87f1eb9e89f59456f80645d679202537de751b7d72e9e40ceea40c5e449057e
-  languageName: node
-  linkType: hard
-
-"node-lfu-cache@npm:5.0.0":
-  version: 5.0.0
-  resolution: "node-lfu-cache@npm:5.0.0"
-  dependencies:
-    pseudomap: ^1.0.2
-  checksum: 349e4c1bf4adc5a4b3e5a05c790194ab2b3ab2e06b57c9c88bc0780231ef4ef0eb4ae5907f0d1e19305ed51c766c622b907630518a91a29ec71c01bfd9496bac
   languageName: node
   linkType: hard
 

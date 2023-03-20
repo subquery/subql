@@ -29,7 +29,7 @@
     "@subql/x-merkle-mountain-range": "^2.0.0-0.1.2",
     "@willsoto/nestjs-prometheus": "^4.4.0",
     "lodash": "^4.17.21",
-    "node-lfu-cache": "5.0.0",
+    "lru-cache": "8.0.4",
     "prom-client": "^14.0.1",
     "sequelize": "6.28.0",
     "vm2": "^3.9.9",
