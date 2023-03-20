@@ -96,7 +96,7 @@ export class CacheMetadataModel implements ICachedModelControl {
       .filter(([key]) => !incrementKeys.includes(key as MetadataKey))
       .map(([key, value]) => ({key, value} as Metadata));
 
-    await Promise.all([
+    const pendingFlush = Promise.all([
       this.model.bulkCreate(ops, {
         transaction: tx,
         updateOnDuplicate: ['key', 'value'],
@@ -106,10 +106,14 @@ export class CacheMetadataModel implements ICachedModelControl {
         .filter(Boolean),
     ]);
 
+    // Don't await DB operations to complete before clearing.
+    // This allows new data to be cached while flushing
     this.clear();
+
+    await pendingFlush;
   }
 
-  clear(): void {
+  private clear(): void {
     this.setCache = {};
     this.flushableRecordCounter = 0;
   }

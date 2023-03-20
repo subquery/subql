@@ -215,10 +215,12 @@ export class CachedModel<
         });
       })
     ) as unknown as CreationAttributes<Model<T, T>>[];
+
+    let dbOperation: Promise<unknown>;
     if (this.historical) {
-      await Promise.all([
+      dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -226,15 +228,23 @@ export class CachedModel<
         }),
       ]);
     } else {
-      await this.model.bulkCreate(records, {
-        transaction: tx,
-        updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
-      });
-      await this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx});
+      dbOperation = Promise.all([
+        this.model.bulkCreate(records, {
+          transaction: tx,
+          updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
+        }),
+        this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx}),
+      ]);
     }
+
+    // Don't await DB operations to complete before clearing.
+    // This allows new data to be cached while flushing
+    this.clear();
+
+    await dbOperation;
   }
 
-  clear(): void {
+  private clear(): void {
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
@@ -274,11 +284,15 @@ export class CachedModel<
   // Different with markAsDeleted, we only mark/close all the records less than current block height
   // thus, and new record with current block height will not be impacted,
   // advantage is this sql is safe to concurrency resolve with any insert sql
-  private async historicalMarkPreviousHeightRecordsBatch(tx: Transaction): Promise<any[]> {
-    const closeSetRecords = Object.entries(this.setCache).map(([id, value]) => {
+  private async historicalMarkPreviousHeightRecordsBatch(
+    tx: Transaction,
+    setRecords: SetData<T>,
+    removeRecords: Record<string, RemoveValue>
+  ): Promise<any[]> {
+    const closeSetRecords = Object.entries(setRecords).map(([id, value]) => {
       return {id, blockHeight: value.getFirst().startHeight};
     });
-    const closeRemoveRecords = Object.entries(this.removeCache).map(([id, value]) => {
+    const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
       return {id, blockHeight: value.removedAtBlock};
     });
 

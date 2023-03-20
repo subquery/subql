@@ -31,7 +31,6 @@ export interface ICachedModelControl {
   isFlushable: boolean;
   flushableRecordCounter: number;
   flush(tx: Transaction): Promise<void>;
-  clear(): void;
 }
 
 export type EntitySetData = Record<string, SetData<any>>;

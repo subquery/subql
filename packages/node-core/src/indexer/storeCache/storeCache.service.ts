@@ -21,9 +21,7 @@ export class StoreCacheService implements OnApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private poiRepo: PoiRepo;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {
-    this.resetMemoryStore();
-  }
+  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
     this.metadataRepo = meta;
@@ -91,19 +89,12 @@ export class StoreCacheService implements OnApplicationShutdown {
   async flushCache(forceFlush?: boolean): Promise<void> {
     if (this.isFlushable() || forceFlush) {
       await this._flushCache();
-      // Note flushCache and commit transaction need to sequential
-      // await this.commitTransaction();
-      this.resetMemoryStore();
     }
   }
 
   isFlushable(): boolean {
     const numOfRecords = sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter));
     return numOfRecords >= this.config.storeCacheThreshold;
-  }
-
-  resetMemoryStore(): void {
-    Object.values(this.cachedModels).map((model) => model.clear());
   }
 
   async onApplicationShutdown(signal?: string): Promise<void> {

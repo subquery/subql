@@ -125,7 +125,7 @@ export class CachePoiModel implements ICachedModelControl {
     return copy;
   }
 
-  clear(): void {
+  private clear(): void {
     this.setCache = {};
     this.removeCache = [];
     this.flushableRecordCounter = 0;
