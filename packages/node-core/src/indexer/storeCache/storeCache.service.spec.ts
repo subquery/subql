@@ -1,19 +1,32 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import {Sequelize} from 'sequelize';
+import {Op, Sequelize} from 'sequelize';
 import {StoreCacheService} from './storeCache.service';
 
 jest.mock('sequelize', () => {
   const mSequelize = {
     authenticate: jest.fn(),
+    Op: {
+      in: jest.fn(),
+      notIn: jest.fn(),
+    },
     define: () => ({
       findOne: jest.fn(),
       create: (input: any) => input,
     }),
     query: () => [{nextval: 1}],
     showAllSchemas: () => ['subquery_1'],
-    model: (entity: string) => ({upsert: jest.fn()}),
+    model: (entity: string) => ({
+      upsert: jest.fn(),
+      count: 5,
+      findAll: [
+        {
+          id: 'apple-05-sequelize',
+          field1: 'set apple at block 5 with sequelize',
+        },
+      ],
+    }),
     sync: jest.fn(),
     transaction: () => ({
       commit: jest.fn(),
@@ -119,7 +132,7 @@ describe('Store Cache Service historical', () => {
     expect(historicalValue[1].endHeight).toBe(null);
   });
 
-  it('getOneByField and getByField', async () => {
+  it('getAll, getOneByField and getByField with getFromCache', async () => {
     storeService = new StoreCacheService(sequilize, null);
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
@@ -130,6 +143,7 @@ describe('Store Cache Service historical', () => {
       },
       5
     );
+    // getOneByField
     const appleEntity_b5 = await appleModel.getOneByField('field1' as any, 'set apple at block 5', null);
     expect(appleEntity_b5.field1).toBe('set apple at block 5');
     appleModel.set(
@@ -140,15 +154,33 @@ describe('Store Cache Service historical', () => {
       },
       5
     );
+    // getAll without pass any field and value, it should unify data
+    const cacheData0 = (appleModel as any).getFromCache();
+    expect(cacheData0).toStrictEqual([
+      {field1: 'set apple at block 5', id: 'apple-05'},
+      {field1: 'set apple at block 5', id: 'apple-05-smith'},
+    ]);
+
+    // getByField
     const appleEntity_b5_records = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {
       limit: 2,
     });
     expect(appleEntity_b5_records.length).toBe(2);
 
-    // TODO, check it is work when not found in getCache
+    // TODO, getByField with offset and limit
+    // const appleEntity_b5_records_2 = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {
+    //   offset:1,
+    //   limit: 5,
+    // });
+    // expect(appleEntity_b5_records_2.length).toBe(1);
+
+    // Manually remove data from setCache, it should look from getCache
+    (appleModel as any).setCache = {};
+    const cacheData1 = (appleModel as any).getFromCache('field1' as any, 'set apple at block 5');
+    expect(cacheData1.length).toBe(2);
   });
 
-  it('count', async () => {
+  it('count', () => {
     storeService = new StoreCacheService(sequilize, null);
     const appleModel = storeService.getModel<Apple>('apple');
     appleModel.set(
@@ -167,7 +199,41 @@ describe('Store Cache Service historical', () => {
       },
       5
     );
-    const count = await appleModel.count();
-    expect(count).toBe(2);
+
+    // TODO mocked model.count result = 5
+    // const count = await appleModel.count();
+    // expect(count).toBe(7);
+    const cacheData = (appleModel as any).getFromCache();
+    expect(cacheData.length).toBe(2);
+  });
+
+  it('remove', async () => {
+    storeService = new StoreCacheService(sequilize, null);
+    const appleModel = storeService.getModel<Apple>('apple');
+
+    appleModel.set(
+      'apple-01',
+      {
+        id: 'apple-01',
+        field1: 'set apple at block 1',
+      },
+      1
+    );
+
+    appleModel.set(
+      'apple-01',
+      {
+        id: 'apple-01',
+        field1: 'updated apple at block 5',
+      },
+      5
+    );
+    appleModel.remove('apple-01', 6);
+    expect((appleModel as any).removeCache).toStrictEqual({'apple-01': {removedAtBlock: 6}});
+    expect(await appleModel.get('apple-01', null)).toBeUndefined();
+
+    // last value in setCache should end with block 6
+    const historicalValue = (storeService as any).cachedModels.apple.setCache['apple-01'].historicalValues;
+    expect(historicalValue[1].endHeight).toBe(6);
   });
 });

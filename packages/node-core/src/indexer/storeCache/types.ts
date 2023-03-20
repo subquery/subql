@@ -122,7 +122,10 @@ export class SetValueModel<T> {
     this.historicalValues[latestIndex].endHeight = removeAtBlock;
   }
 
-  isMatchData(field: keyof T, value: T[keyof T] | T[keyof T][]): boolean {
+  isMatchData(field?: keyof T, value?: T[keyof T] | T[keyof T][]): boolean {
+    if (field === undefined && value === undefined) {
+      return true;
+    }
     if (Array.isArray(value)) {
       return value.findIndex((v) => this.isMatchData(field, value)) > -1;
     } else {
@@ -141,6 +144,7 @@ interface Lfu<T> {
   del(key: string): void;
   has(key: string): boolean;
   keys(): string[];
+  values(): T[];
 }
 
 export interface LfuOptions {
@@ -160,6 +164,10 @@ export class GetDataModel<T> implements Lfu<T> {
 
   get length(): number {
     return this.getData.length;
+  }
+
+  values(): T[] {
+    return this.getData.values();
   }
 
   keys(): string[] {

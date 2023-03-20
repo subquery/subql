@@ -43,8 +43,8 @@ export class CachedModel<
 
   allCachedIds(): string[] {
     // unified ids
-    // Don't need to get from setCache, as it is synced with setCache
-    return uniq(flatten([this.getCache.keys(), Object.keys(this.removeCache)]));
+    // We need to look from setCache too, as setCache is LFU cache, it might have more/fewer entities with setCache
+    return uniq(flatten([this.getCache.keys(), Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
   async get(id: string, tx: Transaction): Promise<T | null> {
@@ -76,7 +76,7 @@ export class CachedModel<
     tx: Transaction,
     options: {offset?: number; limit?: number} | undefined
   ): Promise<T[] | undefined> {
-    let cachedData = this.getByFieldFromCache(field, value);
+    let cachedData = this.getFromCache(field, value);
     if (options?.offset === undefined) {
       options.offset = 0;
     }
@@ -114,11 +114,10 @@ export class CachedModel<
   }
 
   async getOneByField(field: keyof T, value: T[keyof T], tx: Transaction): Promise<T | undefined> {
-    // Might likely be more efficient than use getByField[0]
     if (field === 'id') {
       return this.get(value.toString(), tx);
     } else {
-      const oneFromCached = this.getByFieldFromCache(field, value, true)[0];
+      const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
         return oneFromCached;
       } else {
@@ -168,25 +167,20 @@ export class CachedModel<
     value?: T[keyof T] | T[keyof T][] | undefined,
     options?: {distinct?: boolean; col?: keyof T} | undefined
   ): Promise<number> {
-    if (!field && !value && !options) {
-      return this.allCachedIds().length;
-    }
     const countOption = {} as Omit<CountOptions<any>, 'group'>;
-    let cachedCount = 0;
-    if (field && value) {
-      const cachedData = this.getByFieldFromCache(field, value);
-      const cachedDataIds = Object.values(cachedData).map((data) => data.id);
-      cachedCount = cachedDataIds.length;
-      // count should exclude any id already existed in cache
-      countOption.where = cachedCount !== 0 ? {[field]: value, id: {[Op.notIn]: cachedDataIds}} : {[field]: value};
-    }
+
+    const cachedData = this.getFromCache(field, value);
+    // count should exclude any id already existed in cache
+    countOption.where =
+      cachedData.length !== 0 ? {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} : {[field]: value};
+
     //TODO, this seems not working with field and values
     if (options) {
       assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
       countOption.distinct = options?.distinct;
       countOption.col = options?.col as string;
     }
-    return cachedCount + (await this.model.count(countOption));
+    return cachedData.length + (await this.model.count(countOption));
   }
 
   remove(id: string, blockHeight: number): void {
@@ -269,7 +263,9 @@ export class CachedModel<
     });
   }
 
-  private getByFieldFromCache(field: keyof T, value: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
+  // If field and value are passed, will getByField
+  // If no input parameter, will getAll
+  private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
     const joinedData: T[] = [];
     const unifiedIds: string[] = [];
     if (Object.keys(this.setCache).length !== 0) {
@@ -286,13 +282,14 @@ export class CachedModel<
       }
     }
     if (this.getCache.length !== 0) {
-      Object.entries(this.getCache).map(([, getValue]) => {
+      this.getCache.values().map((getValue) => {
         if (
-          // We don't need to include anything duplicated
-          (!includes(unifiedIds, getValue.id) && Array.isArray(value) && includes(value, getValue[field])) ||
-          isEqual(getValue[field], value)
+          !unifiedIds.includes(getValue.id) &&
+          ((field === undefined && value === undefined) ||
+            (Array.isArray(value) && includes(value, getValue[field])) ||
+            isEqual(getValue[field], value))
         ) {
-          joinedData.concat(getValue);
+          joinedData.push(getValue);
         }
       });
     }
