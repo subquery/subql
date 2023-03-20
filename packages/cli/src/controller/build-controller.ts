@@ -1,7 +1,6 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
-import childProcess from 'child_process';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 
@@ -15,7 +14,7 @@ const getBaseConfig = (
   mode: development ? 'development' : 'production',
   context: projectDir,
   entry: buildEntries,
-  devtool: development && 'inline-source-map',
+  devtool: 'source-map',
   module: {
     rules: [
       {
@@ -25,6 +24,7 @@ const getBaseConfig = (
         options: {
           compilerOptions: {
             declaration: false,
+            sourceMap: true,
           },
         },
       },

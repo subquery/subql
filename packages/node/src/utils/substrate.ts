@@ -23,6 +23,7 @@ import {
 } from '@subql/types';
 import { last, merge, range } from 'lodash';
 import { SubqlProjectBlockFilter } from '../configure/SubqueryProject';
+import { ApiPromiseConnection } from '../indexer/apiPromise.connection';
 import { BlockContent } from '../indexer/types';
 const logger = getLogger('fetch');
 const INTERVAL_THRESHOLD = BN_THOUSAND.div(BN_TWO);
@@ -255,12 +256,12 @@ export async function getBlockByHeight(
 ): Promise<SignedBlock> {
   const blockHash = await api.rpc.chain.getBlockHash(height).catch((e) => {
     logger.error(`failed to fetch BlockHash ${height}`);
-    throw e;
+    throw ApiPromiseConnection.handleError(e);
   });
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
     logger.error(`failed to fetch Block ${blockHash}`);
-    throw e;
+    throw ApiPromiseConnection.handleError(e);
   });
   // validate block is valid
   if (block.block.header.hash.toHex() !== blockHash.toHex()) {
@@ -300,7 +301,7 @@ export async function fetchEventsRange(
     hashs.map((hash) =>
       api.query.system.events.at(hash).catch((e) => {
         logger.error(`failed to fetch events at block ${hash}`);
-        throw e;
+        throw ApiPromiseConnection.handleError(e);
       }),
     ),
   );
@@ -314,7 +315,7 @@ export async function fetchRuntimeVersionRange(
     hashs.map((hash) =>
       api.rpc.state.getRuntimeVersion(hash).catch((e) => {
         logger.error(`failed to fetch RuntimeVersion at block ${hash}`);
-        throw e;
+        throw ApiPromiseConnection.handleError(e);
       }),
     ),
   );
