@@ -132,13 +132,6 @@ export class StoreService {
     this.metadataModel.setIncrement('schemaMigrationCount');
   }
 
-  // private async incrementJsonbCount(key: string, tx?: Transaction): Promise<void> {
-  //   await this.sequelize.query(
-  //     `UPDATE ${this.metaDataRepo.getTableName()} SET value = (COALESCE(value->0):: int + 1)::text::jsonb WHERE key ='${key}'`,
-  //     tx && {transaction: tx}
-  //   );
-  // }
-
   async initHotSchemaReloadQueries(schema: string): Promise<void> {
     if (this.dbType === SUPPORT_DB.cockRoach) {
       logger.warn(`Hot schema reload feature is not supported with ${this.dbType}`);
@@ -507,19 +500,6 @@ export class StoreService {
   setBlockHeight(blockHeight: number): void {
     this.blockHeight = blockHeight;
   }
-
-  // async setMetadata(key: Metadata['key'], value: Metadata['value'], options?: UpsertOptions<Metadata>): Promise<void> {
-  //   assert(this.metaDataRepo, `Model _metadata does not exist`);
-  //   await this.metaDataRepo.upsert({key, value}, options);
-  // }
-
-  // async setPoi(blockPoi: ProofOfIndex, options?: UpsertOptions<ProofOfIndex>): Promise<void> {
-  //   assert(this.poiRepo, `Model _poi does not exist`);
-  //   blockPoi.chainBlockHash = u8aToBuffer(blockPoi.chainBlockHash);
-  //   blockPoi.hash = u8aToBuffer(blockPoi.hash);
-  //   blockPoi.parentHash = u8aToBuffer(blockPoi.parentHash);
-  //   await this.poiRepo.upsert(blockPoi, options);
-  // }
 
   getOperationMerkleRoot(): Uint8Array {
     if (this.config.proofOfIndex) {
