@@ -713,6 +713,8 @@ group by
       // eslint-disable-next-line @typescript-eslint/require-await
       bulkCreate: async (entity: string, data: Entity[]): Promise<void> => {
         try {
+          this.storeCache.getModel(entity).bulkCreate(data, this.blockHeight);
+
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -725,7 +727,7 @@ group by
       // eslint-disable-next-line @typescript-eslint/require-await
       bulkUpdate: async (entity: string, data: Entity[], fields?: string[]): Promise<void> => {
         try {
-          this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight);
+          this.storeCache.getModel(entity).bulkUpdate(data, this.blockHeight, fields);
           if (this.config.proofOfIndex) {
             for (const item of data) {
               this.operationStack.put(OperationType.Set, entity, item);
@@ -739,6 +741,10 @@ group by
       remove: async (entity: string, id: string): Promise<void> => {
         try {
           this.storeCache.getModel(entity).remove(id, this.blockHeight);
+
+          if (this.config.proofOfIndex) {
+            this.operationStack.put(OperationType.Remove, entity, id);
+          }
         } catch (e) {
           throw new Error(`Failed to remove Entity ${entity} with id ${id}: ${e}`);
         }
