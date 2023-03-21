@@ -76,7 +76,6 @@ export class Sandbox extends NodeVM {
     for (const match of matches) {
       const lineNumber = Number.parseInt(match[1]);
       const columnNumber = Number.parseInt(match[2]);
-      logger.info(lineNumber.toString());
       const lineInfo = await this.findLineInfo(this.sourceMap, lineNumber, columnNumber);
       const newLineTrace = `${lineInfo.source}:${lineInfo.line}:${lineInfo.column}`;
       const filepath = path.join(this.root, 'dist/index.js');

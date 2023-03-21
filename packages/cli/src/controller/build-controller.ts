@@ -1,6 +1,7 @@
 // Copyright 2020-2022 OnFinality Limited authors & contributors
 // SPDX-License-Identifier: Apache-2.0
 
+import TerserPlugin from 'terser-webpack-plugin';
 import webpack, {Configuration} from 'webpack';
 import {merge} from 'webpack-merge';
 
@@ -15,6 +16,19 @@ const getBaseConfig = (
   context: projectDir,
   entry: buildEntries,
   devtool: 'inline-source-map',
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new TerserPlugin({
+        terserOptions: {
+          sourceMap: true,
+          format: {
+            beautify: true,
+          },
+        },
+      }),
+    ],
+  },
   module: {
     rules: [
       {
