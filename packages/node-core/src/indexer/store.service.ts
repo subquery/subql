@@ -488,10 +488,7 @@ export class StoreService {
     });
   }
 
-  setTransaction(/*tx: Transaction*/): void {
-    // this.tx = tx;
-
-    // tx.afterCommit(() => (this.tx = undefined));
+  setOperationStack(): void {
     if (this.config.proofOfIndex) {
       this.operationStack = new StoreOperations(this.modelsRelations.models);
     }
