@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {isEqual, unionWith} from 'lodash';
-import {Transaction} from 'sequelize';
 import {getLogger} from '../logger';
 import {CacheMetadataModel} from './storeCache/cacheMetadata';
 
@@ -32,18 +31,12 @@ export abstract class DynamicDsService<DS> implements IDynamicDsService<DS> {
     this.metadata = metadata;
   }
 
-  async resetDynamicDatasource(targetHeight: number, tx: Transaction): Promise<void> {
+  async resetDynamicDatasource(targetHeight: number): Promise<void> {
     const dynamicDs = await this.getDynamicDatasourceParams();
     if (dynamicDs.length !== 0) {
       const filteredDs = dynamicDs.filter((ds) => ds.startBlock <= targetHeight);
       const dsRecords = JSON.stringify(filteredDs);
-      await this.metadata.model.upsert(
-        {
-          key: METADATA_KEY,
-          value: dsRecords,
-        },
-        {transaction: tx}
-      );
+      this.metadata.set(METADATA_KEY, dsRecords);
     }
   }
 

@@ -86,8 +86,8 @@ describe('Store Cache Service historical', () => {
 
     // check from cache
     expect((storeService as any).cachedModels.entity1.setCache.entity1_id_0x01).toBeDefined();
-    const entity1Block1 = (await entity1Model.get('entity1_id_0x01', null)) as any;
-    const entity2Block2 = (await entity2Model.get('entity2_id_0x02', null)) as any;
+    const entity1Block1 = (await entity1Model.get('entity1_id_0x01')) as any;
+    const entity2Block2 = (await entity2Model.get('entity2_id_0x02')) as any;
     expect(entity1Block1.field1).toBe('set at block 1');
     expect(entity2Block2.field1).toBe('set at block 2');
   });
@@ -105,7 +105,7 @@ describe('Store Cache Service historical', () => {
       1
     );
 
-    const appleEntity_b1 = (await appleModel.get('apple-01', null)) as any;
+    const appleEntity_b1 = (await appleModel.get('apple-01')) as any;
     expect(appleEntity_b1.field1).toBe('set apple at block 1');
     // Add new record, should create historical records for same id entity
     appleModel.set(
@@ -116,7 +116,7 @@ describe('Store Cache Service historical', () => {
       },
       5
     );
-    const appleEntity_b5 = (await appleModel.get('apple-01', null)) as any;
+    const appleEntity_b5 = (await appleModel.get('apple-01')) as any;
     expect(appleEntity_b5.field1).toBe('updated apple at block 5');
 
     // Been pushed two records, the latest index should point to 1
@@ -144,7 +144,7 @@ describe('Store Cache Service historical', () => {
       5
     );
     // getOneByField
-    const appleEntity_b5 = await appleModel.getOneByField('field1' as any, 'set apple at block 5', null);
+    const appleEntity_b5 = await appleModel.getOneByField('field1' as any, 'set apple at block 5');
     expect(appleEntity_b5.field1).toBe('set apple at block 5');
     appleModel.set(
       'apple-05-smith',
@@ -162,7 +162,7 @@ describe('Store Cache Service historical', () => {
     ]);
 
     // getByField
-    const appleEntity_b5_records = await appleModel.getByField('field1' as any, 'set apple at block 5', null, {
+    const appleEntity_b5_records = await appleModel.getByField('field1' as any, 'set apple at block 5', {
       limit: 2,
       offset: 0,
     });
@@ -232,7 +232,7 @@ describe('Store Cache Service historical', () => {
     );
     appleModel.remove('apple-01', 6);
     expect((appleModel as any).removeCache).toStrictEqual({'apple-01': {removedAtBlock: 6}});
-    expect(await appleModel.get('apple-01', null)).toBeUndefined();
+    expect(await appleModel.get('apple-01')).toBeUndefined();
 
     // last value in setCache should end with block 6
     const historicalValue = (storeService as any).cachedModels.apple.setCache['apple-01'].historicalValues;

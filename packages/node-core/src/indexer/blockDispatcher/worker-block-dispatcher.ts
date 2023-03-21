@@ -6,7 +6,6 @@ import {OnApplicationShutdown} from '@nestjs/common';
 import {EventEmitter2} from '@nestjs/event-emitter';
 import {Interval} from '@nestjs/schedule';
 import {last} from 'lodash';
-import {Sequelize, Transaction} from 'sequelize';
 import {NodeConfig} from '../../configure';
 import {IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
@@ -40,7 +39,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   private isShutdown = false;
 
   protected abstract fetchBlock(worker: W, height: number): Promise<void>;
-  protected abstract prepareTx(tx: Transaction): void;
 
   constructor(
     nodeConfig: NodeConfig,
@@ -49,7 +47,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     smartBatchService: SmartBatchService,
     storeService: StoreService,
     storeCacheService: StoreCacheService,
-    private sequelize: Sequelize,
     poiService: PoiService,
     project: ISubqueryProject<IProjectNetworkConfig>,
     dynamicDsService: DynamicDsService<DS>,
@@ -77,10 +74,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
 
     this.workers = await Promise.all(new Array(this.numWorkers).fill(0).map(() => this.createIndexerWorker()));
 
-    this.onDynamicDsCreated = onDynamicDsCreated;
-
-    const blockAmount = await this.projectService.getProcessedBlockCount();
-    this.setProcessedBlockCount(blockAmount ?? 0);
+    return super.init(onDynamicDsCreated);
   }
 
   async onApplicationShutdown(): Promise<void> {
@@ -144,7 +138,6 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
     const pendingBlock = this.fetchBlock(worker, height);
 
     const processBlock = async () => {
-      let tx: Transaction;
       try {
         await pendingBlock;
         if (bufferedHeight > this.latestBufferedHeight) {
@@ -152,22 +145,17 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
           return;
         }
 
-        tx = await this.sequelize.transaction();
-
-        this.preProcessBlock(height, tx);
-        this.prepareTx(tx);
+        this.preProcessBlock(height);
 
         const {blockHash, dynamicDsCreated, reindexBlockHeight} = await worker.processBlock(height);
 
-        await this.postProcessBlock(height, tx, {
+        await this.postProcessBlock(height, {
           dynamicDsCreated,
           blockHash,
           reindexBlockHeight,
         });
-
-        await tx.commit();
       } catch (e) {
-        await tx.rollback();
+        // TODO discard any cache changes from this block height
         logger.error(
           e,
           `failed to index block at height ${height} ${e.handler ? `${e.handler}(${e.stack ?? ''})` : ''}`

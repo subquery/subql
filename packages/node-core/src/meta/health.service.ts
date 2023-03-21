@@ -39,7 +39,7 @@ export class HealthService {
     }
 
     if (healthy !== this.indexerHealthy) {
-      await this.storeService.setMetadata('indexerHealthy', healthy);
+      await this.storeService.storeCache.metadata.model.upsert({key: 'indexerHealthy', value: healthy});
       this.indexerHealthy = healthy;
     }
   }
