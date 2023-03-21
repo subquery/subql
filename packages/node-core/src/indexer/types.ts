@@ -36,5 +36,4 @@ export interface IProjectService {
 
   reindex(lastCorrectHeight: number): Promise<void>;
   setBlockOffset(offset: number): Promise<void>;
-  getProcessedBlockCount(): Promise<number>;
 }

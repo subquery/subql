@@ -48,9 +48,9 @@ export async function reindex(
     try {
       await Promise.all([
         storeService.rewind(targetBlockHeight, transaction),
-        unfinalizedBlockService.resetUnfinalizedBlocks(transaction),
-        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(transaction),
-        dynamicDsService.resetDynamicDatasource(targetBlockHeight, transaction),
+        unfinalizedBlockService.resetUnfinalizedBlocks(),
+        unfinalizedBlockService.resetLastFinalizedVerifiedHeight(),
+        dynamicDsService.resetDynamicDatasource(targetBlockHeight),
       ]);
 
       if (blockOffset) {
