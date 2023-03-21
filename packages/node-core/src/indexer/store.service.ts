@@ -55,7 +55,7 @@ import {
 } from '../utils';
 import {MetadataFactory, MetadataRepo, PoiFactory, PoiRepo} from './entities';
 import {CacheMetadataModel} from './storeCache';
-import {CachePoiModel} from './storeCache/cachePOI';
+import {CachePoiModel} from './storeCache/cachePoi';
 import {StoreCacheService} from './storeCache/storeCache.service';
 import {StoreOperations} from './StoreOperations';
 import {IProjectNetworkConfig, ISubqueryProject, OperationType} from './types';
