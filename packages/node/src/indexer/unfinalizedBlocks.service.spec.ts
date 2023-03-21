@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Header } from '@polkadot/types/interfaces';
-import { MetadataRepo } from '@subql/node-core';
+import { CacheMetadataModel, StoreCacheService } from '@subql/node-core';
 import { SubstrateBlock } from '@subql/types';
 import { ApiService } from './api.service';
 import {
@@ -88,12 +88,19 @@ function mockApiService(): ApiService {
   } as any;
 }
 
-function getMockMetadata(): MetadataRepo {
+function getMockMetadata(): any {
   const data: Record<string, any> = {};
   return {
     upsert: ({ key, value }) => (data[key] = value),
     findOne: ({ where: { key } }) => ({ value: data[key] }),
+    findByPk: (key: string) => data[key],
   } as any;
+}
+
+function mockStoreCache(): StoreCacheService {
+  return {
+    metadata: new CacheMetadataModel(getMockMetadata()),
+  } as StoreCacheService;
 }
 
 function mockBlock(
@@ -138,15 +145,15 @@ describe('UnfinalizedBlocksService', () => {
   let apiService: ApiService;
   let unfinalizedBlocksService: UnfinalizedBlocksService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     apiService = mockApiService();
     unfinalizedBlocksService = new UnfinalizedBlocksService(
       apiService,
       { unfinalizedBlocks: true } as any,
-      null,
+      mockStoreCache(),
     );
 
-    unfinalizedBlocksService.init(getMockMetadata(), () => Promise.resolve());
+    await unfinalizedBlocksService.init(() => Promise.resolve());
   });
 
   afterEach(() => {
@@ -257,7 +264,7 @@ describe('UnfinalizedBlocksService', () => {
 
     // After this the call stack is something like:
     // indexerManager -> blockDispatcher -> project -> project -> reindex -> blockDispatcher.resetUnfinalizedBlocks
-    await unfinalizedBlocksService.resetUnfinalizedBlocks(null);
+    unfinalizedBlocksService.resetUnfinalizedBlocks();
 
     expect((unfinalizedBlocksService as any).unfinalizedBlocks).toEqual([]);
   });
@@ -425,14 +432,12 @@ describe('UnfinalizedBlocksService', () => {
     const unfinalizedBlocksService2 = new UnfinalizedBlocksService(
       apiService,
       { unfinalizedBlocks: false } as any,
-      {
-        transaction: () => Promise.resolve({ commit: () => undefined }),
-      } as any,
+      mockStoreCache(),
     );
 
     const reindex = jest.fn().mockReturnValue(Promise.resolve());
 
-    await unfinalizedBlocksService2.init(metadata, reindex);
+    await unfinalizedBlocksService2.init(reindex);
 
     expect(reindex).toBeCalledWith(90);
     expect((unfinalizedBlocksService2 as any).lastCheckedBlockHeight).toBe(90);

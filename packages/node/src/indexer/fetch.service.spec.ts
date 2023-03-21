@@ -14,7 +14,6 @@ import {
   IndexerEvent,
   NodeConfig,
   Dictionary,
-  MetadataRepo,
   SmartBatchService
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';

@@ -16,7 +16,7 @@ const { argv } = yargsOptions;
 const DEFAULT_PORT = 3000;
 const logger = getLogger('subql-node');
 
-export async function bootstrap() {
+export async function bootstrap(): Promise<void> {
   logger.info(`Current ${pjson.name} version is ${pjson.version}`);
   const debug = argv.debug;
 
@@ -55,6 +55,8 @@ export async function bootstrap() {
     await apiService.init();
     await projectService.init();
     await fetchService.init(projectService.startHeight);
+
+    app.enableShutdownHooks();
 
     await app.listen(port);
 

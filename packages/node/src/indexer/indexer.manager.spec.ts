@@ -11,6 +11,7 @@ import {
   PoiService,
   MmrService,
   NodeConfig,
+  StoreCacheService,
 } from '@subql/node-core';
 import { GraphQLSchema } from 'graphql';
 import { Sequelize } from 'sequelize';
@@ -134,13 +135,14 @@ function createIndexerManager(
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const poiService = new PoiService(nodeConfig, sequilize);
-  const storeService = new StoreService(sequilize, nodeConfig, null);
-  const mmrService = new MmrService(nodeConfig, sequilize);
+  const storeCache = new StoreCacheService(sequilize, nodeConfig);
+  const storeService = new StoreService(sequilize, nodeConfig, storeCache);
+  const poiService = new PoiService(storeCache);
+  const mmrService = new MmrService(nodeConfig, storeCache);
   const unfinalizedBlocksService = new UnfinalizedBlocksService(
     apiService,
     nodeConfig,
-    sequilize,
+    storeCache,
   );
   const sandboxService = new SandboxService(
     apiService,

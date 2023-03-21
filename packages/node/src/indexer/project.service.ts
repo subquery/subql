@@ -7,8 +7,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   IProjectService,
-  MetadataFactory,
-  MetadataRepo,
   NodeConfig,
   IndexerEvent,
   StoreService,
@@ -40,7 +38,6 @@ const logger = getLogger('Project');
 @Injectable()
 export class ProjectService implements IProjectService {
   private _schema: string;
-  private metadataRepo: MetadataRepo;
   private _startHeight: number;
   private _blockOffset: number;
 
@@ -78,11 +75,6 @@ export class ProjectService implements IProjectService {
     return this.storeService.historical;
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
-  get metadataName(): string {
-    return this.metadataRepo.tableName;
-  }
-
   private async getExistingProjectSchema(): Promise<string> {
     return getExistingProjectSchema(this.nodeConfig, this.sequelize);
   }
@@ -98,17 +90,15 @@ export class ProjectService implements IProjectService {
     if (isMainThread) {
       this._schema = await this.ensureProject();
       await this.initDbSchema();
-      this.metadataRepo = await this.ensureMetadata();
-      this.dynamicDsService.init(
-        this.storeService.storeCache.getMetadataModel(),
-      );
+      await this.ensureMetadata();
+      this.dynamicDsService.init(this.storeService.storeCache.metadata);
 
       await this.initHotSchemaReload();
 
       if (this.nodeConfig.proofOfIndex) {
         const blockOffset = await this.getMetadataBlockOffset();
         void this.setBlockOffset(Number(blockOffset));
-        await this.poiService.init(this.schema);
+        await this.poiService.init();
       }
 
       this._startHeight = await this.getStartHeight();
@@ -121,21 +111,17 @@ export class ProjectService implements IProjectService {
       }
 
       const reindexedTo = await this.unfinalizedBlockService.init(
-        this.metadataRepo,
         this.reindex.bind(this),
       );
 
       if (reindexedTo !== undefined) {
         this._startHeight = reindexedTo;
       }
+
+      // Flush any pending operations to setup DB
+      await this.storeService.storeCache.flushCache();
     } else {
       this._schema = await this.getExistingProjectSchema();
-      this.metadataRepo = await MetadataFactory(
-        this.sequelize,
-        this.schema,
-        this.nodeConfig.multiChain,
-        this.project.network.chainId,
-      );
 
       await this.sequelize.sync();
 
@@ -143,7 +129,7 @@ export class ProjectService implements IProjectService {
       await this.initDbSchema();
 
       if (this.nodeConfig.proofOfIndex) {
-        await this.poiService.init(this.schema);
+        await this.poiService.init();
       }
     }
   }
@@ -183,13 +169,8 @@ export class ProjectService implements IProjectService {
     await initDbSchema(this.project, this.schema, this.storeService);
   }
 
-  private async ensureMetadata(): Promise<MetadataRepo> {
-    const metadataRepo = await MetadataFactory(
-      this.sequelize,
-      this.schema,
-      this.nodeConfig.multiChain,
-      this.project.network.chainId,
-    );
+  private async ensureMetadata(): Promise<void> {
+    const metadata = this.storeService.storeCache.metadata;
 
     this.eventEmitter.emit(
       IndexerEvent.NetworkMetadata,
@@ -204,98 +185,66 @@ export class ProjectService implements IProjectService {
       'specName',
       'genesisHash',
       'startHeight',
-      'chainId',
       'processedBlockCount',
       'lastFinalizedVerifiedHeight',
       'schemaMigrationCount',
-      'bypassBlocks',
     ] as const;
 
-    const entries = await metadataRepo.findAll({
-      where: {
-        key: keys,
-      },
-    });
-
-    const keyValue = entries.reduce((arr, curr) => {
-      arr[curr.key] = curr.value;
-      return arr;
-    }, {} as { [key in typeof keys[number]]: string | boolean | number });
+    const existing = await metadata.findMany(keys);
 
     const { chain, genesisHash, specName } = this.apiService.networkMeta;
 
     if (this.project.runner) {
       const { node, query } = this.project.runner;
-      await Promise.all([
-        metadataRepo.upsert({
-          key: 'runnerNode',
-          value: node.name,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerNodeVersion',
-          value: node.version,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerQuery',
-          value: query.name,
-        }),
-        metadataRepo.upsert({
-          key: 'runnerQueryVersion',
-          value: query.version,
-        }),
+
+      metadata.setBulk([
+        { key: 'runnerNode', value: node.name },
+        { key: 'runnerNodeVersion', value: node.version },
+        { key: 'runnerQuery', value: query.name },
+        { key: 'runnerQueryVersion', value: query.version },
       ]);
     }
-    if (!keyValue.genesisHash) {
-      await metadataRepo.upsert({ key: 'genesisHash', value: genesisHash });
+    if (!existing.genesisHash) {
+      metadata.set('genesisHash', genesisHash);
     } else {
       // Check if the configured genesisHash matches the currently stored genesisHash
       assert(
         // Configured project yaml genesisHash only exists in specVersion v0.2.0, fallback to api fetched genesisHash on v0.0.1
-        (this.project.network.chainId ?? genesisHash) === keyValue.genesisHash,
+        (this.project.network.chainId ?? genesisHash) === existing.genesisHash,
         'Specified project manifest chain id / genesis hash does not match database stored genesis hash, consider cleaning project schema using --force-clean',
       );
     }
-    if (keyValue.chain !== chain) {
-      await metadataRepo.upsert({ key: 'chain', value: chain });
+    if (existing.chain !== chain) {
+      metadata.set('chain', chain);
     }
 
-    if (keyValue.specName !== specName) {
-      await metadataRepo.upsert({ key: 'specName', value: specName });
+    if (existing.specName !== specName) {
+      metadata.set('specName', specName);
     }
 
     // If project was created before this feature, don't add the key. If it is project created after, add this key.
-    if (!keyValue.processedBlockCount && !keyValue.lastProcessedHeight) {
-      await metadataRepo.upsert({ key: 'processedBlockCount', value: 0 });
+    if (!existing.processedBlockCount && !existing.lastProcessedHeight) {
+      metadata.set('processedBlockCount', 0);
     }
 
-    if (keyValue.indexerNodeVersion !== packageVersion) {
-      await metadataRepo.upsert({
-        key: 'indexerNodeVersion',
-        value: packageVersion,
-      });
+    if (existing.indexerNodeVersion !== packageVersion) {
+      metadata.set('indexerNodeVersion', packageVersion);
     }
-    if (!keyValue.schemaMigrationCount) {
-      await metadataRepo.upsert({ key: 'schemaMigrationCount', value: 0 });
+    if (!existing.schemaMigrationCount) {
+      metadata.set('schemaMigrationCount', 0);
     }
 
-    if (!keyValue.startHeight) {
-      await metadataRepo.upsert({
-        key: 'startHeight',
-        value: this.getStartBlockFromDataSources(),
-      });
+    if (!existing.startHeight) {
+      metadata.set('startHeight', this.getStartBlockFromDataSources());
     }
-
-    return metadataRepo;
   }
 
   private async getMetadataBlockOffset(): Promise<number | undefined> {
-    return this.storeService.storeCache.getMetadataModel().find('blockOffset');
+    return this.storeService.storeCache.metadata.find('blockOffset');
   }
 
   private async getLastProcessedHeight(): Promise<number | undefined> {
-    return this.storeService.storeCache
-      .getMetadataModel()
-      .find('lastProcessedHeight');
+    return this.storeService.storeCache.metadata.find('lastProcessedHeight');
   }
 
   private async getStartHeight(): Promise<number> {
@@ -320,19 +269,10 @@ export class ProjectService implements IProjectService {
     }
     logger.info(`set blockOffset to ${offset}`);
     this._blockOffset = offset;
-    return this.mmrService
-      .syncFileBaseFromPoi(this.schema, offset)
-      .catch((err) => {
-        logger.error(err, 'failed to sync poi to mmr');
-        process.exit(1);
-      });
-  }
-  async getProcessedBlockCount(): Promise<number> {
-    const res = await this.metadataRepo.findOne({
-      where: { key: 'processedBlockCount' },
+    return this.mmrService.syncFileBaseFromPoi(offset).catch((err) => {
+      logger.error(err, 'failed to sync poi to mmr');
+      process.exit(1);
     });
-
-    return res?.value as number | undefined;
   }
 
   private getStartBlockFromDataSources() {
