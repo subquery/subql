@@ -7,21 +7,27 @@ import {CreationAttributes, Model, ModelStatic, Op, Transaction} from 'sequelize
 import {CountOptions} from 'sequelize/types/model';
 import {Fn} from 'sequelize/types/utils';
 import {
-  GetValue,
   HistoricalModel,
   ICachedModelControl,
   RemoveValue,
   SetData,
   ICachedModel,
   SetValueModel,
+  GetData,
 } from './types';
+
+const getCacheOptions = {
+  max: 500,
+  ttl: 1000 * 60 * 60, // in ms
+  updateAgeOnGet: true, // we want to keep most used record in cache longer
+};
 
 export class CachedModel<
   T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
 > implements ICachedModel<T>, ICachedModelControl<T>
 {
   // Null value indicates its not defined in the db
-  private getCache: Record<string, GetValue<T>> = {};
+  private getCache = new GetData<T>(getCacheOptions);
 
   private setCache: SetData<T> = {};
 
@@ -37,8 +43,8 @@ export class CachedModel<
 
   allCachedIds(): string[] {
     // unified ids
-    // Don't need to get from setCache, as it is synced with setCache
-    return uniq(flatten([Object.keys(this.getCache), Object.keys(this.removeCache)]));
+    // We need to look from setCache too, as setCache is LFU cache, it might have more/fewer entities with setCache
+    return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
   async get(id: string, tx: Transaction): Promise<T | null> {
@@ -46,43 +52,50 @@ export class CachedModel<
     if (this.removeCache[id]) {
       return;
     }
-    if (this.getCache[id] === undefined) {
-      const record = await this.model.findOne({
-        // https://github.com/sequelize/sequelize/issues/15179
-        where: {id} as any,
-        transaction: tx,
-      });
-
-      this.getCache[id] = {
-        data: record?.toJSON<T>(),
-      };
+    if (!this.getCache.has(id)) {
+      // LFU getCache could remove record from due to it is least frequently used
+      // Then we try look from setCache
+      let record = this.setCache[id]?.getLatest().data;
+      if (!record) {
+        record = (
+          await this.model.findOne({
+            // https://github.com/sequelize/sequelize/issues/15179
+            where: {id} as any,
+            transaction: tx,
+          })
+        )?.toJSON<T>();
+        // getCache only keep records from db
+        this.getCache.set(id, record);
+      }
+      return record;
     }
-    return this.getCache[id].data;
   }
 
   async getByField(
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
     tx: Transaction,
-    options: {offset?: number; limit?: number} | undefined
-  ): Promise<T[] | undefined> {
-    let cachedData = this.getByFieldFromCache(field, value);
-    if (options?.offset) {
-      if (cachedData.length <= options.offset) {
-        // example cache length 16, offset is 30
-        // it should skip cache value
-        cachedData = [];
-      } else if (cachedData.length > options.offset + options.limit) {
-        // example cache length 166, offset is 30, limit is 50
-        // then return all from cache [30,80]
-        return cachedData.slice(options.offset, options.offset + options.limit);
-      } else if (cachedData.length < options.offset + options.limit) {
-        // example cache length 66, offset is 30, limit is 50
-        // then return [30,66] from cache, set new limit and join record from db
-        cachedData = cachedData.slice(options.offset, cachedData.length);
-        options.limit = options.limit - (cachedData.length - options.offset);
-      }
+    options: {
+      offset: number;
+      limit: number;
     }
+  ): Promise<T[] | undefined> {
+    let cachedData = this.getFromCache(field, value);
+    if (cachedData.length <= options.offset) {
+      // example cache length 16, offset is 30
+      // it should skip cache value
+      cachedData = [];
+    } else if (cachedData.length >= options.offset + options.limit) {
+      // example cache length 166, offset is 30, limit is 50
+      // then return all from cache [30,80]
+      return cachedData.slice(options.offset, options.offset + options.limit);
+    } else if (cachedData.length < options.offset + options.limit) {
+      // example cache length 66, offset is 30, limit is 50
+      // then return [30,66] from cache, set new limit and join record from db
+      cachedData = cachedData.slice(options.offset, cachedData.length);
+      options.limit = options.limit - (cachedData.length - options.offset);
+    }
+
     const records = await this.model.findAll({
       where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
       transaction: tx,
@@ -93,7 +106,7 @@ export class CachedModel<
     // Update getCache value here
     records.map((record) => {
       const data = record.toJSON<T>();
-      this.getCache[data.id] = {data};
+      this.getCache.set(data.id, data);
     });
 
     const joinedData = cachedData.concat(records.map((record) => record.toJSON() as T));
@@ -101,11 +114,10 @@ export class CachedModel<
   }
 
   async getOneByField(field: keyof T, value: T[keyof T], tx: Transaction): Promise<T | undefined> {
-    // Might likely be more efficient than use getByField[0]
     if (field === 'id') {
       return this.get(value.toString(), tx);
     } else {
-      const oneFromCached = this.getByFieldFromCache(field, value)[0];
+      const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
         return oneFromCached;
       } else {
@@ -115,9 +127,8 @@ export class CachedModel<
             transaction: tx,
           })
         )?.toJSON<T>();
-        this.getCache[record.id] = {
-          data: record,
-        };
+
+        this.getCache.set(record.id, record);
         return record;
       }
     }
@@ -129,10 +140,6 @@ export class CachedModel<
     }
     this.setCache[id].set(data, blockHeight);
     this.flushableRecordCounter += 1;
-    // IMPORTANT
-    // This sync getCache with setCache
-    // Change this will impact `getByFieldFromCache`, `allCachedIds` and related methods.
-    this.getCache[id] = {data};
   }
 
   bulkCreate(data: T[], blockHeight: number): void {
@@ -157,21 +164,19 @@ export class CachedModel<
     options?: {distinct?: boolean; col?: keyof T} | undefined
   ): Promise<number> {
     const countOption = {} as Omit<CountOptions<any>, 'group'>;
-    let cachedCount = 0;
-    if (field && value) {
-      const cachedData = this.getByFieldFromCache(field, value);
-      const cachedDataIds = Object.values(cachedData).map((data) => data.id);
-      cachedCount = cachedDataIds.length;
-      // count should exclude any id already existed in cache
-      countOption.where = cachedCount !== 0 ? {[field]: value, id: {[Op.notIn]: cachedDataIds}} : {[field]: value};
-    }
+
+    const cachedData = this.getFromCache(field, value);
+    // count should exclude any id already existed in cache
+    countOption.where =
+      cachedData.length !== 0 ? {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} : {[field]: value};
+
     //TODO, this seems not working with field and values
     if (options) {
       assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
       countOption.distinct = options?.distinct;
       countOption.col = options?.col as string;
     }
-    return cachedCount + (await this.model.count(countOption));
+    return cachedData.length + (await this.model.count(countOption));
   }
 
   remove(id: string, blockHeight: number): void {
@@ -180,8 +185,8 @@ export class CachedModel<
         removedAtBlock: blockHeight,
       };
       this.flushableRecordCounter += 1;
-      if (this.getCache[id]) {
-        delete this.getCache[id];
+      if (this.getCache.get(id)) {
+        this.getCache.delete(id);
         // Also when .get, check removeCache first, should return undefined if removed
       }
       if (this.setCache[id]) {
@@ -234,7 +239,6 @@ export class CachedModel<
   }
 
   clear(): void {
-    this.getCache = {};
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
@@ -254,14 +258,35 @@ export class CachedModel<
     });
   }
 
-  private getByFieldFromCache(field: keyof T, value: T[keyof T] | T[keyof T][]): T[] {
-    // As getCache always synced the latest record with setCache, from `set` method
-    // We only set getCache here, otherwise we need to search setCache.
-    return Object.entries(this.getCache).map(([, getValue]) => {
-      if ((Array.isArray(value) && includes(value, getValue.data[field])) || isEqual(getValue.data[field], value)) {
-        return getValue.data;
+  // If field and value are passed, will getByField
+  // If no input parameter, will getAll
+  private getFromCache(field?: keyof T, value?: T[keyof T] | T[keyof T][], findOne?: boolean): T[] {
+    const joinedData: T[] = [];
+    const unifiedIds: string[] = [];
+    Object.entries(this.setCache).map(([, model]) => {
+      if (model.isMatchData(field, value)) {
+        const latestData = model.getLatest().data;
+        unifiedIds.push(latestData.id);
+        joinedData.push(latestData);
       }
     });
+    // No need search further
+    if (findOne && joinedData.length !== 0) {
+      return joinedData;
+    }
+
+    this.getCache.forEach((getValue, key) => {
+      if (
+        !unifiedIds.includes(key) &&
+        ((field === undefined && value === undefined) ||
+          (Array.isArray(value) && includes(value, getValue[field])) ||
+          isEqual(getValue[field], value))
+      ) {
+        // increase recency with get
+        joinedData.push(this.getCache.get(key));
+      }
+    });
+    return joinedData;
   }
 
   // Different with markAsDeleted, we only mark/close all the records less than current block height
