@@ -68,6 +68,8 @@ export class CachedModel<
       }
       return record;
     }
+
+    return this.getCache.get(id);
   }
 
   async getByField(
@@ -135,6 +137,7 @@ export class CachedModel<
       this.setCache[id] = new SetValueModel();
     }
     this.setCache[id].set(data, blockHeight);
+    this.getCache.set(id, data);
     this.flushableRecordCounter += 1;
   }
 
