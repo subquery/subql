@@ -24,7 +24,7 @@ const getCacheOptions = {
 
 export class CachedModel<
   T extends {id: string; __block_range?: (number | null)[] | Fn} = {id: string; __block_range?: (number | null)[] | Fn}
-> implements ICachedModel<T>, ICachedModelControl<T>
+> implements ICachedModel<T>, ICachedModelControl
 {
   // Null value indicates its not defined in the db
   private getCache = new GetData<T>(getCacheOptions);
@@ -47,7 +47,7 @@ export class CachedModel<
     return uniq(flatten([[...this.getCache.keys()], Object.keys(this.setCache), Object.keys(this.removeCache)]));
   }
 
-  async get(id: string, tx: Transaction): Promise<T | null> {
+  async get(id: string): Promise<T | null> {
     // If this already been removed
     if (this.removeCache[id]) {
       return;
@@ -61,7 +61,6 @@ export class CachedModel<
           await this.model.findOne({
             // https://github.com/sequelize/sequelize/issues/15179
             where: {id} as any,
-            transaction: tx,
           })
         )?.toJSON<T>();
         // getCache only keep records from db
@@ -69,12 +68,13 @@ export class CachedModel<
       }
       return record;
     }
+
+    return this.getCache.get(id);
   }
 
   async getByField(
     field: keyof T,
     value: T[keyof T] | T[keyof T][],
-    tx: Transaction,
     options: {
       offset: number;
       limit: number;
@@ -97,8 +97,7 @@ export class CachedModel<
     }
 
     const records = await this.model.findAll({
-      where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
-      transaction: tx,
+      where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
       limit: options?.limit, //limit should pass from store
       offset: options?.offset,
     });
@@ -113,9 +112,9 @@ export class CachedModel<
     return joinedData;
   }
 
-  async getOneByField(field: keyof T, value: T[keyof T], tx: Transaction): Promise<T | undefined> {
+  async getOneByField(field: keyof T, value: T[keyof T]): Promise<T | undefined> {
     if (field === 'id') {
-      return this.get(value.toString(), tx);
+      return this.get(value.toString());
     } else {
       const oneFromCached = this.getFromCache(field, value, true)[0];
       if (oneFromCached) {
@@ -123,8 +122,7 @@ export class CachedModel<
       } else {
         const record = (
           await this.model.findOne({
-            where: {[field]: value, id: {[Op.notIn]: this.allCachedIds}} as any,
-            transaction: tx,
+            where: {[field]: value, id: {[Op.notIn]: this.allCachedIds()}} as any,
           })
         )?.toJSON<T>();
 
@@ -139,6 +137,7 @@ export class CachedModel<
       this.setCache[id] = new SetValueModel();
     }
     this.setCache[id].set(data, blockHeight);
+    this.getCache.set(id, data);
     this.flushableRecordCounter += 1;
   }
 
@@ -219,10 +218,12 @@ export class CachedModel<
         });
       })
     ) as unknown as CreationAttributes<Model<T, T>>[];
+
+    let dbOperation: Promise<unknown>;
     if (this.historical) {
-      await Promise.all([
+      dbOperation = Promise.all([
         // set, bulkCreate, bulkUpdate & remove close previous records
-        this.historicalMarkPreviousHeightRecordsBatch(tx),
+        this.historicalMarkPreviousHeightRecordsBatch(tx, this.setCache, this.removeCache),
         // bulkCreate all new records for this entity,
         // include(set, bulkCreate, bulkUpdate)
         this.model.bulkCreate(records, {
@@ -230,32 +231,26 @@ export class CachedModel<
         }),
       ]);
     } else {
-      await this.model.bulkCreate(records, {
-        transaction: tx,
-        updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
-      });
-      await this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx});
+      dbOperation = Promise.all([
+        this.model.bulkCreate(records, {
+          transaction: tx,
+          updateOnDuplicate: Object.keys(records[0]) as unknown as (keyof T)[], // TODO is this right? we want upsert behaviour
+        }),
+        this.model.destroy({where: {id: Object.keys(this.removeCache)} as any, transaction: tx}),
+      ]);
     }
+
+    // Don't await DB operations to complete before clearing.
+    // This allows new data to be cached while flushing
+    this.clear();
+
+    await dbOperation;
   }
 
-  clear(): void {
+  private clear(): void {
     this.setCache = {};
     this.removeCache = {};
     this.flushableRecordCounter = 0;
-  }
-
-  dumpSetData(): SetData<T> {
-    const setData = this.setCache;
-
-    this.setCache = {};
-    return setData;
-  }
-
-  sync(data: SetData<T>): void {
-    Object.entries(data).map(([id, enttity]) => {
-      // TODO update for historical
-      this.setCache[id] = enttity;
-    });
   }
 
   // If field and value are passed, will getByField
@@ -292,11 +287,15 @@ export class CachedModel<
   // Different with markAsDeleted, we only mark/close all the records less than current block height
   // thus, and new record with current block height will not be impacted,
   // advantage is this sql is safe to concurrency resolve with any insert sql
-  private async historicalMarkPreviousHeightRecordsBatch(tx: Transaction): Promise<any[]> {
-    const closeSetRecords = Object.entries(this.setCache).map(([id, value]) => {
+  private async historicalMarkPreviousHeightRecordsBatch(
+    tx: Transaction,
+    setRecords: SetData<T>,
+    removeRecords: Record<string, RemoveValue>
+  ): Promise<any[]> {
+    const closeSetRecords = Object.entries(setRecords).map(([id, value]) => {
       return {id, blockHeight: value.getFirst().startHeight};
     });
-    const closeRemoveRecords = Object.entries(this.removeCache).map(([id, value]) => {
+    const closeRemoveRecords = Object.entries(removeRecords).map(([id, value]) => {
       return {id, blockHeight: value.removedAtBlock};
     });
 
