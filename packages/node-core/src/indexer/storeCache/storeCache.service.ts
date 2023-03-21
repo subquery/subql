@@ -99,5 +99,7 @@ export class StoreCacheService implements OnApplicationShutdown {
 
   async onApplicationShutdown(signal?: string): Promise<void> {
     await this.flushCache(true);
+
+    logger.info('Flushed caches');
   }
 }
