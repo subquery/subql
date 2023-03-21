@@ -56,6 +56,10 @@ export async function reindex(
       if (blockOffset) {
         await mmrService.deleteMmrNode(targetBlockHeight + 1, blockOffset);
       }
+
+      // Flush metadata changes from above Promise.all
+      await storeService.storeCache.metadata.flush(transaction);
+
       await transaction.commit();
       logger.info('Reindex Success');
     } catch (err) {

@@ -6,6 +6,7 @@ import {
   DbModule,
   MmrService,
   NodeConfig,
+  StoreCacheService,
   StoreService,
 } from '@subql/node-core';
 import { ConfigureModule } from '../configure/configure.module';
@@ -18,6 +19,7 @@ import { ReindexService } from './reindex.service';
 
 @Module({
   providers: [
+    StoreCacheService,
     StoreService,
     ReindexService,
     MmrService,
