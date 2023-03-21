@@ -132,7 +132,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
 
   // Is called directly before a block is processed
   protected preProcessBlock(height: number): void {
-    this.storeService.setTransaction(); // TODO rename
+    this.storeService.setOperationStack();
     this.storeService.setBlockHeight(height);
 
     this.currentProcessingHeight = height;
