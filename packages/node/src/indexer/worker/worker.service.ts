@@ -3,7 +3,7 @@
 
 import { threadId } from 'node:worker_threads';
 import { Injectable } from '@nestjs/common';
-import { NodeConfig, getLogger, AutoQueue } from '@subql/node-core';
+import { NodeConfig, getLogger, AutoQueue, memoryLock } from '@subql/node-core';
 import { fetchBlocksBatches } from '../../utils/substrate';
 import { ApiService } from '../api.service';
 import { SpecVersion } from '../dictionary.service';
@@ -34,6 +34,7 @@ const logger = getLogger(`Worker Service #${threadId}`);
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
   private _isIndexing = false;
+  private _numOfFetchedBlocks = 0;
 
   private queue: AutoQueue<FetchBlockResponse>;
 
@@ -65,6 +66,14 @@ export class WorkerService {
             height,
             specVersion,
           );
+
+          if (memoryLock.isLocked()) {
+            const start = Date.now();
+            await memoryLock.waitForUnlock();
+            const end = Date.now();
+            logger.debug(`memory lock wait time: ${end - start}ms`);
+          }
+
           const [block] = await fetchBlocksBatches(
             this.apiService.getApi(),
             [height],
@@ -76,6 +85,7 @@ export class WorkerService {
         }
 
         const block = this.fetchedBlocks[height];
+        this._numOfFetchedBlocks++;
         // Return info to get the runtime version, this lets the worker thread know
         return {
           specVersion: block.block.specVersion,
@@ -129,7 +139,7 @@ export class WorkerService {
   }
 
   get numFetchedBlocks(): number {
-    return Object.keys(this.fetchedBlocks).length;
+    return this._numOfFetchedBlocks;
   }
 
   get numFetchingBlocks(): number {

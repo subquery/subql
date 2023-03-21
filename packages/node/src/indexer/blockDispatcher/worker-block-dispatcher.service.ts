@@ -176,7 +176,7 @@ export class WorkerBlockDispatcherService
           cleanedBlocks.length - startIndex,
           await this.maxBatchSize(workerIdx),
         );
-        Promise.all(
+        await Promise.all(
           cleanedBlocks
             .slice(startIndex, startIndex + batchSize)
             .map((height) => this.enqueueBlock(height, workerIdx)),
@@ -206,6 +206,8 @@ export class WorkerBlockDispatcherService
     const { blockSpecVersion, syncedDictionary } =
       await this.runtimeService.getSpecVersion(height);
 
+    await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
+
     const pendingBlock = worker.fetchBlock(height, blockSpecVersion);
 
     const processBlock = async () => {
@@ -215,12 +217,8 @@ export class WorkerBlockDispatcherService
           this.syncWorkerRuntimes();
         }
 
-        await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
-
         const start = new Date();
-        await memoryLock.acquire();
         await pendingBlock;
-        memoryLock.release();
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {

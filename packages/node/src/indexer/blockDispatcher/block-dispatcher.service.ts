@@ -164,13 +164,15 @@ export class BlockDispatcherService
         // If specVersion not changed, a known overallSpecVer will be pass in
         // Otherwise use api to fetch runtimes
 
-        await memoryLock.acquire();
+        if (memoryLock.isLocked) {
+          await memoryLock.waitForUnlock();
+        }
+
         const blocks = await this.fetchBlocksBatches(
           this.apiService.getApi(),
           blockNums,
           specChanged ? undefined : this.runtimeService.parentSpecVersion,
         );
-        memoryLock.release();
 
         this.smartBatchService.addToSizeBuffer(blocks);
 
