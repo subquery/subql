@@ -340,7 +340,7 @@ export class ProjectService {
 
   async setBlockOffset(offset: number): Promise<void> {
     if (
-      this._blockOffset ||
+      this._blockOffset !== undefined ||
       offset === null ||
       offset === undefined ||
       isNaN(offset)
