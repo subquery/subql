@@ -117,7 +117,6 @@ export class ProjectService implements IProjectService {
       if (reindexedTo !== undefined) {
         this._startHeight = reindexedTo;
       }
-
       // Flush any pending operations to setup DB
       await this.storeService.storeCache.flushCache();
     } else {
