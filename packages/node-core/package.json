@@ -34,7 +34,6 @@
     "prom-client": "^14.0.1",
     "sequelize": "6.28.0",
     "source-map": "^0.7.4",
-    "terser-webpack-plugin": "^5.3.7",
     "vm2": "^3.9.9",
     "yargs": "^16.2.0"
   },
