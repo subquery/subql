@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import assert from 'assert';
-import {Injectable, OnApplicationShutdown} from '@nestjs/common';
+import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
 import {NodeConfig} from '@subql/node-core/configure';
 import {sum} from 'lodash';
 import {Sequelize} from 'sequelize';
@@ -16,10 +16,11 @@ import {ICachedModel, ICachedModelControl} from './types';
 const logger = getLogger('StoreCache');
 
 @Injectable()
-export class StoreCacheService implements OnApplicationShutdown {
+export class StoreCacheService implements BeforeApplicationShutdown {
   private cachedModels: Record<string, ICachedModelControl> = {};
   private metadataRepo: MetadataRepo;
   private poiRepo: PoiRepo;
+  private pendingFlush: Promise<void>;
 
   constructor(private sequelize: Sequelize, private config: NodeConfig) {}
 
@@ -87,8 +88,14 @@ export class StoreCacheService implements OnApplicationShutdown {
   }
 
   async flushCache(forceFlush?: boolean): Promise<void> {
+    // When we force flush, this will ensure not interrupt current block flushing,
+    // Force flush will continue after last block flush tx committed.
+    if (this.pendingFlush !== undefined) {
+      await this.pendingFlush;
+    }
     if (this.isFlushable() || forceFlush) {
-      await this._flushCache();
+      this.pendingFlush = this._flushCache();
+      await this.pendingFlush;
     }
   }
 
@@ -97,9 +104,8 @@ export class StoreCacheService implements OnApplicationShutdown {
     return numOfRecords >= this.config.storeCacheThreshold;
   }
 
-  async onApplicationShutdown(signal?: string): Promise<void> {
+  async beforeApplicationShutdown(): Promise<void> {
     await this.flushCache(true);
-
-    logger.info('Flushed caches');
+    logger.info(`Force flush cache successful!`);
   }
 }
