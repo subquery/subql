@@ -34,7 +34,6 @@ const logger = getLogger(`Worker Service #${threadId}`);
 export class WorkerService {
   private fetchedBlocks: Record<string, BlockContent> = {};
   private _isIndexing = false;
-  private _numOfFetchedBlocks = 0;
 
   private queue: AutoQueue<FetchBlockResponse>;
 
@@ -85,7 +84,6 @@ export class WorkerService {
         }
 
         const block = this.fetchedBlocks[height];
-        this._numOfFetchedBlocks++;
         // Return info to get the runtime version, this lets the worker thread know
         return {
           specVersion: block.block.specVersion,
@@ -139,7 +137,7 @@ export class WorkerService {
   }
 
   get numFetchedBlocks(): number {
-    return this._numOfFetchedBlocks;
+    return Object.keys(this.fetchedBlocks).length;
   }
 
   get numFetchingBlocks(): number {
