@@ -50,6 +50,13 @@ export class MmrService implements OnApplicationShutdown {
       // The latestPoiWithMmr its mmr value in filebase db
       const latestPoiFilebaseMmrValue = await this.fileBasedMmr.getRoot(latestPoiWithMmr.id - blockOffset - 1);
       this.validatePoiMmr(latestPoiWithMmr, latestPoiFilebaseMmrValue);
+      // Ensure aligned poi table and file based mmr
+      // If cache poi generated mmr haven't success write back to poi table,
+      // but latestPoiWithMmr still valid, mmr should delete advanced mmr
+      if (this.nextMmrBlockHeight > latestPoiWithMmr.id + 1) {
+        await this.deleteMmrNode(latestPoiWithMmr.id + 1, blockOffset);
+        this.nextMmrBlockHeight = latestPoiWithMmr.id + 1;
+      }
     }
     logger.info(`file based database MMR start with next block height at ${this.nextMmrBlockHeight}`);
     while (!this.isShutdown) {
