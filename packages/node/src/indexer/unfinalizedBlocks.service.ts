@@ -41,6 +41,11 @@ export class UnfinalizedBlocksService {
   async init(
     reindex: (targetHeight: number) => Promise<void>,
   ): Promise<number | undefined> {
+    logger.info(
+      `Unfinalized blocks is ${
+        this.nodeConfig.unfinalizedBlocks ? 'enabled' : 'disabled'
+      }`,
+    );
     // unfinalized blocks
     this.unfinalizedBlocks = await this.getMetadataUnfinalizedBlocks();
     this.lastCheckedBlockHeight = await this.getLastFinalizedVerifiedHeight();
@@ -87,6 +92,7 @@ export class UnfinalizedBlocksService {
     }
 
     const forkedHeader = await this.hasForked();
+
     if (!forkedHeader) {
       // Remove blocks that are now confirmed finalized
       this.deleteFinalizedBlock();
