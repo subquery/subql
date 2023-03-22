@@ -154,19 +154,19 @@ export class WorkerBlockDispatcherService
     if (syncedDictionary) {
       this.syncWorkerRuntimes();
     }
-    const start = new Date();
+    // const start = new Date();
     await worker.fetchBlock(height, blockSpecVersion);
-    const end = new Date();
+    // const end = new Date();
 
-    const waitTime = end.getTime() - start.getTime();
-    if (waitTime > 1000) {
-      logger.info(
-        `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
-      );
-    } else if (waitTime > 200) {
-      logger.info(
-        `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
-      );
-    }
+    // const waitTime = end.getTime() - start.getTime();
+    // if (waitTime > 1000) {
+    //   logger.info(
+    //     `Waiting to fetch block ${height}: ${chalk.red(`${waitTime}ms`)}`,
+    //   );
+    // } else if (waitTime > 200) {
+    //   logger.info(
+    //     `Waiting to fetch block ${height}: ${chalk.yellow(`${waitTime}ms`)}`,
+    //   );
+    // }
   }
 }
