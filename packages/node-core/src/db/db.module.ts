@@ -74,7 +74,7 @@ const buildSequelizeOptions = (nodeConfig: NodeConfig, option: DbOption): Sequel
     },
     logging: nodeConfig.debug
       ? (sql: string, timing?: number) => {
-          // logger.debug(sql);
+          logger.debug(sql);
         }
       : false,
   };
