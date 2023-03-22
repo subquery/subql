@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {getHeapStatistics} from 'v8';
-import AsyncLock from 'async-lock';
 import {Mutex} from 'async-mutex';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
@@ -43,16 +42,19 @@ export const memoryLock = new Mutex();
 export async function waitForBatchSize(sizeInBytes: number) {
   let resolved = false;
   const checkHeap = async () => {
-    await memoryLock.acquire();
     const heapTotal = getHeapStatistics().heap_size_limit;
     const {heapUsed} = process.memoryUsage();
     const availableHeap = heapTotal - heapUsed;
     if (availableHeap >= sizeInBytes && !resolved) {
       resolved = true;
-      memoryLock.release();
+      if (memoryLock.isLocked()) {
+        memoryLock.release();
+      }
       return;
     }
-    memoryLock.release();
+    if (!memoryLock.isLocked()) {
+      await memoryLock.acquire();
+    }
     if (!resolved) {
       logger.warn('Out of Memory - waiting for heap to be freed...');
       await checkHeap();

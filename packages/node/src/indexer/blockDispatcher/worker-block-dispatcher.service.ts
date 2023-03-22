@@ -176,9 +176,11 @@ export class WorkerBlockDispatcherService
           cleanedBlocks.length - startIndex,
           await this.maxBatchSize(workerIdx),
         );
-        cleanedBlocks
-          .slice(startIndex, startIndex + batchSize)
-          .forEach((height) => this.enqueueBlock(height, workerIdx));
+        await Promise.all(
+          cleanedBlocks
+            .slice(startIndex, startIndex + batchSize)
+            .map((height) => this.enqueueBlock(height, workerIdx)),
+        );
         startIndex += batchSize;
       }
     } else {
@@ -191,7 +193,7 @@ export class WorkerBlockDispatcherService
     this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
   }
 
-  private enqueueBlock(height: number, workerIdx: number) {
+  private async enqueueBlock(height: number, workerIdx: number) {
     if (this.isShutdown) return;
     const worker = this.workers[workerIdx];
 
@@ -200,22 +202,23 @@ export class WorkerBlockDispatcherService
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
+    // get SpecVersion from main runtime service
+    const { blockSpecVersion, syncedDictionary } =
+      await this.runtimeService.getSpecVersion(height);
+
+    await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
+
+    const pendingBlock = worker.fetchBlock(height, blockSpecVersion);
+
     const processBlock = async () => {
       try {
-        // get SpecVersion from main runtime service
-        const { blockSpecVersion, syncedDictionary } =
-          await this.runtimeService.getSpecVersion(height);
         // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
         if (syncedDictionary) {
           this.syncWorkerRuntimes();
         }
 
-        await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
-
         const start = new Date();
-        await memoryLock.acquire();
-        await worker.fetchBlock(height, blockSpecVersion);
-        memoryLock.release();
+        await pendingBlock;
         const end = new Date();
 
         if (bufferedHeight > this.latestBufferedHeight) {
