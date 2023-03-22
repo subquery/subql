@@ -96,7 +96,8 @@ export class FetchService implements OnApplicationShutdown {
     private apiService: ApiService,
     private nodeConfig: NodeConfig,
     @Inject('ISubqueryProject') private project: SubqueryProject,
-    @Inject('IBlockDispatcher') private blockDispatcher: ISubstrateBlockDispatcher,
+    @Inject('IBlockDispatcher')
+    private blockDispatcher: ISubstrateBlockDispatcher,
     private dictionaryService: DictionaryService,
     private dsProcessorService: DsProcessorService,
     private dynamicDsService: DynamicDsService,
@@ -488,7 +489,6 @@ export class FetchService implements OnApplicationShutdown {
               .sort((a, b) => a - b);
             if (batchBlocks.length === 0) {
               // There we're no blocks in this query range, we can set a new height we're up to
-              // eslint-disable-next-line @typescript-eslint/await-thenable
               await this.blockDispatcher.enqueueBlocks(
                 [],
                 Math.min(
@@ -504,7 +504,6 @@ export class FetchService implements OnApplicationShutdown {
               const enqueuingBlocks = batchBlocks.slice(0, maxBlockSize);
               const cleanedBatchBlocks =
                 this.filteredBlockBatch(enqueuingBlocks);
-              // eslint-disable-next-line @typescript-eslint/await-thenable
               await this.blockDispatcher.enqueueBlocks(
                 cleanedBatchBlocks,
                 this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
@@ -524,23 +523,16 @@ export class FetchService implements OnApplicationShutdown {
         scaledBatchSize,
       );
 
-      if (handlers.length && this.getModulos().length === handlers.length) {
-        const enqueuingBlocks = this.getEnqueuedModuloBlocks(startBlockHeight);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        await this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      } else {
-        const enqueuingBlocks = range(startBlockHeight, endHeight + 1);
-        const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
-        // eslint-disable-next-line @typescript-eslint/await-thenable
-        await this.blockDispatcher.enqueueBlocks(
-          cleanedBatchBlocks,
-          this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
-        );
-      }
+      const enqueuingBlocks =
+        handlers.length && this.getModulos().length === handlers.length
+          ? this.getEnqueuedModuloBlocks(startBlockHeight)
+          : range(startBlockHeight, endHeight + 1);
+
+      const cleanedBatchBlocks = this.filteredBlockBatch(enqueuingBlocks);
+      await this.blockDispatcher.enqueueBlocks(
+        cleanedBatchBlocks,
+        this.getLatestBufferHeight(cleanedBatchBlocks, enqueuingBlocks),
+      );
     }
   }
   private getLatestBufferHeight(
