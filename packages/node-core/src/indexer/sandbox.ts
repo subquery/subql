@@ -67,6 +67,8 @@ export class Sandbox extends NodeVM {
 
   async convertStack(stackTrace: any) {
     if (!this.sourceMap) {
+      logger.warn('Unable to find a source map. Rebuild your project with latest @subql/cli to generate a source map.');
+      logger.warn('Logging unresolved stack trace.');
       return stackTrace;
     }
     const regex = /index\.js:([0-9]+):([0-9]+)/gi;
@@ -87,6 +89,11 @@ export class Sandbox extends NodeVM {
   decodeSourceMap(sourceMapPath: string) {
     const source = readFileSync(sourceMapPath).toString();
     const sourceMapBase64 = source.split(`//# sourceMappingURL=data:application/json;charset=utf-8;base64,`)[1];
+    if (!sourceMapBase64) {
+      logger.warn('Unable to find a source map for project');
+      logger.warn('Build your project with latest @subql/cli to generate a source map');
+      return;
+    }
     const sourceMap = Buffer.from(sourceMapBase64, 'base64').toString();
     const json = JSON.parse(sourceMap);
 
