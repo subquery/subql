@@ -176,10 +176,21 @@ export class WorkerBlockDispatcherService
           cleanedBlocks.length - startIndex,
           await this.maxBatchSize(workerIdx),
         );
+
+        const processingBlocks = cleanedBlocks.slice(
+          startIndex,
+          startIndex + batchSize,
+        );
+
+        // check within this processing range, whether block spec has changed
+        const specChanged = await this.runtimeService.specChanged(
+          processingBlocks[processingBlocks.length - 1],
+        );
+
         await Promise.all(
           cleanedBlocks
             .slice(startIndex, startIndex + batchSize)
-            .map((height) => this.enqueueBlock(height, workerIdx)),
+            .map((height) => this.enqueueBlock(height, workerIdx, specChanged)),
         );
         startIndex += batchSize;
       }
@@ -193,7 +204,11 @@ export class WorkerBlockDispatcherService
     this.latestBufferedHeight = latestBufferHeight ?? last(cleanedBlocks);
   }
 
-  private async enqueueBlock(height: number, workerIdx: number) {
+  private async enqueueBlock(
+    height: number,
+    workerIdx: number,
+    specChanged = true,
+  ) {
     if (this.isShutdown) return;
     const worker = this.workers[workerIdx];
 
@@ -202,18 +217,25 @@ export class WorkerBlockDispatcherService
     // Used to compare before and after as a way to check if queue was flushed
     const bufferedHeight = this.latestBufferedHeight;
 
-    // get SpecVersion from main runtime service
-    const { blockSpecVersion, syncedDictionary } =
-      await this.runtimeService.getSpecVersion(height);
+    // if it is not being changed, safe to use last specVersion
+    let _blockSpecVersion = this.runtimeService.parentSpecVersion;
+    let _syncedDictionary = false;
 
-    await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
+    // if changed, get SpecVersion from main runtime service
+    if (specChanged) {
+      const { blockSpecVersion, syncedDictionary } =
+        await this.runtimeService.getSpecVersion(height);
+      _blockSpecVersion = blockSpecVersion;
+      _syncedDictionary = syncedDictionary;
+      await worker.waitForWorkerBatchSize(this.minimumHeapLimit);
+    }
 
-    const pendingBlock = worker.fetchBlock(height, blockSpecVersion);
+    const pendingBlock = worker.fetchBlock(height, _blockSpecVersion);
 
     const processBlock = async () => {
       try {
         // if main runtime specVersion has been updated, then sync with all workers specVersion map, and lastFinalizedBlock
-        if (syncedDictionary) {
+        if (_syncedDictionary) {
           this.syncWorkerRuntimes();
         }
 
