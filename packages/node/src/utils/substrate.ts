@@ -260,7 +260,9 @@ export async function getBlockByHeight(
   });
 
   const block = await api.rpc.chain.getBlock(blockHash).catch((e) => {
-    logger.error(`failed to fetch Block ${blockHash}`);
+    logger.error(
+      `failed to fetch Block hash="${blockHash}" height="${height}"`,
+    );
     throw ApiPromiseConnection.handleError(e);
   });
   // validate block is valid
