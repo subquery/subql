@@ -7,7 +7,6 @@ import {Store} from '@subql/types';
 import {levelFilter} from '@subql/utils';
 import {merge} from 'lodash';
 import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
-import {decode} from 'vlq';
 import {NodeVM, NodeVMOptions, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
 import {getLogger} from '../logger';
