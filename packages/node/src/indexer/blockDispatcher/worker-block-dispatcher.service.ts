@@ -188,9 +188,9 @@ export class WorkerBlockDispatcherService
         );
 
         await Promise.all(
-          cleanedBlocks
-            .slice(startIndex, startIndex + batchSize)
-            .map((height) => this.enqueueBlock(height, workerIdx, specChanged)),
+          processingBlocks.map((height) =>
+            this.enqueueBlock(height, workerIdx, specChanged),
+          ),
         );
         startIndex += batchSize;
       }
