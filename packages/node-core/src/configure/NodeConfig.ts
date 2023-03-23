@@ -121,10 +121,6 @@ export class NodeConfig implements IConfig {
     return this._config.storeCacheThreshold;
   }
 
-  get networkEndpoint(): string | undefined {
-    return this._config.networkEndpoint;
-  }
-
   get networkDictionary(): string | undefined {
     return this._config.networkDictionary;
   }
