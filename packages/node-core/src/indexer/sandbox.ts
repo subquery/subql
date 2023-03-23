@@ -66,7 +66,7 @@ export class Sandbox extends NodeVM {
     return timeout(this.run(this.script), duration);
   }
 
-  async convertStack(stackTrace: any) {
+  protected async convertStack(stackTrace: string): Promise<string> {
     if (!this.sourceMap) {
       logger.warn('Unable to find a source map. Rebuild your project with latest @subql/cli to generate a source map.');
       logger.warn('Logging unresolved stack trace.');
@@ -75,7 +75,7 @@ export class Sandbox extends NodeVM {
 
     const entryFile = last(this.entry.split('/'));
     const regex = new RegExp(`${entryFile.split('.')[0]}.${entryFile.split('.')[1]}:([0-9]+):([0-9]+)`, 'gi');
-    const matches = [...stackTrace.matchAll(regex)];
+    const matches = [...(stackTrace as any).matchAll(regex)];
 
     for (const match of matches) {
       const lineNumber = Number.parseInt(match[1]);
@@ -135,7 +135,7 @@ export class IndexerSandbox extends Sandbox {
     try {
       await this.runTimeout(this.config.timeout);
     } catch (e) {
-      const newStack = await this.convertStack(e.stack);
+      const newStack = await this.convertStack((e as Error).stack);
       e.stack = newStack;
       e.handler = funcName;
       if (this.config.logLevel && levelFilter('debug', this.config.logLevel)) {
