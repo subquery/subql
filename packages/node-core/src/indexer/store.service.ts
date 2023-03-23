@@ -468,11 +468,6 @@ export class StoreService {
     sequelizeModel.addHook('beforeValidate', (attributes, options) => {
       attributes.__block_range = [this.blockHeight, null];
     });
-    // sequelizeModel.addHook('beforeBulkCreate', (instances, options) => {
-    //   instances.forEach((item) => {
-    //     item.__block_range = [this.blockHeight, null];
-    //   });
-    // });
   }
 
   private validateNotifyTriggers(triggerName: string, triggers: NotifyTriggerPayload[]): void {
