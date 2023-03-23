@@ -12,7 +12,7 @@ import {getLogger} from '../../logger';
 import {AutoQueue} from '../../utils';
 import {DynamicDsService} from '../dynamic-ds.service';
 import {PoiService} from '../poi.service';
-import { SmartBatchService } from '../smartBatch.service';
+import {SmartBatchService} from '../smartBatch.service';
 import {StoreService} from '../store.service';
 import {StoreCacheService} from '../storeCache';
 import {IProjectNetworkConfig, IProjectService, ISubqueryProject} from '../types';
@@ -89,8 +89,10 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   }
 
   async enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void> {
+    // In the case where factors of batchSize is equal to bypassBlock or when heights is []
+    // to ensure block is bypassed, latestBufferHeight needs to be manually set
     if (!!latestBufferHeight && !heights.length) {
-      this.latestBufferedHeight = latestBufferHeight;
+      await this.jumpBufferedHeight(latestBufferHeight);
       return;
     }
 
@@ -101,14 +103,9 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
       let startIndex = 0;
       while (startIndex < heights.length) {
         const workerIdx = await this.getNextWorkerIndex();
-        const batchSize = Math.min(
-          heights.length - startIndex,
-          await this.maxBatchSize(workerIdx),
-        );
+        const batchSize = Math.min(heights.length - startIndex, await this.maxBatchSize(workerIdx));
         await Promise.all(
-          heights
-            .slice(startIndex, startIndex + batchSize)
-            .map((height) => this.enqueueBlock(height, workerIdx)),
+          heights.slice(startIndex, startIndex + batchSize).map((height) => this.enqueueBlock(height, workerIdx))
         );
         startIndex += batchSize;
       }
@@ -189,9 +186,7 @@ export abstract class WorkerBlockDispatcher<DS, W extends Worker>
   }
 
   private async getNextWorkerIndex(): Promise<number> {
-     return Promise.all(
-      this.workers.map((worker) => worker.getMemoryLeft()),
-    ).then((memoryLeftValues) => {
+    return Promise.all(this.workers.map((worker) => worker.getMemoryLeft())).then((memoryLeftValues) => {
       return memoryLeftValues.indexOf(Math.max(...memoryLeftValues));
     });
   }

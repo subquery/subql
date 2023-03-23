@@ -30,7 +30,7 @@ export type ProcessBlockResponse = {
 };
 
 export interface IBlockDispatcher {
-  enqueueBlocks(heights: number[], latestBufferHeight?: number): void;
+  enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
 
   queueSize: number;
   freeSize: number;
@@ -69,7 +69,7 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     protected dynamicDsService: DynamicDsService<any>
   ) {}
 
-  abstract enqueueBlocks(heights: number[]): void;
+  abstract enqueueBlocks(heights: number[], latestBufferHeight?: number): Promise<void>;
 
   async init(onDynamicDsCreated: (height: number) => Promise<void>): Promise<void> {
     this.onDynamicDsCreated = onDynamicDsCreated;
@@ -198,7 +198,21 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
     }
   }
 
-  private updateStoreMetadata(height: number): void {
+  // Used when dictionary results skip a large number of blocks
+  protected async jumpBufferedHeight(height: number): Promise<void> {
+    this.updateStoreMetadata(height, false);
+    this.latestBufferedHeight = height;
+
+    // We're not actually processing this block, we just want to update health/benchmark
+    this.eventEmitter.emit(IndexerEvent.BlockProcessing, {
+      height,
+      timestamp: Date.now(),
+    });
+
+    await this.storeCacheService.flushCache(true);
+  }
+
+  private updateStoreMetadata(height: number, updateProcessed = true): void {
     const meta = this.storeCacheService.metadata;
     // Update store metadata
     meta.setBulk([
@@ -206,6 +220,8 @@ export abstract class BaseBlockDispatcher<Q extends IQueue> implements IBlockDis
       {key: 'lastProcessedTimestamp', value: Date.now()},
     ]);
     // Db Metadata increase BlockCount, in memory ref to block-dispatcher _processedBlockCount
-    meta.setIncrement('processedBlockCount');
+    if (updateProcessed) {
+      meta.setIncrement('processedBlockCount');
+    }
   }
 }
