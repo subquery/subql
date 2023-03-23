@@ -148,12 +148,12 @@ export class CachedModel<
   }
 
   bulkUpdate(data: T[], blockHeight: number, fields?: string[] | undefined): void {
-    for (const entity of data) {
-      this.set(entity.id, entity, blockHeight);
-    }
     //TODO, remove fields
     if (fields) {
-      throw new Error(`Currently not support update by fields`);
+      throw new Error(`Currently not supported: update by fields`);
+    }
+    for (const entity of data) {
+      this.set(entity.id, entity, blockHeight);
     }
   }
 
@@ -172,8 +172,8 @@ export class CachedModel<
     //TODO, this seems not working with field and values
     if (options) {
       assert.ok(options.distinct && options.col, 'If distinct, the distinct column must be provided');
-      countOption.distinct = options?.distinct;
-      countOption.col = options?.col as string;
+      countOption.distinct = options.distinct;
+      countOption.col = options.col as string;
     }
     return cachedData.length + (await this.model.count(countOption));
   }
