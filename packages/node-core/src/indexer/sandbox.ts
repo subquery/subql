@@ -5,7 +5,7 @@ import {existsSync, readFileSync} from 'fs';
 import path from 'path';
 import {Store} from '@subql/types';
 import {levelFilter} from '@subql/utils';
-import {merge} from 'lodash';
+import {last, merge} from 'lodash';
 import {SourceMapConsumer, NullableMappedPosition} from 'source-map';
 import {NodeVM, NodeVMOptions, VMScript} from 'vm2';
 import {NodeConfig} from '../configure/NodeConfig';
@@ -38,6 +38,7 @@ const logger = getLogger('sandbox');
 
 export class Sandbox extends NodeVM {
   private root: string;
+  private entry: string;
   private sourceMap: any | undefined;
 
   constructor(option: SandboxOption, protected readonly script: VMScript, protected config: NodeConfig) {
@@ -51,13 +52,13 @@ export class Sandbox extends NodeVM {
         },
       })
     );
-    this.root = option.root;
+    this.root = config.subquery.startsWith('ipfs://') ? '' : option.root;
+    this.entry = option.entry;
 
-    const filename = 'dist/index.js';
-    const sourceMapPath = path.join(this.root, filename);
+    const sourceMapFile = path.join(this.root, this.entry);
 
-    if (existsSync(sourceMapPath)) {
-      this.sourceMap = this.decodeSourceMap(sourceMapPath);
+    if (existsSync(sourceMapFile)) {
+      this.sourceMap = this.decodeSourceMap(sourceMapFile);
     }
   }
 
@@ -71,7 +72,9 @@ export class Sandbox extends NodeVM {
       logger.warn('Logging unresolved stack trace.');
       return stackTrace;
     }
-    const regex = /index\.js:([0-9]+):([0-9]+)/gi;
+
+    const entryFile = last(this.entry.split('/'));
+    const regex = new RegExp(`${entryFile.split('.')[0]}.${entryFile.split('.')[1]}:([0-9]+):([0-9]+)`, 'gi');
     const matches = [...stackTrace.matchAll(regex)];
 
     for (const match of matches) {
@@ -79,8 +82,7 @@ export class Sandbox extends NodeVM {
       const columnNumber = Number.parseInt(match[2]);
       const lineInfo = await this.findLineInfo(this.sourceMap, lineNumber, columnNumber);
       const newLineTrace = `${lineInfo.source}:${lineInfo.line}:${lineInfo.column}`;
-      const filepath = path.join(this.root, 'dist/index.js');
-      stackTrace = stackTrace.replace(`${filepath}:${match[1]}:${match[2]}`, newLineTrace);
+      stackTrace = stackTrace.replace(`${path.join(this.root, this.entry)}:${match[1]}:${match[2]}`, newLineTrace);
     }
 
     return stackTrace;
