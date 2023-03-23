@@ -143,7 +143,7 @@ function createIndexerManager(
   const dsProcessorService = new DsProcessorService(project, nodeConfig);
   const dynamicDsService = new DynamicDsService(dsProcessorService, project);
 
-  const storeCache = new StoreCacheService(sequilize, nodeConfig);
+  const storeCache = new StoreCacheService(sequilize, nodeConfig, eventEmitter);
   const storeService = new StoreService(sequilize, nodeConfig, storeCache);
   const poiService = new PoiService(storeCache);
   const mmrService = new MmrService(nodeConfig, storeCache);
