@@ -12,6 +12,8 @@ export enum IndexerEvent {
   NetworkMetadata = 'network_metadata',
   UsingDictionary = 'using_dictionary',
   SkipDictionary = 'skip_dictionary',
+  StoreCacheThreshold = 'store_cache_threshold',
+  StoreCacheRecordsSize = 'store_cache_records_size',
   Ready = 'ready',
 }
 
