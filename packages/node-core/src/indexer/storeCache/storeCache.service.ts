@@ -3,9 +3,11 @@
 
 import assert from 'assert';
 import {Injectable, BeforeApplicationShutdown} from '@nestjs/common';
+import {EventEmitter2, OnEvent} from '@nestjs/event-emitter';
 import {NodeConfig} from '@subql/node-core/configure';
 import {sum} from 'lodash';
 import {Sequelize} from 'sequelize';
+import {EventPayload, IndexerEvent} from '../../events';
 import {getLogger} from '../../logger';
 import {MetadataRepo, PoiRepo} from '../entities';
 import {CacheMetadataModel} from './cacheMetadata';
@@ -21,8 +23,11 @@ export class StoreCacheService implements BeforeApplicationShutdown {
   private metadataRepo: MetadataRepo;
   private poiRepo: PoiRepo;
   private pendingFlush: Promise<void>;
+  private storeCacheThreshold: number;
 
-  constructor(private sequelize: Sequelize, private config: NodeConfig) {}
+  constructor(private sequelize: Sequelize, private config: NodeConfig, protected eventEmitter: EventEmitter2) {
+    this.storeCacheThreshold = config.storeCacheThreshold;
+  }
 
   setRepos(meta: MetadataRepo, poi?: PoiRepo): void {
     this.metadataRepo = meta;
@@ -101,7 +106,22 @@ export class StoreCacheService implements BeforeApplicationShutdown {
 
   isFlushable(): boolean {
     const numOfRecords = sum(Object.values(this.cachedModels).map((m) => m.flushableRecordCounter));
-    return numOfRecords >= this.config.storeCacheThreshold;
+    this.eventEmitter.emit(IndexerEvent.StoreCacheRecordsSize, {
+      value: numOfRecords,
+    });
+    return numOfRecords >= this.storeCacheThreshold;
+  }
+
+  @OnEvent(IndexerEvent.BlockQueueSize)
+  dynamicUpdateCacheThreshold({value}: EventPayload<number>): void {
+    // Ratio of number block left in block queue to queue size
+    // Lesser number of number block left in block queue means we are processing faster
+    // Therefore we should reduce threshold to flush more frequently
+    const waitingProcessingRatio = value / (this.config.batchSize * 3);
+    this.storeCacheThreshold = Math.max(1, Number(waitingProcessingRatio * this.config.storeCacheThreshold));
+    this.eventEmitter.emit(IndexerEvent.StoreCacheThreshold, {
+      value: this.storeCacheThreshold,
+    });
   }
 
   async beforeApplicationShutdown(): Promise<void> {
