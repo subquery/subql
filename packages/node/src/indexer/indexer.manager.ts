@@ -22,6 +22,7 @@ import {
   profiler,
   profilerWrap,
   IndexerSandbox,
+  ProcessBlockResponse,
 } from '@subql/node-core';
 import {
   SubstrateBlock,
@@ -65,13 +66,7 @@ export class IndexerManager {
   async indexBlock(
     blockContent: BlockContent,
     runtimeVersion: RuntimeVersion,
-  ): Promise<{
-    dynamicDsCreated: boolean;
-    // operationHash: Uint8Array;
-    blockHash: string;
-    reindexBlockHeight: number;
-  }> {
-    this.api = this.apiService.api;
+  ): Promise<ProcessBlockResponse> {
     const { block } = blockContent;
     let dynamicDsCreated = false;
     let reindexBlockHeight: number | null = null;
